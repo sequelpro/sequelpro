@@ -47,6 +47,10 @@ static NSString *SPImportFavorites         = @"ImportFavorites";
 static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
+@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
+- (void)setShowsHiddenFiles:(BOOL)flag;
+@end
+
 @interface SPConnectionController ()
 
 - (BOOL)_checkHost;
@@ -237,7 +241,13 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  * connection proxies in use.
  */
 - (IBAction)initiateConnection:(id)sender
-{	
+{
+	// If this action was triggered via a double-click on the favorites outline view,
+	// ensure that one of the connections was double-clicked, not the area above or below
+#ifndef SP_REFACTOR
+	if (sender == favoritesOutlineView && [favoritesOutlineView clickedRow] <= 0) return;
+#endif
+
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
@@ -396,7 +406,8 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	NSArray *permittedFileTypes = nil;
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	keySelectionPanel = [NSOpenPanel openPanel];
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 
 	// Switch details by sender.
 	// First, SSH keys:
@@ -415,7 +426,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 		}
 
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
-		[openPanel setAccessoryView:sshKeyLocationHelp];
+		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 
 	// SSL key file location:
 	} else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
@@ -424,7 +435,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		[openPanel setAccessoryView:sslKeyFileLocationHelp];
+		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 		
 	// SSL certificate file location:
 	} else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
@@ -433,7 +444,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCertificateLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 		
 	// SSL CA certificate file location:
 	} else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
@@ -442,10 +453,10 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 			return;
 		}
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[openPanel setAccessoryView:sslCACertLocationHelp];
+		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 
-	[openPanel beginSheetForDirectory:directoryPath
+	[keySelectionPanel beginSheetForDirectory:directoryPath
 								 file:filePath
 								types:permittedFileTypes
 					   modalForWindow:[dbDocument parentWindow]
@@ -468,6 +479,14 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 - (IBAction)updateSSLInterface:(id)sender
 {
 	[self resizeTabViewToConnectionType:[self type] animating:YES];
+}
+
+/**
+ * Toggle hidden file visiblity in response to accessory view changes
+ */
+- (IBAction)updateKeyLocationFileVisibility:(id)sender
+{
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 }
 
 #pragma mark -

@@ -46,6 +46,9 @@
 - (id) init
 {
     if ( (self = [super init]) ) {
+		systemVersion = 0;
+		Gestalt(gestaltSystemVersion, &systemVersion);
+
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose"]];
         sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Pressed"]];
         sequelProCloseButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Rollover"]];
@@ -405,12 +408,15 @@
 	[[NSGraphicsContext currentContext] setShouldAntialias:NO];
 
 	float backgroundCalibratedWhite = 0.495f;
+	if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.55f;
+
 	float lineCalibratedWhite = [[NSColor darkGrayColor] whiteComponent];
 	float shadowAlpha = 0.4f;
 
 	// When the window is in the background, tone down the colours
 	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
 		backgroundCalibratedWhite = 0.73f;
+		if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.79f;
 		lineCalibratedWhite = 0.49f;
 		shadowAlpha = 0.3f;
 	}
@@ -502,19 +508,19 @@
 	if ([[tabBar window] isMainWindow] && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:0.59f alpha:1.0f];
+			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.63f:0.59f alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.495f alpha:1.0f];		
+			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];		
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:1.0f];
 		}
 	} else {
 		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:0.81f alpha:1.0f];
+			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.85f:0.81f alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
 		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:0.73f alpha:1.0f];
+			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.79f:0.73f alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		}
 	}

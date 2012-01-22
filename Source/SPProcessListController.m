@@ -80,7 +80,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
  */
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:@"%@ %@", [[(SPAppController*)[NSApp delegate] frontDocument] name], NSLocalizedString(@"Server Processes", @"server processes window title")]];
+	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
@@ -700,8 +700,29 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		
 		for (i = 0; i < [processList numOfRows]; i++) 
 		{
-			[processes addObject:[processList fetchRowAsDictionary]];
+			//MCPKit currently returns numbers as NSString, which will break sorting of numbers in this case.
+			NSMutableDictionary *rowsFixed = [[processList fetchRowAsDictionary] mutableCopy];
+			
+			id idColumn = [rowsFixed objectForKey:@"Id"];
+			//Id is a signed int(11) - this is a signed 32 bit int value
+			if(idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
+				int numRaw = [(NSString *)idColumn intValue];
+				NSNumber *num = [NSNumber numberWithInt:numRaw];
+				[rowsFixed setObject:num forKey:@"Id"];
+			}
+
+			id timeColumn = [rowsFixed objectForKey:@"Time"];
+			//Time is a signed int(7) - this is the same 32 bit int value
+			if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
+				int numRaw = [(NSString *)timeColumn intValue];
+				NSNumber *num = [NSNumber numberWithInt:numRaw];
+				[rowsFixed setObject:num forKey:@"Time"];
+			}
+			
+			[processes addObject:[[rowsFixed copy] autorelease]];
+			[rowsFixed release];
 		}
+
 	}
 	
 	// Update the UI on the main thread

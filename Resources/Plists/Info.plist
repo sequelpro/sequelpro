@@ -136,13 +136,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.9.8</string>
+	<string>0.9.9.1</string>
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
 	<string>http://log.sequelpro.com/submit</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -157,7 +159,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2010 Sequel Pro and CocoaMySQL team.</string>
+	<string>Copyright 2002-2011 Sequel Pro and CocoaMySQL team.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -312,5 +314,6 @@
 				<string>sequelpro</string>
 			</array>
 		</dict>
-	</array></dict>
+	</array>
+</dict>
 </plist>

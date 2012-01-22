@@ -34,14 +34,18 @@
 #ifndef SP_REFACTOR /* class forward decls */
 SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
 #endif
-SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
+SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol>
+@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol
+#ifdef SP_REFACTOR /* patch */
+	, NSTextFieldDelegate
+#endif
+>
 {
 #ifdef SP_REFACTOR /* patch */
 	id delegate;
@@ -163,9 +167,11 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
+	NSString *selectedDatabaseEncoding;
 #ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;
 	NSMutableArray *nibObjectsToRelease;
+	NSUndoManager *undoManager;
 #endif
 
 	NSMenu *selectEncodingMenu;
@@ -230,13 +236,28 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 	BOOL isProcessing;
 #ifndef SP_REFACTOR /* ivars */
 	NSString *processID;
+	BOOL windowTitleStatusViewIsVisible;
 #endif
 }
+
+#ifdef SP_REFACTOR /* ivars */
+@property (assign) SPDatabaseData* databaseDataInstance;
+@property (assign) SPTableData* tableDataInstance;
+@property (assign) SPCustomQuery* customQueryInstance;
+@property (assign) id databaseNameField;
+@property (assign) id databaseEncodingButton;
+@property (assign) id addDatabaseButton;
+
+@property (assign) id databaseRenameNameField;
+@property (assign) id renameDatabaseButton;
+@property (assign) id databaseRenameSheet;
+#endif
 
 #ifdef SP_REFACTOR /* ivars */
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
+@property (assign) NSWindow* databaseSheet;
 #endif
 
 #ifndef SP_REFACTOR /* ivars */
@@ -251,8 +272,10 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 
 #ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUntitled;
+#endif
 - (BOOL)couldCommitCurrentViewActions;
 
+#ifndef SP_REFACTOR /* method decls */
 - (void)initQueryEditorWithString:(NSString *)query;
 
 // Connection callback and methods
@@ -267,12 +290,14 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (IBAction)chooseDatabase:(id)sender;
 #endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)refreshTables:(id)sender;
 - (IBAction)copyDatabase:(id)sender;
+#endif
 - (IBAction)renameDatabase:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
@@ -301,6 +326,7 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 // Encoding methods
 - (void)setConnectionEncoding:(NSString *)mysqlEncoding reloadingViews:(BOOL)reloadViews;
 - (NSString *)databaseEncoding;
+- (void)detectDatabaseEncoding;
 - (IBAction)chooseEncoding:(id)sender;
 - (BOOL)supportsEncoding;
 - (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag;
@@ -368,6 +394,7 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (NSURL *)fileURL;
 - (NSString *)displayName;
 #ifndef SP_REFACTOR /* method decls */
+- (NSUndoManager *)undoManager;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
@@ -387,6 +414,7 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (void)setStatusIconToImageWithName:(NSString *)imagePath;
 - (void)setTitlebarStatus:(NSString *)status;
 - (void)clearStatusIcon;
+- (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide;
 
 // Toolbar methods
 - (void)updateWindowTitle:(id)sender;
@@ -436,8 +464,6 @@ SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SP
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
 
-@property (assign) SPTableData* tableDataInstance;
-@property (assign) SPCustomQuery* customQueryInstance;
 #endif
 
 @end

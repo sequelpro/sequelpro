@@ -96,12 +96,7 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 	
 	// Select the default favorite from prefs
-	if (![prefs boolForKey:SPSelectLastFavoriteUsed]) {
-		[defaultFavoritePopup selectItemWithTag:[prefs integerForKey:SPDefaultFavorite]];
-	}
-	else {
-		[defaultFavoritePopup selectItemAtIndex:0];
-	}
+	[self updateDefaultFavoritePopupSelection];
 }
 
 #pragma mark -
@@ -159,6 +154,13 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 	
 	return items;
+}
+
+- (void)updateDefaultFavoritePopupSelection
+{
+	NSUInteger index = [prefs integerForKey:SPDefaultFavorite];
+	
+	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed] && index > 0 && index < [[defaultFavoritePopup itemArray] count]) ? index + 2 : 0];
 }
 
 #pragma mark -

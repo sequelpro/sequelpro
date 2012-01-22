@@ -58,6 +58,7 @@
 	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
 	IBOutlet NSTextField *indexKeyBlockSizeTextField;
 		
+	BOOL _mainNibLoaded;
 	NSString *table;
 	
 	NSMutableArray *fields, *indexes, *indexedFields, *supportsLength, *requiresLength;

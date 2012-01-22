@@ -92,6 +92,7 @@
 	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
 	IBOutlet NSTextField *exportSQLInsertNValueTextField;
 	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
+	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
 	
 	// Excel
 	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;
@@ -112,6 +113,11 @@
 
 	// Dot
 	IBOutlet NSButton *exportDotForceLowerTableNamesCheck;
+
+	/**
+	 * Whether the awakeFromNib routine has already been run
+	 */
+	BOOL mainNibLoaded;
 	
 	/**
 	 * Cancellation flag

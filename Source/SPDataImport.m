@@ -297,6 +297,9 @@
 - (void)importFileSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
+	// Ensure text inputs are completed, preventing dead character entry
+	[sheet makeFirstResponder:nil];
+
 	// Save values to preferences
 	[prefs setObject:[(NSOpenPanel*)sheet directory] forKey:@"openPath"];
 	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
@@ -808,7 +811,12 @@
 	[csvParser setFieldTerminatorString:[importFieldsTerminatedField stringValue] convertDisplayStrings:YES];
 	[csvParser setLineTerminatorString:[importLinesTerminatedField stringValue] convertDisplayStrings:YES];
 	[csvParser setFieldQuoteString:[importFieldsEnclosedField stringValue] convertDisplayStrings:YES];
-	[csvParser setEscapeString:[importFieldsEscapedField stringValue] convertDisplayStrings:YES];
+	if ([[importFieldsEscapedField stringValue] isEqualToString:@"\\ or \""]) {
+		[csvParser setEscapeString:@"\\" convertDisplayStrings:NO];
+	} else {
+		[csvParser setEscapeString:[importFieldsEscapedField stringValue] convertDisplayStrings:YES];
+		[csvParser setEscapeStringsAreMatchedStrictly:YES];
+	}
 	[csvParser setNullReplacementString:[prefs objectForKey:SPNullValue]];
 
 	csvDataBuffer = [[NSMutableData alloc] init];
@@ -1245,7 +1253,7 @@
 	fieldMappingImportArray = [[NSArray alloc] initWithArray:importData];
 	numberOfImportDataColumns = [[importData objectAtIndex:0] count];
 
-	fieldMapperSheetStatus = 1;
+	fieldMapperSheetStatus = SPFieldMapperInProgress;
 	fieldMappingArrayHasGlobalVariables = NO;
 
 	// Init the field mapper controller
@@ -1264,8 +1272,14 @@
 	[[[fieldMapperController window] onMainThread] makeKeyWindow];
 
 	// Wait for field mapper sheet
-	while (fieldMapperSheetStatus == 1)
+	while (fieldMapperSheetStatus == SPFieldMapperInProgress)
 		usleep(100000);
+
+	// If the mapping was cancelled, abort the import
+	if (fieldMapperSheetStatus == SPFieldMapperCancelled) {
+		if (fieldMapperController) [fieldMapperController release];
+		return FALSE;
+	}
 
 	// Get mapping settings and preset some global variables
 	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
@@ -1317,7 +1331,7 @@
 
 	if(fieldMapperController) [fieldMapperController release];
 
-	if(fieldMapperSheetStatus == 2)
+	if(fieldMapperSheetStatus == SPFieldMapperCompleted)
 		return YES;
 	else
 		return NO;
@@ -1329,7 +1343,7 @@
 - (void)fieldMapperDidEndSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	[sheet orderOut:self];
-	fieldMapperSheetStatus = (returnCode) ? 2 : 3;
+	fieldMapperSheetStatus = (returnCode) ? SPFieldMapperCompleted : SPFieldMapperCancelled;
 }
 
 /**

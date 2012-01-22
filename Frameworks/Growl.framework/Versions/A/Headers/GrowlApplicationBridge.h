@@ -45,9 +45,9 @@
  *	@method isGrowlInstalled
  *	@abstract Detects whether Growl is installed.
  *	@discussion Determines if the Growl prefpane and its helper app are installed.
- *	@result Returns YES if Growl is installed, NO otherwise.
+ *	@result this method will forever return YES
  */
-+ (BOOL) isGrowlInstalled;
++ (BOOL) isGrowlInstalled __attribute__((deprecated));
 
 /*!
  *	@method isGrowlRunning

@@ -28,12 +28,11 @@
 #import <MCPKit/MCPKit.h>
 
 @class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
-
-@class SPTableData, SPDatabaseDocument, SPTablesList;
+@class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList, SPContentFilterManager;
 
 @interface SPTableContent : NSObject
 #ifdef SP_REFACTOR
-<NSTableViewDelegate, NSTableViewDataSource>
+<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 #endif
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
@@ -41,8 +40,10 @@
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id tableSourceInstance;
 
+#ifndef SP_REFACTOR
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
+#endif
 	
 	IBOutlet SPCopyTable *tableContentView;
 	IBOutlet NSPopUpButton *fieldField;
@@ -53,21 +54,28 @@
 	IBOutlet id copyButton;
 	IBOutlet id removeButton;
 	IBOutlet id reloadButton;
+#ifndef SP_REFACTOR
 	IBOutlet id multipleLineEditingButton;
 	IBOutlet id countText;
 	IBOutlet id limitRowsField;
 	IBOutlet id limitRowsButton;
 	IBOutlet id limitRowsStepper;
+#endif
 	IBOutlet id firstBetweenField;
 	IBOutlet id secondBetweenField;
 	IBOutlet id betweenTextField;
 
 	IBOutlet NSButton *paginationPreviousButton;
+#ifndef SP_REFACTOR
 	IBOutlet NSButton *paginationButton;
+#endif
 	IBOutlet NSButton *paginationNextButton;
+#ifndef SP_REFACTOR
 	IBOutlet NSView *contentViewPane;
 	IBOutlet NSView *paginationView;
+#endif
 	IBOutlet NSTextField *paginationPageField;
+#ifndef SP_REFACTOR
 	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPCopyTable *filterTableView;
@@ -81,13 +89,15 @@
 	IBOutlet NSMenuItem *filterTableGearLookAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
 	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
-
+#endif
 	MCPConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
+#ifndef SP_REFACTOR
 	NSMutableArray *nibObjectsToRelease;
+#endif
 
 	NSString *selectedTable, *usedQuery;
 	SPDataStorage *tableValues;
@@ -103,9 +113,10 @@
 	NSMutableDictionary *contentFilters;
 	NSMutableDictionary *numberOfDefaultFilters;
 	NSUInteger lastSelectedContentFilterIndex;
-	id contentFilterManager;
+	SPContentFilterManager *contentFilterManager;
 	NSUInteger contentPage;
 
+#ifndef SP_REFACTOR
 	NSMutableDictionary *filterTableData;
 	BOOL filterTableNegate;
 	BOOL filterTableDistinct;
@@ -114,6 +125,7 @@
 	NSString *lastEditedFilterTableValue;
 	NSInteger activeFilter; // 0 = default filter; 1 = filter table; 2 = sequelpro url scheme
 	NSString *schemeFilter;
+#endif
 
 	BOOL sortColumnToRestoreIsAsc;
 	BOOL tableRowsSelectable;
@@ -123,7 +135,9 @@
 	NSRect selectionViewportToRestore;
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
+#ifndef SP_REFACTOR
 	NSInteger paginationViewHeight;
+#endif
 
 	NSTimer *tableLoadTimer;
 	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount, tableLoadTargetRowCount;
@@ -141,9 +155,7 @@
 
 	SPFieldEditorController *fieldEditor;
 	NSRange fieldEditorSelectedRange;
-
 }
-
 
 - (void)setFieldEditorSelectedRange:(NSRange)aRange;
 - (NSRange)fieldEditorSelectedRange;
@@ -169,7 +181,9 @@
 
 // Pagination
 - (IBAction) navigatePaginationFromButton:(id)sender;
+#ifndef SP_REFACTOR
 - (IBAction) togglePagination:(id)sender;
+#endif
 - (void) setPaginationViewVisibility:(BOOL)makeVisible;
 - (void) updatePaginationState;
 
@@ -188,10 +202,11 @@
 - (IBAction)swapFilterTable:(id)sender;
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
 - (IBAction)closeSheet:(id)sender;
+- (IBAction)showDefaultOperaterHelp:(id)sender;
 
-// Getter methods
+// Data accessors
 - (NSArray *)currentResult;
-- (NSArray *)currentDataResult;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
 
 // Task interaction
 - (void) startDocumentTaskForTab:(NSNotification *)aNotification;
@@ -217,6 +232,7 @@
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
 - (void)showErrorSheetWith:(id)error;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
+- (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 
 // Retrieving and setting table state
 - (NSString *) sortColumnName;
@@ -241,15 +257,31 @@
 - (void)openContentFilterManager;
 - (void)makeContentFilterHaveFocus;
 
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
 
 #ifdef SP_REFACTOR /* glue */
-- (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
-- (void)setTableListInstance:(SPTablesList*)list;
-- (void)setConnection:(MCPConnection *)theConnection;
+@property (assign) id filterButton;
+@property (assign) id fieldField;
+@property (assign) id compareField;
+@property (assign) id betweenTextField;
+@property (assign) id firstBetweenField;
+@property (assign) id secondBetweenField;
+@property (assign) id argumentField;
+@property (assign) NSButton* addButton;
+@property (assign) NSButton* copyButton;
+@property (assign) NSButton* removeButton;
+@property (assign) NSButton* reloadButton;
+@property (assign) NSButton* paginationNextButton;
+@property (assign) NSButton* paginationPreviousButton;
+@property (assign) NSTextField* paginationPageField;
+@property (assign) SPDatabaseDocument* tableDocumentInstance;
+@property (assign) SPTablesList* tablesListInstance;
+@property (assign) SPCopyTable* tableContentView;
+@property (assign) SPTableData* tableDataInstance;
+@property (assign) SPTableStructure* tableSourceInstance;
 #endif
 
 @end

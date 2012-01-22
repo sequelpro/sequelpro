@@ -238,6 +238,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
 - (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
 
 // Retrieving and setting table state
@@ -278,7 +279,8 @@
 - (void)commentOutCurrentQueryTakingSelection:(BOOL)takeSelection;
 - (NSString *)usedQuery;
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs;
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSNumber *)columnIndex;
+- (void)saveCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
+- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 - (NSUInteger)numberOfQueries;
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;

@@ -161,7 +161,7 @@ NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -299,7 +299,7 @@ NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -443,7 +443,7 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	NSUInteger *columnTypes = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++) {
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 		NSString *t = [NSArrayObjectAtIndex(columnDefinitions, columnMappings[c]) objectForKey:@"typegrouping"];
 
@@ -614,7 +614,7 @@ NSInteger kBlobAsImageFile = 4;
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
@@ -714,7 +714,7 @@ NSInteger kBlobAsImageFile = 4;
 		if ([[NSThread currentThread] isCancelled]) return nil;
 
 		columnWidth = [self autodetectWidthForColumnDefinition:columnDefinition maxRows:100];
-		[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
+		[columnWidths setObject:[NSString stringWithFormat:@"%llu", (unsigned long long)columnWidth] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
 		allColumnWidths += columnWidth;
 	}
 
@@ -724,7 +724,7 @@ NSInteger kBlobAsImageFile = 4;
 
 		// Look for columns that are wider than the multi-column max
 		for (NSString *columnIdentifier in columnWidths) {
-			columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+			columnWidth = [[columnWidths objectForKey:columnIdentifier] integerValue];
 			if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) availableWidthToReduce += columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN;
 		}
 
@@ -736,7 +736,7 @@ NSInteger kBlobAsImageFile = 4;
 		if (widthToReduce) {
 			NSArray *columnIdentifiers = [columnWidths allKeys];
 			for (NSString *columnIdentifier in columnIdentifiers) {
-				columnWidth = [[columnWidths objectForKey:columnIdentifier] unsignedIntegerValue];
+				columnWidth = [[columnWidths objectForKey:columnIdentifier] integerValue];
 				if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) {
 					columnWidth -= ceil((double)(columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN) / availableWidthToReduce * widthToReduce);
 					[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:columnIdentifier];
@@ -759,12 +759,13 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger cellWidth, maxCellWidth, i;
 	NSRange linebreakRange;
 	double rowStep;
+	unichar breakChar;
 #ifndef SP_REFACTOR /* patch */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
-	NSUInteger columnIndex = [[columnDefinition objectForKey:@"datacolumnindex"] unsignedIntegerValue];
+	NSUInteger columnIndex = (NSUInteger)[[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
 	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
 	Class mcpGeometryData = [MCPGeometryData class];
 
@@ -807,10 +808,26 @@ NSInteger kBlobAsImageFile = 4;
 				contentString = [contentString substringToIndex:500];
 			}
 
-			// If any linebreaks are present, use only the visible part of the string
-			linebreakRange = [contentString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet]];
+			// If any linebreaks are present, they are displayed as single characters; replace them with pilcrow/
+			// reverse pilcrow to match display output width.
+			linebreakRange = [contentString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch];
 			if (linebreakRange.location != NSNotFound) {
-				contentString = [contentString substringToIndex:linebreakRange.location];
+				NSMutableString *singleLineString = [[[NSMutableString alloc] initWithString:contentString] autorelease];
+				while (linebreakRange.location != NSNotFound) {
+					breakChar = [singleLineString characterAtIndex:linebreakRange.location];
+					switch (breakChar) {
+						case '\n':
+							[singleLineString replaceCharactersInRange:linebreakRange withString:@"¶"];
+							break;
+						default:
+							[singleLineString replaceCharactersInRange:linebreakRange withString:@"⁋"];
+							if (breakChar == '\r' && NSMaxRange(linebreakRange) < [singleLineString length] && [singleLineString characterAtIndex:linebreakRange.location+1] == '\n') {
+								[singleLineString deleteCharactersInRange:NSMakeRange(linebreakRange.location+1, 1)];
+							}
+					}
+					linebreakRange = [singleLineString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch];
+				}
+				contentString = singleLineString;
 			}
 		}
 
@@ -1050,6 +1067,11 @@ NSInteger kBlobAsImageFile = 4;
 		if([self isCellComplex])
 			return NO;
 
+		// Check whether the editor is multiline - if so, allow the arrow down to change selection if it's not
+		// on the final line
+		if (NSMaxRange([[textView string] lineRangeForRange:[textView selectedRange]]) < [[textView string] length])
+			return NO;
+
 		NSInteger newRow = row+1;
 #ifndef SP_REFACTOR
 		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
@@ -1078,7 +1100,12 @@ NSInteger kBlobAsImageFile = 4;
 	{
 
 		// If enum field is edited ARROW key navigates through the popup list
-		if([self isCellComplex])
+		if ([self isCellComplex])
+			return NO;
+
+		// Check whether the editor is multiline - if so, allow the arrow up to change selection if it's not
+		// on the first line
+		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0)
 			return NO;
 
 		if (row==0) return YES; //already at the beginning of the list
@@ -1134,6 +1161,45 @@ NSInteger kBlobAsImageFile = 4;
 	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
 		[(SPTableContent*)[self delegate] showFilterTable:self];
 	}
+}
+
+#pragma mark -
+#pragma mark Field editing checks
+
+/**
+ * Determine whether to use the sheet for editing; do so if the multipleLineEditingButton is enabled,
+ * or if the column was a blob or a text, or if it contains linebreaks.
+ */
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex
+{
+
+	// Retrieve the column definition
+	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+
+	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
+#ifndef SP_REFACTOR
+	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
+#endif
+
+	// If the column is a BLOB or TEXT column, and not an enum, trigger sheet editing
+	BOOL isBlob = ([columnType isEqualToString:@"textdata"] || [columnType isEqualToString:@"blobdata"]);
+	if (isBlob && ![columnType isEqualToString:@"enum"]) return YES;
+
+	// Otherwise, check the cell value for newlines.
+	id cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	if ([cellValue isKindOfClass:[NSData class]]) {
+		cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
+	}
+	if (![cellValue isNSNull]
+		&& [columnType isEqualToString:@"string"]
+		&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
+	{
+		return YES;
+	}
+
+	// Otherwise, use standard editing
+	return NO;
 }
 
 #pragma mark -
@@ -1273,7 +1339,7 @@ NSInteger kBlobAsImageFile = 4;
 			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
 			NSUInteger c;
 			for ( c = 0; c < numColumns; c++ )
-				columnMappings[c] = [[NSArrayObjectAtIndex(columns, c) identifier] unsignedIntValue];
+				columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {

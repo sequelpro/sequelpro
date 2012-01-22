@@ -22,6 +22,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+// Forward-declare for 10.7 compatibility
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+enum {
+	NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+	NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
+};
+#endif
+
 #import "SPWindowController.h"
 #import "SPDatabaseDocument.h"
 #import "PSMTabDragAssistant.h"
@@ -45,6 +53,8 @@
 - (void)awakeFromNib
 {
 	selectedTableDocument = nil;
+
+	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
 
 	// Disable automatic cascading - this occurs before the size is set, so let the app
 	// controller apply cascading after frame autosaving.
@@ -699,6 +709,22 @@
 		SPDatabaseDocument *eachDocument = [eachItem identifier];
 		[eachDocument tabDidResize];
 	}
+}
+
+/**
+ * If the window is entering fullscreen, update the front tab's titlebar status view visibility.
+ */
+- (void)windowWillEnterFullScreen:(NSNotification *)notification
+{
+	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:YES];
+}
+
+/**
+ * If the window exits fullscreen, update the front tab's titlebar status view visibility.
+ */
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:NO];
 }
 
 #pragma mark -

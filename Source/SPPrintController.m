@@ -251,7 +251,7 @@
 	// Table content view
 	else if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 1) {
 
-		NSArray *data = [tableContentInstance currentDataResult];
+		NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO];
 
 		heading = NSLocalizedString(@"Table Content", @"table content print heading");
 

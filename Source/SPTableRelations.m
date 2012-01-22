@@ -29,11 +29,22 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
+#import "RegexKitLite.h"
 
-@interface SPTableRelations (PrivateAPI)
+static NSString *SPRemoveRelation = @"SPRemoveRelation";
+
+static NSString *SPRelationNameKey      = @"name";
+static NSString *SPRelationColumnsKey   = @"columns";
+static NSString *SPRelationFKTableKey   = @"fk_table";
+static NSString *SPRelationFKColumnsKey = @"fk_columns";
+static NSString *SPRelationOnUpdateKey  = @"on_update";
+static NSString *SPRelationOnDeleteKey  = @"on_delete";
+
+@interface SPTableRelations ()
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
+- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -48,8 +59,9 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		relationData = [[NSMutableArray alloc] init];
-		prefs        = [NSUserDefaults standardUserDefaults];
+		relationData         = [[NSMutableArray alloc] init];
+		prefs                = [NSUserDefaults standardUserDefaults];
+		takenConstraintNames = [[NSMutableArray alloc] init];
 	}
 
 	return self;
@@ -97,6 +109,18 @@
 #pragma mark IB action methods
 
 /**
+ * Opens the relation sheet, in its current state (without any reset of fields)
+ */
+- (IBAction)openRelationSheet:(id)sender
+{
+	[NSApp beginSheet:addRelationPanel
+	   modalForWindow:[tableDocumentInstance parentWindow]
+		modalDelegate:self
+	   didEndSelector:nil 
+		  contextInfo:nil];
+}
+
+/**
  * Closes the relation sheet.
  */
 - (IBAction)closeRelationSheet:(id)sender
@@ -110,37 +134,72 @@
  */
 - (IBAction)confirmAddRelation:(id)sender
 {
-	[self closeRelationSheet:self];
+	[dataProgressIndicator startAnimation:self];
+	[dataProgressIndicator setHidden:NO];
 	
 	NSString *thisTable  = [tablesListInstance tableName];
 	NSString *thisColumn = [columnPopUpButton titleOfSelectedItem];
 	NSString *thatTable  = [refTablePopUpButton titleOfSelectedItem];
 	NSString *thatColumn = [refColumnPopUpButton titleOfSelectedItem];
 	
-	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD FOREIGN KEY (%@) REFERENCES %@ (%@)", 
-												[thisTable backtickQuotedString],
+	NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ ADD ",[thisTable backtickQuotedString]];
+	
+	// Set constraint name?
+	if ([[constraintName stringValue] length] > 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@"CONSTRAINT %@ ", [[constraintName stringValue] backtickQuotedString]]];
+	}
+	
+	query = [query stringByAppendingString:[NSString stringWithFormat:@"FOREIGN KEY (%@) REFERENCES %@ (%@)",
 												[thisColumn backtickQuotedString],
 												[thatTable backtickQuotedString],
-												[thatColumn backtickQuotedString]];
+												[thatColumn backtickQuotedString]]];
+	
+	NSArray *onActions = [NSArray arrayWithObjects:@"RESTRICT", @"CASCADE", @"SET NULL", @"NO ACTION", nil];
 	
 	// If required add ON DELETE
-	if ([onDeletePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [[onDeletePopUpButton titleOfSelectedItem] uppercaseString]]];
+	if ([onDeletePopUpButton selectedTag] >= 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON DELETE %@", [onActions objectAtIndex:[onDeletePopUpButton selectedTag]]]];
 	}
 	
 	// If required add ON UPDATE
-	if ([onUpdatePopUpButton indexOfSelectedItem] > 0) {
-		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [[onUpdatePopUpButton titleOfSelectedItem] uppercaseString]]];
+	if ([onUpdatePopUpButton selectedTag] >= 0) {
+		query = [query stringByAppendingString:[NSString stringWithFormat:@" ON UPDATE %@", [onActions objectAtIndex:[onUpdatePopUpButton selectedTag]]]];
 	}
 	
 	// Execute query
 	[connection queryString:query];
 
+	[dataProgressIndicator setHidden:YES];
+	[dataProgressIndicator stopAnimation:self];
+
+	[self closeRelationSheet:self];
+
 	if ([connection queryErrored]) {
+
+		// Retrieve the last connection error message.
+		NSString *errorText = [connection getLastErrorMessage];
+
+		// An error ID of 1005 indicates a foreign key error.  These are thrown for many reasons, but the two
+		// most common are 121 (name probably in use) and 150 (types don't exactly match).
+		// Retrieve the InnoDB status and extract the most recent error for more helpful text.
+		if ([connection getLastErrorID] == 1005) {
+			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
+			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
+			if (detailErrorString) {
+				errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+			}
+
+			// Detect name duplication if appropriate
+			if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
+				[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
+				[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
+			}
+		}
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), [connection getLastErrorMessage]]);
+						  nil, nil, [NSApp mainWindow], self, @selector(_reopenRelationSheet:returnCode:contextInfo:), nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]);
 	} 
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
@@ -168,36 +227,47 @@
  */
 - (IBAction)addRelation:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
 	// Set up the controls
 	[addRelationTableBox setTitle:[NSString stringWithFormat:NSLocalizedString(@"Table: %@", @"Add Relation sheet title, showing table name"), [tablesListInstance tableName]]];
-	
+
 	[columnPopUpButton removeAllItems];
 	NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [[tableDataInstance columnNames] sortedArrayUsingSelector:@selector(compare:)] : [tableDataInstance columnNames];
 	[columnPopUpButton addItemsWithTitles:columnTitles];
-	
+
 	[refTablePopUpButton removeAllItems];
-	
+
+	BOOL changeEncoding = ![[connection encoding] isEqualToString:@"utf8"];
+
+	// Use UTF8 for identifier-based queries
+	if (changeEncoding) {
+		[connection storeEncodingForRestoration];
+		[connection setEncoding:@"utf8"];
+	}
+
 	// Get all InnoDB tables in the current database
+	// TODO: MySQL 4 compatibility
 	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	
+
 	[result dataSeek:0];
-	
+
 	for (NSUInteger i = 0; i < [result numOfRows]; i++)
 	{
 		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
 	}
-	
+
+	// Reset other fields
+	[constraintName setStringValue:@""];
+	[onDeletePopUpButton selectItemAtIndex:0];
+	[onUpdatePopUpButton selectItemAtIndex:0];
+
+	// Restore encoding if appropriate
+	if (changeEncoding) [connection restoreStoredEncoding];
+
 	[self selectReferenceTable:nil];
-	
-	[NSApp beginSheet:addRelationPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil 
-		  contextInfo:nil];
+	[self openRelationSheet:self];
 }
 
 /**
@@ -222,7 +292,7 @@
 		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
 
-		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:@"removeRelation"];
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:SPRemoveRelation];
 	}
 }
 
@@ -257,7 +327,8 @@
 		[addRelationButton setEnabled:enableInteraction];
 		[refreshRelationsButton setEnabled:enableInteraction];
 		[relationsTableView setEnabled:YES];
-	} else {
+	} 
+	else {
 		[addRelationButton setEnabled:NO];
 		[refreshRelationsButton setEnabled:NO];
 		[relationsTableView setEnabled:NO];
@@ -266,6 +337,27 @@
 	}
 
 	[self _refreshRelationDataForcingCacheRefresh:NO];
+}
+
+#pragma mark -
+#pragma mark TextField delegate methods
+
+- (void)controlTextDidChange:(NSNotification *)notification
+{	
+	// Make sure the user does not enter a taken name, using the quickly-generated incomplete list
+	if ([notification object] == constraintName) {		
+		NSString *userValue = [[constraintName stringValue] lowercaseString];
+		
+		// Make field red and disable add button
+		if ([takenConstraintNames containsObject:userValue]) {
+			[constraintName setTextColor:[NSColor redColor]];
+			[confirmAddRelationButton setEnabled:NO];
+		}
+		else {
+			[constraintName setTextColor:[NSColor controlTextColor]];
+			[confirmAddRelationButton setEnabled:YES];
+		}
+	}
 }
 
 #pragma mark -
@@ -296,7 +388,7 @@
  * Double-click action on table cells - for the time being, return
  * NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
@@ -306,7 +398,7 @@
 /**
  * Disable row selection while the document is working.
  */
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
 	return ![tableDocumentInstance isWorking];
 }
@@ -372,12 +464,12 @@
 	{
 		NSMutableArray *temp = [[NSMutableArray alloc] init];
 
-		[temp addObject:[eachRelation objectForKey:@"name"]];
-		[temp addObject:[eachRelation objectForKey:@"columns"]];
-		[temp addObject:[eachRelation objectForKey:@"fk_table"]];
-		[temp addObject:[eachRelation objectForKey:@"fk_columns"]];
-		[temp addObject:([eachRelation objectForKey:@"on_update"]) ? [eachRelation objectForKey:@"on_update"] : @""];
-		[temp addObject:([eachRelation objectForKey:@"on_delete"]) ? [eachRelation objectForKey:@"on_delete"] : @""];
+		[temp addObject:[eachRelation objectForKey:SPRelationNameKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationColumnsKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationFKTableKey]];
+		[temp addObject:[eachRelation objectForKey:SPRelationFKColumnsKey]];
+		[temp addObject:([eachRelation objectForKey:SPRelationOnUpdateKey]) ? [eachRelation objectForKey:SPRelationOnUpdateKey] : @""];
+		[temp addObject:([eachRelation objectForKey:SPRelationOnDeleteKey]) ? [eachRelation objectForKey:SPRelationOnDeleteKey] : @""];
 
 		[data addObject:temp];
 
@@ -392,7 +484,7 @@
  */
 - (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-	if ([contextInfo isEqualToString:@"removeRelation"]) {
+	if ([contextInfo isEqualToString:SPRemoveRelation]) {
 
 		if (returnCode == NSAlertDefaultReturn) {
 
@@ -403,7 +495,7 @@
 
 			while (row != NSNotFound) 
 			{
-				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:@"name"];
+				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:SPRelationNameKey];
 				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
 
 				[connection queryString:query];
@@ -466,23 +558,7 @@
 }
 
 #pragma mark -
-
-/*
- * Dealloc.
- */
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	[relationData release], relationData = nil;
-
-	[super dealloc];
-}
-
-@end
-
-@implementation SPTableRelations (PrivateAPI)
+#pragma mark Private API
 
 /**
  * Refresh the displayed relations, optionally forcing a refresh of the underlying cache.
@@ -490,24 +566,30 @@
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches
 {
 	[relationData removeAllObjects];
+
+	// Prepare the list of the used constraint names for this table.  Ideally this would include all the used names
+	// in the database, but the MySQL-provided method of requesting that information (table_constraints in
+	// information_schema) is generated live from db file scans, which cannot be cheaply done on servers with
+	// many databases.
+	[takenConstraintNames removeAllObjects];
 	
 	if ([tablesListInstance tableType] == SPTableTypeTable) {
-
+		
 		if (clearAllCaches) [tableDataInstance updateInformationForCurrentTable];
-
+		
 		NSArray *constraints = [tableDataInstance getConstraints];
-
+		
 		for (NSDictionary *constraint in constraints) 
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[constraint objectForKey:@"name"], @"name",
-									[[constraint objectForKey:@"columns"] objectAtIndex:0], @"columns",
-									[constraint objectForKey:@"ref_table"], @"fk_table",
-									[constraint objectForKey:@"ref_columns"], @"fk_columns",
-									([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), @"on_update",
-									([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), @"on_delete",
-									nil]];
-
+									 [constraint objectForKey:SPRelationNameKey], SPRelationNameKey,
+									 [[constraint objectForKey:SPRelationColumnsKey] objectAtIndex:0], SPRelationColumnsKey,
+									 [constraint objectForKey:@"ref_table"], SPRelationFKTableKey,
+									 [constraint objectForKey:@"ref_columns"], SPRelationFKColumnsKey,
+									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
+									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
+									 nil]];
+			[takenConstraintNames addObject:[[constraint objectForKey:SPRelationNameKey] lowercaseString]];			
 		}
 	} 
 	
@@ -522,42 +604,67 @@
 {
 	NSString *column = [columnPopUpButton titleOfSelectedItem];
 	NSString *table = [refTablePopUpButton titleOfSelectedItem];
-
+	
 	[tableDataInstance resetAllData];
 	[tableDataInstance updateInformationForCurrentTable];
-
+	
 	NSDictionary *columnInfo = [[tableDataInstance columnWithName:column] copy];
-
+	
 	[refColumnPopUpButton setEnabled:NO];
 	[confirmAddRelationButton setEnabled:NO];
-
+	
 	[refColumnPopUpButton removeAllItems];
-
+	
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
-
-	NSArray *columns = [tableInfo objectForKey:@"columns"];
-
+	
+	NSArray *columns = [tableInfo objectForKey:SPRelationColumnsKey];
+	
 	NSMutableArray *validColumns = [NSMutableArray array];
-
+	
 	// Only add columns of the same data type
 	for (NSDictionary *aColumn in columns) 
 	{
 		if ([[columnInfo objectForKey:@"type"] isEqualToString:[aColumn objectForKey:@"type"]]) {
-			[validColumns addObject:[aColumn objectForKey:@"name"]];
+			[validColumns addObject:[aColumn objectForKey:SPRelationNameKey]];
 		}
 	}
-
+	
 	// Add the valid columns
 	if ([validColumns count] > 0) {
 		NSArray *columnTitles = ([prefs boolForKey:SPAlphabeticalTableSorting])? [validColumns sortedArrayUsingSelector:@selector(compare:)] : validColumns;
+		
 		[refColumnPopUpButton addItemsWithTitles:columnTitles];
-
+		
 		[refColumnPopUpButton setEnabled:YES];
 		[confirmAddRelationButton setEnabled:YES];
 	}
-
+	
 	[columnInfo release];
+}
+
+/**
+ * Reopen the add relation sheet, usually after an error message, with the previous content.
+ */
+- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
+}
+
+#pragma mark -
+
+/*
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[relationData release], relationData = nil;
+	[takenConstraintNames release], takenConstraintNames = nil;
+
+	[super dealloc];
 }
 
 @end

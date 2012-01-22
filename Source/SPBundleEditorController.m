@@ -110,6 +110,7 @@
 	if(commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
 	if(sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
 	if(bundlePath) [bundlePath release], bundlePath = nil;
+	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
 
 	[super dealloc];
 
@@ -1239,8 +1240,8 @@
 
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-	if(item && [item respondsToSelector:@selector(objectForKey:)])
-		return [item objectForKey:kBundleNameKey];
+	if(item && [[item representedObject] respondsToSelector:@selector(objectForKey:)])
+		return [[item representedObject] objectForKey:kBundleNameKey];
 	return @"";
 }
 

@@ -431,7 +431,9 @@
 			[debugMessages addObject:[NSString stringWithString:message]];
 			[debugMessagesLock unlock];
 
-			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound) {
+			if ([message rangeOfString:@"Entering interactive session."].location != NSNotFound
+				|| [message rangeOfString:@"mux_client_request_session: master session id: "].location != NSNotFound)
+			{
 				connectionState = PROXY_STATE_CONNECTED;
 				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 			}
@@ -644,7 +646,7 @@
     if (requestedResponse) {
         NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
         [sshPasswordField setStringValue:@""];
-        if ([delegate respondsToSelector:@selector(setUndoManager:)] && [delegate undoManager]) {
+        if ([delegate respondsToSelector:@selector(undoManager)] && [delegate undoManager]) {
             [[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
         } else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
             [[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			

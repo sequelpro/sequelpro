@@ -34,6 +34,7 @@
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
+#import "SPQueryDocumentsController.h"
 
 #pragma mark -
 #pragma mark attribute definition 
@@ -827,6 +828,9 @@
 			}
 			else if((flags & NSAlternateKeyMask) || (flags & NSCommandKeyMask))
 			{
+				if (autocompletePlaceholderWasInserted) [self removeAutocompletionPlaceholderUsingFastMethod:YES];
+				[theView setCompletionIsOpen:NO];
+				[self close];
 				[NSApp sendEvent:event];
 				break;
 			}
@@ -1002,6 +1006,7 @@
 			if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:scanPosition longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(scanPosition, currentLength-scanPosition)]) {
 
 				// A match was found - attributeResultRange contains the range of the attributed string
+				[theView shouldChangeTextInRange:attributeResultRange replacementString:@""];
 				[[theView textStorage] deleteCharactersInRange:attributeResultRange];
 			} else {
 
@@ -1012,6 +1017,7 @@
 				// A match was found - retrieve the location
 				NSUInteger matchStart = attributeResultRange.location+attributeResultRange.length;
 				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, currentLength - matchStart)]) {
+					[theView shouldChangeTextInRange:attributeResultRange replacementString:@""];
 					[[theView textStorage] deleteCharactersInRange:attributeResultRange];
 				}				
 			}

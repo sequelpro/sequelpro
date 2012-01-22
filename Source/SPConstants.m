@@ -25,9 +25,6 @@
 
 #import "SPConstants.h"
 
-// Long running notification time for Growl messages
-const CGFloat SPLongRunningNotificationTime      = 3.0f;
-
 // Narrow down completion max rows
 const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
 
@@ -92,7 +89,6 @@ NSString *SPNullValue                            = @"SPNullValue";
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
-NSString *SPAlphabeticalTableSorting             = @"AlphabeticalTableSorting";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";
@@ -162,6 +158,8 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
 NSString *SPDisplayServerVersionInWindowTitle    = @"DisplayServerVersionInWindowTitle";
+NSString *SPLongRunningQueryNotificationTime     = @"LongRunningQueryNotificationTime";
+NSString *SPAlphabeticalTableSorting             = @"AlphabeticalTableSorting";
 
 // Import and export
 NSString *SPCSVImportFieldEnclosedBy             = @"CSVImportFieldEnclosedBy";
@@ -197,9 +195,10 @@ NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncod
 NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType";
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
+NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
 
 // URLs
-NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate.html";
+NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";
 NSString *SPMySQLSearchURL                       = @"http://search.mysql.com/search/query/search?q=%@&group=refman-%@";
 NSString *SPDevURL                               = @"http://code.google.com/p/sequel-pro/";
 

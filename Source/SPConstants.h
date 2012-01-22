@@ -223,9 +223,7 @@ typedef enum
 #define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/Getting_Connected", @"Localized connection help page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"http://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
-
-// Long running notification time for Growl messages
-extern const CGFloat SPLongRunningNotificationTime;
+#define SPLOCALIZEDURL_CONTENTFILTERHELP   NSLocalizedString(@"http://www.sequelpro.com/docs/Content_Filters", @"Localized help page for content filter - do not localize if no translated webpage is available")
 
 // Narrow down completion max rows
 extern const NSUInteger SPNarrowDownCompletionMaxRows;
@@ -286,7 +284,6 @@ extern NSString *SPNullValue;
 extern NSString *SPGlobalResultTableFont;
 extern NSString *SPFilterTableDefaultOperator;
 extern NSString *SPFilterTableDefaultOperatorLastItems;
-extern NSString *SPAlphabeticalTableSorting;
 
 // Favorites Prefpane
 extern NSString *SPFavorites;
@@ -356,6 +353,8 @@ extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;
 extern NSString *SPDisplayServerVersionInWindowTitle;
+extern NSString *SPLongRunningQueryNotificationTime;
+extern NSString *SPAlphabeticalTableSorting;
 
 // Import and export
 extern NSString *SPCSVImportFieldTerminator;
@@ -391,6 +390,7 @@ extern NSString *SPLastImportIntoNewTableEncoding;
 extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
 extern NSString *SPBundleDeletedDefaultBundlesKey;
+extern NSString *SPHiddenKeyFileVisibilityKey;
 
 // URLs
 extern NSString *SPDonationsURL;

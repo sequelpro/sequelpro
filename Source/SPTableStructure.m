@@ -83,6 +83,7 @@
 #ifndef SP_REFACTOR /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
 
 	// Set the double-click action in blank areas of the table to create new rows
@@ -1650,6 +1651,9 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+#ifndef SP_REFACTOR
+	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
+#endif
 
 	[tableFields release];
 	[oldRow release];

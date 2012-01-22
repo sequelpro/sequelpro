@@ -85,6 +85,7 @@
 	NSUInteger startingParserPosition, nextQuoteDistance, nextFieldEndDistance, nextLineEndDistance;
 	NSInteger skipLength, j;
 	BOOL fieldIsQuoted, isEscaped;
+	BOOL nonStrictEscapeMatchingFallback = NO;
 	BOOL lineEndingEncountered = NO;
 
 	if (fieldCount == NSNotFound)
@@ -120,6 +121,7 @@
 				if (escapeLength && nextQuoteDistance != NSNotFound) {
 					j = 1;
 					isEscaped = NO;
+					nonStrictEscapeMatchingFallback = NO;
 					if (!escapeStringIsFieldQuoteString) {
 						while (j * escapeLength <= (NSInteger)nextQuoteDistance
 								&& ([[csvString substringWithRange:NSMakeRange((parserPosition + nextQuoteDistance - (j*escapeLength)), escapeLength)] isEqualToString:escapeString]))
@@ -128,7 +130,13 @@
 							j++;
 						}
 						skipLength = fieldQuoteLength;
-					} else {
+						if (!useStrictEscapeMatching && !isEscaped) nonStrictEscapeMatchingFallback = YES;
+					}
+					
+					// If the escape string is the field quote string, check for doubled (Excel-style) usage.
+					// Also, if the parser is in loose mode, also support field end strings quoted by using
+					// another field end string, as used by Excel
+					if (escapeStringIsFieldQuoteString || nonStrictEscapeMatchingFallback) {
 						if (parserPosition + nextQuoteDistance + (2 * fieldQuoteLength) <= csvStringLength
 							&& [[csvString substringWithRange:NSMakeRange(parserPosition + nextQuoteDistance + fieldQuoteLength, fieldQuoteLength)] isEqualToString:fieldQuoteString])
 						{
@@ -143,7 +151,7 @@
 						// Append the matched string, together with the field quote character
 						// which has been determined to be within the string - but append the
 						// field end character unescaped to avoid later processing.
-						if (escapeStringIsFieldQuoteString) {
+						if (escapeStringIsFieldQuoteString || nonStrictEscapeMatchingFallback) {
 							[csvCellString appendString:[csvString substringWithRange:NSMakeRange(parserPosition, nextQuoteDistance+fieldQuoteLength)]];
 						} else {
 							[csvCellString appendString:[csvString substringWithRange:NSMakeRange(parserPosition, nextQuoteDistance - escapeLength)]];
@@ -461,6 +469,17 @@
 	if (nullString) nullReplacementString = [[NSString alloc] initWithString:nullString];
 }
 
+/**
+ * By default, field end strings aren't matched strictly - as well as the defined escape
+ * character, the class will automatically match doubled-up field quote strings, as exported
+ * by Excel and in common use (eg "field contains ""quotes""").  To switch escaping to strict
+ * mode, set this to YES.
+ */
+- (void) setEscapeStringsAreMatchedStrictly:(BOOL)strictMatching
+{
+	useStrictEscapeMatching = strictMatching;
+}
+
 #pragma mark -
 #pragma mark Init and internal update methods
 
@@ -486,6 +505,7 @@
 	escapedLineEndString = [[NSString alloc] initWithString:@"\\\n"];
 	escapedFieldQuoteString = [[NSString alloc] initWithString:@"\\\""];
 	escapedEscapeString = [[NSString alloc] initWithString:@"\\\\"];
+	useStrictEscapeMatching = NO;
 	fieldEndLength = [fieldEndString length];
 	lineEndLength = [lineEndString length];
 	fieldQuoteLength = [fieldQuoteString length];

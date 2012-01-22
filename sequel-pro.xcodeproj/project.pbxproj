@@ -42,6 +42,9 @@
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
+		1733F7DE14CC33DB005ED414 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7D814CC33DB005ED414 /* SPQueryConsoleDataSource.m */; };
+		1733F7DF14CC33DB005ED414 /* SPQueryControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7DA14CC33DB005ED414 /* SPQueryControllerInitializer.m */; };
+		1733F7E014CC33DB005ED414 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7DC14CC33DB005ED414 /* SPQueryDocumentsController.m */; };
 		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
@@ -595,6 +598,12 @@
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		173284E81088FEDE0062E892 /* SPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConstants.h; sourceTree = "<group>"; };
 		173284E91088FEDE0062E892 /* SPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConstants.m; sourceTree = "<group>"; };
+		1733F7D814CC33DB005ED414 /* SPQueryConsoleDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryConsoleDataSource.m; sourceTree = "<group>"; };
+		1733F7D914CC33DB005ED414 /* SPQueryConsoleDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryConsoleDataSource.h; sourceTree = "<group>"; };
+		1733F7DA14CC33DB005ED414 /* SPQueryControllerInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryControllerInitializer.m; sourceTree = "<group>"; };
+		1733F7DB14CC33DB005ED414 /* SPQueryControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryControllerInitializer.h; sourceTree = "<group>"; };
+		1733F7DC14CC33DB005ED414 /* SPQueryDocumentsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryDocumentsController.m; sourceTree = "<group>"; };
+		1733F7DD14CC33DB005ED414 /* SPQueryDocumentsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryDocumentsController.h; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
 		173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryFavoriteManager.h; sourceTree = "<group>"; };
 		173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryFavoriteManager.m; sourceTree = "<group>"; };
@@ -1424,6 +1433,30 @@
 			name = Data;
 			sourceTree = "<group>";
 		};
+		1733F7D114CC32F2005ED414 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				17B7B5551016002900F057DE /* MCPKit */,
+				58B906F811BD9B34000826E5 /* PSMTabBar */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1733F7D714CC33A9005ED414 /* Query Controller */ = {
+			isa = PBXGroup;
+			children = (
+				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
+				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
+				1733F7DA14CC33DB005ED414 /* SPQueryControllerInitializer.m */,
+				1733F7DB14CC33DB005ED414 /* SPQueryControllerInitializer.h */,
+				1733F7D814CC33DB005ED414 /* SPQueryConsoleDataSource.m */,
+				1733F7D914CC33DB005ED414 /* SPQueryConsoleDataSource.h */,
+				1733F7DC14CC33DB005ED414 /* SPQueryDocumentsController.m */,
+				1733F7DD14CC33DB005ED414 /* SPQueryDocumentsController.h */,
+			);
+			name = "Query Controller";
+			sourceTree = "<group>";
+		};
 		173567CD12AC140A000DCCEF /* Bundle Support */ = {
 			isa = PBXGroup;
 			children = (
@@ -1535,8 +1568,6 @@
 				174CE14110AB9281008F892B /* SPProcessListController.m */,
 				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
 				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
-				BC29C37D10501EFD00DD6C6E /* SPQueryController.h */,
-				BC29C37E10501EFD00DD6C6E /* SPQueryController.m */,
 				1792C13510AD75C800ABE758 /* SPServerVariablesController.h */,
 				1792C13610AD75C800ABE758 /* SPServerVariablesController.m */,
 				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
@@ -1549,6 +1580,7 @@
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
+				1733F7D714CC33A9005ED414 /* Query Controller */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -1995,8 +2027,7 @@
 				17E641670EF01F19001BC333 /* Views */,
 				17E6416E0EF01F3B001BC333 /* Other */,
 				17DC8825126B222D00E9AAEC /* Third Party */,
-				58B906F811BD9B34000826E5 /* PSMTabBar */,
-				17B7B5551016002900F057DE /* MCPKit */,
+				1733F7D114CC32F2005ED414 /* Frameworks */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -3268,6 +3299,9 @@
 				582F02311370B52600B30621 /* SPExportFileNameTokenObject.m in Sources */,
 				17123A1C137F09C200D06442 /* SPFavoritesExporter.m in Sources */,
 				17123A1F137F09E500D06442 /* SPFavoritesImporter.m in Sources */,
+				1733F7DE14CC33DB005ED414 /* SPQueryConsoleDataSource.m in Sources */,
+				1733F7DF14CC33DB005ED414 /* SPQueryControllerInitializer.m in Sources */,
+				1733F7E014CC33DB005ED414 /* SPQueryDocumentsController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

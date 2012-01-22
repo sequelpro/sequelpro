@@ -25,6 +25,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+// Forward-declare for 10.7 compatibility
+#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+enum {
+	NSFullScreenWindowMask = 1 << 14
+};
+#endif
+
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
@@ -41,6 +48,7 @@
 #import "SPExportController.h"
 #endif
 #import "SPQueryController.h"
+#import "SPQueryDocumentsController.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPWindowController.h"
 #endif
@@ -48,7 +56,9 @@
 #ifndef SP_REFACTOR /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
+#endif
 #import "SPDatabaseData.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
@@ -63,6 +73,7 @@
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
+#import "SPTableRelations.h"
 #endif
 #import "SPServerSupport.h"
 #ifndef SP_REFACTOR /* headers */
@@ -79,6 +90,7 @@
 #import "SPAlertSheets.h"
 #import "NSNotificationAdditions.h"
 #import "SPCustomQuery.h"
+#import "SPDatabaseRename.h"
 #endif
 
 // Constants
@@ -88,12 +100,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 @interface SPDatabaseDocument ()
 
-#ifndef SP_REFACTOR /* method decls */
 - (void)_addDatabase;
+#ifndef SP_REFACTOR /* method decls */
 - (void)_copyDatabase;
+#endif
 - (void)_renameDatabase;
 - (void)_removeDatabase;
-#endif
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
 
 @end
@@ -116,6 +128,14 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 @synthesize tableDataInstance;
 @synthesize customQueryInstance;
 @synthesize queryProgressBar;
+@synthesize databaseSheet;
+@synthesize databaseNameField;
+@synthesize databaseEncodingButton;
+@synthesize addDatabaseButton;
+@synthesize databaseDataInstance;
+@synthesize databaseRenameSheet;
+@synthesize databaseRenameNameField;
+@synthesize renameDatabaseButton;
 #endif
 
 - (id)init
@@ -144,6 +164,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		triggersLoaded = NO;
 
 		selectedDatabase = nil;
+		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		mySQLConnection = nil;
 		mySQLVersion = nil;
 		allDatabases = nil;
@@ -159,6 +180,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[printWebView setFrameLoadDelegate:self];
 
 		prefs = [NSUserDefaults standardUserDefaults];
+		undoManager = [[NSUndoManager alloc] init];
 #endif
 		queryEditorInitString = nil;
 
@@ -184,6 +206,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #ifndef SP_REFACTOR /* init ivars */
 		statusValues = nil;
 		printThread = nil;
+		windowTitleStatusViewIsVisible = NO;
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 
 		// As this object is not an NSWindowController subclass, top-level objects in loaded nibs aren't
@@ -207,6 +230,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
+	
 	return connectionController;
 }
 
@@ -325,6 +349,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[taskProgressWindow setContentView:taskProgressLayer];
 
 	[contentViewSplitter setDelegate:self];
+
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
 #endif
 }
 
@@ -409,14 +435,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	[databaseDataInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR /* setServerSupport: */
 	// Pass the support class to the data instance
 	[databaseDataInstance setServerSupport:serverSupport];
-#endif
 
 #ifdef SP_REFACTOR /* glue */
 	tablesListInstance = [[SPTablesList alloc] init];
 	[tablesListInstance setDatabaseDocument:self];	
+	[tablesListInstance awakeFromNib];
 #endif	
 
 	// Set the connection on the tables list instance - this updates the table list while the connection
@@ -429,6 +454,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	if ([encodingType intValue] != SPEncodingAutodetect) {
 		[self setConnectionEncoding:[self mysqlEncodingFromEncodingTag:encodingType] reloadingViews:NO];
+	} else {
+#endif
+		[[self onMainThread] updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[mySQLConnection encoding]]];
+#ifndef SP_REFACTOR
 	}
 #endif
 
@@ -450,8 +479,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[self updateWindowTitle:self];
 	
 	// Connected Growl notification
+	NSString *serverDisplayName = nil;
+	if ([parentWindowController selectedTableDocument] == self) {
+		serverDisplayName = [parentWindow title];
+	} else {
+		serverDisplayName = [parentTabViewItem label];
+	}
+
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Connected"
-												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), [parentWindow title]]
+												   description:[NSString stringWithFormat:NSLocalizedString(@"Connected to %@",@"description for connected growl notification"), serverDisplayName]
 													  document:self
 											  notificationName:@"Connected"];
 
@@ -522,7 +558,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		}
 	}
 
-	(void)[self databaseEncoding];
+	if ([self database]) [self detectDatabaseEncoding];
 #endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
@@ -679,7 +715,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	}
 }
 
-#ifndef SP_REFACTOR /* operations on whole databases */
 /**
  * opens the add-db sheet and creates the new db
  */
@@ -731,6 +766,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 
+#ifndef SP_REFACTOR /* operations on whole databases */
 /**
  * opens the copy database sheet and copies the databsae
  */
@@ -739,7 +775,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 	
 	[databaseCopyNameField setStringValue:selectedDatabase];
-	[copyDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate database '%@' to:", @"duplicate database message"), selectedDatabase]];
+	[copyDatabaseMessageField setStringValue:selectedDatabase];
 	
 	[NSApp beginSheet:databaseCopySheet
 	   modalForWindow:parentWindow
@@ -747,6 +783,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:@"copyDatabase"];
 }
+#endif
 
 /**
  * opens the rename database sheet and renames the databsae
@@ -770,8 +807,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (IBAction)removeDatabase:(id)sender
 {
+#ifndef SP_REFACTOR
 	// No database selected, bail
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0) return;
+#endif
 
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
 
@@ -793,6 +832,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Refreshes the tables list by calling SPTablesList's updateTables.
  */
@@ -852,7 +892,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	return allSystemDatabases;
 }
 
-#ifndef SP_REFACTOR /* sheetDidEnd: */
 /**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
  *
@@ -863,11 +902,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
+#ifndef SP_REFACTOR
 	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
 		return;
 	}
+#endif
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
@@ -897,23 +937,27 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				[chooseDatabaseButton selectItemAtIndex:0];
 		}
 	} 
+#ifndef SP_REFACTOR
 	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _copyDatabase];		
 		}
 	}
+#endif
 	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];		
 		}
 	}
+#ifndef SP_REFACTOR
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
 		if (statusValues) [statusValues release], statusValues = nil;
 	}
-
+#endif
 }
 
+#ifndef SP_REFACTOR /* sheetDidEnd: */
 /**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
@@ -1500,10 +1544,19 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 /**
- * Detect and return the database encoding.
- * Falls back to Latin1.
+ * Retrieve the current database encoding.  This will return Latin-1
+ * for unknown encodings.
  */
 - (NSString *)databaseEncoding
+{
+	return selectedDatabaseEncoding;
+}
+
+/**
+ * Detect and store the encoding of the currently selected database.
+ * Falls back to Latin-1 if the encoding cannot be retrieved.
+ */
+- (void)detectDatabaseEncoding
 {
 	MCPResult *charSetResult;
 	NSString *mysqlEncoding = nil;
@@ -1521,14 +1574,16 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
 	}
 
+	[selectedDatabaseEncoding release];
+
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
-		mysqlEncoding = @"latin1";
+		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		_supportsEncoding = NO;
+	} else {
+		selectedDatabaseEncoding = [mysqlEncoding retain];
 	}
-
-	return mysqlEncoding;
 }
 
 /**
@@ -2208,6 +2263,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 {
 	queryEditorInitString = [query retain];
 }
+#endif
 
 /**
  * Invoked when user hits the cancel button or close button in
@@ -2227,6 +2283,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[[sender window] orderOut:self];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Displays the user account manager.
  */
@@ -3550,6 +3607,34 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[titleImageView setImage:nil];
 }
 
+/**
+ * Update the title bar status area visibility.  The status area is visible if the tab is
+ * frontmost in the window, and if the window is not fullscreen.
+ */
+- (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide
+{
+	BOOL newIsVisible = !forceHide;
+	if (newIsVisible && [parentWindow styleMask] & NSFullScreenWindowMask) newIsVisible = NO;
+	if (newIsVisible && [parentWindowController selectedTableDocument] != self) newIsVisible = NO;
+	if (newIsVisible == windowTitleStatusViewIsVisible) return;
+
+	if (newIsVisible) {
+		NSView *windowFrame = [[parentWindow contentView] superview];
+		NSRect av = [titleAccessoryView frame];
+		NSRect initialAccessoryViewFrame = NSMakeRect(
+												[windowFrame frame].size.width - av.size.width - 30,
+												[windowFrame frame].size.height - av.size.height,
+												av.size.width,
+												av.size.height);
+		[titleAccessoryView setFrame:initialAccessoryViewFrame];
+		[windowFrame addSubview:titleAccessoryView];
+	} else {
+		[titleAccessoryView removeFromSuperview];
+	}
+
+	windowTitleStatusViewIsVisible = newIsVisible;
+}
+
 #pragma mark -
 #pragma mark Toolbar Methods
 
@@ -3905,9 +3990,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)willResignActiveTabInWindow
 {
-
-	// Remove the icon accessory view from the title bar
-	[titleAccessoryView removeFromSuperview];
+	[self updateTitlebarStatusVisibilityForcingHide:YES];
 
 	// Remove the task progress window
 	[parentWindow removeChildWindow:taskProgressWindow];
@@ -3933,16 +4016,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	else
 		[parentWindow setRepresentedURL:nil];
 
-	// Add the icon accessory view to the title bar
-	NSView *windowFrame = [[parentWindow contentView] superview];
-	NSRect av = [titleAccessoryView frame];
-	NSRect initialAccessoryViewFrame = NSMakeRect(
-											[windowFrame frame].size.width - av.size.width - 30,
-											[windowFrame frame].size.height - av.size.height,
-											av.size.width,
-											av.size.height);
-	[titleAccessoryView setFrame:initialAccessoryViewFrame];
-	[windowFrame addSubview:titleAccessoryView];
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
 
 	// Add the progress window to this window
 	[self centerTaskWindow];	
@@ -4077,6 +4151,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} 
 	return [[[self fileURL] path] lastPathComponent];
 }
+
+#ifndef SP_REFACTOR
+- (NSUndoManager *)undoManager
+{
+	return undoManager;
+}
+#endif
+
+
 #ifndef SP_REFACTOR /* state saving and setting */
 #pragma mark -
 #pragma mark State saving and setting
@@ -5578,13 +5661,16 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	[nibObjectsToRelease release];
+
 #endif
 
 	[allDatabases release];
 	[allSystemDatabases release];
 #ifndef SP_REFACTOR /* dealloc ivars */
+	[undoManager release];
 	[printWebView release];
 #endif
+	[selectedDatabaseEncoding release];
 	[taskProgressWindow close];
 	
 	if (selectedTableName) [selectedTableName release];
@@ -5612,6 +5698,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (processID) [processID release];
 #endif
 	if (runningActivitiesArray) [runningActivitiesArray release];
+	
+#ifdef SP_REFACTOR 
+	if ( tablesListInstance ) [tablesListInstance release];
+	if ( customQueryInstance ) [customQueryInstance release];
+#endif
 	
 	[super dealloc];
 }
@@ -5656,6 +5747,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// Update DB list
 	[self setDatabases:self];
 }			 
+#endif
 
 - (void)_renameDatabase 
 {
@@ -5682,6 +5774,20 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	// Update DB list
 	[self setDatabases:self];
+
+#ifdef SP_REFACTOR
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			NSString* db = [databaseRenameNameField stringValue];
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:db];
+		}
+	}
+#endif
 }			 
 
 /**
@@ -5735,7 +5841,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
+#endif
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:selectedDatabase];
+		}
+	}
+#endif
 }
 
 /**
@@ -5774,10 +5894,23 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
-}
-
 #endif
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+		
+	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
+	{
+		if ( [allDatabases count] > 0 )
+		{
+			NSString* db = [allDatabases objectAtIndex:0];
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:db];
+		}
+	}
+#endif
+}
 
 /**
  * Select the specified database and, optionally, table.
@@ -5811,7 +5944,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			// End the task first to ensure the database dropdown can be reselected
 			[self endTask];
 
-			if ( [mySQLConnection isConnected] ) {
+			if ([mySQLConnection isConnected]) {
 
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
@@ -5840,6 +5973,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
 		}
+
+		// Update the stored database encoding, used for views, "default" table encodings, and to allow
+		// or disallow use of the "View using encoding" menu
+		[self detectDatabaseEncoding];
 #endif
 		
 		// Set the connection of SPTablesList and TablesDump to reload tables in db
@@ -5858,10 +5995,12 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		// Set focus to table list filter field if visible
 		// otherwise set focus to Table List view
-		if ( [[tablesListInstance tables] count] > 20 )
+		if ([[tablesListInstance tables] count] > 20) {
 			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
-		else
+		}
+		else {
 			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+		}
 #endif
 	}
 
@@ -5919,8 +6058,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 
 #ifdef SP_REFACTOR /* glue */
-	if ( delegate && [delegate respondsToSelector:@selector(databaseDidChange:)] )
+	if (delegate && [delegate respondsToSelector:@selector(databaseDidChange:)]) {
 		[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
+	}
 #endif
 
 	[taskPool drain];

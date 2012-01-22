@@ -42,6 +42,7 @@
 	IBOutlet SPTableView *relationsTableView;
 	IBOutlet NSPanel     *addRelationPanel;
 
+	IBOutlet NSTextField   *constraintName;
 	IBOutlet NSBox         *addRelationTableBox;
 	IBOutlet NSPopUpButton *columnPopUpButton;
 	IBOutlet NSPopUpButton *refTablePopUpButton;
@@ -49,11 +50,14 @@
 	IBOutlet NSPopUpButton *onUpdatePopUpButton;
 	IBOutlet NSPopUpButton *onDeletePopUpButton;
 	IBOutlet NSButton      *confirmAddRelationButton;
+	IBOutlet NSProgressIndicator *dataProgressIndicator;
+	IBOutlet NSTextField *progressStatusTextField;
 		
 	MCPConnection *connection;
 
-	NSMutableArray *relationData;
 	NSUserDefaults *prefs;
+	NSMutableArray *relationData;
+	NSMutableArray *takenConstraintNames;
 }
 
 @property (readonly) NSMutableArray *relationData;
@@ -62,6 +66,7 @@
 // IB action methods
 - (IBAction)addRelation:(id)sender;
 - (IBAction)removeRelation:(id)sender;
+- (IBAction)openRelationSheet:(id)sender;
 - (IBAction)closeRelationSheet:(id)sender;
 - (IBAction)confirmAddRelation:(id)sender;
 - (IBAction)selectTableColumn:(id)sender;

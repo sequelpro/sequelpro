@@ -25,6 +25,12 @@
 
 #import <MCPKit/MCPKit.h>
 
+typedef enum {
+	SPFieldMapperInProgress = 1,
+	SPFieldMapperCompleted = 2,
+	SPFieldMapperCancelled = 3
+} SPFieldMapperSheetStatus;
+
 @class SPFieldMapperController, SPFileHandle;
 
 @interface SPDataImport : NSObject 
@@ -89,7 +95,7 @@
 	NSString *lastFilename;
 	NSString *csvImportHeaderString;
 	NSString *csvImportTailString;
-	NSInteger fieldMapperSheetStatus;
+	SPFieldMapperSheetStatus fieldMapperSheetStatus;
 	NSInteger numberOfImportDataColumns;
 	BOOL fieldMappingArrayHasGlobalVariables;
 	BOOL csvImportMethodHasTail;

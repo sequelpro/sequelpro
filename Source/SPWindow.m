@@ -79,13 +79,17 @@
 			case '}':
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
 				{
-					return [[self windowController] selectNextDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectNextDocumentTab:)])
+						[[self windowController] selectNextDocumentTab:self];
+					return;
 				}
 				break;
 			case '{':
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask))
 				{
-					return [[self windowController] selectPreviousDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectPreviousDocumentTab:)])
+						[[self windowController] selectPreviousDocumentTab:self];
+					return;
 				}
 				break;
 
@@ -93,13 +97,17 @@
 			case NSRightArrowFunctionKey:
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSAlternateKeyMask | NSNumericPadKeyMask | NSFunctionKeyMask))
 				{
-					return [[self windowController] selectNextDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectNextDocumentTab:)])
+						[[self windowController] selectNextDocumentTab:self];
+					return;
 				}
 				break;
 			case NSLeftArrowFunctionKey:
 				if (([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSAlternateKeyMask | NSNumericPadKeyMask | NSFunctionKeyMask))
 				{
-					return [[self windowController] selectPreviousDocumentTab:self];
+					if ([[self windowController] respondsToSelector:@selector(selectPreviousDocumentTab:)])
+						[[self windowController] selectPreviousDocumentTab:self];
+					return;
 				}
 				break;
 		}
@@ -108,5 +116,18 @@
 	[super sendEvent:theEvent];
 }
 
+/**
+ * If this window is controlled by an SPWindowController, and thus supports being asked
+ * for the frontmost SPTableDocument, request the undoController for that table
+ * document.  This allows undo to be individual per tab rather than shared across the
+ * window.
+ */
+- (NSUndoManager *)undoManager
+{
+	if ([[self windowController] respondsToSelector:@selector(selectedTableDocument)]) {
+		return [[[self windowController] selectedTableDocument] undoManager];
+	}
+	return [super undoManager];
+}
 
 @end

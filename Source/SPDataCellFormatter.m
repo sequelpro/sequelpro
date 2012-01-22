@@ -34,7 +34,7 @@
 - (NSString *)stringForObjectValue:(id)anObject
 {
 	// Truncate the string for speed purposes if it's very long - improves table scrolling speed.
-	if ([(NSString *)anObject length] > 150) {
+	if ([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > 150) {
 		return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);
 	}
 
@@ -53,9 +53,52 @@
 	return YES;
 }
 
+/**
+ * When producing an attributed string, take the opportunity to convert to a single
+ * line for display, displaying placeholders for CR and LF characters.
+ */
 - (NSAttributedString *)attributedStringForObjectValue:(id)anObject withDefaultAttributes:(NSDictionary *)attributes
 {
-	return [[[NSAttributedString alloc] initWithString:[self stringForObjectValue:anObject] attributes:attributes] autorelease];
+
+	// Start with a base string which has been shortened for fast display
+	NSString *baseString = [self stringForObjectValue:anObject];
+
+	// Look for any linebreaks within the string
+	NSRange linebreakRange = [baseString rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch];
+
+	// If there's no linebreaks, return a non-mutable string
+	if (linebreakRange.location == NSNotFound) {
+		return [[[NSAttributedString alloc] initWithString:baseString attributes:attributes] autorelease];
+	}
+
+	NSMutableAttributedString *mutableString;
+	NSUInteger i, j, stringLength = [baseString length];
+	unichar c;
+
+	// Otherwise, prepare a mutable attributed string to alter, and walk along the string.
+	mutableString = [[[NSMutableAttributedString alloc] initWithString:baseString attributes:attributes] autorelease];
+	for (i = linebreakRange.location, j = i; i < stringLength; i++, j++) {
+		c = [baseString characterAtIndex:i];
+		switch (c) {
+			case '\n':
+				[mutableString replaceCharactersInRange:NSMakeRange(j, 1) withString:@"¶"];
+				[mutableString addAttribute:NSForegroundColorAttributeName value:[NSColor lightGrayColor] range:NSMakeRange(j, 1)];
+				break;
+			case '\r':
+			case 0x0085:
+			case 0x000b:
+			case 0x000c:
+				[mutableString replaceCharactersInRange:NSMakeRange(j, 1) withString:@"⁋"];
+				[mutableString addAttribute:NSForegroundColorAttributeName value:[NSColor lightGrayColor] range:NSMakeRange(j, 1)];
+				if (c == '\r' && i + 1 < stringLength && [baseString characterAtIndex:i+1] == '\n') {
+					[mutableString deleteCharactersInRange:NSMakeRange(j+1, 1)];
+					i++;
+				}
+				break;
+		}
+	}
+
+	return mutableString;
 }
 
 - (BOOL)isPartialStringValid:(NSString *)partialString newEditingString:(NSString **)newString errorDescription:(NSString **)error

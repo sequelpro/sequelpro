@@ -24,7 +24,6 @@
 
 #import "SPMenuAdditions.h"
 
-
 @implementation NSMenu (SPMenuAdditions)
 
 // Add a 10.5-compatible removeAllItems
@@ -32,7 +31,8 @@
 {
 	if ([self respondsToSelector:@selector(removeAllItems)]) {
 		[(id)self removeAllItems];
-	} else {
+	} 
+	else {
 		while ([self numberOfItems]) [self removeItemAtIndex:0];
 	}
 }

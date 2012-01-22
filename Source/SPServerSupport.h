@@ -71,6 +71,7 @@
 	BOOL supportsBlackholeStorageEngine;
 	BOOL supportsArchiveStorageEngine;
 	BOOL supportsCSVStorageEngine;
+	BOOL supportsQuotingEngineTypeInCreateSyntax;
 	
 	// Triggers
 	BOOL supportsTriggers;
@@ -212,6 +213,12 @@
  * @property supportsIndexKeyBlockSize Indicates if the server supports specifying an index's key block size
  */
 @property (readonly) BOOL supportsIndexKeyBlockSize;
+
+/**
+ * @property supportsQuotingEngineTypeInCreateSyntax Indicates whether the server supports quoting the engine
+ *                                                   type in the create syntax.
+ */
+@property (readonly) BOOL supportsQuotingEngineTypeInCreateSyntax;
 
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion;
 
