@@ -30,7 +30,7 @@
 #import "SPKeychain.h"
 #import "RegexKitLite.h"
 
-@interface SPConnectionController (PrivateAPI)
+@interface SPConnectionController ()
 
 - (void)_restoreConnectionInterface;
 
@@ -405,6 +405,7 @@
 	if (connectionKeychainItemName) {
 		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
 	}
+	
 	if (connectionSSHKeychainItemName) {
 		[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
 	}
@@ -417,6 +418,7 @@
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
 	// this will definitely need to be updated.
 	else if (returnCode == NSAlertOtherReturn) {
+		
 		// Extract the local port number that SSH attempted to bind to from the debug output
 		NSString *tunnelPort = [[[errorDetailText string] componentsMatchedByRegex:@"LOCALHOST:([0-9]+)" capture:1L] lastObject];
 		

@@ -45,7 +45,7 @@
 }
 
 /**
- * @property favoritesTree
+ * @property favoritesTree The current favorites tree
  */
 @property (readonly) SPTreeNode *favoritesTree;
 

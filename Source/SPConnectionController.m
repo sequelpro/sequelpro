@@ -48,7 +48,9 @@ static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 @interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
+
 - (void)setShowsHiddenFiles:(BOOL)flag;
+
 @end
 
 @interface SPConnectionController ()
@@ -67,7 +69,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
-static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
+static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 
 @end
 
@@ -102,134 +104,6 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 @synthesize connectionSSHKeychainItemAccount;
 
 @synthesize isConnecting;
-
-#pragma mark -
-
-/**
- * Initialise the connection controller, linking it to the
- * parent document and setting up the parent window.
- */
-- (id)initWithDocument:(SPDatabaseDocument *)document
-{
-	if ((self = [super init])) {
-		
-		// Weak reference
-		dbDocument = document;
-		
-		databaseConnectionSuperview = [dbDocument databaseView];
-		databaseConnectionView = [dbDocument valueForKey:@"contentViewSplitter"];
-		
-		// Keychain references
-		connectionKeychainItemName = nil;
-		connectionKeychainItemAccount = nil;
-		connectionSSHKeychainItemName = nil;
-		connectionSSHKeychainItemAccount = nil;
-		
-		isEditing = NO;
-		isConnecting = NO;
-		
-		sshTunnel = nil;
-		mySQLConnection = nil;
-		cancellingConnection = NO;
-		mySQLConnectionCancelled = NO;
-		
-		favoriteNameFieldWasTouched = YES;
-		
-		// Load the connection nib, keeping references to the top-level objects for later release
-		nibObjectsToRelease = [[NSMutableArray alloc] init];
-		NSArray *connectionViewTopLevelObjects = nil;
-		NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionView" bundle:[NSBundle mainBundle]];
-		
-		[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
-		[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
-		[nibLoader release];
-		
-		// Hide the main view and position and display the connection view
-		[databaseConnectionView setHidden:YES];
-		[connectionView setFrame:[databaseConnectionView frame]];
-		[databaseConnectionSuperview addSubview:connectionView];		
-		[connectionSplitView setPosition:[[dbDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
-		[connectionSplitView setDelegate:self];
-		
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
-		
-		// Generic folder image for use in the outline view's groups
-		folderImage = [[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericFolderIcon)] retain];
-		
-		[folderImage setSize:NSMakeSize(16, 16)];
-		
-		// Set up a keychain instance and preferences reference, and create the initial favorites list
-		keychain = [[SPKeychain alloc] init];
-		prefs = [[NSUserDefaults standardUserDefaults] retain];
-				
-		// Create a reference to the favorites controller, forcing the data to be loaded from disk and the
-		// tree constructor.
-		favoritesController = [SPFavoritesController sharedFavoritesController];
-		
-		// Tree reference
-		favoritesRoot = [favoritesController favoritesTree];
-		
-		// Update the UI
-		[self _reloadFavoritesViewData];
-
-        // Set sort items
-        currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
-        reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
-        
-		// Register double click action for the favorites outline view (double click favorite to connect)
-		[favoritesOutlineView setTarget:self];
-		[favoritesOutlineView setDoubleAction:@selector(nodeDoubleClicked:)];
-		
-		// Register drag types for the favorites outline view
-        [favoritesOutlineView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
-        [favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
-
-		// Preserve expanded group nodes
-		[favoritesOutlineView setAutosaveExpandedItems:YES];
-		
-		// Registered to be notified of changes to connection information
-		[self addObserver:self forKeyPath:SPFavoriteNameKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteHostKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteUserKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteDatabaseKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSocketKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoritePortKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteUseSSLKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSHHostKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSHUserKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSHPortKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSHKeyLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSHKeyLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-		[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-					
-		SPTreeNode *favorite = [self _favoriteNodeForFavoriteID:[prefs integerForKey:([prefs boolForKey:SPSelectLastFavoriteUsed]) ? SPLastFavoriteID : SPDefaultFavorite]];
-						
-		if (favorite) {
-													
-			NSNumber *typeNumber = [[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey];
-			
-			previousType = (typeNumber) ? [typeNumber integerValue] : SPTCPIPConnection;
-						
-		    [self _selectNode:favorite];
-		 
-			[self resizeTabViewToConnectionType:[[[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey] integerValue] animating:NO];
-			
-			[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
-		} 
-		else {
-			previousType = SPTCPIPConnection;
-			
-			[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
-		}
-	}
-	
-	return self;
-}
 
 #pragma mark -
 #pragma mark Connection processes
@@ -1284,7 +1158,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
 	
 	[indexes release];
 	
-	[nodes sortUsingFunction:compareFavoritesUsingKey context:key];
+	[nodes sortUsingFunction:_compareFavoritesUsingKey context:key];
 	
 	[nodes addObjectsFromArray:groupNodes];
 	
@@ -1304,7 +1178,7 @@ static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, v
  * 
  * @return An integer (NSComparisonResult) indicating the order of the comparison
  */
-static NSComparisonResult compareFavoritesUsingKey(id favorite1, id favorite2, void *key)
+static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key)
 {
 	NSString *dictKey = (NSString *)key;
 	

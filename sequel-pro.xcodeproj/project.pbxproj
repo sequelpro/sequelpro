@@ -45,6 +45,7 @@
 		1733F7DE14CC33DB005ED414 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7D814CC33DB005ED414 /* SPQueryConsoleDataSource.m */; };
 		1733F7DF14CC33DB005ED414 /* SPQueryControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7DA14CC33DB005ED414 /* SPQueryControllerInitializer.m */; };
 		1733F7E014CC33DB005ED414 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F7DC14CC33DB005ED414 /* SPQueryDocumentsController.m */; };
+		1733F86D14CC49E7005ED414 /* SPConnectionControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1733F86C14CC49E7005ED414 /* SPConnectionControllerInitializer.m */; };
 		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
@@ -604,6 +605,8 @@
 		1733F7DB14CC33DB005ED414 /* SPQueryControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryControllerInitializer.h; sourceTree = "<group>"; };
 		1733F7DC14CC33DB005ED414 /* SPQueryDocumentsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryDocumentsController.m; sourceTree = "<group>"; };
 		1733F7DD14CC33DB005ED414 /* SPQueryDocumentsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryDocumentsController.h; sourceTree = "<group>"; };
+		1733F86B14CC49E7005ED414 /* SPConnectionControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerInitializer.h; sourceTree = "<group>"; };
+		1733F86C14CC49E7005ED414 /* SPConnectionControllerInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerInitializer.m; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
 		173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryFavoriteManager.h; sourceTree = "<group>"; };
 		173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryFavoriteManager.m; sourceTree = "<group>"; };
@@ -1831,6 +1834,8 @@
 				17AF712E12A8424C00C54D6A /* SPConnectionHandler.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
+				1733F86B14CC49E7005ED414 /* SPConnectionControllerInitializer.h */,
+				1733F86C14CC49E7005ED414 /* SPConnectionControllerInitializer.m */,
 				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
 				17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */,
 				170EAA2E1311B7AA000AE5FE /* SPConnectionControllerDataSource.h */,
@@ -3302,6 +3307,7 @@
 				1733F7DE14CC33DB005ED414 /* SPQueryConsoleDataSource.m in Sources */,
 				1733F7DF14CC33DB005ED414 /* SPQueryControllerInitializer.m in Sources */,
 				1733F7E014CC33DB005ED414 /* SPQueryDocumentsController.m in Sources */,
+				1733F86D14CC49E7005ED414 /* SPConnectionControllerInitializer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

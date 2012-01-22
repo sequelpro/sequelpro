@@ -34,6 +34,7 @@ enum {
 
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
+#import "SPConnectionControllerInitializer.h"
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
@@ -245,7 +246,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 #endif
-
 
 - (void)awakeFromNib
 {

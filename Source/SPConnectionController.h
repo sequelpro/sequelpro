@@ -212,8 +212,6 @@
 
 @property (readonly, assign) BOOL isConnecting;
 
-- (id)initWithDocument:(SPDatabaseDocument *)document;
-
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
 #ifndef SP_REFACTOR /* method decls */
