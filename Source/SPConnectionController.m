@@ -885,10 +885,12 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	
+	NSString *fileName = [[self selectedFavoriteNodes] count] > 1 ? SPExportFavoritesFilename : [[[self selectedFavorite] objectForKey:SPFavoriteNameKey] stringByAppendingPathExtension:@"plist"];
+	
 	[savePanel setAccessoryView:exportPanelAccessoryView];
 	
 	[savePanel beginSheetForDirectory:nil
-								 file:SPExportFavoritesFilename
+								 file:fileName
 					   modalForWindow:[dbDocument parentWindow]
 						modalDelegate:self
 					   didEndSelector:@selector(importExportFavoritesSheetDidEnd:returnCode:contextInfo:)
