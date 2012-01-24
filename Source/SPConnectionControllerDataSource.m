@@ -29,7 +29,7 @@
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 
-@interface SPConnectionController (PrivateAPI)
+@interface SPConnectionController ()
 
 - (void)_reloadFavoritesViewData;
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
@@ -66,7 +66,6 @@
 
 - (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-	// Trim whitespace
 	NSString *newName = [object stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
 	if ([newName length]) {

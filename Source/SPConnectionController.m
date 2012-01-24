@@ -312,33 +312,40 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
+		
 		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
-
+	}
 	// SSL key file location:
-	} else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+	else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslKeyFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 		
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
+		
+		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
+	}
 	// SSL certificate file location:
-	} else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+	else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslCertificateFileLocation:nil];
 			return;
 		}
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 		
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
+		
+		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
+	}
 	// SSL CA certificate file location:
-	} else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+	else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslCACertFileLocation:nil];
 			return;
 		}
+		
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
+		
 		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 

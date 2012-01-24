@@ -35,6 +35,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 - (void)_reloadFavoritesViewData;
 - (void)_selectNode:(SPTreeNode *)node;
+
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
 
 @end
@@ -128,27 +129,101 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)registerForNotifications
 {
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(scrollViewFrameChanged:) name:NSViewFrameDidChangeNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(scrollViewFrameChanged:) 
+												 name:NSViewFrameDidChangeNotification 
+											   object:nil];
 	
 	// Registered to be notified of changes to connection information
-	[self addObserver:self forKeyPath:SPFavoriteNameKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteHostKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteUserKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteDatabaseKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSocketKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoritePortKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteUseSSLKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSHHostKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSHUserKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSHPortKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSHKeyLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSHKeyLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
-	[self addObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:NULL];
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteNameKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteHostKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteUserKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteDatabaseKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSocketKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoritePortKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteUseSSLKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSHHostKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSHUserKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSHPortKey
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSHKeyLocationEnabledKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSHKeyLocationKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLKeyFileLocationKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLCertificateFileLocationKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteSSLCACertFileLocationKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
 }
 
 /**

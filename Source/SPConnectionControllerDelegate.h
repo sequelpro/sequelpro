@@ -24,6 +24,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
+#import "SPFavoritesExportProtocol.h"
+#import "SPFavoritesImportProtocol.h"
 
 /**
  * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
@@ -32,6 +34,6 @@
  *
  * Connection controller delegate category.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesExportProtocol>
+@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
 
 @end

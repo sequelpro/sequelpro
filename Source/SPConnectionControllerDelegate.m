@@ -503,7 +503,6 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)favoritesExportCompletedWithError:(NSError *)error
 {	
 	if (error) {
-		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites export error", @"favorites export error message")
 										 defaultButton:NSLocalizedString(@"OK", @"OK")
 									   alternateButton:nil 
@@ -522,7 +521,7 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (void)favoritesImportData:(NSDictionary *)data
 {
-	
+	// TODO: do something with the data
 }
 
 /**

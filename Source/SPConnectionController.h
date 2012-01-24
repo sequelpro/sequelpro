@@ -24,7 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <MCPKit/MCPKit.h>
-#import "SPFavoritesExportProtocol.h"
+
 #import "SPConnectionControllerDelegateProtocol.h"
 
 #ifndef SP_REFACTOR /* headers */
