@@ -212,7 +212,6 @@ enum {
  */
 - (IBAction) moveSelectedTabInNewWindow:(id)sender
 {
-
 	static NSPoint cascadeLocation = {.x = 0, .y = 0};
 
 	SPDatabaseDocument *selectedDocument = [[tabView selectedTabViewItem] identifier];
@@ -275,7 +274,6 @@ enum {
 	[newWindowController tabView:[tabBar tabView] didDropTabViewItem:[selectedCell representedObject] inTabBar:control];
 
 	[newWindow makeKeyAndOrderFront:nil];
-
 }
 
 /**

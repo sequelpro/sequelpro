@@ -30,6 +30,8 @@
 #import "SPKeychain.h"
 #import "RegexKitLite.h"
 
+static NSString *SPLocalhostAddress = @"127.0.0.1"; 
+
 @interface SPConnectionController ()
 
 - (void)_restoreConnectionInterface;
@@ -69,7 +71,7 @@
 	} 
 	else {
 		if ([self type] == SPSSHTunnelConnection) {
-			mySQLConnection = [[MCPConnection alloc] initToHost:@"127.0.0.1"
+			mySQLConnection = [[MCPConnection alloc] initToHost:SPLocalhostAddress
 													  withLogin:[self user]
 													  usingPort:[sshTunnel localPort]];
 			[mySQLConnection setConnectionProxy:sshTunnel];
@@ -427,12 +429,12 @@
 		
 		// Change connection details
 		[self setPort:tunnelPort];
-		[self setHost:@"127.0.0.1"];
+		[self setHost:SPLocalhostAddress];
 		
 		// Change to standard TCP/IP connection view
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:YES];
 		
-		// Initiate the connection after half a second to give the connection view a chance to resize
+		// Initiate the connection after a half second delay to give the connection view a chance to resize
 		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
 	}
 }
