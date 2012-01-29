@@ -1,6 +1,6 @@
 # $Id$
 
-CONFIG=Release
+CONFIG=Debug
 
 BUILD_CONFIG?=$(CONFIG)
 
