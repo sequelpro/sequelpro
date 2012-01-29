@@ -70,7 +70,8 @@
 	else {
 		error = [NSError errorWithDomain:NSCocoaErrorDomain 
 									code:NSFileNoSuchFileError 
-								userInfo:[NSDictionary dictionaryWithObject:@"Import file does not exist." forKey:NSLocalizedDescriptionKey]];
+								userInfo:[NSDictionary dictionaryWithObject:NSLocalizedString(@"Import file does not exist.", @"import file does not exist message") 
+																	 forKey:NSLocalizedDescriptionKey]];
 	}
 	
 	[self _informDelegateOfImportCompletion:error];

@@ -76,6 +76,7 @@
 	BOOL automaticFavoriteSelection;
 	BOOL cancellingConnection;
 	BOOL isConnecting;
+	
 #ifndef SP_REFACTOR	/* ivars */
 	// Standard details
 	NSInteger previousType;
