@@ -133,7 +133,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (id)autorelease { return self; }
 
-- (void)release { }
+- (oneway void)release { }
 
 #ifndef SP_REFACTOR
 /**

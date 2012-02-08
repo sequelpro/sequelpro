@@ -124,8 +124,8 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:@"cnf"];
-	
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:@"cnf"]];
+
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
@@ -174,7 +174,7 @@
 				[variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
 			}
 			
-			[variablesString writeToFile:[panel filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+			[variablesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 		}
 	}
 }

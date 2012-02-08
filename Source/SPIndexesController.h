@@ -70,7 +70,8 @@
 	BOOL _mainNibLoaded;
 	NSString *table;
 	
-	NSMutableArray *fields, *indexes, *indexedFields, *supportsLength, *requiresLength;
+	NSMutableArray *fields, *indexes, *indexedFields;
+	NSArray *supportsLength, *requiresLength;
 	
 #ifndef SP_REFACTOR /* ivars */
 	NSUserDefaults *prefs;

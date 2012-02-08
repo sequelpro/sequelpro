@@ -548,7 +548,7 @@
 	NSString *fileDefault = @"";
 
 	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[MCPGeometryData class]]) {
-		[panel setRequiredFileType:@"pdf"];
+		[panel setAllowedFileTypes:[NSArray arrayWithObject:@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
 	} else {
 		[panel setAllowsOtherFileTypes:YES];
@@ -642,7 +642,6 @@
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo
 {
 	if (returnCode == NSOKButton) {
-		NSString *fileName = [panel filename];
 		NSString *contents = nil;
 
 		editSheetWillBeInitialized = YES;
@@ -655,7 +654,7 @@
 		}
 
 		// load new data/images
-		sheetEditData = [[NSData alloc] initWithContentsOfFile:fileName];
+		sheetEditData = [[NSData alloc] initWithContentsOfURL:[panel URL]];
 
 		NSImage *image = [[NSImage alloc] initWithData:sheetEditData];
 		contents = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
@@ -710,37 +709,37 @@
 
 		[editSheetProgressBar startAnimation:self];
 
-		NSString *fileName = [panel filename];
+		NSURL *fileURL = [panel URL];
 
 		// Write binary field types directly to the file
 		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
-			[sheetEditData writeToFile:fileName atomically:YES];
+			[sheetEditData writeToURL:fileURL atomically:YES];
 
 		}
 		else if ( [sheetEditData isKindOfClass:[MCPGeometryData class]] ) {
 
 			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
 
-				[[editTextView string] writeToFile:fileName
-										atomically:YES
-										  encoding:encoding
-											 error:NULL];
+				[[editTextView string] writeToURL:fileURL
+									   atomically:YES
+										 encoding:encoding
+											error:NULL];
 
 			} else if (editImage != nil){
 
 				SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
 				NSData *pdf = [v pdfData];
 				if(pdf)
-					[pdf writeToFile:fileName atomically:YES];
+					[pdf writeToURL:fileURL atomically:YES];
 
 			}
 		}
 		// Write other field types' representations to the file via the current encoding
 		else {
-			[[sheetEditData description] writeToFile:fileName
-										  atomically:YES
-											encoding:encoding
-											   error:NULL];
+			[[sheetEditData description] writeToURL:fileURL
+										 atomically:YES
+										   encoding:encoding
+											  error:NULL];
 		}
 
 		[editSheetProgressBar stopAnimation:self];

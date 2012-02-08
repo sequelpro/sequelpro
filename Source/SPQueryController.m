@@ -125,7 +125,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (id)autorelease { return self; }
 
-- (void)release { }
+- (oneway void)release { }
 
 #pragma mark -
 #pragma mark QueryConsoleController
@@ -205,7 +205,7 @@ static SPQueryController *sharedQueryController = nil;
 #ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:SPFileExtensionSQL];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -302,7 +302,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 #ifndef SP_REFACTOR
 	if (returnCode == NSOKButton) {
-		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state] connections:[includeConnectionButton state]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state] connections:[includeConnectionButton state]] writeToFile:[[sheet URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 	}
 #endif
 }

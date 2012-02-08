@@ -467,7 +467,7 @@
 #ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:SPFileExtensionSQL];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -3592,10 +3592,10 @@
 			[prefs synchronize];
 #endif
 
-			[[self buildHistoryString] writeToFile:[panel filename]
-										atomically:YES
-										  encoding:[[encodingPopUp selectedItem] tag]
-											 error:&error];
+			[[self buildHistoryString] writeToURL:[panel URL]
+									   atomically:YES
+										 encoding:[[encodingPopUp selectedItem] tag]
+											error:&error];
 
 			if (error) [[NSAlert alertWithError:error] runModal];
 		}

@@ -67,7 +67,7 @@
 @synthesize argumentField;
 @synthesize betweenTextField;
 @synthesize compareField;
-@synthesize copyButton;
+@synthesize duplicateButton;
 @synthesize fieldField;
 @synthesize filterButton;
 @synthesize firstBetweenField;
@@ -453,7 +453,7 @@
 
 		// Disable table action buttons
 		[addButton setEnabled:NO];
-		[copyButton setEnabled:NO];
+		[duplicateButton setEnabled:NO];
 		[removeButton setEnabled:NO];
 
 		// Clear restoration settings
@@ -699,7 +699,7 @@
 
 	// Set the state of the table buttons
 	[addButton setEnabled:(enableInteraction && [tablesListInstance tableType] == SPTableTypeTable)];
-	[copyButton setEnabled:NO];
+	[duplicateButton setEnabled:NO];
 	[removeButton setEnabled:NO];
 
 	// Reset the table store if required - basically if the table is being changed,
@@ -1787,7 +1787,7 @@
 /**
  * Copies a row of the table-array and goes into edit mode
  */
-- (IBAction)copyRow:(id)sender
+- (IBAction)duplicateRow:(id)sender
 {
 	NSMutableArray *tempRow;
 	MCPResult *queryResult;
@@ -4270,15 +4270,15 @@
 		// and update the status of the delete/duplicate buttons
 		if([tablesListInstance tableType] == SPTableTypeTable) {
 			if ([tableContentView numberOfSelectedRows] > 0) {
-				[copyButton setEnabled:([tableContentView numberOfSelectedRows] == 1)];
+				[duplicateButton setEnabled:([tableContentView numberOfSelectedRows] == 1)];
 				[removeButton setEnabled:YES];
 			}
 			else {
-				[copyButton setEnabled:NO];
+				[duplicateButton setEnabled:NO];
 				[removeButton setEnabled:NO];
 			}
 		} else {
-			[copyButton setEnabled:NO];
+			[duplicateButton setEnabled:NO];
 			[removeButton setEnabled:NO];
 		}
 	}
@@ -4645,7 +4645,7 @@
 
 	[addButton setEnabled:NO];
 	[removeButton setEnabled:NO];
-	[copyButton setEnabled:NO];
+	[duplicateButton setEnabled:NO];
 	[reloadButton setEnabled:NO];
 	[filterButton setEnabled:NO];
 	tableRowsSelectable = NO;
@@ -4678,7 +4678,7 @@
 	if ([tableContentView numberOfSelectedRows] > 0) {
 		if([tablesListInstance tableType] == SPTableTypeTable) {
 			[removeButton setEnabled:YES];
-			[copyButton setEnabled:YES];
+			[duplicateButton setEnabled:YES];
 		}
 	}
 
@@ -4842,7 +4842,7 @@
 	}
 
 	// Duplicate row
-	if (action == @selector(copyRow:)) {
+	if (action == @selector(duplicateRow:)) {
 		return (([tableContentView numberOfSelectedRows]) == 1 && ([tablesListInstance tableType] == SPTableTypeTable));
 	}
 	

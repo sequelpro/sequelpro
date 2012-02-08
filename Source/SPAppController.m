@@ -171,7 +171,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)panelSelectionDidChange:(id)sender
 {
 	if ([sender isKindOfClass:[NSOpenPanel class]]) {
-		if([[[[sender filename] pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL]) {
+		if([[[[[sender URL] path] pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL]) {
 			[encodingPopUp setEnabled:YES];
 		} else {
 			[encodingPopUp setEnabled:NO];

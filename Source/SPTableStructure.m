@@ -49,7 +49,7 @@
 @synthesize indexesController;
 @synthesize indexesTableView;
 @synthesize addFieldButton;
-@synthesize copyFieldButton;
+@synthesize duplicateFieldButton;
 @synthesize removeFieldButton;
 @synthesize reloadFieldsButton;
 #endif
@@ -440,7 +440,7 @@
 	[enumFields removeAllObjects];
 	[indexesTableView deselectAll:self];
 	[addFieldButton setEnabled:NO];
-	[copyFieldButton setEnabled:NO];
+	[duplicateFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
 #ifndef SP_REFACTOR
 	[addIndexButton setEnabled:NO];
@@ -619,7 +619,7 @@
 /**
  * Copies a field and goes in edit mode for the new field
  */
-- (IBAction)copyField:(id)sender
+- (IBAction)duplicateField:(id)sender
 {
 	NSMutableDictionary *tempRow;
 	NSUInteger rowToCopy;
@@ -1221,7 +1221,7 @@
 			[tableSourceView reloadData];
 			[indexesTableView reloadData];
 			[addFieldButton setEnabled:NO];
-			[copyFieldButton setEnabled:NO];
+			[duplicateFieldButton setEnabled:NO];
 			[removeFieldButton setEnabled:NO];
 #ifndef SP_REFACTOR
 			[addIndexButton setEnabled:NO];
@@ -1318,7 +1318,7 @@
 	}
 
 	// Duplicate field
-	if ([menuItem action] == @selector(copyField:)) {
+	if ([menuItem action] == @selector(duplicateField:)) {
 		return ([tableSourceView numberOfSelectedRows] == 1);
 	}
 
@@ -1577,7 +1577,7 @@
 	[tableSourceView setEnabled:NO];
 	[addFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
-	[copyFieldButton setEnabled:NO];
+	[duplicateFieldButton setEnabled:NO];
 	[reloadFieldsButton setEnabled:NO];
 #ifndef SP_REFACTOR
 	[editTableButton setEnabled:NO];
@@ -1609,7 +1609,7 @@
 
 	if (editingEnabled && [tableSourceView numberOfSelectedRows] > 0) {
 		[removeFieldButton setEnabled:YES];
-		[copyFieldButton setEnabled:YES];
+		[duplicateFieldButton setEnabled:YES];
 	}
 
 	[reloadFieldsButton setEnabled:YES];

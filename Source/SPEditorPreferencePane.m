@@ -128,7 +128,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:SPColorThemeFileExtension];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPColorThemeFileExtension]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -521,7 +521,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 {
 	if ([contextInfo isEqualToString:SPExportColorScheme]) {
 		if (returnCode == NSOKButton) {
-			[self _saveColorThemeAtPath:[panel filename]];
+			[self _saveColorThemeAtPath:[[panel URL] path]];
 		}
 	}
 	else if ([contextInfo isEqualToString:SPImportColorScheme]) {

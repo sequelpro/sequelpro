@@ -50,7 +50,7 @@
 #endif
 	IBOutlet SPTableView* tableSourceView;
 	IBOutlet id addFieldButton;
-	IBOutlet id copyFieldButton;
+	IBOutlet id duplicateFieldButton;
 	IBOutlet id removeFieldButton;
 	IBOutlet id reloadFieldsButton;
 #ifndef SP_REFACTOR /* ivars */
@@ -95,7 +95,7 @@
 @property (assign) SPIndexesController* indexesController;
 @property (assign) id indexesTableView;
 @property (assign) id addFieldButton;
-@property (assign) id copyFieldButton;
+@property (assign) id duplicateFieldButton;
 @property (assign) id removeFieldButton;
 @property (assign) id reloadFieldsButton;
 #endif
@@ -117,7 +117,7 @@
 
 // Edit methods
 - (IBAction)addField:(id)sender;
-- (IBAction)copyField:(id)sender;
+- (IBAction)duplicateField:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (void)removeFieldSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)resetAutoIncrement:(id)sender;

@@ -675,7 +675,7 @@
 - (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 #ifndef SP_REFACTOR /* !!! ssh key location */
-	NSString *abbreviatedFileName = [[openPanel filename] stringByAbbreviatingWithTildeInPath];
+	NSString *abbreviatedFileName = [[[openPanel URL] path] stringByAbbreviatingWithTildeInPath];
 
 	// SSH key file selection
 	if (contextInfo == sshSSHKeyButton) {
