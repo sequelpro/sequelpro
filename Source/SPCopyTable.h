@@ -49,11 +49,11 @@
 	NSUserDefaults *prefs;
 
 	NSRange fieldEditorSelectedRange;
-	NSString *copyBlobFileDirectory;
+	NSString *tmpBlobFileDirectory;
 
 }
 
-@property(readwrite,assign) NSString *copyBlobFileDirectory;
+@property(readwrite,assign) NSString *tmpBlobFileDirectory;
 
 @property(readwrite,assign) NSRange fieldEditorSelectedRange;
 

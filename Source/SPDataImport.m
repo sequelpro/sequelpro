@@ -315,7 +315,7 @@
 	progressCancelled = NO;
 
 	if(lastFilename) [lastFilename release]; lastFilename = nil;
-	lastFilename = [[NSString stringWithString:[(NSOpenPanel*)sheet filename]] retain];
+	lastFilename = [[NSString stringWithString:[[(NSOpenPanel*)sheet URL] path]] retain];
 
 	NSString *importFileName = [NSString stringWithString:lastFilename];
 	if (lastFilename == nil || ![lastFilename length]) {

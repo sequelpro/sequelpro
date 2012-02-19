@@ -299,7 +299,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:SPFileExtensionSQL];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -319,7 +319,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:SPFileExtensionDefault];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -828,7 +828,7 @@
 			[prefs synchronize];
 #endif
 		
-			[[favoriteQueryTextView string] writeToFile:[panel filename] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
+			[[favoriteQueryTextView string] writeToURL:[panel URL] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
 		
 			if (error) [[NSAlert alertWithError:error] runModal];
 		}
@@ -873,7 +873,7 @@
 			}
 
 			NSError *error = nil;
-			[plist writeToFile:[panel filename] options:NSAtomicWrite error:&error];
+			[plist writeToURL:[panel URL] options:NSAtomicWrite error:&error];
 			if (error) [[NSAlert alertWithError:error] runModal];
 
 		}

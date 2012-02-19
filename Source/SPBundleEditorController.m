@@ -773,7 +773,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:SPUserBundleFileExtension];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPUserBundleFileExtension]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -1065,7 +1065,7 @@
 			NSString *bundleFileName = [aBundle objectForKey:kBundleNameKey];
 			NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
 
-			NSString *savePath = [sheet filename];
+			NSString *savePath = [[sheet URL] path];
 
 			BOOL isDir;
 			BOOL copyingWasSuccessful = YES;

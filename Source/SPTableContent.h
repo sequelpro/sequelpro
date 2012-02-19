@@ -51,7 +51,7 @@
 	IBOutlet id argumentField;
 	IBOutlet id filterButton;
 	IBOutlet id addButton;
-	IBOutlet id copyButton;
+	IBOutlet id duplicateButton;
 	IBOutlet id removeButton;
 	IBOutlet id reloadButton;
 #ifndef SP_REFACTOR
@@ -189,7 +189,7 @@
 
 // Edit methods
 - (IBAction)addRow:(id)sender;
-- (IBAction)copyRow:(id)sender;
+- (IBAction)duplicateRow:(id)sender;
 - (IBAction)removeRow:(id)sender;
 - (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
@@ -271,7 +271,7 @@
 @property (assign) id secondBetweenField;
 @property (assign) id argumentField;
 @property (assign) NSButton* addButton;
-@property (assign) NSButton* copyButton;
+@property (assign) NSButton* duplicateButton;
 @property (assign) NSButton* removeButton;
 @property (assign) NSButton* reloadButton;
 @property (assign) NSButton* paginationNextButton;

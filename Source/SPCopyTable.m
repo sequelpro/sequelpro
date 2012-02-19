@@ -59,7 +59,7 @@ NSInteger kBlobAsImageFile = 4;
  * selection in the field editor's editTextView
  */
 @synthesize fieldEditorSelectedRange;
-@synthesize copyBlobFileDirectory;
+@synthesize tmpBlobFileDirectory;
 
 /**
  * Cell editing in SPCustomQuery or for views in SPTableContent
@@ -169,10 +169,10 @@ NSInteger kBlobAsImageFile = 4;
 	Class mcpGeometryData = [MCPGeometryData class];
 	NSUInteger rowCounter = 0;
 
-	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 		NSFileManager *fm = [NSFileManager defaultManager];
-		[fm removeItemAtPath:copyBlobFileDirectory error:nil];
-		[fm createDirectoryAtPath:copyBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+		[fm removeItemAtPath:tmpBlobFileDirectory error:nil];
+		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
 	while ( rowIndex != NSNotFound )
@@ -196,13 +196,13 @@ NSInteger kBlobAsImageFile = 4;
 							[displayString release];
 						}
 					}
-					else if(withBlobHandling == kBlobAsFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", copyBlobFileDirectory, rowCounter, c];
+					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"%@\t", fp];
 					}
-					else if(withBlobHandling == kBlobAsImageFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", copyBlobFileDirectory, rowCounter, c];
+					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -220,8 +220,8 @@ NSInteger kBlobAsImageFile = 4;
 					}
 				}
 				else if ([cellData isKindOfClass:mcpGeometryData]) {
-					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", copyBlobFileDirectory, rowCounter, c];
+					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -308,10 +308,10 @@ NSInteger kBlobAsImageFile = 4;
 
 	NSUInteger rowCounter = 0;
 
-	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
+	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 		NSFileManager *fm = [NSFileManager defaultManager];
-		[fm removeItemAtPath:copyBlobFileDirectory error:nil];
-		[fm createDirectoryAtPath:copyBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+		[fm removeItemAtPath:tmpBlobFileDirectory error:nil];
+		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
 	while ( rowIndex != NSNotFound )
@@ -335,13 +335,13 @@ NSInteger kBlobAsImageFile = 4;
 							[displayString release];
 						}
 					}
-					else if(withBlobHandling == kBlobAsFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", copyBlobFileDirectory, rowCounter, c];
+					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"\"%@\",", fp];
 					}
-					else if(withBlobHandling == kBlobAsImageFile && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", copyBlobFileDirectory, rowCounter, c];
+					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -359,8 +359,8 @@ NSInteger kBlobAsImageFile = 4;
 					}
 				}
 				else if ([cellData isKindOfClass:mcpGeometryData]) {
-					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && copyBlobFileDirectory && [copyBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", copyBlobFileDirectory, rowCounter, c];
+					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -1294,9 +1294,9 @@ NSInteger kBlobAsImageFile = 4;
 			if(blobHandling != kBlobExclude) {
 				NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
 				[env setObject:bundleBlobFilePath forKey:SPBundleShellVariableBlobFileDirectory];
-				[self setCopyBlobFileDirectory:bundleBlobFilePath];
+				[self setTmpBlobFileDirectory:bundleBlobFilePath];
 			} else {
-				[self setCopyBlobFileDirectory:@""];
+				[self setTmpBlobFileDirectory:@""];
 			}
 
 			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {

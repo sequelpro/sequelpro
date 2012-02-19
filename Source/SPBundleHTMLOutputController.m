@@ -185,7 +185,7 @@
 		if (returnCode == NSOKButton) {
 			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
 			NSError *err = nil;
-			[sourceCode writeToFile:[sheet filename]
+			[sourceCode writeToURL:[sheet URL]
 						atomically:YES
 						encoding:NSUTF8StringEncoding
 						error:&err];
@@ -265,7 +265,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:@"html"];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:@"html"]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];

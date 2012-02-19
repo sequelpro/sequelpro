@@ -42,26 +42,32 @@
 	IBOutlet SPIndexesController* indexesController;
 	IBOutlet SPDatabaseData* databaseDataInstance;
 
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
 	IBOutlet id resetAutoIncrementLine;
-	IBOutlet SPTableView *tableSourceView;
+#endif
+	IBOutlet SPTableView* tableSourceView;
 	IBOutlet id addFieldButton;
-	IBOutlet id copyFieldButton;
+	IBOutlet id duplicateFieldButton;
 	IBOutlet id removeFieldButton;
 	IBOutlet id reloadFieldsButton;
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet id chooseKeyButton;
 	IBOutlet id structureGrabber;
 	IBOutlet id editTableButton;
 	IBOutlet id addIndexButton;
 	IBOutlet id removeIndexButton;
 	IBOutlet id refreshIndexesButton;
-	IBOutlet SPTableView *indexesTableView;
+#endif
+	IBOutlet SPTableView* indexesTableView;
+#ifndef SP_REFACTOR /* ivars */
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 
 	IBOutlet id viewColumnsMenu;
+#endif
 	IBOutlet NSPopUpButtonCell *encodingPopupCell;
 
 	MCPConnection *mySQLConnection;
@@ -85,6 +91,15 @@
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }
 
+#ifdef SP_REFACTOR
+@property (assign) SPIndexesController* indexesController;
+@property (assign) id indexesTableView;
+@property (assign) id addFieldButton;
+@property (assign) id duplicateFieldButton;
+@property (assign) id removeFieldButton;
+@property (assign) id reloadFieldsButton;
+#endif
+
 // Table loading
 - (void)loadTable:(NSString *)aTable;
 - (IBAction)reloadTable:(id)sender;
@@ -94,12 +109,15 @@
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
 - (void)setTableListInstance:(SPTablesList*)list;
 - (void)setTableDataInstance:(SPTableData*)data;
+- (void)setDatabaseDataInstance:(SPDatabaseData*)data;
+- (void)setTableSourceView:(SPTableView*)tv;
+- (void)setEncodingPopupCell:(NSPopUpButtonCell*)cell;
 #endif
 - (void)showErrorSheetWith:(NSDictionary *)errorDictionary;
 
 // Edit methods
 - (IBAction)addField:(id)sender;
-- (IBAction)copyField:(id)sender;
+- (IBAction)duplicateField:(id)sender;
 - (IBAction)removeField:(id)sender;
 - (void)removeFieldSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)resetAutoIncrement:(id)sender;

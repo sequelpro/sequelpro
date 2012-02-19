@@ -125,7 +125,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (id)autorelease { return self; }
 
-- (void)release { }
+- (oneway void)release { }
 
 #pragma mark -
 #pragma mark QueryConsoleController
@@ -144,9 +144,9 @@ static SPQueryController *sharedQueryController = nil;
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
 
 		NSUInteger i = [rows firstIndex];
-
-		BOOL dateColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
-		BOOL connectionColumnIsHidden = [[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
+		
+		BOOL includeTimestamps = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
+		BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
 
 		[string setString:@""];
 
@@ -154,15 +154,20 @@ static SPQueryController *sharedQueryController = nil;
 		{
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-
-				// If the timestamp column is not hidden we need to include them in the copy
-				if (!dateColumnIsHidden)
-					[string appendFormat:@"/* %@ %@ ", [dateFormatter stringFromDate:[message messageDate]], (connectionColumnIsHidden) ? @"*/ ": @""];
-
-
-				// If the connection column is not hidden we need to include them in the copy
-				if (!connectionColumnIsHidden)
-					[string appendFormat:@"%@%@ */ ",(dateColumnIsHidden) ? @"/* " : @"", [message messageConnection]];
+				
+				if (includeTimestamps || includeConnections) [string appendString:@"/* "];
+				
+				if (includeTimestamps) {
+					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
+					[string appendString:@" "];
+				}
+				
+				if (includeConnections) {
+					[string appendString:[message messageConnection]];
+					[string appendString:@" "];
+				}
+				
+				if (includeTimestamps || includeConnections) [string appendString:@"*/ "];
 
 				[string appendFormat:@"%@\n", [message message]];
 			}
@@ -200,7 +205,7 @@ static SPQueryController *sharedQueryController = nil;
 #ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:SPFileExtensionSQL];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -297,7 +302,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 #ifndef SP_REFACTOR
 	if (returnCode == NSOKButton) {
-		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton integerValue] connections:[includeConnectionButton integerValue]] writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state] connections:[includeConnectionButton state]] writeToFile:[[sheet URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 	}
 #endif
 }
@@ -528,12 +533,14 @@ static SPQueryController *sharedQueryController = nil;
 		
 		// If the timestamp column is not hidden we need to include them in the copy
 		if (timeStamps) {
-			[consoleString appendFormat:@"%@ ", [dateFormatter stringFromDate:[message messageDate]]];
+			[consoleString appendString:[dateFormatter stringFromDate:[message messageDate]]];
+			[consoleString appendString:@" "];
 		}
 		
 		// If the connection column is not hidden we need to include them in the copy
 		if (connections) {
-			[consoleString appendFormat:@"%@ ", [message messageConnection]];
+			[consoleString appendString:[message messageConnection]];
+			[consoleString appendString:@" "];
 		}
 		
 		// Close the comment

@@ -309,7 +309,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:SPFileExtensionDefault];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -773,12 +773,11 @@
 
 	SEL action = [menuItem action];
 
-	if ( (action == @selector(duplicateContentFilter:)))
+	if (action == @selector(duplicateContentFilter:))
 	{
 		return ([contentFilterTableView numberOfSelectedRows] == 1);
 	}
-	else if ( (action == @selector(removeContentFilter:))	||
-		( action == @selector(exportFavorites:)))
+	else if ( (action == @selector(removeContentFilter:)) || (action == @selector(exportFavorites:)) )
 	{
 		return ([contentFilterTableView numberOfSelectedRows] > 0);
 	}
@@ -937,7 +936,7 @@
 			}
 
 			NSError *error = nil;
-			[plist writeToFile:[panel filename] options:NSAtomicWrite error:&error];
+			[plist writeToURL:[panel URL] options:NSAtomicWrite error:&error];
 			if (error) [[NSAlert alertWithError:error] runModal];
 
 		}

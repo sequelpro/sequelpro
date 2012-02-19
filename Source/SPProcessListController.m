@@ -409,7 +409,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				[processesString appendString:@"\n"];
 			}
 			
-			[processesString writeToFile:[panel filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+			[processesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 		}
 	}
 }

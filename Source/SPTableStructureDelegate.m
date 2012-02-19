@@ -401,7 +401,7 @@
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
 		
-		[copyFieldButton setEnabled:YES];
+		[duplicateFieldButton setEnabled:YES];
 		
 		// Check if there is currently a field selected and change button state accordingly
 		if ([tableSourceView numberOfSelectedRows] > 0 && [tablesListInstance tableType] == SPTableTypeTable) {
@@ -409,7 +409,7 @@
 		} 
 		else {
 			[removeFieldButton setEnabled:NO];
-			[copyFieldButton setEnabled:NO];
+			[duplicateFieldButton setEnabled:NO];
 		}
 		
 		// If the table only has one field, disable the remove button. This removes the need to check that the user

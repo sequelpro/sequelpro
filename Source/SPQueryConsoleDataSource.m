@@ -43,7 +43,7 @@ static NSUInteger SPMessageTruncateCharacterLength = 256;
 }
 
 /**
- * Table view delegate method. Returns the specific object for the request column and row.
+ * Table view delegate method. Returns the specific object for the requested column and row.
  */
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {

@@ -2186,7 +2186,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setRequiredFileType:SPFileExtensionSQL];
+	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -2818,7 +2818,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 {
 	if ( returnCode ) {
 
-		NSString *fileName = [panel filename];
+		NSString *fileName = [[panel URL] path];
 		NSError *error = nil;
 
 		// Save file as SQL file by using the chosen encoding
@@ -3487,7 +3487,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			if ([createSyntax length] > 0) {
 				NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax]; 
 
-				[output writeToFile:[sheet filename] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+				[output writeToURL:[sheet URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 			}
 		}
 	}
