@@ -254,6 +254,8 @@
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
 		58587B5A11B4437C00D129ED /* NSNotificationAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58587B5811B4437C00D129ED /* NSNotificationAdditions.h */; };
 		58587B5B11B4437C00D129ED /* NSNotificationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58587B5911B4437C00D129ED /* NSNotificationAdditions.m */; };
+		586AA0D214F1CE38007F82BF /* SPMySQL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 586AA0CC14F1CE0C007F82BF /* SPMySQL.framework */; };
+		586AA0D314F1CE44007F82BF /* SPMySQL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 586AA0CC14F1CE0C007F82BF /* SPMySQL.framework */; };
 		586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */; };
 		586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
@@ -536,6 +538,20 @@
 			remoteGlobalIDString = 584754C1120A04560057631F;
 			remoteInfo = "Sequel Pro QLGenerator";
 		};
+		586AA0CB14F1CE0C007F82BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 586AA0C414F1CE0C007F82BF /* SPMySQLFramework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* SPMySQL.framework */;
+			remoteInfo = SPMySQL.framework;
+		};
+		586AA0D014F1CE19007F82BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 586AA0C414F1CE0C007F82BF /* SPMySQLFramework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* SPMySQL.framework */;
+			remoteInfo = SPMySQL.framework;
+		};
 		58B907CC11BDA552000826E5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -577,6 +593,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				586AA0D214F1CE38007F82BF /* SPMySQL.framework in Copy Frameworks */,
 				17B7B61D101605E300F057DE /* MCPKit.framework in Copy Frameworks */,
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
 				4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */,
@@ -1012,6 +1029,7 @@
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
 		58587B5811B4437C00D129ED /* NSNotificationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSNotificationAdditions.h; path = "Support files/NSNotificationAdditions.h"; sourceTree = "<group>"; };
 		58587B5911B4437C00D129ED /* NSNotificationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSNotificationAdditions.m; path = "Support files/NSNotificationAdditions.m"; sourceTree = "<group>"; };
+		586AA0C414F1CE0C007F82BF /* SPMySQLFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPMySQLFramework.xcodeproj; path = Frameworks/SPMySQLFramework/SPMySQLFramework.xcodeproj; sourceTree = "<group>"; };
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
 		5870868210FA3E9C00D58E1C /* SPDataStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataStorage.h; sourceTree = "<group>"; };
@@ -1404,6 +1422,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				586AA0D314F1CE44007F82BF /* SPMySQL.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
 				8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */,
 				4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */,
@@ -2429,6 +2448,7 @@
 		17FC36AE141425D600AC3602 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				586AA0C414F1CE0C007F82BF /* SPMySQLFramework.xcodeproj */,
 				17B7B5551016002900F057DE /* MCPKit */,
 				58B906F811BD9B34000826E5 /* PSMTabBar */,
 				17FC358A1413CF7200AC3602 /* QueryKit */,
@@ -2560,6 +2580,14 @@
 				58587B5911B4437C00D129ED /* NSNotificationAdditions.m */,
 			);
 			name = "Support files";
+			sourceTree = "<group>";
+		};
+		586AA0C514F1CE0C007F82BF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				586AA0CC14F1CE0C007F82BF /* SPMySQL.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		58B906F811BD9B34000826E5 /* PSMTabBar */ = {
@@ -2978,6 +3006,7 @@
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
 				58B9097011C3A462000826E5 /* PBXTargetDependency */,
 				5847571E120A1C6D0057631F /* PBXTargetDependency */,
+				586AA0D114F1CE19007F82BF /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -3003,6 +3032,12 @@
 			);
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* sequel-pro */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 586AA0C514F1CE0C007F82BF /* Products */;
+					ProjectRef = 586AA0C414F1CE0C007F82BF /* SPMySQLFramework.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
@@ -3017,6 +3052,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		586AA0CC14F1CE0C007F82BF /* SPMySQL.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SPMySQL.framework;
+			remoteRef = 586AA0CB14F1CE0C007F82BF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		584754BE120A04560057631F /* Resources */ = {
@@ -3553,6 +3598,11 @@
 			isa = PBXTargetDependency;
 			target = 584754C1120A04560057631F /* Sequel Pro QLGenerator */;
 			targetProxy = 5847571D120A1C6D0057631F /* PBXContainerItemProxy */;
+		};
+		586AA0D114F1CE19007F82BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SPMySQL.framework;
+			targetProxy = 586AA0D014F1CE19007F82BF /* PBXContainerItemProxy */;
 		};
 		58B907CD11BDA552000826E5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4527,6 +4577,7 @@
 				IBC_WARNINGS = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
 				VALID_ARCHS = "i386 ppc x86_64";
 				WARNING_CFLAGS = "-Wmost";
 			};
@@ -4859,6 +4910,7 @@
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
 				STRIP_INSTALLED_PRODUCT = NO;
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
 				VALID_ARCHS = "i386 ppc x86_64";
 				WARNING_CFLAGS = "-Wmost";
 			};
@@ -4909,6 +4961,7 @@
 				IBC_WARNINGS = YES;
 				PREBINDING = NO;
 				SDKROOT = macosx10.5;
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
 				VALID_ARCHS = "i386 ppc x86_64";
 				WARNING_CFLAGS = "-Wmost";
 			};
