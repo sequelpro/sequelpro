@@ -282,7 +282,7 @@
 	} else if (!strcmp(mysqlCharset, "cp932")) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingDOSJapanese);
 	} else if (!strcmp(mysqlCharset, "eucjpms")) {
-		return CFStringConvertEncodingToNSStringEncoding(NSJapaneseEUCStringEncoding);
+		return NSJapaneseEUCStringEncoding;
 
 	// Continue with old < 4.1 mappings
 	} else if (!strcmp(mysqlCharset, "czech")) {

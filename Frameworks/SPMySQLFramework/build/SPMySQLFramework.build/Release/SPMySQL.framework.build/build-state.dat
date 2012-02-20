@@ -1,1690 +1,0 @@
-TSPMySQL.framework
-v7
-r0
-t351386739.899509
-cCheck dependencies
-cSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current A
-cSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources Versions/Current/Resources
-cSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers Versions/Current/Headers
-cSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL Versions/Current/SPMySQL
-cProcessInfoPlistFile /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/Info.plist Resources/Info.plist
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnection.h Source/SPMySQLConnection.h
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConstants.h Source/SPMySQLConstants.h
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Querying & Preparation.h" "Source/SPMySQLConnection Categories/Querying & Preparation.h"
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/Encoding.h "Source/SPMySQLConnection Categories/Encoding.h"
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Server Info.h" "Source/SPMySQLConnection Categories/Server Info.h"
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQL.h SPMySQL.h
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionDelegate.h Source/SPMySQLConnectionDelegate.h
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLResult.h Source/SPMySQLResult.h
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLGeometryData.h Source/SPMySQLGeometryData.h
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLFastStreamingResult.h Source/SPMySQLFastStreamingResult.h
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Field Definitions.h" "Source/SPMySQLResult Categories/Field Definitions.h"
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionProxy.h Source/SPMySQLConnectionProxy.h
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Max Packet Size.h" "Source/SPMySQLConnection Categories/Max Packet Size.h"
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Delegate & Proxy.h" "Source/SPMySQLConnection Categories/Delegate & Proxy.h"
-cCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Databases & Tables.h" "Source/SPMySQLConnection Categories/Databases & Tables.h"
-cCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLStreamingResult.h Source/SPMySQLStreamingResult.h
-cCopyStringsFile /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/English.lproj/InfoPlist.strings English.lproj/InfoPlist.strings
-cProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLConnection.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Ping & KeepAlive.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Encoding.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Server Info.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Conversion.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Querying & Preparation.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Locking.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLGeometryData.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLFastStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Field Definitions.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStringAdditions.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Max Packet Size.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Delegate & Proxy.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Databases & Tables.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cLd /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL normal x86_64
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLConnection.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Ping & KeepAlive.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Encoding.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Server Info.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Conversion.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Querying & Preparation.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Locking.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLGeometryData.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLFastStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Field Definitions.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStringAdditions.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Max Packet Size.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Delegate & Proxy.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Databases & Tables.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-cLd /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL normal i386
-cCreateUniversalBinary /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL normal "x86_64 i386"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m"
-cAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m"
-cAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-cTouch /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework
-
-N/Developer/SDKs/MacOSX10.5.sdk
-c000000004C238B9B00000000000000EE
-t1277397915
-s238
-
-N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Cocoa.framework/Headers/Cocoa.h
-c0000000040C4AA6800000000000001E5
-t1086630504
-s485
-
-N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/SystemConfiguration.framework/Headers/SCNetworkReachability.h
-c0000000047BAC506000000000000235B
-t1203422470
-s9051
-
-N/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/SystemConfiguration.framework/SystemConfiguration
-c000000004B760CDC00000000000371FC
-t1266027740
-s225788
-
-N/Developer/SDKs/MacOSX10.5.sdk/usr/include/mach/mach_time.h
-c0000000047E8839E0000000000000746
-t1206420382
-s1862
-
-N/Developer/SDKs/MacOSX10.5.sdk/usr/include/pthread.h
-c0000000047BA9932000000000000380F
-t1203411250
-s14351
-
-N/Developer/SDKs/MacOSX10.5.sdk/usr/include/standards.h
-c0000000047BA9930000000000000055B
-t1203411248
-s1371
-
-N/Developer/SDKs/MacOSX10.5.sdk/usr/include/sys/types.h
-c0000000047E883D2000000000000290F
-t1206420434
-s10511
-
-N/Developer/SDKs/MacOSX10.5.sdk/usr/lib/libz.dylib
-c000000004B760D050000000000006EE8
-t1266027781
-s28392
-
-N/System/Library/Frameworks/Cocoa.framework/Cocoa
-c000000004E2DE5120000000000006560
-t1311630610
-s25952
-
-N/Users/rowan/code/SPMySQLFramework/English.lproj/InfoPlist.strings
-c000000004F0A19CD0000000000000030
-t1326062029
-s48
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/my_alloc.h
-c000000004F130858000000000000070C
-t1326647384
-s1804
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/my_list.h
-c000000004F13085800000000000005D0
-t1326647384
-s1488
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/mysql.h
-c000000004F13085800000000000083EB
-t1326647384
-s33771
-i<standards.h>
-i<sys/types.h>
-i<winsock2.h>
-i"mysql_version.h"
-i"mysql_com.h"
-i"mysql_time.h"
-i"my_list.h"
-i"typelib.h"
-i"my_alloc.h"
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/mysql_com.h
-c000000004F130858000000000000503F
-t1326647384
-s20543
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/mysql_time.h
-c000000004F1308580000000000000831
-t1326647384
-s2097
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/mysql_version.h
-c000000004F130858000000000000032B
-t1326647384
-s811
-i<custom_conf.h>
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/include/typelib.h
-c000000004F13085800000000000005DD
-t1326647384
-s1501
-i"my_alloc.h"
-
-N/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/lib/libmysqlclient.a
-c000000004F13085B0000000000445164
-t1326647387
-s4477284
-
-N/Users/rowan/code/SPMySQLFramework/SPMySQL Private APIs.h
-c000000004F3FDF050000000000000EFA
-t1329585925
-s3834
-i"Ping & KeepAlive.h"
-i"Locking.h"
-i"Conversion.h"
-
-N/Users/rowan/code/SPMySQLFramework/SPMySQL.h
-c000000004F40545B00000000000008AA
-t1329615963
-s2218
-i"SPMySQLConstants.h"
-i"SPMySQLStringAdditions.h"
-i"SPMySQLConnectionDelegate.h"
-i"SPMySQLConnectionProxy.h"
-i"SPMySQLConnection.h"
-i"Delegate & Proxy.h"
-i"Databases & Tables.h"
-i"Max Packet Size.h"
-i"Querying & Preparation.h"
-i"Encoding.h"
-i"Server Info.h"
-i"SPMySQLResult.h"
-i"SPMySQLStreamingResult.h"
-i"SPMySQLFastStreamingResult.h"
-i"Field Definitions.h"
-i"SPMySQLGeometryData.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.h
-c000000004F307BEF00000000000009A8
-t1328577519
-s2472
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m
-c000000004F307BE80000000000000EF3
-t1328577512
-s3827
-i"Conversion.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.h
-c000000004F3800F70000000000000711
-t1329070327
-s1809
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m
-c000000004F3D0465000000000000245E
-t1329398885
-s9310
-i"Databases & Tables.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.h
-c000000004F3452E5000000000000057E
-t1328829157
-s1406
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m
-c000000004F3CFAE100000000000011ED
-t1329396449
-s4589
-i"Delegate & Proxy.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.h
-c000000004F340C6A000000000000079C
-t1328811114
-s1948
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m
-c000000004F330C610000000000003AAA
-t1328745569
-s15018
-i"Encoding.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.h
-c000000004F307BFB00000000000005E6
-t1328577531
-s1510
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m
-c000000004F3CFAF70000000000000E61
-t1329396471
-s3681
-i"Locking.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.h
-c000000004F398B4100000000000005F3
-t1329171265
-s1523
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m
-c000000004F3CFAF30000000000001A0E
-t1329396467
-s6670
-i"Max Packet Size.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.h
-c000000004F3172E100000000000007C2
-t1328640737
-s1986
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m
-c000000004F4184B40000000000001D1F
-t1329693876
-s7455
-i"Ping & KeepAlive.h"
-i"Locking.h"
-i<pthread.h>
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.h
-c000000004F40542D0000000000001194
-t1329615917
-s4500
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m
-c000000004F405438000000000000554B
-t1329615928
-s21835
-i"SPMySQLConnection.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.h
-c000000004F3848660000000000000761
-t1329088614
-s1889
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m
-c000000004F3CFAEF0000000000001614
-t1329396463
-s5652
-i"Server Info.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.h
-c000000004F3D27C200000000000014E2
-t1329407938
-s5346
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-c000000004F4184A80000000000006ED3
-t1329693864
-s28371
-i"SPMySQL Private APIs.h"
-i<mach/mach_time.h>
-i<pthread.h>
-i<SystemConfiguration/SCNetworkReachability.h>
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionDelegate.h
-c000000004F36BCAB0000000000001041
-t1328987307
-s4161
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionProxy.h
-c000000004F327BDC0000000000000884
-t1328708572
-s2180
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConstants.h
-c000000004F39B228000000000000092D
-t1329181224
-s2349
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.h
-c000000004F417F8900000000000006A2
-t1329692553
-s1698
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-c000000004F41837B00000000000034CA
-t1329693563
-s13514
-i"SPMySQLFastStreamingResult.h"
-i"SPMySQL Private APIs.h"
-i<pthread.h>
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch
-c000000004F307C5D00000000000000E7
-t1328577629
-s231
-i<Cocoa/Cocoa.h>
-i"mysql.h"
-i"SPMySQL.h"
-i"SPMySQLUtilities.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.h
-c000000004F32785D00000000000006DB
-t1328707677
-s1755
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-c000000004F3D044500000000000069C8
-t1329398853
-s27080
-i"SPMySQLGeometryData.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.h
-c000000004F307BB8000000000000059A
-t1328577464
-s1434
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m
-c000000004F307BB10000000000004B47
-t1328577457
-s19271
-i"Field Definitions.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.h
-c000000004F415CF40000000000001137
-t1329683700
-s4407
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-c000000004F415CEF0000000000003B6C
-t1329683695
-s15212
-i"SPMySQLResult.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.h
-c000000004F401EC60000000000000796
-t1329602246
-s1942
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-c000000004F415D940000000000001E81
-t1329683860
-s7809
-i"SPMySQLStreamingResult.h"
-i"SPMySQL Private APIs.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.h
-c000000004F32FAD700000000000005CE
-t1328741079
-s1486
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-c000000004F32FB4B0000000000000823
-t1328741195
-s2083
-i"SPMySQLStringAdditions.h"
-
-N/Users/rowan/code/SPMySQLFramework/Source/SPMySQLUtilities.h
-c000000004F307D2800000000000006F7
-t1328577832
-s1783
-i<mach/mach_time.h>
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework
-t1329693917
-s204
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework.dSYM
-t2
-s0
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers
-t3
-s24
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources
-t3
-s26
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL
-t3
-s24
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Databases & Tables.h
-t1329398513
-s1809
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Delegate & Proxy.h
-t1329398513
-s1406
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Encoding.h
-t1329398513
-s1948
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Field Definitions.h
-t1329398513
-s1434
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Max Packet Size.h
-t1329398513
-s1523
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Querying & Preparation.h
-t1329685305
-s4500
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQL.h
-t1329685305
-s2218
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnection.h
-t1329613179
-s5346
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionDelegate.h
-t1329398513
-s4161
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionProxy.h
-t1329398513
-s2180
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConstants.h
-t1329398513
-s2349
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLFastStreamingResult.h
-t1329693268
-s1698
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLGeometryData.h
-t1329398513
-s1755
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLResult.h
-t1329685305
-s4407
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLStreamingResult.h
-t1329613179
-s1942
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers/Server Info.h
-t1329398513
-s1889
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/English.lproj/InfoPlist.strings
-t1329398513
-s92
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/Info.plist
-t1329398513
-s1144
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL
-t1329693917
-s2249976
-
-N/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current
-t3
-s1
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Conversion.o
-t1329693271
-s19480
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Databases & Tables.o
-t1329693271
-s26136
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Delegate & Proxy.o
-t1329693271
-s20004
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Encoding.o
-t1329693270
-s34248
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Field Definitions.o
-t1329693271
-s37748
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Locking.o
-t1329693271
-s17924
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Max Packet Size.o
-t1329693271
-s23584
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Ping & KeepAlive.o
-t1329693917
-s24244
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Querying & Preparation.o
-t1329693271
-s47608
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL
-t1329693917
-s1033464
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL.LinkFileList
-c000000004F40497B0000000000000873
-t1329613179
-s2163
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLConnection.o
-t1329693917
-s69624
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLFastStreamingResult.o
-t1329693917
-s33152
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLGeometryData.o
-t1329693271
-s39272
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLResult.o
-t1329693271
-s37432
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStreamingResult.o
-t1329693271
-s27688
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStringAdditions.o
-t1329693271
-s4668
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Server Info.o
-t1329693270
-s23220
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Conversion.o
-t1329693270
-s22616
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Databases & Tables.o
-t1329693270
-s33948
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Delegate & Proxy.o
-t1329693270
-s24696
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Encoding.o
-t1329693270
-s41604
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Field Definitions.o
-t1329693270
-s53824
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Locking.o
-t1329693270
-s20496
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Max Packet Size.o
-t1329693270
-s30528
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Ping & KeepAlive.o
-t1329693917
-s29960
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Querying & Preparation.o
-t1329693270
-s64748
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL
-t1329693917
-s1209176
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL.LinkFileList
-c000000004F40497B0000000000000893
-t1329613179
-s2195
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLConnection.o
-t1329693917
-s112588
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLFastStreamingResult.o
-t1329693917
-s43620
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLGeometryData.o
-t1329693270
-s56344
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLResult.o
-t1329693270
-s53480
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStreamingResult.o
-t1329693270
-s35972
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStringAdditions.o
-t1329693270
-s6260
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Server Info.o
-t1329693269
-s29120
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Conversion.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Databases & Tables.plist
-t1329693928
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Delegate & Proxy.plist
-t1329693928
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Encoding.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Field Definitions.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Locking.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Max Packet Size.plist
-t1329693928
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Ping & KeepAlive.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Querying & Preparation.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLConnection.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLFastStreamingResult.plist
-t1329693928
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLGeometryData.plist
-t1329693939
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLResult.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLStreamingResult.plist
-t1329693928
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLStringAdditions.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Server Info.plist
-t1329693927
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Conversion.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Databases & Tables.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Delegate & Proxy.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Encoding.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Field Definitions.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Locking.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Max Packet Size.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Ping & KeepAlive.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Querying & Preparation.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLConnection.plist
-t1329693925
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLFastStreamingResult.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLGeometryData.plist
-t1329693939
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLResult.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLStreamingResult.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/SPMySQLStringAdditions.plist
-t1329693926
-s276
-
-N/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/x86_64/Server Info.plist
-t1329693925
-s276
-
-N/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-akcogxxzhrvecheeycvxvgronzwm/SPMySQLFramework_Prefix.pch.pth
-t1329399806
-s10910168
-
-N/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch.pth
-t1329693269
-s9978580
-
-N/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch.pth
-t1329693269
-s10915724
-
-N/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-ewvxuxqrezwtesexznalgcozpcmh/SPMySQLFramework_Prefix.pch.pth
-t1329399805
-s9973036
-
-NResources/Info.plist
-c000000004F0A20EC0000000000000357
-t1326063852
-s855
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m"
-s351386726.931095
-e351386727.138087
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m
-lSLF07#2@91"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m351386726#351386727#0(0"0(0#0#83"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m4456279696#1836"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Conversion.plist0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m"
-s351386728.125354
-e351386728.328516
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m
-lSLF07#2@99"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m351386728#351386728#0(0"0(0#0#91"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m4456279696#1854"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Databases & Tables.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m"
-s351386728.009400
-e351386728.206574
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m
-lSLF07#2@97"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m351386728#351386728#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m4456279696#1850"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Delegate & Proxy.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m"
-s351386726.732878
-e351386726.930918
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m
-lSLF07#2@89"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m351386726#351386726#0(0"0(0#0#81"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m4456279696#1832"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Encoding.plist0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m"
-s351386727.098607
-e351386727.324678
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m
-lSLF07#2@88"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m351386727#351386727#0(0"0(0#0#80"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m4456279696#1830"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Locking.plist0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m"
-s351386727.826828
-e351386728.009261
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m
-lSLF07#2@96"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m351386727#351386728#0(0"0(0#0#88"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m4456279696#1848"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Max Packet Size.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m"
-s351386726.677071
-e351386726.890868
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m
-lSLF07#2@97"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m351386726#351386726#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m4456279696#1850"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Ping & KeepAlive.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m"
-s351386727.095184
-e351386727.316856
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m
-lSLF07#2@103"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m351386727#351386727#0(0"0(0#0#95"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m4456279696#1862"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Querying & Preparation.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m"
-s351386726.891006
-e351386727.095043
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m
-lSLF07#2@92"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m351386726#351386727#0(0"0(0#0#84"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m4456279696#1840"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Server Info.plist"0#
-
-CAnalyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m"
-s351386727.441710
-e351386727.644236
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m
-lSLF07#2@94"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m351386727#351386727#0(0"0(0#0#86"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m4456279696#1848"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/Field Definitions.plist"0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-s351386726.540458
-e351386727.098463
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-lSLF07#2@69"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m351386726#351386727#0(0"0(0#0#61"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m4456279696#1819"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLConnection.plist0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-s351386727.325094
-e351386728.125033
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-lSLF07#2@78"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m351386727#351386728#0(0"0(0#0#70"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m4456279696#1837"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLFastStreamingResult.plist0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-s351386727.317021
-e351386739.899284
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-lSLF07#2@71"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m351386727#351386739#0(0"0(0#0#63"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m4456279696#1823"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLGeometryData.plist0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-s351386727.138427
-e351386727.441566
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-lSLF07#2@65"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m351386727#351386727#0(0"0(0#0#57"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m4456279696#1811"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLResult.plist0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-s351386728.206708
-e351386728.399588
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-lSLF07#2@74"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m351386728#351386728#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m4456279696#1829"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLStreamingResult.plist0#
-
-CAnalyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-s351386727.644367
-e351386727.826673
-r1
-xAnalyze
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-lSLF07#2@74"Analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m351386727#351386727#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m4456279696#1829"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch --analyze /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/StaticAnalyzer/normal/i386/SPMySQLStringAdditions.plist0#
-
-CCheck dependencies
-r0
-lSLF07#2@18"Check dependencies351386724#351386725#0(0"0(0#1#0"4456281408#0"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Databases & Tables.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.565348
-e351386071.886597
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Databases & Tables.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@99"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m351386071#351386071#0(0"0(0#0#91"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m4551671440#1836"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Databases & Tables.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Delegate & Proxy.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.478164
-e351386071.590044
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Delegate & Proxy.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@97"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m351386071#351386071#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m4551671440#1832"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Delegate & Proxy.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Field Definitions.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.379642
-e351386071.590384
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Field Definitions.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@94"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m351386071#351386071#0(0"0(0#0#86"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m4551671440#1830"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Field Definitions.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Max Packet Size.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.461965
-e351386071.565181
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Max Packet Size.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@96"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m351386071#351386071#0(0"0(0#0#88"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m4551671440#1830"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Max Packet Size.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Ping & KeepAlive.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.310522
-e351386717.459785
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Ping & KeepAlive.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@97"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m351386717#351386717#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m4554342032#1832"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Ping & KeepAlive.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Querying & Preparation.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.984552
-e351386071.267628
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Querying & Preparation.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@103"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m351386070#351386071#0(0"0(0#0#95"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m4551671440#1844"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Querying & Preparation.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Server Info.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.872194
-e351386070.984379
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Server Info.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@92"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m351386070#351386070#0(0"0(0#0#84"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m4551671440#1822"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Server Info.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Databases & Tables.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.555052
-e351386070.698435
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Databases & Tables.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@99"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m351386070#351386070#0(0"0(0#0#91"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m4551671440#1842"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Databases & Tables.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Delegate & Proxy.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.506238
-e351386070.611349
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Delegate & Proxy.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@97"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m351386070#351386070#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m4551671440#1838"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Delegate & Proxy.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Field Definitions.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.319561
-e351386070.557323
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Field Definitions.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@94"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m351386070#351386070#0(0"0(0#0#86"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m4551671440#1836"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Field Definitions.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Max Packet Size.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.435380
-e351386070.554868
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Max Packet Size.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@96"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m351386070#351386070#0(0"0(0#0#88"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m4551671440#1836"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Max Packet Size.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Ping & KeepAlive.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.012572
-e351386717.310364
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Ping & KeepAlive.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@97"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m351386717#351386717#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m4554342032#1838"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Ping & KeepAlive.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Ping & KeepAlive.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Querying & Preparation.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386069.976557
-e351386070.262717
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Querying & Preparation.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@103"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m351386069#351386070#0(0"0(0#0#95"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m4551671440#1850"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Querying & Preparation.o"0#
-
-CCompileC "build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Server Info.o" "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386069.859589
-e351386069.966150
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Server Info.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@92"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m351386069#351386069#0(0"0(0#0#84"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m4551671440#1828"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.m" -o "/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Server Info.o"0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Conversion.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.923556
-e351386071.031146
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Conversion.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@91"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m351386070#351386071#0(0"0(0#0#83"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m4551671440#1818"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Conversion.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Encoding.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.698596
-e351386070.902717
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Encoding.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@89"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m351386070#351386070#0(0"0(0#0#81"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m4551671440#1814"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Encoding.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Locking.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.031939
-e351386071.108496
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Locking.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@88"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m351386071#351386071#0(0"0(0#0#80"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m4551671440#1812"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/Locking.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLConnection.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.018001
-e351386717.514378
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLConnection.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@69"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m351386717#351386717#0(0"0(0#0#61"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m4554342032#1801"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLConnection.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLFastStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.361867
-e351386717.525838
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLFastStreamingResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@78"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m351386717#351386717#0(0"0(0#0#70"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m4554342032#1819"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLFastStreamingResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLGeometryData.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.205736
-e351386071.887209
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLGeometryData.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@71"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m351386071#351386071#0(0"0(0#0#63"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m4551671440#1805"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLGeometryData.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.108629
-e351386071.423703
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@65"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m351386071#351386071#0(0"0(0#0#57"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m4551671440#1793"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.590640
-e351386071.886979
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStreamingResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@74"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m351386071#351386071#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m4551671440#1811"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStreamingResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStringAdditions.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386071.423866
-e351386071.477982
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStringAdditions.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@74"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m351386071#351386071#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m4551671440#1811"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQLStringAdditions.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Conversion.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386069.966522
-e351386070.087669
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Conversion.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@91"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m351386069#351386070#0(0"0(0#0#83"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m4551671440#1824"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Conversion.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Conversion.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Encoding.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386069.858167
-e351386070.028025
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Encoding.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@89"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m351386069#351386070#0(0"0(0#0#81"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m4551671440#1820"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Encoding.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Locking.o "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.031108
-e351386070.115713
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Locking.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@88"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m351386070#351386070#0(0"0(0#0#80"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m4551671440#1818"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Locking.m" -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/Locking.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLConnection.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.010711
-e351386717.532164
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLConnection.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@69"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m351386717#351386717#0(0"0(0#0#61"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m4554342032#1807"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLConnection.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLFastStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386717.015019
-e351386717.356926
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLFastStreamingResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@78"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m351386717#351386717#0(0"0(0#0#70"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m4554342032#1825"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLFastStreamingResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLGeometryData.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.115858
-e351386070.798434
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLGeometryData.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@71"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m351386070#351386070#0(0"0(0#0#63"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m4551671440#1811"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLGeometryData.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.088098
-e351386070.319385
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@65"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m351386070#351386070#0(0"0(0#0#57"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m4551671440#1799"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStreamingResult.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.557464
-e351386070.688127
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStreamingResult.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@74"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m351386070#351386070#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m4551671440#1817"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStreamingResult.o0#
-
-CCompileC build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStringAdditions.o /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386070.378888
-e351386070.435210
-r1
-xCompileC
-xbuild/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStringAdditions.o
-x/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@74"Compile /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m351386070#351386070#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m4551671440#1817"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -include /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStringAdditions.m -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQLStringAdditions.o0#
-
-CCopyStringsFile /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/English.lproj/InfoPlist.strings English.lproj/InfoPlist.strings
-s351091313.342511
-e351091313.395429
-r1
-xCopyStringsFile
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/English.lproj/InfoPlist.strings
-xEnglish.lproj/InfoPlist.strings
-lSLF07#2@36"Copy English.lproj/InfoPlist.strings351091313#351091313#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/English.lproj/InfoPlist.strings4566089360#367"    cd /Users/rowan/code/SPMySQLFramework    setenv ICONV /usr/bin/iconv    /Developer/Library/Xcode/Plug-ins/CoreBuildTasks.xcplugin/Contents/Resources/copystrings --validate --inputencoding utf-8 --outputencoding UTF-16 English.lproj/InfoPlist.strings --outdir /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/English.lproj0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Databases & Tables.h" "Source/SPMySQLConnection Categories/Databases & Tables.h"
-s351091313.320298
-e351091313.333153
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Databases & Tables.h
-xSource/SPMySQLConnection Categories/Databases & Tables.h
-lSLF07#2@61"Copy Source/SPMySQLConnection Categories/Databases & Tables.h351091313#351091313#0(0"0(0#0#91"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.h4566089360#405"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Databases & Tables.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Delegate & Proxy.h" "Source/SPMySQLConnection Categories/Delegate & Proxy.h"
-s351091313.319420
-e351091313.342371
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Delegate & Proxy.h
-xSource/SPMySQLConnection Categories/Delegate & Proxy.h
-lSLF07#2@59"Copy Source/SPMySQLConnection Categories/Delegate & Proxy.h351091313#351091313#0(0"0(0#0#89"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.h4566089360#403"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Delegate & Proxy.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Field Definitions.h" "Source/SPMySQLResult Categories/Field Definitions.h"
-s351091313.310565
-e351091313.325376
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Field Definitions.h
-xSource/SPMySQLResult Categories/Field Definitions.h
-lSLF07#2@56"Copy Source/SPMySQLResult Categories/Field Definitions.h351091313#351091313#0(0"0(0#0#86"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.h4566089360#400"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult Categories/Field Definitions.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Max Packet Size.h" "Source/SPMySQLConnection Categories/Max Packet Size.h"
-s351091313.318441
-e351091313.333420
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Max Packet Size.h
-xSource/SPMySQLConnection Categories/Max Packet Size.h
-lSLF07#2@58"Copy Source/SPMySQLConnection Categories/Max Packet Size.h351091313#351091313#0(0"0(0#0#88"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.h4566089360#402"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Max Packet Size.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Querying & Preparation.h" "Source/SPMySQLConnection Categories/Querying & Preparation.h"
-s351378105.959192
-e351378105.972769
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Querying & Preparation.h
-xSource/SPMySQLConnection Categories/Querying & Preparation.h
-lSLF07#2@65"Copy Source/SPMySQLConnection Categories/Querying & Preparation.h351378105#351378105#0(0"0(0#0#95"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.h4544564880#409"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Querying & Preparation.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader "build/Release/SPMySQL.framework/Versions/A/Headers/Server Info.h" "Source/SPMySQLConnection Categories/Server Info.h"
-s351091313.289711
-e351091313.310342
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Server Info.h
-xSource/SPMySQLConnection Categories/Server Info.h
-lSLF07#2@54"Copy Source/SPMySQLConnection Categories/Server Info.h351091313#351091313#0(0"0(0#0#84"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.h4566089360#398"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Server Info.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/Encoding.h "Source/SPMySQLConnection Categories/Encoding.h"
-s351091313.288896
-e351091313.317405
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/Encoding.h
-xSource/SPMySQLConnection Categories/Encoding.h
-lSLF07#2@51"Copy Source/SPMySQLConnection Categories/Encoding.h351091313#351091313#0(0"0(0#0#81"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.h4566089360#395"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks "/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection Categories/Encoding.h" /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQL.h SPMySQL.h
-s351378105.960224
-e351378105.973137
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQL.h
-xSPMySQL.h
-lSLF07#2@14"Copy SPMySQL.h351378105#351378105#0(0"0(0#0#44"/Users/rowan/code/SPMySQLFramework/SPMySQL.h4544564880#356"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/SPMySQL.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnection.h Source/SPMySQLConnection.h
-s351305979.657134
-e351305979.678654
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnection.h
-xSource/SPMySQLConnection.h
-lSLF07#2@31"Copy Source/SPMySQLConnection.h351305979#351305979#0(0"0(0#0#61"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.h4456279696#373"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnection.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionDelegate.h Source/SPMySQLConnectionDelegate.h
-s351091313.291285
-e351091313.321567
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionDelegate.h
-xSource/SPMySQLConnectionDelegate.h
-lSLF07#2@39"Copy Source/SPMySQLConnectionDelegate.h351091313#351091313#0(0"0(0#0#69"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionDelegate.h4566089360#381"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionDelegate.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionProxy.h Source/SPMySQLConnectionProxy.h
-s351091313.313233
-e351091313.331649
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConnectionProxy.h
-xSource/SPMySQLConnectionProxy.h
-lSLF07#2@36"Copy Source/SPMySQLConnectionProxy.h351091313#351091313#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionProxy.h4566089360#378"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConnectionProxy.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConstants.h Source/SPMySQLConstants.h
-s351091313.287583
-e351091313.316981
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLConstants.h
-xSource/SPMySQLConstants.h
-lSLF07#2@30"Copy Source/SPMySQLConstants.h351091313#351091313#0(0"0(0#0#60"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLConstants.h4566089360#372"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLConstants.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLFastStreamingResult.h Source/SPMySQLFastStreamingResult.h
-s351386068.547227
-e351386068.558500
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLFastStreamingResult.h
-xSource/SPMySQLFastStreamingResult.h
-lSLF07#2@40"Copy Source/SPMySQLFastStreamingResult.h351386068#351386068#0(0"0(0#0#70"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.h4551671440#382"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFastStreamingResult.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLGeometryData.h Source/SPMySQLGeometryData.h
-s351091313.292835
-e351091313.321741
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLGeometryData.h
-xSource/SPMySQLGeometryData.h
-lSLF07#2@33"Copy Source/SPMySQLGeometryData.h351091313#351091313#0(0"0(0#0#63"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.h4566089360#375"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLGeometryData.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLResult.h Source/SPMySQLResult.h
-s351378105.961194
-e351378105.973440
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLResult.h
-xSource/SPMySQLResult.h
-lSLF07#2@27"Copy Source/SPMySQLResult.h351378105#351378105#0(0"0(0#0#57"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.h4544564880#369"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLResult.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCpHeader build/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLStreamingResult.h Source/SPMySQLStreamingResult.h
-s351305979.661983
-e351305979.680356
-r1
-xCpHeader
-xbuild/Release/SPMySQL.framework/Versions/A/Headers/SPMySQLStreamingResult.h
-xSource/SPMySQLStreamingResult.h
-lSLF07#2@36"Copy Source/SPMySQLStreamingResult.h351305979#351305979#0(0"0(0#0#66"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.h4456279696#378"    cd /Users/rowan/code/SPMySQLFramework    /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Resources/pbxcp -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -strip-debug-symbols -resolve-src-symlinks /Users/rowan/code/SPMySQLFramework/Source/SPMySQLStreamingResult.h /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Headers0#
-
-CCreateUniversalBinary /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL normal "x86_64 i386"
-s351386717.931058
-e351386717.962365
-r1
-xCreateUniversalBinary
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL
-xnormal
-xx86_64 i386
-lSLF07#2@93"CreateUniversalBinary build/Release/SPMySQL.framework/Versions/A/SPMySQL normal "x86_64 i386"351386717#351386717#0(0"0(0#0#46"/Users/rowan/code/SPMySQLFramework/x86_64 i3864554342032#412"    cd /Users/rowan/code/SPMySQLFramework    /usr/bin/lipo -create /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL -output /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL0#
-
-CGenerateDSYMFile /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework.dSYM /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/SPMySQL
-r0
-
-CLd /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL normal i386
-s351386717.526013
-e351386717.881233
-r1
-xLd
-x/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL
-xnormal
-xi386
-lSLF07#2@128"Link /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL351386717#351386717#0(0"0(0#0#0"4554342032#863"    cd /Users/rowan/code/SPMySQLFramework    setenv MACOSX_DEPLOYMENT_TARGET 10.5    /Developer/usr/bin/clang -arch i386 -dynamiclib -isysroot /Developer/SDKs/MacOSX10.5.sdk -L/Users/rowan/code/SPMySQLFramework/build/Release "-L/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/lib" -F/Users/rowan/code/SPMySQLFramework/build/Release -filelist /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL.LinkFileList -install_name @executable_path/../Frameworks/SPMySQL.framework/Versions/A/SPMySQL -mmacosx-version-min=10.5 -dead_strip -framework Cocoa -lmysqlclient -lz -framework SystemConfiguration -single_module -compatibility_version 1 -current_version 1 -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/i386/SPMySQL0#
-
-CLd /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL normal x86_64
-s351386717.532291
-e351386717.930955
-r1
-xLd
-x/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL
-xnormal
-xx86_64
-lSLF07#2@130"Link /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL351386717#351386717#0(0"0(0#0#0"4554342032#869"    cd /Users/rowan/code/SPMySQLFramework    setenv MACOSX_DEPLOYMENT_TARGET 10.5    /Developer/usr/bin/clang -arch x86_64 -dynamiclib -isysroot /Developer/SDKs/MacOSX10.5.sdk -L/Users/rowan/code/SPMySQLFramework/build/Release "-L/Users/rowan/code/SPMySQLFramework/MySQL Client Libraries/lib" -F/Users/rowan/code/SPMySQLFramework/build/Release -filelist /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL.LinkFileList -install_name @executable_path/../Frameworks/SPMySQL.framework/Versions/A/SPMySQL -mmacosx-version-min=10.5 -dead_strip -framework Cocoa -lmysqlclient -lz -framework SystemConfiguration -single_module -compatibility_version 1 -current_version 1 -o /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/Objects-normal/x86_64/SPMySQL0#
-
-CProcessInfoPlistFile /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/Info.plist Resources/Info.plist
-s351091313.283593
-e351091313.286836
-r1
-xProcessInfoPlistFile
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/Info.plist
-xResources/Info.plist
-lSLF07#2@28"Process Resources/Info.plist351091313#351091313#0(0"0(0#0#55"/Users/rowan/code/SPMySQLFramework/Resources/Info.plist4566089472#232"    cd /Users/rowan/code/SPMySQLFramework    builtin-infoPlistUtility Resources/Info.plist -expandbuildsettings -platform macosx -o /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/A/Resources/Info.plist0#
-
-CProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-akcogxxzhrvecheeycvxvgronzwm/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351092604.819745
-e351092606.154963
-r1
-xProcessPCH
-x/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-akcogxxzhrvecheeycvxvgronzwm/SPMySQLFramework_Prefix.pch.pth
-xSource/SPMySQLFramework_Prefix.pch
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-oclang: warning: argument unused during compilation: '-flto'
-lSLF07#2@45"Precompile Source/SPMySQLFramework_Prefix.pch351092604#351092606#0(60"clang: warning: argument unused during compilation: '-flto'0(0#0#69"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch4634766992#1681"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c-header -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -flto -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch -o /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-akcogxxzhrvecheeycvxvgronzwm/SPMySQLFramework_Prefix.pch.pth0#
-
-CProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386068.558766
-e351386069.716248
-r1
-xProcessPCH
-x/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch.pth
-xSource/SPMySQLFramework_Prefix.pch
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@45"Precompile Source/SPMySQLFramework_Prefix.pch351386068#351386069#0(0"0(0#0#69"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch4551671440#1679"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c-header -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch -o /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-auxswahqcpdpplbhprktpczirxee/SPMySQLFramework_Prefix.pch.pth0#
-
-CProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351386068.559718
-e351386069.854468
-r1
-xProcessPCH
-x/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch.pth
-xSource/SPMySQLFramework_Prefix.pch
-xnormal
-xi386
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-lSLF07#2@45"Precompile Source/SPMySQLFramework_Prefix.pch351386068#351386069#0(0"0(0#0#69"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch4551671440#1675"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c-header -arch i386 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/i386 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch -o /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-cofotckhtpskmbbitaunrurqfhjt/SPMySQLFramework_Prefix.pch.pth0#
-
-CProcessPCH /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-ewvxuxqrezwtesexznalgcozpcmh/SPMySQLFramework_Prefix.pch.pth Source/SPMySQLFramework_Prefix.pch normal x86_64 objective-c com.apple.compilers.llvm.clang.1_0.compiler
-s351092604.818783
-e351092605.903013
-r1
-xProcessPCH
-x/var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-ewvxuxqrezwtesexznalgcozpcmh/SPMySQLFramework_Prefix.pch.pth
-xSource/SPMySQLFramework_Prefix.pch
-xnormal
-xx86_64
-xobjective-c
-xcom.apple.compilers.llvm.clang.1_0.compiler
-oclang: warning: argument unused during compilation: '-flto'
-lSLF07#2@45"Precompile Source/SPMySQLFramework_Prefix.pch351092604#351092605#0(60"clang: warning: argument unused during compilation: '-flto'0(0#0#69"/Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch4634766992#1685"    cd /Users/rowan/code/SPMySQLFramework    setenv LANG en_US.US-ASCII    /Developer/usr/bin/clang -x objective-c-header -arch x86_64 -fmessage-length=0 -pipe -fdiagnostics-print-source-range-info -std=gnu99 -Wno-trigraphs -fpascal-strings -Os -flto -Wmissing-field-initializers -Wmissing-prototypes -Wreturn-type -Wmissing-braces -Wparentheses -Wswitch -Wunused-variable -Wuninitialized -Wshadow -Wsign-compare -Wconversion -Wshorten-64-to-32 -Wstrict-selector-match -isysroot /Developer/SDKs/MacOSX10.5.sdk -fasm-blocks -mmacosx-version-min=10.5 -gdwarf-2 -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-generated-files.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-own-target-headers.hmap -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-all-target-headers.hmap -iquote /Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/SPMySQL-project-headers.hmap -F/Users/rowan/code/SPMySQLFramework/build/Release -I/Users/rowan/code/SPMySQLFramework/build/Release/include -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources/x86_64 -I/Users/rowan/code/SPMySQLFramework/build/SPMySQLFramework.build/Release/SPMySQL.framework.build/DerivedSources -c /Users/rowan/code/SPMySQLFramework/Source/SPMySQLFramework_Prefix.pch -o /var/folders/2z/qvbjmrlm8xjfgn006s69xpm80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/SPMySQLFramework_Prefix-ewvxuxqrezwtesexznalgcozpcmh/SPMySQLFramework_Prefix.pch.pth0#
-
-CSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers Versions/Current/Headers
-s351091313.281056
-e351091313.283506
-r1
-xSymLink
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers
-xVersions/Current/Headers
-lSLF07#2@82"Process /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers351091313#351091313#0(0"0(0#0#0"4566089360#158"    cd /Users/rowan/code/SPMySQLFramework    /bin/ln -sf Versions/Current/Headers /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Headers0#
-
-CSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources Versions/Current/Resources
-s351091313.276568
-e351091313.280820
-r1
-xSymLink
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources
-xVersions/Current/Resources
-lSLF07#2@84"Process /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources351091313#351091313#0(0"0(0#0#0"4566089360#162"    cd /Users/rowan/code/SPMySQLFramework    /bin/ln -sf Versions/Current/Resources /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Resources0#
-
-CSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL Versions/Current/SPMySQL
-s351091313.277533
-e351091313.281810
-r1
-xSymLink
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL
-xVersions/Current/SPMySQL
-lSLF07#2@82"Process /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL351091313#351091313#0(0"0(0#0#0"4566089360#158"    cd /Users/rowan/code/SPMySQLFramework    /bin/ln -sf Versions/Current/SPMySQL /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/SPMySQL0#
-
-CSymLink /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current A
-s351091313.274448
-e351091313.280642
-r1
-xSymLink
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current
-xA
-lSLF07#2@91"Process /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current351091313#351091313#0(0"0(0#0#0"4566089360#144"    cd /Users/rowan/code/SPMySQLFramework    /bin/ln -sf A /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework/Versions/Current0#
-
-CTouch /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework
-s351386717.962479
-e351386717.967053
-r1
-xTouch
-x/Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework
-lSLF07#2@72"Touch /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework351386717#351386717#0(0"0(0#0#0"4554342032#131"    cd /Users/rowan/code/SPMySQLFramework    /usr/bin/touch -c /Users/rowan/code/SPMySQLFramework/build/Release/SPMySQL.framework0#
-
