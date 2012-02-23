@@ -61,7 +61,7 @@
 	NSSize cellSize = [super cellSize];
 
 	cellSize.width = [[self attributedStringValue] size].width + (([self image] != nil) ? [[self image] size].width : 0) + 25;
-	cellSize.height = [[self attributedStringValue] size].height + 14.0;
+	cellSize.height = [[self attributedStringValue] size].height + 14.0f;
 
 	return cellSize;
 }

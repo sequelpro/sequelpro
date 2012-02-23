@@ -586,8 +586,8 @@ enum {
 
 	// Draw the background flipped, which is actually the right way up
 	NSAffineTransform *transform = [NSAffineTransform transform];
-	[transform translateXBy:0.0 yBy:[[[self window] contentView] frame].size.height];
-	[transform scaleXBy:1.0 yBy:-1.0];
+	[transform translateXBy:0.0f yBy:[[[self window] contentView] frame].size.height];
+	[transform scaleXBy:1.0f yBy:-1.0f];
 	[transform concat];
 	[(id <PSMTabStyle>)[[aTabView delegate] style] drawBackgroundInRect:tabFrame];
 	[viewImage unlockFocus];

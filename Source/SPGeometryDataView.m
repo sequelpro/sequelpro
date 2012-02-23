@@ -43,7 +43,7 @@
  */
 - (id)initWithCoordinates:(NSDictionary*)coord
 {
-	return [self initWithCoordinates:coord targetDimension:400.0];
+	return [self initWithCoordinates:coord targetDimension:400.0f];
 }
 
 /**
@@ -56,7 +56,7 @@
 - (id)initWithCoordinates:(NSDictionary*)coord targetDimension:(CGFloat)targetDimension
 {
 
-	margin_offset = 10.0;
+	margin_offset = 10.0f;
 	type = [coord objectForKey:@"type"];
 	coordinates = [coord objectForKey:@"coordinates"];
 
@@ -72,7 +72,7 @@
 	if(maxDim != 0)
 		zoom_factor = targetDimension/maxDim;
 	else
-		zoom_factor = 1.0;
+		zoom_factor = 1.0f;
 
 	width*=zoom_factor;
 	height*=zoom_factor;
@@ -85,14 +85,14 @@
 
 	lineColor         = [NSColor blackColor];
 	borderLineColor   = [NSColor grayColor];
-	backgroundColor   = [NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.96];
+	backgroundColor   = [NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:0.96f];
 	pointFillColor    = [NSColor redColor];
 	pointStrokeColor  = [NSColor grayColor];
-	polygonFillColor1 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:0.0 alpha:0.1];
-	polygonFillColor2 = [NSColor colorWithCalibratedRed:0.0 green:1.0 blue:1.0 alpha:0.1];
-	polygonFillColor3 = [NSColor colorWithCalibratedRed:1.0 green:0.0 blue:0.0 alpha:0.1];
+	polygonFillColor1 = [NSColor colorWithCalibratedRed:0.0f green:1.0f blue:0.0f alpha:0.1f];
+	polygonFillColor2 = [NSColor colorWithCalibratedRed:0.0f green:1.0f blue:1.0f alpha:0.1f];
+	polygonFillColor3 = [NSColor colorWithCalibratedRed:1.0f green:0.0f blue:0.0f alpha:0.1f];
 
-	lineWidth = 1.0;
+	lineWidth = 1.0f;
 
 	return self;
 }
@@ -109,7 +109,7 @@
 
 	// Draw a rect as border
 	path = [NSBezierPath bezierPathWithRect:[self bounds]];
-	[path setLineWidth:0.1];
+	[path setLineWidth:0.1f];
 	[backgroundColor set];
 	[path fill];
 	[borderLineColor set];

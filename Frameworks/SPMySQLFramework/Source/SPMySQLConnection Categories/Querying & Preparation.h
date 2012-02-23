@@ -45,6 +45,10 @@
 - (id)streamingQueryString:(NSString *)theQueryString useLowMemoryBlockingStreaming:(BOOL)fullStreaming;
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType;
 
+// Query convenience functions
+- (NSArray *)getAllRowsFromQuery:(NSString *)theQueryString;
+- (id)getFirstFieldFromQuery:(NSString *)theQueryString;
+
 // Query information
 - (unsigned long long)rowsAffectedByLastQuery;
 - (unsigned long long)lastInsertID;

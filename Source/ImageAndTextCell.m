@@ -53,7 +53,7 @@
 		imageFrame.size = [image size];
 		imageFrame.origin = cellFrame.origin;
 		imageFrame.origin.x += ((1 - MIN(1,INDENT_AMOUNT)) * 3) + (INDENT_AMOUNT * _indentationLevel);
-		imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2);
+		imageFrame.origin.y += ceilf((cellFrame.size.height - imageFrame.size.height) / 2);
 		return imageFrame;
 	}
 	else
@@ -115,9 +115,9 @@
 		imageFrame.size = imageSize;
 
 		if ([view isFlipped])
-			imageFrame.origin.y += ceil((cellFrame.size.height + imageFrame.size.height) / 2);
+			imageFrame.origin.y += ceilf((cellFrame.size.height + imageFrame.size.height) / 2);
 		else
-			imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2);
+			imageFrame.origin.y += ceilf((cellFrame.size.height - imageFrame.size.height) / 2);
 
 		imageFrame.origin.y -= 1;
 
@@ -154,9 +154,9 @@
 		imageFrame.size = imageSize;
 
 		if ([controlView isFlipped])
-			imageFrame.origin.y += ceil((cellFrame.size.height + imageFrame.size.height) / 2);
+			imageFrame.origin.y += ceilf((cellFrame.size.height + imageFrame.size.height) / 2);
 		else
-			imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2);
+			imageFrame.origin.y += ceilf((cellFrame.size.height - imageFrame.size.height) / 2);
 
 		[image compositeToPoint:imageFrame.origin operation:NSCompositeSourceOver];
 	}

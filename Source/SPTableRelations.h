@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPTableView;
+@class SPTableView, SPMySQLConnection;
 
 @interface SPTableRelations : NSObject 
 {	
@@ -53,7 +51,7 @@
 	IBOutlet NSProgressIndicator *dataProgressIndicator;
 	IBOutlet NSTextField *progressStatusTextField;
 		
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 
 	NSUserDefaults *prefs;
 	NSMutableArray *relationData;
@@ -61,7 +59,7 @@
 }
 
 @property (readonly) NSMutableArray *relationData;
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 // IB action methods
 - (IBAction)addRelation:(id)sender;

@@ -316,12 +316,12 @@
 
 	if(caretPos.y >= 0 && caretPos.y < [self frame].size.height)
 	{
-		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5f);
 		isAbove = YES;
 	}
 	if(caretPos.y < 0 && (mainScreen.size.height-[self frame].size.height) < (caretPos.y*-1))
 	{
-		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5f);
 		isAbove = YES;
 	}
 
@@ -334,7 +334,7 @@
 	[self setLevel:NSNormalWindowLevel];
 	[self setHidesOnDeactivate:YES];
 	[self setHasShadow:YES];
-	[self setAlphaValue:0.9];
+	[self setAlphaValue:0.9f];
 
 	NSScrollView* scrollView = [[[NSScrollView alloc] initWithFrame:NSZeroRect] autorelease];
 	[scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -720,10 +720,10 @@
 	if(caretPos.y >= 0 && (isAbove || caretPos.y < newHeight))
 	{
 		isAbove = YES;
-		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5f);
 	}
 	if(caretPos.y < 0 && (isAbove || ([self rectOfMainScreen].size.height-newHeight) < (caretPos.y*-1)))
-		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5f);
 
 	// newHeight is currently the new height for theTableView, but we need to resize the whole window
 	// so here we use the difference in height to find the new height for the window
@@ -972,7 +972,7 @@
 
 		// Restore the text selection location, and clearly mark the autosuggested text
 		[theView setSelectedRange:NSMakeRange(currentSelectionPosition, 0)];
-		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3], NSMakeRange(currentSelectionPosition, [toInsert length]));
+		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3f], NSMakeRange(currentSelectionPosition, [toInsert length]));
 		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], kSPAutoCompletePlaceholderName, kSPAutoCompletePlaceholderVal, NSMakeRange(currentSelectionPosition, [toInsert length]));
 
 		[self checkSpaceForAllowedCharacter];

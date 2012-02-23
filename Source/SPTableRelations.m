@@ -30,6 +30,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#import "SPMySQL.h"
 
 static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
@@ -177,12 +178,12 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 	if ([connection queryErrored]) {
 
 		// Retrieve the last connection error message.
-		NSString *errorText = [connection getLastErrorMessage];
+		NSString *errorText = [connection lastErrorMessage];
 
 		// An error ID of 1005 indicates a foreign key error.  These are thrown for many reasons, but the two
 		// most common are 121 (name probably in use) and 150 (types don't exactly match).
 		// Retrieve the InnoDB status and extract the most recent error for more helpful text.
-		if ([connection getLastErrorID] == 1005) {
+		if ([connection lastErrorID] == 1005) {
 			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
 			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
 			if (detailErrorString) {
@@ -249,13 +250,10 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 
 	// Get all InnoDB tables in the current database
 	// TODO: MySQL 4 compatibility
-	MCPResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-
-	[result dataSeek:0];
-
-	for (NSUInteger i = 0; i < [result numOfRows]; i++)
-	{
-		[refTablePopUpButton addItemWithTitle:[[result fetchRowAsArray] objectAtIndex:0]];
+	SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
+	[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
+	for (NSArray *eachRow in result) {
+		[refTablePopUpButton addItemWithTitle:[eachRow objectAtIndex:0]];
 	}
 
 	// Reset other fields
@@ -505,7 +503,7 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"), 
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection getLastErrorMessage]]);
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection lastErrorMessage]]);
 
 					// Abort loop
 					break;

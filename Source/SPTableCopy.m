@@ -24,6 +24,7 @@
 
 #import "SPDBActionCommons.h"
 #import "SPTableCopy.h"
+#import "SPMySQL.h"
 
 @implementation SPTableCopy
 
@@ -31,10 +32,10 @@
 {
 	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@", [sourceDB backtickQuotedString], [tableName backtickQuotedString]];
 	
-	MCPResult *theResult = [connection queryString:showCreateTableStatment];
+	SPMySQLResult *theResult = [connection queryString:showCreateTableStatment];
 	
-	if ([theResult numOfRows] != 0) {
-		return [[theResult fetchRowAsArray] objectAtIndex:1];
+	if ([theResult numberOfRows] != 0) {
+		return [[theResult getRowAsArray] objectAtIndex:1];
 	}
 	
 	return @"";

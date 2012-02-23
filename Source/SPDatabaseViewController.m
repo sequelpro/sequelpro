@@ -32,6 +32,7 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
+#import "SPMySQL.h"
 #ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
 #endif

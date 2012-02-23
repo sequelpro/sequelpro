@@ -57,6 +57,7 @@
 #import "SPMySQLStreamingResult.h"
 #import "SPMySQLFastStreamingResult.h"
 #import "Field Definitions.h"
+#import "Convenience Methods.h"
 
 // Result data objects
 #import "SPMySQLGeometryData.h"

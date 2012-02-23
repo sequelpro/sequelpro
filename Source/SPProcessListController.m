@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
+#import "SPMySQL.h"
 
 static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 
@@ -97,7 +98,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 		// Also, if available restore the table's column widths
 		NSNumber *columnWidth = [[prefs objectForKey:SPProcessListTableColumnWidths] objectForKey:[[column headerCell] stringValue]];
 				
-		if (columnWidth) [column setWidth:[columnWidth doubleValue]];
+		if (columnWidth) [column setWidth:[columnWidth floatValue]];
 	}
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
@@ -284,7 +285,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Toggles the display of the process ID table column.
  */
-- (IBAction)toggleShowProcessID:(id)sender
+- (IBAction)toggleShowProcessID:(NSMenuItem *)sender
 {
 	[[processListTableView tableColumnWithIdentifier:SPTableViewIDColumnIdentifier] setHidden:([sender state])];
 }
@@ -292,7 +293,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Toggles the display of the FULL process list.
  */
-- (IBAction)toggeleShowFullProcessList:(id)sender
+- (IBAction)toggeleShowFullProcessList:(NSMenuItem *)sender
 {
 	showFullProcessList = (!showFullProcessList);
 
@@ -302,7 +303,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Toggles whether or not auto refresh is enabled.
  */
-- (IBAction)toggleProcessListAutoRefresh:(id)sender
+- (IBAction)toggleProcessListAutoRefresh:(NSButton *)sender
 {
 	BOOL enable = [sender state];
 	
@@ -687,18 +688,16 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Get processes
 	if ([connection isConnected]) {
 		
-		MCPResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
+		SPMySQLResult *processList = (showFullProcessList) ? [connection queryString:@"SHOW FULL PROCESSLIST"] : [connection listProcesses];
 		
 		[processList setReturnDataAsStrings:YES];
-		
-		if ([processList numOfRows]) [processList dataSeek:0];
-		
+
 		[processes removeAllObjects];
 		
-		for (i = 0; i < [processList numOfRows]; i++) 
+		for (i = 0; i < [processList numberOfRows]; i++) 
 		{
-			//MCPKit currently returns numbers as NSString, which will break sorting of numbers in this case.
-			NSMutableDictionary *rowsFixed = [[processList fetchRowAsDictionary] mutableCopy];
+			//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
+			NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
 			
 			id idColumn = [rowsFixed objectForKey:@"Id"];
 			//Id is a signed int(11) - this is a signed 32 bit int value
@@ -739,7 +738,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -757,7 +756,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list

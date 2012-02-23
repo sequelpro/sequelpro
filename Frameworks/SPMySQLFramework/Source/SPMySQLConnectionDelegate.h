@@ -30,6 +30,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPMySQLConstants.h"
+
 @protocol SPMySQLConnectionDelegate <NSObject>
 @optional
 

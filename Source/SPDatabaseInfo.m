@@ -24,6 +24,7 @@
 
 #import "SPDBActionCommons.h"
 #import "SPDatabaseInfo.h"
+#import "SPMySQL.h"
 
 @implementation SPDatabaseInfo
 
@@ -36,40 +37,12 @@
 
 - (NSArray *)listDBs 
 {
-	return [self listDBsLike:nil];
+	return [connection databases];
 }
 
 - (NSArray *)listDBsLike:(NSString *)dbsName
 {
-	NSString *listDBStatement = nil;
-	
-	if ((dbsName == nil) || ([dbsName isEqualToString:@""])) {
-		listDBStatement = [NSString stringWithFormat:@"SHOW DATABASES"];
-	}
-	else {
-		listDBStatement = [NSString stringWithFormat:@"SHOW DATABASES LIKE %@", [dbsName backtickQuotedString]];
-	}
-	
-	MCPResult *theResult = [connection queryString:listDBStatement];
-		
-	if ([connection queryErrored]) return NO;
-	
-	NSMutableArray *names = [NSMutableArray array];
-	NSMutableString *name;
-	
-	if ([theResult numOfRows] > 1) {
-		
-		NSUInteger i;
-		
-		for (i = 0 ; i < [theResult numOfRows]; i++) 
-		{
-			name = [[theResult fetchRowAsArray] objectAtIndex:0];
-			
-			[names addObject:name];
-		}		
-	}
-	
-	return names;    
+	return [connection databasesLike:dbsName];
 }
 
 @end

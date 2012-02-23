@@ -22,9 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPServerSupport, BWAnchoredButtonBar;
+@class SPServerSupport, SPMySQLConnection, BWAnchoredButtonBar;
 
 @interface SPUserManager : NSWindowController
 {	
@@ -35,7 +33,7 @@
 	
 	BOOL isInitializing;
 	
-	MCPConnection *mySqlConnection;
+	SPMySQLConnection *mySqlConnection;
 	SPServerSupport *serverSupport;
 	
 	IBOutlet NSOutlineView *outlineView;
@@ -75,7 +73,7 @@
 	NSMutableString *errorsString;
 }
 
-@property (nonatomic, retain) MCPConnection *mySqlConnection;
+@property (nonatomic, retain) SPMySQLConnection *mySqlConnection;
 @property (nonatomic, retain) SPServerSupport *serverSupport;
 @property (nonatomic, retain) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;

@@ -29,6 +29,7 @@
 #import "SPExportFile.h"
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
+#import "SPMySQL.h"
 
 typedef enum
 {

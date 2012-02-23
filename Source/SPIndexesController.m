@@ -28,7 +28,7 @@
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
-#import <MCPKit/MCPKit.h>
+#import "SPMySQL.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableView.h"
@@ -862,9 +862,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[tempIndexedColumns release];
 
 		// Check for errors, but only if the query wasn't cancelled
-		if ([connection queryErrored] && ![connection queryCancelled]) {
+		if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection lastErrorMessage]]);
 		}
 		else {
 			[tableData resetAllData];
@@ -918,11 +918,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [table backtickQuotedString], [constraintName backtickQuotedString]]];
 
 		// Check for errors, but only if the query wasn't cancelled
-		if ([connection queryErrored] && ![connection queryCancelled]) {
+		if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 
 			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [connection getLastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), constraintName, [connection lastErrorMessage]] forKey:@"message"];
 
 			[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 		}
@@ -937,11 +937,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	}
 
 	// Check for errors, but only if the query wasn't cancelled
-	if ([connection queryErrored] && ![connection queryCancelled]) {
+	if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 
 		[errorDictionary setObject:NSLocalizedString(@"Unable to delete index", @"error deleting index message") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection getLastErrorMessage]] forKey:@"message"];
+		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to delete the index.\n\nMySQL said: %@", @"error deleting index informative message"), [connection lastErrorMessage]] forKey:@"message"];
 
 		[(SPTableStructure*)[tableStructure onMainThread] showErrorSheetWith:errorDictionary];
 	}

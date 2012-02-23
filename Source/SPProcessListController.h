@@ -23,11 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPMySQLConnection;
 
 @interface SPProcessListController : NSWindowController 
 {
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 	BOOL showFullProcessList, processListThreadRunning;
 	
@@ -49,7 +49,7 @@
 	IBOutlet NSMenuItem          *autoRefreshIntervalMenuItem;
 }
 
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 - (IBAction)copy:(id)sender;
 - (IBAction)closeSheet:(id)sender;
@@ -57,9 +57,9 @@
 - (IBAction)saveServerProcesses:(id)sender;
 - (IBAction)killProcessQuery:(id)sender;
 - (IBAction)killProcessConnection:(id)sender;
-- (IBAction)toggleShowProcessID:(id)sender;
-- (IBAction)toggeleShowFullProcessList:(id)sender;
-- (IBAction)toggleProcessListAutoRefresh:(id)sender;
+- (IBAction)toggleShowProcessID:(NSMenuItem *)sender;
+- (IBAction)toggeleShowFullProcessList:(NSMenuItem *)sender;
+- (IBAction)toggleProcessListAutoRefresh:(NSButton *)sender;
 - (IBAction)setAutoRefreshInterval:(id)sender;
 - (IBAction)setCustomAutoRefreshInterval:(id)sender;
 

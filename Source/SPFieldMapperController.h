@@ -22,14 +22,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPTextView, SPTableView, SPTablesList, SPMySQLConnection;
 
-@class SPTextView, SPTableView, SPTablesList;
-
-#ifndef SP_REFACTOR
 @interface SPFieldMapperController : NSWindowController
-#else
-@interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate>
+#ifdef SP_REFACTOR
+<NSTokenFieldCellDelegate>
 #endif
 {
 	IBOutlet SPTableView *fieldMapperTableView;
@@ -41,8 +38,8 @@
 	IBOutlet id rowUpButton;
 	IBOutlet id rowDownButton;
 	IBOutlet id recordCountLabel;
-	IBOutlet id importFieldNamesHeaderSwitch;
-	IBOutlet id addRemainingDataSwitch;
+	IBOutlet NSButton *importFieldNamesHeaderSwitch;
+	IBOutlet NSButton *addRemainingDataSwitch;
 	IBOutlet id importButton;
 	IBOutlet id advancedBox;
 	IBOutlet NSPopUpButton *alignByPopup;
@@ -65,20 +62,20 @@
 	IBOutlet NSButton *addGlobalValueButton;
 	IBOutlet NSButton *removeGlobalValueButton;
 	IBOutlet NSButton *insertNULLValueButton;
-	IBOutlet id replaceAfterSavingCheckBox;
+	IBOutlet NSButton *replaceAfterSavingCheckBox;
 	IBOutlet NSPopUpButton *insertPullDownButton;
 	IBOutlet NSMenu *recentGlobalValueMenu;
 
-	IBOutlet id ignoreCheckBox;
-	IBOutlet id ignoreUpdateCheckBox;
-	IBOutlet id delayedCheckBox;
-	IBOutlet id delayedReplaceCheckBox;
-	IBOutlet id onupdateCheckBox;
-	IBOutlet id lowPriorityCheckBox;
-	IBOutlet id lowPriorityReplaceCheckBox;
-	IBOutlet id lowPriorityUpdateCheckBox;
-	IBOutlet id highPriorityCheckBox;
-	IBOutlet id skipexistingRowsCheckBox;
+	IBOutlet NSButton *ignoreCheckBox;
+	IBOutlet NSButton *ignoreUpdateCheckBox;
+	IBOutlet NSButton *delayedCheckBox;
+	IBOutlet NSButton *delayedReplaceCheckBox;
+	IBOutlet NSButton *onupdateCheckBox;
+	IBOutlet NSButton *lowPriorityCheckBox;
+	IBOutlet NSButton *lowPriorityReplaceCheckBox;
+	IBOutlet NSButton *lowPriorityUpdateCheckBox;
+	IBOutlet NSButton *highPriorityCheckBox;
+	IBOutlet NSButton *skipexistingRowsCheckBox;
 	IBOutlet SPTextView *onupdateTextView;
 	IBOutlet id gobackButton;
 
@@ -131,7 +128,7 @@
 	NSString *primaryKeyField;
 	NSNumber *lastDisabledCSVFieldcolumn;
 
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 
 	NSString *sourcePath;
 
@@ -146,7 +143,7 @@
 
 - (id)initWithDelegate:(id)managerDelegate;
 
-- (void)setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setImportDataArray:(id)theFieldMappingImportArray hasHeader:(BOOL)hasHeader isPreview:(BOOL)isPreview;
 
 // Getter methods

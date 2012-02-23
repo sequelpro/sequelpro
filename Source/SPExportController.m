@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPExportController.h"
 #import "SPExportInitializer.h"
 #import "SPTablesList.h"
@@ -36,6 +34,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPDatabaseDocument.h"
+#import "SPMySQL.h"
 
 // Constants
 static const NSUInteger SPExportUIPadding = 20;
@@ -574,7 +573,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 /**
  * Toggles the export button when choosing to include or table structures in an SQL export.
  */
-- (IBAction)toggleSQLIncludeStructure:(id)sender
+- (IBAction)toggleSQLIncludeStructure:(NSButton *)sender
 {
 	if (![sender state])
 	{
@@ -593,7 +592,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 /**
  * Toggles the export button when choosing to include or exclude table contents in an SQL export.
  */
-- (IBAction)toggleSQLIncludeContent:(id)sender
+- (IBAction)toggleSQLIncludeContent:(NSButton *)sender
 {
 	[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] setHidden:(![sender state])];
 	
@@ -603,7 +602,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 /**
  * Toggles the export button when choosing to include or exclude table drop syntax in an SQL export.
  */
-- (IBAction)toggleSQLIncludeDropSyntax:(id)sender
+- (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender
 {
 	[[exportTableList tableColumnWithIdentifier:SPTableViewDropColumnID] setHidden:(![sender state])];
 	
@@ -613,7 +612,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 /**
  * Toggles whether XML and CSV files should be combined into a single file.
  */
-- (IBAction)toggleNewFilePerTable:(id)sender
+- (IBAction)toggleNewFilePerTable:(NSButton *)sender
 {
 	[self _updateExportFormatInformation];
 }
@@ -795,12 +794,12 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	// to set the export's link case sensitivity setting
 	if (isDot && serverLowerCaseTableNameValue == NSNotFound) {
 		
-		MCPResult *caseResult = [connection queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
+		SPMySQLResult *caseResult = [connection queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
 		
 		[caseResult setReturnDataAsStrings:YES];
 		
-		if ([caseResult numOfRows] == 1) {
-			serverLowerCaseTableNameValue = [[[caseResult fetchRowAsDictionary] objectForKey:@"Value"] integerValue];
+		if ([caseResult numberOfRows] == 1) {
+			serverLowerCaseTableNameValue = [[[caseResult getRowAsDictionary] objectForKey:@"Value"] integerValue];
 		} 
 		else {
 			serverLowerCaseTableNameValue = 0;

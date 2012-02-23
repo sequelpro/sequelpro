@@ -35,6 +35,7 @@
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
+#import "SPMySQLGeometryData.h"
 
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
 
@@ -351,7 +352,7 @@
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
-		} else if ([sheetEditData isKindOfClass:[MCPGeometryData class]]) {
+		} else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
 			image = [v thumbnailImage];
 			stringValue = [[sheetEditData wktString] retain];
@@ -547,7 +548,7 @@
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *fileDefault = @"";
 
-	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[MCPGeometryData class]]) {
+	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 		[panel setAllowedFileTypes:[NSArray arrayWithObject:@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
 	} else {
@@ -716,7 +717,7 @@
 			[sheetEditData writeToURL:fileURL atomically:YES];
 
 		}
-		else if ( [sheetEditData isKindOfClass:[MCPGeometryData class]] ) {
+		else if ( [sheetEditData isKindOfClass:[SPMySQLGeometryData class]] ) {
 
 			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
 

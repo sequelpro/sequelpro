@@ -31,6 +31,7 @@
 
 #import "SPArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPObjectAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPWindowAdditions.h"
 #import "SPDataAdditions.h"

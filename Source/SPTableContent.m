@@ -37,6 +37,7 @@
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
+#import "SPMySQL.h"
 #ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"
 #endif
@@ -53,6 +54,7 @@
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
 #import "SPCustomQuery.h"
+#import <pthread.h>
 
 @interface SPTableContent ()
 
@@ -745,7 +747,7 @@
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
-	MCPStreamingResult *streamingResult;
+	SPMySQLFastStreamingResult *streamingResult;
 	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 
 #ifndef SP_REFACTOR
@@ -817,7 +819,7 @@
 	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
 	// and queue a full table reload.
 	BOOL fullTableReloadRequired = NO;
-	if (streamingResult && [dataColumns count] != [streamingResult numOfFields]) {
+	if (streamingResult && [dataColumns count] != [streamingResult numberOfFields]) {
 		[tableDocumentInstance disableTaskCancellation];
 		[mySQLConnection cancelCurrentQuery];
 		[streamingResult cancelResultLoad];
@@ -831,7 +833,7 @@
 	if (streamingResult) [streamingResult release];
 
 	// If the result is empty, and a late page is selected, reset the page
-	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection queryCancelled]) {
+	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection lastQueryWasCancelled]) {
 		contentPage = 1;
 		previousTableRowsCount = tableRowsCount;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
@@ -843,7 +845,7 @@
 		}
 	}
 
-	if ([mySQLConnection queryCancelled] || [mySQLConnection queryErrored])
+	if ([mySQLConnection lastQueryWasCancelled] || [mySQLConnection queryErrored])
 		isInterruptedLoad = YES;
 	else
 		isInterruptedLoad = NO;
@@ -869,7 +871,7 @@
 
 	// Retrieve and cache the column definitions for editing views
 	if (cqColumnDefinition) [cqColumnDefinition release];
-	cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
+	cqColumnDefinition = [[streamingResult fieldDefinitions] retain];
 
 
 	// Notify listenters that the query has finished
@@ -879,16 +881,16 @@
 	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 #endif
 
-	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
+	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 #ifndef SP_REFACTOR
 		if(activeFilter == 0) {
 #endif
 			if(filterString)
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection lastErrorMessage]]);
 			else
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection lastErrorMessage]]);
 		}
 #ifndef SP_REFACTOR
 		// Filter task came from filter table
@@ -910,9 +912,8 @@
 /**
  * Processes a supplied streaming result set, loading it into the data array.
  */
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
+- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
 {
-	NSArray *tempRow;
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
 	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
@@ -949,13 +950,13 @@
 
 	// Loop through the result rows as they become available
 	tableRowsCount = 0;
-	while ((tempRow = [theResult fetchNextRowAsArray])) {
+	for (NSArray *eachRow in theResult) {
 		pthread_mutex_lock(&tableValuesLock);
 
 		if (tableRowsCount < previousTableRowsCount) {
-			SPDataStorageReplaceRow(tableValues, tableRowsCount, tempRow);
+			SPDataStorageReplaceRow(tableValues, tableRowsCount, eachRow);
 		} else {
-			SPDataStorageAddRow(tableValues, tempRow);
+			SPDataStorageAddRow(tableValues, eachRow);
 		}
 
 		// Alter the values for hidden blob and text fields if appropriate
@@ -1569,7 +1570,7 @@
  * layer depending on the current state.
  */
 #ifndef SP_REFACTOR
-- (IBAction) togglePagination:(id)sender
+- (IBAction) togglePagination:(NSButton *)sender
 {
 	if ([sender state] == NSOnState) [self setPaginationViewVisibility:YES];
 	else [self setPaginationViewVisibility:NO];
@@ -1660,7 +1661,6 @@
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs
 {
 	NSArray *dataRow;
-	NSDictionary *theRow;
 	id field;
 	NSMutableArray *argumentParts = [NSMutableArray array];
 
@@ -1675,17 +1675,14 @@
 	dataRow = [tableValues rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one, using any columns present within it
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
 	NSMutableArray *primaryColumnsInSpecifiedTable = [NSMutableArray array];
-	NSUInteger i;
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		theRow = [theResult fetchRowAsDictionary];
-		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
+	for (NSDictionary *eachRow in theResult) {
+		if ( [[eachRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
 			for (field in columnsInSpecifiedTable) {
-				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
+				if([[field objectForKey:@"org_name"] isEqualToString:[eachRow objectForKey:@"Field"]]) {
 					[primaryColumnsInSpecifiedTable addObject:field];
 				}
 			}
@@ -1698,7 +1695,7 @@
 	// Build up the argument
 	for (field in columnsToQuery) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
-		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
+		if ([aValue isNSNull]) {
 			[argumentParts addObject:[NSString stringWithFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]]];
 		} else {
 			NSString *fieldTypeGrouping = [field objectForKey:@"typegrouping"];
@@ -1718,14 +1715,14 @@
 				[argumentParts addObject:[NSString stringWithFormat:@"%@=b'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]]];
 			}
 			else if ([fieldTypeGrouping isEqualToString:@"geometry"]) {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteData:[aValue data]]]];
 			}
 			// BLOB/TEXT data
 			else if ([aValue isKindOfClass:[NSData class]]) {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteData:aValue]]];
 			}
 			else {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@='%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteString:aValue]]];
 			}
 		}
 	}
@@ -1790,7 +1787,7 @@
 - (IBAction)duplicateRow:(id)sender
 {
 	NSMutableArray *tempRow;
-	MCPResult *queryResult;
+	SPMySQLResult *queryResult;
 	NSDictionary *row;
 	NSArray *dbDataRow = nil;
 	NSUInteger i;
@@ -1819,7 +1816,7 @@
 		
 		// If we have indexes, use argumentForRow
 		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
-		dbDataRow = [queryResult fetchRowAsArray];
+		dbDataRow = [queryResult getRowAsArray];
 	}
 #endif
 
@@ -1827,12 +1824,10 @@
 	queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 	
 	[queryResult setReturnDataAsStrings:YES];
-	
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-	
-	for (i = 0; i < [queryResult numOfRows]; i++) 
+
+	for (i = 0; i < [queryResult numberOfRows]; i++) 
 	{
-		row = [queryResult fetchRowAsDictionary];
+		row = [queryResult getRowAsDictionary];
 		
 		if ([[row objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
 			[tempRow replaceObjectAtIndex:i withObject:[NSNull null]];
@@ -1904,7 +1899,7 @@
 		contextInfo = @"removeallrows";
 
 		// If table has PRIMARY KEY ask for resetting the auto increment after deletion if given
-		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
+		if(![[tableDataInstance statusValueForKey:@"Auto_increment"] isNSNull]) {
 			[alert setShowsSuppressionButton:YES];
 #ifndef SP_REFACTOR
 			[[alert suppressionButton] setState:([prefs boolForKey:SPResetAutoIncrementAfterDeletionOfAllRows]) ? NSOnState : NSOffState];
@@ -1980,7 +1975,7 @@
 				[self performSelector:@selector(showErrorSheetWith:)
 					withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 						[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete rows.\n\nMySQL said: %@", @"message when deleteing all rows failed"),
-						   [mySQLConnection getLastErrorMessage]],
+						   [mySQLConnection lastErrorMessage]],
 						nil]
 					afterDelay:0.3];
 			}
@@ -2029,18 +2024,17 @@
 				primaryKeyFieldNames = [tableDataInstance columnNames];
 
 				NSInteger numberOfRows = 0;
+
 				// Get the number of rows in the table
-				MCPResult *r;
-				r = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
-				if (![mySQLConnection queryErrored]) {
-					NSArray *a = [r fetchRowAsArray];
-					if([a count])
-						numberOfRows = [[a objectAtIndex:0] integerValue];
+				NSString *returnedCount = [mySQLConnection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]];
+				if (returnedCount) {
+					numberOfRows = [returnedCount integerValue];
 				}
+
 				// Check for uniqueness via LIMIT numberOfRows-1,numberOfRows for speed
 				if(numberOfRows > 0) {
 					[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ GROUP BY %@ LIMIT %ld,%ld", [selectedTable backtickQuotedString], [primaryKeyFieldNames componentsJoinedAndBacktickQuoted], (long)(numberOfRows-1), (long)numberOfRows]];
-					if([mySQLConnection affectedRows] == 0)
+					if ([mySQLConnection rowsAffectedByLastQuery] == 0)
 						primaryKeyFieldNames = nil;
 				} else {
 					primaryKeyFieldNames = nil;
@@ -2058,7 +2052,7 @@
 						[mySQLConnection queryString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", [selectedTable backtickQuotedString], wherePart]];
 
 						// Check for errors
-						if ( ![mySQLConnection affectedRows] || [mySQLConnection queryErrored]) {
+						if ( ![mySQLConnection rowsAffectedByLastQuery] || [mySQLConnection queryErrored]) {
 							// If error delete that index from selectedRows for reloading table if
 							// "ReloadAfterRemovingRow" is disbaled
 							if(!reloadAfterRemovingRow)
@@ -2086,9 +2080,9 @@
 					id keyValue = [tableValues cellDataAtRow:anIndex column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(primaryKeyFieldNames,0)] objectForKey:@"datacolumnindex"] integerValue]];
 
 					if([keyValue isKindOfClass:[NSData class]])
-						[deleteQuery appendFormat:@"X'%@'", [mySQLConnection prepareBinaryData:keyValue]];
+						[deleteQuery appendString:[mySQLConnection escapeAndQuoteData:keyValue]];
 					else
-						[deleteQuery appendFormat:@"'%@'", [keyValue description]];
+						[deleteQuery appendString:[mySQLConnection escapeAndQuoteString:[keyValue description]]];
 
 					// Split deletion query into 256k chunks
 					if([deleteQuery length] > 256000) {
@@ -2096,7 +2090,7 @@
 						[mySQLConnection queryString:deleteQuery];
 
 						// Remember affected rows for error checking
-						affectedRows += (NSInteger)[mySQLConnection affectedRows];
+						affectedRows += (NSInteger)[mySQLConnection rowsAffectedByLastQuery];
 
 						// Reinit a new deletion query
 						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ IN (", [selectedTable backtickQuotedString], [NSArrayObjectAtIndex(primaryKeyFieldNames,0) backtickQuotedString]]];
@@ -2115,7 +2109,7 @@
 					[mySQLConnection queryString:deleteQuery];
 
 					// Remember affected rows for error checking
-					affectedRows += (NSInteger)[mySQLConnection affectedRows];
+					affectedRows += (NSInteger)[mySQLConnection rowsAffectedByLastQuery];
 				}
 
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
@@ -2139,7 +2133,7 @@
 						[mySQLConnection queryString:deleteQuery];
 
 						// Remember affected rows for error checking
-						affectedRows += (NSInteger)[mySQLConnection affectedRows];
+						affectedRows += (NSInteger)[mySQLConnection rowsAffectedByLastQuery];
 
 						// Reinit a new deletion query
 						[deleteQuery setString:[NSString stringWithFormat:@"DELETE FROM %@ WHERE ", [selectedTable backtickQuotedString]]];
@@ -2159,7 +2153,7 @@
 					[mySQLConnection queryString:deleteQuery];
 
 					// Remember affected rows for error checking
-					affectedRows += (NSInteger)[mySQLConnection affectedRows];
+					affectedRows += (NSInteger)[mySQLConnection rowsAffectedByLastQuery];
 				}
 
 				errors = (affectedRows > 0) ? [selectedRows count] - affectedRows : [selectedRows count];
@@ -2274,7 +2268,7 @@
 			else if([o isKindOfClass:[NSString class]]) {
 				[tempRow addObject:[o description]];
 			}
-			else if([o isKindOfClass:[MCPGeometryData class]]) {
+			else if([o isKindOfClass:[SPMySQLGeometryData class]]) {
 				SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[o coordinates]];
 				NSImage *image = [v thumbnailImage];
 				NSString *imageStr = @"";
@@ -2370,7 +2364,7 @@
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 
@@ -2697,20 +2691,20 @@
 
 		// Convert geometry values to their string values
 		} else if ([fieldTypeGroup isEqualToString:@"geometry"]) {
-			fieldValue = ([rowObject isKindOfClass:[MCPGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString];
+			fieldValue = ([rowObject isKindOfClass:[SPMySQLGeometryData class]]) ? [[rowObject wktString] getGeomFromTextString] : [(NSString*)rowObject getGeomFromTextString];
 	
 		// Convert the object to a string (here we can add special treatment for date-, number- and data-fields)
 		} else {
 
 			// I believe these class matches are not ever met at present.
 			if ([rowObject isKindOfClass:[NSCalendarDate class]]) {
-				fieldValue = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]];
+				fieldValue = [mySQLConnection escapeAndQuoteString:[rowObject description]];
 			} else if ([rowObject isKindOfClass:[NSNumber class]]) {
 				fieldValue = [rowObject stringValue];
 
 			// Convert data to its hex representation
 			} else if ([rowObject isKindOfClass:[NSData class]]) {
-				fieldValue = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:rowObject]];
+				fieldValue = [mySQLConnection escapeAndQuoteData:rowObject];
 
 			} else {
 				if ([[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"]) {
@@ -2720,7 +2714,7 @@
 				} else if ([fieldTypeGroup isEqualToString:@"date"] && [[rowObject description] isEqualToString:@"NOW()"]) {
 					fieldValue = @"NOW()";
 				} else {
-					fieldValue = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[rowObject description]]];
+					fieldValue = [mySQLConnection escapeAndQuoteString:[rowObject description]];
 				}
 			}
 		}
@@ -2767,7 +2761,7 @@
 #endif
 
 	// If no rows have been changed, show error if appropriate.
-	if ( ![mySQLConnection affectedRows] && ![mySQLConnection queryErrored] ) {
+	if ( ![mySQLConnection rowsAffectedByLastQuery] && ![mySQLConnection queryErrored] ) {
 #ifndef SP_REFACTOR
 		if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 			SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
@@ -2809,7 +2803,7 @@
 				// Set the insertId for fields with auto_increment
 				for ( i = 0; i < [dataColumns count] ; i++ ) {
 					if ([[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"autoincrement"] integerValue]) {
-						[tableValues replaceObjectInRow:currentlyEditingRow column:i withObject:[[NSNumber numberWithUnsignedLongLong:[mySQLConnection insertId]] description]];
+						[tableValues replaceObjectInRow:currentlyEditingRow column:i withObject:[[NSNumber numberWithUnsignedLongLong:[mySQLConnection lastInsertID]] description]];
 					}
 				}
 #ifndef SP_REFACTOR
@@ -2837,7 +2831,7 @@
 	} 
 	else {
 		SPBeginAlertSheet(NSLocalizedString(@"Couldn't write row", @"Couldn't write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection lastErrorMessage]]);
 		return NO;
 	}
 }
@@ -2942,8 +2936,7 @@
  */
 - (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits
 {
-	MCPResult *theResult;
-	NSDictionary *theRow;
+	SPMySQLResult *theResult;
 	id tempValue;
 	NSMutableString *value = [NSMutableString string];
 	NSMutableString *argument = [NSMutableString string];
@@ -2963,11 +2956,9 @@
 		keys = [[NSMutableArray alloc] init];
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
 		[theResult setReturnDataAsStrings:YES];
-		if ([theResult numOfRows]) [theResult dataSeek:0];
-		for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-			theRow = [theResult fetchRowAsDictionary];
-			if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
-				[keys addObject:[theRow objectForKey:@"Field"]];
+		for (NSDictionary *eachRow in theResult) {
+			if ( [[eachRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
+				[keys addObject:[eachRow objectForKey:@"Field"]];
 			}
 		}
 	}
@@ -3015,17 +3006,17 @@
 		else {
 			// If the field is of type BIT then it needs a binary prefix
 			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
-				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection prepareString:tempValue]]];
+				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection escapeString:tempValue includingQuotes:NO]]];
 			}
-			else if ([tempValue isKindOfClass:[MCPGeometryData class]]) {
-				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:[tempValue data]]]];
+			else if ([tempValue isKindOfClass:[SPMySQLGeometryData class]]) {
+				[value setString:[mySQLConnection escapeAndQuoteData:[tempValue data]]];
 			}
 			// BLOB/TEXT data
 			else if ([tempValue isKindOfClass:[NSData class]]) {
-				[value setString:[NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:tempValue]]];
+				[value setString:[mySQLConnection escapeAndQuoteData:tempValue]];
 			}
 			else
-				[value setString:[NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:tempValue]]];
+				[value setString:[mySQLConnection escapeAndQuoteString:tempValue]];
 
 			[argument appendFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value];
 		}
@@ -3120,7 +3111,7 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
 	// Actual check whether field can be identified bijectively
-	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
+	SPMySQLResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
 		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
 		[tableForColumn backtickQuotedString],
 		fieldIDQueryStr]];
@@ -3130,7 +3121,7 @@
 		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 	}
 
-	NSArray *tempRow = [tempResult fetchRowAsArray];
+	NSArray *tempRow = [tempResult getRowAsArray];
 
 	if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] > 1) {
 		// try to identify the cell by using blob data
@@ -3150,7 +3141,7 @@
 			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 		}
 
-		tempRow = [tempResult fetchRowAsArray];
+		tempRow = [tempResult getRowAsArray];
 
 		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
 			[tableDocumentInstance endTask];
@@ -3309,11 +3300,11 @@
 
 		NSString *newObject = nil;
 		if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
-			newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+			newObject = [mySQLConnection escapeAndQuoteString:[anObject description]];
 		} else if ( [anObject isKindOfClass:[NSNumber class]] ) {
 			newObject = [anObject stringValue];
 		} else if ( [anObject isKindOfClass:[NSData class]] ) {
-			newObject = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:anObject]];
+			newObject = [mySQLConnection escapeAndQuoteData:anObject];
 		} else {
 			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 				newObject = @"CURRENT_TIMESTAMP";
@@ -3327,7 +3318,7 @@
 						&& [[anObject description] isEqualToString:@"NOW()"]) {
 				newObject = @"NOW()";
 			} else {
-				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+				newObject = [mySQLConnection escapeAndQuoteString:[anObject description]];
 			}
 		}
 
@@ -3340,7 +3331,7 @@
 		// Check for errors while UPDATE
 		if ([mySQLConnection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection lastErrorMessage]]);
 
 			[tableDocumentInstance endTask];
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -3349,7 +3340,7 @@
 
 
 		// This shouldn't happen – for safety reasons
-		if ( ![mySQLConnection affectedRows] ) {
+		if ( ![mySQLConnection rowsAffectedByLastQuery] ) {
 #ifndef SP_REFACTOR
 			if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 				SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
@@ -3864,7 +3855,7 @@
  */
 - (NSInteger)fetchNumberOfRows
 {
-	return [[[[mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
+	return [[mySQLConnection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] integerValue];
 }
 
 /**
@@ -3951,7 +3942,7 @@
 				return nil;
 			}
 		}
-		else if ([theValue isKindOfClass:[MCPGeometryData class]]) {
+		else if ([theValue isKindOfClass:[SPMySQLGeometryData class]]) {
 			SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[theValue coordinates]];
 			image = [v thumbnailImage];
 			if(image) {
@@ -4035,7 +4026,7 @@
 			theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 		}
 
-		if([theValue isKindOfClass:[MCPGeometryData class]])
+		if([theValue isKindOfClass:[SPMySQLGeometryData class]])
 			return [theValue wktString];
 
 		if ([theValue isNSNull])
@@ -4242,7 +4233,7 @@
 
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection lastErrorMessage]]);
 		[tableDocumentInstance endTask];
 		[sortPool drain];
 		return;
@@ -4403,14 +4394,14 @@
 			// Only get the data for the selected column, not all of them
 			NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[aTableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
 
-			MCPResult *tempResult = [mySQLConnection queryString:query];
-			if (![tempResult numOfRows]) {
+			SPMySQLResult *tempResult = [mySQLConnection queryString:query];
+			if (![tempResult numberOfRows]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
 				return NO;
 			}
 
-			NSArray *tempRow = [tempResult fetchRowAsArray];
+			NSArray *tempRow = [tempResult getRowAsArray];
 			[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:aTableColumn] withObject:[tempRow objectAtIndex:0]];
 			[tableContentView reloadData];
 		}

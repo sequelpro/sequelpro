@@ -33,6 +33,7 @@
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"
 #import "SPServerSupport.h"
+#import "SPMySQL.h"
 
 @interface SPExtendedTableInfo (PrivateAPI)
 
@@ -102,7 +103,8 @@
 	// Alter table's storage type
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ %@ = %@", [selectedTable backtickQuotedString], [[tableDocumentInstance serverSupport] engineTypeQueryName], newType]];
 
-	if ([connection getLastErrorID] == 0) {
+	if (![connection queryErrored]) {
+
 		// Reload the table's data
 		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
 	}
@@ -111,7 +113,7 @@
 
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection lastErrorMessage]]);
 	}
 }
 
@@ -129,7 +131,7 @@
 	// Alter table's character set encoding
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ CHARACTER SET = %@", [selectedTable backtickQuotedString], newEncoding]];
 
-	if ([connection getLastErrorID] == 0) {
+	if (![connection queryErrored]) {
 		// Reload the table's data
 		[self reloadTable:self];
 	}
@@ -138,7 +140,7 @@
 
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table encoding", @"error changing table encoding message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection lastErrorMessage]]);
 	}
 }
 
@@ -156,7 +158,7 @@
 	// Alter table's character set collation
 	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COLLATE = %@", [selectedTable backtickQuotedString], newCollation]];
 
-	if ([connection getLastErrorID] == 0) {
+	if (![connection queryErrored]) {
 		// Reload the table's data
 		[self reloadTable:self];
 	}
@@ -165,7 +167,7 @@
 
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table collation", @"error changing table collation message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection lastErrorMessage]]);
 	}
 }
 
@@ -373,7 +375,7 @@
 	[tableCreateSyntaxTextView setEditable:NO];
 
 	// Validate Reset AUTO_INCREMENT button
-	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isKindOfClass:[NSNull class]]) {
+	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isNSNull]) {
 		[resetAutoIncrementResetButton setHidden:NO];
 	}
 }
@@ -429,7 +431,7 @@
 	NSFont *oldFont = [tableCreateSyntaxTextView font];
 	BOOL editableStatus = [tableCreateSyntaxTextView isEditable];
 	[tableCreateSyntaxTextView setEditable:YES];
-	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0]];
+	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0f]];
 
 	// Convert tableCreateSyntaxTextView to HTML
 	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length])
@@ -468,16 +470,16 @@
 		if (![currentComment isEqualToString:newComment]) {
 
 			// Alter table's comment
-			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COMMENT = '%@'", [selectedTable backtickQuotedString], [connection prepareString:newComment]]];
+			[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ COMMENT = %@", [selectedTable backtickQuotedString], [connection escapeAndQuoteString:newComment]]];
 
-			if ([connection getLastErrorID] == 0) {
+			if (![connection queryErrored]) {
 				// Reload the table's data
 				[self reloadTable:self];
 			}
 			else {
 				SPBeginAlertSheet(NSLocalizedString(@"Error changing table comment", @"error changing table comment message"),
 								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection getLastErrorMessage]]);
+								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection lastErrorMessage]]);
 			}
 		}
 	}
@@ -559,7 +561,7 @@
 {
 	NSString *value = [infoDict objectForKey:key];
 
-	if ([value isKindOfClass:[NSNull class]]) {
+	if ([value isNSNull]) {
 		value = @"";
 	}
 	else {

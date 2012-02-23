@@ -67,9 +67,7 @@ static SPQueryController *sharedQueryController = nil;
 		return [[self sharedQueryController] retain];
 	}
 	
-#ifdef SP_REFACTOR
-	return nil;  // only here to stop clang's 'can reach end of non-void function'
-#endif
+	return nil;
 }
 
 - (id)init

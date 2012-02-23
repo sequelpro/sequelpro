@@ -22,18 +22,18 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPMySQLConnection;
 
 @interface SPDBActionCommons : NSObject 
 {
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	NSWindow *messageWindow;
 }
 
 /**
- * @property connection References the MCPKit connection to MySQL; it has to be set.
+ * @property connection References the SPMySQL.framework MySQL connection; it has to be set.
  */
-@property (retain) MCPConnection *connection;
+@property (retain) SPMySQLConnection *connection;
 
 /**
  * @property messageWindow The NSWindow instance to send message sheets to.

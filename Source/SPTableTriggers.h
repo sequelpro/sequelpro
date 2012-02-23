@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPTableView;
+@class SPTableView, SPMySQLConnection;
 
 @interface SPTableTriggers : NSObject 
 {
@@ -50,7 +48,7 @@
 	IBOutlet NSBox         *addTriggerTableBox;
 	IBOutlet NSButton      *confirmAddTriggerButton;
 	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 	NSMutableArray *triggerData;
 	
@@ -64,7 +62,7 @@
 	NSString *editTriggerActionTime;
 }
 
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 - (void)loadTriggers;
 - (void)resetInterface;

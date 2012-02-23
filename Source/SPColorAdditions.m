@@ -71,19 +71,19 @@
 		unsigned int color = 0;
 		scanner = [NSScanner scannerWithString:code];
 		if( ! [scanner scanHexInt:&color] ) return nil;
-		return [self colorWithCalibratedRed:( ( ( color >> 24 ) & 0xff ) / 255. ) green:( ( ( color >> 16 ) & 0xff ) / 255. ) blue:( ( ( color >> 8) & 0xff ) / 255. ) alpha:( ( color & 0xff ) / 255. )];
+		return [self colorWithCalibratedRed:( ( ( color >> 24 ) & 0xff ) / 255.f ) green:( ( ( color >> 16 ) & 0xff ) / 255.f ) blue:( ( ( color >> 8) & 0xff ) / 255.f ) alpha:( ( color & 0xff ) / 255.f )];
 	}
 	else if( [code length] == 6 ) { // decode colors like #ffee33
 		unsigned int color = 0;
 		scanner = [NSScanner scannerWithString:code];
 		if( ! [scanner scanHexInt:&color] ) return nil;
-		return [self colorWithCalibratedRed:( ( ( color >> 16 ) & 0xff ) / 255. ) green:( ( ( color >> 8 ) & 0xff ) / 255. ) blue:( ( color & 0xff ) / 255. ) alpha:1.];
+		return [self colorWithCalibratedRed:( ( ( color >> 16 ) & 0xff ) / 255.f ) green:( ( ( color >> 8 ) & 0xff ) / 255.f ) blue:( ( color & 0xff ) / 255.f ) alpha:1.f];
 	}
 	else if( [code length] == 3 ) {  // decode short-hand colors like #fe3
 		unsigned int color = 0;
 		scanner = [NSScanner scannerWithString:code];
 		if( ! [scanner scanHexInt:&color] ) return nil;
-		return [self colorWithCalibratedRed:( ( ( ( ( color >> 8 ) & 0xf ) << 4 ) | ( ( color >> 8 ) & 0xf ) ) / 255. ) green:( ( ( ( ( color >> 4 ) & 0xf ) << 4 ) | ( ( color >> 4 ) & 0xf ) ) / 255. ) blue:( ( ( ( color & 0xf ) << 4 ) | ( color & 0xf ) ) / 255. ) alpha:1.];
+		return [self colorWithCalibratedRed:( ( ( ( ( color >> 8 ) & 0xf ) << 4 ) | ( ( color >> 8 ) & 0xf ) ) / 255.f ) green:( ( ( ( ( color >> 4 ) & 0xf ) << 4 ) | ( ( color >> 4 ) & 0xf ) ) / 255.f ) blue:( ( ( ( color & 0xf ) << 4 ) | ( color & 0xf ) ) / 255.f ) alpha:1.f];
 	}
 
 	return nil;

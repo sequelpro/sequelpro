@@ -24,9 +24,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #ifndef SP_REFACTOR
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, BWAnchoredButtonBar, SPTableView;
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, BWAnchoredButtonBar, SPTableView;
 #else
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, MCPConnection, SPTableView;
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, SPTableView;
 #endif
 
 @interface SPIndexesController : NSWindowController 
@@ -77,7 +77,7 @@
 	NSUserDefaults *prefs;
 #endif
 	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 #ifndef SP_REFACTOR /* ivars */
 	BOOL showAdvancedView;
@@ -105,7 +105,7 @@
 /**
  * @property connection The MySQL connection to use
  */
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 - (IBAction)addIndex:(id)sender;
 - (IBAction)removeIndex:(id)sender;

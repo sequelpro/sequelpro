@@ -36,6 +36,7 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"
+#import "SPMySQL.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -227,7 +228,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #endif
 }
 
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
+- (void) setConnection:(SPMySQLConnection *)theConnection withVersion:(NSInteger)majorVersion
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;

@@ -73,6 +73,7 @@ typedef enum {
 // Result set information
 - (NSUInteger)numberOfFields;
 - (unsigned long long)numberOfRows;
+- (double)queryExecutionTime;
 
 // Column information
 - (NSArray *)fieldNames;

@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPTableData, SPDatabaseData, SPTablesList;
+@class SPTableData, SPDatabaseData, SPTablesList, SPMySQLConnection;
 
 @interface SPExtendedTableInfo : NSObject
 {
@@ -57,10 +55,10 @@
 	
 	NSString *selectedTable;
 	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 }
 
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 // IBAction methods
 - (IBAction)reloadTable:(id)sender;

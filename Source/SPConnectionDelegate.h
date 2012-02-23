@@ -25,13 +25,13 @@
 
 #import "SPDatabaseDocument.h"
 
-#import <MCPKit/MCPConnectionDelegate.h>
+#import "SPMySQLConnectionDelegate.h"
 
-@interface SPDatabaseDocument (SPConnectionDelegate) <MCPConnectionDelegate>
+@interface SPDatabaseDocument (SPConnectionDelegate) <SPMySQLConnectionDelegate>
 
 - (void) closeAndDisconnect;
 
-- (NSString *)keychainPasswordForConnection:(MCPConnection *)connection;
-- (NSString *)keychainPasswordForSSHConnection:(MCPConnection *)connection;
+- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection;
+- (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection;
 
 @end

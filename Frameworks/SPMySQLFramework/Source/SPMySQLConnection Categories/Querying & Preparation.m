@@ -357,6 +357,27 @@
 }
 
 #pragma mark -
+#pragma mark Query convenience functions
+
+/**
+ * Run a query and retrieve the entire result set as an array of dictionaries.
+ * Returns nil if there was a problem running the query or retrieving any results.
+ */
+- (NSArray *)getAllRowsFromQuery:(NSString *)theQueryString
+{
+	return [[self queryString:theQueryString] getAllRows];
+}
+
+/**
+ * Run a query and retrieve the first field of any response.  Returns nil if there
+ * was a problem running the query or retrieving any results.
+ */
+- (id)getFirstFieldFromQuery:(NSString *)theQueryString
+{
+	return [[[self queryString:theQueryString] getRowAsArray] objectAtIndex:0];
+}
+
+#pragma mark -
 #pragma mark Query information
 
 /**
