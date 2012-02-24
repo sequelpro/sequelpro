@@ -346,9 +346,10 @@
 		}
 	}
 
-	// Update error string and ID
+	// Update error string and ID, and the rows affected
 	[self _updateLastErrorMessage:theErrorMessage];
 	[self _updateLastErrorID:theErrorID];
+	lastQueryAffectedRowCount = theAffectedRowCount;
 
 	// Store the result time on the response object
 	[theResult _setQueryExecutionTime:queryExecutionTime];

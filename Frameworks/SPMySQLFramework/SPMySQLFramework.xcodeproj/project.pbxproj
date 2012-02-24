@@ -32,6 +32,7 @@
 		586A99FC14F02E21007F82BF /* SPMySQLStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */; };
 		586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */ = {isa = PBXBuildFile; fileRef = 586AA16514F30C5F007F82BF /* Convenience Methods.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		586AA16814F30C5F007F82BF /* Convenience Methods.m in Sources */ = {isa = PBXBuildFile; fileRef = 586AA16614F30C5F007F82BF /* Convenience Methods.m */; };
+		586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */; };
 		5884127714CC63830078027F /* SPMySQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 5884127614CC63830078027F /* SPMySQL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		588412A814CC7A4D0078027F /* Locking.h in Headers */ = {isa = PBXBuildFile; fileRef = 588412A614CC7A4D0078027F /* Locking.h */; };
 		5884133C14CCEC6B0078027F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5884133B14CCEC6B0078027F /* libz.dylib */; };
@@ -96,6 +97,7 @@
 		586AA0E714F1CEC8007F82BF /* Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
 		586AA16514F30C5F007F82BF /* Convenience Methods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Convenience Methods.h"; path = "Source/SPMySQLResult Categories/Convenience Methods.h"; sourceTree = "<group>"; };
 		586AA16614F30C5F007F82BF /* Convenience Methods.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Convenience Methods.m"; path = "Source/SPMySQLResult Categories/Convenience Methods.m"; sourceTree = "<group>"; };
+		586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLArrayAdditions.h; path = Source/SPMySQLArrayAdditions.h; sourceTree = "<group>"; };
 		5884127614CC63830078027F /* SPMySQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQL.h; path = Source/SPMySQL.h; sourceTree = "<group>"; };
 		588412A614CC7A4D0078027F /* Locking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Locking.h; path = "Source/SPMySQLConnection Categories/Locking.h"; sourceTree = "<group>"; };
 		588412A714CC7A4D0078027F /* Locking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Locking.m; path = "Source/SPMySQLConnection Categories/Locking.m"; sourceTree = "<group>"; };
@@ -330,6 +332,7 @@
 			children = (
 				58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */,
 				58C009D414E31D3800AC489A /* SPMySQLStringAdditions.m */,
+				586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -383,6 +386,7 @@
 				58C00CA514E845D800AC489A /* SPMySQL Private APIs.h in Headers */,
 				586A99FB14F02E21007F82BF /* SPMySQLStreamingResult.h in Headers */,
 				586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */,
+				586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -549,7 +553,6 @@
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
@@ -581,7 +584,6 @@
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
@@ -612,7 +614,6 @@
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;

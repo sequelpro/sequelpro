@@ -32,8 +32,10 @@
 
 #import "SPMySQLResult.h"
 #import "SPMySQL Private APIs.h"
+#import "SPMySQLArrayAdditions.h"
 
 static SPMySQLResultFieldProcessor fieldProcessingMap[256];
+static id NSNullPointer;
 
 @implementation SPMySQLResult
 
@@ -51,6 +53,9 @@ static SPMySQLResultFieldProcessor fieldProcessingMap[256];
  */
 + (void)initialize
 {
+
+	// Cached NSNull singleton reference
+	if (!NSNullPointer) NSNullPointer = [NSNull null];
 
 	// Go through the list of enum_field_types in mysql_com.h, mapping each to the method for
 	// processing that result set.
@@ -266,11 +271,11 @@ static SPMySQLResultFieldProcessor fieldProcessingMap[256];
 		id cellData = SPMySQLResultGetObject(self, theRow[i], theRowDataLengths[i], fieldTypes[i], i);
 
 		// If object creation failed, display a null
-		if (!cellData) cellData = [NSNull null];
+		if (!cellData) cellData = NSNullPointer;
 
 		// Add to the result array/dictionary
 		if (theType == SPMySQLResultRowAsArray) {
-			[(NSMutableArray *)theReturnData addObject:cellData];
+			SPMySQLMutableArrayInsertObject(theReturnData, cellData, i);
 		} else {
 			[(NSMutableDictionary *)theReturnData setObject:cellData forKey:fieldNames[i]];
 		}
@@ -389,7 +394,7 @@ static SPMySQLResultFieldProcessor fieldProcessingMap[256];
 {
 
 	// A NULL pointer for the data indicates a null value; return a NSNull object.
-	if (bytes == NULL) return [NSNull null];
+	if (bytes == NULL) return NSNullPointer;
 
 	// Determine the field processor to use
 	SPMySQLResultFieldProcessor dataProcessor = fieldProcessingMap[fieldType];
@@ -445,7 +450,7 @@ static SPMySQLResultFieldProcessor fieldProcessingMap[256];
 
 		// Convert null types to NSNulls
 		case SPMySQLResultFieldAsNull:
-			return [NSNull null];
+			return NSNullPointer;
 
 		case SPMySQLResultFieldAsUnhandled:
 			NSLog(@"SPMySQLResult processing encountered an unknown field type (%d), falling back to NSData handling", fieldType);

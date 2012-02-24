@@ -32,7 +32,10 @@
 
 #import "SPMySQLFastStreamingResult.h"
 #import "SPMySQL Private APIs.h"
+#import "SPMySQLArrayAdditions.h"
 #include <pthread.h>
+
+static id NSNullPointer;
 
 /**
  * This type of streaming result operates in a multithreaded fashion - a worker
@@ -45,7 +48,7 @@
 
 typedef struct st_spmysqlstreamingrowdata {
 	char *data;
-	NSUInteger *dataLengths;
+	unsigned long *dataLengths;
 	struct st_spmysqlstreamingrowdata *nextRow;
 } SPMySQLStreamingRowData;
 
@@ -60,6 +63,16 @@ typedef struct st_spmysqlstreamingrowdata {
 @implementation SPMySQLFastStreamingResult
 
 #pragma mark -
+
+/**
+ * In the one-off class initialisation, cache static variables
+ */
++ (void)initialize
+{
+
+	// Cached NSNull singleton reference
+	if (!NSNullPointer) NSNullPointer = [NSNull null];
+}
 
 /**
  * Standard init method, constructing the SPMySQLStreamingResult around a MySQL
@@ -137,8 +150,18 @@ typedef struct st_spmysqlstreamingrowdata {
 {
 	NSUInteger copiedDataLength = 0;
 	char *theRowData;
-	NSUInteger *fieldLengths;
+	unsigned long *fieldLengths;
 	id theReturnData;
+
+	// If the target type was unspecified, use the instance default
+	if (theType == SPMySQLResultRowAsDefault) theType = defaultRowReturnType;
+
+	// Set up the return data as appropriate
+	if (theType == SPMySQLResultRowAsArray) {
+		theReturnData = [NSMutableArray arrayWithCapacity:numberOfFields];
+	} else {
+		theReturnData = [NSMutableDictionary dictionaryWithCapacity:numberOfFields];
+	}
 
 	// Lock the data mutex for safe access of variables and counters
 	pthread_mutex_lock(&dataLock);
@@ -164,40 +187,32 @@ typedef struct st_spmysqlstreamingrowdata {
 	theRowData = currentDataStoreEntry->data;
 	fieldLengths = currentDataStoreEntry->dataLengths;
 
-	// If the target type was unspecified, use the instance default
-	if (theType == SPMySQLResultRowAsDefault) theType = defaultRowReturnType;
-
-	// Set up the return data as appropriate
-	if (theType == SPMySQLResultRowAsArray) {
-		theReturnData = [NSMutableArray arrayWithCapacity:numberOfFields];
-	} else {
-		theReturnData = [NSMutableDictionary dictionaryWithCapacity:numberOfFields];
-	}
-
 	// Convert each of the cells in the row in turn
+	unsigned long fieldLength;
+	id cellData;
+	char *rawCellData;
 	for (NSUInteger i = 0; i < numberOfFields; i++) {
-		char *rawCellData;
-		NSUInteger fieldLength = fieldLengths[i];
+		fieldLength = fieldLengths[i];
 
 		// If the length of this cell is NSNotFound, it's a null reference
 		if (fieldLength == NSNotFound) {
-			rawCellData = NULL;
+			cellData = nil;
 
 		// Otherwise grab a reference to that data using pointer arithmetic
 		} else {
 			rawCellData = theRowData + copiedDataLength;
 			copiedDataLength += fieldLength;
+
+			// Convert to the correct object type
+			cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, fieldTypes[i], i);
 		}
 
-		// Convert to the correct object type
-		id cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, fieldTypes[i], i);
-
 		// If object creation failed, display a null
-		if (!cellData) cellData = [NSNull null];
+		if (!cellData) cellData = NSNullPointer;
 
 		// Add to the result array/dictionary
 		if (theType == SPMySQLResultRowAsArray) {
-			[(NSMutableArray *)theReturnData addObject:cellData];
+			SPMySQLMutableArrayInsertObject(theReturnData, cellData, i);
 		} else {
 			[(NSMutableDictionary *)theReturnData setObject:cellData forKey:fieldNames[i]];
 		}
@@ -211,6 +226,7 @@ typedef struct st_spmysqlstreamingrowdata {
 
 	// Update the active-data pointer to the next item in the list (which may be NULL)
 	currentDataStoreEntry = currentDataStoreEntry->nextRow;
+	if (!currentDataStoreEntry) lastDataStoreEntry = NULL;
 
 	// Increment the processed counter and row index
 	processedRowCount++;
@@ -221,7 +237,6 @@ typedef struct st_spmysqlstreamingrowdata {
 	pthread_mutex_unlock(&dataLock);
 
 	// Free the memory for the processed row
-	previousDataStoreEntry->nextRow = NULL;
 	free(previousDataStoreEntry->dataLengths);
 	if (previousDataStoreEntry->data != NULL) free(previousDataStoreEntry->data);
 	free(previousDataStoreEntry);
@@ -260,6 +275,7 @@ typedef struct st_spmysqlstreamingrowdata {
 
 		// Update the active-data pointer to the next item in the list (which may be NULL)
 		currentDataStoreEntry = currentDataStoreEntry->nextRow;
+		if (!currentDataStoreEntry) lastDataStoreEntry = NULL;
 
 		processedRowCount++;
 		currentRowIndex++;
@@ -269,7 +285,6 @@ typedef struct st_spmysqlstreamingrowdata {
 		pthread_mutex_unlock(&dataLock);
 
 		// Free the memory for the processed row
-		previousDataStoreEntry->nextRow = NULL;
 		free(previousDataStoreEntry->dataLengths);
 		if (previousDataStoreEntry->data != NULL) free(previousDataStoreEntry->data);
 		free(previousDataStoreEntry);
@@ -287,47 +302,20 @@ typedef struct st_spmysqlstreamingrowdata {
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
 
-	// If all rows have already been processed, return 0 to stop iteration.
-	if (dataDownloaded && processedRowCount == downloadedRowCount) return 0;
+	// To avoid lock issues, return one row at a time.
+	id nextRow = SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 
-	// If the MySQL row pointer does not match the requested state, throw an exception
-	if (state->state != currentRowIndex) {
-		[NSException raise:NSRangeException format:@"SPMySQLFastStreamingResult results can only be accessed linearly"];
-	}
+	// If no row was available, return 0 to stop iteration.
+	if (!nextRow) return 0;
 
-	// Determine how many objects to return.  Default to 128 items, or the number of items requested
-	NSUInteger itemsToReturn = 128;
-	if (len < 128) itemsToReturn = len;
+	// Otherwise, add the item to the buffer and return the appropriate state.
+	stackbuf[0] = nextRow;
 
-	// If there are fewer items available in the downloaded-but-processed queue, limit to that
-	if (downloadedRowCount - processedRowCount < itemsToReturn) {
-		itemsToReturn = downloadedRowCount - processedRowCount;
-	}
-
-	// If no rows are available to be processed, wait for a single item to be readied.
-	if (!itemsToReturn) itemsToReturn = 1;
-
-	// Retrieve rows and add them to the result stack
-	NSUInteger i, itemsRetrieved = 0;
-	id eachRow;
-	for (i = 0; i < itemsToReturn; i++) {
-		eachRow = SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
-
-		// If nil was returned the end of the result resource has been reached
-		if (!eachRow) {
-			if (!itemsRetrieved) return 0;
-			break;
-		}
-
-		stackbuf[i] = eachRow;
-		itemsRetrieved++;
-	}
-
-	state->state += itemsRetrieved;
+	state->state += 1;
 	state->itemsPtr = stackbuf;
 	state->mutationsPtr = (unsigned long *)self;
 
-	return itemsRetrieved;
+	return 1;
 }
 
 @end
@@ -349,7 +337,7 @@ typedef struct st_spmysqlstreamingrowdata {
 	SPMySQLStreamingRowData *newRowStore;
 
 	size_t sizeOfStreamingRowData = sizeof(SPMySQLStreamingRowData);
-	size_t sizeOfDataLengths = (size_t)(sizeof(NSUInteger) * numberOfFields);
+	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * numberOfFields);
 	size_t sizeOfChar = sizeof(char);
 
 	// Loop through the rows until the end of the data is reached - indicated via a NULL

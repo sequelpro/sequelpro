@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  Convenience Methods.h
+//  SPMySQLArrayAdditions.h
 //  SPMySQLFramework
 //
-//  Created by Rowan Beentje (rowan.beent.je) on February 20, 2012
+//  Created by Rowan Beentje (rowan.beent.je) on February 23, 2012
 //  Copyright (c) 2012 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -30,42 +30,21 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "Convenience Methods.h"
-
-@implementation SPMySQLResult (Convenience_Methods)
-
 /**
- * Iterates over the result set, retrieving all the rows, and returns them
- * as an array.
- * The rows are in the default format for this instance, as controlled via
- * -setDefaultRowReturnType:.
- * Returns nil if there are no rows to return.
+ * Set up a static function to allow fast mutable array insertion using
+ * cached selectors.
+ * At least in 10.7, inserting items into an array at a known point
+ * using NSMutableArray methods appears to be the fastest way of adding
+ * items to a CF/NSMutableArray.
  */
-- (NSArray *)getAllRows
+static inline void SPMySQLMutableArrayInsertObject(NSMutableArray *self, id anObject, NSUInteger anIndex)
 {
-	unsigned long long previousSeekPosition = currentRowIndex;
+	typedef id (*SPMySQLMutableArrayInsertObjectPtr)(NSMutableArray*, SEL, id, NSUInteger);
+	static SPMySQLMutableArrayInsertObjectPtr cachedMethodPointer;
+	static SEL cachedSelector;
 
-	NSMutableArray *rowsToReturn;
+	if (!cachedSelector) cachedSelector = @selector(insertObject:atIndex:);
+	if (!cachedMethodPointer) cachedMethodPointer = (SPMySQLMutableArrayInsertObjectPtr)[self methodForSelector:cachedSelector];
 
-	// If the number of rows is known, pre-set the size; otherwise just create an array
-	if (numberOfRows != NSNotFound) {
-		rowsToReturn = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)numberOfRows];
-	} else {
-		rowsToReturn = [[NSMutableArray alloc] init];
-	}
-
-	// Loop through the rows in the instance-specified return format
-	for (id eachRow in self) {
-		[rowsToReturn addObject:eachRow];
-	}
-
-	// Seek to the previous position if appropriate
-	if (previousSeekPosition) [self seekToRow:previousSeekPosition];
-
-	// Instead of empty arrays, return nil if there are no rows.
-	if (![rowsToReturn count]) return nil;
-
-	return rowsToReturn;
+	cachedMethodPointer(self, cachedSelector, anObject, anIndex);
 }
-
-@end
