@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  QKSelectQueryTests.h
+//  QKSelectQueryGroupByTests.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on February 25, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -33,7 +33,7 @@
 #import <QueryKit/QueryKit.h>
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface QKSelectQueryTests : SenTestCase
+@interface QKSelectQueryGroupByTests : SenTestCase 
 {
 	QKQuery *_query;
 }

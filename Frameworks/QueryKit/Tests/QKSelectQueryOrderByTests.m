@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  QKSelectQueryTests.m
+//  QKSelectQueryOrderByTests.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on February 25, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -30,18 +30,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "QKSelectQueryTests.h"
+#import "QKSelectQueryOrderByTests.h"
 
 static NSString *QKTestTableName = @"test_table";
 
 static NSString *QKTestFieldOne   = @"test_field1";
 static NSString *QKTestFieldTwo   = @"test_field2";
-static NSString *QKTestFieldThree = @"test_field3";
-static NSString *QKTestFieldFour  = @"test_field4";
 
-static NSUInteger QKTestParameterOne = 10;
-
-@implementation QKSelectQueryTests
+@implementation QKSelectQueryOrderByTests
 
 #pragma mark -
 #pragma mark Setup & tear down
@@ -52,10 +48,6 @@ static NSUInteger QKTestParameterOne = 10;
 	
 	[_query addField:QKTestFieldOne];
 	[_query addField:QKTestFieldTwo];
-	[_query addField:QKTestFieldThree];
-	[_query addField:QKTestFieldFour];
-	
-	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 }
 
 #pragma mark -
@@ -66,18 +58,22 @@ static NSUInteger QKTestParameterOne = 10;
 	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
 }
 
-- (void)testSelectQueryFieldsAreCorrect
-{
-	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
-				
-	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
+- (void)testSelectQueryOrderByAscendingIsCorrect
+{	
+	[_query orderByField:QKTestFieldOne descending:NO];
+	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ ASC", QKTestFieldOne];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
 }
 
-- (void)testSelectQueryConstraintsAreCorrect
-{
-	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+- (void)testSelectQueryOrderByDescendingIsCorrect
+{	
+	[_query orderByField:QKTestFieldOne descending:YES];
 	
-	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
+	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ DESC", QKTestFieldOne];
+		
+	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
 }
 
 @end

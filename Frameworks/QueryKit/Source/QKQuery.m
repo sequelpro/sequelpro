@@ -378,9 +378,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[orderBy setString:[orderBy substringToIndex:([orderBy length] - 2)]];
 	}
 	
-	if (_orderDescending) {
-		[orderBy appendString:@" DESC"];
-	}
+	[orderBy appendString:_orderDescending ? @" DESC" : @" ASC"];
 	
 	return orderBy;
 }
