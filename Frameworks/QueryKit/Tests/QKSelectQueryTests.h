@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: QKSelectQueryTests.h 3431 2011-09-26 22:26:24Z stuart02 $
 //
 //  QKSelectQueryTests.h
 //  sequel-pro

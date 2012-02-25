@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: QKQueryParameter.m 3432 2011-09-27 00:21:35Z stuart02 $
 //
-//  QKQueryParameter.h
+//  QKQueryParameter.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
@@ -30,41 +30,57 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "QKQueryOperators.h"
+#import "QKQueryParameter.h"
+#import "QKQueryUtilities.h"
 
-/**
- * @class QKQueryParameter QKQueryParameter.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * QueryKit query parameter class. 
- */
-@interface QKQueryParameter : NSObject 
+@implementation QKQueryParameter
+
+@synthesize _field;
+@synthesize _operator;
+@synthesize _value;
+
+#pragma mark -
+#pragma mark Initialisation
+
++ (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
 {
-	NSString *_field;
-	
-	QKQueryOperator _operator;
-	
-	id _value;
+	return [[[QKQueryParameter alloc] initParamWithField:field operator:op value:value] autorelease];
 }
 
-/**
- * @property _field The field component of the parameter.
- */
-@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
+- (id)initParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
+{
+	if ((self = [super init])) {
+		[self setField:field];
+		[self setOperator:op];
+		[self setValue:value];
+	}
+	
+	return self;
+}
 
-/**
- * @property _operator The operator component of the parameter.
- */
-@property (readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
+#pragma mark -
 
-/**
- *@property _value The value component of the parameter.
- */
-@property (readwrite, retain, getter=value, setter=setValue:) id _value;
+- (NSString *)description
+{
+	NSMutableString *string = [NSMutableString string]; 
+		
+	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	[string appendString:field];
+	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
+	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
+	
+	return string;
+}
 
-+ (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
+#pragma mark -
 
-- (id)initParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
+- (void)dealloc
+{
+	if (_field) [_field release], _field = nil;
+	if (_value) [_value release], _value = nil;
+	
+	[super dealloc];
+}
 
 @end

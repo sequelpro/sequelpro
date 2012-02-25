@@ -139,6 +139,7 @@
 		17E090E811498FC9007FC1B4 /* SPPrintController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E090E711498FC9007FC1B4 /* SPPrintController.m */; };
 		17E0937E114AE154007FC1B4 /* SPTableInfoPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */; };
 		17E20E0012D660C3007F75A6 /* OCMock.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 11D44DEF118F5887002AA43C /* OCMock.framework */; };
+		17E5955414F3041C0054EE08 /* QueryKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; };
 		17E641460EF01EB5001BC333 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641440EF01EB5001BC333 /* main.m */; };
 		17E641560EF01EF6001BC333 /* SPCustomQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641490EF01EF6001BC333 /* SPCustomQuery.m */; };
 		17E641570EF01EF6001BC333 /* SPAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E6414B0EF01EF6001BC333 /* SPAppController.m */; };
@@ -179,16 +180,6 @@
 		17F90E2C1210B34900274C98 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17F90E2B1210B34900274C98 /* Credits.rtf */; };
 		17F90E481210B42700274C98 /* SPExportFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E471210B42700274C98 /* SPExportFile.m */; };
 		17F90E4B1210B43A00274C98 /* SPExportFileUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */; };
-		17FC35C01413D13F00AC3602 /* QKQueryOperators.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC358B1413CF7200AC3602 /* QKQueryOperators.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC35C21413D14000AC3602 /* QKQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC358D1413CF7200AC3602 /* QKQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC35C31413D14100AC3602 /* QKQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC358E1413CF7200AC3602 /* QKQuery.m */; };
-		17FC35C91413D14800AC3602 /* QKQueryTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC35941413CF7200AC3602 /* QKQueryTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC35CA1413D14A00AC3602 /* QueryKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC35911413CF7200AC3602 /* QueryKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC360B1413DAED00AC3602 /* QKQueryParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC36091413DAED00AC3602 /* QKQueryParameter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC360C1413DAED00AC3602 /* QKQueryParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC360A1413DAED00AC3602 /* QKQueryParameter.m */; };
-		17FC3626141411B800AC3602 /* QKQueryUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 17FC3624141411B800AC3602 /* QKQueryUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		17FC3627141411B800AC3602 /* QKQueryUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC3625141411B800AC3602 /* QKQueryUtilities.m */; };
-		17FC3634141415F100AC3602 /* QKSelectQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FC3633141415F100AC3602 /* QKSelectQueryTests.m */; };
 		17FDB04C1280778B00DBBBC2 /* SPFontPreviewTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */; };
 		296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC89E0F8FD336002A3258 /* WebKit.framework */; };
 		296DC8B60F909194002A3258 /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8A70F909194002A3258 /* MGTemplateEngine.m */; };
@@ -522,11 +513,25 @@
 			remoteGlobalIDString = 17B7B5611016012700F057DE;
 			remoteInfo = MCPKit;
 		};
-		17FC36351414164000AC3602 /* PBXContainerItemProxy */ = {
+		17E5955214F304000054EE08 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
+			containerPortal = 17E5954E14F304000054EE08 /* QueryKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* QueryKit.framework */;
+			remoteInfo = QueryKit;
+		};
+		17E596A114F307CE0054EE08 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17E5954E14F304000054EE08 /* QueryKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 17E5969E14F307CE0054EE08 /* Tests.octest */;
+			remoteInfo = Tests;
+		};
+		17E5971314F917380054EE08 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 17E5954E14F304000054EE08 /* QueryKit.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 17FC35AB1413CFE700AC3602;
+			remoteGlobalIDString = 8DC2EF4F0486A6940098B216 /* QueryKit */;
 			remoteInfo = QueryKit;
 		};
 		5847571D120A1C6D0057631F /* PBXContainerItemProxy */ = {
@@ -841,6 +846,7 @@
 		17E090E711498FC9007FC1B4 /* SPPrintController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintController.m; sourceTree = "<group>"; };
 		17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = SPTableInfoPrintTemplate.html; path = Templates/SPTableInfoPrintTemplate.html; sourceTree = "<group>"; };
 		17E20E1E12D6645F007F75A6 /* run-tests.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "run-tests.sh"; sourceTree = "<group>"; };
+		17E5954E14F304000054EE08 /* QueryKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = QueryKit.xcodeproj; path = Frameworks/QueryKit/QueryKit.xcodeproj; sourceTree = "<group>"; };
 		17E641440EF01EB5001BC333 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		17E641450EF01EB5001BC333 /* Sequel-Pro.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Sequel-Pro.pch"; sourceTree = "<group>"; };
 		17E641480EF01EF6001BC333 /* SPCustomQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCustomQuery.h; sourceTree = "<group>"; };
@@ -900,19 +906,6 @@
 		17F90E471210B42700274C98 /* SPExportFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFile.m; sourceTree = "<group>"; };
 		17F90E491210B43A00274C98 /* SPExportFileUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFileUtilities.h; sourceTree = "<group>"; };
 		17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFileUtilities.m; sourceTree = "<group>"; };
-		17FC358B1413CF7200AC3602 /* QKQueryOperators.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryOperators.h; sourceTree = "<group>"; };
-		17FC358D1413CF7200AC3602 /* QKQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQuery.h; sourceTree = "<group>"; };
-		17FC358E1413CF7200AC3602 /* QKQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQuery.m; sourceTree = "<group>"; };
-		17FC35911413CF7200AC3602 /* QueryKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QueryKit.h; sourceTree = "<group>"; };
-		17FC35941413CF7200AC3602 /* QKQueryTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryTypes.h; sourceTree = "<group>"; };
-		17FC35A01413CFBC00AC3602 /* QueryKit-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "QueryKit-Info.plist"; path = "Plists/QueryKit-Info.plist"; sourceTree = "<group>"; };
-		17FC35AC1413CFE700AC3602 /* QueryKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QueryKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		17FC36091413DAED00AC3602 /* QKQueryParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryParameter.h; sourceTree = "<group>"; };
-		17FC360A1413DAED00AC3602 /* QKQueryParameter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryParameter.m; sourceTree = "<group>"; };
-		17FC3624141411B800AC3602 /* QKQueryUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryUtilities.h; sourceTree = "<group>"; };
-		17FC3625141411B800AC3602 /* QKQueryUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryUtilities.m; sourceTree = "<group>"; };
-		17FC3632141415F100AC3602 /* QKSelectQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryTests.h; sourceTree = "<group>"; };
-		17FC3633141415F100AC3602 /* QKSelectQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryTests.m; sourceTree = "<group>"; };
 		17FDB04A1280778B00DBBBC2 /* SPFontPreviewTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFontPreviewTextField.h; sourceTree = "<group>"; };
 		17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFontPreviewTextField.m; sourceTree = "<group>"; };
 		296DC89E0F8FD336002A3258 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -1353,13 +1346,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		17FC35AA1413CFE700AC3602 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		584754C0120A04560057631F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1418,6 +1404,7 @@
 				179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */,
 				58C6C71611FBB17200A3F5E9 /* UniversalDetector.framework in Frameworks */,
 				58DC0D5F1293293400B76DA5 /* ShortcutRecorder.framework in Frameworks */,
+				17E5955414F3041C0054EE08 /* QueryKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1726,7 +1713,6 @@
 			children = (
 				17E641F60EF02088001BC333 /* Info.plist */,
 				17DD52C1115074B3007D8950 /* InfoPlist.strings */,
-				17FC35A01413CFBC00AC3602 /* QueryKit-Info.plist */,
 				17DA04EA0FC1A7DA00D66140 /* Unit Tests-Info.plist */,
 				B58731270F838C9E00087794 /* PreferenceDefaults.plist */,
 				17B7B58B1016022C00F057DE /* MCPKit-Info.plist */,
@@ -2088,6 +2074,15 @@
 			name = "Outline Views";
 			sourceTree = "<group>";
 		};
+		17E5954F14F304000054EE08 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				17E5955314F304000054EE08 /* QueryKit.framework */,
+				17E596A214F307CE0054EE08 /* Tests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		17E641420EF01E8A001BC333 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -2383,45 +2378,10 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
-		17FC358A1413CF7200AC3602 /* QueryKit */ = {
-			isa = PBXGroup;
-			children = (
-				17FC35911413CF7200AC3602 /* QueryKit.h */,
-				17FC358D1413CF7200AC3602 /* QKQuery.h */,
-				17FC358E1413CF7200AC3602 /* QKQuery.m */,
-				17FC3624141411B800AC3602 /* QKQueryUtilities.h */,
-				17FC3625141411B800AC3602 /* QKQueryUtilities.m */,
-				17FC36091413DAED00AC3602 /* QKQueryParameter.h */,
-				17FC360A1413DAED00AC3602 /* QKQueryParameter.m */,
-				17FC35D31413D3BC00AC3602 /* Constants */,
-			);
-			name = QueryKit;
-			path = Frameworks/QueryKit;
-			sourceTree = "<group>";
-		};
-		17FC35D31413D3BC00AC3602 /* Constants */ = {
-			isa = PBXGroup;
-			children = (
-				17FC35941413CF7200AC3602 /* QKQueryTypes.h */,
-				17FC358B1413CF7200AC3602 /* QKQueryOperators.h */,
-			);
-			name = Constants;
-			sourceTree = "<group>";
-		};
-		17FC362C141415C200AC3602 /* QueryKit */ = {
-			isa = PBXGroup;
-			children = (
-				17FC3632141415F100AC3602 /* QKSelectQueryTests.h */,
-				17FC3633141415F100AC3602 /* QKSelectQueryTests.m */,
-			);
-			name = QueryKit;
-			sourceTree = "<group>";
-		};
 		17FC366814141A4B00AC3602 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				17DC885B126B36CF00E9AAEC /* MCPKit */,
-				17FC362C141415C200AC3602 /* QueryKit */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2429,9 +2389,9 @@
 		17FC36AE141425D600AC3602 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				17E5954E14F304000054EE08 /* QueryKit.xcodeproj */,
 				17B7B5551016002900F057DE /* MCPKit */,
 				58B906F811BD9B34000826E5 /* PSMTabBar */,
-				17FC358A1413CF7200AC3602 /* QueryKit */,
 			);
 			name = Frameworks;
 			path = ..;
@@ -2456,7 +2416,6 @@
 				58B906E611BD989A000826E5 /* PSMTabBar.framework */,
 				58B9096111C3A42B000826E5 /* xibLocalizationPostprocessor */,
 				584754C2120A04560057631F /* Sequel Pro.qlgenerator */,
-				17FC35AC1413CFE700AC3602 /* QueryKit.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2790,19 +2749,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		17FC35A71413CFE700AC3602 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				17FC35C01413D13F00AC3602 /* QKQueryOperators.h in Headers */,
-				17FC35C21413D14000AC3602 /* QKQuery.h in Headers */,
-				17FC35C91413D14800AC3602 /* QKQueryTypes.h in Headers */,
-				17FC35CA1413D14A00AC3602 /* QueryKit.h in Headers */,
-				17FC360B1413DAED00AC3602 /* QKQueryParameter.h in Headers */,
-				17FC3626141411B800AC3602 /* QKQueryUtilities.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		58B906E111BD989A000826E5 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2853,23 +2799,6 @@
 			productReference = 17B7B5621016012700F057DE /* MCPKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		17FC35AB1413CFE700AC3602 /* QueryKit */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 17FC35B11413CFE800AC3602 /* Build configuration list for PBXNativeTarget "QueryKit" */;
-			buildPhases = (
-				17FC35A71413CFE700AC3602 /* Headers */,
-				17FC35A91413CFE700AC3602 /* Sources */,
-				17FC35AA1413CFE700AC3602 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = QueryKit;
-			productName = QueryKit;
-			productReference = 17FC35AC1413CFE700AC3602 /* QueryKit.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 		380F4ED80FC0B50500B0BFD7 /* Unit Tests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 380F4EDE0FC0B50600B0BFD7 /* Build configuration list for PBXNativeTarget "Unit Tests" */;
@@ -2884,7 +2813,6 @@
 			dependencies = (
 				1792C2CD10AE239D00ABE758 /* PBXTargetDependency */,
 				1798AB0012676BAD000D946A /* PBXTargetDependency */,
-				17FC36361414164000AC3602 /* PBXTargetDependency */,
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
@@ -2978,6 +2906,7 @@
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
 				58B9097011C3A462000826E5 /* PBXTargetDependency */,
 				5847571E120A1C6D0057631F /* PBXTargetDependency */,
+				17E5971414F917380054EE08 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -3003,6 +2932,12 @@
 			);
 			mainGroup = 2A37F4AAFDCFA73011CA2CEA /* sequel-pro */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 17E5954F14F304000054EE08 /* Products */;
+					ProjectRef = 17E5954E14F304000054EE08 /* QueryKit.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				8D15AC270486D014006FF6A4 /* Sequel Pro */,
@@ -3010,13 +2945,29 @@
 				58CDB3350FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
 				17B7B5611016012700F057DE /* MCPKit */,
 				58B906E511BD989A000826E5 /* PSMTabBar */,
-				17FC35AB1413CFE700AC3602 /* QueryKit */,
 				58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */,
 				584754C1120A04560057631F /* Sequel Pro QLGenerator */,
 				1798AB1C12676EA0000D946A /* Localize */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		17E5955314F304000054EE08 /* QueryKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = QueryKit.framework;
+			remoteRef = 17E5955214F304000054EE08 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		17E596A214F307CE0054EE08 /* Tests.octest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Tests.octest;
+			remoteRef = 17E596A114F307CE0054EE08 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		584754BE120A04560057631F /* Resources */ = {
@@ -3282,16 +3233,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		17FC35A91413CFE700AC3602 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				17FC35C31413D14100AC3602 /* QKQuery.m in Sources */,
-				17FC360C1413DAED00AC3602 /* QKQueryParameter.m in Sources */,
-				17FC3627141411B800AC3602 /* QKQueryUtilities.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		380F4ED50FC0B50500B0BFD7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3307,7 +3248,6 @@
 				176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */,
 				176059B913361D390098E162 /* SPTableCopyTest.m in Sources */,
 				176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */,
-				17FC3634141415F100AC3602 /* QKSelectQueryTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3544,10 +3484,10 @@
 			target = 17B7B5611016012700F057DE /* MCPKit */;
 			targetProxy = 17B7B59A1016039200F057DE /* PBXContainerItemProxy */;
 		};
-		17FC36361414164000AC3602 /* PBXTargetDependency */ = {
+		17E5971414F917380054EE08 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 17FC35AB1413CFE700AC3602 /* QueryKit */;
-			targetProxy = 17FC36351414164000AC3602 /* PBXContainerItemProxy */;
+			name = QueryKit;
+			targetProxy = 17E5971314F917380054EE08 /* PBXContainerItemProxy */;
 		};
 		5847571E120A1C6D0057631F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4249,81 +4189,6 @@
 			};
 			name = Distribution;
 		};
-		17FC35AE1413CFE800AC3602 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				COPY_PHASE_STRIP = NO;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "Resources/Plists/QueryKit-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = QueryKit;
-				SDKROOT = macosx10.6;
-			};
-			name = Debug;
-		};
-		17FC35AF1413CFE800AC3602 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "Resources/Plists/QueryKit-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = QueryKit;
-				SDKROOT = macosx10.6;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		17FC35B01413CFE800AC3602 /* Distribution */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				FRAMEWORK_VERSION = A;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Headers/AppKit.h";
-				INFOPLIST_FILE = "Resources/Plists/QueryKit-Info.plist";
-				INSTALL_PATH = "$(HOME)/Library/Frameworks";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Foundation,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = QueryKit;
-				SDKROOT = macosx10.6;
-			};
-			name = Distribution;
-		};
 		380F4EDB0FC0B50600B0BFD7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4541,6 +4406,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
@@ -4791,6 +4657,7 @@
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
@@ -4933,16 +4800,6 @@
 				17B7B5641016012A00F057DE /* Debug */,
 				17B7B5651016012A00F057DE /* Release */,
 				17B7B5661016012A00F057DE /* Distribution */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		17FC35B11413CFE800AC3602 /* Build configuration list for PBXNativeTarget "QueryKit" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				17FC35AE1413CFE800AC3602 /* Debug */,
-				17FC35AF1413CFE800AC3602 /* Release */,
-				17FC35B01413CFE800AC3602 /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

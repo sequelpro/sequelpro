@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: QueryKit.h 3431 2011-09-26 22:26:24Z stuart02 $
 //
-//  QKQueryParameter.m
+//  QueryKit.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
@@ -30,57 +30,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "QKQueryParameter.h"
-#import "QKQueryUtilities.h"
-
-@implementation QKQueryParameter
-
-@synthesize _field;
-@synthesize _operator;
-@synthesize _value;
-
-#pragma mark -
-#pragma mark Initialisation
-
-+ (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
-{
-	return [[[QKQueryParameter alloc] initParamWithField:field operator:op value:value] autorelease];
-}
-
-- (id)initParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
-{
-	if ((self = [super init])) {
-		[self setField:field];
-		[self setOperator:op];
-		[self setValue:value];
-	}
-	
-	return self;
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	NSMutableString *string = [NSMutableString string]; 
-		
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendString:field];
-	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
-}
-
-#pragma mark -
-
-- (void)dealloc
-{
-	if (_field) [_field release], _field = nil;
-	if (_value) [_value release], _value = nil;
-	
-	[super dealloc];
-}
-
-@end
+#import <QueryKit/QKQuery.h>
+#import <QueryKit/QKQueryTypes.h>
+#import <QueryKit/QKQueryOperators.h>
+#import <QueryKit/QKQueryParameter.h>
+#import <QueryKit/QKQueryUtilities.h>
