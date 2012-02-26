@@ -67,12 +67,30 @@ static NSString *QKTestFieldTwo   = @"test_field2";
 	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
 }
 
+- (void)testSelectQueryOrderByMultipleFieldsAscendingIsCorrect
+{	
+	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:NO];
+	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ ASC", QKTestFieldOne, QKTestFieldTwo];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+}
+
 - (void)testSelectQueryOrderByDescendingIsCorrect
 {	
 	[_query orderByField:QKTestFieldOne descending:YES];
 	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ DESC", QKTestFieldOne];
 		
+	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+}
+
+- (void)testSelectQueryOrderByMultipleFieldsDescendingIsCorrect
+{	
+	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:YES];
+	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ DESC", QKTestFieldOne, QKTestFieldTwo];
+	
 	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
 }
 

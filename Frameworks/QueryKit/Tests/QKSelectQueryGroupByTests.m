@@ -67,7 +67,7 @@ static NSString *QKTestFieldTwo   = @"test_field2";
 	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
 }
 
-- (void)testSelectQueryMultipleGroupByIsCorrect
+- (void)testSelectQueryGroupByMultipleFieldsIsCorrect
 {	
 	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
 	

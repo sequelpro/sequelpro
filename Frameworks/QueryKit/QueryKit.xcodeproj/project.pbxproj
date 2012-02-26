@@ -133,6 +133,40 @@
 			path = Source;
 			sourceTree = "<group>";
 		};
+		17322A7214FA645300F0CF9B /* SELECT Tests */ = {
+			isa = PBXGroup;
+			children = (
+				17E5969714F307B70054EE08 /* QKSelectQueryTests.h */,
+				17E5969814F307B70054EE08 /* QKSelectQueryTests.m */,
+				1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */,
+				1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */,
+				1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */,
+				1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */,
+			);
+			name = "SELECT Tests";
+			sourceTree = "<group>";
+		};
+		17322A7414FA646000F0CF9B /* UPDATE Tests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "UPDATE Tests";
+			sourceTree = "<group>";
+		};
+		17322A7514FA647200F0CF9B /* DELETE Tests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "DELETE Tests";
+			sourceTree = "<group>";
+		};
+		17322A7614FA648100F0CF9B /* INSERT Tests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "INSERT Tests";
+			sourceTree = "<group>";
+		};
 		17E5952814F301F40054EE08 /* Constants */ = {
 			isa = PBXGroup;
 			children = (
@@ -145,12 +179,10 @@
 		17E5969614F3079E0054EE08 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17E5969714F307B70054EE08 /* QKSelectQueryTests.h */,
-				17E5969814F307B70054EE08 /* QKSelectQueryTests.m */,
-				1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */,
-				1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */,
-				1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */,
-				1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */,
+				17322A7614FA648100F0CF9B /* INSERT Tests */,
+				17322A7514FA647200F0CF9B /* DELETE Tests */,
+				17322A7414FA646000F0CF9B /* UPDATE Tests */,
+				17322A7214FA645300F0CF9B /* SELECT Tests */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
