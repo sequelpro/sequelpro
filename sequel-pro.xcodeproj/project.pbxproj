@@ -527,13 +527,6 @@
 			remoteGlobalIDString = 17E5969E14F307CE0054EE08;
 			remoteInfo = Tests;
 		};
-		17E5971314F917380054EE08 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 17E5954E14F304000054EE08 /* QueryKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
-			remoteInfo = QueryKit;
-		};
 		5847571D120A1C6D0057631F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -2906,7 +2899,6 @@
 				58CDB34B0FCE144000F8ACA3 /* PBXTargetDependency */,
 				58B9097011C3A462000826E5 /* PBXTargetDependency */,
 				5847571E120A1C6D0057631F /* PBXTargetDependency */,
-				17E5971414F917380054EE08 /* PBXTargetDependency */,
 			);
 			name = "Sequel Pro";
 			productInstallPath = "$(HOME)/Applications";
@@ -3483,11 +3475,6 @@
 			isa = PBXTargetDependency;
 			target = 17B7B5611016012700F057DE /* MCPKit */;
 			targetProxy = 17B7B59A1016039200F057DE /* PBXContainerItemProxy */;
-		};
-		17E5971414F917380054EE08 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = QueryKit;
-			targetProxy = 17E5971314F917380054EE08 /* PBXContainerItemProxy */;
 		};
 		5847571E120A1C6D0057631F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
