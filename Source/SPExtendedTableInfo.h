@@ -60,7 +60,7 @@
 	MCPConnection *connection;
 }
 
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, retain) MCPConnection *connection;
 
 // IBAction methods
 - (IBAction)reloadTable:(id)sender;
