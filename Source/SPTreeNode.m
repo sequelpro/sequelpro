@@ -236,14 +236,18 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 		
 		for (SPTreeNode *node in [self childNodes])
 		{
-			[children addObject:[node dictionaryRepresentation]];
+			NSDictionary *representation = [node dictionaryRepresentation];
+			
+			if (representation) {
+				[children addObject:representation];
+			}
 		}
 		
 		dictionary = [NSMutableDictionary dictionary];
 		
 		NSString *name = (![self parentNode]) ? NSLocalizedString(@"Favorites", @"favorites label") : [object nodeName];
 		
-		[dictionary setObject:(name) ? name : @"" forKey:SPFavoritesGroupNameKey];
+		[dictionary setObject:name ? name : @"" forKey:SPFavoritesGroupNameKey];
 		[dictionary setObject:children forKey:SPFavoriteChildrenKey];
 	}
 	

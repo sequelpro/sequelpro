@@ -170,7 +170,8 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 	
 	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
-	[pboard setData:[NSKeyedArchiver archivedDataWithRootObject:items] forType:SPFavoritesPasteboardDragType];
+	//[pboard setData:[NSKeyedArchiver archivedDataWithRootObject:items] forType:SPFavoritesPasteboardDragType];
+	[pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
 	
 	return YES;
 }
@@ -211,10 +212,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	{
 		[menuItem setState:NSOffState];
 	}
-		
-	NSArray *nodes = [NSKeyedUnarchiver unarchiveObjectWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]];
 	
-	if (![nodes count]) return acceptedDrop;
+	NSArray *nodes = [self selectedFavoriteNodes];
+		
+	//NSArray *nodes = [NSKeyedUnarchiver unarchiveObjectWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]];
+	
+	//if (![nodes count]) return acceptedDrop;
 	
 	if ([node isGroup]) {		
 		if (index == NSOutlineViewDropOnItemIndex) {
