@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: QKQueryTypes.h 3423 2011-09-12 16:50:15Z stuart02 $
 //
 //  QKQueryTypes.h
 //  sequel-pro

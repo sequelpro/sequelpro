@@ -171,6 +171,13 @@
 
 - (void)close
 {
+
+	// Invalidate the timer now to prevent retain cycles preventing deallocation
+	if (stateTimer != nil) {
+		[stateTimer invalidate];
+		[stateTimer release];
+	}
+
 	closeMe = YES;
 	[theView setCompletionIsOpen:NO];
 	[super close];

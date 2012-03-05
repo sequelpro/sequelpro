@@ -352,7 +352,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Start Edit panel
-	if (([triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
+	if (((NSInteger)[triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
 		[self _editTriggerAtIndex:rowIndex];
 	}
 

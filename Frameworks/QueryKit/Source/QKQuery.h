@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: QKQuery.h 3421 2011-09-10 22:58:45Z stuart02 $
 //
 //  QKQuery.h
 //  sequel-pro

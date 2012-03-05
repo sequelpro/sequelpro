@@ -1,5 +1,5 @@
 //
-//  $Id$
+//  $Id: QKQuery.m 3432 2011-09-27 00:21:35Z stuart02 $
 //
 //  QKQuery.h
 //  sequel-pro
@@ -81,7 +81,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[self setTable:table];
 		[self setFields:[[NSMutableArray alloc] init]];
 		[self setParameters:[[NSMutableArray alloc] init]];
-		[self setQueryType:-1];
+		[self setQueryType:(QKQueryType)-1];
 		[self setQuoteFields:NO];
 		
 		_orderDescending = NO;
@@ -378,9 +378,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[orderBy setString:[orderBy substringToIndex:([orderBy length] - 2)]];
 	}
 	
-	if (_orderDescending) {
-		[orderBy appendString:@" DESC"];
-	}
+	[orderBy appendString:_orderDescending ? @" DESC" : @" ASC"];
 	
 	return orderBy;
 }

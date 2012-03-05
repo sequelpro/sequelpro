@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: QKQueryParameter.h 3421 2011-09-10 22:58:45Z stuart02 $
 //
-//  QKQueryUtilities.h
+//  QKQueryParameter.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
@@ -33,14 +33,38 @@
 #import "QKQueryOperators.h"
 
 /**
- * @class QKQueryUtilities QKQueryUtilities.h
+ * @class QKQueryParameter QKQueryParameter.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * QueryKit utilities class. 
+ * QueryKit query parameter class. 
  */
-@interface QKQueryUtilities : NSObject 
+@interface QKQueryParameter : NSObject 
+{
+	NSString *_field;
+	
+	QKQueryOperator _operator;
+	
+	id _value;
+}
 
-+ (NSString *)operatorRepresentationForType:(QKQueryOperator)operator;
+/**
+ * @property _field The field component of the parameter.
+ */
+@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
+
+/**
+ * @property _operator The operator component of the parameter.
+ */
+@property (readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
+
+/**
+ *@property _value The value component of the parameter.
+ */
+@property (readwrite, retain, getter=value, setter=setValue:) id _value;
+
++ (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
+
+- (id)initParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
 
 @end

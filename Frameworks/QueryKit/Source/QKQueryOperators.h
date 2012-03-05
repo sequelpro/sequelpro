@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: QKQueryOperators.h 3423 2011-09-12 16:50:15Z stuart02 $
 //
-//  QueryKit.h
+//  QKQueryOperators.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
@@ -30,8 +30,27 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <QueryKit/QKQuery.h>
-#import <QueryKit/QKQueryTypes.h>
-#import <QueryKit/QKQueryOperators.h>
-#import <QueryKit/QKQueryParameter.h>
-#import <QueryKit/QKQueryUtilities.h>
+/**
+ * @enum QKQueryOperator
+ *
+ * Used to specify the operator to use for a specific query parameter. 
+ *
+ * Note that this is by no means a complete list of available operators, only the most commonly used ones. 
+ * Other operators can be added as and when they are required.
+ */
+typedef enum
+{
+	QKEqualityOperator,
+	QKNotEqualOperator,
+	QKLikeOperator,
+	QKNotLikeOperator,
+	QKInOperator,
+	QKNotInOperator,
+	QKIsNullOperator,
+	QKIsNotNullOperator,
+	QKGreaterThanOperator,
+	QKLessThanOperator,
+	QKGreaterThanOrEqualOperator,
+	QKLessThanOrEqualOperator
+}
+QKQueryOperator;

@@ -1,7 +1,7 @@
 //
-//  $Id$
+//  $Id: QKQueryUtilities.h 3421 2011-09-10 22:58:45Z stuart02 $
 //
-//  QKQueryParameter.m
+//  QKQueryUtilities.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
@@ -30,57 +30,17 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "QKQueryParameter.h"
-#import "QKQueryUtilities.h"
+#import "QKQueryOperators.h"
 
-@implementation QKQueryParameter
+/**
+ * @class QKQueryUtilities QKQueryUtilities.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * QueryKit utilities class. 
+ */
+@interface QKQueryUtilities : NSObject 
 
-@synthesize _field;
-@synthesize _operator;
-@synthesize _value;
-
-#pragma mark -
-#pragma mark Initialisation
-
-+ (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
-{
-	return [[[QKQueryParameter alloc] initParamWithField:field operator:op value:value] autorelease];
-}
-
-- (id)initParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value
-{
-	if ((self = [super init])) {
-		[self setField:field];
-		[self setOperator:op];
-		[self setValue:value];
-	}
-	
-	return self;
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	NSMutableString *string = [NSMutableString string]; 
-		
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendString:field];
-	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
-}
-
-#pragma mark -
-
-- (void)dealloc
-{
-	if (_field) [_field release], _field = nil;
-	if (_value) [_value release], _value = nil;
-	
-	[super dealloc];
-}
++ (NSString *)operatorRepresentationForType:(QKQueryOperator)operator;
 
 @end
