@@ -34,8 +34,12 @@
 #import "SPTableStructure.h"
 #import "SPServerSupport.h"
 
-@interface SPExtendedTableInfo (PrivateAPI)
+static NSString *SPUpdateTableTypeCurrentType = @"SPUpdateTableTypeCurrentType";
+static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
+@interface SPExtendedTableInfo ()
+
+- (void)_changeCurrentTableTypeFrom:(NSString *)currentType to:(NSString *)newType;
 - (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict;
 
 @end
@@ -95,24 +99,32 @@
 	NSString *currentType = [tableDataInstance statusValueForKey:@"Engine"];
 
 	// Check if the user selected the same type
-	if ([currentType isEqualToString:newType]) {
-		return;
-	}
-
-	// Alter table's storage type
-	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ %@ = %@", [selectedTable backtickQuotedString], [[tableDocumentInstance serverSupport] engineTypeQueryName], newType]];
-
-	if ([connection getLastErrorID] == 0) {
-		// Reload the table's data
-		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
-	}
-	else {
-		[sender selectItemWithTitle:currentType];
-
-		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection getLastErrorMessage]]);
-	}
+	if ([currentType isEqualToString:newType]) return;
+		
+	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Change table type", @"change table type message")
+									 defaultButton:NSLocalizedString(@"Change", @"change button")
+								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+									   otherButton:nil
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of it's data. This action cannot be undone.", @"change table type informative message"), newType];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	NSArray *buttons = [alert buttons];
+	
+	// Change the alert's cancel button to have the key equivalent of return
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+	
+	NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] initWithCapacity:2];
+	
+	[dataDict setObject:currentType forKey:SPUpdateTableTypeCurrentType];
+	[dataDict setObject:newType forKey:SPUpdateTableTypeNewType];
+	
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+					  modalDelegate:self 
+					 didEndSelector:@selector(confirmChangeTableTypeDidEnd:returnCode:contextInfo:) 
+						contextInfo:dataDict];
 }
 
 /**
@@ -245,7 +257,8 @@
 				[tableCreateSyntaxTextView didChangeText];
 				[tableCreateSyntaxTextView setEditable:NO];
 			}
-		} else {
+		} 
+		else {
 			[tableCreateSyntaxTextView setEditable:YES];
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
 			[tableCreateSyntaxTextView setString:@""];
@@ -278,6 +291,7 @@
 			[tableEncodingPopUpButton addItemWithTitle:[statusFields objectForKey:@"CharacterSetClient"]];
 			[tableCollationPopUpButton addItemWithTitle:[statusFields objectForKey:@"Collation"]];
 		}
+		
 		return;
 	}
 
@@ -353,7 +367,9 @@
 
 	// Set comments
 	NSString *commentText = [statusFields objectForKey:@"Comment"];
+	
 	if (!commentText) commentText = @"";
+	
 	[tableCommentsTextView setEditable:YES];
 	[tableCommentsTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCommentsTextView string] length]) replacementString:commentText];
 	[tableCommentsTextView setString:commentText];
@@ -366,9 +382,11 @@
 	[tableCreateSyntaxTextView setString:@""];
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:[tableDataInstance tableCreateSyntax]];
+	
 	if ([tableDataInstance tableCreateSyntax]) {
 		[tableCreateSyntaxTextView insertText:[[tableDataInstance tableCreateSyntax] stringByAppendingString:@";"]];
 	}
+	
 	[tableCreateSyntaxTextView didChangeText];
 	[tableCreateSyntaxTextView setEditable:NO];
 
@@ -389,35 +407,59 @@
 	NSMutableDictionary *tableInfo = [NSMutableDictionary dictionary];
 	NSDictionary *statusFields = [tableDataInstance statusValues];
 
-	if([tableTypePopUpButton titleOfSelectedItem])
+	if ([tableTypePopUpButton titleOfSelectedItem]) {
 		[tableInfo setObject:[tableTypePopUpButton titleOfSelectedItem] forKey:@"type"];
-	if([tableEncodingPopUpButton titleOfSelectedItem])
+	}
+		
+	if ([tableEncodingPopUpButton titleOfSelectedItem]) {
 		[tableInfo setObject:[tableEncodingPopUpButton titleOfSelectedItem] forKey:@"encoding"];
-	if([tableCollationPopUpButton titleOfSelectedItem])
+	}
+	
+	if ([tableCollationPopUpButton titleOfSelectedItem]) {
 		[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
+	}
 
-	if([self _formatValueWithKey:@"Create_time" inDictionary:statusFields])
+	if ([self _formatValueWithKey:@"Create_time" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
-	if([self _formatValueWithKey:@"Update_time" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Update_time" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
-	if([self _formatValueWithKey:@"Rows" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Rows" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
-	if([self _formatValueWithKey:@"Row_format" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Row_format" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
-	if([self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
-	if([self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
-	if([self _formatValueWithKey:@"Data_length" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Data_length" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
-	if([self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
-	if([self _formatValueWithKey:@"Index_length" inDictionary:statusFields])
+	}
+	
+	if ([self _formatValueWithKey:@"Index_length" inDictionary:statusFields]) {
 		[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
+	}
+	
 	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
 
-	if([tableCommentsTextView string])
+	if ([tableCommentsTextView string]) {
 		[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
+	}
 
 	NSError *error = nil;
 	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
@@ -428,12 +470,12 @@
 	// Set tableCreateSyntaxTextView's font size temporarily to 10pt for printing
 	NSFont *oldFont = [tableCreateSyntaxTextView font];
 	BOOL editableStatus = [tableCreateSyntaxTextView isEditable];
+	                   
 	[tableCreateSyntaxTextView setEditable:YES];
 	[tableCreateSyntaxTextView setFont:[NSFont fontWithName:[oldFont fontName] size:10.0]];
 
 	// Convert tableCreateSyntaxTextView to HTML
-	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length])
-		documentAttributes:attributes error:&error];
+	NSData *HTMLData = [[tableCreateSyntaxTextView textStorage] dataFromRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) documentAttributes:attributes error:&error];
 
 	// Restore original font settings
 	[tableCreateSyntaxTextView setFont:oldFont];
@@ -483,6 +525,22 @@
 	}
 }
 
+/**
+ * Called when the user dismisses the change table type confirmation dialog.
+ */
+- (void)confirmChangeTableTypeDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSDictionary *)contextInfo
+{
+	if (returnCode == NSAlertDefaultReturn) {
+		[self _changeCurrentTableTypeFrom:[contextInfo objectForKey:SPUpdateTableTypeCurrentType] 
+									   to:[contextInfo objectForKey:SPUpdateTableTypeNewType]];
+	}
+	else {
+		[tableTypePopUpButton selectItemWithTitle:[contextInfo objectForKey:SPUpdateTableTypeCurrentType]];
+	}
+	
+	[contextInfo release];
+}
+
 #pragma mark -
 #pragma mark Task interaction
 
@@ -514,7 +572,7 @@
 
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
-	//also affects mysql and performance_schema
+	// also affects mysql and performance_schema
 	BOOL isSystemSchemaDb = ([[tableDocumentInstance database] isEqualToString:@"information_schema"] || [[tableDocumentInstance database] isEqualToString:@"performance_schema"] || [[tableDocumentInstance database] isEqualToString:@"mysql"]);
 
 	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"]) {
@@ -525,8 +583,7 @@
 		[tableEncodingPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
-	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count]
-		&& [statusFields objectForKey:@"Collation"])
+	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count] && [statusFields objectForKey:@"Collation"])
 	{
 		[tableCollationPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
@@ -548,9 +605,29 @@
 	[super dealloc];
 }
 
-@end
+#pragma mark -
+#pragma mark Private API
 
-@implementation SPExtendedTableInfo (PrivateAPI)
+/**
+ * Changes the current table's storage engine to the supplied type.
+ */
+- (void)_changeCurrentTableTypeFrom:(NSString *)currentType to:(NSString *)newType
+{
+	// Alter table's storage type
+	[connection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ %@ = %@", [selectedTable backtickQuotedString], [[tableDocumentInstance serverSupport] engineTypeQueryName], newType]];
+	
+	if ([connection getLastErrorID] == 0) {
+		// Reload the table's data
+		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
+	}
+	else {
+		[tableTypePopUpButton selectItemWithTitle:currentType];
+		
+		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
+						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection getLastErrorMessage]]);
+	}
+}
 
 /**
  * Format and returns the value within the info dictionary with the associated key.
@@ -603,12 +680,7 @@
 		}
 	}
 
-	if ([key isEqualToString:@"Auto_increment"]) {
-		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
-	}
-	else {
-		return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
-	}
+	return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
 }
 
 @end
