@@ -656,7 +656,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If set to use a socket and a socket was supplied, use it; otherwise, search for a socket to use
 	if (useSocket) {
-		if (socketPath) {
+		if ([socketPath length]) {
 			theSocket = [self _cStringForString:socketPath];
 		} else {
 			theSocket = [self _cStringForString:[SPMySQLConnection findSocketPath]];

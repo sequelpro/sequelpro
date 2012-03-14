@@ -1301,6 +1301,7 @@
 	// MySQL before 5.0.3 does not support the WHERE syntax
 	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ /*!50003 WHERE `key` = 'PRI'*/", [selectedTable backtickQuotedString]]];
 	[r setReturnDataAsStrings:YES];
+	[r setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
 	if ([r numberOfRows] < 1) {
 		if (changeEncoding && [mySQLConnection isConnected]) [mySQLConnection restoreStoredEncoding];

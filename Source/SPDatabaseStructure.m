@@ -400,13 +400,10 @@
 			NSString *key = [row objectAtIndex:4];
 			NSString *def = [row objectAtIndex:5];
 			NSString *extra = [row objectAtIndex:6];
-			NSString *priv = [row objectAtIndex:7];
-			NSString *comment;
-			if ([row count] > 8) {
-				comment = [row objectAtIndex:8];
-			} else {
-				comment = @"";
-			}
+			NSString *priv = @"";
+			NSString *comment = @"";
+			if ([row count] > 7) priv = [row objectAtIndex:7];
+			if ([row count] > 8) comment = [row objectAtIndex:8];
 
 			NSString *charset = @"";
 			if (![collation isNSNull]) {
