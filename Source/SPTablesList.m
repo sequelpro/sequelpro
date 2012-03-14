@@ -1528,7 +1528,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[tableDocumentInstance updateWindowTitle:self];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
 #pragma mark -
@@ -2191,7 +2191,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 }
 
@@ -2327,7 +2327,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 	}
 	else {
@@ -2530,7 +2530,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		}
 	}

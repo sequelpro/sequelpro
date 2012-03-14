@@ -406,7 +406,7 @@
 	[tableDocumentInstance setStatusRequiresReload:YES];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 	[self loadTable:selectedTable];
 }
@@ -1196,7 +1196,7 @@
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}

@@ -929,7 +929,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:databaseStructureRetrieval withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		} else {
 			// reset chooseDatabaseButton

@@ -178,10 +178,12 @@
 	if (stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];
+		stateTimer = nil;
 	}
 
 	closeMe = YES;
 	[theView setCompletionIsOpen:NO];
+
 	[super close];
 }
 
