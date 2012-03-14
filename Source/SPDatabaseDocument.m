@@ -60,6 +60,7 @@ enum {
 #import "SPTableData.h"
 #endif
 #import "SPDatabaseData.h"
+#import "SPDatabaseStructure.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
@@ -119,6 +120,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 @synthesize isProcessing;
 @synthesize serverSupport;
+@synthesize databaseStructureRetrieval;
 #ifndef SP_REFACTOR /* ivars */
 @synthesize processID;
 #endif
@@ -218,6 +220,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 #endif
+
+		databaseStructureRetrieval = [[SPDatabaseStructure alloc] initWithDelegate:self];
 	}
 	
 	return self;
@@ -433,6 +437,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[self setDatabases:self];
 	
 	[chooseDatabaseButton setEnabled:!_isWorkingLevel];
+
+	// Set the connection on the database structure builder
+	[databaseStructureRetrieval setConnectionToClone:mySQLConnection];
 
 	[databaseDataInstance setConnection:mySQLConnection];
 	
@@ -1357,7 +1364,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (!taskCanBeCancelled) return;
 
 	[taskCancelButton setEnabled:NO];
-	[mySQLConnection cancelCurrentQuery];
+
+	// See whether there is an active database structure task and whether it can be used
+	// to cancel the query, for speed (no connection overhead!)
+	if (databaseStructureRetrieval && [databaseStructureRetrieval connection]) {
+		[mySQLConnection setLastQueryWasCancelled:YES];
+		[[databaseStructureRetrieval connection] killQueryOnThreadID:[mySQLConnection mysqlConnectionThreadId]];
+	} else {
+		[mySQLConnection cancelCurrentQuery];
+	}
 
 	if (taskCancellationCallbackObject && taskCancellationCallbackSelector) {
 		[taskCancellationCallbackObject performSelector:taskCancellationCallbackSelector];
@@ -5658,6 +5673,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 #endif
 
+	[databaseStructureRetrieval release];
+
 	[allDatabases release];
 	[allSystemDatabases release];
 #ifndef SP_REFACTOR /* dealloc ivars */
@@ -5879,7 +5896,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	// This only deletes the db and refreshes the navigator since nothing is changed
 	// that's why we can run this on main thread
-	[mySQLConnection queryDbStructureWithUserInfo:nil];
+	[databaseStructureRetrieval queryDbStructureWithUserInfo:nil];
 
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;

@@ -282,7 +282,7 @@
 		} else {
 
 			// Prevent retries if the query was cancelled or not a connection error
-			if (lastQueryWasCancelled && ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
+			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
 				break;
 			}
 		}
@@ -546,14 +546,6 @@
 	// Reset tracking bools to cover encompassed queries
 	lastQueryWasCancelled = YES;
 	lastQueryWasCancelledUsingReconnect = YES;
-}
-
-/**
- * Returns whether the last query was cancelled using cancelCurrentQuery.
- */
-- (BOOL)lastQueryWasCancelled
-{
-	return lastQueryWasCancelled;
 }
 
 /**

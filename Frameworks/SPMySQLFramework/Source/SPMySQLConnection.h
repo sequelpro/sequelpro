@@ -30,6 +30,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+@class SPMySQLKeepAliveTimer;
+
 @interface SPMySQLConnection : NSObject {
 
 	// Delegate
@@ -80,7 +82,7 @@
 	// Timeout and keep-alive
 	NSUInteger timeout;
 	BOOL useKeepAlive;
-	NSTimer *keepAliveTimer;
+	SPMySQLKeepAliveTimer *keepAliveTimer;
 	CGFloat keepAliveInterval;
 	uint64_t lastKeepAliveTime;
 	NSUInteger keepAlivePingFailures;
@@ -152,6 +154,8 @@
 @property (readwrite, assign) BOOL retryQueriesOnConnectionFailure;
 
 @property (readwrite, assign) BOOL delegateQueryLogging;
+
+@property (readwrite, assign) BOOL lastQueryWasCancelled;
 
 #pragma mark -
 #pragma mark Connection and disconnection

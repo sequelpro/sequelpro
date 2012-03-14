@@ -341,10 +341,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Query the structure of all databases in the background
 	if (sender == self)
 		// Invoked by SP
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
 }
 
 /**

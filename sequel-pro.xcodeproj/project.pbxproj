@@ -209,6 +209,8 @@
 		5847577D120A1E8A0057631F /* Sequel Pro.qlgenerator in Copy QuickLook Plugins */ = {isa = PBXBuildFile; fileRef = 584754C2120A04560057631F /* Sequel Pro.qlgenerator */; };
 		584D804A15056AC200F24774 /* SPMySQL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 584D804315056AA700F24774 /* SPMySQL.framework */; };
 		584D804D15056ACB00F24774 /* SPMySQL.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 584D804315056AA700F24774 /* SPMySQL.framework */; };
+		584D810D1505784100F24774 /* SPObjectAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D810C1505784100F24774 /* SPObjectAdditions.m */; };
+		584D81AC1505922600F24774 /* SPDatabaseStructure.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D81AB1505922600F24774 /* SPDatabaseStructure.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
 		586AAB1514FAD3AF007F82BF /* QueryKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; };
 		586AAB9314FAD40D007F82BF /* QueryKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; };
@@ -269,7 +271,6 @@
 		58C3506710B9A57300D37E14 /* button_right.png in Resources */ = {isa = PBXBuildFile; fileRef = 58C3506610B9A57300D37E14 /* button_right.png */; };
 		58C3506B10B9AA8B00D37E14 /* button_pagination.png in Resources */ = {isa = PBXBuildFile; fileRef = 58C3506A10B9AA8B00D37E14 /* button_pagination.png */; };
 		58C3507510B9ADEA00D37E14 /* ContentPaginationView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 58C3507310B9ADEA00D37E14 /* ContentPaginationView.xib */; };
-		58C458DF10CF188F00E6E13E /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		58C4593810D0674D00E6E13E /* spficon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58C4593610D0674D00E6E13E /* spficon.icns */; };
 		58C4593910D0674E00E6E13E /* sqlicon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58C4593710D0674D00E6E13E /* sqlicon.icns */; };
 		58C56EF50F438E120035701E /* SPDataCellFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C56EF40F438E120035701E /* SPDataCellFormatter.m */; };
@@ -916,6 +917,10 @@
 		58475708120A1B630057631F /* German */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = German; path = German.lproj/SPQLPluginQueryFavoritesTemplate.html; sourceTree = "<group>"; };
 		58475709120A1B630057631F /* German */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = German; path = German.lproj/SPQLPluginSQLTemplate.html; sourceTree = "<group>"; };
 		584D803E15056AA700F24774 /* SPMySQLFramework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SPMySQLFramework.xcodeproj; path = Frameworks/SPMySQLFramework/SPMySQLFramework.xcodeproj; sourceTree = "<group>"; };
+		584D810B1505784100F24774 /* SPObjectAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPObjectAdditions.h; sourceTree = "<group>"; };
+		584D810C1505784100F24774 /* SPObjectAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPObjectAdditions.m; sourceTree = "<group>"; };
+		584D81AA1505922600F24774 /* SPDatabaseStructure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseStructure.h; sourceTree = "<group>"; };
+		584D81AB1505922600F24774 /* SPDatabaseStructure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseStructure.m; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
@@ -1296,7 +1301,6 @@
 				584D804A15056AC200F24774 /* SPMySQL.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				58B907CA11BDA541000826E5 /* PSMTabBar.framework in Frameworks */,
-				58C458DF10CF188F00E6E13E /* libcrypto.dylib in Frameworks */,
 				B52ECDDC10DDACE9009DC3E8 /* BWToolkitFramework.framework in Frameworks */,
 				586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */,
 				179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */,
@@ -1569,6 +1573,8 @@
 				17D3C66D128AD4710047709F /* SPFavoritesController.m */,
 				17148563125F5FF500321285 /* SPDatabaseCharacterSets.h */,
 				17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */,
+				584D81AA1505922600F24774 /* SPDatabaseStructure.h */,
+				584D81AB1505922600F24774 /* SPDatabaseStructure.m */,
 			);
 			name = "Data Controllers";
 			sourceTree = "<group>";
@@ -2483,6 +2489,8 @@
 				1789343B0F30C1DD0097539A /* SPStringAdditions.m */,
 				58DC10D112A1B8DF00B76DA5 /* SPMenuAdditions.h */,
 				58DC10D212A1B8DF00B76DA5 /* SPMenuAdditions.m */,
+				584D810B1505784100F24774 /* SPObjectAdditions.h */,
+				584D810C1505784100F24774 /* SPObjectAdditions.m */,
 				B52460D50F8EF92300171639 /* SPTextViewAdditions.h */,
 				B52460D60F8EF92300171639 /* SPTextViewAdditions.m */,
 				B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */,
@@ -3185,6 +3193,8 @@
 				1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */,
 				1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */,
 				17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */,
+				584D810D1505784100F24774 /* SPObjectAdditions.m in Sources */,
+				584D81AC1505922600F24774 /* SPDatabaseStructure.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

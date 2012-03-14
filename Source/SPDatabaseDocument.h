@@ -33,7 +33,7 @@
 #ifndef SP_REFACTOR /* class forward decls */
 SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
 #endif
-SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery, SPMySQLConnection;
+SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery, SPDatabaseStructure, SPMySQLConnection;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
@@ -237,6 +237,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	NSString *processID;
 	BOOL windowTitleStatusViewIsVisible;
 #endif
+	SPDatabaseStructure *databaseStructureRetrieval;
 }
 
 #ifdef SP_REFACTOR /* ivars */
@@ -268,6 +269,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 @property (readwrite, retain) NSString *processID;
 #endif
 @property (readonly) SPServerSupport *serverSupport;
+@property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
 
 #ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUntitled;

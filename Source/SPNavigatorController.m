@@ -34,6 +34,7 @@
 #import "SPAppController.h"
 #import "SPDatabaseViewController.h"
 #import "SPMySQL.h"
+#import "SPDatabaseStructure.h"
 
 #import <objc/message.h>
 #endif
@@ -447,12 +448,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[[schemaData objectForKey:connectionName] removeObjectForKey:db];
 			}
 		}
-		id structureData = [theConnection getDbStructure];
+		id structureData = [[doc databaseStructureRetrieval] structure];
 		if(structureData && [structureData objectForKey:connectionName] && [[structureData objectForKey:connectionName] isKindOfClass:NSDictionaryClass]) {
 			for(id item in [[structureData objectForKey:connectionName] allKeys])
 				[[schemaData objectForKey:connectionName] setObject:[[structureData objectForKey:connectionName] objectForKey:item] forKey:item];
 
-			NSArray *a = [theConnection getAllKeysOfDbStructure];
+			NSArray *a = [[doc databaseStructureRetrieval] allStructureKeys];
 			if(a)
 				[allSchemaKeys setObject:a forKey:connectionName];
 		} else {
@@ -1063,7 +1064,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			NSUInteger i = 0;
 			for(i=0; i<[selectedItem count]-2; i++) {
 				NSString *item = NSArrayObjectAtIndex(selectedItem, i);
-				if(![item length]) continue;
+				if([item isNSNull] || ![item length]) continue;
 				[infoArray addObject:[NSString stringWithFormat:@"%@: %@", 
 					[self tableInfoLabelForIndex:i ofType:0], 
 					[item stringByReplacingOccurrencesOfString:@"," withString:@", "]]];

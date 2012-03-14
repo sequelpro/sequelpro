@@ -38,19 +38,6 @@
 @implementation SPMySQLConnection (Ping_and_KeepAlive)
 
 #pragma mark -
-#pragma mark Setup functions
-
-/**
- * Set up the keepalive timer; this should be called on the main
- * thread, to ensure the timer isn't descheduled when child threads
- * terminate.
- */
-- (void)_initKeepAlivePingTimer
-{
-	keepAliveTimer = [[NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(_keepAlive:) userInfo:nil repeats:YES] retain];
-}
-
-#pragma mark -
 #pragma mark Keepalive ping initialisation
 
 /**
@@ -58,7 +45,7 @@
  * This method is called every ten seconds and spawns a thread which determines
  * whether or not it should perform a ping.
  */
-- (void)_keepAlive:(NSTimer *)theTimer
+- (void)_keepAlive
 {
 
 	// Do nothing if not connected or if keepalive is disabled

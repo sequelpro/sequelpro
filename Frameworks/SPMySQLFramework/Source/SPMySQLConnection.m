@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPMySQL Private APIs.h"
+#import "SPMySQLKeepAliveTimer.h"
 #include <mach/mach_time.h>
 #include <pthread.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
@@ -71,6 +72,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize mysqlConnectionThreadId;
 @synthesize retryQueriesOnConnectionFailure;
 @synthesize delegateQueryLogging;
+@synthesize lastQueryWasCancelled;
 
 #pragma mark -
 #pragma mark Initialisation and teardown
@@ -161,11 +163,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		retryQueriesOnConnectionFailure = YES;
 
 		// Start the ping keepalive timer
-		if ([NSThread isMainThread]) {
-			[self _initKeepAlivePingTimer];
-		} else {
-			[self performSelectorOnMainThread:@selector(_initKeepAlivePingTimer) withObject:nil waitUntilDone:YES];
-		}
+		keepAliveTimer = [[SPMySQLKeepAliveTimer alloc] initWithInterval:10 target:self selector:@selector(_keepAlive)];
 	}
 
 	return self;
@@ -180,6 +178,10 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// Unset the delegate
 	[self setDelegate:nil];
+
+	// Clear the keepalive timer
+	[keepAliveTimer invalidate];
+	[keepAliveTimer release];
 
 	// Disconnect if appropriate (which should also disconnect any proxy)
 	[self disconnect];
@@ -196,14 +198,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	}
 	[connectionLock release], connectionLock = nil;
 
-	[encoding dealloc];
+	[encoding release];
 	if (previousEncoding) [previousEncoding release], previousEncoding = nil;
 
 	if (database) [database release], database = nil;
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
-	[keepAliveTimer invalidate];
-	[keepAliveTimer release];
 	[delegateDecisionLock release];
 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];

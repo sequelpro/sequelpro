@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  Ping & KeepAlive.h
+//  SPMySQLKeepAliveTimer.h
 //  SPMySQLFramework
 //
-//  Created by Rowan Beentje (rowan.beent.je) on January 14, 2012
+//  Created by Rowan Beentje (rowan.beent.je) on March 5, 2012
 //  Copyright (c) 2012 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -30,26 +30,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-// This class is private to the framework.
 
-typedef struct {
-	MYSQL	*mySQLConnection;
-	BOOL	*keepAlivePingActivePointer;
-	BOOL	*keepAliveLastPingSuccessPointer;
-} SPMySQLConnectionPingDetails;
+@interface SPMySQLKeepAliveTimer : NSObject {
+	id timerTarget;
+	SEL timerSelector;
+	NSTimeInterval timerRepeatInterval;
 
-@interface SPMySQLConnection (Ping_and_KeepAlive)
+	NSTimer *wrappedTimer;
+}
 
-// Keepalive ping initialisation
-- (void)_keepAlive;
-- (void)_threadedKeepAlive;
-
-// Master ping method
-- (BOOL)_pingConnectionUsingLoopDelay:(NSUInteger)loopDelay;
-
-// Ping thread internals
-void _backgroundPingTask(void *ptr);
-void _forceThreadExit(int signalNumber);
-void _pingThreadCleanup(void *pingDetails);
+- (id)initWithInterval:(NSTimeInterval)anInterval target:(id)aTarget selector:(SEL)aSelector;
+- (void)invalidate;
 
 @end

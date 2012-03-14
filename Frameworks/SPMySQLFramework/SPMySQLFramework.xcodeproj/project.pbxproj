@@ -28,6 +28,10 @@
 		584294FB14CB8002000F8438 /* Encoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294F914CB8002000F8438 /* Encoding.m */; };
 		584294FE14CB8002000F8438 /* Server Info.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294FC14CB8002000F8438 /* Server Info.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		584294FF14CB8002000F8438 /* Server Info.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294FD14CB8002000F8438 /* Server Info.m */; };
+		584D812E15057ECD00F24774 /* SPMySQLKeepAliveTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */; };
+		584D812F15057ECD00F24774 /* SPMySQLKeepAliveTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */; };
+		584D82551509775000F24774 /* Copying.h in Headers */ = {isa = PBXBuildFile; fileRef = 584D82531509775000F24774 /* Copying.h */; };
+		584D82561509775000F24774 /* Copying.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D82541509775000F24774 /* Copying.m */; };
 		586A99FB14F02E21007F82BF /* SPMySQLStreamingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		586A99FC14F02E21007F82BF /* SPMySQLStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */; };
 		586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */ = {isa = PBXBuildFile; fileRef = 586AA16514F30C5F007F82BF /* Convenience Methods.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -92,6 +96,10 @@
 		584294F914CB8002000F8438 /* Encoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Encoding.m; path = "Source/SPMySQLConnection Categories/Encoding.m"; sourceTree = "<group>"; };
 		584294FC14CB8002000F8438 /* Server Info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Server Info.h"; path = "Source/SPMySQLConnection Categories/Server Info.h"; sourceTree = "<group>"; };
 		584294FD14CB8002000F8438 /* Server Info.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Server Info.m"; path = "Source/SPMySQLConnection Categories/Server Info.m"; sourceTree = "<group>"; };
+		584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLKeepAliveTimer.h; path = Source/SPMySQLKeepAliveTimer.h; sourceTree = "<group>"; };
+		584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLKeepAliveTimer.m; path = Source/SPMySQLKeepAliveTimer.m; sourceTree = "<group>"; };
+		584D82531509775000F24774 /* Copying.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Copying.h; path = "Source/SPMySQLConnection Categories/Copying.h"; sourceTree = "<group>"; };
+		584D82541509775000F24774 /* Copying.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Copying.m; path = "Source/SPMySQLConnection Categories/Copying.m"; sourceTree = "<group>"; };
 		586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLStreamingResult.h; path = Source/SPMySQLStreamingResult.h; sourceTree = "<group>"; };
 		586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLStreamingResult.m; path = Source/SPMySQLStreamingResult.m; sourceTree = "<group>"; };
 		586AA0E714F1CEC8007F82BF /* Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
@@ -202,6 +210,8 @@
 				58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */,
 				58C7C1E114DB6E3000436315 /* Result Categories */,
 				580A331B14D75CCF000D6933 /* Result types */,
+				584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */,
+				584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -288,6 +298,8 @@
 		584294EB14CB8002000F8438 /* Connection Categories */ = {
 			isa = PBXGroup;
 			children = (
+				584D82531509775000F24774 /* Copying.h */,
+				584D82541509775000F24774 /* Copying.m */,
 				58C00AB314E4892E00AC489A /* Delegate & Proxy.h */,
 				58C00AB414E4892E00AC489A /* Delegate & Proxy.m */,
 				58C00BCF14E7459600AC489A /* Databases & Tables.h */,
@@ -387,6 +399,8 @@
 				586A99FB14F02E21007F82BF /* SPMySQLStreamingResult.h in Headers */,
 				586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */,
 				586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */,
+				584D812E15057ECD00F24774 /* SPMySQLKeepAliveTimer.h in Headers */,
+				584D82551509775000F24774 /* Copying.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -470,6 +484,8 @@
 				58C00BD214E7459600AC489A /* Databases & Tables.m in Sources */,
 				586A99FC14F02E21007F82BF /* SPMySQLStreamingResult.m in Sources */,
 				586AA16814F30C5F007F82BF /* Convenience Methods.m in Sources */,
+				584D812F15057ECD00F24774 /* SPMySQLKeepAliveTimer.m in Sources */,
+				584D82561509775000F24774 /* Copying.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
