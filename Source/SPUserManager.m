@@ -145,6 +145,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	// Select users from the mysql.user table
 	SPMySQLResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
+	[result setReturnDataAsStrings:YES];
 	[usersResultArray addObjectsFromArray:[result getAllRows]];
 
 	[self _initializeTree:usersResultArray];
@@ -158,7 +159,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	if ([serverSupport supportsShowPrivileges]) {
 	
 		result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
-		
 		[result setReturnDataAsStrings:YES];
 	}
 	
@@ -178,8 +178,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	} 
 	// If that fails, base privilege support on the mysql.users columns
 	else {
-		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];
-		
+		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];		
 		[result setReturnDataAsStrings:YES];
 		
 		while ((privRow = [result getRowAsArray])) 
@@ -359,6 +358,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	
 	SPMySQLResult *queryResults = [self.mySqlConnection queryString:queryString];
+	[queryResults setReturnDataAsStrings:YES];
 	
 	for (NSDictionary *rowDict in queryResults) 
 	{
@@ -856,7 +856,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// The passed in objects should be an array of NSDictionaries with a key
 	// of "name".
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
-	NSString *selectedDb = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
+	NSString *selectedDb = [[schemaController selectedObjects] objectAtIndex:0];
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
@@ -1535,7 +1535,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
-				NSString *selectedSchema = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
+				NSString *selectedSchema = [[schemaController selectedObjects] objectAtIndex:0];
 				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
                                                       schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
                                                         host:[user valueForKey:@"host"]];
