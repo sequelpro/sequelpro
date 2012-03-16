@@ -166,7 +166,7 @@
 		}
 	}
 
-	return (NSArray *)triggers;
+	return triggers;
 }
 
 /**
@@ -1060,8 +1060,8 @@
 		return NO;
 	}
 
-	[triggers removeAllObjects];
-	[triggers addObjectsFromArray:[theResult getAllRows]];
+	if (triggers) [triggers release];
+	triggers = [[NSArray alloc] initWithArray:[theResult getAllRows]];
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
