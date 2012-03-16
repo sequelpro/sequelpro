@@ -180,7 +180,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 #ifndef SP_REFACTOR
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
-	[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
+	NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
+	[self setQueryEditorBackgroundColor:backgroundColor];
+	[self setBackgroundColor:backgroundColor];
 	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
 	[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
 	[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
@@ -240,7 +242,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 #ifndef SP_REFACTOR
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
-		[self setQueryEditorBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
+		NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
+		[self setQueryEditorBackgroundColor:backgroundColor];
+		[self setBackgroundColor:backgroundColor];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
 		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];

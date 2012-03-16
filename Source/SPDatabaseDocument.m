@@ -299,18 +299,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// Hide the activity list
 	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 
-	// Bind the background color of the create syntax text view to the users preference
-	[createTableSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
-
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-
-	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-
-	[createTableSyntaxTextView bind:@"backgroundColor"
-						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
-						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
-							options:bindingOptions];
-
 	// Load additional nibs, keeping track of the top-level objects to allow correct release
 	NSArray *connectionDialogTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];

@@ -53,17 +53,6 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
  */
 - (void)awakeFromNib
 {
-	[tableCreateSyntaxTextView setAllowsDocumentBackgroundColorChange:YES];
-
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-
-	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-
-	[tableCreateSyntaxTextView bind:@"backgroundColor"
-						   toObject:[NSUserDefaultsController sharedUserDefaultsController]
-						withKeyPath:@"values.CustomQueryEditorBackgroundColor"
-							options:bindingOptions];
-
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)

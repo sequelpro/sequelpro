@@ -82,18 +82,6 @@
  */
 - (void)awakeFromNib
 {
-	[favoriteQueryTextView setAllowsDocumentBackgroundColorChange:YES];
-	
-	NSMutableDictionary *bindingOptions = [NSMutableDictionary dictionary];
-	
-	[bindingOptions setObject:NSUnarchiveFromDataTransformerName forKey:@"NSValueTransformerName"];
-	
-	[favoriteQueryTextView bind:@"backgroundColor"
-					   toObject:[NSUserDefaultsController sharedUserDefaultsController]
-					withKeyPath:@"values.CustomQueryEditorBackgroundColor"
-						options:bindingOptions];
-
-
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			@"Global", @"name", 
 			@"", @"headerOfFileURL",
