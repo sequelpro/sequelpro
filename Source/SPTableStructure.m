@@ -36,6 +36,7 @@
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
+#import "SPMySQL.h"
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -232,6 +233,7 @@
 {
 	NSArray *theTableIndexes;
 	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
+	SPMySQLResult *indexResult;
 
 	// Check whether a save of the current row is required.
 	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
@@ -249,7 +251,7 @@
 		[theTableFields addObject:[[col mutableCopy] autorelease]];
 
 	// Retrieve the indexes for the table
-	indexResult = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]] retain];
+	indexResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]];
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
@@ -264,17 +266,14 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-					   [mySQLConnection getLastErrorMessage]]);
+					   [mySQLConnection lastErrorMessage]]);
 		}
-		
-		if (indexResult) [indexResult release];
-		
+
 		return;
 	}
 
 	// Process the indexes into a local array of dictionaries
-	theTableIndexes = [self fetchResultAsArray:indexResult];
-	[indexResult release];
+	theTableIndexes = [self convertIndexResultToArray:indexResult];
 
 	// Set the Key column
 	for (NSDictionary* theIndex in theTableIndexes) 
@@ -357,7 +356,7 @@
 		// Normalize default
 		if(![theField objectForKey:@"default"])
 			[theField setObject:@"" forKey:@"default"];
-		else if([[theField objectForKey:@"default"] isKindOfClass:[NSNull class]])
+		else if([[theField objectForKey:@"default"] isNSNull])
 			[theField setObject:[prefs stringForKey:SPNullValue] forKey:@"default"];
 
 		// Init Extra field
@@ -407,7 +406,7 @@
 	[tableDocumentInstance setStatusRequiresReload:YES];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 	[self loadTable:selectedTable];
 }
@@ -533,7 +532,7 @@
  */
 - (IBAction)showOptimizedFieldType:(id)sender
 {
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT %@ FROM %@ PROCEDURE ANALYSE(0,8192)", 
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT %@ FROM %@ PROCEDURE ANALYSE(0,8192)", 
 		[[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"] backtickQuotedString],
 		[selectedTable backtickQuotedString]]];
 
@@ -546,7 +545,7 @@
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -556,13 +555,10 @@
 		return;
 	}
 
-	NSArray *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSDictionary *analysisResult = [theResult getRowAsDictionary];
 
-	NSString *type = nil;
-
-	if([result count])
-		type = [[result objectAtIndex:0] objectForKey:@"Optimal_fieldtype"];
-	if(!type || [type isKindOfClass:[NSNull class]] || ![type length])
+	NSString *type = [analysisResult objectForKey:@"Optimal_fieldtype"];
+	if (!type || [type isNSNull] || ![type length])
 		type = NSLocalizedString(@"No optimized field type found.", @"no optimized field type found. message");
 
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimized type for field '%@'", @"Optimized type for field %@"), [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"]] 
@@ -580,31 +576,31 @@
 /**
  * Control the visibility of the columns
  */
-- (IBAction)toggleColumnView:(id)sender
+- (IBAction)toggleColumnView:(NSMenuItem *)sender
 {
 
 	NSString *columnIdentifierName = nil;
 
-	switch([sender tag]) {
+	switch ([sender tag]) {
 		case 7:
-		columnIdentifierName = @"Key";
+			columnIdentifierName = @"Key";
 		break;
 		case 10:
-		columnIdentifierName = @"encoding";
+			columnIdentifierName = @"encoding";
 		break;
 		case 11:
-		columnIdentifierName = @"collation";
+			columnIdentifierName = @"collation";
 		break;
 		case 12:
-		columnIdentifierName = @"comment";
+			columnIdentifierName = @"comment";
 		break;
 		default:
 		return;
 	}
 
-	for(NSTableColumn *col in [tableSourceView tableColumns]) {
+	for (NSTableColumn *col in [tableSourceView tableColumns]) {
 
-		if([[col identifier] isEqualToString:columnIdentifierName]) {
+		if ([[col identifier] isEqualToString:columnIdentifierName]) {
 			[col setHidden:([sender state] == NSOffState) ? NO : YES];
 			[(NSMenuItem *)sender setState:![sender state]];
 			break;
@@ -864,7 +860,7 @@
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to reset AUTO_INCREMENT of table '%@'.\n\nMySQL said: %@", @"error resetting auto_increment informative message"),
-								selTable, [mySQLConnection getLastErrorMessage]]);
+								selTable, [mySQLConnection lastErrorMessage]]);
 	}
 
 	// reload data
@@ -884,9 +880,9 @@
 /**
  * Converts the supplied result to an array containing a (mutable) dictionary for each row
  */
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult
+- (NSArray *)convertIndexResultToArray:(SPMySQLResult *)theResult
 {
-	NSUInteger numOfRows = (NSUInteger)[theResult numOfRows];
+	NSUInteger numOfRows = (NSUInteger)[theResult numberOfRows];
 	NSMutableArray *tempResult = [NSMutableArray arrayWithCapacity:numOfRows];
 	NSMutableDictionary *tempRow;
 	NSArray *keys;
@@ -896,9 +892,8 @@
 	// Ensure table information is returned as strings to avoid problems with some server versions
 	[theResult setReturnDataAsStrings:YES];
 
-	if (numOfRows) [theResult dataSeek:0];
 	for ( i = 0 ; i < (NSInteger)numOfRows ; i++ ) {
-		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult fetchRowAsDictionary]];
+		tempRow = [NSMutableDictionary dictionaryWithDictionary:[theResult getRowAsDictionary]];
 
 		// Replace NSNull instances with the NULL string from preferences
 		keys = [tempRow allKeys];
@@ -1028,7 +1023,7 @@
 		}
 		// Otherwise, use the provided default
 		else {
-			[queryString appendFormat:@"\n DEFAULT '%@' ", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
+			[queryString appendFormat:@"\n DEFAULT %@ ", [mySQLConnection escapeAndQuoteString:[theRow objectForKey:@"default"]]];
 		}
 	}
 
@@ -1115,7 +1110,7 @@
 			}
 			// Otherwise, use the provided default
 			else {
-				[queryString appendFormat:@"\n DEFAULT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"default"]]];
+				[queryString appendFormat:@"\n DEFAULT %@", [mySQLConnection escapeAndQuoteString:[theRow objectForKey:@"default"]]];
 			}
 		}
 
@@ -1126,7 +1121,7 @@
 
 	// Any column comments
 	if ([(NSString *)[theRow objectForKey:@"comment"] length]) {
-		[queryString appendFormat:@"\n COMMENT '%@'", [mySQLConnection prepareString:[theRow objectForKey:@"comment"]]];
+		[queryString appendFormat:@"\n COMMENT %@", [mySQLConnection escapeAndQuoteString:[theRow objectForKey:@"comment"]]];
 	}
 
 	if (!isEditingNewRow) {
@@ -1201,18 +1196,18 @@
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}
 	else {
 		alertSheetOpened = YES;
-		if([mySQLConnection getLastErrorID] == 1146) { // If the current table doesn't exist anymore
+		if([mySQLConnection lastErrorID] == 1146) { // If the current table doesn't exist anymore
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"),
-							  selectedTable, [mySQLConnection getLastErrorMessage]]);
+							  selectedTable, [mySQLConnection lastErrorMessage]]);
 
 			isEditingRow = NO;
 			isEditingNewRow = NO;
@@ -1237,14 +1232,14 @@
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@", @"error adding field informative message"),
-							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
 		}
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"),
 							  NSLocalizedString(@"Edit row", @"Edit row button"),
 							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@", @"error changing field informative message"),
-							  [theRow objectForKey:@"name"], queryString, [mySQLConnection getLastErrorMessage]]);
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
 		}
 
 		return NO;
@@ -1431,7 +1426,7 @@
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	
@@ -1449,7 +1444,7 @@
 {
 	if ( ![defaultValues objectForKey:field] ) {
 		return [prefs objectForKey:SPNullValue];
-	} else if ( [[defaultValues objectForKey:field] isMemberOfClass:[NSNull class]] ) {
+	} else if ( [[defaultValues objectForKey:field] isNSNull] ) {
 		return [prefs objectForKey:SPNullValue];
 	} else {
 		return [defaultValues objectForKey:field];
@@ -1502,18 +1497,15 @@
 	NSString *nullValue = [prefs stringForKey:SPNullValue];
 	CFStringRef escapedNullValue = CFXMLCreateStringByEscapingEntities(NULL, ((CFStringRef)nullValue), NULL);
 
-	MCPResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
-	MCPResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
+	SPMySQLResult *structureQueryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+	SPMySQLResult *indexesQueryResult   = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEXES FROM %@", [selectedTable backtickQuotedString]]];
 
 	[structureQueryResult setReturnDataAsStrings:YES];
 	[indexesQueryResult setReturnDataAsStrings:YES];
 
-	if ([structureQueryResult numOfRows]) [structureQueryResult dataSeek:0];
-	if ([indexesQueryResult numOfRows]) [indexesQueryResult dataSeek:0];
+	[tempResult addObject:[structureQueryResult fieldNames]];
 
-	[tempResult addObject:[structureQueryResult fetchFieldNames]];
-
-	NSMutableArray *temp = [[indexesQueryResult fetchFieldNames] mutableCopy];
+	NSMutableArray *temp = [[indexesQueryResult fieldNames] mutableCopy];
 
 	// Remove the 'table' column
 	[temp removeObjectAtIndex:0];
@@ -1522,8 +1514,8 @@
 
 	[temp release];
 
-	for (i = 0; i < [structureQueryResult numOfRows]; i++) {
-		NSMutableArray *row = [[structureQueryResult fetchRowAsArray] mutableCopy];
+	for (i = 0; i < [structureQueryResult numberOfRows]; i++) {
+		NSMutableArray *row = [[structureQueryResult getRowAsArray] mutableCopy];
 
 		// For every NULL value replace it with the user's NULL value placeholder so we can actually print it
 		for (j = 0; j < [row count]; j++)
@@ -1538,8 +1530,8 @@
 		[row release];
 	}
 
-	for (i = 0; i < [indexesQueryResult numOfRows]; i++) {
-		NSMutableArray *eachIndex = [[indexesQueryResult fetchRowAsArray] mutableCopy];
+	for (i = 0; i < [indexesQueryResult numberOfRows]; i++) {
+		NSMutableArray *eachIndex = [[indexesQueryResult getRowAsArray] mutableCopy];
 
 		// Remove the 'table' column values
 		[eachIndex removeObjectAtIndex:0];
@@ -1658,10 +1650,10 @@
 		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
 
 		// Check for errors, but only if the query wasn't cancelled
-		if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
+		if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection getLastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection lastErrorMessage]] forKey:@"message"];
 			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		}
 	}
@@ -1671,12 +1663,12 @@
 								  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"] backtickQuotedString]]];
 
 	// Check for errors, but only if the query wasn't cancelled
-	if ([mySQLConnection queryErrored] && ![mySQLConnection queryCancelled]) {
+	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
 		[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
 									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"],
-									[mySQLConnection getLastErrorMessage]] forKey:@"message"];
+									[mySQLConnection lastErrorMessage]] forKey:@"message"];
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	}
 	else {

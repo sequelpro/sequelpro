@@ -36,6 +36,8 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"
+#import "SPMySQL.h"
+#import "SPDatabaseStructure.h"
 
 #pragma mark -
 #pragma mark lex init
@@ -229,7 +231,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #endif
 }
 
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion
+- (void) setConnection:(SPMySQLConnection *)theConnection withVersion:(NSInteger)majorVersion
 {
 	mySQLConnection = theConnection;
 	mySQLmajorVersion = majorVersion;
@@ -828,7 +830,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		NSString *theDb = (dbName == nil) ? [NSString stringWithString:currentDb] : [NSString stringWithString:dbName];
 		NSString *connectionID = [tableDocumentInstance connectionID];
 		NSString *conID = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, theDb];
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[[tableDocumentInstance databaseStructureRetrieval] structure] objectForKey:connectionID]];
 		if(theDb && dbs != nil && [dbs count] && [dbs objectForKey:conID] && [[dbs objectForKey:conID] isKindOfClass:[NSDictionary class]]) {
 			NSArray *allTables = [[dbs objectForKey:conID] allKeys];
 			// Check if found table name is known, if not parse for aliases
@@ -890,7 +892,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 					autoComplete:autoCompleteMode
 					oneColumn:isDictMode
 					alias:alias
-					isQueryingDBStructure:[mySQLConnection isQueryingDatabaseStructure]];
+					withDBStructureRetriever:[tableDocumentInstance databaseStructureRetrieval]];
 
 	completionParseRangeLocation = parseRange.location;
 
@@ -1455,7 +1457,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		if (tablesListInstance && [tablesListInstance tableName])
 			currentTable = [tablesListInstance tableName];
 
-		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[mySQLConnection getDbStructure] objectForKey:connectionID]];
+		NSDictionary *dbs = [NSDictionary dictionaryWithDictionary:[[[tableDocumentInstance databaseStructureRetrieval] structure] objectForKey:connectionID]];
 		if(currentDb != nil && currentTable != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb] && [[dbs objectForKey:currentDb] objectForKey:currentTable]) {
 			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
 			NSArray *allFields = [theTable allKeys];
@@ -1527,7 +1529,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 					autoComplete:NO
 					oneColumn:NO
 					alias:nil
-					isQueryingDBStructure:NO];
+					withDBStructureRetriever:nil];
 
 	//Get the NSPoint of the first character of the current word
 	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
@@ -1684,7 +1686,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 											autoComplete:NO
 											oneColumn:YES
 											alias:nil
-											isQueryingDBStructure:NO];
+											withDBStructureRetriever:nil];
 
 							//Get the NSPoint of the first character of the current word
 							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];

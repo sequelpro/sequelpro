@@ -30,6 +30,8 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"
+#import "SPMySQL.h"
+#include <pthread.h>
 
 @interface SPTableData (PrivateAPI)
 
@@ -70,7 +72,7 @@
  *
  * @param theConnection The used connection for the SPDatabaseDocument
  */
-- (void) setConnection:(MCPConnection *)theConnection
+- (void) setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -164,7 +166,7 @@
 		}
 	}
 
-	return (NSArray *)triggers;
+	return triggers;
 }
 
 /**
@@ -476,7 +478,7 @@
 	[constraints removeAllObjects];
 
 	// Retrieve the CREATE TABLE syntax for the table
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 
 	// Check for any errors, but only display them if a connection still exists
@@ -485,10 +487,10 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
-					   tableName, [mySQLConnection getLastErrorMessage]]);
+					   tableName, [mySQLConnection lastErrorMessage]]);
 
 			// If the current table doesn't exist anymore reload table list
-			if([mySQLConnection getLastErrorID] == 1146) {
+			if([mySQLConnection lastErrorID] == 1146) {
 
 				// Release the table loading lock to allow reselection/reloading to requery the database.
 				pthread_mutex_unlock(&dataProcessingLock);
@@ -503,8 +505,8 @@
 	}
 
 	// Retrieve the table syntax string
-	NSArray *syntaxResult = [theResult fetchRowAsArray];
-	NSArray *resultFieldNames = [theResult fetchFieldNames];
+	NSArray *syntaxResult = [theResult getRowAsArray];
+	NSArray *resultFieldNames = [theResult fieldNames];
 
 	// Only continue if syntaxResult is not nil. This accommodates causes where the above query caused the
 	// connection reconnect dialog to appear and the user chose to close the connection.
@@ -798,7 +800,6 @@
 	NSMutableArray *tableColumns;
 	NSDictionary *resultRow;
 	NSMutableDictionary *tableColumn, *viewData;
-	NSUInteger i;
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected views and return nil
@@ -811,7 +812,7 @@
 	}
 
 	// Retrieve the CREATE TABLE syntax for the table
-	MCPResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
+	SPMySQLResult *theResult = [mySQLConnection queryString: [NSString stringWithFormat: @"SHOW CREATE TABLE %@",
 																					   [viewName backtickQuotedString]
 																					]];
 	[theResult setReturnDataAsStrings:YES];
@@ -822,7 +823,7 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-					   [mySQLConnection getLastErrorMessage]]);
+					   [mySQLConnection lastErrorMessage]]);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return nil;
@@ -830,7 +831,7 @@
 
 	// Retrieve the table syntax string
 	if (tableCreateSyntax) [tableCreateSyntax release], tableCreateSyntax = nil;
-	NSString *syntaxString = [[theResult fetchRowAsArray] objectAtIndex:1];
+	NSString *syntaxString = [[theResult getRowAsArray] objectAtIndex:1];
 
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([syntaxString isNSNull]) {
@@ -856,20 +857,18 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-					   [mySQLConnection getLastErrorMessage]]);
+					   [mySQLConnection lastErrorMessage]]);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return nil;
 	}
 
 	// Loop through the fields and capture details
-	if ([theResult numOfRows]) [theResult dataSeek:0];
 	tableColumns = [[NSMutableArray alloc] init];
 	tableColumn = [[NSMutableDictionary alloc] init];
 	fieldParser = [[SPSQLParser alloc] init];
-	for ( i = 0; i < [theResult numOfRows] ; i++ ) {
+	for (resultRow in theResult) {
 		[tableColumn removeAllObjects];
-		resultRow = [theResult fetchRowAsDictionary];
 
 		// Add the column index and name
 		[tableColumn setObject:[NSString stringWithFormat:@"%llu", (unsigned long long)[tableColumns count]] forKey:@"datacolumnindex"];
@@ -938,7 +937,7 @@
 	[escapedTableName replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:NSMakeRange(0, [escapedTableName length])];
 	[escapedTableName replaceOccurrencesOfString:@"'" withString:@"\\\'" options:0 range:NSMakeRange(0, [escapedTableName length])];
 
-	MCPResult *tableStatusResult = nil;
+	SPMySQLResult *tableStatusResult = nil;
 
 	if ([tableListInstance tableType] == SPTableTypeProc) {
 		NSMutableString *escapedDatabaseName = [NSMutableString stringWithString:[tableDocumentInstance database]];
@@ -967,7 +966,7 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
 					nil, nil, [NSApp mainWindow], self, nil, nil,
 					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"),
-					   [mySQLConnection getLastErrorMessage]]);
+					   [mySQLConnection lastErrorMessage]]);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		pthread_mutex_unlock(&dataProcessingLock);
@@ -975,7 +974,7 @@
 	}
 
 	// Retrieve the status as a dictionary and set as the cache
-	[status setDictionary:[tableStatusResult fetchRowAsDictionary]];
+	[status setDictionary:[tableStatusResult getRowAsDictionary]];
 
 	if ([tableListInstance tableType] == SPTableTypeTable) {
 
@@ -1001,10 +1000,10 @@
 
 		// [status objectForKey:@"Rows"] is NULL then try to get the number of rows via SELECT COUNT(1) FROM `foo`
 		// this happens e.g. for db "information_schema"
-		if([[status objectForKey:@"Rows"] isKindOfClass:[NSNull class]]) {
+		if([[status objectForKey:@"Rows"] isNSNull]) {
 			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [escapedTableName backtickQuotedString] ]];
 			if (![mySQLConnection queryErrored])
-				[status setObject:[[tableStatusResult fetchRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+				[status setObject:[[tableStatusResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
 		}
 
@@ -1042,7 +1041,7 @@
 		[mySQLConnection setEncoding:@"utf8"];
 	}
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */",
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */",
 											  [[tableListInstance tableName] tickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
 
@@ -1052,7 +1051,7 @@
 			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"), NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
-							  [tableListInstance tableName], [mySQLConnection getLastErrorMessage]]);
+							  [tableListInstance tableName], [mySQLConnection lastErrorMessage]]);
 			if (triggers) [triggers release], triggers = nil;
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -1062,10 +1061,7 @@
 	}
 
 	if (triggers) [triggers release];
-	triggers = [[NSMutableArray alloc] init];
-	for (NSUInteger i=0; i<[theResult numOfRows]; i++) {
-		[triggers addObject:[theResult fetchRowAsDictionary]];
-	}
+	triggers = [[NSArray alloc] initWithArray:[theResult getAllRows]];
 
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
@@ -1298,32 +1294,31 @@
 	NSString *selectedTable = [tableListInstance tableName];
 	if(![selectedTable length]) return nil;
 
-	MCPResult *r;
-	NSArray *resultRow;
-	NSUInteger i;
+	SPMySQLResult *r;
 	NSMutableArray *keyColumns = [NSMutableArray array];
 
 	// select all columns that are primary keys
 	// MySQL before 5.0.3 does not support the WHERE syntax
 	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ /*!50003 WHERE `key` = 'PRI'*/", [selectedTable backtickQuotedString]]];
 	[r setReturnDataAsStrings:YES];
+	[r setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
-	if([r numOfRows] < 1) {
+	if ([r numberOfRows] < 1) {
 		if (changeEncoding && [mySQLConnection isConnected]) [mySQLConnection restoreStoredEncoding];
 		return nil;
 	}
 
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the PRIMARY KEY data:\n\n%@",@"message when the query that fetches the primary keys fails"), [mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the PRIMARY KEY data:\n\n%@",@"message when the query that fetches the primary keys fails"), [mySQLConnection lastErrorMessage]], @"OK", nil, nil);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		return nil;
 	}
 
 
-	for( i = 0; i < [r numOfRows]; i++ ) {
-		resultRow = [r fetchRowAsArray];
+	for (NSArray *resultRow in r) {
+
 		// check if the row is indeed a key (for MySQL servers before 5.0.3)
 		if ([[NSArrayObjectAtIndex(resultRow ,3) description] isEqualToString:@"PRI"]) {
 			[keyColumns addObject:[NSArrayObjectAtIndex(resultRow ,0) description]];

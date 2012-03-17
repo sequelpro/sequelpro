@@ -27,6 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseViewController.h"
+#import "SPMySQL.h"
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPTableContent.h"
@@ -103,9 +104,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (IBAction)updateTables:(id)sender
 {
-	MCPResult *theResult;
-	NSArray *resultRow;
-	NSUInteger i;
+	SPMySQLResult *theResult;
 	NSString *previousSelectedTable = nil;
 	NSString *previousFilterString = nil;
 	BOOL previousTableListIsSelectable = tableListIsSelectable;
@@ -150,25 +149,24 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Select the table list for the current database.  On MySQL versions after 5 this will include
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
 		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
-		if ([theResult numOfRows]) [theResult dataSeek:0];
-		if ([theResult numOfFields] == 1) {
-			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-				[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:0]];
+		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		if ([theResult numberOfFields] == 1) {
+			for (NSArray *eachRow in theResult) {
+				[tables addObject:[eachRow objectAtIndex:0]];
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 			}
 		} else {
-			for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-				resultRow = [theResult fetchRowAsArray];
+			for (NSArray *eachRow in theResult) {
+
 				// Due to encoding problems it can be the case that [resultRow objectAtIndex:0]
 				// return NSNull, thus catch that case for safety reasons
-				NSString *row = [resultRow objectAtIndex:0];
-				NSString *tableName;
-				if([row isKindOfClass:[NSString class]])
-					tableName = [NSString stringWithUTF8String:[row cStringUsingEncoding:[mySQLConnection stringEncoding]]];
-				else
+				id tableName = [eachRow objectAtIndex:0];
+				if ([tableName isNSNull]) {
 					tableName = @"...";
+				}
 				[tables addObject:tableName];
-				if ([[resultRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
+
+				if ([[eachRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
 					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];
 					tableListContainsViews = YES;
 				} else {
@@ -187,31 +185,31 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		 * backward compatibility with pre 4 I believe. I left the other methods below, in case.
 		 */
 		if ([[tableDocumentInstance serverSupport] supportsInformationSchema]) {
-			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = '%@' ORDER BY routine_name",[tableDocumentInstance database]];
+			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = %@ ORDER BY routine_name", [[tableDocumentInstance database] tickQuotedString]];
 			theResult = [mySQLConnection queryString:pQuery];
+			[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
-			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numOfRows] ) {
-				// add the header row
+			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] ) {
+
+				// Add the header row
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
-				[theResult dataSeek:0];
 
-				if( [theResult numOfFields] == 1 ) {
-					for( i = 0; i < [theResult numOfRows]; i++ ) {
-						[tables addObject:NSArrayObjectAtIndex([theResult fetchRowAsArray],3)];
-						if( [NSArrayObjectAtIndex([theResult fetchRowAsArray], 4) isEqualToString:@"PROCEDURE"]) {
+				if( [theResult numberOfFields] == 1 ) {
+					for (NSArray *eachRow in theResult) {
+						[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
+						if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
 							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
 						} else {
 							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
 						}
 					}
 				} else {
-					for( i = 0; i < [theResult numOfRows]; i++ ) {
-						resultRow = [theResult fetchRowAsArray];
-						[tables addObject:NSArrayObjectAtIndex(resultRow, 3)];
-						if( [NSArrayObjectAtIndex(resultRow, 4) isEqualToString:@"PROCEDURE"] ) {
+					for (NSArray *eachRow in theResult) {
+						[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
+						if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
 							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
 						} else {
 							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
@@ -343,10 +341,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Query the structure of all databases in the background
 	if (sender == self)
 		// Invoked by SP
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", [NSNumber numberWithBool:YES], @"cancelQuerying", nil]];
 }
 
 /**
@@ -728,7 +726,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[self updateTables:self];
@@ -1530,7 +1528,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[tableDocumentInstance updateWindowTitle:self];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
 #pragma mark -
@@ -1744,7 +1742,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 										   alternateButton:nil
 											   otherButton:nil
 								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to import a table via: \n%@\n\n\nMySQL said: %@", @"error importing table informative message"),
-									query, [mySQLConnection getLastErrorMessage]]];
+									query, [mySQLConnection lastErrorMessage]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
@@ -2159,7 +2157,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
 			}
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\n\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\n\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -2193,7 +2191,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 }
 
@@ -2218,7 +2216,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 										   alternateButton:nil
 											   otherButton:nil
 								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"),
-									[filteredTables objectAtIndex:currentIndex], [mySQLConnection getLastErrorMessage]]];
+									[filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			// NSArray *buttons = [alert buttons];
@@ -2329,7 +2327,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 	}
 	else {
@@ -2339,7 +2337,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		SPBeginAlertSheet(NSLocalizedString(@"Error adding new table", @"error adding new table message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), SPAddRow,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection lastErrorMessage]]);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		[[tablesListView onMainThread] reloadData];
@@ -2393,16 +2391,17 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 
 	// Get table/view structure
-	MCPResult *queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
+	SPMySQLResult *queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
 												[tableType uppercaseString],
 												[[filteredTables objectAtIndex:[tablesListView selectedRow]] backtickQuotedString]
 												]];
 	[queryResult setReturnDataAsStrings:YES];
 
-	if ( ![queryResult numOfRows] ) {
+	if ( ![queryResult numberOfRows] ) {
+
 		//error while getting table structure
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
 
     } else {
 		//insert new table name in create syntax and create new table
@@ -2410,14 +2409,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		NSString *scanString;
 
 		if(tblType == SPTableTypeView){
-			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create View"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create View"]];
 			[scanner scanUpToString:@"AS" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[scanner release];
 			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
 		}
 		else if(tblType == SPTableTypeTable){
-			scanner = [[NSScanner alloc] initWithString:[[queryResult fetchRowAsDictionary] objectForKey:@"Create Table"]];
+			scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create Table"]];
 			[scanner scanUpToString:@"(" intoString:nil];
 			[scanner scanUpToString:@"" intoString:&scanString];
 			[scanner release];
@@ -2436,7 +2435,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		else if(tblType == SPTableTypeFunc || tblType == SPTableTypeProc)
 		{
 			// get the create syntax
-			MCPResult *theResult;
+			SPMySQLResult *theResult;
 			if(selectedTableType == SPTableTypeProc)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
 			else if([self tableType] == SPTableTypeFunc)
@@ -2448,20 +2447,20 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			if ([mySQLConnection queryErrored]) {
 				if ([mySQLConnection isConnected]) {
 					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection getLastErrorMessage]]);
+									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]);
 				}
 				return;
 			}
 
 			[theResult setReturnDataAsStrings:YES];
-			NSString *tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+			NSString *tableSyntax = [[theResult getRowAsArray] objectAtIndex:2];
 
 			// replace the old name by the new one and drop the old one
 			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 
 			if ([mySQLConnection queryErrored]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
+								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
 			}
 
 		}
@@ -2469,7 +2468,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
         if ([mySQLConnection queryErrored]) {
 			//error while creating new table
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
         } else {
 
             if (copyTableContent) {
@@ -2531,7 +2530,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		}
 	}
@@ -2578,7 +2577,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[mySQLConnection queryString:[NSString stringWithFormat:@"RENAME TABLE %@ TO %@", [oldTableName backtickQuotedString], [newTableName backtickQuotedString]]];
 		// check for errors
 		if ([mySQLConnection queryErrored]) {
-			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming '%@'.\n\nMySQL said: %@", @"rename table error informative message"), oldTableName, [mySQLConnection getLastErrorMessage]];
+			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming '%@'.\n\nMySQL said: %@", @"rename table error informative message"), oldTableName, [mySQLConnection lastErrorMessage]];
 		}
 		
 		return;
@@ -2597,12 +2596,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			default: break;
 		}
 
-		MCPResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
+		SPMySQLResult *theResult  = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
 		if ([mySQLConnection queryErrored]) {
-			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't retrieve syntax"), oldTableName, [mySQLConnection getLastErrorMessage]];
+			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't retrieve the syntax for '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't retrieve syntax"), oldTableName, [mySQLConnection lastErrorMessage]];
 		}
 		[theResult setReturnDataAsStrings:YES];
-		NSString *oldCreateSyntax = [[theResult fetchRowAsArray] objectAtIndex:2];
+		NSString *oldCreateSyntax = [[theResult getRowAsArray] objectAtIndex:2];
 
 		// replace the old name with the new name
 		NSRange rangeOfProcedureName = [oldCreateSyntax rangeOfString: [NSString stringWithFormat:@"%@ %@", stringTableType, [oldTableName backtickQuotedString] ] ];
@@ -2613,12 +2612,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			withString: [NSString stringWithFormat:@"%@ %@", stringTableType, [newTableName backtickQuotedString] ] ];
 		[mySQLConnection queryString: newCreateSyntax];
 		if ([mySQLConnection queryErrored]) {
-			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't recreate procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't recreate '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't recreate procedure"), oldTableName, [mySQLConnection lastErrorMessage]];
 		}
 
 		[mySQLConnection queryString: [NSString stringWithFormat: @"DROP %@ %@", stringTableType, [oldTableName backtickQuotedString]]];
 		if ([mySQLConnection queryErrored]) {
-			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't delete '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't delete old procedure"), oldTableName, [mySQLConnection getLastErrorMessage]];
+			[NSException raise:@"MySQL Error" format:NSLocalizedString(@"An error occured while renaming. I couldn't delete '%@'.\n\nMySQL said: %@", @"rename precedure/function error - can't delete old procedure"), oldTableName, [mySQLConnection lastErrorMessage]];
 		}
 		return;
 	}

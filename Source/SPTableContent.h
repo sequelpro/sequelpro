@@ -25,9 +25,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController;
+@class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
 @class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList, SPContentFilterManager;
 
 @interface SPTableContent : NSObject
@@ -55,7 +53,7 @@
 	IBOutlet id removeButton;
 	IBOutlet id reloadButton;
 #ifndef SP_REFACTOR
-	IBOutlet id multipleLineEditingButton;
+	IBOutlet NSButton *multipleLineEditingButton;
 	IBOutlet id countText;
 	IBOutlet id limitRowsField;
 	IBOutlet id limitRowsButton;
@@ -90,7 +88,7 @@
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
 	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
 #endif
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
@@ -182,7 +180,7 @@
 // Pagination
 - (IBAction) navigatePaginationFromButton:(id)sender;
 #ifndef SP_REFACTOR
-- (IBAction) togglePagination:(id)sender;
+- (IBAction) togglePagination:(NSButton *)sender;
 #endif
 - (void) setPaginationViewVisibility:(BOOL)makeVisible;
 - (void) updatePaginationState;
@@ -213,11 +211,11 @@
 - (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Additional methods
-- (void)setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
+- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)saveRowToTable;
 - (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (NSString *)argumentForRow:(NSInteger)row;

@@ -39,8 +39,8 @@
 #import "SPFieldMapperController.h"
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
+#import "SPMySQL.h"
 
-#import <MCPKit/MCPKit.h>
 #import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
@@ -424,9 +424,9 @@
 			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
 			sqlEncoding = [fileEncodingDetector encoding];
 			[fileEncodingDetector release];
-			if ([MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]) {
+			if ([SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]) {
 				connectionEncodingToRestore = [mySQLConnection encoding];
-				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [MCPConnection mySQLEncodingForStringEncoding:sqlEncoding]]];
+				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]]];
 			}
 		}
 
@@ -564,11 +564,11 @@
 			if (![query length]) continue;
 			
 			// Run the query
-			[mySQLConnection queryString:query usingEncoding:sqlEncoding streamingResult:NO];
+			[mySQLConnection queryString:query usingEncoding:sqlEncoding withResultType:SPMySQLResultAsResult];
 
 			// Check for any errors
-			if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-				[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]];
+			if ([mySQLConnection queryErrored] && ![[mySQLConnection lastErrorMessage] isEqualToString:@"Query was empty"]) {
+				[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]];
 
 				// If not set to ignore errors, ask what to do.  Use NSAlert rather than
 				// SPBeginWaitingAlertSheet as there is already a modal sheet in progress.
@@ -580,7 +580,7 @@
 								   defaultButton:NSLocalizedString(@"Continue", @"continue button")
 								 alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
 									 otherButton:NSLocalizedString(@"Stop", @"stop button")
-					   informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]
+					   informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]
 					];
 					[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
 					sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
@@ -632,11 +632,11 @@
 	if ([query length] && !progressCancelled) {
 
 		// Run the query
-		[mySQLConnection queryString:query usingEncoding:sqlEncoding streamingResult:NO];
+		[mySQLConnection queryString:query usingEncoding:sqlEncoding withResultType:SPMySQLResultAsResult];
 
 		// Check for any errors
-		if ([mySQLConnection queryErrored] && ![[mySQLConnection getLastErrorMessage] isEqualToString:@"Query was empty"]) {
-			[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection getLastErrorMessage]];
+		if ([mySQLConnection queryErrored] && ![[mySQLConnection lastErrorMessage] isEqualToString:@"Query was empty"]) {
+			[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]];
 		}
 
 		// Increment the processed queries count
@@ -672,7 +672,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -1067,10 +1067,10 @@
 							[tableDocumentInstance showConsole:nil];
 							[errors appendFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
+								(long)(rowsImported+1),[mySQLConnection lastErrorMessage]];
 						}
 
-						if ( insertRemainingRowsAfterUpdate && ![mySQLConnection affectedRows]) {
+						if ( insertRemainingRowsAfterUpdate && ![mySQLConnection rowsAffectedByLastQuery]) {
 							query = [[NSMutableString alloc] initWithString:insertRemainingBaseString];
 							[query appendString:[self mappedValueStringForRowArray:[parsedRows objectAtIndex:i]]];
 
@@ -1084,7 +1084,7 @@
 							if ([mySQLConnection queryErrored]) {
 								[errors appendFormat:
 									NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-									(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
+									(long)(rowsImported+1),[mySQLConnection lastErrorMessage]];
 							}
 						}
 
@@ -1120,7 +1120,7 @@
 						if ([mySQLConnection queryErrored]) {
 							[errors appendFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
-								(long)(rowsImported+1),[mySQLConnection getLastErrorMessage]];
+								(long)(rowsImported+1),[mySQLConnection lastErrorMessage]];
 						}
 						rowsImported++;
 						if (fileIsCompressed) {
@@ -1194,7 +1194,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];
@@ -1379,7 +1379,7 @@
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 				NSMutableString *globalVar = [NSMutableString string];
 				id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-				if([insertItem isKindOfClass:[NSNull class]]) {
+				if([insertItem isNSNull]) {
 					[globalVar setString:@"NULL"];
 				} else if([insertItem isSPNotLoaded]) {
 					[globalVar setString:@"NULL"];
@@ -1417,7 +1417,7 @@
 				if (cellData == [NSNull null]) {
 					[setString appendString:@"NULL"];
 				} else {
-					[setString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
+					[setString appendString:[mySQLConnection escapeAndQuoteString:cellData]];
 				}
 			}
 		}
@@ -1431,7 +1431,7 @@
 			if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 				NSMutableString *globalVar = [NSMutableString string];
 				id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-				if([insertItem isKindOfClass:[NSNull class]]) {
+				if([insertItem isNSNull]) {
 					[globalVar setString:@"NULL"];
 				} else if([insertItem isSPNotLoaded]) {
 					[globalVar setString:@"NULL"];
@@ -1469,7 +1469,8 @@
 				if (cellData == [NSNull null]) {
 					[whereString appendString:@" IS NULL"];
 				} else {
-					[whereString appendFormat:@"='%@'", [mySQLConnection prepareString:cellData]];
+					[whereString appendString:@"="];
+					[whereString appendString:[mySQLConnection escapeAndQuoteString:cellData]];
 				}
 			}
 		}
@@ -1505,7 +1506,7 @@
 		if(fieldMappingArrayHasGlobalVariables && mapColumn >= numberOfImportDataColumns) {
 			NSMutableString *globalVar = [NSMutableString string];
 			id insertItem = NSArrayObjectAtIndex(fieldMappingGlobalValueArray, mapColumn);
-			if([insertItem isKindOfClass:[NSNull class]]) {
+			if([insertItem isNSNull]) {
 				[globalVar setString:@"NULL"];
 			} else if([insertItem isSPNotLoaded]) {
 				[globalVar setString:@"NULL"];
@@ -1549,9 +1550,10 @@
 				if([geometryFields count] && [geometryFieldsMapIndex containsIndex:i]) {
 					[valueString appendString:[(NSString*)cellData getGeomFromTextString]];
 				} else if([bitFields count] && [bitFieldsMapIndex containsIndex:i]) {
-					[valueString appendFormat:@"b'%@'", [mySQLConnection prepareString:cellData]];
+					[valueString appendString:@"b"];
+					[valueString appendString:[mySQLConnection escapeAndQuoteString:cellData]];
 				} else {
-					[valueString appendFormat:@"'%@'", [mySQLConnection prepareString:cellData]];
+					[valueString appendString:[mySQLConnection escapeAndQuoteString:cellData]];
 				}
 			}
 		}
@@ -1636,7 +1638,7 @@
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once.
  */
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	NSButtonCell *switchButton = [[NSButtonCell alloc] init];
 	

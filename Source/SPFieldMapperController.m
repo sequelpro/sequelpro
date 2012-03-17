@@ -31,6 +31,7 @@
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
+#import "SPMySQL.h"
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
@@ -231,7 +232,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 #pragma mark -
 #pragma mark Setter methods
 
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -422,7 +423,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
-									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new column informative message"), [fieldMappingTableColumnNames objectAtIndex:currentIndex], createString, [mySQLConnection getLastErrorMessage]]];
+									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new column informative message"), [fieldMappingTableColumnNames objectAtIndex:currentIndex], createString, [mySQLConnection lastErrorMessage]]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -472,7 +473,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button")
 										   alternateButton:nil
 											   otherButton:nil
-								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection getLastErrorMessage]]];
+								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection lastErrorMessage]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -1189,7 +1190,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 		// Replace the current map pair with the last selected global value
-		if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+		if ([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
 
 			[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
@@ -1405,7 +1406,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		CGFloat   dist     = 1e6f;
 		for(j=0; j < [fileHeaderNames count]; j++) {
 			id fileHeaderName = NSArrayObjectAtIndex(fileHeaderNames,j);
-			if([fileHeaderName isKindOfClass:[NSNull class]] || [fileHeaderName isSPNotLoaded]) continue;
+			if([fileHeaderName isNSNull] || [fileHeaderName isSPNotLoaded]) continue;
 			NSString *headerName = [(NSString*)fileHeaderName lowercaseString];
 			NSString *tableHeadName = [NSArrayObjectAtIndex(tableHeaderNames,i) lowercaseString];
 			dist = [tableHeadName levenshteinDistanceWithWord:headerName];
@@ -1484,7 +1485,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count]
-					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isKindOfClass:[NSNull class]]) {
+					&& NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) != [NSNull null]) {
 				value = i;
 			} else {
 				value = 0;

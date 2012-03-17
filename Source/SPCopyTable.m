@@ -22,11 +22,6 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-#import <MCPKit/MCPKit.h>
-#ifndef SP_REFACTOR /* headers */
-#import "MCPGeometryData.h"
-#endif
-
 #import "SPCopyTable.h"
 #import "SPTableContent.h"
 #import "SPTableTriggers.h"
@@ -41,6 +36,7 @@
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
 #import "SPTablesList.h"
+#import "SPMySQL.h"
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
@@ -157,7 +153,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
-	Class mcpGeometryData = [MCPGeometryData class];
+	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 	NSUInteger rowCounter = 0;
 
 	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
@@ -210,7 +206,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						[result appendString:@"BLOB\t"];
 					}
 				}
-				else if ([cellData isKindOfClass:mcpGeometryData]) {
+				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
@@ -295,7 +291,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	// Loop through the rows, adding their descriptive contents
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
-	Class mcpGeometryData = [MCPGeometryData class];
+	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 
 	NSUInteger rowCounter = 0;
 
@@ -349,7 +345,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						[result appendString:@"\"BLOB\","];
 					}
 				}
-				else if ([cellData isKindOfClass:mcpGeometryData]) {
+				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
@@ -511,15 +507,15 @@ static const NSInteger kBlobAsImageFile = 4;
 					case 1:
 					case 2:
 						if ([cellData isKindOfClass:nsDataClass]) {
-							[value appendFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:cellData]];
+							[value appendString:[mySQLConnection escapeAndQuoteData:cellData]];
 						} else {
-							[value appendFormat:@"'%@', ", [mySQLConnection prepareString:[cellData description]]];
+							[value appendString:[mySQLConnection escapeAndQuoteString:[cellData description]]];
 						}
 						break;
 
 					// GEOMETRY
 					case 3:
-						[value appendFormat:@"X'%@', ", [mySQLConnection prepareBinaryData:[cellData data]]];
+						[value appendString:[mySQLConnection escapeAndQuoteData:[cellData data]]];
 						break;
 					// Unhandled cases - abort
 					default:
@@ -617,7 +613,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	Class nsDataClass = [NSData class];
-	Class mcpGeometryData = [MCPGeometryData class];
+	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
 	while ( rowIndex != NSNotFound )
 	{
@@ -639,7 +635,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						[displayString release];
 					}
 				}
-				else if ([cellData isKindOfClass:mcpGeometryData]) {
+				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					[result appendFormat:@"%@\t", [cellData wktString]];
 				} else
 					[result appendFormat:@"%@\t", [cellData description]];
@@ -705,7 +701,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 	// Determine the available size
 	NSScrollView *parentScrollView = (NSScrollView*)[[self superview] superview];
- 	CGFloat visibleTableWidth = [parentScrollView bounds].size.width - [NSScroller scrollerWidth] - [columnDefinitions count] * 3.5;
+ 	CGFloat visibleTableWidth = [parentScrollView bounds].size.width - [NSScroller scrollerWidth] - [columnDefinitions count] * 3.5f;
 
 	for (NSDictionary *columnDefinition in columnDefinitions) {
 		if ([[NSThread currentThread] isCancelled]) return nil;
@@ -735,7 +731,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			for (NSString *columnIdentifier in columnIdentifiers) {
 				columnWidth = [[columnWidths objectForKey:columnIdentifier] integerValue];
 				if (columnWidth > SP_MAX_CELL_WIDTH_MULTICOLUMN) {
-					columnWidth -= ceil((double)(columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN) / availableWidthToReduce * widthToReduce);
+					columnWidth -= ceilf((double)(columnWidth - SP_MAX_CELL_WIDTH_MULTICOLUMN) / availableWidthToReduce * widthToReduce);
 					[columnWidths setObject:[NSNumber numberWithUnsignedInteger:columnWidth] forKey:columnIdentifier];
 				}
 			}
@@ -764,13 +760,13 @@ static const NSInteger kBlobAsImageFile = 4;
 #endif
 	NSUInteger columnIndex = (NSUInteger)[[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
 	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
-	Class mcpGeometryData = [MCPGeometryData class];
+	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 
 	// Check the number of rows available to check, sampling every n rows
 	if ([tableStorage count] < rowsToCheck)
 		rowStep = 1;
 	else
-		rowStep = floor([tableStorage count] / rowsToCheck);
+		rowStep = floorf([tableStorage count] / rowsToCheck);
 
 	rowsToCheck = [tableStorage count];
 
@@ -784,8 +780,8 @@ static const NSInteger kBlobAsImageFile = 4;
 		// Retrieve the cell's content
 		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
 
-		// Get WKT string out of the MCPGeometryData for calculation
-		if ([contentString isKindOfClass:mcpGeometryData])
+		// Get WKT string out of the SPMySQLGeometryData for calculation
+		if ([contentString isKindOfClass:spmysqlGeometryData])
 			contentString = [contentString wktString];
 
 		// Replace NULLs with their placeholder string

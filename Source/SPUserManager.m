@@ -29,6 +29,7 @@
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
+#import "SPMySQL.h"
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 static const NSString *SPTableViewNameColumnID = @"NameColumn";
@@ -140,23 +141,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSMutableString *privKey;
 	NSArray *privRow;
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSMutableArray *resultAsArray = [NSMutableArray array];
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
 	// Select users from the mysql.user table
-	MCPResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
-	
-	NSUInteger rows = (NSUInteger)[result numOfRows];
-	
-	if (rows > 0) [result dataSeek:0];
-	
-	for (NSUInteger i = 0; i < rows; i++)
-	{
-		[resultAsArray addObject:[result fetchRowAsDictionary]];
-	}
-	
-	[usersResultArray addObjectsFromArray:resultAsArray];
+	SPMySQLResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
+	[result setReturnDataAsStrings:YES];
+	[usersResultArray addObjectsFromArray:[result getAllRows]];
 
 	[self _initializeTree:usersResultArray];
 
@@ -169,12 +159,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	if ([serverSupport supportsShowPrivileges]) {
 	
 		result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
-		
 		[result setReturnDataAsStrings:YES];
 	}
 	
-	if (result && [result numOfRows]) {
-		while ((privRow = [result fetchRowAsArray])) 
+	if (result && [result numberOfRows]) {
+		while ((privRow = [result getRowAsArray])) 
 		{
 			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
 
@@ -189,11 +178,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	} 
 	// If that fails, base privilege support on the mysql.users columns
 	else {
-		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];
-		
+		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];		
 		[result setReturnDataAsStrings:YES];
 		
-		while ((privRow = [result fetchRowAsArray])) 
+		while ((privRow = [result getRowAsArray])) 
 		{
 			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
 			
@@ -308,15 +296,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Initialize Databases
 	[schemas removeAllObjects];
-	
-	MCPResult *results = [self.mySqlConnection listDBs];
-	
-	if ([results numOfRows]) [results dataSeek:0];
-	
-	for (NSUInteger i = 0; i < [results numOfRows]; i++) 
-	{
-		[schemas addObject:[results fetchRowAsDictionary]];
-	}
+	[schemas addObjectsFromArray:[self.mySqlConnection databases]];
 	
 	[schemaController rearrangeObjects];
 	
@@ -377,16 +357,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSString *queryString = [NSString stringWithFormat:@"SELECT * from mysql.db d WHERE d.user = %@ and d.host = %@", 
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	
-	MCPResult *queryResults = [self.mySqlConnection queryString:queryString];
+	SPMySQLResult *queryResults = [self.mySqlConnection queryString:queryString];
+	[queryResults setReturnDataAsStrings:YES];
 	
-	if ([queryResults numOfRows] > 0) {
-		// Go to the beginning
-		[queryResults dataSeek:0];
-	}
-	
-	for (NSUInteger i = 0; i < [queryResults numOfRows]; i++) 
+	for (NSDictionary *rowDict in queryResults) 
 	{
-		NSDictionary *rowDict = [queryResults fetchRowAsDictionary];
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
 																inManagedObjectContext:[self managedObjectContext]];
 		for (NSString *key in rowDict)
@@ -881,7 +856,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// The passed in objects should be an array of NSDictionaries with a key
 	// of "name".
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
-	NSString *selectedDb = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
+	NSString *selectedDb = [[schemaController selectedObjects] objectAtIndex:0];
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
@@ -1212,12 +1187,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
 									  [dbName tickQuotedString]];
 	
-	MCPResult *result = [self.mySqlConnection queryString:statement];
-	
-	NSUInteger rows = (NSUInteger)[result numOfRows];
-	BOOL userExists = YES;
-	
-	if (rows == 0) userExists = NO;
+	NSArray *matchingUsers = [self.mySqlConnection getAllRowsFromQuery:statement];	
 	
 	for (NSString *key in self.privsSupportedByServer)
 	{
@@ -1228,7 +1198,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				if (userExists || [grantPrivileges count] > 0) {
+				if ([matchingUsers count] || [grantPrivileges count] > 0) {
 					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
 			}
@@ -1433,11 +1403,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	if ([self.mySqlConnection queryErrored]) {
 		if (isSaving) {
-			[errorsString appendFormat:@"%@\n", [self.mySqlConnection getLastErrorMessage]];
+			[errorsString appendFormat:@"%@\n", [self.mySqlConnection lastErrorMessage]];
 		} else {
 			SPBeginAlertSheet(NSLocalizedString(@"An error occurred", @"mysql error occurred message"), 
 							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection lastErrorMessage]]);
 		}
 
 		return NO;
@@ -1565,7 +1535,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
-				NSString *selectedSchema = [[[schemaController selectedObjects] objectAtIndex:0] valueForKey:@"Database"];
+				NSString *selectedSchema = [[schemaController selectedObjects] objectAtIndex:0];
 				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
                                                       schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
                                                         host:[user valueForKey:@"host"]];

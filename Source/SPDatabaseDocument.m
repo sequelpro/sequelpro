@@ -35,6 +35,8 @@ enum {
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
+#import "SPMySQL.h"
+
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #ifndef SP_REFACTOR /* headers */
@@ -58,6 +60,7 @@ enum {
 #import "SPTableData.h"
 #endif
 #import "SPDatabaseData.h"
+#import "SPDatabaseStructure.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPExtendedTableInfo.h"
@@ -117,6 +120,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 @synthesize isProcessing;
 @synthesize serverSupport;
+@synthesize databaseStructureRetrieval;
 #ifndef SP_REFACTOR /* ivars */
 @synthesize processID;
 #endif
@@ -216,6 +220,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[nibLoader release];
 		[nibObjectsToRelease addObjectsFromArray:dbViewTopLevelObjects];
 #endif
+
+		databaseStructureRetrieval = [[SPDatabaseStructure alloc] initWithDelegate:self];
 	}
 	
 	return self;
@@ -381,7 +387,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #pragma mark -
 #pragma mark Connection callback and methods
 
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
@@ -419,6 +425,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[self setDatabases:self];
 	
 	[chooseDatabaseButton setEnabled:!_isWorkingLevel];
+
+	// Set the connection on the database structure builder
+	[databaseStructureRetrieval setConnectionToClone:mySQLConnection];
 
 	[databaseDataInstance setConnection:mySQLConnection];
 	
@@ -558,7 +567,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  *
  * @return The document's connection
  */
-- (MCPConnection *) getConnection 
+- (SPMySQLConnection *) getConnection 
 {
 	return mySQLConnection;
 }
@@ -592,28 +601,22 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 #endif
 
-	MCPResult *queryResult = [mySQLConnection listDBs];
-
-	if ([queryResult numOfRows]) [queryResult dataSeek:0];
-
 	if (allDatabases) [allDatabases release];
 	if (allSystemDatabases) [allSystemDatabases release];
 	
-	allDatabases = [[NSMutableArray alloc] initWithCapacity:(NSUInteger)[queryResult numOfRows]];
+	NSArray *theDatabaseList = [mySQLConnection databases];
 
+	allDatabases = [[NSMutableArray alloc] initWithCapacity:[theDatabaseList count]];
 	allSystemDatabases = [[NSMutableArray alloc] initWithCapacity:2];
 	
-	for (NSUInteger i = 0 ; i < [queryResult numOfRows] ; i++)
-	{
-		NSString *database = NSArrayObjectAtIndex([queryResult fetchRowAsArray], 0);
+	for (NSString *databaseName in theDatabaseList) {
 		
-		// If the database is either information_schema or mysql then it is classed as a system table
-		// 5.5.3+ performance_schema
-		if ([database isEqualToString:@"information_schema"] || [database isEqualToString:@"mysql"] || [database isEqualToString:@"performance_schema"]) {
-			[allSystemDatabases addObject:database];
-		}
-		else {
-			[allDatabases addObject:database];
+		// If the database is either information_schema or mysql then it is classed as a
+		// system table; similarly, for 5.5.3+, performance_schema
+		if ([databaseName isEqualToString:@"information_schema"] || [databaseName isEqualToString:@"mysql"] || [databaseName isEqualToString:@"performance_schema"]) {
+			[allSystemDatabases addObject:databaseName];
+		} else {
+			[allDatabases addObject:databaseName];
 		}
 	}
 
@@ -914,7 +917,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:mySQLConnection withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:databaseStructureRetrieval withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		} else {
 			// reset chooseDatabaseButton
@@ -972,15 +975,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
 #endif
 
-	MCPResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
+	SPMySQLResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
+	[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 	if (![mySQLConnection queryErrored]) {
-		NSInteger i;
-		NSInteger r = (NSInteger)[theResult numOfRows];
-		if (r) [theResult dataSeek:0];
-		for ( i = 0 ; i < r ; i++ ) {
-			dbName = NSArrayObjectAtIndex([theResult fetchRowAsArray], 0);
+		for (NSArray *eachRow in theResult) {
+			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
-		if(![dbName isKindOfClass:[NSNull class]]) {
+		if(![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
@@ -1351,7 +1352,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (!taskCanBeCancelled) return;
 
 	[taskCancelButton setEnabled:NO];
-	[mySQLConnection cancelCurrentQuery];
+
+	// See whether there is an active database structure task and whether it can be used
+	// to cancel the query, for speed (no connection overhead!)
+	if (databaseStructureRetrieval && [databaseStructureRetrieval connection]) {
+		[mySQLConnection setLastQueryWasCancelled:YES];
+		[[databaseStructureRetrieval connection] killQueryOnThreadID:[mySQLConnection mysqlConnectionThreadId]];
+	} else {
+		[mySQLConnection cancelCurrentQuery];
+	}
 
 	if (taskCancellationCallbackObject && taskCancellationCallbackSelector) {
 		[taskCancellationCallbackObject performSelector:taskCancellationCallbackSelector];
@@ -1545,7 +1554,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void)detectDatabaseEncoding
 {
-	MCPResult *charSetResult;
+	SPMySQLResult *charSetResult;
 	NSString *mysqlEncoding = nil;
 
 	_supportsEncoding = YES;
@@ -1554,11 +1563,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if ([serverSupport supportsCharacterSetDatabaseVar]) {
 		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
 		[charSetResult setReturnDataAsStrings:YES];
-		mysqlEncoding = [[charSetResult fetchRowAsDictionary] objectForKey:@"Value"];
+		mysqlEncoding = [[charSetResult getRowAsDictionary] objectForKey:@"Value"];
 	} 
 	// MySQL 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
 	else {
-		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] fetchRowAsDictionary] objectForKey:@"Value"];
+		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] getRowAsDictionary] objectForKey:@"Value"];
 	}
 
 	[selectedDatabaseEncoding release];
@@ -1644,13 +1653,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			return;
 		}
 
-		MCPResult *theResult = [mySQLConnection queryString:query];
+		SPMySQLResult *theResult = [mySQLConnection queryString:query];
 		[theResult setReturnDataAsStrings:YES];
 
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if ([mySQLConnection queryErrored]) {
 			if ([mySQLConnection isConnected]) {
-				NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"),[mySQLConnection getLastErrorMessage]], @"OK", nil, nil);
+				NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"), [mySQLConnection lastErrorMessage]], @"OK", nil, nil);
 			}
 
 			return;
@@ -1658,9 +1667,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		NSString *tableSyntax;
 		if (type == SPTableTypeProc)
-			tableSyntax = [NSString stringWithFormat:@"DELIMITER ;;\n%@;;\nDELIMITER ", [[theResult fetchRowAsArray] objectAtIndex:colOffs]];
+			tableSyntax = [NSString stringWithFormat:@"DELIMITER ;;\n%@;;\nDELIMITER ", [[theResult getRowAsArray] objectAtIndex:colOffs]];
 		else
-			tableSyntax = [[theResult fetchRowAsArray] objectAtIndex:colOffs];
+			tableSyntax = [[theResult getRowAsArray] objectAtIndex:colOffs];
 
 		// A NULL value indicates that the user does not have permission to view the syntax
 		if ([tableSyntax isNSNull]) {
@@ -1743,7 +1752,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1756,7 +1765,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1766,10 +1775,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSArray *resultStatuses = [theResult getAllRows];
 	BOOL statusOK = YES;
-	for(id res in result) {
-		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+	for (NSDictionary *eachRow in theResult) {
+		if (![[eachRow objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
 			statusOK = NO;
 			break;
 		}
@@ -1777,7 +1786,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	// Process result
 	if([selectedItems count] == 1) {
-		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Check table successfully passed.",@"check table successfully passed message") : NSLocalizedString(@"Check table failed.", @"check table failed message");
 
@@ -1799,7 +1808,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while checking selected items", @"error while checking selected items message")];
@@ -1819,7 +1828,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1832,7 +1841,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1842,18 +1851,18 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSArray *resultStatuses = [theResult getAllRows];
 	BOOL statusOK = YES;
-	for(id res in result) {
-		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+	for (NSDictionary *eachRow in resultStatuses) {
+		if(![[eachRow objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
 			statusOK = NO;
 			break;
 		}
 	}
 
 	// Process result
-	if([selectedItems count] == 1) {
-		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if ([selectedItems count] == 1) {
+		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
 
@@ -1875,7 +1884,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while analyzing selected items", @"error while analyzing selected items message")];
@@ -1895,7 +1904,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1908,7 +1917,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1918,18 +1927,18 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSArray *resultStatuses = [theResult getAllRows];
 	BOOL statusOK = YES;
-	for(id res in result) {
-		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+	for (NSDictionary *eachRow in resultStatuses) {
+		if (![[eachRow objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
 			statusOK = NO;
 			break;
 		}
 	}
 
 	// Process result
-	if([selectedItems count] == 1) {
-		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if ([selectedItems count] == 1) {
+		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
 
@@ -1951,7 +1960,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while optimizing selected items", @"error while optimizing selected items message")];
@@ -1970,7 +1979,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1983,7 +1992,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1993,18 +2002,18 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSArray *resultStatuses = [theResult getAllRows];
 	BOOL statusOK = YES;
-	for(id res in result) {
-		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+	for (NSDictionary *eachRow in resultStatuses) {
+		if (![[eachRow objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
 			statusOK = NO;
 			break;
 		}
 	}
 
 	// Process result
-	if([selectedItems count] == 1) {
-		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if ([selectedItems count] == 1) {
+		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
 
@@ -2013,7 +2022,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		message = NSLocalizedString(@"Successfully repaired all selected items.",@"successfully repaired all selected items message");
 	}
 
-	if(message) {
+	if (message) {
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Repair %@", @"REPAIR one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
@@ -2026,7 +2035,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while repairing selected items", @"error while repairing selected items message")];
@@ -2045,7 +2054,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2058,7 +2067,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2068,18 +2077,18 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
+	NSArray *resultStatuses = [theResult getAllRows];
 	BOOL statusOK = YES;
-	for(id res in result) {
-		if(![[res objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
+	for (NSDictionary *eachRow in resultStatuses) {
+		if (![[eachRow objectForKey:@"Msg_type"] isEqualToString:@"status"]) {
 			statusOK = NO;
 			break;
 		}
 	}
 
 	// Process result
-	if([selectedItems count] == 1) {
-		NSDictionary *lastresult = [[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject];
+	if ([selectedItems count] == 1) {
+		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
 
@@ -2088,7 +2097,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		message = NSLocalizedString(@"Successfully flushed all selected items.",@"successfully flushed all selected items message");
 	}
 
-	if(message) {
+	if (message) {
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Flush %@", @"FLUSH one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
@@ -2101,7 +2110,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
 		[alert setMessageText:NSLocalizedString(@"Error while flushing selected items", @"error while flushing selected items message")];
@@ -2120,7 +2129,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	if([selectedItems count] == 0) return;
 
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECKSUM TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2132,7 +2141,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection getLastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2143,8 +2152,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	}
 
 	// Process result
-	if([selectedItems count] == 1) {
-		message = [[[theResult fetch2DResultAsType:MCPTypeDictionary] lastObject]  objectForKey:@"Checksum"];
+	NSArray *resultStatuses = [theResult getAllRows];
+	if ([selectedItems count] == 1) {
+		message = [[resultStatuses lastObject] objectForKey:@"Checksum"];
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Checksum %@",@"checksum %@ message"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
@@ -2155,9 +2165,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 						didEndSelector:NULL 
 						   contextInfo:NULL];
 	} else {
-		NSDictionary *result = [theResult fetch2DResultAsType:MCPTypeDictionary];
 		if (statusValues) [statusValues release], statusValues = nil;
-		statusValues = [result retain];
+		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];
 		[alert setMessageText:NSLocalizedString(@"Table checksum",@"table checksum message")];
@@ -2285,9 +2294,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
     }
     
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
-	MCPResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
 	
-	if ([mySQLConnection queryErrored] && ([result numOfRows] == 0)) {
+	if ([mySQLConnection queryErrored] && ([result numberOfRows] == 0)) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unable to get list of users", @"unable to get list of users message")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -2345,7 +2354,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection lastErrorMessage]]);
 	}
 }
 
@@ -5076,7 +5085,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				}
 
 				// Get create syntax
-				MCPResult *queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
+				SPMySQLResult *queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE %@ %@",
 															itemTypeStr,
 															[item backtickQuotedString]
 															]];
@@ -5084,15 +5093,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 				if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
-				if ( ![queryResult numOfRows] ) {
+				if ( ![queryResult numberOfRows] ) {
 					//error while getting table structure
 					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection getLastErrorMessage]]);
+									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
 
 					status = @"1";
 
 				} else {
-					NSString *syntaxString = [[queryResult fetchRowAsArray] objectAtIndex:queryCol];
+					NSString *syntaxString = [[queryResult getRowAsArray] objectAtIndex:queryCol];
 
 					// A NULL value indicates that the user does not have permission to view the syntax
 					if ([syntaxString isNSNull]) {
@@ -5167,21 +5176,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 				SPFileHandle *fh = [SPFileHandle fileHandleForWritingAtPath:resultFileName];
 				if(!fh) NSLog(@"Couldn't create file handle to %@", resultFileName);
 
-				MCPStreamingResult *theResult = [mySQLConnection streamingQueryString:query];
+				SPMySQLResult *theResult = [mySQLConnection streamingQueryString:query];
 				[theResult setReturnDataAsStrings:YES];
 				if ([mySQLConnection queryErrored]) {
-					[fh writeData:[[NSString stringWithFormat:@"MySQL said: %@", [mySQLConnection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+					[fh writeData:[[NSString stringWithFormat:@"MySQL said: %@", [mySQLConnection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 					status = @"1";
 				} else {
 
 					// write header
 					if(writeAsCsv)
-						[fh writeData:[[[theResult fetchFieldNames] componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
+						[fh writeData:[[[theResult fieldNames] componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
 					else
-						[fh writeData:[[[theResult fetchFieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
+						[fh writeData:[[[theResult fieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
 					[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
 
-					NSArray *columnDefinition = [theResult fetchResultFieldsStructure];
+					NSArray *columnDefinition = [theResult fieldDefinitions];
 
 					// Write table meta data
 					NSMutableString *tableMetaData = [NSMutableString string];
@@ -5209,10 +5218,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 					NSUInteger i, j;
 					NSArray *theRow;
 					NSMutableString *result = [NSMutableString string];
-					if(writeAsCsv) {
-						for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+					if (writeAsCsv) {
+						for ( i = 0 ; i < [theResult numberOfRows] ; i++ ) {
 							[result setString:@""];
-							theRow = [theResult fetchNextRowAsArray];
+							theRow = [theResult getRowAsArray];
 							for( j = 0 ; j < [theRow count] ; j++ ) {
 
 								NSEvent* event = [NSApp currentEvent];
@@ -5226,9 +5235,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 								if([result length]) [result appendString:@","];
 								id cell = NSArrayObjectAtIndex(theRow, j);
-								if([cell isKindOfClass:[NSNull class]])
+								if([cell isNSNull])
 									[result appendString:@"\"NULL\""];
-								else if([cell isKindOfClass:[MCPGeometryData class]])
+								else if([cell isKindOfClass:[SPMySQLGeometryData class]])
 									[result appendFormat:@"\"%@\"", [cell wktString]];
 								else if([cell isKindOfClass:[NSData class]]) {
 									NSString *displayString = [[NSString alloc] initWithData:cell encoding:[mySQLConnection stringEncoding]];
@@ -5249,9 +5258,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 						}
 					}
 					else {
-						for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
+						for ( i = 0 ; i < [theResult numberOfRows] ; i++ ) {
 							[result setString:@""];
-							theRow = [theResult fetchNextRowAsArray];
+							theRow = [theResult getRowAsArray];
 							for( j = 0 ; j < [theRow count] ; j++ ) {
 
 								NSEvent* event = [NSApp currentEvent];
@@ -5265,9 +5274,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 								if([result length]) [result appendString:@"\t"];
 								id cell = NSArrayObjectAtIndex(theRow, j);
-								if([cell isKindOfClass:[NSNull class]])
+								if([cell isNSNull])
 									[result appendString:@"NULL"];
-								else if([cell isKindOfClass:[MCPGeometryData class]])
+								else if([cell isKindOfClass:[SPMySQLGeometryData class]])
 									[result appendFormat:@"%@", [cell wktString]];
 								else if([cell isKindOfClass:[NSData class]]) {
 									NSString *displayString = [[NSString alloc] initWithData:cell encoding:[mySQLConnection stringEncoding]];
@@ -5652,6 +5661,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 #endif
 
+	[databaseStructureRetrieval release];
+
 	[allDatabases release];
 	[allSystemDatabases release];
 #ifndef SP_REFACTOR /* dealloc ivars */
@@ -5805,13 +5816,13 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	
 	if ([mySQLConnection queryErrored]) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection getLastErrorMessage]]);
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
 		
 		return;
 	}
 	
 	// Error while selecting the new database (is this even possible?)
-	if (![mySQLConnection selectDB:[databaseNameField stringValue]] ) {
+	if (![mySQLConnection selectDatabase:[databaseNameField stringValue]] ) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
 		
 		[self setDatabases:self];
@@ -5859,7 +5870,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[self performSelector:@selector(showErrorSheetWith:) 
 				   withObject:[NSArray arrayWithObjects:NSLocalizedString(@"Error", @"error"),
 							   [NSString stringWithFormat:NSLocalizedString(@"Couldn't delete the database.\nMySQL said: %@", @"message of panel when deleting db failed"), 
-								[mySQLConnection getLastErrorMessage]],
+								[mySQLConnection lastErrorMessage]],
 							   nil] 
 				   afterDelay:0.3];
 		
@@ -5870,9 +5881,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// do to threading we have to delete it from 'allDatabases' directly
 	// before calling navigator
 	[allDatabases removeObject:[self database]];
+
 	// This only deletes the db and refreshes the navigator since nothing is changed
 	// that's why we can run this on main thread
-	[mySQLConnection queryDbStructureWithUserInfo:nil];
+	[databaseStructureRetrieval queryDbStructureWithUserInfo:nil];
 
 	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
@@ -5923,7 +5935,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		// Attempt to select the specified database, and abort on failure
 #ifndef SP_REFACTOR /* patch */
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
-			|| ![mySQLConnection selectDB:targetDatabaseName])
+			|| ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
 		if ( ![mySQLConnection selectDB:targetDatabaseName] )
 #endif

@@ -26,6 +26,7 @@
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseInfo.h"
+#import "SPMySQL.h"
 
 @implementation SPDatabaseRename
 
@@ -59,7 +60,7 @@
 	if (sourceExists && !targetExists) {
 		
 		// Retrieve the list of tables/views/funcs/triggers from the source database
-		tables = [connection listTablesFromDB:sourceDatabaseName];
+		tables = [connection tablesFromDatabase:sourceDatabaseName];
 	}
 	else {
 		return NO;
@@ -78,7 +79,7 @@
 	
 	[dbActionTableCopy release];
 		
-	tables = [connection listTablesFromDB:sourceDatabaseName];
+	tables = [connection tablesFromDatabase:sourceDatabaseName];
 		
 	if ([tables count] == 0) {
 		[self dropDatabase:sourceDatabaseName];

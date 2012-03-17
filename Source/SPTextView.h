@@ -23,14 +23,13 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
-#import <MCPKit/MCPKit.h>
 
 #import "NoodleLineNumberView.h"
 #import "SPCopyTable.h"
 
 #define SP_TEXT_SIZE_TRIGGER_FOR_PARTLY_PARSING 10000
 
-@class SPNarrowDownCompletion, SPDatabaseDocument, SPTablesList, SPCustomQuery;
+@class SPNarrowDownCompletion, SPDatabaseDocument, SPTablesList, SPCustomQuery, SPMySQLConnection;
 
 @interface SPTextView : NSTextView
 #ifdef SP_REFACTOR
@@ -65,7 +64,7 @@
 	NSUserDefaults *prefs;
 #endif
 
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 	NSInteger mySQLmajorVersion;
 
 	NSInteger snippetControlArray[20][3];
@@ -148,7 +147,7 @@
 #endif
 - (void) doSyntaxHighlighting;
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange;
-- (void) setConnection:(MCPConnection *)theConnection withVersion:(NSInteger)majorVersion;
+- (void) setConnection:(SPMySQLConnection *)theConnection withVersion:(NSInteger)majorVersion;
 - (void) doCompletionByUsingSpellChecker:(BOOL)isDictMode fuzzyMode:(BOOL)fuzzySearch autoCompleteMode:(BOOL)autoCompleteMode;
 - (void) doAutoCompletion;
 - (void) refreshCompletion;

@@ -23,7 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
 #import <WebKit/WebKit.h>
 
 #import "SPCopyTable.h"
@@ -47,9 +46,9 @@
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
 #ifndef SP_REFACTOR
-@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView, SPFieldEditorController;
+@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
 #else
-@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController;
+@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
 #endif
 
 @interface SPCustomQuery : NSObject 
@@ -129,7 +128,7 @@
 	SPQueryFavoriteManager *favoritesManager;
 
 	NSUserDefaults *prefs;
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 
 	NSString *usedQuery;
 	NSRange currentQueryRange;
@@ -221,7 +220,7 @@
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
 - (IBAction)showCompletionList:(id)sender;
-- (IBAction)toggleQueryInfoPaneCollapse:(id)sender;
+- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
@@ -239,7 +238,7 @@
 // Accessors
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult;
+- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
 
 // Retrieving and setting table state
 - (void) updateTableView;
@@ -271,7 +270,7 @@
 - (void)tableSortCallback;
 
 // Other
-- (void)setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
 - (void)selectCurrentQuery;

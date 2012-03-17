@@ -33,6 +33,8 @@
 #import "SPTooltip.h"
 #import "SPAppController.h"
 #import "SPDatabaseViewController.h"
+#import "SPMySQL.h"
+#import "SPDatabaseStructure.h"
 
 #import <objc/message.h>
 #endif
@@ -68,9 +70,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	@synchronized(self) {
 		return [[self sharedNavigatorController] retain];
 	}
-#ifdef SP_REFACTOR
-	return nil;  // only here to stop clang's "can reach end of non-void function"
-#endif
+	return nil;
 }
 
 - (id)init
@@ -117,9 +117,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[functionIcon release];
 	[fieldIcon release];
 #endif
-#ifdef SP_REFACTOR /* patch */
+
 	[super dealloc];
-#endif
 }
 /**
  * The following base protocol methods are implemented to ensure the singleton status of this class.
@@ -449,12 +448,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[[schemaData objectForKey:connectionName] removeObjectForKey:db];
 			}
 		}
-		id structureData = [theConnection getDbStructure];
+		id structureData = [[doc databaseStructureRetrieval] structure];
 		if(structureData && [structureData objectForKey:connectionName] && [[structureData objectForKey:connectionName] isKindOfClass:NSDictionaryClass]) {
 			for(id item in [[structureData objectForKey:connectionName] allKeys])
 				[[schemaData objectForKey:connectionName] setObject:[[structureData objectForKey:connectionName] objectForKey:item] forKey:item];
 
-			NSArray *a = [theConnection getAllKeysOfDbStructure];
+			NSArray *a = [[doc databaseStructureRetrieval] allStructureKeys];
 			if(a)
 				[allSchemaKeys setObject:a forKey:connectionName];
 		} else {
@@ -799,7 +798,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		[expandStatus2 removeObjectForKey:[[parentObject allKeysForObject:item] objectAtIndex:0]];
 }
 
-- (id)outlineView:(id)outlineView child:(NSInteger)index ofItem:(id)item
+- (id)outlineView:(id)outlineView child:(NSInteger)childIndex ofItem:(id)item
 {
 
 	if (item == nil) {
@@ -822,7 +821,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 			// No parent return the child by using the normal sort routine
 			if(!parentObject || ![parentObject isKindOfClass:NSDictionaryClass])
-				return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+				return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],childIndex)];
 
 			// Get the parent key name for storing
 			id parentKeys = [parentObject allKeysForObject:item];
@@ -832,26 +831,26 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 				// For safety reasons
 				if(!itemRef)
-					return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+					return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],childIndex)];
 
 				// Not yet cached so do it
 				if(![cachedSortedKeys objectForKey:itemRef])
 					[cachedSortedKeys setObject:[allKeys sortedArrayUsingFunction:compareStrings context:nil] forKey:itemRef];
 
-				return [item objectForKey:NSArrayObjectAtIndex([cachedSortedKeys objectForKey:itemRef],index)];
+				return [item objectForKey:NSArrayObjectAtIndex([cachedSortedKeys objectForKey:itemRef],childIndex)];
 
 			}
 
 			// If something failed return the child by using the normal way
-			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],childIndex)];
 
 		} else {
-			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],index)];
+			return [item objectForKey:NSArrayObjectAtIndex([allKeys sortedArrayUsingFunction:compareStrings context:nil],childIndex)];
 		}
 	}
 	else if ([item isKindOfClass:[NSArray class]]) 
 	{
-		return NSArrayObjectAtIndex(item,index);
+		return NSArrayObjectAtIndex(item,childIndex);
 	}
 	return nil;
 
@@ -1016,9 +1015,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(!parentObject) return 0;
 
 	if([outlineView levelForItem:item] == 3 && [outlineView isExpandable:[outlineView itemAtRow:[outlineView rowForItem:item]-1]])
-		return 5.0;
+		return 5.0f;
 
-	return 18.0;
+	return 18.0f;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldExpandItem:(id)item
@@ -1065,7 +1064,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			NSUInteger i = 0;
 			for(i=0; i<[selectedItem count]-2; i++) {
 				NSString *item = NSArrayObjectAtIndex(selectedItem, i);
-				if(![item length]) continue;
+				if([item isNSNull] || ![item length]) continue;
 				[infoArray addObject:[NSString stringWithFormat:@"%@: %@", 
 					[self tableInfoLabelForIndex:i ofType:0], 
 					[item stringByReplacingOccurrencesOfString:@"," withString:@", "]]];
@@ -1163,7 +1162,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
 {
 	// Use first row as dummy to increase the distance between content and header
-	return (row == 0) ? 5.0 : 16.0;
+	return (row == 0) ? 5.0f : 16.0f;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
@@ -1213,11 +1212,11 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 #pragma mark -
 #pragma mark others
 
-- (NSString*)tableInfoLabelForIndex:(NSInteger)index ofType:(NSInteger)type
+- (NSString*)tableInfoLabelForIndex:(NSInteger)anIndex ofType:(NSInteger)type
 {
 
 	if(type == 0 || type == 1) // TABLE / VIEW
-		switch(index) {
+		switch(anIndex) {
 			case 0:
 			return NSLocalizedString(@"Type", @"type label (Navigator)");
 			case 1:
@@ -1239,7 +1238,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		}
 
 	if(type == 2) // PROCEDURE
-		switch(index) {
+		switch(anIndex) {
 			case 0:
 			return @"DTD Identifier";
 			case 1:
@@ -1252,7 +1251,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			return @"Definer";
 		}
 	if(type == 3) // FUNCTION
-		switch(index) {
+		switch(anIndex) {
 			case 0:
 			return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
 			case 1:

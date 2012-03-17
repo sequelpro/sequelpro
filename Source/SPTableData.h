@@ -23,10 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPDatabaseDocument;
-@class SPTablesList;
+@class SPDatabaseDocument, SPTablesList, SPMySQLConnection;
 
 @interface SPTableData : NSObject 
 {
@@ -36,13 +33,13 @@
 	NSMutableArray *columns;
 	NSMutableArray *columnNames;
 	NSMutableArray *constraints;
-	NSMutableArray *triggers;
+	NSArray *triggers;
 	NSMutableDictionary *status;
 	
 	NSString *tableEncoding;
 	NSString *tableCreateSyntax;
 	
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 
 	pthread_mutex_t dataProcessingLock;
 
@@ -51,7 +48,7 @@
 
 @property (readonly, assign) BOOL tableHasAutoIncrementField;
 
-- (void) setConnection:(MCPConnection *)theConnection;
+- (void) setConnection:(SPMySQLConnection *)theConnection;
 - (NSString *) tableEncoding;
 - (NSString *) tableCreateSyntax;
 - (NSArray *) columns;

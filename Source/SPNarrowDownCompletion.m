@@ -35,6 +35,7 @@
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPQueryDocumentsController.h"
+#import "SPDatabaseStructure.h"
 
 #pragma mark -
 #pragma mark attribute definition 
@@ -165,6 +166,7 @@
 	if(suggestions) [suggestions release];
 
 	if (filtered) [filtered release];
+	if (databaseStructureRetrieval) [databaseStructureRetrieval release];
 
 	[super dealloc];
 }
@@ -193,7 +195,7 @@
 	timeCounter++;
 	if(timeCounter > 20) {
 		timeCounter = 0;
-		if(![[theView valueForKeyPath:@"mySQLConnection"] isQueryingDatabaseStructure]) {
+		if(![databaseStructureRetrieval isQueryingDatabaseStructure]) {
 			isQueryingDatabaseStructure = NO;
 			if(stateTimer) {
 				[stateTimer invalidate];
@@ -229,7 +231,7 @@
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
-	alias:(NSString*)anAlias isQueryingDBStructure:(BOOL)isQueryingDBStructure
+	alias:(NSString*)anAlias withDBStructureRetriever:(SPDatabaseStructure *)theDatabaseStructure
 {
 	if((self = [self init]))
 	{
@@ -245,10 +247,6 @@
 		theAliasName = anAlias;
 
 		oneColumnMode = oneColumn;
-		isQueryingDatabaseStructure = isQueryingDBStructure;
-
-		if(isQueryingDatabaseStructure)
-			stateTimer = [[NSTimer scheduledTimerWithTimeInterval:0.07f target:self selector:@selector(updateSyncArrowStatus) userInfo:nil repeats:YES] retain];
 
 		fuzzyMode = fuzzySearch;
 		if(fuzzyMode)
@@ -306,6 +304,11 @@
 		if(someAdditionalWordCharacters)
 			[textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
 
+		databaseStructureRetrieval = [theDatabaseStructure retain];
+		isQueryingDatabaseStructure = [databaseStructureRetrieval isQueryingDatabaseStructure];
+
+		if(isQueryingDatabaseStructure)
+			stateTimer = [[NSTimer scheduledTimerWithTimeInterval:0.07f target:self selector:@selector(updateSyncArrowStatus) userInfo:nil repeats:YES] retain];
 	}
 	return self;
 }

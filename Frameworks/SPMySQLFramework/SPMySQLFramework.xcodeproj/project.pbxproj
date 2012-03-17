@@ -1,0 +1,695 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		580A331E14D75CF7000D6933 /* SPMySQLGeometryData.h in Headers */ = {isa = PBXBuildFile; fileRef = 580A331C14D75CF7000D6933 /* SPMySQLGeometryData.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		580A331F14D75CF7000D6933 /* SPMySQLGeometryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 580A331D14D75CF7000D6933 /* SPMySQLGeometryData.m */; };
+		58428E0014BA5FAE000F8438 /* SPMySQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 58428DFE14BA5FAE000F8438 /* SPMySQLConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58428E0114BA5FAE000F8438 /* SPMySQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 58428DFF14BA5FAE000F8438 /* SPMySQLConnection.m */; };
+		5842929F14C34B36000F8438 /* my_alloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929414C34B36000F8438 /* my_alloc.h */; settings = {ATTRIBUTES = (); }; };
+		584292A014C34B36000F8438 /* my_list.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929514C34B36000F8438 /* my_list.h */; settings = {ATTRIBUTES = (); }; };
+		584292A114C34B36000F8438 /* mysql.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929614C34B36000F8438 /* mysql.h */; };
+		584292A214C34B36000F8438 /* mysql_com.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929714C34B36000F8438 /* mysql_com.h */; };
+		584292A314C34B36000F8438 /* mysql_embed.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929814C34B36000F8438 /* mysql_embed.h */; };
+		584292A414C34B36000F8438 /* mysql_time.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929914C34B36000F8438 /* mysql_time.h */; };
+		584292A514C34B36000F8438 /* mysql_version.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929A14C34B36000F8438 /* mysql_version.h */; };
+		584292A614C34B36000F8438 /* typelib.h in Headers */ = {isa = PBXBuildFile; fileRef = 5842929B14C34B36000F8438 /* typelib.h */; };
+		584292A714C34B36000F8438 /* libmysqlclient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5842929D14C34B36000F8438 /* libmysqlclient.a */; };
+		584294E414CB8002000F8438 /* SPMySQLConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294E314CB8002000F8438 /* SPMySQLConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		584294F014CB8002000F8438 /* Ping & KeepAlive.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294EE14CB8002000F8438 /* Ping & KeepAlive.h */; };
+		584294F114CB8002000F8438 /* Ping & KeepAlive.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294EF14CB8002000F8438 /* Ping & KeepAlive.m */; };
+		584294F614CB8002000F8438 /* Querying & Preparation.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294F414CB8002000F8438 /* Querying & Preparation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		584294FA14CB8002000F8438 /* Encoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294F814CB8002000F8438 /* Encoding.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		584294FB14CB8002000F8438 /* Encoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294F914CB8002000F8438 /* Encoding.m */; };
+		584294FE14CB8002000F8438 /* Server Info.h in Headers */ = {isa = PBXBuildFile; fileRef = 584294FC14CB8002000F8438 /* Server Info.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		584294FF14CB8002000F8438 /* Server Info.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294FD14CB8002000F8438 /* Server Info.m */; };
+		584D812E15057ECD00F24774 /* SPMySQLKeepAliveTimer.h in Headers */ = {isa = PBXBuildFile; fileRef = 584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */; };
+		584D812F15057ECD00F24774 /* SPMySQLKeepAliveTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */; };
+		584D82551509775000F24774 /* Copying.h in Headers */ = {isa = PBXBuildFile; fileRef = 584D82531509775000F24774 /* Copying.h */; };
+		584D82561509775000F24774 /* Copying.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D82541509775000F24774 /* Copying.m */; };
+		586A99FB14F02E21007F82BF /* SPMySQLStreamingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		586A99FC14F02E21007F82BF /* SPMySQLStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */; };
+		586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */ = {isa = PBXBuildFile; fileRef = 586AA16514F30C5F007F82BF /* Convenience Methods.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		586AA16814F30C5F007F82BF /* Convenience Methods.m in Sources */ = {isa = PBXBuildFile; fileRef = 586AA16614F30C5F007F82BF /* Convenience Methods.m */; };
+		586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */; };
+		5884127714CC63830078027F /* SPMySQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 5884127614CC63830078027F /* SPMySQL.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		588412A814CC7A4D0078027F /* Locking.h in Headers */ = {isa = PBXBuildFile; fileRef = 588412A614CC7A4D0078027F /* Locking.h */; };
+		5884133C14CCEC6B0078027F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5884133B14CCEC6B0078027F /* libz.dylib */; };
+		5884142714CCF5190078027F /* Conversion.h in Headers */ = {isa = PBXBuildFile; fileRef = 5884142514CCF5190078027F /* Conversion.h */; };
+		5884142814CCF5190078027F /* Conversion.m in Sources */ = {isa = PBXBuildFile; fileRef = 5884142614CCF5190078027F /* Conversion.m */; };
+		588414BD14CE3B110078027F /* SPMySQLConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 588414BC14CE3B110078027F /* SPMySQLConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5884159414D1A6760078027F /* Locking.m in Sources */ = {isa = PBXBuildFile; fileRef = 588412A714CC7A4D0078027F /* Locking.m */; };
+		5884159514D1A6880078027F /* Querying & Preparation.m in Sources */ = {isa = PBXBuildFile; fileRef = 584294F514CB8002000F8438 /* Querying & Preparation.m */; };
+		5884165514D2306A0078027F /* SPMySQLResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 5884165314D2306A0078027F /* SPMySQLResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5884165614D2306A0078027F /* SPMySQLResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 5884165414D2306A0078027F /* SPMySQLResult.m */; };
+		58C006C814E0B18A00AC489A /* SPMySQLUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C006C714E0B18A00AC489A /* SPMySQLUtilities.h */; };
+		58C008CD14E2AC7D00AC489A /* SPMySQLConnectionProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C008CC14E2AC7D00AC489A /* SPMySQLConnectionProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C009D514E31D3800AC489A /* SPMySQLStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */; };
+		58C009D614E31D3800AC489A /* SPMySQLStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C009D414E31D3800AC489A /* SPMySQLStringAdditions.m */; };
+		58C00AA914E4869C00AC489A /* Max Packet Size.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C00AA714E4869C00AC489A /* Max Packet Size.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C00AAA14E4869C00AC489A /* Max Packet Size.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C00AA814E4869C00AC489A /* Max Packet Size.m */; };
+		58C00AB514E4892E00AC489A /* Delegate & Proxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C00AB314E4892E00AC489A /* Delegate & Proxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C00AB614E4892E00AC489A /* Delegate & Proxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C00AB414E4892E00AC489A /* Delegate & Proxy.m */; };
+		58C00ADA14E4959A00AC489A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C00AD914E4959A00AC489A /* SystemConfiguration.framework */; };
+		58C00BD114E7459600AC489A /* Databases & Tables.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C00BCF14E7459600AC489A /* Databases & Tables.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C00BD214E7459600AC489A /* Databases & Tables.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C00BD014E7459600AC489A /* Databases & Tables.m */; };
+		58C00CA514E845D800AC489A /* SPMySQL Private APIs.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C00CA414E845D800AC489A /* SPMySQL Private APIs.h */; };
+		58C7C1E414DB6E4C00436315 /* SPMySQLFastStreamingResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C7C1E214DB6E4C00436315 /* SPMySQLFastStreamingResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C7C1E514DB6E4C00436315 /* SPMySQLFastStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */; };
+		58C7C1E814DB6E8600436315 /* Field Definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C7C1E614DB6E8600436315 /* Field Definitions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58C7C1E914DB6E8600436315 /* Field Definitions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C7C1E714DB6E8600436315 /* Field Definitions.m */; };
+		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
+		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		32DBCF5E0370ADEE00C91783 /* SPMySQLFramework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLFramework_Prefix.pch; path = Source/SPMySQLFramework_Prefix.pch; sourceTree = "<group>"; };
+		580A331C14D75CF7000D6933 /* SPMySQLGeometryData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLGeometryData.h; path = Source/SPMySQLGeometryData.h; sourceTree = "<group>"; };
+		580A331D14D75CF7000D6933 /* SPMySQLGeometryData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLGeometryData.m; path = Source/SPMySQLGeometryData.m; sourceTree = "<group>"; };
+		58428DF614BA5A13000F8438 /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		58428DFE14BA5FAE000F8438 /* SPMySQLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLConnection.h; path = Source/SPMySQLConnection.h; sourceTree = "<group>"; };
+		58428DFF14BA5FAE000F8438 /* SPMySQLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLConnection.m; path = Source/SPMySQLConnection.m; sourceTree = "<group>"; };
+		5842929414C34B36000F8438 /* my_alloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_alloc.h; sourceTree = "<group>"; };
+		5842929514C34B36000F8438 /* my_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = my_list.h; sourceTree = "<group>"; };
+		5842929614C34B36000F8438 /* mysql.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql.h; sourceTree = "<group>"; };
+		5842929714C34B36000F8438 /* mysql_com.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_com.h; sourceTree = "<group>"; };
+		5842929814C34B36000F8438 /* mysql_embed.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_embed.h; sourceTree = "<group>"; };
+		5842929914C34B36000F8438 /* mysql_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_time.h; sourceTree = "<group>"; };
+		5842929A14C34B36000F8438 /* mysql_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mysql_version.h; sourceTree = "<group>"; };
+		5842929B14C34B36000F8438 /* typelib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = typelib.h; sourceTree = "<group>"; };
+		5842929D14C34B36000F8438 /* libmysqlclient.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libmysqlclient.a; sourceTree = "<group>"; };
+		584294E314CB8002000F8438 /* SPMySQLConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLConstants.h; path = Source/SPMySQLConstants.h; sourceTree = "<group>"; };
+		584294EE14CB8002000F8438 /* Ping & KeepAlive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Ping & KeepAlive.h"; path = "Source/SPMySQLConnection Categories/Ping & KeepAlive.h"; sourceTree = "<group>"; };
+		584294EF14CB8002000F8438 /* Ping & KeepAlive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Ping & KeepAlive.m"; path = "Source/SPMySQLConnection Categories/Ping & KeepAlive.m"; sourceTree = "<group>"; };
+		584294F414CB8002000F8438 /* Querying & Preparation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Querying & Preparation.h"; path = "Source/SPMySQLConnection Categories/Querying & Preparation.h"; sourceTree = "<group>"; };
+		584294F514CB8002000F8438 /* Querying & Preparation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Querying & Preparation.m"; path = "Source/SPMySQLConnection Categories/Querying & Preparation.m"; sourceTree = "<group>"; };
+		584294F814CB8002000F8438 /* Encoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Encoding.h; path = "Source/SPMySQLConnection Categories/Encoding.h"; sourceTree = "<group>"; };
+		584294F914CB8002000F8438 /* Encoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Encoding.m; path = "Source/SPMySQLConnection Categories/Encoding.m"; sourceTree = "<group>"; };
+		584294FC14CB8002000F8438 /* Server Info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Server Info.h"; path = "Source/SPMySQLConnection Categories/Server Info.h"; sourceTree = "<group>"; };
+		584294FD14CB8002000F8438 /* Server Info.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Server Info.m"; path = "Source/SPMySQLConnection Categories/Server Info.m"; sourceTree = "<group>"; };
+		584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLKeepAliveTimer.h; path = Source/SPMySQLKeepAliveTimer.h; sourceTree = "<group>"; };
+		584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLKeepAliveTimer.m; path = Source/SPMySQLKeepAliveTimer.m; sourceTree = "<group>"; };
+		584D82531509775000F24774 /* Copying.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Copying.h; path = "Source/SPMySQLConnection Categories/Copying.h"; sourceTree = "<group>"; };
+		584D82541509775000F24774 /* Copying.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Copying.m; path = "Source/SPMySQLConnection Categories/Copying.m"; sourceTree = "<group>"; };
+		586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLStreamingResult.h; path = Source/SPMySQLStreamingResult.h; sourceTree = "<group>"; };
+		586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLStreamingResult.m; path = Source/SPMySQLStreamingResult.m; sourceTree = "<group>"; };
+		586AA0E714F1CEC8007F82BF /* Readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Readme.txt; sourceTree = "<group>"; };
+		586AA16514F30C5F007F82BF /* Convenience Methods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Convenience Methods.h"; path = "Source/SPMySQLResult Categories/Convenience Methods.h"; sourceTree = "<group>"; };
+		586AA16614F30C5F007F82BF /* Convenience Methods.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Convenience Methods.m"; path = "Source/SPMySQLResult Categories/Convenience Methods.m"; sourceTree = "<group>"; };
+		586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLArrayAdditions.h; path = Source/SPMySQLArrayAdditions.h; sourceTree = "<group>"; };
+		5884127614CC63830078027F /* SPMySQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQL.h; path = Source/SPMySQL.h; sourceTree = "<group>"; };
+		588412A614CC7A4D0078027F /* Locking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Locking.h; path = "Source/SPMySQLConnection Categories/Locking.h"; sourceTree = "<group>"; };
+		588412A714CC7A4D0078027F /* Locking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Locking.m; path = "Source/SPMySQLConnection Categories/Locking.m"; sourceTree = "<group>"; };
+		5884133B14CCEC6B0078027F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		5884142514CCF5190078027F /* Conversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Conversion.h; path = "Source/SPMySQLConnection Categories/Conversion.h"; sourceTree = "<group>"; };
+		5884142614CCF5190078027F /* Conversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Conversion.m; path = "Source/SPMySQLConnection Categories/Conversion.m"; sourceTree = "<group>"; };
+		588414BC14CE3B110078027F /* SPMySQLConnectionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLConnectionDelegate.h; path = Source/SPMySQLConnectionDelegate.h; sourceTree = "<group>"; };
+		5884165314D2306A0078027F /* SPMySQLResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLResult.h; path = Source/SPMySQLResult.h; sourceTree = "<group>"; };
+		5884165414D2306A0078027F /* SPMySQLResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLResult.m; path = Source/SPMySQLResult.m; sourceTree = "<group>"; };
+		58C006C714E0B18A00AC489A /* SPMySQLUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLUtilities.h; path = Source/SPMySQLUtilities.h; sourceTree = "<group>"; };
+		58C008CC14E2AC7D00AC489A /* SPMySQLConnectionProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLConnectionProxy.h; path = Source/SPMySQLConnectionProxy.h; sourceTree = "<group>"; };
+		58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLStringAdditions.h; path = Source/SPMySQLStringAdditions.h; sourceTree = "<group>"; };
+		58C009D414E31D3800AC489A /* SPMySQLStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLStringAdditions.m; path = Source/SPMySQLStringAdditions.m; sourceTree = "<group>"; };
+		58C00AA714E4869C00AC489A /* Max Packet Size.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Max Packet Size.h"; path = "Source/SPMySQLConnection Categories/Max Packet Size.h"; sourceTree = "<group>"; };
+		58C00AA814E4869C00AC489A /* Max Packet Size.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Max Packet Size.m"; path = "Source/SPMySQLConnection Categories/Max Packet Size.m"; sourceTree = "<group>"; };
+		58C00AB314E4892E00AC489A /* Delegate & Proxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Delegate & Proxy.h"; path = "Source/SPMySQLConnection Categories/Delegate & Proxy.h"; sourceTree = "<group>"; };
+		58C00AB414E4892E00AC489A /* Delegate & Proxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Delegate & Proxy.m"; path = "Source/SPMySQLConnection Categories/Delegate & Proxy.m"; sourceTree = "<group>"; };
+		58C00AD914E4959A00AC489A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		58C00BCF14E7459600AC489A /* Databases & Tables.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Databases & Tables.h"; path = "Source/SPMySQLConnection Categories/Databases & Tables.h"; sourceTree = "<group>"; };
+		58C00BD014E7459600AC489A /* Databases & Tables.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Databases & Tables.m"; path = "Source/SPMySQLConnection Categories/Databases & Tables.m"; sourceTree = "<group>"; };
+		58C00CA414E845D800AC489A /* SPMySQL Private APIs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SPMySQL Private APIs.h"; path = "Source/SPMySQL Private APIs.h"; sourceTree = "<group>"; };
+		58C7C1E214DB6E4C00436315 /* SPMySQLFastStreamingResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SPMySQLFastStreamingResult.h; path = Source/SPMySQLFastStreamingResult.h; sourceTree = "<group>"; };
+		58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLFastStreamingResult.m; path = Source/SPMySQLFastStreamingResult.m; sourceTree = "<group>"; };
+		58C7C1E614DB6E8600436315 /* Field Definitions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Field Definitions.h"; path = "Source/SPMySQLResult Categories/Field Definitions.h"; sourceTree = "<group>"; };
+		58C7C1E714DB6E8600436315 /* Field Definitions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Field Definitions.m"; path = "Source/SPMySQLResult Categories/Field Definitions.m"; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
+		8DC2EF5B0486A6940098B216 /* SPMySQL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SPMySQL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2F7E79907B2D74100F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DC2EF560486A6940098B216 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */,
+				584292A714C34B36000F8438 /* libmysqlclient.a in Frameworks */,
+				5884133C14CCEC6B0078027F /* libz.dylib in Frameworks */,
+				58C00ADA14E4959A00AC489A /* SystemConfiguration.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DFFF38A50411DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DC2EF5B0486A6940098B216 /* SPMySQL.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* SPMySQLFramework */ = {
+			isa = PBXGroup;
+			children = (
+				586AA0E714F1CEC8007F82BF /* Readme.txt */,
+				5884127614CC63830078027F /* SPMySQL.h */,
+				58C0077714E1DFFF00AC489A /* Protocols */,
+				08FB77AEFE84172EC02AAC07 /* Classes */,
+				58C009D214E31D1300AC489A /* Category Additions */,
+				32C88DFF0371C24200C91783 /* Other Sources */,
+				089C1665FE841158C02AAC07 /* Resources */,
+				58428DF514BA5A03000F8438 /* Scripts */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DFFF38A50411DB9C8B /* Products */,
+			);
+			name = SPMySQLFramework;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
+				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5842929214C34B36000F8438 /* MySQL Client Libraries */,
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77AEFE84172EC02AAC07 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				58C00CA414E845D800AC489A /* SPMySQL Private APIs.h */,
+				58428DFE14BA5FAE000F8438 /* SPMySQLConnection.h */,
+				58428DFF14BA5FAE000F8438 /* SPMySQLConnection.m */,
+				584294EB14CB8002000F8438 /* Connection Categories */,
+				5884165314D2306A0078027F /* SPMySQLResult.h */,
+				5884165414D2306A0078027F /* SPMySQLResult.m */,
+				586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */,
+				586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */,
+				58C7C1E214DB6E4C00436315 /* SPMySQLFastStreamingResult.h */,
+				58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */,
+				58C7C1E114DB6E3000436315 /* Result Categories */,
+				580A331B14D75CCF000D6933 /* Result types */,
+				584D812C15057ECD00F24774 /* SPMySQLKeepAliveTimer.h */,
+				584D812D15057ECD00F24774 /* SPMySQLKeepAliveTimer.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
+				5884133B14CCEC6B0078027F /* libz.dylib */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0867D6A5FE840307C02AAC07 /* AppKit.framework */,
+				D2F7E79907B2D74100F64583 /* CoreData.framework */,
+				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
+				58C00AD914E4959A00AC489A /* SystemConfiguration.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		32C88DFF0371C24200C91783 /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				584294E314CB8002000F8438 /* SPMySQLConstants.h */,
+				58C006C714E0B18A00AC489A /* SPMySQLUtilities.h */,
+				32DBCF5E0370ADEE00C91783 /* SPMySQLFramework_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		580A331B14D75CCF000D6933 /* Result types */ = {
+			isa = PBXGroup;
+			children = (
+				580A331C14D75CF7000D6933 /* SPMySQLGeometryData.h */,
+				580A331D14D75CF7000D6933 /* SPMySQLGeometryData.m */,
+			);
+			name = "Result types";
+			sourceTree = "<group>";
+		};
+		58428DF514BA5A03000F8438 /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				58428DF614BA5A13000F8438 /* build-mysql-client.sh */,
+			);
+			name = Scripts;
+			sourceTree = "<group>";
+		};
+		5842929214C34B36000F8438 /* MySQL Client Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				5842929314C34B36000F8438 /* include */,
+				5842929C14C34B36000F8438 /* lib */,
+			);
+			path = "MySQL Client Libraries";
+			sourceTree = "<group>";
+		};
+		5842929314C34B36000F8438 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				5842929414C34B36000F8438 /* my_alloc.h */,
+				5842929514C34B36000F8438 /* my_list.h */,
+				5842929614C34B36000F8438 /* mysql.h */,
+				5842929714C34B36000F8438 /* mysql_com.h */,
+				5842929814C34B36000F8438 /* mysql_embed.h */,
+				5842929914C34B36000F8438 /* mysql_time.h */,
+				5842929A14C34B36000F8438 /* mysql_version.h */,
+				5842929B14C34B36000F8438 /* typelib.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		5842929C14C34B36000F8438 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				5842929D14C34B36000F8438 /* libmysqlclient.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		584294EB14CB8002000F8438 /* Connection Categories */ = {
+			isa = PBXGroup;
+			children = (
+				584D82531509775000F24774 /* Copying.h */,
+				584D82541509775000F24774 /* Copying.m */,
+				58C00AB314E4892E00AC489A /* Delegate & Proxy.h */,
+				58C00AB414E4892E00AC489A /* Delegate & Proxy.m */,
+				58C00BCF14E7459600AC489A /* Databases & Tables.h */,
+				58C00BD014E7459600AC489A /* Databases & Tables.m */,
+				584294F414CB8002000F8438 /* Querying & Preparation.h */,
+				584294F514CB8002000F8438 /* Querying & Preparation.m */,
+				584294F814CB8002000F8438 /* Encoding.h */,
+				584294F914CB8002000F8438 /* Encoding.m */,
+				584294FC14CB8002000F8438 /* Server Info.h */,
+				584294FD14CB8002000F8438 /* Server Info.m */,
+				58C00AA714E4869C00AC489A /* Max Packet Size.h */,
+				58C00AA814E4869C00AC489A /* Max Packet Size.m */,
+				5884142414CCF4E60078027F /* Private */,
+			);
+			name = "Connection Categories";
+			sourceTree = "<group>";
+		};
+		5884142414CCF4E60078027F /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				584294EE14CB8002000F8438 /* Ping & KeepAlive.h */,
+				584294EF14CB8002000F8438 /* Ping & KeepAlive.m */,
+				588412A614CC7A4D0078027F /* Locking.h */,
+				588412A714CC7A4D0078027F /* Locking.m */,
+				5884142514CCF5190078027F /* Conversion.h */,
+				5884142614CCF5190078027F /* Conversion.m */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
+		58C0077714E1DFFF00AC489A /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				588414BC14CE3B110078027F /* SPMySQLConnectionDelegate.h */,
+				58C008CC14E2AC7D00AC489A /* SPMySQLConnectionProxy.h */,
+			);
+			name = Protocols;
+			sourceTree = "<group>";
+		};
+		58C009D214E31D1300AC489A /* Category Additions */ = {
+			isa = PBXGroup;
+			children = (
+				58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */,
+				58C009D414E31D3800AC489A /* SPMySQLStringAdditions.m */,
+				586AA81214F6C648007F82BF /* SPMySQLArrayAdditions.h */,
+			);
+			name = "Category Additions";
+			sourceTree = "<group>";
+		};
+		58C7C1E114DB6E3000436315 /* Result Categories */ = {
+			isa = PBXGroup;
+			children = (
+				58C7C1E614DB6E8600436315 /* Field Definitions.h */,
+				58C7C1E714DB6E8600436315 /* Field Definitions.m */,
+				586AA16514F30C5F007F82BF /* Convenience Methods.h */,
+				586AA16614F30C5F007F82BF /* Convenience Methods.m */,
+			);
+			name = "Result Categories";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		8DC2EF500486A6940098B216 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				58428E0014BA5FAE000F8438 /* SPMySQLConnection.h in Headers */,
+				584294E414CB8002000F8438 /* SPMySQLConstants.h in Headers */,
+				584294F614CB8002000F8438 /* Querying & Preparation.h in Headers */,
+				584294F014CB8002000F8438 /* Ping & KeepAlive.h in Headers */,
+				584294FA14CB8002000F8438 /* Encoding.h in Headers */,
+				584294FE14CB8002000F8438 /* Server Info.h in Headers */,
+				5842929F14C34B36000F8438 /* my_alloc.h in Headers */,
+				584292A014C34B36000F8438 /* my_list.h in Headers */,
+				584292A114C34B36000F8438 /* mysql.h in Headers */,
+				584292A214C34B36000F8438 /* mysql_com.h in Headers */,
+				584292A314C34B36000F8438 /* mysql_embed.h in Headers */,
+				584292A414C34B36000F8438 /* mysql_time.h in Headers */,
+				584292A514C34B36000F8438 /* mysql_version.h in Headers */,
+				584292A614C34B36000F8438 /* typelib.h in Headers */,
+				5884127714CC63830078027F /* SPMySQL.h in Headers */,
+				588412A814CC7A4D0078027F /* Locking.h in Headers */,
+				5884142714CCF5190078027F /* Conversion.h in Headers */,
+				588414BD14CE3B110078027F /* SPMySQLConnectionDelegate.h in Headers */,
+				5884165514D2306A0078027F /* SPMySQLResult.h in Headers */,
+				580A331E14D75CF7000D6933 /* SPMySQLGeometryData.h in Headers */,
+				58C7C1E414DB6E4C00436315 /* SPMySQLFastStreamingResult.h in Headers */,
+				58C7C1E814DB6E8600436315 /* Field Definitions.h in Headers */,
+				58C006C814E0B18A00AC489A /* SPMySQLUtilities.h in Headers */,
+				58C008CD14E2AC7D00AC489A /* SPMySQLConnectionProxy.h in Headers */,
+				58C009D514E31D3800AC489A /* SPMySQLStringAdditions.h in Headers */,
+				58C00AA914E4869C00AC489A /* Max Packet Size.h in Headers */,
+				58C00AB514E4892E00AC489A /* Delegate & Proxy.h in Headers */,
+				58C00BD114E7459600AC489A /* Databases & Tables.h in Headers */,
+				58C00CA514E845D800AC489A /* SPMySQL Private APIs.h in Headers */,
+				586A99FB14F02E21007F82BF /* SPMySQLStreamingResult.h in Headers */,
+				586AA16714F30C5F007F82BF /* Convenience Methods.h in Headers */,
+				586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */,
+				584D812E15057ECD00F24774 /* SPMySQLKeepAliveTimer.h in Headers */,
+				584D82551509775000F24774 /* Copying.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		8DC2EF4F0486A6940098B216 /* SPMySQL.framework */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "SPMySQL.framework" */;
+			buildPhases = (
+				8DC2EF500486A6940098B216 /* Headers */,
+				8DC2EF520486A6940098B216 /* Resources */,
+				8DC2EF540486A6940098B216 /* Sources */,
+				8DC2EF560486A6940098B216 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SPMySQL.framework;
+			productInstallPath = "$(HOME)/Library/Frameworks";
+			productName = SPMySQLFramework;
+			productReference = 8DC2EF5B0486A6940098B216 /* SPMySQL.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "SPMySQLFramework" */;
+			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* SPMySQLFramework */;
+			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DC2EF4F0486A6940098B216 /* SPMySQL.framework */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8DC2EF520486A6940098B216 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DC2EF540486A6940098B216 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				58428E0114BA5FAE000F8438 /* SPMySQLConnection.m in Sources */,
+				584294F114CB8002000F8438 /* Ping & KeepAlive.m in Sources */,
+				584294FB14CB8002000F8438 /* Encoding.m in Sources */,
+				584294FF14CB8002000F8438 /* Server Info.m in Sources */,
+				5884142814CCF5190078027F /* Conversion.m in Sources */,
+				5884159514D1A6880078027F /* Querying & Preparation.m in Sources */,
+				5884159414D1A6760078027F /* Locking.m in Sources */,
+				5884165614D2306A0078027F /* SPMySQLResult.m in Sources */,
+				580A331F14D75CF7000D6933 /* SPMySQLGeometryData.m in Sources */,
+				58C7C1E514DB6E4C00436315 /* SPMySQLFastStreamingResult.m in Sources */,
+				58C7C1E914DB6E8600436315 /* Field Definitions.m in Sources */,
+				58C009D614E31D3800AC489A /* SPMySQLStringAdditions.m in Sources */,
+				58C00AAA14E4869C00AC489A /* Max Packet Size.m in Sources */,
+				58C00AB614E4892E00AC489A /* Delegate & Proxy.m in Sources */,
+				58C00BD214E7459600AC489A /* Databases & Tables.m in Sources */,
+				586A99FC14F02E21007F82BF /* SPMySQLStreamingResult.m in Sources */,
+				586AA16814F30C5F007F82BF /* Convenience Methods.m in Sources */,
+				584D812F15057ECD00F24774 /* SPMySQLKeepAliveTimer.m in Sources */,
+				584D82561509775000F24774 /* Copying.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C1667FE841158C02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB91AE08733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/SPMySQLFramework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
+				);
+				PRODUCT_NAME = SPMySQL;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
+		1DEB91AF08733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/SPMySQLFramework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
+				);
+				PRODUCT_NAME = SPMySQL;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+		1DEB91B208733DA50010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+					x86_64,
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACH_O_TYPE = mh_dylib;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+				VALID_ARCHS = "i386 ppc x86_64";
+			};
+			name = Debug;
+		};
+		1DEB91B308733DA50010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+					x86_64,
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACH_O_TYPE = mh_dylib;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+				VALID_ARCHS = "i386 ppc x86_64";
+			};
+			name = Release;
+		};
+		586AA55214F5D599007F82BF /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+					x86_64,
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACH_O_TYPE = mh_dylib;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+				VALID_ARCHS = "i386 ppc x86_64";
+			};
+			name = Distribution;
+		};
+		586AA55314F5D599007F82BF /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = Source/SPMySQLFramework_Prefix.pch;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INSTALL_PATH = "@executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
+				);
+				PRODUCT_NAME = SPMySQL;
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Distribution;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB91AD08733DA50010E9CD /* Build configuration list for PBXNativeTarget "SPMySQL.framework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91AE08733DA50010E9CD /* Debug */,
+				1DEB91AF08733DA50010E9CD /* Release */,
+				586AA55314F5D599007F82BF /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "SPMySQLFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB91B208733DA50010E9CD /* Debug */,
+				1DEB91B308733DA50010E9CD /* Release */,
+				586AA55214F5D599007F82BF /* Distribution */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

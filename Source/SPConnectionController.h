@@ -23,14 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
 #import "SPConnectionControllerDelegateProtocol.h"
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPFavoritesOutlineView.h"
 #endif
 
-@class SPDatabaseDocument, SPSSHTunnel, SPKeychain
+@class SPDatabaseDocument, SPSSHTunnel, SPKeychain, SPMySQLConnection
 #ifndef SP_REFACTOR /* class decl */
 , BWAnchoredButtonBar, SPFavoriteNode
 #endif
@@ -67,7 +66,7 @@
 	NSMutableArray *favorites;
 #endif
 	SPSSHTunnel *sshTunnel;
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 #ifndef SP_REFACTOR	/* ivars */
 	BOOL automaticFavoriteSelection;
 #endif
@@ -207,7 +206,7 @@
 - (void)addConnectionToDocument;
 
 // Interface interaction
-- (IBAction)chooseKeyLocation:(id)sender;
+- (IBAction)chooseKeyLocation:(NSButton *)sender;
 #ifndef SP_REFACTOR /* method decls */
 - (IBAction)editFavorites:(id)sender;
 - (IBAction)showHelp:(id)sender;
@@ -215,7 +214,7 @@
 - (IBAction)updateKeyLocationFileVisibility:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
-- (IBAction)reverseSortFavorites:(id)sender;
+- (IBAction)reverseSortFavorites:(NSMenuItem *)sender;
 #endif
 
 // Connection details interaction

@@ -35,7 +35,7 @@
 - (CGFloat)toolbarHeight
 {
 	NSRect windowFrame;
-	CGFloat toolbarHeight = 0.0;
+	CGFloat toolbarHeight = 0.0f;
 
 	if ([self toolbar] && [[self toolbar] isVisible]) {
 		windowFrame   = [NSWindow contentRectForFrameRect:[self frame] styleMask:[self styleMask]];
@@ -83,10 +83,12 @@
 	if( frontDoc && [frontDoc isKindOfClass:[SPDatabaseDocument class]]
 		&& [frontDoc valueForKeyPath:@"spHistoryControllerInstance"]
 		&& ![frontDoc isWorking])
+	{
 		if([anEvent deltaX] == -1.0f)
 			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goForwardInHistory"];
 		else if([anEvent deltaX] == 1.0f)
 			[[frontDoc valueForKeyPath:@"spHistoryControllerInstance"] valueForKey:@"goBackInHistory"];
+	}
 }
 
 

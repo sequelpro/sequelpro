@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPExportInitializer.h"
 #import "SPTableData.h"
 #import "SPDatabaseDocument.h"
@@ -44,6 +42,7 @@
 #import "SPExportFileUtilities.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
+#import "SPMySQL.h"
 
 @implementation SPExportController (SPExportInitializer)
 

@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPServerSupport;
+@class SPServerSupport, SPMySQLConnection;
 
 /**
  * @class SPDatabaseData SPDatabaseData.h
@@ -45,14 +43,14 @@
 	NSMutableArray *characterSetEncodings;
 	NSMutableDictionary *cachedCollationsByEncoding;
 	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	SPServerSupport *serverSupport;	
 }
 
 /**
  * @property connection The current database connection
  */
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 /**
  * @property serverSupport The connection's associated SPServerSupport instance

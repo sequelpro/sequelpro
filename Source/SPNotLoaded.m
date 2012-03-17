@@ -45,9 +45,7 @@ static SPNotLoaded *notLoaded = nil;
 	@synchronized(self) {
 		return [[self notLoaded] retain];
 	}
-#ifdef SP_REFACTOR
-	return nil;  // only here to stop clang's "can reach end of non-void function"
-#endif
+	return nil;
 }
 
 - (id) init

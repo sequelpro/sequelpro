@@ -30,6 +30,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
+#import "SPMySQL.h"
 
 // Constants
 static const NSString *SPTriggerName       = @"TriggerName";
@@ -189,7 +190,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 							  NSLocalizedString(@"OK", @"OK button"),
 							  nil, nil, [NSApp mainWindow], nil, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"),
-							   [connection getLastErrorMessage]]);
+							   [connection lastErrorMessage]]);
 			
 			return;
 		}
@@ -229,7 +230,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 						  NSLocalizedString(@"OK", @"OK button"),
 						  nil, nil, [NSApp mainWindow], nil, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
-						   [connection getLastErrorMessage]]);
+						   [connection lastErrorMessage]]);
 		
 		// In case of error, re-create the original trigger statement
 		if (isEdit) {
@@ -346,12 +347,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 /**
  * Double-click action on table cells - for the time being, return NO to disable editing.
  */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSUInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
 	// Start Edit panel
-	if (([triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
+	if (((NSInteger)[triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
 		[self _editTriggerAtIndex:rowIndex];
 	}
 
@@ -427,7 +428,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 									  NSLocalizedString(@"OK", @"OK button"),
 									  nil, nil, [tableDocumentInstance parentWindow], nil, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection getLastErrorMessage]]);
+									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection lastErrorMessage]]);
 
 					// Abort loop
 					break;

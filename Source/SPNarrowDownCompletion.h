@@ -26,6 +26,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+@class SPDatabaseStructure;
+
 #ifndef SP_REFACTOR
 @interface SPNarrowDownCompletion : NSWindow
 #else
@@ -74,6 +76,7 @@
 	
 	NSMutableCharacterSet* textualInputCharacters;
 
+	SPDatabaseStructure *databaseStructureRetrieval;
 #ifndef SP_REFACTOR
 	NSUserDefaults *prefs;
 #endif
@@ -85,7 +88,7 @@
 	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch 
 	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
 	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
-	alias:(NSString*)anAlias isQueryingDBStructure:(BOOL)isQueryingDBStructure;
+	alias:(NSString*)anAlias withDBStructureRetriever:(SPDatabaseStructure *)theDatabaseStructure;
 - (void)setCaretPos:(NSPoint)aPos;
 - (void)insert_text:(NSString* )aString;
 - (void)insertAutocompletePlaceholder;

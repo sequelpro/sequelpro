@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPMySQLConnection;
 
 typedef enum {
 	SPFieldMapperInProgress = 1,
@@ -77,7 +77,7 @@ typedef enum {
 	IBOutlet id singleProgressTitle;
 	IBOutlet id singleProgressText;
 
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 
 	NSMutableArray *nibObjectsToRelease;
 
@@ -138,7 +138,7 @@ typedef enum {
 - (NSString *)mappedUpdateSetStatementStringForRowArray:(NSArray *)csvRowArray;
 
 // Additional methods
-- (void)setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)showErrorSheetWithMessage:(NSString*)message;
 
 // Import delegate notifications

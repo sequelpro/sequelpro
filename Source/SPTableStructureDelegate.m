@@ -30,6 +30,7 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
+#import "SPMySQL.h"
 
 @implementation SPTableStructure (SPTableStructureDelegate)
 
@@ -328,13 +329,13 @@
 			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 		}
 		else if ([(NSString *)[originalRow objectForKey:@"default"] length]) {
-			[queryString appendFormat:@" DEFAULT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"default"]]];
+			[queryString appendFormat:@" DEFAULT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"default"]]];
 		}
 	}
 	
 	// Any column comments
 	if ([(NSString *)[originalRow objectForKey:@"comment"] length]) {
-		[queryString appendFormat:@" COMMENT '%@'", [mySQLConnection prepareString:[originalRow objectForKey:@"comment"]]];
+		[queryString appendFormat:@" COMMENT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"comment"]]];
 	}
 	
 	// Unparsed details - column formats, storage, reference definitions
@@ -355,7 +356,7 @@
 	
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection getLastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection lastErrorMessage]]);
 	} 
 	else {
 		[tableDataInstance resetAllData];
