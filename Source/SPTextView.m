@@ -398,9 +398,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 			// Put information_schema and/or mysql db at the end if not selected
 			// 5.5.3+ also has performance_schema
-			NSString* mysql_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"mysql"];
-			NSString* inf_id   = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"information_schema"];
-			NSString* perf_id  = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, @"performance_schema"];
+			NSString* mysql_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, SPMySQLDatabase];
+			NSString* inf_id   = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, SPMySQLInformationSchemaDatabase];
+			NSString* perf_id  = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, SPMySQLPerformanceSchemaDatabase];
+			
 			if(currentDb && ![currentDb isEqualToString:mysql_id] && [sortedDbs containsObject:mysql_id]) {
 				[sortedDbs removeObject:mysql_id];
 				[sortedDbs addObject:mysql_id];
