@@ -613,10 +613,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		
 		// If the database is either information_schema or mysql then it is classed as a
 		// system table; similarly, for 5.5.3+, performance_schema
-		if ([database isEqualToString:SPMySQLDatabase] || 
-			[database isEqualToString:SPMySQLInformationSchemaDatabase] || 
-			[database isEqualToString:SPMySQLPerformanceSchemaDatabase]) {
- 			[allSystemDatabases addObject:database];
+		if ([databaseName isEqualToString:SPMySQLDatabase] || 
+			[databaseName isEqualToString:SPMySQLInformationSchemaDatabase] || 
+			[databaseName isEqualToString:SPMySQLPerformanceSchemaDatabase]) {
+ 			[allSystemDatabases addObject:databaseName];
  		}
 		else {
 			[allDatabases addObject:databaseName];
