@@ -563,7 +563,9 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
 	// also affects mysql and performance_schema
-	BOOL isSystemSchemaDb = ([[tableDocumentInstance database] isEqualToString:@"information_schema"] || [[tableDocumentInstance database] isEqualToString:@"performance_schema"] || [[tableDocumentInstance database] isEqualToString:@"mysql"]);
+	BOOL isSystemSchemaDb = ([[tableDocumentInstance database] isEqualToString:SPMySQLInformationSchemaDatabase] || 
+							 [[tableDocumentInstance database] isEqualToString:SPMySQLPerformanceSchemaDatabase] || 
+							 [[tableDocumentInstance database] isEqualToString:SPMySQLDatabase]);
 
 	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"]) {
 		[tableTypePopUpButton setEnabled:(!isSystemSchemaDb)];
