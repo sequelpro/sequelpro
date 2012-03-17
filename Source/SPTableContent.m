@@ -278,11 +278,7 @@
 	}
 
 	// Post a notification that a query will be performed
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#endif
 
 	// Set up the table details for the new table, and trigger an interface update
 	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -322,11 +318,7 @@
 		[[tableContentView onMainThread] setNeedsDisplay:YES];
 
 	// Post the notification that the query is finished
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 	// Clear any details to restore now that they have been restored
 	[self clearDetailsToRestore];
@@ -755,11 +747,7 @@
 #endif
 
 	// Notify any listeners that a query has started
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#endif
 
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", 
@@ -875,11 +863,7 @@
 
 
 	// Notify listenters that the query has finished
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 #ifndef SP_REFACTOR
@@ -2724,11 +2708,8 @@
 		[rowValuesToSave addObject:fieldValue];
 	}
 
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#endif
+
 	NSMutableString *queryString;
 
 	// Use INSERT syntax when creating new rows
@@ -2754,11 +2735,7 @@
 	// Run the query
 	[mySQLConnection queryString:queryString];
 
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 	// If no rows have been changed, show error if appropriate.
 	if ( ![mySQLConnection rowsAffectedByLastQuery] && ![mySQLConnection queryErrored] ) {

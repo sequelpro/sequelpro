@@ -255,11 +255,7 @@
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
-#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 		[[self onMainThread] setTableDetails:nil];
 
 		if ([mySQLConnection isConnected]) {
@@ -384,11 +380,7 @@
 	autoIncrementIndex = nil;
 
 	// Send the query finished/work complete notification
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 
 	[theTableFields release];
 }

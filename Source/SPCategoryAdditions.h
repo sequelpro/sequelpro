@@ -41,5 +41,5 @@
 #import "SPColorAdditions.h"
 #import "SPFileManagerAdditions.h"
 
-#import "NSNotificationAdditions.h"
+#import "NSNotificationCenterThreadingAdditions.h"
 #import "NSMutableArray-MultipleSort.h"

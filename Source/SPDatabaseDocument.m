@@ -969,11 +969,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	NSString *dbName = nil;
 
 	// Notify listeners that a query has started
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:self];
-#endif
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
@@ -1000,11 +996,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	}
 
 	//query finished
-#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
-#endif
 }
 
 #ifndef SP_REFACTOR /* navigatorSchemaPathExistsForDatabase: */
@@ -5325,11 +5317,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 - (void)registerActivity:(NSDictionary*)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
-#ifndef SP_REFACTOR
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
-#endif
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 
 	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
 		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
@@ -5361,12 +5349,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 	}
 
-#ifndef SP_REFACTOR
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:nil];
-#else
-	[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
-#endif
-
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 }
 
 - (void)setActivityPaneHidden:(NSNumber*)hide

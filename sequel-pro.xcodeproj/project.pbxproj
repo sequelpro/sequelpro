@@ -212,6 +212,10 @@
 		584D878B15140FEB00F24774 /* SPObjectAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D878A15140FEB00F24774 /* SPObjectAdditions.m */; };
 		584D87921514101E00F24774 /* SPDatabaseStructure.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D87911514101E00F24774 /* SPDatabaseStructure.m */; };
 		584D87C415141A5D00F24774 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 584D87BE15141A4A00F24774 /* libz.dylib */; };
+		584D88A91515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */; };
+		584D88AA1515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */; };
+		584D88AB1515034200F24774 /* NSNotificationCenterThreadingAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 584D88A71515034200F24774 /* NSNotificationCenterThreadingAdditions.h */; };
+		584D88AC1515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */; };
 		584F5F8F0F50ACD800036517 /* table-view-small.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 584F5F8E0F50ACD800036517 /* table-view-small.tiff */; };
 		586AAB1514FAD3AF007F82BF /* QueryKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; };
 		586AAB9314FAD40D007F82BF /* QueryKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 17E5955314F304000054EE08 /* QueryKit.framework */; };
@@ -267,7 +271,6 @@
 		58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58B906E611BD989A000826E5 /* PSMTabBar.framework */; };
 		58B9097B11C3A4A2000826E5 /* xibLocalizationPostprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B9095B11C3A3EC000826E5 /* xibLocalizationPostprocessor.m */; };
 		58B909A511C3B919000826E5 /* DMLocalizedNibBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B909A411C3B919000826E5 /* DMLocalizedNibBundle.m */; };
-		58C34F5310B86CAE00D37E14 /* NSNotificationAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */; };
 		58C3506510B9A56C00D37E14 /* button_left.png in Resources */ = {isa = PBXBuildFile; fileRef = 58C3506410B9A56C00D37E14 /* button_left.png */; };
 		58C3506710B9A57300D37E14 /* button_right.png in Resources */ = {isa = PBXBuildFile; fileRef = 58C3506610B9A57300D37E14 /* button_right.png */; };
 		58C3506B10B9AA8B00D37E14 /* button_pagination.png in Resources */ = {isa = PBXBuildFile; fileRef = 58C3506A10B9AA8B00D37E14 /* button_pagination.png */; };
@@ -919,6 +922,8 @@
 		584D87901514101E00F24774 /* SPDatabaseStructure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseStructure.h; sourceTree = "<group>"; };
 		584D87911514101E00F24774 /* SPDatabaseStructure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseStructure.m; sourceTree = "<group>"; };
 		584D87BE15141A4A00F24774 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		584D88A71515034200F24774 /* NSNotificationCenterThreadingAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotificationCenterThreadingAdditions.h; sourceTree = "<group>"; };
+		584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationCenterThreadingAdditions.m; sourceTree = "<group>"; };
 		584F5F8E0F50ACD800036517 /* table-view-small.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-view-small.tiff"; sourceTree = "<group>"; };
 		586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FeedbackReporter.framework; path = Frameworks/FeedbackReporter.framework; sourceTree = "<group>"; };
 		586F432A0FD74CFC00B428D7 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/SSHQuestionDialog.xib; sourceTree = "<group>"; };
@@ -1010,8 +1015,6 @@
 		58B9095B11C3A3EC000826E5 /* xibLocalizationPostprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xibLocalizationPostprocessor.m; sourceTree = "<group>"; };
 		58B9096111C3A42B000826E5 /* xibLocalizationPostprocessor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xibLocalizationPostprocessor; sourceTree = BUILT_PRODUCTS_DIR; };
 		58B909A411C3B919000826E5 /* DMLocalizedNibBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMLocalizedNibBundle.m; sourceTree = "<group>"; };
-		58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNotificationAdditions.h; sourceTree = "<group>"; };
-		58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNotificationAdditions.m; sourceTree = "<group>"; };
 		58C3506410B9A56C00D37E14 /* button_left.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_left.png; sourceTree = "<group>"; };
 		58C3506610B9A57300D37E14 /* button_right.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_right.png; sourceTree = "<group>"; };
 		58C3506A10B9AA8B00D37E14 /* button_pagination.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_pagination.png; sourceTree = "<group>"; };
@@ -1738,8 +1741,8 @@
 		17DC8825126B222D00E9AAEC /* Third Party */ = {
 			isa = PBXGroup;
 			children = (
-				58C34F5110B86CAE00D37E14 /* NSNotificationAdditions.h */,
-				58C34F5210B86CAE00D37E14 /* NSNotificationAdditions.m */,
+				584D88A71515034200F24774 /* NSNotificationCenterThreadingAdditions.h */,
+				584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */,
 				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
 				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
 				17DC8826126B22F200E9AAEC /* Views */,
@@ -2537,6 +2540,7 @@
 				BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */,
 				BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */,
 				BCD06FC6120AAAC200C73602 /* SPDataAdditions.h in Headers */,
+				584D88AB1515034200F24774 /* NSNotificationCenterThreadingAdditions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2998,6 +3002,7 @@
 				584754D3120A05910057631F /* GeneratePreviewForURL.m in Sources */,
 				584754D4120A05910057631F /* GenerateThumbnailForURL.m in Sources */,
 				584754D5120A05910057631F /* main.c in Sources */,
+				584D88AC1515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3037,6 +3042,7 @@
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
 				58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */,
 				58C61CFA11960312003BAA5D /* SPAlertSheets.m in Sources */,
+				584D88AA1515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3117,7 +3123,6 @@
 				1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */,
 				1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */,
 				17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */,
-				58C34F5310B86CAE00D37E14 /* NSNotificationAdditions.m in Sources */,
 				5870868410FA3E9C00D58E1C /* SPDataStorage.m in Sources */,
 				584095191107CB6600260CFD /* SPAlertSheets.m in Sources */,
 				29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */,
@@ -3191,6 +3196,7 @@
 				17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */,
 				584D878B15140FEB00F24774 /* SPObjectAdditions.m in Sources */,
 				584D87921514101E00F24774 /* SPDatabaseStructure.m in Sources */,
+				584D88A91515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

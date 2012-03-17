@@ -134,11 +134,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ([tableDocumentInstance database]) {
 
 		// Notify listeners that a query has started
-#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-#endif
 
 		// Use UTF8 for identifier-based queries
 		if (changeEncoding) {
@@ -274,11 +270,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 		// Notify listeners that the query has finished
-#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-#endif
 	}
 
 	// Add the table headers even if no tables were found
