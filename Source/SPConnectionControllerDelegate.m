@@ -168,12 +168,14 @@ static NSString *SPDatabaseImage = @"database-small";
 		
 		return NO;
 	}
-	
+		
 	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
-	//[pboard setData:[NSKeyedArchiver archivedDataWithRootObject:items] forType:SPFavoritesPasteboardDragType];
-	[pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
+
+	BOOL result = [pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
 	
-	return YES;
+	draggedNodes = items;
+	
+	return result;
 }
 
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
@@ -213,11 +215,9 @@ static NSString *SPDatabaseImage = @"database-small";
 		[menuItem setState:NSOffState];
 	}
 	
-	NSArray *nodes = [self selectedFavoriteNodes];
-		
-	//NSArray *nodes = [NSKeyedUnarchiver unarchiveObjectWithData:[[info draggingPasteboard] dataForType:SPFavoritesPasteboardDragType]];
+	NSArray *nodes = draggedNodes;
 	
-	//if (![nodes count]) return acceptedDrop;
+	if (![nodes count]) return acceptedDrop;
 	
 	if ([node isGroup]) {		
 		if (index == NSOutlineViewDropOnItemIndex) {

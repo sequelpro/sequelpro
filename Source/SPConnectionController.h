@@ -172,6 +172,7 @@
 	BOOL favoriteNameFieldWasTouched;
 	
 #ifndef SP_REFACTOR	/* ivars */
+	NSArray *draggedNodes;
 	NSImage *folderImage;
 	
 	SPTreeNode *favoritesRoot;
