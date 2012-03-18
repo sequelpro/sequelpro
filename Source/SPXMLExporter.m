@@ -23,12 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPXMLExporter.h"
 #import "SPExportFile.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
+#import "SPMySQL.h"
 
 @implementation SPXMLExporter
 
@@ -73,9 +72,9 @@
 	NSString *dataConversionString = nil;
 	
 	// Result sets
-	MCPResult *statusResult = nil;
-	MCPResult *structureResult = nil;
-	MCPStreamingResult *streamingResult = nil;
+	SPMySQLResult *statusResult = nil;
+	SPMySQLResult *structureResult = nil;
+	SPMySQLFastStreamingResult *streamingResult = nil;
 	
 	NSMutableArray *xmlTags    = [NSMutableArray array];
 	NSMutableString *xmlString = [NSMutableString string];
@@ -107,7 +106,7 @@
 		
 		isTableExport = YES;
 		
-		totalRows       = [[[[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self xmlTableName] backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
+		totalRows       = [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self xmlTableName] backtickQuotedString]]] integerValue];
 		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self xmlTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
 	
 		// Only include the structure if necessary
@@ -118,17 +117,12 @@
 			[escapedTableName replaceOccurrencesOfString:@"\\" withString:@"\\\\\\\\" options:0 range:NSMakeRange(0, [escapedTableName length])];
 			statusResult    = [connection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE %@", escapedTableName]];
 			
-			if ([structureResult numOfRows] && [statusResult numOfRows]) {
-				
-				[statusResult dataSeek:0];
-				[structureResult dataSeek:0];
-				
+			if ([structureResult numberOfRows] && [statusResult numberOfRows]) {
+
 				[xmlString appendFormat:@"\t<table_structure name=\"%@\">\n", [self xmlTableName]];
 				
-				for (i = 0; i < [structureResult numOfRows]; i++)
+				for (NSDictionary *row in structureResult)
 				{
-					NSDictionary *row = [structureResult fetchRowAsDictionary];
-					
 					[xmlString appendFormat:@"\t\t<field field=\"%@\" type=\"%@\" null=\"%@\" key=\"%@\" default=\"%@\" extra=\"%@\" />\n",
 					 [row objectForKey:@"Field"],
 					 [row objectForKey:@"Type"],
@@ -138,7 +132,7 @@
 					 [row objectForKey:@"Extra"]];				
 				}
 				
-				NSDictionary *row = [statusResult fetchRowAsDictionary];
+				NSDictionary *row = [statusResult getRowAsDictionary];
 				
 				[xmlString appendFormat:@"\n\t\t<options name=\"%@\" engine=\"%@\" version=\"%@\" row_format=\"%@\" rows=\"%@\" avg_row_length=\"%@\" data_length=\"%@\" max_data_length=\"%@\" index_length=\"%@\" data_free=\"%@\" create_time=\"%@\" update_time=\"%@\" collation=\"%@\" create_options=\"%@\" comment=\"%@\" />\n",
 				 [row objectForKey:@"Name"],
@@ -175,7 +169,7 @@
 	if ((!isTableExport) || (isTableExport && [self xmlOutputIncludeContent])) {
 	
 		// Set up an array of encoded field names as opening and closing tags
-		fieldNames = ([self xmlDataArray]) ? NSArrayObjectAtIndex([self xmlDataArray], 0) : [streamingResult fetchFieldNames];
+		fieldNames = ([self xmlDataArray]) ? NSArrayObjectAtIndex([self xmlDataArray], 0) : [streamingResult fieldNames];
 		
 		for (i = 0; i < [fieldNames count]; i++) 
 		{
@@ -225,7 +219,7 @@
 			} 
 			// Or by reading an appropriate row from the streaming result
 			else {
-				xmlRow = [streamingResult fetchNextRowAsArray];
+				xmlRow = [streamingResult getRowAsArray];
 				
 				if (!xmlRow) break;
 			}
@@ -265,14 +259,14 @@
 					[xmlItem setString:[NSString stringWithString:dataConversionString]];
 					[dataConversionString release];
 				} 
-				else if ([data isKindOfClass:[NSNull class]]) {
+				else if (data == [NSNull null]) {
 					dataIsNULL = YES;
 					
 					if ([self xmlFormat] == SPXMLExportPlainFormat) {
 						[xmlItem setString:[self xmlNULLString]];
 					}
 				}
-				else if ([data isKindOfClass:[MCPGeometryData class]]) {
+				else if ([data isKindOfClass:[SPMySQLGeometryData class]]) {
 					[xmlItem setString:[data wktString]];
 				}
 				else {

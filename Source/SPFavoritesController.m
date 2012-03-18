@@ -54,7 +54,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 {    
     @synchronized(self) {
 		return [[self sharedFavoritesController] retain]; 
-    }    
+    }
+	return nil;    
 }
 
 - (id)init

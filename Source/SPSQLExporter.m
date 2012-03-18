@@ -23,14 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPSQLExporter.h"
 #import "SPTablesList.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
 #import "SPTableData.h"
+#import "SPMySQL.h"
 
 @interface SPSQLExporter (PrivateAPI)
 
@@ -86,8 +85,8 @@
 	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
 	[sqlTableDataInstance setConnection:connection];
 			
-	MCPResult *queryResult;
-	MCPStreamingResult *streamingResult;
+	SPMySQLResult *queryResult;
+	SPMySQLStreamingResult *streamingResult;
 	
 	NSArray *row;
 	NSString *tableName;
@@ -226,8 +225,8 @@
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
-		if ([queryResult numOfRows]) {
-			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+		if ([queryResult numberOfRows]) {
+			tableDetails = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 			
 			if ([tableDetails objectForKey:@"Create View"]) {
 				[viewSyntaxes setValue:[[[[tableDetails objectForKey:@"Create View"] copy] autorelease] createViewSyntaxPrettifier] forKey:tableName];
@@ -243,9 +242,9 @@
 		}
 					
 		if ([connection queryErrored]) {
-			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
+			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 			
-			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			
 			continue;
 		}
@@ -291,11 +290,11 @@
 			}
 																			
 			// Retrieve the number of rows in the table for progress bar drawing
-			NSArray *rowArray = [[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] fetchRowAsArray];
+			NSArray *rowArray = [[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [tableName backtickQuotedString]]] getRowAsArray];
 			
 			if ([connection queryErrored] || ![rowArray count]) {
-				[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				continue;
 			}
@@ -307,7 +306,7 @@
 				// Set up a result set in streaming mode
 				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
 				
-				NSArray *fieldNames = [streamingResult fetchFieldNames];
+				NSArray *fieldNames = [streamingResult fieldNames];
 				
 				// Inform the delegate that we are about to start writing data for the current table
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
@@ -331,7 +330,7 @@
 				// Inform the delegate that we are about to start writing the data to disk
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 				
-				while ((row = [streamingResult fetchNextRowAsArray])) 
+				while ((row = [streamingResult getRowAsArray])) 
 				{
 					// Check for cancellation flag
 					if ([self isCancelled]) {
@@ -373,7 +372,7 @@
 						id object = NSArrayObjectAtIndex(row, t);
 												
 						// Add NULL values directly to the output row
-						if ([object isMemberOfClass:[NSNull class]]) {
+						if (object == [NSNull null]) {
 							[sqlString appendString:@"NULL"];
 						} 
 						// If the field is off type BIT, the values need a binary prefix of b'x'.
@@ -384,7 +383,7 @@
 						else if ([object isKindOfClass:[NSData class]]) {
 							
 							if ([self sqlOutputEncodeBLOBasHex]) {
-								[sqlString appendFormat:@"X'%@'", [connection prepareBinaryData:object]];
+								[sqlString appendString:[connection escapeAndQuoteData:object]];
 							}
 							else {
 								[sqlString appendString:@"'"];
@@ -404,8 +403,8 @@
 						} 
 
 						// GEOMETRY data types directly as hex data
-						else if ([object isKindOfClass:[MCPGeometryData class]]) {
-							[sqlString appendFormat:@"X'%@'", [connection prepareBinaryData:[object data]]];
+						else if ([object isKindOfClass:[SPMySQLGeometryData class]]) {
+							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
 						}
 						else {
 							[cellValue setString:[object description]];
@@ -420,9 +419,7 @@
 								} 
 								// Otherwise add a quoted string with special characters escaped
 								else {
-									[sqlString appendString:@"'"];
-									[sqlString appendString:[connection prepareString:cellValue]];
-									[sqlString appendString:@"'"];
+									[sqlString appendString:[connection escapeAndQuoteString:cellValue]];
 								}
 							}
 						}
@@ -481,10 +478,10 @@
 			}
 			
 			if ([connection queryErrored]) {
-				[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
+				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
-					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
+					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]
 										   dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 			}
@@ -494,12 +491,12 @@
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
-		if ([queryResult numOfRows]) {
+		if ([queryResult numberOfRows]) {
 			
 			[metaString setString:@"\n"];
 			[metaString appendString:@"DELIMITER ;;\n"];
 			
-			for (s = 0; s < [queryResult numOfRows]; s++) 
+			for (s = 0; s < [queryResult numberOfRows]; s++) 
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
@@ -509,7 +506,7 @@
 					return;
 				}
 				
-				NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+				NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 				
 				// Definer is user@host but we need to escape it to `user`@`host`
 				NSArray *triggersDefiner = [[triggers objectForKey:@"Definer"] componentsSeparatedByString:@"@"];
@@ -534,10 +531,10 @@
 		}
 		
 		if ([connection queryErrored]) {
-			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
+			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 			
 			if ([self sqlOutputIncludeErrors]) {
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]]
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]
 									   dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 		}
@@ -591,7 +588,7 @@
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
-		if ([queryResult numOfRows]) {
+		if ([queryResult numberOfRows]) {
 			
 			[metaString setString:@"\n"];
 			[metaString appendFormat:@"--\n-- Dumping routines (%@) for database %@\n--\nDELIMITER ;;\n\n", procedureType,
@@ -599,7 +596,7 @@
 			
 			
 			// Loop through the definitions, exporting if enabled
-			for (s = 0; s < [queryResult numOfRows]; s++) 
+			for (s = 0; s < [queryResult numberOfRows]; s++) 
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
@@ -609,7 +606,7 @@
 					return;
 				}
 
-				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]];
+				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
 
 				// Only proceed if the item is in the list of items
@@ -661,20 +658,20 @@
 											[NSArrayObjectAtIndex(procedureDefiner, 1) backtickQuotedString]
 											];
 				
-				MCPResult *createProcedureResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", procedureType,
+				SPMySQLResult *createProcedureResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", procedureType,
 																			[procedureName backtickQuotedString]]];
 				[createProcedureResult setReturnDataAsStrings:YES];
 				if ([connection queryErrored]) {
-					[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
+					[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 					
 					if ([self sqlOutputIncludeErrors]) {
-						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 					}
 					[proceduresList release];
 					continue;
 				}
 				
-				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult fetchRowAsDictionary]];
+				NSDictionary *procedureInfo = [[NSDictionary alloc] initWithDictionary:[createProcedureResult getRowAsDictionary]];
 				
 				[metaString appendFormat:@"/*!50003 SET SESSION SQL_MODE=\"%@\"*/;;\n", [procedureInfo objectForKey:@"sql_mode"]];
 				
@@ -714,10 +711,10 @@
 		}
 		
 		if ([connection queryErrored]) {
-			[errors appendFormat:@"%@\n", [connection getLastErrorMessage]];
+			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 			
 			if ([self sqlOutputIncludeErrors]) {
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection getLastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 		}
 		
@@ -806,7 +803,10 @@
 			
 			for (j = 0; j < [[column objectForKey:@"values"] count]; j++) 
 			{
-				[fieldString appendFormat:@"'%@'%@", [connection prepareString:NSArrayObjectAtIndex([column objectForKey:@"values"], j)], ((j + 1) == [[column objectForKey:@"values"] count]) ? @"" : @","];
+				[fieldString appendString:[connection escapeAndQuoteString:NSArrayObjectAtIndex([column objectForKey:@"values"], j)]];
+				if ((j + 1) != [[column objectForKey:@"values"] count]) {
+					[fieldString appendString:@","];
+				}
 			}
 			
 			[fieldString appendString:@")"];
@@ -834,7 +834,7 @@
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 			} 
 			else {
-				[fieldString appendFormat:@" DEFAULT '%@'", [connection prepareString:[column objectForKey:@"default"]]];
+				[fieldString appendFormat:@" DEFAULT %@", [connection escapeAndQuoteString:[column objectForKey:@"default"]]];
 			}
 		}
 		

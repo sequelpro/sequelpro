@@ -48,11 +48,11 @@
  * explicity called.
  */
 
-@class MCPConnection, SPExportFile;
+@class SPMySQLConnection, SPExportFile;
 
 @interface SPExporter : NSOperation
 {	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 	double exportProgressValue;
 	double exportMaxProgress;
@@ -74,7 +74,7 @@
 /**
  * @property connection The MySQL connection to use
  */
-@property(readwrite, retain) MCPConnection *connection;
+@property(readwrite, retain) SPMySQLConnection *connection;
 
 /**
  * @property exportProgressValue The export's current progress value

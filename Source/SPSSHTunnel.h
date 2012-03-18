@@ -23,9 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+#import "SPMySQLConnectionProxy.h"
+#import "SPMySQLConstants.h"
 
-@interface SPSSHTunnel : NSObject <MCPConnectionProxy>
+@interface SPSSHTunnel : NSObject <SPMySQLConnectionProxy>
 {
 	id delegate;
 
@@ -78,7 +79,7 @@
 - (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount;
 - (BOOL)setPassword:(NSString *)thePassword;
 - (BOOL)setKeyFilePath:(NSString *)thePath;
-- (NSInteger)state;
+- (SPMySQLConnectionProxyState)state;
 - (NSString *)lastError;
 - (NSString *)debugMessages;
 - (NSUInteger)localPort;

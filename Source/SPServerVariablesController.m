@@ -26,6 +26,7 @@
 #import "SPServerVariablesController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAppController.h"
+#import "SPMySQL.h"
 
 @interface SPServerVariablesController (PrivateAPI)
 
@@ -287,20 +288,13 @@
  */
 - (void)_getDatabaseServerVariables
 {
-	NSUInteger i = 0;
 	
 	// Get processes
-	MCPResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
+	SPMySQLResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
 	[serverVariables setReturnDataAsStrings:YES];
 	
-	if ([serverVariables numOfRows]) [serverVariables dataSeek:0];
-	
 	[variables removeAllObjects];
-	
-	for (i = 0; i < [serverVariables numOfRows]; i++) 
-	{
-		[variables addObject:[serverVariables fetchRowAsDictionary]];
-	}
+	[variables addObjectsFromArray:[serverVariables getAllRows]];
 }
 
 /**

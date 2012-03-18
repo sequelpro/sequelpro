@@ -23,13 +23,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPCSVExporter.h"
 #import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
+#import "SPMySQL.h"
 
 @implementation SPCSVExporter
 
@@ -77,7 +76,7 @@
 
 	NSArray *csvRow = nil;
 	NSScanner *csvNumericTester = nil;
-	MCPStreamingResult *streamingResult = nil;
+	SPMySQLFastStreamingResult *streamingResult = nil;
 	NSString *escapedEscapeString, *escapedFieldSeparatorString, *escapedEnclosingString, *escapedLineEndString, *dataConversionString;
 
 	id csvCell;
@@ -122,7 +121,7 @@
 	
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self csvDataArray]) && [self csvTableName]) {
-		totalRows       = [[[[connection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] fetchRowAsArray] objectAtIndex:0] integerValue];
+		totalRows		= [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] integerValue];
 		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
 	}
 	
@@ -184,12 +183,12 @@
 		NSDictionary *tableDetails = nil;
 		
 		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		MCPResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
-		if ([queryResult numOfRows]) {
-			id object = [[[NSDictionary alloc] initWithDictionary:[queryResult fetchRowAsDictionary]] objectForKey:@"Create View"];
+		if ([queryResult numberOfRows]) {
+			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
 			
 			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
 		}
@@ -238,11 +237,11 @@
 		else {
 			// If still requested to read the field names, get the field names
 			if ([self csvOutputFieldNames]) {
-				csvRow = [streamingResult fetchFieldNames];
+				csvRow = [streamingResult fieldNames];
 				[self setCsvOutputFieldNames:NO];
 			} 
 			else {
-				csvRow = [streamingResult fetchNextRowAsArray];
+				csvRow = [streamingResult getRowAsArray];
 				
 				if (!csvRow) break;
 			}
@@ -266,7 +265,7 @@
 			csvCell = NSArrayObjectAtIndex(csvRow, i);
 							
 			// For NULL objects supplied from a queryResult, add an unenclosed null string as per prefs
-			if ([csvCell isKindOfClass:[NSNull class]]) {
+			if ([csvCell isNSNull]) {
 				[csvString appendString:[self csvNULLString]];
 				
 				if (i < (csvCellCount - 1)) [csvString appendString:[self csvFieldSeparatorString]];
@@ -285,7 +284,7 @@
 				[csvCellString setString:[NSString stringWithString:dataConversionString]];
 				[dataConversionString release];
 			}
-			else if ([csvCell isKindOfClass:[MCPGeometryData class]]) {
+			else if ([csvCell isKindOfClass:[SPMySQLGeometryData class]]) {
 				[csvCellString setString:[csvCell wktString]];
 			}
 			else {

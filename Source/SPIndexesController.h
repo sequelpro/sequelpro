@@ -23,9 +23,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPTableView, MCPConnection, BWAnchoredButtonBar;
+#ifndef SP_REFACTOR
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, BWAnchoredButtonBar, SPTableView;
+#else
+@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, SPTableView;
+#endif
 
 @interface SPIndexesController : NSWindowController 
+#ifdef SP_REFACTOR
+<NSTableViewDelegate, NSTableViewDataSource>
+#endif
 {
 	// Controllers
 	IBOutlet SPDatabaseDocument *dbDocument;
@@ -49,6 +56,7 @@
 	IBOutlet NSButton *addIndexedColumnButton;
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
+#ifndef SP_REFACTOR
 	IBOutlet BWAnchoredButtonBar *anchoredButtonBar;
 	
 	// Advanced options view
@@ -57,6 +65,7 @@
 	IBOutlet NSButton *indexAdvancedOptionsViewLabelButton;
 	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
 	IBOutlet NSTextField *indexKeyBlockSizeTextField;
+#endif
 		
 	BOOL _mainNibLoaded;
 	NSString *table;
@@ -68,14 +77,25 @@
 	NSUserDefaults *prefs;
 #endif
 	
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
+#ifndef SP_REFACTOR /* ivars */
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
+#endif
 }
+
+#ifdef SP_REFACTOR
+@property (assign) SPTableView* indexesTableView;
+@property (assign) SPTableStructure* tableStructure;
+@property (assign) NSButton* addIndexButton;
+@property (assign) NSButton* removeIndexButton;
+
+- (void)setDatabaseDocument:(SPDatabaseDocument*)db;
+#endif
 
 /**
  * @property table The table currently being viewed
@@ -85,7 +105,7 @@
 /**
  * @property connection The MySQL connection to use
  */
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 - (IBAction)addIndex:(id)sender;
 - (IBAction)removeIndex:(id)sender;

@@ -32,6 +32,7 @@
 #import "SPArrayAdditions.h"
 #import "SPMutableArrayAdditions.h"
 #import "SPStringAdditions.h"
+#import "SPObjectAdditions.h"
 #import "SPTextViewAdditions.h"
 #import "SPWindowAdditions.h"
 #import "SPDataAdditions.h"
@@ -41,5 +42,5 @@
 #import "SPColorAdditions.h"
 #import "SPFileManagerAdditions.h"
 
-#import "NSNotificationAdditions.h"
+#import "NSNotificationCenterThreadingAdditions.h"
 #import "NSMutableArray-MultipleSort.h"

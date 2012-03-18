@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
 #import "SPConnectionControllerDelegateProtocol.h"
 
 #ifndef SP_REFACTOR /* headers */
@@ -34,7 +32,8 @@
 	   SPFavoritesController, 
 	   SPSSHTunnel,
 	   SPTreeNode,
-	   SPFavoritesOutlineView
+	   SPFavoritesOutlineView,
+       SPMySQLConnection
 #ifndef SP_REFACTOR /* class decl */
 	   ,SPKeychain, 
 	   BWAnchoredButtonBar, 
@@ -58,14 +57,10 @@
 	
 	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;
+	SPMySQLConnection *mySQLConnection;
 	
 #ifndef SP_REFACTOR	/* ivars */
 	SPKeychain *keychain;
-#endif
-	
-	MCPConnection *mySQLConnection;
-	
-#ifndef SP_REFACTOR	/* ivars */
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
 	NSOpenPanel *keySelectionPanel;
@@ -73,11 +68,11 @@
 	NSUserDefaults *prefs;
 	NSMutableArray *favorites;
 
+#ifndef SP_REFACTOR	/* ivars */
 	BOOL automaticFavoriteSelection;
 	BOOL cancellingConnection;
 	BOOL isConnecting;
 	
-#ifndef SP_REFACTOR	/* ivars */
 	// Standard details
 	NSInteger previousType;
 #endif
@@ -227,7 +222,7 @@
 - (IBAction)updateKeyLocationFileVisibility:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
-- (IBAction)reverseSortFavorites:(id)sender;
+- (IBAction)reverseSortFavorites:(NSMenuItem *)sender;
 
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 

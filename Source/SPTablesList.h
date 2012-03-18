@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPHistoryController, SPTableView;
+@class SPHistoryController, SPTableView, SPMySQLConnection;
 @class SPDatabaseDocument, SPDatabaseData, SPTableStructure, SPTableContent;
 
 #ifdef SP_REFACTOR
@@ -103,7 +101,7 @@
 	IBOutlet NSMenuItem *separatorTableMenuItem3;
 #endif
 	
-	MCPConnection *mySQLConnection;
+	SPMySQLConnection *mySQLConnection;
 	
 #ifndef SP_REFACTOR /* ivars */
 	// Table list context menu items
@@ -153,7 +151,7 @@
 - (IBAction)togglePaneCollapse:(id)sender;
 #endif
 // Additional methods
-- (void)setConnection:(MCPConnection *)theConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
 #ifndef SP_REFACTOR /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;

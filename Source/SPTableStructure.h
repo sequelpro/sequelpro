@@ -23,9 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
-
-@class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController, SPTableView;
+@class SPDatabaseDocument, SPTableFieldValidation, SPTableData, SPDatabaseData, SPTablesList, SPIndexesController, SPTableView, SPMySQLConnection, SPMySQLResult;
 
 @interface SPTableStructure : NSObject 
 #ifdef SP_REFACTOR
@@ -70,9 +68,7 @@
 #endif
 	IBOutlet NSPopUpButtonCell *encodingPopupCell;
 
-	MCPConnection *mySQLConnection;
-	MCPResult *tableSourceResult;
-	MCPResult *indexResult;
+	SPMySQLConnection *mySQLConnection;
 	
 	SPTableFieldValidation *fieldValidation;
 
@@ -123,15 +119,15 @@
 - (IBAction)resetAutoIncrement:(id)sender;
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)showOptimizedFieldType:(id)sender;
-- (IBAction)toggleColumnView:(id)sender;
+- (IBAction)toggleColumnView:(NSMenuItem *)sender;
 - (BOOL)cancelRowEditing;
 
 // Index sheet methods
 - (IBAction)closeSheet:(id)sender;
 
 // Additional methods
-- (void)setConnection:(MCPConnection *)theConnection;
-- (NSArray *)fetchResultAsArray:(MCPResult *)theResult;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
+- (NSArray *)convertIndexResultToArray:(SPMySQLResult *)theResult;
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;

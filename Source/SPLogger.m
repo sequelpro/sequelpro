@@ -79,6 +79,7 @@ int _isSPLeaksLog(struct direct *entry);
     @synchronized(self) {
 		return [[self logger] retain];
     }
+	return nil;
 }
 
 - (id)init

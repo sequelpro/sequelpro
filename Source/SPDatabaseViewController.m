@@ -32,6 +32,7 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
+#import "SPMySQL.h"
 #ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
 #endif
@@ -320,11 +321,7 @@
 #endif
 
 		// Notify listeners of the table change
-#ifndef SP_REFACTOR
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
-#endif
 
 		return;
 	}
@@ -467,11 +464,8 @@
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	// Notify listeners of the table change now that the state is fully set up.
-#ifndef SP_REFACTOR
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
-#else
-		[[NSNotificationCenter defaultCenter] sequelProPostNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
-#endif
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+
 #ifndef SP_REFACTOR /* [spHistoryControllerInstance restoreViewStates] */
 
 	// Restore view states as appropriate

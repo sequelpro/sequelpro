@@ -40,6 +40,7 @@
 #import "SPTreeNode.h"
 #import "SPFavoritesExporter.h"
 #import "SPFavoritesImporter.h"
+#import "SPMySQL.h"
 
 // Constants
 static NSString *SPRemoveNode              = @"RemoveNode";

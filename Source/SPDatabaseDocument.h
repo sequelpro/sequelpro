@@ -25,7 +25,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
 #ifndef SP_REFACTOR /* headers */
 #import <WebKit/WebKit.h>
 #endif
@@ -34,7 +33,7 @@
 #ifndef SP_REFACTOR /* class forward decls */
 SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
 #endif
-SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery;
+SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery, SPDatabaseStructure, SPMySQLConnection;
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
@@ -102,7 +101,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet id addDatabaseButton;
 
 	IBOutlet id databaseCopyNameField;
-	IBOutlet id copyDatabaseDataButton;
+	IBOutlet NSButton *copyDatabaseDataButton;
 	IBOutlet id copyDatabaseMessageField;
 	IBOutlet id copyDatabaseButton;
 
@@ -146,14 +145,14 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet id inputTextWindowSecureTextField;
 	NSInteger passwordSheetReturnCode;
 	
+	// Master connection
+	SPMySQLConnection *mySQLConnection;
+
 	// Controllers
 	SPConnectionController *connectionController;
 #ifndef SP_REFACTOR /* ivars */
 	SPProcessListController *processListController;
 	SPServerVariablesController *serverVariablesController;
-#endif
-	MCPConnection *mySQLConnection;
-#ifndef SP_REFACTOR /* ivars */
 
 	NSInteger currentTabIndex;
 #endif
@@ -222,7 +221,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 #ifndef SP_REFACTOR /* ivars */
 	NSThread *printThread;
 	
-	id statusValues;
+	NSArray *statusValues;
 
 	NSInteger saveDocPrefSheetStatus;
 
@@ -238,6 +237,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	NSString *processID;
 	BOOL windowTitleStatusViewIsVisible;
 #endif
+	SPDatabaseStructure *databaseStructureRetrieval;
 }
 
 #ifdef SP_REFACTOR /* ivars */
@@ -269,6 +269,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 @property (readwrite, retain) NSString *processID;
 #endif
 @property (readonly) SPServerSupport *serverSupport;
+@property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
 
 #ifndef SP_REFACTOR /* method decls */
 - (BOOL)isUntitled;
@@ -280,8 +281,8 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 
 // Connection callback and methods
 #endif
-- (void)setConnection:(MCPConnection *)theConnection;
-- (MCPConnection *)getConnection;
+- (void)setConnection:(SPMySQLConnection *)theConnection;
+- (SPMySQLConnection *)getConnection;
 - (void)setKeychainID:(NSString *)theID;
 
 // Database methods

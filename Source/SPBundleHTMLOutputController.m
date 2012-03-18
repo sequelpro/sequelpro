@@ -126,6 +126,7 @@
 - (void)dealloc
 {
 	if(webPreferences) [webPreferences release];
+	[super dealloc];
 }
 
 - (void)keyDown:(NSEvent *)theEvent

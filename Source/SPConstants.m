@@ -31,6 +31,11 @@ const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
 // Default monospaced font name
 NSString *SPDefaultMonospacedFontName            = @"Monaco";
 
+// System database names
+NSString *SPMySQLDatabase                        = @"mysql";
+NSString *SPMySQLInformationSchemaDatabase       = @"information_schema";
+NSString *SPMySQLPerformanceSchemaDatabase       = @"performance_schema";
+
 // Table view drag types
 NSString *SPDefaultPasteboardDragType            = @"SequelProPasteboard";
 NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
@@ -216,7 +221,17 @@ NSString *SPMainToolbarTableInfo                 = @"SwitchToTableInfoToolbarIte
 NSString *SPMainToolbarTableRelations            = @"SwitchToTableRelationsToolbarItemIdentifier";
 NSString *SPMainToolbarTableTriggers             = @"SwitchToTableTriggersToolbarItemIdentifier";
 NSString *SPMainToolbarUserManager               = @"SwitchToUserManagerToolbarItemIdentifier";
-NSString **SPViewModeToMainToolbarMap[]          = {nil, &SPMainToolbarTableStructure, &SPMainToolbarTableContent, &SPMainToolbarCustomQuery, &SPMainToolbarTableInfo, &SPMainToolbarTableRelations, &SPMainToolbarTableTriggers};
+
+NSString **SPViewModeToMainToolbarMap[] = 
+{ 
+	nil, 
+	&SPMainToolbarTableStructure, 
+	&SPMainToolbarTableContent, 
+	&SPMainToolbarCustomQuery, 
+	&SPMainToolbarTableInfo, 
+	&SPMainToolbarTableRelations, 
+	&SPMainToolbarTableTriggers
+};
 
 // Preferences toolbar
 NSString *SPPreferenceToolbarGeneral             = @"SPPreferenceToolbarGeneral";
@@ -376,7 +391,7 @@ const NSInteger SPBundleRedirectActionShowAsTextTooltip    = 207;
 const NSInteger SPBundleRedirectActionShowAsHTMLTooltip    = 208;
 const NSInteger SPBundleRedirectActionLastCode             = 208;
 
-// sequel URL scheme
+// URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
 NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
 NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";

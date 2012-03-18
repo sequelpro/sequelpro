@@ -23,7 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class MCPConnection, BWAnchoredButtonBar;
+@class SPMySQLConnection, BWAnchoredButtonBar;
 
 /**
  * @class SPExportController SPExportController.h
@@ -162,7 +162,7 @@
 	/** 
 	 * Database connection
 	 */
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 	/**
 	 * Concurrent operation queue
@@ -238,7 +238,7 @@
 /**
  * @property connection Database connection
  */
-@property(readwrite, assign) MCPConnection *connection;
+@property(readwrite, assign) SPMySQLConnection *connection;
 
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
@@ -258,10 +258,10 @@
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender;
 
 - (IBAction)toggleXMLOutputFormat:(id)sender;
-- (IBAction)toggleSQLIncludeStructure:(id)sender;
-- (IBAction)toggleSQLIncludeContent:(id)sender;
-- (IBAction)toggleSQLIncludeDropSyntax:(id)sender;
-- (IBAction)toggleNewFilePerTable:(id)sender;
+- (IBAction)toggleSQLIncludeStructure:(NSButton *)sender;
+- (IBAction)toggleSQLIncludeContent:(NSButton *)sender;
+- (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender;
+- (IBAction)toggleNewFilePerTable:(NSButton *)sender;
 
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 

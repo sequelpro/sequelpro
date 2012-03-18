@@ -284,7 +284,7 @@
 	// Skip empty rows
 	if ([csvRowArray count] == 0
 		|| ([csvRowArray count] == 1
-			&& ([[csvRowArray objectAtIndex:0] isMemberOfClass:[NSNull class]]
+			&& ([csvRowArray objectAtIndex:0] == [NSNull null]
 				|| ![[csvRowArray objectAtIndex:0] length])))
 	{
 

@@ -1,0 +1,11 @@
+//
+// Prefix header for all source files of the 'SPMySQLFramework' target in the 'SPMySQLFramework' project.
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
+
+#import "mysql.h"
+#import "SPMySQL.h"
+#import "SPMySQLUtilities.h"

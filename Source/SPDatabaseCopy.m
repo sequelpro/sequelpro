@@ -25,6 +25,7 @@
 #import "SPDBActionCommons.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
+#import "SPMySQL.h"
 
 @implementation SPDatabaseCopy
 
@@ -58,7 +59,7 @@
 	if (sourceExists && !targetExists) {
 		
 		// Retrieve the list of tables/views/funcs/triggers from the source database
-		tables = [connection listTablesFromDB:sourceDatabaseName];
+		tables = [connection tablesFromDatabase:sourceDatabaseName];
 	} 
 	else {
 		return NO;

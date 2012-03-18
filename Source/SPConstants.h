@@ -231,6 +231,11 @@ extern const NSUInteger SPNarrowDownCompletionMaxRows;
 // Default monospaced font name
 extern NSString *SPDefaultMonospacedFontName;
 
+// System database names
+extern NSString *SPMySQLDatabase;
+extern NSString *SPMySQLInformationSchemaDatabase;
+extern NSString *SPMySQLPerformanceSchemaDatabase;
+
 // Table view drag types
 extern NSString *SPDefaultPasteboardDragType;
 extern NSString *SPFavoritesPasteboardDragType;
@@ -570,7 +575,7 @@ extern const NSInteger SPBundleRedirectActionShowAsTextTooltip;
 extern const NSInteger SPBundleRedirectActionShowAsHTMLTooltip;
 extern const NSInteger SPBundleRedirectActionLastCode;
 
-// sequel URL scheme
+// URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;
 extern NSString *SPURLSchemeQueryResultPathHeader;
 extern NSString *SPURLSchemeQueryResultStatusPathHeader;

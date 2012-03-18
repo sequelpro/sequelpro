@@ -27,9 +27,41 @@ static inline id NSArrayObjectAtIndex(NSArray *self, NSUInteger i)
 	return (id)CFArrayGetValueAtIndex((CFArrayRef)self, (long)i);
 }
 
-static inline void NSMutableArrayAddObject(NSArray *self, id anObject) 
+/**
+ * Set up a static function to allow fast mutable array insertion using
+ * cached selectors.
+ * At least in 10.7, inserting items into an array at a known point
+ * using NSMutableArray methods appears to be the fastest way of adding
+ * items to a CF/NSMutableArray.
+ */
+static inline void NSMutableArrayInsertObject(NSMutableArray *self, id anObject, NSUInteger anIndex)
 {
-	CFArrayAppendValue((CFMutableArrayRef)self, anObject);
+	typedef id (*NSMutableArrayInsertObjectPtr)(NSMutableArray*, SEL, id, NSUInteger);
+	static NSMutableArrayInsertObjectPtr cachedMethodPointer;
+	static SEL cachedSelector;
+
+	if (!cachedSelector) cachedSelector = @selector(insertObject:atIndex:);
+	if (!cachedMethodPointer) cachedMethodPointer = (NSMutableArrayInsertObjectPtr)[self methodForSelector:cachedSelector];
+
+	cachedMethodPointer(self, cachedSelector, anObject, anIndex);
+}
+/**
+ * Set up a static function to allow fast mutable array insertion using
+ * cached selectors.
+ * At least in 10.7, adding items to an array using NSMutableArray methods
+ * appears to be the fastest approach to adding items to a CF/NSMutableArray;
+ * only NSMutableArrayInsertObject is faster if the position is known.
+ */
+static inline void NSMutableArrayAddObject(NSMutableArray *self, id anObject)
+{
+	typedef id (*NSMutableArrayAddObjectPtr)(NSMutableArray*, SEL, id);
+	static NSMutableArrayAddObjectPtr cachedMethodPointer;
+	static SEL cachedSelector;
+
+	if (!cachedSelector) cachedSelector = @selector(addObject:);
+	if (!cachedMethodPointer) cachedMethodPointer = (NSMutableArrayAddObjectPtr)[self methodForSelector:cachedSelector];
+
+	cachedMethodPointer(self, cachedSelector, anObject);
 }
 
 static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id anObject) 

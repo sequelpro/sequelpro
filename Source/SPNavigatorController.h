@@ -22,12 +22,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPNavigatorOutlineView;
 
 @interface SPNavigatorController : NSWindowController 
 {
 #ifndef SP_REFACTOR /* ivars */
-	IBOutlet id outlineSchema2;
+	IBOutlet SPNavigatorOutlineView *outlineSchema2;
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
 	IBOutlet id searchField;
@@ -70,6 +70,7 @@
 - (IBAction)outlineViewAction:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
+- (void)reloadAfterFiltering;
 - (IBAction)syncButtonAction:(id)sender;
 
 - (void)updateEntriesForConnection:(id)object;

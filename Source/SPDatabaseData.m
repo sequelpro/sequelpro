@@ -26,10 +26,11 @@
 #import "SPDatabaseData.h"
 #import "SPServerSupport.h"
 #import "SPDatabaseCharacterSets.h"
+#import "SPMySQL.h"
 
 @interface SPDatabaseData (PrivateAPI)
 
-- (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query;
+- (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
 
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 
@@ -162,12 +163,12 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
 			
 			// Check if InnoDB support is enabled
-			MCPResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
 			
 			[result setReturnDataAsStrings:YES];
 			
-			if ([result numOfRows] == 1) {
-				if ([[[result fetchRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
+			if ([result numberOfRows] == 1) {
+				if ([[[result getRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
 					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"InnoDB" forKey:@"Engine"]];
 				}
 			}
@@ -201,9 +202,9 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 			if ([serverSupport supportsInformationSchemaEngines])
 			{
 				// Check the information_schema.engines table is accessible
-				MCPResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'ENGINES'"];
+				SPMySQLResult *result = [connection queryString:@"SHOW TABLES IN information_schema LIKE 'ENGINES'"];
 				
-				if ([result numOfRows] == 1) {
+				if ([result numberOfRows] == 1) {
 					
 					// Table is accessible so get available storage engines
 					// Note, that the case of the column names specified in this query are important.
@@ -212,7 +213,7 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 			}
 			else {				
 				// Get storage engines
-				NSMutableArray *engines = [self _getDatabaseDataForQuery:@"SHOW STORAGE ENGINES"];
+				NSArray *engines = [self _getDatabaseDataForQuery:@"SHOW STORAGE ENGINES"];
 				
 				// We only want to include engines that are supported
 				for (NSDictionary *engine in engines) 
@@ -308,22 +309,14 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  * Executes the supplied query against the current connection and returns the result as an array of 
  * NSDictionarys, one for each row.
  */
-- (NSMutableArray *)_getDatabaseDataForQuery:(NSString *)query
+- (NSArray *)_getDatabaseDataForQuery:(NSString *)query
 {
-	NSMutableArray *array = [NSMutableArray array];
+	SPMySQLResult *result = [connection queryString:query];
 
-	MCPResult *result = [connection queryString:query];
+	if ([connection queryErrored]) return [NSArray array];
 
-	if (![connection queryErrored]) {
-		[result dataSeek:0];
-
-		for (NSUInteger i = 0; i < [result numOfRows]; i++)
-		{
-			[array addObject:[result fetchRowAsDictionary]];
-		}
-	}
-
-	return array;
+	[result setReturnDataAsStrings:YES];
+	return [result getAllRows];
 }
 
 /**

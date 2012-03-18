@@ -30,7 +30,7 @@ static SPNotLoaded *notLoaded = nil;
 @implementation SPNotLoaded
 
 // Return the singleton object
-+ (SPNotLoaded *) notLoaded
++ (SPNotLoaded *)notLoaded
 {
 	@synchronized(self) {
 		if (notLoaded == nil) {
@@ -40,16 +40,19 @@ static SPNotLoaded *notLoaded = nil;
 	return notLoaded;
 }
 
-+ (id) allocWithZone:(NSZone *)zone
++ (id)allocWithZone:(NSZone *)zone
 {
 	@synchronized(self) {
 		return [[self notLoaded] retain];
 	}
+	
+	return nil;
 }
 
-- (id) init
+- (id)init
 {
 	Class notLoadedClass = [self class];
+	
 	@synchronized(notLoadedClass) {
 		if (notLoaded == nil) {
 			if ((self = [super init])) {
@@ -57,18 +60,19 @@ static SPNotLoaded *notLoaded = nil;
 			}
 		}
 	}
+
 	return notLoaded;
 }
 
-- (id) copyWithZone:(NSZone *)zone { return self; }
+- (id)copyWithZone:(NSZone *)zone { return self; }
 
-- (id) retain { return self; }
+- (id)retain { return self; }
 
-- (NSUInteger) retainCount { return NSUIntegerMax; }
+- (NSUInteger)retainCount { return NSUIntegerMax; }
 
-- (oneway void) release {}
+- (oneway void)release {}
 
-- (id) autorelease { return self; }
+- (id)autorelease { return self; }
 
 @end
 
@@ -78,11 +82,13 @@ static SPNotLoaded *notLoaded = nil;
  */
 @implementation NSObject (SPNotLoadedTest)
 
-- (BOOL) isSPNotLoaded
+- (BOOL)isSPNotLoaded
 {
 	static id SPNotLoadedForComparison;
+	
 	if (!SPNotLoadedForComparison) SPNotLoadedForComparison = [SPNotLoaded notLoaded];
-    return (self == SPNotLoadedForComparison);
+    
+	return (self == SPNotLoadedForComparison);
 }
 
 @end

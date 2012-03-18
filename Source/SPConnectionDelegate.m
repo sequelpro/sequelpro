@@ -28,11 +28,12 @@
 #import "SPQueryController.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
+#import "SPMySQLConstants.h"
 
 @implementation SPDatabaseDocument (SPConnectionDelegate)
 
 #pragma mark -
-#pragma mark MCPKit connection delegate methods
+#pragma mark SPMySQLConnection delegate methods
 
 /**
  * Invoked when the framework is about to perform a query.
@@ -60,18 +61,9 @@
 }
 
 /**
- * Invoked when the framework is in the process of reconnecting to the server and needs to know 
- * which database to select.
- */
-- (NSString *)onReconnectShouldSelectDatabase:(id)connection
-{
-	return selectedDatabase;
-}
-
-/**
  * Invoked when the current connection needs a password from the Keychain.
  */
-- (NSString *)keychainPasswordForConnection:(MCPConnection *)connection
+- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection
 {
 	
 	// If no keychain item is available, return an empty password
@@ -89,8 +81,10 @@
 
 /**
  * Invoked when the current connection needs a ssh password from the Keychain.
+ * This isn't actually part of the SPMySQLConnection delegate protocol, but is here
+ * due to its similarity to the previous method.
  */
-- (NSString *)keychainPasswordForSSHConnection:(MCPConnection *)connection
+- (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection
 {
 
 	// If no keychain item is available, return an empty password
@@ -123,9 +117,9 @@
 /**
  * Invoked when the connection fails and the framework needs to know how to proceed.
  */
-- (MCPConnectionCheck)connectionLost:(id)connection
+- (SPMySQLConnectionLostDecision)connectionLost:(id)connection
 {
-	NSInteger connectionErrorCode = MCPConnectionCheckDisconnect;
+	NSInteger connectionErrorCode = SPMySQLConnectionLostDisconnect;
 	
 	// Only display the reconnect dialog if the window is visible
 	if ([self parentWindow] && [[self parentWindow] isVisible]) {
@@ -144,7 +138,7 @@
 		[connectionErrorDialog orderOut:nil];
 		
 		// If 'disconnect' was selected, trigger a window close.
-		if (connectionErrorCode == MCPConnectionCheckDisconnect) {
+		if (connectionErrorCode == SPMySQLConnectionLostDisconnect) {
 			[self performSelectorOnMainThread:@selector(closeAndDisconnect) withObject:nil waitUntilDone:YES];
 		}
 	}
@@ -179,7 +173,7 @@
 	_isConnected = NO;
 	if ([[[self parentTabViewItem] tabView] numberOfTabViewItems] == 1) {
 		[theParentWindow orderOut:self];
-		[theParentWindow setAlphaValue:0.0];
+		[theParentWindow setAlphaValue:0.0f];
 		[theParentWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
 	} else {
 		[[[self parentTabViewItem] tabView] performSelector:@selector(removeTabViewItem:) withObject:[self parentTabViewItem] afterDelay:0.5];

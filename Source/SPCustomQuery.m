@@ -25,6 +25,7 @@
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
+#import "SPMySQL.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPGrowlController.h"
 #endif
@@ -45,6 +46,7 @@
 #import "SPGeometryDataView.h"
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
+#include <pthread.h>
 
 #ifndef SP_REFACTOR /* headers */
 #import <BWToolkitFramework/BWToolkitFramework.h>
@@ -537,7 +539,7 @@
 /**
  * Toggle whether the query info pane is visible.
  */
-- (IBAction)toggleQueryInfoPaneCollapse:(id)sender
+- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender
 {
 	[queryInfoPaneSplitView toggleCollapse:sender];
 
@@ -582,12 +584,12 @@
 
 - (void)performQueriesTask:(NSDictionary *)taskArguments
 {
-	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
-	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	MCPStreamingResult	*streamingResult  = nil;
-	NSMutableString		*errors     = [NSMutableString string];
-	SEL					callbackMethod = NULL;
-	NSString			*taskButtonString;
+	NSAutoreleasePool			*queryRunningPool = [[NSAutoreleasePool alloc] init];
+	NSArray						*queries	= [taskArguments objectForKey:@"queries"];
+	SPMySQLFastStreamingResult	*streamingResult  = nil;
+	NSMutableString				*errors     = [NSMutableString string];
+	SEL							callbackMethod = NULL;
+	NSString					*taskButtonString;
 
 	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
@@ -624,7 +626,7 @@
 	}
 
 	// Disable automatic query retries on failure for the custom queries
-	[mySQLConnection setAllowQueryRetries:NO];
+	[mySQLConnection setRetryQueriesOnConnectionFailure:NO];
 
 	NSUInteger queryCount = [queries count];
 	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
@@ -656,16 +658,16 @@
 
 		// Run the query, timing execution (note this also includes network and overhead)
 		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
-		executionTime += [mySQLConnection lastQueryExecutionTime];
+		executionTime += [streamingResult queryExecutionTime];
 		totalQueriesRun++;
 
 		// If this is the last query, retrieve and store the result; otherwise,
 		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount || [mySQLConnection queryCancelled]) {
+		if (totalQueriesRun == queryCount || [mySQLConnection lastQueryWasCancelled]) {
 
 			// Retrieve and cache the column definitions for the result array
 			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[streamingResult fetchResultFieldsStructure] retain];
+			cqColumnDefinition = [[streamingResult fieldDefinitions] retain];
 
 			if(!reloadingExistingResult) {
 				[[self onMainThread] updateTableView];
@@ -692,24 +694,24 @@
 		}
 
 		// Record any affected rows
-		if ( [mySQLConnection affectedRows] != (my_ulonglong)~0 )
-			totalAffectedRows += (NSUInteger)[mySQLConnection affectedRows];
-		else if ( [streamingResult numOfRows] )
-			totalAffectedRows += (NSUInteger)[streamingResult numOfRows];
+		if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 )
+			totalAffectedRows += (NSUInteger)[mySQLConnection rowsAffectedByLastQuery];
+		else if ( [streamingResult numberOfRows] )
+			totalAffectedRows += (NSUInteger)[streamingResult numberOfRows];
 
 		[streamingResult release];
 
 		// Store any error messages
-		if ([mySQLConnection queryErrored] || [mySQLConnection queryCancelled]) {
+		if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
 
 			NSString *errorString;
-			if ([mySQLConnection queryCancelled]) {
-				if ([mySQLConnection queryCancellationUsedReconnect])
+			if ([mySQLConnection lastQueryWasCancelled]) {
+				if ([mySQLConnection lastQueryWasCancelledUsingReconnect])
 					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
 				else
 					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 			} else {
-				errorString = [mySQLConnection getLastErrorMessage];
+				errorString = [mySQLConnection lastErrorMessage];
 			}
 
 			// If the query errored, append error to the error log for display at the end
@@ -726,7 +728,7 @@
 					[[errorText onMainThread] setString:errors];
 
 					// ask the user to continue after detecting an error
-					if (![mySQLConnection queryCancelled]) {
+					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
 						SPBeginWaitingAlertSheet(@"title",
@@ -735,7 +737,7 @@
 							@selector(sheetDidEnd:returnCode:contextInfo:),
 							@"runAllContinueStopSheet",
 							NSLocalizedString(@"MySQL Error", @"mysql error message"),
-							[mySQLConnection getLastErrorMessage],
+							[mySQLConnection lastErrorMessage],
 							&runAllContinueStopSheetReturnCode
 						);
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
@@ -768,7 +770,7 @@
 				databaseWasChanged = YES;
 		}
 		// If the query was cancelled, end all queries.
-		if ([mySQLConnection queryCancelled]) break;
+		if ([mySQLConnection lastQueryWasCancelled]) break;
 	}
 
 	// Reload table list if at least one query began with drop, alter, rename, or create
@@ -797,7 +799,7 @@
 	if ( !queryCount ) {
 		streamingResult = [mySQLConnection streamingQueryString:@""];
 		[streamingResult cancelResultLoad];
-		[errors setString:[mySQLConnection getLastErrorMessage]];
+		[errors setString:[mySQLConnection lastErrorMessage]];
 	}
 
 	// add query to history
@@ -814,7 +816,7 @@
 	// Set up the status string
 	NSString *statusString = nil;
 	NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
-	if ( [mySQLConnection queryCancelled] ) {
+	if ( [mySQLConnection lastQueryWasCancelled] ) {
 		if (totalQueriesRun > 1) {
 			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
 								statusErrorString,
@@ -859,7 +861,7 @@
 	[[affectedRowsText onMainThread] setStringValue:statusString];
 
 	// Restore automatic query retries
-	[mySQLConnection setAllowQueryRetries:YES];
+	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
 
 #ifndef SP_REFACTOR /* [tableDocumentInstance setQueryMode:] */
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
@@ -934,9 +936,8 @@
 /**
  * Processes a supplied streaming result set, loading it into the data array.
  */
-- (void)processResultIntoDataStorage:(MCPStreamingResult *)theResult
+- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult
 {
-	NSArray *tempRow;
 	NSAutoreleasePool *dataLoadingPool;
 
 	// Remove all items from the table
@@ -948,7 +949,7 @@
 
 	// Set the column count on the data store before setting up anything else -
 	// ensures that SPDataStorage is set up for timer-driven data loads
-	[resultData setColumnCount:[theResult numOfFields]];
+	[resultData setColumnCount:[theResult numberOfFields]];
 
 	// Set up the table updates timer
 	[[self onMainThread] initQueryLoadTimer];
@@ -957,10 +958,10 @@
 	dataLoadingPool = [[NSAutoreleasePool alloc] init];
 
 	// Loop through the result rows as they become available
-	while ((tempRow = [theResult fetchNextRowAsArray])) {
+	for (NSArray *eachRow in theResult) {
 
 		pthread_mutex_lock(&resultDataLock);
-		SPDataStorageAddRow(resultData, tempRow);
+		SPDataStorageAddRow(resultData, eachRow);
 		resultDataCount++;
 		pthread_mutex_unlock(&resultDataLock);
 
@@ -1286,7 +1287,7 @@
 	NSInteger firstErrorOccuredInQuery = [[errorDetails objectForKey:@"firstErrorQueryNumber"] integerValue];
 
 	// If errors occur, display them
-	if ( [mySQLConnection queryCancelled] || ([errorsString length] && !queryIsTableSorter)) {
+	if ( [mySQLConnection lastQueryWasCancelled] || ([errorsString length] && !queryIsTableSorter)) {
 
 		// set the error text
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
@@ -1297,7 +1298,7 @@
 		NSRange errorLineNumberRange = [errorsString rangeOfRegex:@"([0-9]+)[^0-9]*$" options:RKLNoOptions inRange:NSMakeRange(0, [errorsString length]) capture:1L error:nil];
 
 		// if error ID 1064 and a line number was found
-		if([mySQLConnection getLastErrorID] == 1064 && errorLineNumberRange.length)
+		if([mySQLConnection lastErrorID] == 1064 && errorLineNumberRange.length)
 		{
 			// Get the line number
 			NSUInteger errorAtLine = [[errorsString substringWithRange:errorLineNumberRange] integerValue];
@@ -1499,7 +1500,7 @@
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
-- (void)setConnection:(MCPConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	currentQueryRanges = nil;
@@ -1755,7 +1756,7 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
 	// Actual check whether field can be identified bijectively 
-	MCPResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
+	SPMySQLResult *tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
 		[[columnDefinition objectForKey:@"db"] backtickQuotedString],
 		[tableForColumn backtickQuotedString],
 		fieldIDQueryStr]];
@@ -1765,7 +1766,7 @@
 		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 	}
 
-	NSArray *tempRow = [tempResult fetchRowAsArray];
+	NSArray *tempRow = [tempResult getRowAsArray];
 
 	if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] > 1) {
 		// try to identify the cell by using blob data
@@ -1785,7 +1786,7 @@
 			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
 		}
 
-		tempRow = [tempResult fetchRowAsArray];
+		tempRow = [tempResult getRowAsArray];
 
 		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
 			[tableDocumentInstance endTask];
@@ -1808,7 +1809,6 @@
 - (NSString *)argumentForRow:(NSUInteger)rowIndex ofTable:(NSString *)tableForColumn andDatabase:(NSString *)database includeBlobs:(BOOL)includeBlobs
 {
 	NSArray *dataRow;
-	NSDictionary *theRow;
 	id field;
 	NSMutableArray *argumentParts = [NSMutableArray array];
 
@@ -1827,17 +1827,14 @@
 	dataRow = [resultData rowContentsAtIndex:rowIndex];
 
 	// Get the primary key if there is one, using any columns present within it
-	MCPResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
+	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@.%@",
 		[database backtickQuotedString], [tableForColumn backtickQuotedString]]];
 	[theResult setReturnDataAsStrings:YES];
-	if ([theResult numOfRows]) [theResult dataSeek:0];
 	NSMutableArray *primaryColumnsInSpecifiedTable = [NSMutableArray array];
-	NSUInteger i;
-	for ( i = 0 ; i < [theResult numOfRows] ; i++ ) {
-		theRow = [theResult fetchRowAsDictionary];
-		if ( [[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
+	for (NSDictionary *eachRow in theResult) {
+		if ( [[eachRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
 			for (field in columnsInSpecifiedTable) {
-				if([[field objectForKey:@"org_name"] isEqualToString:[theRow objectForKey:@"Field"]]) {
+				if([[field objectForKey:@"org_name"] isEqualToString:[eachRow objectForKey:@"Field"]]) {
 					[primaryColumnsInSpecifiedTable addObject:field];
 				}
 			}
@@ -1850,34 +1847,38 @@
 	// Build up the argument
 	for (field in columnsToQuery) {
 		id aValue = [dataRow objectAtIndex:[[field objectForKey:@"datacolumnindex"] integerValue]];
-		if ([aValue isKindOfClass:[NSNull class]] || [aValue isNSNull]) {
+		
+		if ([aValue isNSNull]) {
 			[argumentParts addObject:[NSString stringWithFormat:@"%@ IS NULL", [[field objectForKey:@"org_name"] backtickQuotedString]]];
-		} else {
-			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"textdata"]) {
-				if(includeBlobs) {
-					[fieldIDQueryStr appendFormat:@"%@='%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]];
-				}
+		} 
+		else {
+			NSString *fieldTypeGrouping = [field objectForKey:@"typegrouping"];
+			
+			// Skip blob-type fields if requested
+			if (!includeBlobs
+				&& ([fieldTypeGrouping isEqualToString:@"textdata"] || 
+					[fieldTypeGrouping isEqualToString:@"blobdata"] || 
+					[[field objectForKey:@"type"] isEqualToString:@"BINARY"] || 
+					[[field objectForKey:@"type"] isEqualToString:@"VARBINARY"]))
+			{
+				continue;
 			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"blobdata"] || [[field objectForKey:@"type"] isEqualToString:@"BINARY"] || [[field objectForKey:@"type"] isEqualToString:@"VARBINARY"]) {
-				if(includeBlobs) {
-					[fieldIDQueryStr appendFormat:@"%@=X'%@' AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]];
-				}
-			}
-			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
+			
+			if ([[field objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
 				[argumentParts addObject:[NSString stringWithFormat:@"%@=b'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]]];
 			}
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"integer"]) {
 				[fieldIDQueryStr appendFormat:@"%@=%@ AND ", [[field objectForKey:@"org_name"] backtickQuotedString], [aValue description]];
 			}
 			else if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:[aValue data]]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteData:[aValue data]]]];
 			}
 			// BLOB/TEXT data
 			else if ([aValue isKindOfClass:[NSData class]]) {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@=X'%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareBinaryData:aValue]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteData:aValue]]];
 			}
 			else {
-				[argumentParts addObject:[NSString stringWithFormat:@"%@='%@'", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection prepareString:aValue]]];
+				[argumentParts addObject:[NSString stringWithFormat:@"%@=%@", [[field objectForKey:@"org_name"] backtickQuotedString], [mySQLConnection escapeAndQuoteString:aValue]]];
 			}
 		}
 	}
@@ -1914,11 +1915,11 @@
 
 		NSString *newObject = nil;
 		if ( [anObject isKindOfClass:[NSCalendarDate class]] ) {
-			newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+			newObject = [mySQLConnection escapeAndQuoteString:[anObject description]];
 		} else if ( [anObject isKindOfClass:[NSNumber class]] ) {
 			newObject = [anObject stringValue];
 		} else if ( [anObject isKindOfClass:[NSData class]] ) {
-			newObject = [NSString stringWithFormat:@"X'%@'", [mySQLConnection prepareBinaryData:anObject]];
+			newObject = [mySQLConnection escapeAndQuoteData:anObject];
 		} else {
 			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 				newObject = @"CURRENT_TIMESTAMP";
@@ -1935,7 +1936,7 @@
 						&& [[anObject description] isEqualToString:@"NOW()"]) {
 				newObject = @"NOW()";
 			} else {
-				newObject = [NSString stringWithFormat:@"'%@'", [mySQLConnection prepareString:[anObject description]]];
+				newObject = [mySQLConnection escapeAndQuoteString:[anObject description]];
 			}
 		}
 
@@ -1947,13 +1948,13 @@
 		// Check for errors while UPDATE
 		if ([mySQLConnection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection getLastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection lastErrorMessage]]);
 
 			return;
 		}
 
 		// This shouldn't happen – for safety reasons
-		if ( ![mySQLConnection affectedRows] ) {
+		if ( ![mySQLConnection rowsAffectedByLastQuery] ) {
 #ifndef SP_REFACTOR
 			if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 				SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
@@ -2330,7 +2331,7 @@
 			return nil;
 		}
 	}
-	else if ([theValue isKindOfClass:[MCPGeometryData class]]) {
+	else if ([theValue isKindOfClass:[SPMySQLGeometryData class]]) {
 		SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[theValue coordinates]];
 		image = [v thumbnailImage];
 		if(image) {
@@ -3064,7 +3065,7 @@
 	if(![searchString length]) return @"";
 
 	NSRange         aRange;
-	MCPResult     *theResult = nil;
+	SPMySQLResult   *theResult = nil;
 	NSDictionary    *tableDetails;
 	NSMutableString *theHelp = [NSMutableString string];
 
@@ -3083,14 +3084,16 @@
 		return SP_HELP_NOT_AVAILABLE;
 	}
 	// nothing found?
-	if(![theResult numOfRows]) {
+	if(![theResult numberOfRows]) {
+
 		// try to search via: HELP 'searchString%'
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
+
 		// really nothing found?
-		if(![theResult numOfRows])
+		if(![theResult numberOfRows])
 			return @"";
 	}
-	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult fetchRowAsDictionary]];
+	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult getRowAsDictionary]];
 
 	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
 		if ([tableDetails objectForKey:@"name"]) {
@@ -3165,9 +3168,9 @@
 
 		}
 	} else { // list all found topics
-		NSUInteger i;
-		NSUInteger r = (NSUInteger)[theResult numOfRows];
-		if (r) [theResult dataSeek:0];
+		NSUInteger r = (NSUInteger)[theResult numberOfRows];
+		if (r) [theResult seekToRow:0];
+
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
 			[theHelp appendFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
@@ -3176,9 +3179,9 @@
 
 		// iterate through all found rows and print them as HTML ul/li list
 		[theHelp appendString:@"<ul>"];
-		for ( i = 0 ; i < r ; i++ ) {
-			NSArray *anArray = [theResult fetchRowAsArray];
-			NSString *topic = [anArray objectAtIndex:[anArray count]-2];
+		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		for (NSArray *eachRow in theResult) {
+			NSString *topic = [eachRow objectAtIndex:[eachRow count]-2];
 			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>",
 				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
 		}
@@ -3998,7 +4001,7 @@
 		value = [prefs objectForKey:SPNullValue];
 	}
 	
-	if ([value isKindOfClass:[MCPGeometryData class]]) {
+	if ([value isKindOfClass:[SPMySQLGeometryData class]]) {
 		value = [value wktString];
 	}
 	

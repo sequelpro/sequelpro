@@ -23,11 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <MCPKit/MCPKit.h>
+@class SPMySQLConnection;
 
 @interface SPServerVariablesController : NSWindowController 
 {
-	MCPConnection *connection;
+	SPMySQLConnection *connection;
 	
 	NSMutableArray *variables, *variablesFiltered;
 	
@@ -37,7 +37,7 @@
 	IBOutlet NSSearchField *filterVariablesSearchField;
 }
 
-@property (readwrite, assign) MCPConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 - (IBAction)copy:(id)sender;
 - (IBAction)copyServerVariableName:(id)sender;
