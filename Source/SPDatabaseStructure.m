@@ -95,8 +95,12 @@
 	[NSThread detachNewThreadSelector:@selector(_cloneConnectionFromConnection:) toTarget:self withObject:aConnection];
 }
 
-- (void)dealloc
+/**
+ * Ensure that processing is completed.
+ */
+- (void)destroy
 {
+	delegate = nil;
 
 	// Ensure all the retrieval threads have ended
 	pthread_mutex_lock(&threadManagementLock);
@@ -111,12 +115,17 @@
 		}
 	}
 	pthread_mutex_unlock(&threadManagementLock);
+
+}
+
+- (void)dealloc
+{
+	[self destroy];
 	[structureRetrievalThreads release];
 
 	pthread_mutex_destroy(&threadManagementLock);
 	pthread_mutex_destroy(&dataLock);
 	pthread_mutex_destroy(&connectionCheckLock);
-	delegate = nil;
 
 	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
 	if (structure) [structure release], structure = nil;
@@ -619,7 +628,7 @@
 
 - (BOOL)_ensureConnection
 {
-	if (!mySQLConnection) return NO;
+	if (!mySQLConnection || !delegate) return NO;
 
 	// Check the connection state
 	if ([mySQLConnection isConnected] && [mySQLConnection checkConnection]) return YES;

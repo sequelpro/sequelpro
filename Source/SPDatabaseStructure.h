@@ -39,9 +39,10 @@
 	pthread_mutex_t connectionCheckLock;
 }
 
-// Setup
+// Setup and teardown
 - (id)initWithDelegate:(SPDatabaseDocument *)theDelegate;
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection;
+- (void)destroy;
 
 // Information
 - (SPMySQLConnection *)connection;

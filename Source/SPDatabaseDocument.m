@@ -5647,6 +5647,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 #endif
 
+	[databaseStructureRetrieval destroy];
 	[databaseStructureRetrieval release];
 
 	[allDatabases release];
