@@ -4,9 +4,6 @@
 //  SPFontPreviewTextField.m
 //  sequel-pro
 //
-//  This is a heavily modified version of JVFontPreviewField from
-//  the Colloquy Project <http://colloquy.info/>
-//
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or
@@ -27,37 +24,39 @@
 
 @implementation SPFontPreviewTextField
 
-- (void)setFont:(NSFont *)font 
+/**
+ * Add a method to set the font to use for the preview.  The font metrics
+ * are applied to the textField, and the font name is displayed in the textField
+ * for an easy preview.
+ */
+- (void)setFont:(NSFont *)theFont 
 {
-	if (!font) return;
 
-	if (_actualFont) [_actualFont release];
-	
-	_actualFont = [font retain];
+	// If no font was supplied, clear the preview
+	if (!theFont) {
+		[self setObjectValue:@""];
+		return;
+	}
 
-	[super setFont:[[NSFontManager sharedFontManager] convertFont:font toSize:11.0f]];
+	// Take the supplied font and apply all its traits except for a standardised
+	// font size to the text field
+	NSFont *displayFont = [[NSFontManager sharedFontManager] convertFont:theFont toSize:11.0f];
+	[super setFont:displayFont];
 
-	NSMutableAttributedString *text = [[NSMutableAttributedString alloc] initWithString:[_actualFont displayName]];
-	NSMutableParagraphStyle *paraStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+	// Set up a paragraph style for display, setting bounds and display settings
+	NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle new] autorelease];
+	[paragraphStyle setAlignment:NSNaturalTextAlignment];
+	[paragraphStyle setLineBreakMode:NSLineBreakByTruncatingMiddle];
+	[paragraphStyle setMaximumLineHeight:NSHeight([self bounds]) + [displayFont descender]];
 
-	[paraStyle setMinimumLineHeight:NSHeight([self bounds])];
-	[paraStyle setMaximumLineHeight:NSHeight([self bounds])];
-	
-	[text addAttribute:NSParagraphStyleAttributeName value:paraStyle range:NSMakeRange(0, [text length])];
+	// Set up the text to display - the font display name and the point size.
+	NSMutableAttributedString *displayString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@, %.1f pt", [theFont displayName], [theFont pointSize]]];
 
-	[self setObjectValue:text];
-	
-	[text release];
-	[paraStyle release];
-}
+	// Apply the paragraph style
+	[displayString addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [displayString length])];
 
-#pragma mark -
-
-- (void)dealloc 
-{
-	if (_actualFont) [_actualFont release], _actualFont = nil;
-	
-	[super dealloc];
+	// Update the display
+	[self setObjectValue:displayString];
 }
 
 @end

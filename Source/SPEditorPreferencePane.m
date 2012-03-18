@@ -329,7 +329,6 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	NSFont *font = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]];
 	
 	[editorFontName setFont:font];
-	[editorFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [font displayName], [font pointSize]]];
 	
 	[colorSettingTableView reloadData];
 }
