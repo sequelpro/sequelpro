@@ -1,10 +1,10 @@
 //
-//  $Id: SPDataAdditions.m 866 2009-06-15 16:05:54Z bibiko $
+//  $Id$
 //
-//  SPDataAdditions.m
+//  SPDataBase64EncodingAdditions.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on June 19, 2009
+//  Created by Rowan Beentje on March 18th, 2012
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -22,13 +22,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface NSData (SPDataAdditions)
 
-- (NSString *)dataToFormattedHexString;
-- (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
-- (NSData *)dataEncryptedWithPassword:(NSString *)password;
-- (NSData *)dataDecryptedWithPassword:(NSString *)password;
-- (NSData *)compress;
-- (NSData *)decompress;
+@interface NSData (SPDataBase64EncodingAdditions)
+
+- (NSString *)base64EncodingWithLineLength:(NSUInteger)lineLength;
 
 @end

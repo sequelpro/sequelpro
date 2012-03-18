@@ -35,6 +35,7 @@
 #import "SPTextViewAdditions.h"
 #import "SPWindowAdditions.h"
 #import "SPDataAdditions.h"
+#import "SPDataBase64EncodingAdditions.h"
 #import "SPMenuAdditions.h"
 #import "SPNotLoaded.h"
 #import "SPMainThreadTrampoline.h"
