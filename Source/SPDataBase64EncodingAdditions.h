@@ -25,6 +25,7 @@
 
 @interface NSData (SPDataBase64EncodingAdditions)
 
+- (NSString *)base64Encoding;
 - (NSString *)base64EncodingWithLineLength:(NSUInteger)lineLength;
 
 @end

@@ -30,6 +30,15 @@ static const char _base64EncodingTable[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh
 @implementation NSData (SPDataBase64EncodingAdditions)
 
 /**
+ * Returns a base64-encoded representation of the NSData as an NSString,
+ * on a single line.
+ */
+- (NSString *)base64Encoding
+{
+	return [self base64EncodingWithLineLength:NSNotFound];
+}
+
+/**
  * Returns a base64-encoded representation of the NSData as an NSString.
  * Takes an argument for the maximum output line length; supply 0 or NSNotFound
  * to have the results on a single line.

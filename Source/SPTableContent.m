@@ -2273,7 +2273,7 @@
 					@"<BR><IMG %@='%ld' SRC=\"data:image/auto;base64,%@\">",
 						maxSizeValue,
 						(long)imageWidth,
-						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64EncodingWithLineLength:0]];
+						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64Encoding]];
 				}
 				
 				[v release];
@@ -2289,7 +2289,7 @@
 					[tempRow addObject:[NSString stringWithFormat:
 						@"<IMG WIDTH='%ld' SRC=\"data:image/auto;base64,%@\">",
 						(long)imageWidth,
-						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64EncodingWithLineLength:0]]];
+						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64Encoding]]];
 				} 
 				else {
 					[tempRow addObject:@"&lt;BLOB&gt;"];
