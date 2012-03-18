@@ -66,6 +66,7 @@
 		1741368B1516290D00DF1EE6 /* SPConnectionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 174136881516290D00DF1EE6 /* SPConnectionHandler.m */; };
 		174136931516294000DF1EE6 /* SPFavoritesExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1741368E1516294000DF1EE6 /* SPFavoritesExporter.m */; };
 		174136941516294000DF1EE6 /* SPFavoritesImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 174136911516294000DF1EE6 /* SPFavoritesImporter.m */; };
+		174137641516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 174137631516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m */; };
 		174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */; };
 		174CE14210AB9281008F892B /* SPProcessListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CE14110AB9281008F892B /* SPProcessListController.m */; };
 		175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */; };
@@ -679,6 +680,8 @@
 		174136901516294000DF1EE6 /* SPFavoritesImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImporter.h; sourceTree = "<group>"; };
 		174136911516294000DF1EE6 /* SPFavoritesImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesImporter.m; sourceTree = "<group>"; };
 		174136921516294000DF1EE6 /* SPFavoritesImportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImportProtocol.h; sourceTree = "<group>"; };
+		174137621516793B00DF1EE6 /* SPDataBase64EncodingAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDataBase64EncodingAdditions.h; sourceTree = "<group>"; };
+		174137631516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataBase64EncodingAdditions.m; sourceTree = "<group>"; };
 		174A345112DA4ED000DB0ADE /* create-test-stubs.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "create-test-stubs.pl"; sourceTree = "<group>"; };
 		174CE11D10AB80B5008F892B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseProcessList.xib; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
@@ -2573,6 +2576,8 @@
 				BC32F241121D66260067305E /* SPFileManagerAdditions.m */,
 				1741367D151628A400DF1EE6 /* SPMutableArrayAdditions.h */,
 				1741367E151628A400DF1EE6 /* SPMutableArrayAdditions.m */,
+				174137621516793B00DF1EE6 /* SPDataBase64EncodingAdditions.h */,
+				174137631516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -3273,6 +3278,7 @@
 				1741368B1516290D00DF1EE6 /* SPConnectionHandler.m in Sources */,
 				174136931516294000DF1EE6 /* SPFavoritesExporter.m in Sources */,
 				174136941516294000DF1EE6 /* SPFavoritesImporter.m in Sources */,
+				174137641516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
