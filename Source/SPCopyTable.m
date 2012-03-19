@@ -410,7 +410,6 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSUInteger rowCounter = 0;
 	NSUInteger penultimateRowIndex = [selectedRows count];
 	NSUInteger c;
-	NSUInteger valueLength = 0;
 
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 
@@ -462,7 +461,8 @@ static const NSInteger kBlobAsImageFile = 4;
 		[value appendString:@"\t("];
 		cellData = nil;
 		rowCounter++;
-		
+		NSMutableArray *rowValues = [[NSMutableArray alloc] initWithCapacity:numColumns];
+
 		for (c = 0; c < numColumns; c++)
 		{
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -489,7 +489,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 			// Check for NULL value
 			if ([cellData isNSNull]) {
-				[value appendString:@"NULL, "];
+				[rowValues addObject:@"NULL"];
 				continue;
 
 			} 
@@ -500,28 +500,29 @@ static const NSInteger kBlobAsImageFile = 4;
 
 					// Convert numeric types to unquoted strings
 					case 0:
-						[value appendFormat:@"%@, ", [cellData description]];
+						[rowValues addObject:[cellData description]];
 						break;
 
 					// Quote string, text and blob types appropriately
 					case 1:
 					case 2:
 						if ([cellData isKindOfClass:nsDataClass]) {
-							[value appendString:[mySQLConnection escapeAndQuoteData:cellData]];
+							[rowValues addObject:[mySQLConnection escapeAndQuoteData:cellData]];
 						} else {
-							[value appendString:[mySQLConnection escapeAndQuoteString:[cellData description]]];
+							[rowValues addObject:[mySQLConnection escapeAndQuoteString:[cellData description]]];
 						}
 						break;
 
 					// GEOMETRY
 					case 3:
-						[value appendString:[mySQLConnection escapeAndQuoteData:[cellData data]]];
+						[rowValues addObject:[mySQLConnection escapeAndQuoteData:[cellData data]]];
 						break;
 					// Unhandled cases - abort
 					default:
 						NSBeep();
 						free(columnMappings);
 						free(columnTypes);
+						[rowValues release];
 						return nil;
 				}
 
@@ -531,29 +532,25 @@ static const NSInteger kBlobAsImageFile = 4;
 				NSBeep();
 				free(columnMappings);
 				free(columnTypes);
-				
+				[rowValues release];
 				return nil;
 			}
 		}
 
-		// Remove the trailing ', ' from the query
-		if ([value length] > 2) {
-			[value deleteCharactersInRange:NSMakeRange([value length] - 2, 2)];
-		}
-			
-		valueLength += [value length];
+		// Add to the string in comma-separated form, and increment the string length
+		[value appendString:[rowValues componentsJoinedByString:@", "]];
+		[rowValues release];
 
 		// Close this VALUES group and set up the next one if appropriate
 		if (rowCounter != penultimateRowIndex) {
 
 			// Add a new INSERT starter command every ~250k of data.
-			if (valueLength > 250000) {
+			if ([value length] > 250000) {
 				[result appendFormat:@"%@);\n\nINSERT INTO %@ (%@)\nVALUES\n",
 						value,
 						[(selectedTable == nil) ? @"<table>" : selectedTable backtickQuotedString],
 						[tbHeader componentsJoinedAndBacktickQuoted]];
 				[value setString:@""];
-				valueLength = 0;
 			} 
 			else {
 				[value appendString:@"),\n"];
