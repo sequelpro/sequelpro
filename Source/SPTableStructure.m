@@ -547,6 +547,7 @@
 		return;
 	}
 
+	[theResult setReturnDataAsStrings:YES];
 	NSDictionary *analysisResult = [theResult getRowAsDictionary];
 
 	NSString *type = [analysisResult objectForKey:@"Optimal_fieldtype"];
