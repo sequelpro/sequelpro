@@ -338,6 +338,7 @@
 #endif
 	NSArray *columnNames;
 	NSDictionary *columnDefinition;
+	NSMutableDictionary *preservedColumnWidths = nil;
 	NSTableColumn	*theCol;
 #ifndef SP_REFACTOR
 	NSTableColumn *filterCol;
@@ -373,6 +374,12 @@
 	// reload the data in-place to maintain table state if possible.
 	if ([selectedTable isEqualToString:newTableName]) {
 		previousTableRowsCount = tableRowsCount;
+
+		// Store the column widths for later restoration
+		preservedColumnWidths = [NSMutableDictionary dictionaryWithCapacity:[[tableContentView tableColumns] count]];
+		for (NSTableColumn *eachColumn in [tableContentView tableColumns]) {
+			[preservedColumnWidths setObject:[NSNumber numberWithFloat:[eachColumn width]] forKey:[[eachColumn headerCell] stringValue]];
+		}
 
 	// Otherwise store the newly selected table name and reset the data
 	} else {
@@ -532,6 +539,11 @@
 			([columnDefinition objectForKey:@"comment"] && [(NSString *)[columnDefinition objectForKey:@"comment"] length]) ? [NSString stringWithFormat:@"\n%@", [[columnDefinition objectForKey:@"comment"] stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"]] : @""
 			]];
 		[theCol setEditable:YES];
+
+		// Copy in the width if present in a reloaded table
+		if ([preservedColumnWidths objectForKey:[columnDefinition objectForKey:@"name"]]) {
+			[theCol setWidth:[[preservedColumnWidths objectForKey:[columnDefinition objectForKey:@"name"]] floatValue]];
+		}
 
 #ifndef SP_REFACTOR
 		// Set up column for filterTable 
