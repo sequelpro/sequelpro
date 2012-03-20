@@ -4220,7 +4220,7 @@
 	previousTableRowsCount = tableRowsCount;
 	[self loadTableValues];
 
-	if ([mySQLConnection queryErrored]) {
+	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection lastErrorMessage]]);
 		[tableDocumentInstance endTask];
