@@ -610,16 +610,17 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	
 	if ([connection queryErrored]) {
 
-		// Reload the table's data
-		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
-	}
-	else {
 		[tableTypePopUpButton selectItemWithTitle:currentType];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection lastErrorMessage]]);
+		
+		return;
 	}
+	
+	// Reload the table's data
+	[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
 }
 
 /**
