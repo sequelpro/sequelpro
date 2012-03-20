@@ -117,5 +117,6 @@
 - (NSDictionary*)shellEnvironmentForDocument:(NSString*)docUUID;
 
 - (void)addHTMLOutputController:(id)controller;
+- (void)removeHTMLOutputController:(id)controller;
 
 @end

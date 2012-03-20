@@ -59,9 +59,6 @@
 {
 
 	if ((self = [super initWithWindowNibName:@"BundleHTMLOutput"])) {
-
-		[[self window] setReleasedWhenClosed:YES];
-
 		[webView setContinuousSpellCheckingEnabled:NO];
 		[webView setGroupName:@"SequelProBundleHTMLOutput"];
 		[webView setDrawsBackground:YES];
@@ -286,6 +283,7 @@
 	[self setInitHTMLSourceString:@""];
 	windowUUID = @"";
 	docUUID = @"";
+	[[NSApp delegate] removeHTMLOutputController:self];
 	[self release];
 }
 

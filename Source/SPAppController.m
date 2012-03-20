@@ -1515,13 +1515,19 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[bundleHTMLOutputController addObject:controller];
 }
 
+- (void)removeHTMLOutputController:(id)controller
+{
+	[bundleHTMLOutputController removeObject:controller];
+}
+
 - (IBAction)reloadBundles:(id)sender
 {
 
-	// Force releasing of any HTML output windows
-	for(id c in bundleHTMLOutputController) {
-		if(![[c window] isVisible]) {
-			[c release];
+	// Force releasing of any hidden HTML output windows, which will automatically remove them from the array.
+	// Keep the visible windows.
+	for (id c in bundleHTMLOutputController) {
+		if (![[c window] isVisible]) {
+			[[c window] performClose:self];
 		}
 	}
 
@@ -1529,7 +1535,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	[bundleItems removeAllObjects];
 	[bundleUsedScopes removeAllObjects];
-	[bundleHTMLOutputController removeAllObjects];
 	[bundleCategories removeAllObjects];
 	[bundleTriggers removeAllObjects];
 	[bundleKeyEquivalents removeAllObjects];
