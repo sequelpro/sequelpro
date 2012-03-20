@@ -57,7 +57,7 @@
 @interface SPCustomQuery (PrivateAPI)
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs;
+- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate;
 
 @end
 
@@ -1455,7 +1455,7 @@
  */
 - (NSArray *)currentResult
 {	
-	return [self currentDataResultWithNULLs:NO];
+	return [self currentDataResultWithNULLs:NO truncateDataFields:YES];
 }
 
 /**
@@ -1464,8 +1464,9 @@
  *
  * @param includeNULLs Indicates whether to include NULLs as a native type
  *                     or use the user's NULL string representation preference.
+ * @param truncate     Indicates whether to truncate data fields for display purposes.
  */
-- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs truncateDataFields:(BOOL)truncate
 {
 	NSInteger i;	
 	id tableColumn;
@@ -1492,7 +1493,7 @@
 		{
 			id value = [self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue]];
 			
-			[tempRow addObject:[self _convertResultDataValueToDisplayableRepresentation:value whilePreservingNULLs:YES]];			
+			[tempRow addObject:[self _convertResultDataValueToDisplayableRepresentation:value whilePreservingNULLs:includeNULLs truncateDataFields:truncate]];			
 		}
 		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
@@ -2045,7 +2046,7 @@
 {
 	if (aTableView == customQueryView) {
 		
-		return [self _convertResultDataValueToDisplayableRepresentation:[self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue]] whilePreservingNULLs:NO];
+		return [self _convertResultDataValueToDisplayableRepresentation:[self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue]] whilePreservingNULLs:NO truncateDataFields:YES];
 	}
 
 	return @"";
@@ -3994,13 +3995,14 @@
  * @param value         The value to convert
  * @param preserveNULLs Whether or not NULLs should be preserved or converted to the 
  *                      user's NULL placeholder preference.
+ * @param truncate      Whether or not data fields should be truncates for display purposes.
  *
  * @return The converted value
  */
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs 
+- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate
 {
 	if ([value isKindOfClass:[NSData class]]) {
-		value = [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+		value = truncate ? [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]] : [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]; 
 	}
 	
 	if ([value isNSNull] && !preserveNULLs) {

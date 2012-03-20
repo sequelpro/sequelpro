@@ -25,8 +25,22 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPDatabaseDocument, SPCopyTable, SPTextAndLinkCell, SPHistoryController, SPTableInfo, SPDataStorage, SPTextView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
-@class SPTableData, SPDatabaseDocument, SPTablesList, SPTableStructure, SPTableList, SPContentFilterManager;
+@class SPDatabaseDocument, 
+       SPCopyTable, 
+       SPTextAndLinkCell, 
+       SPHistoryController, 
+       SPTableInfo, 
+       SPDataStorage, 
+       SPTextView, 
+       SPFieldEditorController, 
+       SPMySQLConnection, 
+       SPMySQLFastStreamingResult,
+       SPTableData, 
+       SPDatabaseDocument,
+       SPTablesList, 
+       SPTableStructure, 
+	   SPTableList, 
+       SPContentFilterManager;
 
 @interface SPTableContent : NSObject
 #ifdef SP_REFACTOR
@@ -155,35 +169,57 @@
 	NSRange fieldEditorSelectedRange;
 }
 
+#ifdef SP_REFACTOR /* glue */
+@property (assign) id filterButton;
+@property (assign) id fieldField;
+@property (assign) id compareField;
+@property (assign) id betweenTextField;
+@property (assign) id firstBetweenField;
+@property (assign) id secondBetweenField;
+@property (assign) id argumentField;
+@property (assign) NSButton* addButton;
+@property (assign) NSButton* duplicateButton;
+@property (assign) NSButton* removeButton;
+@property (assign) NSButton* reloadButton;
+@property (assign) NSButton* paginationNextButton;
+@property (assign) NSButton* paginationPreviousButton;
+@property (assign) NSTextField* paginationPageField;
+@property (assign) SPDatabaseDocument* tableDocumentInstance;
+@property (assign) SPTablesList* tablesListInstance;
+@property (assign) SPCopyTable* tableContentView;
+@property (assign) SPTableData* tableDataInstance;
+@property (assign) SPTableStructure* tableSourceInstance;
+#endif
+
 - (void)setFieldEditorSelectedRange:(NSRange)aRange;
 - (NSRange)fieldEditorSelectedRange;
 
 // Table loading methods and information
-- (void) loadTable:(NSString *)aTable;
-- (void) clearTableValues;
-- (void) loadTableValues;
-- (NSString *) tableFilterString;
-- (void) updateCountText;
-- (void) initTableLoadTimer;
-- (void) clearTableLoadTimer;
-- (void) tableLoadUpdate:(NSTimer *)theTimer;
+- (void)loadTable:(NSString *)aTable;
+- (void)clearTableValues;
+- (void)loadTableValues;
+- (NSString *)tableFilterString;
+- (void)updateCountText;
+- (void)initTableLoadTimer;
+- (void)clearTableLoadTimer;
+- (void)tableLoadUpdate:(NSTimer *)theTimer;
 
 // Table interface actions
-- (IBAction) reloadTable:(id)sender;
-- (void) reloadTableTask;
-- (IBAction) filterTable:(id)sender;
+- (IBAction)reloadTable:(id)sender;
+- (void)reloadTableTask;
+- (IBAction)filterTable:(id)sender;
 - (void)filterTableTask;
-- (IBAction) toggleFilterField:(id)sender;
-- (NSString *) usedQuery;
-- (void) setUsedQuery:(NSString *)query;
+- (IBAction)toggleFilterField:(id)sender;
+- (NSString *)usedQuery;
+- (void)setUsedQuery:(NSString *)query;
 
 // Pagination
-- (IBAction) navigatePaginationFromButton:(id)sender;
+- (IBAction)navigatePaginationFromButton:(id)sender;
 #ifndef SP_REFACTOR
-- (IBAction) togglePagination:(NSButton *)sender;
+- (IBAction)togglePagination:(NSButton *)sender;
 #endif
-- (void) setPaginationViewVisibility:(BOOL)makeVisible;
-- (void) updatePaginationState;
+- (void)setPaginationViewVisibility:(BOOL)makeVisible;
+- (void)updatePaginationState;
 
 // Edit methods
 - (IBAction)addRow:(id)sender;
@@ -204,11 +240,11 @@
 
 // Data accessors
 - (NSArray *)currentResult;
-- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Additional methods
 - (void)setConnection:(SPMySQLConnection *)theConnection;
@@ -233,23 +269,23 @@
 - (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 
 // Retrieving and setting table state
-- (NSString *) sortColumnName;
-- (BOOL) sortColumnIsAscending;
-- (NSUInteger) pageNumber;
-- (NSIndexSet *) selectedRowIndexes;
-- (NSRect) viewport;
-- (CGFloat) tablesListWidth;
-- (NSDictionary *) filterSettings;
+- (NSString *)sortColumnName;
+- (BOOL)sortColumnIsAscending;
+- (NSUInteger)pageNumber;
+- (NSIndexSet *)selectedRowIndexes;
+- (NSRect)viewport;
+- (CGFloat)tablesListWidth;
+- (NSDictionary *)filterSettings;
 - (NSArray *)dataColumnDefinitions;
-- (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
-- (void) setPageToRestore:(NSUInteger)thePage;
-- (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
-- (void) setViewportToRestore:(NSRect)theViewport;
-- (void) setFiltersToRestore:(NSDictionary *)filterSettings;
-- (void) storeCurrentDetailsForRestoration;
-- (void) clearDetailsToRestore;
-- (void) setFilterTableData:(NSData*)arcData;
-- (NSData*) filterTableData;
+- (void)setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
+- (void)setPageToRestore:(NSUInteger)thePage;
+- (void)setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void)setViewportToRestore:(NSRect)theViewport;
+- (void)setFiltersToRestore:(NSDictionary *)filterSettings;
+- (void)storeCurrentDetailsForRestoration;
+- (void)clearDetailsToRestore;
+- (void)setFilterTableData:(NSData*)arcData;
+- (NSData*)filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
@@ -259,27 +295,5 @@
 
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
-
-#ifdef SP_REFACTOR /* glue */
-@property (assign) id filterButton;
-@property (assign) id fieldField;
-@property (assign) id compareField;
-@property (assign) id betweenTextField;
-@property (assign) id firstBetweenField;
-@property (assign) id secondBetweenField;
-@property (assign) id argumentField;
-@property (assign) NSButton* addButton;
-@property (assign) NSButton* duplicateButton;
-@property (assign) NSButton* removeButton;
-@property (assign) NSButton* reloadButton;
-@property (assign) NSButton* paginationNextButton;
-@property (assign) NSButton* paginationPreviousButton;
-@property (assign) NSTextField* paginationPageField;
-@property (assign) SPDatabaseDocument* tableDocumentInstance;
-@property (assign) SPTablesList* tablesListInstance;
-@property (assign) SPCopyTable* tableContentView;
-@property (assign) SPTableData* tableDataInstance;
-@property (assign) SPTableStructure* tableSourceInstance;
-#endif
 
 @end

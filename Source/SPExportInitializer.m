@@ -98,10 +98,10 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			dataArray = [tableContentInstance currentDataResultWithNULLs:YES];
+			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
 			break;
 		case SPQueryExport:
-			dataArray = [customQueryInstance currentResult];
+			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
 			break;
 		case SPTableExport:
 			// Create an array of tables to export
@@ -211,9 +211,10 @@
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 			NSString *selectedTableName = nil;
+			
 			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
 
-			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
+			[exportFilename setString:createCustomFilename ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
 
 			// Only append the extension if necessary
 			if (![[exportFilename pathExtension] length]) {
