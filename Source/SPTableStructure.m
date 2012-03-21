@@ -292,15 +292,19 @@
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	if ([encodings count]) {
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemWithTitle:@""];
 
 		// Populate encoding popup button
+		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
+		[encodingTitles addObject:@""];
 		for (NSDictionary *encoding in encodings)
-			[[encodingPopupCell onMainThread] addItemWithTitle:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
+			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
 
+		[[encodingPopupCell onMainThread] removeAllItems];
+		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
+		[encodingTitles release];
 	}
 	else {
+		[[encodingPopupCell onMainThread] removeAllItems];
 		[[encodingPopupCell onMainThread] addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 
