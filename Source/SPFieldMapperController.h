@@ -125,7 +125,7 @@
 	BOOL newTableMode;
 	BOOL addGlobalSheetIsOpen;
 
-	NSString *primaryKeyField;
+	NSArray *primaryKeyFields;
 	NSNumber *lastDisabledCSVFieldcolumn;
 
 	SPMySQLConnection *mySQLConnection;
