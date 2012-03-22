@@ -129,7 +129,7 @@
 		sortColumnToRestore = nil;
 		sortColumnToRestoreIsAsc = YES;
 		pageToRestore = 1;
-		selectionIndexToRestore = nil;
+		selectionToRestore = nil;
 		selectionViewportToRestore = NSZeroRect;
 		filterFieldToRestore = nil;
 		filterComparisonToRestore = nil;
@@ -301,14 +301,6 @@
 		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [tableContentView visibleRect].size;
 		[(SPCopyTable*)[tableContentView onMainThread] scrollRectToVisible:selectionViewportToRestore];
-	}
-
-	// Restore selection indexes if appropriate
-	if (selectionIndexToRestore) {
-		BOOL previousTableRowsSelectable = tableRowsSelectable;
-		tableRowsSelectable = YES;
-		[[tableContentView onMainThread] selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-		tableRowsSelectable = previousTableRowsSelectable;
 	}
 
 	// Update display if necessary
@@ -853,6 +845,65 @@
 
 	// End cancellation ability
 	[tableDocumentInstance disableTaskCancellation];
+
+	// Restore selection indexes if appropriate
+	if (selectionToRestore) {
+		BOOL previousTableRowsSelectable = tableRowsSelectable;
+		tableRowsSelectable = YES;
+		NSMutableIndexSet *selectionSet = [NSMutableIndexSet indexSet];
+
+		// Currently two types of stored selection are supported: primary keys and direct index sets.
+		if ([[selectionToRestore objectForKey:@"type"] isEqualToString:SPSelectionDetailTypePrimaryKeyed]) {
+
+			// Check whether the keys are still present and get their positions
+			BOOL columnsFound = YES;
+			NSArray *primaryKeyFieldNames = [selectionToRestore objectForKey:@"keys"];
+			NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
+			NSUInteger primaryKeyFieldIndexes[primaryKeyFieldCount];
+			for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
+				primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
+				if (primaryKeyFieldIndexes[i] == NSNotFound) {
+					columnsFound = NO;
+				}
+			}
+
+			// Only proceed with reselection if all columns were found
+			if (columnsFound) {
+				NSDictionary *selectionKeysToRestore = [selectionToRestore objectForKey:@"rows"];
+				NSUInteger rowsToSelect = [selectionKeysToRestore count];
+				BOOL rowMatches = NO;
+
+				for (NSUInteger i = 0; i < tableRowsCount; i++) {
+					if (primaryKeyFieldCount == 1) {
+						if ([selectionKeysToRestore objectForKey:SPDataStorageObjectAtRowAndColumn(tableValues, i, primaryKeyFieldIndexes[0])]) {
+							rowMatches = YES;
+						}
+					} else {
+						NSMutableString *lookupString = [[NSMutableString alloc] initWithString:[SPDataStorageObjectAtRowAndColumn(tableValues, i, primaryKeyFieldIndexes[0]) description]];
+						for (NSUInteger j = 1; j < primaryKeyFieldCount; j++) {
+							[lookupString appendString:SPUniqueSchemaDelimiter];
+							[lookupString appendString:[SPDataStorageObjectAtRowAndColumn(tableValues, i, primaryKeyFieldIndexes[j]) description]];
+						}
+						if ([selectionKeysToRestore objectForKey:lookupString]) rowMatches = YES;
+						[lookupString release];
+					}
+					
+					if (rowMatches) {
+						[selectionSet addIndex:i];
+						rowsToSelect--;
+						if (rowsToSelect <= 0) break;
+						rowMatches = NO;
+					}
+				}
+			}
+
+		} else if ([[selectionToRestore objectForKey:@"type"] isEqualToString:SPSelectionDetailTypeIndexed]) {
+			selectionSet = [selectionToRestore objectForKey:@"rows"];
+		}
+
+		[[tableContentView onMainThread] selectRowIndexes:selectionSet byExtendingSelection:NO];
+		tableRowsSelectable = previousTableRowsSelectable;
+	}
 
 	if ([prefs boolForKey:SPLimitResults] && (contentPage > 1 || (NSInteger)tableRowsCount == [prefs integerForKey:SPLimitResultsValue]))
 	{
@@ -1465,6 +1516,7 @@
 #endif
 
 	// Reset and reload data using the new filter settings
+	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
 	previousTableRowsCount = 0;
 	[self clearTableValues];
 	[self loadTableValues];
@@ -1596,7 +1648,7 @@
 	
 	// Update data using the new sort order
 	previousTableRowsCount = tableRowsCount;
-	
+	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
 	[self loadTableValues];
 	
 	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
@@ -3626,11 +3678,81 @@
 }
 
 /**
- * Provide a getter for the table's selected rows index set
+ * Provide a getter for the table's selected rows.  If a primary key is available,
+ * the returned dictionary will contain details of the primary key used, and an
+ * identifier for each selected row.  If no primary key is available, the returned
+ * dictionary will contain details and a list of the selected row *indexes* if the
+ * supplied argument is set to true, which may not always be appropriate.
  */
-- (NSIndexSet *) selectedRowIndexes
+- (NSDictionary *)selectionDetailsAllowingIndexSelection:(BOOL)allowIndexFallback
 {
-	return [tableContentView selectedRowIndexes];
+
+	// If a primary key is available, store the selection details for rows using the primary key.
+	NSArray *primaryKeyFieldNames = [tableDataInstance primaryKeyColumnNames];
+	if (primaryKeyFieldNames) {
+
+		// Set up an array of the column indexes to store
+		NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
+		NSUInteger primaryKeyFieldIndexes[primaryKeyFieldCount];
+		BOOL problemColumns = NO;
+		for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
+			primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
+			if (primaryKeyFieldIndexes[i] == NSNotFound) {
+				problemColumns = YES;
+#ifndef SP_REFACTOR
+			} else {
+				if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
+					if ([tableDataInstance columnIsBlobOrText:[primaryKeyFieldNames objectAtIndex:i]]) {
+						problemColumns = YES;
+					}
+				}
+#endif
+			}
+		}
+
+		// Only proceed with key-based selection if there were no problem columns
+		if (!problemColumns) {
+			NSIndexSet *selectedRowIndexes = [tableContentView selectedRowIndexes];
+			NSUInteger *indexBuffer = malloc(sizeof(NSUInteger) * [selectedRowIndexes count]);
+			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
+
+			NSMutableDictionary *selectedRowLookupTable = [NSMutableDictionary dictionaryWithCapacity:indexCount];
+			NSNumber *trueNumber = [NSNumber numberWithBool:YES];
+			for (NSUInteger i = 0; i < indexCount; i++) {
+				if (primaryKeyFieldCount == 1) {
+					[selectedRowLookupTable setObject:trueNumber forKey:[SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0]) description]];
+				} else {
+					NSMutableString *lookupString = [NSMutableString stringWithString:SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0])];
+					for (NSUInteger j = 1; j < primaryKeyFieldCount; j++) {
+						[lookupString appendString:SPUniqueSchemaDelimiter];
+						[lookupString appendString:[SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[j]) description]];
+					}
+					[selectedRowLookupTable setObject:trueNumber forKey:lookupString];
+				}
+			}
+			free(indexBuffer);
+
+			return [NSDictionary dictionaryWithObjectsAndKeys:
+						SPSelectionDetailTypePrimaryKeyed, @"type",
+						selectedRowLookupTable, @"rows",
+						primaryKeyFieldNames, @"keys",
+					nil];
+		}
+	}
+
+	// If no primary key was available, fall back to using just the selected row indexes if permitted
+	if (allowIndexFallback) {
+		return [NSDictionary dictionaryWithObjectsAndKeys:
+					SPSelectionDetailTypeIndexed, @"type",
+					[tableContentView selectedRowIndexes], @"rows",
+				nil];
+	}
+
+	// Otherwise return a blank selection
+	return [NSDictionary dictionaryWithObjectsAndKeys:
+				SPSelectionDetailTypeIndexed, @"type",
+				[NSIndexSet indexSet], @"rows",
+			nil];
 }
 
 /**
@@ -3711,11 +3833,11 @@
 /**
  * Set the selected row indexes to restore on next table load
  */
-- (void) setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
+- (void) setSelectionToRestore:(NSDictionary *)theSelection
 {
-	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
+	if (selectionToRestore) [selectionToRestore release], selectionToRestore = nil;
 
-	if (theIndexSet) selectionIndexToRestore = [[NSIndexSet alloc] initWithIndexSet:theIndexSet];
+	if (theSelection) selectionToRestore = [theSelection copy];
 }
 
 /**
@@ -3777,7 +3899,7 @@
 {
 	[self setSortColumnNameToRestore:[self sortColumnName] isAscending:[self sortColumnIsAscending]];
 	[self setPageToRestore:[self pageNumber]];
-	[self setSelectedRowIndexesToRestore:[self selectedRowIndexes]];
+	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:YES]];
 	[self setViewportToRestore:[self viewport]];
 	[self setFiltersToRestore:[self filterSettings]];
 }
@@ -3789,7 +3911,7 @@
 {
 	[self setSortColumnNameToRestore:nil isAscending:YES];
 	[self setPageToRestore:1];
-	[self setSelectedRowIndexesToRestore:nil];
+	[self setSelectionToRestore:nil];
 	[self setViewportToRestore:NSZeroRect];
 	[self setFiltersToRestore:nil];
 }
@@ -4291,7 +4413,7 @@
 	if (sortCol) [sortCol release];
 	[usedQuery release];
 	if (sortColumnToRestore) [sortColumnToRestore release];
-	if (selectionIndexToRestore) [selectionIndexToRestore release];
+	if (selectionToRestore) [selectionToRestore release];
 	if (filterFieldToRestore) filterFieldToRestore = nil;
 	if (filterComparisonToRestore) filterComparisonToRestore = nil;
 	if (filterValueToRestore) filterValueToRestore = nil;

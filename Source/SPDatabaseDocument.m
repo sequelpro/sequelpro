@@ -4297,16 +4297,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if ([tableContentInstance filterSettings])
 			[sessionState setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
-		NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
-		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
-			NSMutableArray *indices = [NSMutableArray array];
-			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
-			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-			NSUInteger idx;
-			for (idx = 0; idx < limit; idx++) {
-				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
-			}
-			[sessionState setObject:indices forKey:@"contentSelectedIndexSet"];
+		NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
+		if (contentSelectedRows) {
+			[sessionState setObject:contentSelectedRows forKey:@"contentSelection"];
 		}
 	}
 
@@ -4734,14 +4727,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 
 		// Restore table selection indexes
-		if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
-			NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-			NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-			NSUInteger i;
-			for(i=0; i<[items count]; i++)
-				[anIndexSet addIndex:[NSArrayObjectAtIndex(items, i) integerValue]];
-
-			[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+		if([spfSession objectForKey:@"contentSelection"]) {
+			[tableContentInstance setSelectionToRestore:[spfSession objectForKey:@"contentSelection"]];
 		}
 
 		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];

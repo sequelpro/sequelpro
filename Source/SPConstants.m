@@ -211,6 +211,8 @@ NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType"
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
+NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexSet";
+NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";

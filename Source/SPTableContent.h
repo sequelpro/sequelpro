@@ -143,7 +143,7 @@
 	BOOL tableRowsSelectable;
 	NSString *sortColumnToRestore;
 	NSUInteger pageToRestore;
-	NSIndexSet *selectionIndexToRestore;
+	NSDictionary *selectionToRestore;
 	NSRect selectionViewportToRestore;
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
@@ -272,14 +272,14 @@
 - (NSString *)sortColumnName;
 - (BOOL)sortColumnIsAscending;
 - (NSUInteger)pageNumber;
-- (NSIndexSet *)selectedRowIndexes;
+- (NSDictionary *)selectionDetailsAllowingIndexSelection:(BOOL)allowIndexFallback;
 - (NSRect)viewport;
 - (CGFloat)tablesListWidth;
 - (NSDictionary *)filterSettings;
 - (NSArray *)dataColumnDefinitions;
 - (void)setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
 - (void)setPageToRestore:(NSUInteger)thePage;
-- (void)setSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void)setSelectionToRestore:(NSDictionary *)theSelection;
 - (void)setViewportToRestore:(NSRect)theViewport;
 - (void)setFiltersToRestore:(NSDictionary *)filterSettings;
 - (void)storeCurrentDetailsForRestoration;

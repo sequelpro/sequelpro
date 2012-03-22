@@ -267,7 +267,7 @@
 	NSString *contentSortCol = [tableContentInstance sortColumnName];
 	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
 	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
-	NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
+	NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
 	NSRect contentViewport = [tableContentInstance viewport];
 	NSDictionary *contentFilter = [tableContentInstance filterSettings];
 	NSData *filterTableData = [tableContentInstance filterTableData];
@@ -283,7 +283,7 @@
 												[NSNumber numberWithBool:contentSortColIsAsc], @"sortIsAsc",
 												nil];
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
-		if (contentSelectedIndexSet) [contentState setObject:contentSelectedIndexSet forKey:@"selection"];
+		if (contentSelectedRows) [contentState setObject:contentSelectedRows forKey:@"selection"];
 		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
 		if (filterTableData) [contentState setObject:filterTableData forKey:@"filterTable"];
 
@@ -322,7 +322,7 @@
 					|| ![[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
 		{
 			[currentHistoryEntry setObject:[NSValue valueWithRect:contentViewport] forKey:@"contentViewport"];
-			if (contentSelectedIndexSet) [currentHistoryEntry setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
+			if (contentSelectedRows) [currentHistoryEntry setObject:contentSelectedRows forKey:@"contentSelection"];
 
 		// Special case: if the last history item is currently active, and has no table,
 		// but the new selection does - delete the last entry, in order to replace it.
@@ -344,7 +344,7 @@
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
-	if (contentSelectedIndexSet) [newEntry setObject:contentSelectedIndexSet forKey:@"contentSelectedIndexSet"];
+	if (contentSelectedRows) [newEntry setObject:contentSelectedRows forKey:@"contentSelection"];
 	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilter"];
 
 	[history addObject:newEntry];
@@ -397,7 +397,7 @@
 	// Set table content details for restore
 	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
 	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
-	[tableContentInstance setSelectedRowIndexesToRestore:[historyEntry objectForKey:@"contentSelectedIndexSet"]];
+	[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
 	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
 	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
 
@@ -514,7 +514,7 @@
 	// Restore the content view state
 	[tableContentInstance setSortColumnNameToRestore:[contentState objectForKey:@"sortCol"] isAscending:[[contentState objectForKey:@"sortIsAsc"] boolValue]];
 	[tableContentInstance setPageToRestore:[[contentState objectForKey:@"page"] unsignedIntegerValue]];
-	[tableContentInstance setSelectedRowIndexesToRestore:[contentState objectForKey:@"selection"]];
+	[tableContentInstance setSelectionToRestore:[contentState objectForKey:@"selection"]];
 	[tableContentInstance setViewportToRestore:[[contentState objectForKey:@"viewport"] rectValue]];
 	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filter"]];
 }

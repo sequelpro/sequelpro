@@ -400,6 +400,8 @@ extern NSString *SPLastImportIntoNewTableType;
 extern NSString *SPGlobalValueHistory;
 extern NSString *SPBundleDeletedDefaultBundlesKey;
 extern NSString *SPHiddenKeyFileVisibilityKey;
+extern NSString *SPSelectionDetailTypeIndexed;
+extern NSString *SPSelectionDetailTypePrimaryKeyed;
 
 // URLs
 extern NSString *SPDonationsURL;

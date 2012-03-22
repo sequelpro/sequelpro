@@ -187,22 +187,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
 	for (NSDictionary *field in fields)
 	{
-		BOOL hasCompositePrimaryKey = NO;
-		BOOL isPrimaryKey = [[field objectForKey:@"isprimarykey"] boolValue];
-		
-		// The 'isprimarykey' key of a field is only present for single column primary keys, not composite keys, 
-		// so we need to check the indexes manually.
-		if (!isPrimaryKey) {
-			for (NSDictionary *index in indexes)
-			{
-				if ([[index objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
-					hasCompositePrimaryKey = YES;
-					break;
-				}  
-			}
-		}
-		
-		if (isPrimaryKey || hasCompositePrimaryKey) {
+		if ([[field objectForKey:@"isprimarykey"] boolValue]) {
 
 			// Hide primary key option
 			[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:YES];

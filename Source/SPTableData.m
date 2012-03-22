@@ -53,6 +53,7 @@
 		columnNames = [[NSMutableArray alloc] init];
 		constraints = [[NSMutableArray alloc] init];
 		status = [[NSMutableDictionary alloc] init];
+		primaryKeyColumns = [[NSMutableArray alloc] init];
 
 		triggers = nil;
 		tableEncoding = nil;
@@ -375,6 +376,7 @@
 	[columnNames removeAllObjects];
 	[constraints removeAllObjects];
 	tableHasAutoIncrementField = NO;
+	[primaryKeyColumns removeAllObjects];
 
 	if( [tableListInstance tableType] == SPTableTypeTable || [tableListInstance tableType] == SPTableTypeView ) {
 		tableData = [self informationForTable:[tableListInstance tableName]];
@@ -400,6 +402,7 @@
 		[tableEncoding release];
 	}
 	tableEncoding = [[NSString alloc] initWithString:[tableData objectForKey:@"encoding"]];
+	[primaryKeyColumns addObjectsFromArray:[tableData objectForKey:@"primarykeyfield"]];
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
@@ -419,6 +422,7 @@
 	NSEnumerator *enumerator;
 
 	tableHasAutoIncrementField = NO;
+	[primaryKeyColumns removeAllObjects];
 
 	if (viewData == nil) {
 		[columns removeAllObjects];
@@ -707,33 +711,38 @@
 			// add "isprimarykey" to the corresponding tableColumn
 			// add dict root "primarykeyfield" = <field> for faster accessing
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] && [parts count] == 3) {
-				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 2) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-				if([parsedString length]>4) {
-					NSString *priFieldName = [[parsedString substringWithRange:NSMakeRange(2,[parsedString length]-4)] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
-					[tableData setObject:priFieldName forKey:@"primarykeyfield"];
-					for(id theTableColumn in tableColumns)
-						if([[theTableColumn objectForKey:@"name"] isEqualToString:priFieldName]) {
-							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
-							break;
+				SPSQLParser *keyParser = [SPSQLParser stringWithString:NSArrayObjectAtIndex(parts, 2)];
+				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO]];
+				NSArray *primaryKeyQuotedNames = [keyParser splitStringByCharacter:','];
+				if ([keyParser length]) {
+					NSMutableArray *primaryKeyFields = [NSMutableArray array];
+					for (NSString *quotedKeyName in primaryKeyQuotedNames) {
+						NSString *primaryFieldName = [[SPSQLParser stringWithString:quotedKeyName] unquotedString];
+						[primaryKeyFields addObject:primaryFieldName];
+						for (NSMutableDictionary *theTableColumn in tableColumns) {
+							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
+								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+								break;
+							}
 						}
+					}
+					[tableData setObject:primaryKeyFields forKey:@"primarykeyfield"];
 				}
 			}
 			
 			// unique keys
 			// add to each corresponding tableColumn the tag "unique" if given
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"UNIQUE"]  && [parts count] == 4) {
-				NSString *parsedString = [(NSString*)NSArrayObjectAtIndex(parts, 3) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-				if([parsedString length]>4) {
-					NSArray *uniqueFieldNames = [parsedString componentsSeparatedByString:@"`,`"];
-					for(NSString* uniq in uniqueFieldNames) {
-						NSString *uniqField = [[uniq stringByReplacingOccurrencesOfRegex:@"^\\(`|`\\)" withString:@""] stringByReplacingOccurrencesOfString:@"``" withString:@"`"];
-						for(id theTableColumn in tableColumns)
-							if([[theTableColumn objectForKey:@"name"] isEqualToString:uniqField]) {
-								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
-								break;
-							}
+				SPSQLParser *keyParser = [SPSQLParser stringWithString:NSArrayObjectAtIndex(parts, 3)];
+				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO]];
+				for (NSString *quotedUniqueKey in [keyParser splitStringByCharacter:',']) {
+					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
+					for (NSMutableDictionary *theTableColumn in tableColumns) {
+						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
+							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+							break;
+						}
 					}
-
 				}
 			}
 			// who knows
@@ -1284,52 +1293,19 @@
 - (NSArray *)primaryKeyColumnNames
 {
 
-	// Ensure that identifier queries occur over UTF8
-	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
-	if (changeEncoding) {
-		[mySQLConnection storeEncodingForRestoration];
-		[mySQLConnection setEncoding:@"utf8"];
-	}
+	// If processing is already in action, wait for it to complete
+	[self _loopWhileWorking];
 
-	NSString *selectedTable = [tableListInstance tableName];
-	if(![selectedTable length]) return nil;
-
-	SPMySQLResult *r;
-	NSMutableArray *keyColumns = [NSMutableArray array];
-
-	// select all columns that are primary keys
-	// MySQL before 5.0.3 does not support the WHERE syntax
-	r = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@ /*!50003 WHERE `key` = 'PRI'*/", [selectedTable backtickQuotedString]]];
-	[r setReturnDataAsStrings:YES];
-	[r setDefaultRowReturnType:SPMySQLResultRowAsArray];
-
-	if ([r numberOfRows] < 1) {
-		if (changeEncoding && [mySQLConnection isConnected]) [mySQLConnection restoreStoredEncoding];
-		return nil;
-	}
-
-	if ([mySQLConnection queryErrored]) {
-		if ([mySQLConnection isConnected]) {
-			NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the PRIMARY KEY data:\n\n%@",@"message when the query that fetches the primary keys fails"), [mySQLConnection lastErrorMessage]], @"OK", nil, nil);
-			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-		}
-		return nil;
-	}
-
-
-	for (NSArray *resultRow in r) {
-
-		// check if the row is indeed a key (for MySQL servers before 5.0.3)
-		if ([[NSArrayObjectAtIndex(resultRow ,3) description] isEqualToString:@"PRI"]) {
-			[keyColumns addObject:[NSArrayObjectAtIndex(resultRow ,0) description]];
+	if ([columns count] == 0) {
+		if ([tableListInstance tableType] == SPTableTypeView) {
+			[self updateInformationForCurrentView];
+		} else {
+			[self updateInformationForCurrentTable];
 		}
 	}
 
-	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
-
-	if([keyColumns count]) return keyColumns;
-
-	return nil;
+	if (![primaryKeyColumns count]) return nil;
+	return primaryKeyColumns;
 }
 
 #pragma mark -
@@ -1343,6 +1319,7 @@
 	[columnNames release];
 	[constraints release];
 	[status release];
+	[primaryKeyColumns release];
 
 	if (triggers) [triggers release];
 	if (tableEncoding) [tableEncoding release];
