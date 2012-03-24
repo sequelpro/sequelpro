@@ -317,7 +317,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (QKQueryParameter *param in _parameters)
 	{
-		[constraints appendFormat:@"%@ ", param];
+		[constraints appendFormat:@"%@", param];
 		
 		[constraints appendString:@" AND "];
 	}
