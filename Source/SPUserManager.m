@@ -34,7 +34,7 @@
 
 static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
-@interface SPUserManager (PrivateAPI)
+@interface SPUserManager ()
 
 - (void)_initializeTree:(NSArray *)items;
 - (void)_initializeUsers;
@@ -271,8 +271,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Initialize available privileges
 	NSManagedObjectContext *moc = self.managedObjectContext;
-	NSEntityDescription *privEntityDescription = [NSEntityDescription entityForName:@"Privileges"
-															 inManagedObjectContext:moc];
+	NSEntityDescription *privEntityDescription = [NSEntityDescription entityForName:@"Privileges" inManagedObjectContext:moc];
 	NSArray *props = [privEntityDescription attributeKeys];
 	
 	[availablePrivs removeAllObjects];
@@ -354,7 +353,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	[child setPrimitiveValue:[child valueForKey:@"host"] forKey:@"originalhost"];
 	
 	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * from mysql.db d WHERE d.user = %@ and d.host = %@", 
+	NSString *queryString = [NSString stringWithFormat:@"SELECT * FROM mysql.db WHERE user = %@ AND host = %@", 
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	
 	SPMySQLResult *queryResults = [self.mySqlConnection queryString:queryString];
@@ -460,7 +459,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		{
 			NSImage *image1 = [[NSImage imageNamed:NSImageNameNetwork] retain];
 			[image1 setScalesWhenResized:YES];
-			[image1 setSize:(NSSize){16,16}];
+			[image1 setSize:(NSSize){16, 16}];
 			[(ImageAndTextCell*)cell setImage:image1];
 			[image1 release];
 			
@@ -468,7 +467,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		else {
 			NSImage *image1 = [[NSImage imageNamed:NSImageNameUser] retain];
 			[image1 setScalesWhenResized:YES];
-			[image1 setSize:(NSSize){16,16}];
+			[image1 setSize:(NSSize){16, 16}];
 			[(ImageAndTextCell*)cell setImage:image1];
 			[image1 release];
 		}
@@ -623,11 +622,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
-		@try {
+		NS_DURING
 			[selectedUser setValue:[NSNumber numberWithBool:YES] forKey:key];
-		}
-		@catch (NSException * e) {
-		}
+		NS_HANDLER
+		NS_ENDHANDLER
 	}
 }
 
@@ -643,11 +641,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
-		@try {
+		NS_DURING
 			[selectedUser setValue:[NSNumber numberWithBool:NO] forKey:key];
-		}
-		@catch (NSException * e) {
-		}
+		NS_HANDLER
+		NS_ENDHANDLER
 	}
 }
 
@@ -781,7 +778,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doubleClickSchemaPriv:(id)sender
 {
-
 	// Ignore double-clicked header cells
 	if ([sender clickedRow] == -1) return;
 
@@ -890,8 +886,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (void)_clearData
 {
 	[managedObjectContext reset];
-	[managedObjectContext release];
-	managedObjectContext = nil;
+	[managedObjectContext release], managedObjectContext = nil;
 }
 
 /**
@@ -1562,6 +1557,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 						}
 					}
 				}
+				
                 [availableTableView setEnabled:YES];
 			}
 		} 
