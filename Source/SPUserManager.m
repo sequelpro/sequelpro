@@ -956,10 +956,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
-
-	// Close the window
-	[NSApp endSheet:[self window] returnCode:0];
-	[[self window] orderOut:self];
 }
 
 #pragma mark -
