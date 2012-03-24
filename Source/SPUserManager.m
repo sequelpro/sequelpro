@@ -591,8 +591,11 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	[[self window] makeFirstResponder:self];
 
 	isSaving = YES;
+	
 	[[self managedObjectContext] save:&error];
+	
 	isSaving = NO;
+	
 	if (error != nil) [errorsString appendString:[error localizedDescription]];
 
 	[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
@@ -602,6 +605,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		[errorsTextView setString:errorsString];
 		[NSApp beginSheet:errorsSheet modalForWindow:[NSApp keyWindow] modalDelegate:nil didEndSelector:NULL contextInfo:nil];
 		[errorsString release];
+		
 		return;
 	}
 
