@@ -874,10 +874,14 @@
 				BOOL rowMatches = NO;
 
 				for (NSUInteger i = 0; i < tableRowsCount; i++) {
+
+					// For single-column primary keys look up the cell value in the dictionary for a match
 					if (primaryKeyFieldCount == 1) {
 						if ([selectionKeysToRestore objectForKey:SPDataStorageObjectAtRowAndColumn(tableValues, i, primaryKeyFieldIndexes[0])]) {
 							rowMatches = YES;
 						}
+
+					// For multi-column primary keys, convert all the cells to a string for lookup.
 					} else {
 						NSMutableString *lookupString = [[NSMutableString alloc] initWithString:[SPDataStorageObjectAtRowAndColumn(tableValues, i, primaryKeyFieldIndexes[0]) description]];
 						for (NSUInteger j = 1; j < primaryKeyFieldCount; j++) {
@@ -1649,6 +1653,7 @@
 	// Update data using the new sort order
 	previousTableRowsCount = tableRowsCount;
 	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
+	[[tableContentView onMainThread] selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	[self loadTableValues];
 	
 	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
@@ -1870,7 +1875,7 @@
 
 	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
 		column = NSArrayObjectAtIndex(dataColumns, i);
-		if ([column objectForKey:@"default"] == nil || [column objectForKey:@"default"] == [NSNull null]) {
+		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isNSNull]) {
 			[newRow addObject:[NSNull null]];
 		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
 					&& ![[column objectForKey:@"null"] boolValue]
@@ -3719,10 +3724,14 @@
 			NSMutableDictionary *selectedRowLookupTable = [NSMutableDictionary dictionaryWithCapacity:indexCount];
 			NSNumber *trueNumber = [NSNumber numberWithBool:YES];
 			for (NSUInteger i = 0; i < indexCount; i++) {
+
+				// For single-column primary keys, use the cell value as a dictionary key for fast lookups
 				if (primaryKeyFieldCount == 1) {
-					[selectedRowLookupTable setObject:trueNumber forKey:[SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0]) description]];
+					[selectedRowLookupTable setObject:trueNumber forKey:SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0])];
+
+				// For multi-column primary keys, convert all the cell values to a string and use that as the key.
 				} else {
-					NSMutableString *lookupString = [NSMutableString stringWithString:SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0])];
+					NSMutableString *lookupString = [NSMutableString stringWithString:[SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[0]) description]];
 					for (NSUInteger j = 1; j < primaryKeyFieldCount; j++) {
 						[lookupString appendString:SPUniqueSchemaDelimiter];
 						[lookupString appendString:[SPDataStorageObjectAtRowAndColumn(tableValues, indexBuffer[i], primaryKeyFieldIndexes[j]) description]];

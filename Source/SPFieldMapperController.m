@@ -292,7 +292,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	NSMutableArray *globals = [NSMutableArray array];
 	for(NSUInteger i=0; i < [fieldMappingGlobalValues count]; i++) {
 		id glob = NSArrayObjectAtIndex(fieldMappingGlobalValues, i);
-		if([NSArrayObjectAtIndex(fieldMappingGlobalValuesSQLMarked, i) boolValue] || glob == [NSNull null])
+		if([NSArrayObjectAtIndex(fieldMappingGlobalValuesSQLMarked, i) boolValue] || [glob isNSNull])
 			[globals addObject:glob];
 		else
 			[globals addObject:[NSString stringWithFormat:@"'%@'", [(NSString*)glob stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
@@ -839,7 +839,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 		columnCounter = 0;
 		for(id col in row) {
-			if(col && col != [NSNull null]) {
+			if(col && ![col isNSNull]) {
 				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < (NSInteger)[(NSString*)col length]) {
 					maxLengthOfSourceColumns[columnCounter] = [(NSString*)col length];
 				}
@@ -1489,7 +1489,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count]
-					&& NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) != [NSNull null]) {
+					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isNSNull]) {
 				value = i;
 			} else {
 				value = 0;

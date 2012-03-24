@@ -1394,7 +1394,7 @@
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 							if (colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-								if(colStr == [NSNull null])
+								if([colStr isNSNull])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 								else if([colStr isSPNotLoaded])
 									[globalVar replaceCharactersInRange:aRange withString:@""];
@@ -1414,7 +1414,7 @@
 				if ([cellData isSPNotLoaded])
 					cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-				if (cellData == [NSNull null]) {
+				if ([cellData isNSNull]) {
 					[setString appendString:@"NULL"];
 				} else {
 					[setString appendString:[mySQLConnection escapeAndQuoteString:cellData]];
@@ -1446,7 +1446,7 @@
 							NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 							if(colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 								id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-								if(colStr == [NSNull null])
+								if([colStr isNSNull])
 									[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 								else if([colStr isSPNotLoaded])
 									[globalVar replaceCharactersInRange:aRange withString:@""];
@@ -1466,7 +1466,7 @@
 				if ([cellData isSPNotLoaded])
 					cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
-				if (cellData == [NSNull null]) {
+				if ([cellData isNSNull]) {
 					[whereString appendString:@" IS NULL"];
 				} else {
 					[whereString appendString:@"="];
@@ -1521,7 +1521,7 @@
 						NSInteger colIndex = [[globalVar substringWithRange:[globalVar rangeOfRegex:re capture:1L]] integerValue];
 						if(colIndex > 0 && colIndex <= (NSInteger)[csvRowArray count]) {
 							id colStr = NSArrayObjectAtIndex(csvRowArray, colIndex-1);
-							if(colStr == [NSNull null])
+							if([colStr isNSNull])
 								[globalVar replaceCharactersInRange:aRange withString:@"NULL"];
 							else if([colStr isSPNotLoaded])
 								[globalVar replaceCharactersInRange:aRange withString:@""];
@@ -1542,7 +1542,7 @@
 				cellData = NSArrayObjectAtIndex(fieldMappingTableDefaultValues, i);
 
 			// Insert a NULL if the cell is an NSNull, or is a nullable numeric field and empty
-			if (cellData == [NSNull null] || ([nullableNumericFieldsMapIndex containsIndex:i] && [[cellData description] isEqualToString:@""])) {
+			if ([cellData isNSNull] || ([nullableNumericFieldsMapIndex containsIndex:i] && [[cellData description] isEqualToString:@""])) {
 				[valueString appendString:@"NULL"];
 
 			} else {
