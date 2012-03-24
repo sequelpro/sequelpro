@@ -2516,15 +2516,15 @@
 	// Retrieve the original index of the column from the identifier
 	NSInteger columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] integerValue];
 	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSString *table = [columnDefinition objectForKey:@"org_table"];
+	NSString *col = [columnDefinition objectForKey:@"org_name"];
 
 	// Don't save if the column doesn't map to an underlying SQL field
-	if (![columnDefinition objectForKey:@"org_name"] || ![(NSString *)[columnDefinition objectForKey:@"org_name"] length])
+	if (!table || ![table length] || !col || ![col length])
 		return;
 
 	NSMutableDictionary *tableColumnWidths;
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
-	NSString *table = [columnDefinition objectForKey:@"org_table"];
-	NSString *col = [columnDefinition objectForKey:@"org_name"];
 
 	// Retrieve or instantiate the tableColumnWidths object
 #ifndef SP_REFACTOR
