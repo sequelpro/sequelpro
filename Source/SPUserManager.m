@@ -608,6 +608,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		
 		return;
 	}
+	
+	[errorsString release];
 
 	// Otherwise, close the sheet
 	[NSApp endSheet:[self window] returnCode:0];
