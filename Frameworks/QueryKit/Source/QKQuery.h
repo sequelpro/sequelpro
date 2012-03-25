@@ -100,6 +100,7 @@
 - (id)initWithTable:(NSString *)table;
 
 - (NSString *)query;
+- (void)clear;
 
 - (void)addField:(NSString *)field;
 - (void)addFields:(NSArray *)fields;

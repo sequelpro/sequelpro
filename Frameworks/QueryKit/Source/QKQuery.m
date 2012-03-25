@@ -100,9 +100,30 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 #pragma mark -
 #pragma mark Public API
 
+/**
+ * Requests that the query be built.
+ *
+ * @return The generated query.
+ */
 - (NSString *)query
 {
 	return _query ? [self _buildQuery] : @""; 
+}
+
+/**
+ * Clears anything this instance should know about the query it's building.
+ */
+- (void)clear
+{
+	[self setTable:nil];
+	[self setDatabase:nil];
+	[self setQueryType:(QKQueryType)-1];
+	
+	[_fields removeAllObjects];
+	[_parameters removeAllObjects];
+	[_updateParameters removeAllObjects];
+	[_groupByFields removeAllObjects];
+	[_orderByFields removeAllObjects];
 }
 
 #pragma mark -
