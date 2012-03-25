@@ -2,7 +2,7 @@
 //  $Id: QKQuery.h 3421 2011-09-10 22:58:45Z stuart02 $
 //
 //  QKQuery.h
-//  sequel-pro
+//  QueryKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
@@ -27,12 +27,11 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "QKQueryTypes.h"
 #import "QKQueryOperators.h"
 #import "QKQueryParameter.h"
+#import "QKQueryUpdateParameter.h"
 
 /**
  * @class QKQuery QKQuery.h
@@ -47,8 +46,10 @@
 	NSString *_table;
 	
 	NSMutableString *_query;
+	
 	NSMutableArray *_parameters;
 	NSMutableArray *_fields;
+	NSMutableArray *_updateParameters;
 	NSMutableArray *_groupByFields;
 	NSMutableArray *_orderByFields;
 	
@@ -79,6 +80,11 @@
 @property (readwrite, retain, getter=fields, setter=setFields:) NSMutableArray *_fields;
 
 /**
+ * @property _updateFields The fields of an UPDATE query.
+ */
+@property (readwrite, retain, getter=updateParameters, setter=setUpdateParameters:) NSMutableArray *_updateParameters;
+
+/**
  * @property _queryType The type of query to be built.
  */
 @property (readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
@@ -100,6 +106,9 @@
 
 - (void)addParameter:(QKQueryParameter *)parameter;
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value;
+
+- (void)addFieldToUpdate:(QKQueryUpdateParameter *)parameter;
+- (void)addFieldToUpdate:(NSString *)field toValue:(id)value;
 
 - (void)groupByField:(NSString *)field;
 - (void)groupByFields:(NSArray *)fields;

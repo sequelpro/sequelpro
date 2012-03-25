@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  QKSelectQueryTests.m
+//  QKUpdateQueryTests.m
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 25, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,30 +28,31 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKSelectQueryTests.h"
+#import "QKUpdateQueryTests.h"
 
 static NSString *QKTestTableName = @"test_table";
 
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
-static NSString *QKTestFieldThree = @"test_field3";
-static NSString *QKTestFieldFour  = @"test_field4";
+static NSString *QKTestFieldOne = @"test_field1";
+static NSString *QKTestFieldTwo = @"test_field2";
+
+static NSString *QKTestUpdateValueOne = @"update_one";
+static NSString *QKTestUpdateValueTwo = @"update_two";
 
 static NSUInteger QKTestParameterOne = 10;
 
-@implementation QKSelectQueryTests
+@implementation QKUpdateQueryTests
 
 #pragma mark -
 #pragma mark Setup & tear down
 
 - (void)setUp
 {
-	_query = [QKQuery selectQueryFromTable:QKTestTableName];
+	_query = [QKQuery queryTable:QKTestTableName];
 	
-	[_query addField:QKTestFieldOne];
-	[_query addField:QKTestFieldTwo];
-	[_query addField:QKTestFieldThree];
-	[_query addField:QKTestFieldFour];
+	[_query setQueryType:QKUpdateQuery];
+	
+	[_query addFieldToUpdate:QKTestFieldOne toValue:QKTestUpdateValueOne];
+	[_query addFieldToUpdate:QKTestFieldTwo toValue:QKTestUpdateValueTwo];
 	
 	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 }
@@ -59,19 +60,19 @@ static NSUInteger QKTestParameterOne = 10;
 #pragma mark -
 #pragma mark Tests
 
-- (void)testSelectQueryTypeIsCorrect
+- (void)testUpdateQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	STAssertTrue([[_query query] hasPrefix:@"UPDATE"], @"query type");
 }
 
-- (void)testSelectQueryFieldsAreCorrect
+- (void)testUpdateQueryFieldsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
-				
+	NSString *query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = '%@', %@ = '%@'", QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
+	
 	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
 }
 
-- (void)testSelectQueryConstraintsAreCorrect
+- (void)testUpdateQueryConstraintsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	

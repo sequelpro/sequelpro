@@ -2,7 +2,7 @@
 //  $Id: QKQuery.m 3432 2011-09-27 00:21:35Z stuart02 $
 //
 //  QKQuery.h
-//  sequel-pro
+//  QueryKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
@@ -27,8 +27,6 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "QKQuery.h"
 
@@ -44,6 +42,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 - (NSString *)_buildConstraints;
 - (NSString *)_buildGroupByClause;
 - (NSString *)_buildOrderByClause;
+- (NSString *)_buildUpdateClause;
+- (NSString *)_buildSelectOptions;
 
 - (BOOL)_addString:(NSString *)string toArray:(NSMutableArray *)array;
 
@@ -56,6 +56,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 @synthesize _parameters;
 @synthesize _queryType;
 @synthesize _fields;
+@synthesize _updateParameters;
 @synthesize _quoteFields;
 
 #pragma mark -
@@ -80,6 +81,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	if ((self = [super init])) {
 		[self setTable:table];
 		[self setFields:[[NSMutableArray alloc] init]];
+		[self setUpdateParameters:[[NSMutableArray alloc] init]];
 		[self setParameters:[[NSMutableArray alloc] init]];
 		[self setQueryType:(QKQueryType)-1];
 		[self setQuoteFields:NO];
@@ -148,6 +150,29 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value
 {	
 	[self addParameter:[QKQueryParameter queryParamWithField:field operator:operator value:value]];
+}
+
+#pragma mark -
+#pragma mark Update Parameters
+
+/**
+ * Adds the supplied update parameter.
+ *
+ * @param parameter The parameter to add.
+ */
+- (void)addFieldToUpdate:(QKQueryUpdateParameter *)parameter
+{
+	if ([parameter field] && ([[parameter field] length] > 0) && [parameter value]) {
+		[_updateParameters addObject:parameter];
+	}
+}
+
+/**
+ * Convenience method for adding a new update parameter.
+ */
+- (void)addFieldToUpdate:(NSString *)field toValue:(id)value
+{
+	[self addFieldToUpdate:[QKQueryUpdateParameter queryUpdateParamWithField:field value:value]];
 }
 
 #pragma mark -
@@ -220,10 +245,10 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 {
 	[self _validateRequiements];
 	
-	BOOL isSelect = (_queryType == QKSelectQuery);
-	BOOL isInsert = (_queryType == QKInsertQuery);
-	BOOL isUpdate = (_queryType == QKUpdateQuery);
-	BOOL isDelete = (_queryType == QKDeleteQuery);
+	BOOL isSelect = _queryType == QKSelectQuery;
+	BOOL isInsert = _queryType == QKInsertQuery;
+	BOOL isUpdate = _queryType == QKUpdateQuery;
+	BOOL isDelete = _queryType == QKDeleteQuery;
 	
 	NSString *fields = [self _buildFieldList];
 	
@@ -246,22 +271,16 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	[_query appendString:_table];
 	
+	if (isUpdate) {
+		[_query appendFormat:@" %@", [self _buildUpdateClause]];
+	}
+	
 	if ([_parameters count] > 0) {
-		[_query appendString:@" WHERE "];
-		[_query appendString:[self _buildConstraints]];
+		[_query appendFormat:@" WHERE %@", [self _buildConstraints]];
 	}
 	
 	if (isSelect) {
-		NSString *groupBy = [self _buildGroupByClause];
-		NSString *orderBy = [self _buildOrderByClause];
-		
-		if ([groupBy length] > 0) {
-			[_query appendFormat:@" %@", groupBy];
-		}
-		
-		if ([orderBy length] > 0) {
-			[_query appendFormat:@" %@", orderBy];
-		}
+		[_query appendString:[self _buildSelectOptions]];
 	}
 	
 	return _query;
@@ -384,6 +403,54 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 }
 
 /**
+ * Builds the string representation of the query's UPDATE parameters.
+ *
+ * @return The fields to be updated
+ */
+- (NSString *)_buildUpdateClause
+{
+	NSMutableString *update = [NSMutableString string];
+	
+	if ([_updateParameters count] == 0) return update;
+	
+	[update appendString:@"SET "];
+	
+	for (QKQueryUpdateParameter *param in _updateParameters)
+	{
+		[update appendFormat:@"%@, ", param];
+	}
+	
+	if ([update hasSuffix:@", "]) {
+		[update setString:[update substringToIndex:([update length] - 2)]];
+	}
+	
+	return update;
+}
+
+/**
+ * Builds any SELECT specific query constraints, namely ORDER BY or GROUP BY clauses.
+ *
+ * @return The query clauses (if any).
+ */
+- (NSString *)_buildSelectOptions
+{
+	NSMutableString *string = [NSMutableString string];
+	
+	NSString *groupBy = [self _buildGroupByClause];
+	NSString *orderBy = [self _buildOrderByClause];
+	
+	if ([groupBy length] > 0) {
+		[string appendFormat:@" %@", groupBy];
+	}
+	
+	if ([orderBy length] > 0) {
+		[string appendFormat:@" %@", orderBy];
+	}
+	
+	return string;
+}
+
+/**
  * Adds the supplied string to the supplied array, but only if the length is greater than zero.
  *
  * @param string The string to add to the array
@@ -427,6 +494,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	if (_query) [_query release], _query = nil;
 	if (_parameters) [_parameters release], _parameters = nil;
 	if (_fields) [_fields release], _fields = nil;
+	if (_updateParameters) [_updateParameters release], _updateParameters = nil;
 	if (_groupByFields) [_groupByFields release], _groupByFields = nil;
 	if (_orderByFields) [_orderByFields release], _orderByFields = nil;
 	

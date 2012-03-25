@@ -1,11 +1,11 @@
 //
-//  $Id: QKQueryOperators.h 3423 2011-09-12 16:50:15Z stuart02 $
+//  $Id$
 //
-//  QKQueryOperators.h
+//  QKQueryUpdateParameter.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -29,26 +29,31 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 /**
- * @enum QKQueryOperator
+ * @class QKQueryUpdateParameter QKQueryUpdateParameter.h
  *
- * Used to specify the operator to use for a specific query parameter. 
+ * @author Stuart Connolly http://stuconnolly.com/
  *
- * Note that this is by no means a complete list of available operators, only the most commonly used ones. 
- * Other operators can be added as and when they are required.
+ * QueryKit update query parameter class. 
  */
-typedef enum
+@interface QKQueryUpdateParameter : NSObject 
 {
-	QKEqualityOperator,
-	QKNotEqualOperator,
-	QKLikeOperator,
-	QKNotLikeOperator,
-	QKInOperator,
-	QKNotInOperator,
-	QKIsNullOperator,
-	QKIsNotNullOperator,
-	QKGreaterThanOperator,
-	QKLessThanOperator,
-	QKGreaterThanOrEqualOperator,
-	QKLessThanOrEqualOperator
+	NSString *_field;
+	
+	id _value;
 }
-QKQueryOperator;
+
+/**
+ * @property _field The field component of the parameter.
+ */
+@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
+
+/**
+ *@property _value The value component of the parameter.
+ */
+@property (readwrite, retain, getter=value, setter=setValue:) id _value;
+
++ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value;
+
+- (id)initUpdateParamWithField:(NSString *)field value:(id)value;
+
+@end

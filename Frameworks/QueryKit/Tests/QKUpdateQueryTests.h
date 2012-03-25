@@ -1,11 +1,11 @@
 //
-//  $Id: QKQueryOperators.h 3423 2011-09-12 16:50:15Z stuart02 $
+//  $Id$
 //
-//  QKQueryOperators.h
+//  QKUpdateQueryTests.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 25, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,27 +28,12 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-/**
- * @enum QKQueryOperator
- *
- * Used to specify the operator to use for a specific query parameter. 
- *
- * Note that this is by no means a complete list of available operators, only the most commonly used ones. 
- * Other operators can be added as and when they are required.
- */
-typedef enum
+#import <QueryKit/QueryKit.h>
+#import <SenTestingKit/SenTestingKit.h>
+
+@interface QKUpdateQueryTests : SenTestCase
 {
-	QKEqualityOperator,
-	QKNotEqualOperator,
-	QKLikeOperator,
-	QKNotLikeOperator,
-	QKInOperator,
-	QKNotInOperator,
-	QKIsNullOperator,
-	QKIsNotNullOperator,
-	QKGreaterThanOperator,
-	QKLessThanOperator,
-	QKGreaterThanOrEqualOperator,
-	QKLessThanOrEqualOperator
+	QKQuery *_query;
 }
-QKQueryOperator;
+
+@end
