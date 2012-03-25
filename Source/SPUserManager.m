@@ -29,7 +29,9 @@
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
-#import "SPMySQL.h"
+
+#import <SPMySQL/SPMySQL.h>
+#import <QueryKit/QueryKit.h>
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 static const NSString *SPTableViewNameColumnID = @"NameColumn";
@@ -51,6 +53,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host;
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
 - (void)_initializeAvailablePrivs;
+- (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost;
 
 @end
 
@@ -999,6 +1002,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	if (!isInitializing) [outlineView reloadData];
 }
 
+/**
+ * Updates the supplied array of users.
+ */
 - (BOOL)updateUsers:(NSArray *)updatedUsers
 {
 	for (NSManagedObject *user in updatedUsers) 
@@ -1010,20 +1016,16 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		else if (![user parent]) {
 			NSArray *hosts = [user valueForKey:@"children"];
 
-			// If the user has been changed, update the username on all hosts.  Don't check for errors, as some
-			// hosts may be new.
+			// If the user has been changed, update the username on all hosts.  
+			// Don't check for errors, as some hosts may be new.
 			if (![[user valueForKey:@"user"] isEqualToString:[user valueForKey:@"originaluser"]]) {
 				
 				for (NSManagedObject *child in hosts) 
 				{
-					NSString *renameUserStatement = [NSString stringWithFormat:
-														@"RENAME USER %@@%@ TO %@@%@",
-														 [[user valueForKey:@"originaluser"] tickQuotedString],
-														 [([child valueForKey:@"originalhost"]?[child valueForKey:@"originalhost"]:[child host]) tickQuotedString],
-														 [[user valueForKey:@"user"] tickQuotedString],
-														 [[child host] tickQuotedString]];
-					
-					[self.mySqlConnection queryString:renameUserStatement];	
+					[self _renameUserFrom:[user valueForKey:@"originaluser"] 
+									 host:[child valueForKey:@"originalhost"] ? [child valueForKey:@"originalhost"] : [child host]
+									   to:[user valueForKey:@"user"]
+									 host:[child user]];
 				}
 			}
 
@@ -1044,17 +1046,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			}
 		} 
 		else {
-
-			// If the hostname has changed, remane the detail before editing details.
+			// If the hostname has changed, remane the detail before editing details
 			if (![[user valueForKey:@"host"] isEqualToString:[user valueForKey:@"originalhost"]]) {
-				NSString *renameUserStatement = [NSString stringWithFormat:
-													@"RENAME USER %@@%@ TO %@@%@",
-													 [[[user parent] valueForKey:@"originaluser"] tickQuotedString],
-													 [[user valueForKey:@"originalhost"] tickQuotedString],
-													 [[[user parent] valueForKey:@"user"] tickQuotedString],
-													 [[user valueForKey:@"host"] tickQuotedString]];
 				
-				[self.mySqlConnection queryString:renameUserStatement];	
+				[self _renameUserFrom:[[user parent] valueForKey:@"originaluser"] 
+								 host:[user valueForKey:@"originalhost"]
+								   to:[[user parent] valueForKey:@"user"]
+								 host:[user valueForKey:@"host"]];
 			}
 
 			if ([serverSupport supportsUserMaxVars]) [self updateResourcesForUser:user];
@@ -1189,8 +1187,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	for (NSString *key in self.privsSupportedByServer)
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
+		
 		NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
-		@try {
+		
+		NS_DURING
 			if ([[schemaPriv valueForKey:key] boolValue] == YES) {
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
@@ -1199,15 +1199,22 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
 			}
-		}
-		@catch (NSException * e) { }
+		NS_HANDLER
+		NS_ENDHANDLER
+	
 	}
 	
 	// Grant privileges
-	[self _grantPrivileges:grantPrivileges onDatabase:dbName forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] host:[schemaPriv valueForKeyPath:@"user.host"]];
+	[self _grantPrivileges:grantPrivileges 
+				onDatabase:dbName 
+				   forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
+					  host:[schemaPriv valueForKeyPath:@"user.host"]];
 	
 	// Revoke privileges
-	[self _revokePrivileges:revokePrivileges onDatabase:dbName forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] host:[schemaPriv valueForKeyPath:@"user.host"]];
+	[self _revokePrivileges:revokePrivileges 
+				 onDatabase:dbName 
+					forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
+					   host:[schemaPriv valueForKeyPath:@"user.host"]];
 	
 	return YES;
 }
@@ -1229,6 +1236,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
         [self.mySqlConnection queryString:updateResourcesStatement];
         [self _checkAndDisplayMySqlError];
     }
+	
 	return YES;
 }
 
@@ -1250,26 +1258,32 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			
 			// Check the value of the priv and assign to grant or revoke query as appropriate; do this
 			// in a try/catch check to avoid exceptions for unhandled privs
-			@try {
+			NS_DURING
 				if ([[user valueForKey:key] boolValue] == YES) {
 					[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				} 
 				else {
 					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 				}
-			}
-			@catch (NSException * e) {
-			}
+			NS_HANDLER
+			NS_ENDHANDLER
 		}
 		
 		// Grant privileges
-		[self _grantPrivileges:grantPrivileges onDatabase:nil forUser:[[user parent] valueForKey:@"user"] host:[user valueForKey:@"host"]];
+		[self _grantPrivileges:grantPrivileges 
+					onDatabase:nil 
+					   forUser:[[user parent] valueForKey:@"user"] 
+						  host:[user valueForKey:@"host"]];
 
 		// Revoke privileges
-		[self _revokePrivileges:revokePrivileges onDatabase:nil forUser:[[user parent] valueForKey:@"user"] host:[user valueForKey:@"host"]];
+		[self _revokePrivileges:revokePrivileges 
+					 onDatabase:nil 
+						forUser:[[user parent] valueForKey:@"user"] 
+						   host:[user valueForKey:@"host"]];
 	}
 	
-	for (NSManagedObject *priv in [user valueForKey:@"schema_privileges"]) {
+	for (NSManagedObject *priv in [user valueForKey:@"schema_privileges"]) 
+	{
 		[self grantDbPrivilegesWithPrivilege:priv];
 	}
 	
@@ -1401,7 +1415,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	if ([self.mySqlConnection queryErrored]) {
 		if (isSaving) {
 			[errorsString appendFormat:@"%@\n", [self.mySqlConnection lastErrorMessage]];
-		} else {
+		} 
+		else {
 			SPBeginAlertSheet(NSLocalizedString(@"An error occurred", @"mysql error occurred message"), 
 							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection lastErrorMessage]]);
@@ -1573,6 +1588,60 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	else if ([notification object] == availableTableView) {
 		[addSchemaPrivButton setEnabled:([[availableController selectedObjects] count] > 0)];
 	}		
+}
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Renames a user account using the supplied parameters.
+ *
+ * @param originalUser The user's original user name
+ * @param originalHost The user's original host
+ * @param newUser      The user's new user name
+ * @param newHost      The user's new host
+ */
+- (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost
+{
+	NSString *renameQuery;
+	
+	if ([serverSupport supportsRenameUser]) {
+		renameQuery = [NSString stringWithFormat:@"RENAME USER %@@%@ TO %@@%@",
+					   [originalUser tickQuotedString],
+					   [originalHost tickQuotedString],
+					   [newUser tickQuotedString],
+					   [newHost tickQuotedString]];
+	}
+	else {
+		// mysql.user is keyed on user and host so there should only ever be one result, 
+		// but double check before we do the update.
+		QKQuery *query = [QKQuery selectQueryFromTable:@"user"];
+		
+		[query setDatabase:SPMySQLDatabase];
+		[query addField:@"COUNT(1)"];
+		
+		[query addParameter:@"User" operator:QKEqualityOperator value:originalUser];
+		[query addParameter:@"Host" operator:QKEqualityOperator value:originalHost];
+		
+		SPMySQLResult *result = [mySqlConnection queryString:[query query]];
+		
+		if ([[[result getRowAsArray] objectAtIndex:0] integerValue] == 1) {
+			QKQuery *updateQuery = [QKQuery queryTable:@"user"];
+			
+			[updateQuery setQueryType:QKUpdateQuery];
+			[updateQuery setDatabase:SPMySQLDatabase];
+			
+			[updateQuery addFieldToUpdate:@"User" toValue:newUser];
+			[updateQuery addFieldToUpdate:@"Host" toValue:newHost];
+			
+			[updateQuery addParameter:@"User" operator:QKEqualityOperator value:originalUser];
+			[updateQuery addParameter:@"Host" operator:QKEqualityOperator value:originalHost];
+			
+			renameQuery = [updateQuery query];
+		}
+	}
+	
+	[mySqlConnection queryString:renameQuery];
 }
 
 #pragma mark -

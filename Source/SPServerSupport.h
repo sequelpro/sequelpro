@@ -59,6 +59,7 @@
 	
 	// User account related
 	BOOL supportsCreateUser;
+	BOOL supportsRenameUser;
 	BOOL supportsDropUser;
 	BOOL supportsFullDropUser;
 	BOOL supportsUserMaxVars;
@@ -151,6 +152,11 @@
  * @property supportsCreateUser Indicates if the server supports the CREATE USER statement
  */
 @property (readonly) BOOL supportsCreateUser;
+
+/**
+ * @property supportsRenameUser Indicates if the server supports the RENAME USER statement
+ */
+@property (readonly) BOOL supportsRenameUser;
 
 /**
  * @property supportsDropUser Indicates if the server supports the DROP USER statement
