@@ -181,7 +181,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	} 
 	// If that fails, base privilege support on the mysql.users columns
 	else {
-		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];		
+		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];
+		
 		[result setReturnDataAsStrings:YES];
 		
 		while ((privRow = [result getRowAsArray])) 
@@ -451,119 +452,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 }
 
 #pragma mark -
-#pragma mark OutlineView Delegate Methods
-
-- (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell*)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
-	if ([cell isKindOfClass:[ImageAndTextCell class]])
-	{
-		// Determines which Image to display depending on parent or child object
-		if ([(NSManagedObject *)[item  representedObject] parent] != nil)
-		{
-			NSImage *image1 = [[NSImage imageNamed:NSImageNameNetwork] retain];
-			[image1 setScalesWhenResized:YES];
-			[image1 setSize:(NSSize){16, 16}];
-			[(ImageAndTextCell*)cell setImage:image1];
-			[image1 release];
-			
-		} 
-		else {
-			NSImage *image1 = [[NSImage imageNamed:NSImageNameUser] retain];
-			[image1 setScalesWhenResized:YES];
-			[image1 setSize:(NSSize){16, 16}];
-			[(ImageAndTextCell*)cell setImage:image1];
-			[image1 release];
-		}
-	}
-}
-
-- (BOOL)outlineView:(NSOutlineView *)olv isGroupItem:(id)item
-{
-	return NO;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)olv shouldSelectItem:(id)item
-{
-	return YES;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)olv shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
-{
-	return ([[[item representedObject] children] count] == 0);
-}
-
-- (void)outlineViewSelectionDidChange:(NSNotification *)notification
-{
-	if ([[treeController selectedObjects] count] == 0) return;
-	
-	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-	
-	if ([selectedObject parent] == nil && !([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"])) {
-		[tabView selectTabViewItemWithIdentifier:@"General"];
-	}
-	else {
-		if ([selectedObject parent] != nil && [[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
-			[tabView selectTabViewItemWithIdentifier:@"Global Privileges"];
-		}
-	}
-	
-	if ([selectedObject parent] != nil && [selectedObject host] == nil)
-	{
-		[selectedObject setValue:@"%" forKey:@"host"];
-		[outlineView reloadItem:selectedObject];
-	}
-	
-	[schemasTableView deselectAll:nil];
-	[grantedTableView deselectAll:nil];
-	[availableTableView deselectAll:nil];
-}
-
-- (BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)outlineView
-{
-	if ([[treeController selectedObjects] count] > 0)
-	{
-		id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-		// Check parents
-		if ([selectedObject valueForKey:@"parent"] == nil)
-		{
-			NSString *name = [selectedObject valueForKey:@"user"];
-			NSArray *results = [self _fetchUserWithUserName:name];
-			if ([results count] > 1)
-			{
-				NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate User"
-												 defaultButton:NSLocalizedString(@"OK", @"OK button")
-											   alternateButton:nil
-												   otherButton:nil
-									 informativeTextWithFormat:@"A user with that name already exists"];
-				[alert runModal];
-				return NO;
-			}
-		}
-		else
-		{
-			NSArray *children = [selectedObject valueForKeyPath:@"parent.children"];
-			NSString *host = [selectedObject valueForKey:@"host"];
-			for (NSManagedObject *child in children)
-			{
-				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
-				{
-					NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate Host"
-													 defaultButton:NSLocalizedString(@"OK", @"OK button")
-												   alternateButton:nil
-													   otherButton:nil
-										 informativeTextWithFormat:@"A user with that host already exists"];
-					[alert runModal];
-					return NO;
-				}
-			}
-		}
-		
-	}
-	
-	return YES;
-}
-
-#pragma mark -
 #pragma mark General IBAction methods
 
 /**
@@ -684,14 +572,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)removeUser:(id)sender
 {
-    NSString *username = [[[treeController selectedObjects] objectAtIndex:0]
-                          valueForKey:@"originaluser"];
-    NSArray *children = [[[treeController selectedObjects] objectAtIndex:0] 
-                         valueForKey:@"children"];
+    NSString *username = [[[treeController selectedObjects] objectAtIndex:0] valueForKey:@"originaluser"];
+    NSArray *children = [[[treeController selectedObjects] objectAtIndex:0] valueForKey:@"children"];
 
 	// On all the children - host entries - set the username to be deleted,
 	// for later query contruction.
-    for(NSManagedObject *child in children)
+    for (NSManagedObject *child in children)
     {
         [child setPrimitiveValue:username forKey:@"user"];
     }
@@ -739,6 +625,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
     // the drop sql command
     NSManagedObject *child = [[treeController selectedObjects] objectAtIndex:0];
     NSManagedObject *parent = [child valueForKey:@"parent"];
+	
     [child setPrimitiveValue:[[child valueForKey:@"parent"] valueForKey:@"user"] forKey:@"user"];
 	
 	[treeController remove:sender];
@@ -873,8 +760,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		priv = [selectedPrivs objectAtIndex:0];
 	} 
 	else {
-		priv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
-											 inManagedObjectContext:[self managedObjectContext]];
+		priv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges" inManagedObjectContext:[self managedObjectContext]];
+		
 		[priv setValue:selectedDb forKey:@"db"];
 		isNew = YES;
 	}
@@ -1426,168 +1313,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	}
 	
 	return YES;
-}
-
-#pragma mark -
-#pragma mark Tab View Delegate methods
-
-- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-    BOOL retVal = YES;
-    // If there aren't any selected objects, then can't change tab view item
-    if ([[treeController selectedObjects] count] == 0) return NO;
-    
-    // Currently selected object in tree
-    id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-    
-    // If we are selecting a tab view that requires there be a child,
-    // make sure there is a child to select.  If not, don't allow it.
-    if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
-        || [[tabViewItem identifier] isEqualToString:@"Resources"]
-        || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-        
-		id parent = [selectedObject parent];
-        
-		if (parent) {
-            retVal = ([[parent children] count] > 0);
-        } 
-		else {
-            retVal = ([[selectedObject children] count] > 0);
-        }
-        
-		if (retVal == NO) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
-                                             defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
-                                           alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-                                               otherButton:nil
-                                 informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
-            
-			NSInteger ret = [alert runModal];
-            
-			if (ret == NSAlertDefaultReturn) {
-                [self addHost:nil];
-            }
-        }
-		
-		// If this is the resources tab, enable or disable the controls based on the server's support for them
-		if ([[tabViewItem identifier] isEqualToString:@"Resources"]) {
-			
-			BOOL serverSupportsUserMaxVars = [serverSupport supportsUserMaxVars];
-			
-			// Disable the fields according to the version
-			[maxUpdatesTextField setEnabled:serverSupportsUserMaxVars];
-			[maxConnectionsTextField setEnabled:serverSupportsUserMaxVars];
-			[maxQuestionsTextField setEnabled:serverSupportsUserMaxVars];
-		}
-    }
-	
-    return retVal;
-}
-
-- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[treeController selectedObjects] count] == 0) return;
-	
-	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
-	
-	// If the selected tab is General and a child is selected, select the
-	// parent (user info)
-	if ([[tabViewItem identifier] isEqualToString:@"General"]) {
-		if ([selectedObject parent] != nil) {
-			[self _selectParentFromSelection];
-		}
-	} 
-	else if ([[tabViewItem identifier] isEqualToString:@"Global Privileges"] 
-			   || [[tabViewItem identifier] isEqualToString:@"Resources"]
-			   || [[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-		// if the tab is either Global Privs or Resources and we have a user 
-		// selected, then open tree and select first child node.
-		[self _selectFirstChildOfParentNode];
-	}
-}
-
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[tabViewItem identifier] isEqualToString:@"Schema Privileges"]) {
-		[self _initializeSchemaPrivs];
-	}
-}
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 620);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 120);
-}
-
-#pragma mark -
-#pragma mark TableView Delegate Methods
-
-- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	if ([notification object] == schemasTableView) {
-		[grantedSchemaPrivs removeAllObjects];
-		[grantedTableView reloadData];
-		[self _initializeAvailablePrivs];
-		
-		if ([[treeController selectedObjects] count] > 0 && [[schemaController selectedObjects] count] > 0) {
-			NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
-			
-			// Check to see if the user host node was selected
-			if ([user valueForKey:@"host"]) {
-				NSString *selectedSchema = [[schemaController selectedObjects] objectAtIndex:0];
-				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
-                                                      schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
-                                                        host:[user valueForKey:@"host"]];
-				
-				if ([results count] > 0) {
-					NSManagedObject *priv = [results objectAtIndex:0];
-					
-					for (NSPropertyDescription *property in [priv entity])
-					{
-						if ([[property name] hasSuffix:@"_priv"] && [[priv valueForKey:[property name]] boolValue])
-						{
-							NSString *displayName = [[[property name] stringByReplacingOccurrencesOfString:@"_priv"
-																							   withString:@""] replaceUnderscoreWithSpace];
-							NSDictionary *newDict = [NSDictionary dictionaryWithObjectsAndKeys:displayName, @"displayName", [property name], @"name", nil];
-							[grantedController addObject:newDict];
-							
-							// Remove items from available so they can't be added twice.
-							NSPredicate *predicate = [NSPredicate predicateWithFormat:@"displayName like[cd] %@", displayName];
-							NSArray *previousObjects = [[availableController arrangedObjects] filteredArrayUsingPredicate:predicate];
-							for (NSDictionary *dict in previousObjects)
-							{
-								[availableController removeObject:dict];
-							}
-						}
-					}
-				}
-				
-                [availableTableView setEnabled:YES];
-			}
-		} 
-		else {
-            [availableTableView setEnabled:NO];
-        }
-	}
-	else if ([notification object] == grantedTableView) {
-		[removeSchemaPrivButton setEnabled:([[grantedController selectedObjects] count] > 0)];
-	}
-	else if ([notification object] == availableTableView) {
-		[addSchemaPrivButton setEnabled:([[availableController selectedObjects] count] > 0)];
-	}		
 }
 
 #pragma mark -

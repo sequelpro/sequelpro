@@ -41,6 +41,7 @@
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */; };
 		17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17386E0A15192526002DC206 /* SPTableContentDataSource.m */; };
 		17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17386E0D1519257E002DC206 /* SPTableContentDelegate.m */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
@@ -615,6 +616,8 @@
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		173284E81088FEDE0062E892 /* SPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConstants.h; sourceTree = "<group>"; };
 		173284E91088FEDE0062E892 /* SPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConstants.m; sourceTree = "<group>"; };
+		17381854151FB34E0078FFE2 /* SPUserManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManagerDelegate.h; sourceTree = "<group>"; };
+		17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManagerDelegate.m; sourceTree = "<group>"; };
 		17386E0915192526002DC206 /* SPTableContentDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentDataSource.h; sourceTree = "<group>"; };
 		17386E0A15192526002DC206 /* SPTableContentDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContentDataSource.m; sourceTree = "<group>"; };
 		17386E0C1519257E002DC206 /* SPTableContentDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentDelegate.h; sourceTree = "<group>"; };
@@ -1452,6 +1455,17 @@
 			name = "Bundle Support";
 			sourceTree = "<group>";
 		};
+		17381853151FB29C0078FFE2 /* User Manager */ = {
+			isa = PBXGroup;
+			children = (
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
+				17381854151FB34E0078FFE2 /* SPUserManagerDelegate.h */,
+				17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */,
+			);
+			name = "User Manager";
+			sourceTree = "<group>";
+		};
 		17386E08151924E9002DC206 /* Table Content */ = {
 			isa = PBXGroup;
 			children = (
@@ -1568,14 +1582,13 @@
 				1792C13610AD75C800ABE758 /* SPServerVariablesController.m */,
 				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
-				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
-				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
 				17E641600EF01F15001BC333 /* SPTablesList.h */,
 				17E641610EF01F15001BC333 /* SPTablesList.m */,
 				BC27779E11514B940034DF6A /* SPNavigatorController.h */,
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
+				17381853151FB29C0078FFE2 /* User Manager */,
 				1713C73D140D88D400CFD461 /* Query Controller */,
 			);
 			name = "Subview Controllers";
@@ -3223,6 +3236,7 @@
 				584D899D15162CBE00F24774 /* SPDataBase64EncodingAdditions.m in Sources */,
 				17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */,
 				17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */,
+				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4078,6 +4092,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(CONFIGURATION_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Frameworks\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4299,6 +4314,7 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(CONFIGURATION_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Frameworks\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4328,6 +4344,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(CONFIGURATION_BUILD_DIR)/$(CONTENTS_FOLDER_PATH)/Frameworks\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);

@@ -31,8 +31,6 @@
     NSManagedObjectContext *managedObjectContext;
 	NSDictionary *privColumnToGrantMap;
 	
-	BOOL isInitializing;
-	
 	SPMySQLConnection *mySqlConnection;
 	SPServerSupport *serverSupport;
 	
@@ -70,6 +68,7 @@
 	NSSortDescriptor *treeSortDescriptor;
 
 	BOOL isSaving;
+	BOOL isInitializing;
 	NSMutableString *errorsString;
 }
 
