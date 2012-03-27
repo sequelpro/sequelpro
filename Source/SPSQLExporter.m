@@ -378,7 +378,8 @@
 						
 						id object = NSArrayObjectAtIndex(row, t);
 												
-						// Add NULL values directly to the output row
+						// Add NULL values directly to the output row; use a pointer comparison to the singleton
+						// instance for speed.
 						if (object == [NSNull null]) {
 							[sqlString appendString:@"NULL"];
 						} 
@@ -494,7 +495,7 @@
 			}
 		}
 			
-		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */;", [tableName tickQuotedString]]];
+		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW TRIGGERS WHERE `Table` = %@ */", [tableName tickQuotedString]]];
 		
 		[queryResult setReturnDataAsStrings:YES];
 		
@@ -590,7 +591,7 @@
 		if ([items count] == 0) continue;
 		
 		// Retrieve the definitions
-		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */;", procedureType,
+		queryResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW %@ STATUS WHERE `Db` = %@ */", procedureType,
 											   [[self sqlDatabaseName] tickQuotedString]]];
 		
 		[queryResult setReturnDataAsStrings:YES];
@@ -665,7 +666,7 @@
 											[NSArrayObjectAtIndex(procedureDefiner, 1) backtickQuotedString]
 											];
 				
-				SPMySQLResult *createProcedureResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */;;", procedureType,
+				SPMySQLResult *createProcedureResult = [connection queryString:[NSString stringWithFormat:@"/*!50003 SHOW CREATE %@ %@ */", procedureType,
 																			[procedureName backtickQuotedString]]];
 				[createProcedureResult setReturnDataAsStrings:YES];
 				if ([connection queryErrored]) {
@@ -831,7 +832,8 @@
 		// Provide the field default if appropriate
 		if ([column objectForKey:@"default"]) {
 			
-			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those
+			// Some MySQL server versions show a default of NULL for NOT NULL columns - don't export those.
+			// Check against the NSNull singleton instance for speed.
 			if ([column objectForKey:@"default"] == [NSNull null]) {
 				if ([[column objectForKey:@"null"] integerValue]) {
 					[fieldString appendString:@" DEFAULT NULL"];
