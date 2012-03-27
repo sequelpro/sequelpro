@@ -30,7 +30,7 @@
 #import "SPExportFile.h"
 #import "SPTableData.h"
 #import "RegexKitLite.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPSQLExporter ()
 

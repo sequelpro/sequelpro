@@ -28,7 +28,7 @@
 #import "SPQueryController.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
-#import "SPMySQLConstants.h"
+#import <SPMySQL/SPMySQLConstants.h>
 
 @implementation SPDatabaseDocument (SPConnectionDelegate)
 

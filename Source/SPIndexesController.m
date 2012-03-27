@@ -28,11 +28,7 @@
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableView.h"

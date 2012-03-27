@@ -37,7 +37,7 @@
 #import "SPGeometryDataView.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #import "SPBundleHTMLOutputController.h"
 #import "SPCopyTable.h"
 #import "SPAlertSheets.h"

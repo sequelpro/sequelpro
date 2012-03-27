@@ -30,7 +30,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 // Constants
 static const NSString *SPTriggerName       = @"TriggerName";

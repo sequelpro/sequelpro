@@ -25,11 +25,7 @@
 
 #import "SPConnectionController.h"
 #import "SPDatabaseDocument.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"

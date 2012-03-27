@@ -30,11 +30,7 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 @implementation SPTableStructure (SPTableStructureDelegate)
 

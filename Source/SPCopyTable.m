@@ -36,11 +36,7 @@
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
 #import "SPTablesList.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;

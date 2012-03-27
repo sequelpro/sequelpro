@@ -36,11 +36,7 @@
 #import "SPBundleHTMLOutputController.h"
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 #import "SPDatabaseStructure.h"
 
 #pragma mark -

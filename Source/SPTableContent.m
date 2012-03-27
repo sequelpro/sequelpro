@@ -38,11 +38,9 @@
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
 #ifndef SP_REFACTOR
-#import "SPMySQL.h"
 #import "QLPreviewPanel.h"
-#else
-#import <SPMySQL/SPMySQL.h>
 #endif
+#import <SPMySQL/SPMySQL.h>
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
 #import "RegexKitLite.h"

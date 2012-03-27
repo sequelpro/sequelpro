@@ -31,11 +31,7 @@
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 

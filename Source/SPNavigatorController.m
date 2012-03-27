@@ -33,7 +33,7 @@
 #import "SPTooltip.h"
 #import "SPAppController.h"
 #import "SPDatabaseViewController.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
 
 #import <objc/message.h>

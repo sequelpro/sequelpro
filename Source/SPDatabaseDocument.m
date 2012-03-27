@@ -35,11 +35,7 @@ enum {
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"

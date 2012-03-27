@@ -39,8 +39,8 @@
 #import "SPFieldMapperController.h"
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
-#import "SPMySQL.h"
 
+#import <SPMySQL/SPMySQL.h>
 #import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")

@@ -26,11 +26,9 @@
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
 #ifndef SP_REFACTOR /* headers */
-#import "SPMySQL.h"
 #import "SPGrowlController.h"
-#else
-#import <SPMySQL/SPMySQL.h>
 #endif
+#import <SPMySQL/SPMySQL.h>
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"

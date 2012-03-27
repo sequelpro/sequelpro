@@ -23,9 +23,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+
+#import <SPMySQL/SPMySQLConnectionDelegate.h>
+
 @class SPMySQLConnection, SPDatabaseDocument;
 
-@interface SPDatabaseStructure : NSObject {
+@interface SPDatabaseStructure : NSObject <SPMySQLConnectionDelegate> {
 	SPDatabaseDocument *delegate;
 	SPMySQLConnection *mySQLConnection;
 

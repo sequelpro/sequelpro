@@ -36,11 +36,7 @@
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 @interface SPTableStructure (PrivateAPI)
 

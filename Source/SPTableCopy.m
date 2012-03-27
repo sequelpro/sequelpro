@@ -24,11 +24,7 @@
 
 #import "SPDBActionCommons.h"
 #import "SPTableCopy.h"
-#ifndef SP_REFACTOR
-#import "SPMySQL.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 @implementation SPTableCopy
 

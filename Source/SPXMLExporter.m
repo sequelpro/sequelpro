@@ -27,7 +27,7 @@
 #import "SPExportFile.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPXMLExporter
 

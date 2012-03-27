@@ -35,11 +35,7 @@
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
-#ifndef SP_REFACTOR
-#import "SPMySQLGeometryData.h"
-#else
 #import <SPMySQL/SPMySQL.h>
-#endif
 
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
 

@@ -31,12 +31,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContentDataSource.h"
-#import "SPMySQLGeometryData.h"
 #import "SPDataStorage.h"
-#import "SPMySQL.h"
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
 
+#import <SPMySQL/SPMySQL.h>
 #import <pthread.h>
 
 @implementation SPTableContent (SPTableContentDataSource)

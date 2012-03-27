@@ -32,11 +32,9 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
-#ifdef SP_REFACTOR /* headers */
 #import <SPMySQL/SPMySQL.h>
+#ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
-#else
-#import "SPMySQL.h"
 #endif
 
 @interface SPDatabaseDocument (SPDatabaseViewControllerPrivateAPI)
