@@ -37,9 +37,11 @@
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
-#import "SPMySQL.h"
 #ifndef SP_REFACTOR
+#import "SPMySQL.h"
 #import "QLPreviewPanel.h"
+#else
+#import <SPMySQL/SPMySQL.h>
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
@@ -2009,10 +2011,15 @@
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"];
+#endif
 
 	[alert setShowsSuppressionButton:NO];
 	[[alert suppressionButton] setState:NSOffState];
@@ -2684,7 +2691,6 @@
 	{
 		[[contentFilters objectForKey:compareType] addObjectsFromArray:[[prefs objectForKey:SPContentFilters] objectForKey:compareType]];
 	}
-#endif
 
 	// Load doc-based user-defined content filters
 	if([[SPQueryController sharedQueryController] contentFilterForFileURL:[tableDocumentInstance fileURL]]) {
@@ -2692,6 +2698,7 @@
 		if([filters objectForKey:compareType])
 			[[contentFilters objectForKey:compareType] addObjectsFromArray:[filters objectForKey:compareType]];
 	}
+#endif
 
 	// Rebuild operator popup menu
 	NSUInteger i = 0;

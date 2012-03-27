@@ -30,7 +30,11 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"
+#ifndef SP_REFACTOR
 #import "SPMySQL.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 #include <pthread.h>
 
 @interface SPTableData (PrivateAPI)

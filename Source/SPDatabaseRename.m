@@ -26,7 +26,11 @@
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseInfo.h"
+#ifndef SP_REFACTOR
 #import "SPMySQL.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 
 @implementation SPDatabaseRename
 

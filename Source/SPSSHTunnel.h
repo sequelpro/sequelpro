@@ -23,8 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#ifndef SP_REFACTOR
 #import "SPMySQLConnectionProxy.h"
 #import "SPMySQLConstants.h"
+#else
+#import <SPMySQL/SPMySQLConnectionProxy.h>
+#import <SPMySQL/SPMySQLConstants.h>
+#endif
 
 @interface SPSSHTunnel : NSObject <SPMySQLConnectionProxy>
 {

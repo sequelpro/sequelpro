@@ -247,6 +247,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 @property (assign) id databaseNameField;
 @property (assign) id databaseEncodingButton;
 @property (assign) id addDatabaseButton;
+@property (assign) id chooseDatabaseButton;
 
 @property (assign) id databaseRenameNameField;
 @property (assign) id renameDatabaseButton;
@@ -293,8 +294,8 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)refreshTables:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)copyDatabase:(id)sender;
 #endif
 - (IBAction)renameDatabase:(id)sender;

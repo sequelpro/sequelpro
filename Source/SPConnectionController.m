@@ -25,7 +25,11 @@
 
 #import "SPConnectionController.h"
 #import "SPDatabaseDocument.h"
+#ifndef SP_REFACTOR
 #import "SPMySQL.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
@@ -525,7 +529,14 @@
 	// Only display the connection error message if there is a window visible and the connection attempt
 	// wasn't cancelled even though it failed.
 	if ([[tableDocument parentWindow] isVisible] && (!mySQLConnectionCancelled)) {
+#ifdef SP_REFACTOR
+		if ( errorDetail )
+			NSLog(@"%@", errorDetail);
+			
+		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+#else
 		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [tableDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
+#endif
 	}
 }
 
@@ -605,14 +616,13 @@
 {
 #ifndef SP_REFACTOR /* favorites */
 	[favoritesTable deselectAll:self];
-#endif
+
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	NSArray *permittedFileTypes = nil;
 	keySelectionPanel = [NSOpenPanel openPanel];
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 
-#ifndef SP_REFACTOR /* !!! ssh keys */
 	// Switch details by sender.
 	// First, SSH keys:
 	if (sender == sshSSHKeyButton) {
@@ -659,7 +669,6 @@
 		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
 		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
-#endif
 
 	[keySelectionPanel beginSheetForDirectory:directoryPath
 										 file:filePath
@@ -668,6 +677,7 @@
 								modalDelegate:self
 							   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
 								  contextInfo:sender];
+#endif
 }
 
 /**
@@ -879,14 +889,23 @@
 {
 	if ([self type] != SPSocketConnection && [[self host] isEqualToString:@"localhost"]) {
 		SPBeginAlertSheet(NSLocalizedString(@"You have entered 'localhost' for a non-socket connection", @"title of error when using 'localhost' for a network connection"),
+#ifndef SP_REFACTOR
 							NSLocalizedString(@"Use 127.0.0.1", @"Use 127.0.0.1 button"),			// Main button
 							NSLocalizedString(@"Connect via socket", @"Connect via socket button"),	// Alternate button
+#else
+							NSLocalizedString(@"OK", @"OK"),			// Main button
+							nil,	// Alternate button
+#endif
 							nil,																	// Other button
 							[tableDocument parentWindow],											// Window to attach to
 							self,																	// Modal delegate
 							@selector(localhostErrorSheetDidEnd:returnCode:contextInfo:),			// Did end selector
 							nil,	// Contextual info for selectors
+#ifndef SP_REFACTOR
 							NSLocalizedString(@"To MySQL, 'localhost' is a special host and means that a socket connection should be used.\n\nDid you mean to use a socket connection, or to connect to the local machine via a port?  If you meant to connect via a port, '127.0.0.1' should be used instead of 'localhost'.", @"message of error when using 'localhost' for a network connection"));
+#else
+							NSLocalizedString(@"In MySQL, \"localhost\" is a special host and implies that a socket connection should be used.\n\nTo make a socket connection to a local server, choose \"MySQL Socket\" from the \"Connect to\" pop-up.\n\nTo connect via port instead, please change the \"MySQL Server\" field from \"localhost\" to \"127.0.0.1\".", @"message of error when using 'localhost' for a network connection"));
+#endif
 		return NO;
 	}
 
@@ -898,12 +917,14 @@
  */
 - (void)localhostErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
+#ifndef SP_REFACTOR
 	if (returnCode == NSAlertAlternateReturn) {
 		[self setType:SPSocketConnection];
 		[self setHost:@""];
 	} else {
 		[self setHost:@"127.0.0.1"];
 	}
+#endif
 }
 
 #ifndef SP_REFACTOR
@@ -1280,6 +1301,7 @@
 
 	[favoritesNode release];
 }
+#endif
 
 /**
  * Restores the connection interface to its original state.
@@ -1296,6 +1318,7 @@
 	[tableDocument setIsProcessing:NO];
 
 	// Reset the UI
+#ifndef SP_REFACTOR
 	[addToFavoritesButton setHidden:NO];
 	[addToFavoritesButton display];
 	[helpButton setHidden:NO];
@@ -1311,13 +1334,15 @@
 	// Re-enable favorites table view
 	[favoritesTable setEnabled:YES];
 	[favoritesTable display];
+#endif
 
 	mySQLConnectionCancelled = NO;
 
 	// Revert the connect button back to its original selector
+#ifndef SP_REFACTOR
 	[connectButton setAction:@selector(initiateConnection:)];
-}
 #endif
+}
 
 /**
  * Called on the main thread once the MySQL connection is established on the background thread. Either the

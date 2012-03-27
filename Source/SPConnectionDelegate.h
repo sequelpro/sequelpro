@@ -25,7 +25,11 @@
 
 #import "SPDatabaseDocument.h"
 
+#ifndef SP_REFACTOR
 #import "SPMySQLConnectionDelegate.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 
 @interface SPDatabaseDocument (SPConnectionDelegate) <SPMySQLConnectionDelegate>
 

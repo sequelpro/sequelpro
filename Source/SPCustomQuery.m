@@ -25,9 +25,11 @@
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
-#import "SPMySQL.h"
 #ifndef SP_REFACTOR /* headers */
+#import "SPMySQL.h"
 #import "SPGrowlController.h"
+#else
+#import <SPMySQL/SPMySQL.h>
 #endif
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
@@ -861,7 +863,9 @@
 							];
 		}
 	}
+#ifndef SP_REFACTOR
 	[[affectedRowsText onMainThread] setStringValue:statusString];
+#endif
 
 	// Restore automatic query retries
 	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
@@ -1292,9 +1296,11 @@
 	// If errors occur, display them
 	if ( [mySQLConnection lastQueryWasCancelled] || ([errorsString length] && !queryIsTableSorter)) {
 
+#ifndef SP_REFACTOR
 		// set the error text
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 		[[errorTextScrollView verticalScroller] setFloatValue:1.0f];
+#endif
 
 		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
 		// by capturing the last number of the error string
@@ -1368,6 +1374,9 @@
 		[queryInfoButton setState:NSOffState];
 		[self toggleQueryInfoPaneCollapse:queryInfoButton];
 	}
+#else
+	if ( [errorsString length] > 0 )
+		NSRunAlertPanel(LOCAL(@"Query Error"), @"%@", LOCAL(@"OK"), nil, nil, errorsString);
 #endif
 }
 
@@ -1530,11 +1539,11 @@
 	[autouppercaseKeywordsMenuItem setState:(YES?NSOnState:NSOffState)];
 #endif
 
+#ifndef SP_REFACTOR
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
 
 	// Populate query favorites
-#ifndef SP_REFACTOR
 	[self queryFavoritesHaveBeenUpdated:nil];
 #endif
 

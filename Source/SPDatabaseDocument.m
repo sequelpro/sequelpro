@@ -35,7 +35,11 @@ enum {
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 
+#ifndef SP_REFACTOR
 #import "SPMySQL.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
@@ -90,7 +94,7 @@ enum {
 
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
-#import "NSNotificationAdditions.h"
+#import "NSNotificationCenterThreadingAdditions.h"
 #import "SPCustomQuery.h"
 #import "SPDatabaseRename.h"
 #endif
@@ -139,6 +143,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 @synthesize databaseRenameSheet;
 @synthesize databaseRenameNameField;
 @synthesize renameDatabaseButton;
+@synthesize chooseDatabaseButton;
 #endif
 
 - (id)init
@@ -815,17 +820,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"]; // Esc = Cancel
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"]; // Return = OK
+#endif
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
 	[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
-#ifndef SP_REFACTOR
 /**
  * Refreshes the tables list by calling SPTablesList's updateTables.
  */
@@ -834,6 +843,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance updateTables:self];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Displays the database server variables sheet.
  */
@@ -913,6 +923,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
 		}
+#ifdef SP_REFACTOR
+		else {
+			// reset chooseDatabaseButton
+			if([[self database] length])
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			else
+				[chooseDatabaseButton selectItemAtIndex:0];
+		}
+#endif
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
@@ -941,6 +960,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];		
 		}
+#ifdef SP_REFACTOR
+		else {
+			// reset chooseDatabaseButton
+			if([[self database] length])
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			else
+				[chooseDatabaseButton selectItemAtIndex:0];
+		}
+#endif
 	}
 #ifndef SP_REFACTOR
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
@@ -5911,7 +5939,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
 			|| ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
-		if ( ![mySQLConnection selectDB:targetDatabaseName] )
+		if ( ![mySQLConnection selectDatabase:targetDatabaseName] )
 #endif
 		{
 

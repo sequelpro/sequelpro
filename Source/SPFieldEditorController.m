@@ -35,7 +35,11 @@
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
+#ifndef SP_REFACTOR
 #import "SPMySQLGeometryData.h"
+#else
+#import <SPMySQL/SPMySQL.h>
+#endif
 
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
 
@@ -43,6 +47,10 @@
 
 @end
 
+#ifdef SP_REFACTOR
+/* Suppress deprecation warning for beginSheetForDirectory: until Sequel Pro team can migrate */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 @implementation SPFieldEditorController
 
@@ -1135,7 +1143,7 @@
 	NSUInteger bitValue = 0x1;
 
 	for(i=0; i<maxBit; i++) {
-		if([[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
+		if([(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
 			intValue += bitValue;
 			[bitString replaceCharactersInRange:NSMakeRange((NSUInteger)maxTextLength-i-1, 1) withString:@"1"];
 		}
@@ -1175,31 +1183,31 @@
 		break;
 		case 2: // negate
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
 		break;
 		case 3: // shift left
 		for(i=maxBit-1; i>0; i--) {
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:NSOffState];
 		break;
 		case 4: // shift right
 		for(i=0; i<maxBit-1; i++) {
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
 		}
 		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:NSOffState];
 		break;
 		case 5: // rotate left
-		aBit = [[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] state];
+		aBit = [(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] state];
 		for(i=maxBit-1; i>0; i--) {
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:aBit];
 		break;
 		case 6: // rotate right
-		aBit = [[self valueForKeyPath:@"bitSheetBitButton0"] state];
+		aBit = [(NSButton*)[self valueForKeyPath:@"bitSheetBitButton0"] state];
 		for(i=0; i<maxBit-1; i++) {
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
 		}
 		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:aBit];
 		break;
@@ -1225,7 +1233,7 @@
 	NSUInteger i;
 	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
-	if([sender state] == NSOnState) {
+	if([(NSButton*)sender state] == NSOnState) {
 		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
 		[bitSheetHexTextField setEnabled:NO];

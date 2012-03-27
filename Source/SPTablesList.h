@@ -156,9 +156,11 @@
 #ifndef SP_REFACTOR /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
+#endif
 
 // Getters
 - (NSArray *)selectedTableNames;
+#ifndef SP_REFACTOR /* method decls */
 - (NSArray *)selectedTableItems;
 - (NSArray *)selectedTableTypes;
 #endif
@@ -199,16 +201,18 @@
 @property (assign) SPTableContent* tableContentInstance;
 @property (assign) id toolbarAddButton;
 @property (assign) id toolbarDeleteButton;
+@property (assign) id toolbarReloadButton;
 @property (assign) id tableSheet;
 @property (assign) id tableNameField;
 @property (assign) id tableEncodingButton;
 @property (assign) id tableTypeButton;
 @property (assign) id databaseDataInstance;
 @property (assign) id addTableButton;
-@property (assign) NSTableView* tablesListView;
+@property (assign) SPTableView* tablesListView;
 @property (assign) SQLSidebarViewController* sidebarViewController;
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)setDatabaseDocument:(SPDatabaseDocument*)val;
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 #endif
 @end
