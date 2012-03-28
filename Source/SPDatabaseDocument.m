@@ -2308,7 +2308,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
     {
         userManagerInstance = [[SPUserManager alloc] init];
 		
-        [userManagerInstance setMySqlConnection:mySQLConnection];
+        [userManagerInstance setConnection:mySQLConnection];
 		[userManagerInstance setServerSupport:serverSupport];
     }
     

@@ -31,7 +31,7 @@
     NSManagedObjectContext *managedObjectContext;
 	NSDictionary *privColumnToGrantMap;
 	
-	SPMySQLConnection *mySqlConnection;
+	SPMySQLConnection *connection;
 	SPServerSupport *serverSupport;
 	
 	IBOutlet NSOutlineView *outlineView;
@@ -72,7 +72,7 @@
 	NSMutableString *errorsString;
 }
 
-@property (nonatomic, retain) SPMySQLConnection *mySqlConnection;
+@property (nonatomic, retain) SPMySQLConnection *connection;
 @property (nonatomic, retain) SPServerSupport *serverSupport;
 @property (nonatomic, retain) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;

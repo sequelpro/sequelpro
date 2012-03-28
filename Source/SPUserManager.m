@@ -59,7 +59,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 @implementation SPUserManager
 
-@synthesize mySqlConnection;
+@synthesize connection;
 @synthesize privsSupportedByServer;
 @synthesize managedObjectContext;
 @synthesize managedObjectModel;
@@ -147,21 +147,21 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSMutableArray *usersResultArray = [NSMutableArray array];
 	
 	// Select users from the mysql.user table
-	SPMySQLResult *result = [self.mySqlConnection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
+	SPMySQLResult *result = [[self connection] queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 	[result setReturnDataAsStrings:YES];
 	[usersResultArray addObjectsFromArray:[result getAllRows]];
 
 	[self _initializeTree:usersResultArray];
 
 	// Set up the array of privs supported by this server.
-	[self.privsSupportedByServer removeAllObjects];
+	[[self privsSupportedByServer] removeAllObjects];
 	
 	result = nil;
 	
 	// Attempt to obtain user privileges if supported
 	if ([serverSupport supportsShowPrivileges]) {
 	
-		result = [self.mySqlConnection queryString:@"SHOW PRIVILEGES"];
+		result = [[self connection] queryString:@"SHOW PRIVILEGES"];
 		[result setReturnDataAsStrings:YES];
 	}
 	
@@ -176,12 +176,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
 			
-			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:privKey];
+			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:privKey];
 		}
 	} 
 	// If that fails, base privilege support on the mysql.users columns
 	else {
-		result = [self.mySqlConnection queryString:@"SHOW COLUMNS FROM mysql.user"];
+		result = [[self connection] queryString:@"SHOW COLUMNS FROM mysql.user"];
 		
 		[result setReturnDataAsStrings:YES];
 		
@@ -193,7 +193,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			
 			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
 			
-			[self.privsSupportedByServer setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
+			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
 		}
 	}
 
@@ -274,7 +274,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (void)_initializeAvailablePrivs 
 {
 	// Initialize available privileges
-	NSManagedObjectContext *moc = self.managedObjectContext;
+	NSManagedObjectContext *moc = [self managedObjectContext];
 	NSEntityDescription *privEntityDescription = [NSEntityDescription entityForName:@"Privileges" inManagedObjectContext:moc];
 	NSArray *props = [privEntityDescription attributeKeys];
 	
@@ -282,7 +282,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	for (NSString *prop in props)
 	{
-		if ([prop hasSuffix:@"_priv"] && [[self.privsSupportedByServer objectForKey:prop] boolValue]) {
+		if ([prop hasSuffix:@"_priv"] && [[[self privsSupportedByServer] objectForKey:prop] boolValue]) {
 			NSString *displayName = [[prop stringByReplacingOccurrencesOfString:@"_priv" withString:@""] replaceUnderscoreWithSpace];
 			
 			[availablePrivs addObject:[NSDictionary dictionaryWithObjectsAndKeys:displayName, @"displayName", prop, @"name", nil]];				
@@ -299,7 +299,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Initialize Databases
 	[schemas removeAllObjects];
-	[schemas addObjectsFromArray:[self.mySqlConnection databases]];
+	[schemas addObjectsFromArray:[[self connection] databases]];
 	
 	[schemaController rearrangeObjects];
 	
@@ -360,7 +360,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSString *queryString = [NSString stringWithFormat:@"SELECT * FROM mysql.db WHERE user = %@ AND host = %@", 
 							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
 	
-	SPMySQLResult *queryResults = [self.mySqlConnection queryString:queryString];
+	SPMySQLResult *queryResults = [[self connection] queryString:queryString];
 	[queryResults setReturnDataAsStrings:YES];
 	
 	for (NSDictionary *rowDict in queryResults) 
@@ -489,7 +489,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	if (error != nil) [errorsString appendString:[error localizedDescription]];
 
-	[self.mySqlConnection queryString:@"FLUSH PRIVILEGES"];
+	[[self connection] queryString:@"FLUSH PRIVILEGES"];
 
 	// Display any errors
 	if ([errorsString length]) {
@@ -515,7 +515,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
 	// Iterate through the supported privs, setting the value of each to YES
-	for (NSString *key in self.privsSupportedByServer) {
+	for (NSString *key in [self privsSupportedByServer]) 
+	{
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
@@ -534,7 +535,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	id selectedUser = [[treeController selectedObjects] objectAtIndex:0];
 
 	// Iterate through the supported privs, setting the value of each to NO
-	for (NSString *key in self.privsSupportedByServer) {
+	for (NSString *key in [self privsSupportedByServer]) 
+	{
 		if (![key hasSuffix:@"_priv"]) continue;
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
@@ -679,7 +681,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 	if (sender == availableTableView) {
 		[self addSchemaPriv:sender];
-	} else {
+	} 
+	else {
 		[self removeSchemaPriv:sender];
 	}
 }
@@ -689,7 +692,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)refresh:(id)sender
 {
-	if ([self.managedObjectContext hasChanges]) {
+	if ([[self managedObjectContext] hasChanges]) {
 		
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Unsaved changes", @"unsaved changes message")
 										 defaultButton:NSLocalizedString(@"Continue", @"continue button")
@@ -703,36 +706,37 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		if ([alert runModal] == NSAlertAlternateReturn) return;
 	}
     
-	[self.managedObjectContext reset];
+	[[self managedObjectContext] reset];
+	
     [grantedSchemaPrivs removeAllObjects];
 	[grantedTableView reloadData];
+	
 	[self _initializeAvailablePrivs];	
-    [outlineView reloadData];
+    
+	[outlineView reloadData];
 	[treeController rearrangeObjects];
     
     // Get all the stores on the current MOC and remove them.
-    NSArray *stores = [[self.managedObjectContext persistentStoreCoordinator] persistentStores];
+    NSArray *stores = [[[self managedObjectContext] persistentStoreCoordinator] persistentStores];
     
 	for (NSPersistentStore* store in stores)
     {
-        NSError *error = nil;
-        [[self.managedObjectContext persistentStoreCoordinator] removePersistentStore:store error:&error];
+        [[[self managedObjectContext] persistentStoreCoordinator] removePersistentStore:store error:nil];
     }
 	
     // Add a new store
-    NSError *error = nil;
-    [[self.managedObjectContext persistentStoreCoordinator] 
-     addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error];
+    [[[self managedObjectContext] persistentStoreCoordinator] addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:nil];
     
     // Reinitialize the tree with values from the database.
     [self _initializeUsers];
 
 	// After the reset, ensure all original password and user values are up-to-date.
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
-														 inManagedObjectContext:self.managedObjectContext];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser" inManagedObjectContext:[self managedObjectContext]];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+	
 	[request setEntity:entityDescription];
-	NSArray *userArray = [self.managedObjectContext executeFetchRequest:request error:nil];
+	
+	NSArray *userArray = [[self managedObjectContext] executeFetchRequest:request error:nil];
 	
 	for (NSManagedObject *user in userArray) 
 	{
@@ -749,12 +753,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// of "name".
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
 	NSString *selectedDb = [[schemaController selectedObjects] objectAtIndex:0];
+	
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 												  host:[selectedHost valueForKey:@"host"]];
-	NSManagedObject *priv = nil;
-	BOOL isNew = NO;
 	
+	BOOL isNew = NO;
+	NSManagedObject *priv = nil;
     
 	if ([selectedPrivs count] > 0){
 		priv = [selectedPrivs objectAtIndex:0];
@@ -862,7 +867,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 	// If there are multiple user manager windows open, it's possible to get this
 	// notification from foreign windows.  Ignore those notifications.
-	if (notificationContext != self.managedObjectContext) return;
+	if (notificationContext != [self managedObjectContext]) return;
 	
 	if (!isInitializing)
 	{		
@@ -927,7 +932,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 														 [[child host] tickQuotedString],
 														 ([user valueForKey:@"password"]) ? [[user valueForKey:@"password"] tickQuotedString] : @"''"];
 					
-					[self.mySqlConnection queryString:changePasswordStatement];	
+					[[self connection] queryString:changePasswordStatement];	
 					[self _checkAndDisplayMySqlError];
 				}
 			}
@@ -970,13 +975,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		// all their privileges first. Also, REVOKE ALL PRIVILEGES was added in MySQL 4.1.2, so use the
 		// old multiple query approach (damn, I wish there were only one MySQL version!).
 		if (![serverSupport supportsFullDropUser]) {
-			[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE ALL PRIVILEGES ON *.* FROM %@", droppedUsers]];
-			[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE GRANT OPTION ON *.* FROM %@", droppedUsers]];
+			[connection queryString:[NSString stringWithFormat:@"REVOKE ALL PRIVILEGES ON *.* FROM %@", droppedUsers]];
+			[connection queryString:[NSString stringWithFormat:@"REVOKE GRANT OPTION ON *.* FROM %@", droppedUsers]];
 		}
 		
 		// DROP USER was added in MySQL 4.1.1
 		if ([serverSupport supportsDropUser]) {
-			[self.mySqlConnection queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
+			[[self connection] queryString:[NSString stringWithFormat:@"DROP USER %@", droppedUsers]];
 		}
 		// Otherwise manually remove the user rows from the mysql.user table
 		else {
@@ -986,7 +991,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			{
 				NSArray *userDetails = [user componentsSeparatedByString:@"@"];
 				
-				[mySqlConnection queryString:[NSString stringWithFormat:@"DELETE FROM mysql.user WHERE User = %@ and Host = %@", [userDetails objectAtIndex:0], [userDetails objectAtIndex:1]]];
+				[connection queryString:[NSString stringWithFormat:@"DELETE FROM mysql.user WHERE User = %@ and Host = %@", [userDetails objectAtIndex:0], [userDetails objectAtIndex:1]]];
 			}
 		}
 		
@@ -1034,7 +1039,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
         if (createStatement) {
 			
             // Create user in database
-            [mySqlConnection queryString:createStatement];
+            [connection queryString:createStatement];
             
             if ([self _checkAndDisplayMySqlError]) {
                 if ([serverSupport supportsUserMaxVars]) [self updateResourcesForUser:user];
@@ -1042,7 +1047,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 				// If we created the user with the GRANT statment (MySQL < 5), then revoke the 
 				// privileges we gave the new user.
 				if (![serverSupport supportsUserMaxVars]) {
-					[mySqlConnection queryString:[NSString stringWithFormat:@"REVOKE SELECT ON mysql.* FROM %@@%@", [[[user parent] valueForKey:@"user"] tickQuotedString], host]];
+					[connection queryString:[NSString stringWithFormat:@"REVOKE SELECT ON mysql.* FROM %@@%@", [[[user parent] valueForKey:@"user"] tickQuotedString], host]];
 				}
 				
                 [self grantPrivilegesToUser:user];                
@@ -1069,9 +1074,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
 									  [dbName tickQuotedString]];
 	
-	NSArray *matchingUsers = [self.mySqlConnection getAllRowsFromQuery:statement];	
+	NSArray *matchingUsers = [[self connection] getAllRowsFromQuery:statement];	
 	
-	for (NSString *key in self.privsSupportedByServer)
+	for (NSString *key in [self privsSupportedByServer])
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
 		
@@ -1120,7 +1125,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
                                               [[[user valueForKey:@"parent"] valueForKey:@"user"] tickQuotedString],
                                               [[user valueForKey:@"host"] tickQuotedString]];
 		
-        [self.mySqlConnection queryString:updateResourcesStatement];
+        [[self connection] queryString:updateResourcesStatement];
         [self _checkAndDisplayMySqlError];
     }
 	
@@ -1137,7 +1142,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
-		for (NSString *key in self.privsSupportedByServer)
+		for (NSString *key in [self privsSupportedByServer])
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
 			
@@ -1185,8 +1190,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"user == %@ AND parent == nil", username];
-	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser"
-														 inManagedObjectContext:moc];
+	NSEntityDescription *entityDescription = [NSEntityDescription entityForName:@"SPUser" inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
 	
 	[request setEntity:entityDescription];
@@ -1205,11 +1209,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = 
-        [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
-	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges"
-														 inManagedObjectContext:moc];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges" inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
+	
 	[request setEntity:privEntity];
 	[request setPredicate:predicate];
 	
@@ -1241,12 +1244,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSString *grantStatement;
 
 	// Special case when all items are checked, to allow GRANT OPTION to work
-	if ([self.privsSupportedByServer count] == [thePrivileges count]) {
+	if ([[self privsSupportedByServer] count] == [thePrivileges count]) {
 		grantStatement = [NSString stringWithFormat:@"GRANT ALL ON %@.* TO %@@%@ WITH GRANT OPTION",
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
-	} else {
+	} 
+	else {
 		grantStatement = [NSString stringWithFormat:@"GRANT %@ ON %@.* TO %@@%@",
 							[[thePrivileges componentsJoinedByCommas] uppercaseString],
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
@@ -1254,7 +1258,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 							[aHost tickQuotedString]];
 	}
 
-	[self.mySqlConnection queryString:grantStatement];
+	[[self connection] queryString:grantStatement];
 	[self _checkAndDisplayMySqlError];
 }
 
@@ -1269,20 +1273,21 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSString *revokeStatement;
 
 	// Special case when all items are checked, to allow GRANT OPTION to work
-	if ([self.privsSupportedByServer count] == [thePrivileges count]) {
+	if ([[self privsSupportedByServer] count] == [thePrivileges count]) {
 		revokeStatement = [NSString stringWithFormat:@"REVOKE ALL PRIVILEGES ON %@.* FROM %@@%@",
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
 
-		[self.mySqlConnection queryString:revokeStatement];
+		[[self connection] queryString:revokeStatement];
 		[self _checkAndDisplayMySqlError];
 
 		revokeStatement = [NSString stringWithFormat:@"REVOKE GRANT OPTION ON %@.* FROM %@@%@",
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
 							[aUser tickQuotedString],
 							[aHost tickQuotedString]];
-	} else {
+	} 
+	else {
 		revokeStatement = [NSString stringWithFormat:@"REVOKE %@ ON %@.* FROM %@@%@",
 							[[thePrivileges componentsJoinedByCommas] uppercaseString],
 							aDatabase?[aDatabase backtickQuotedString]:@"*",
@@ -1290,7 +1295,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 							[aHost tickQuotedString]];
 	}
 
-	[self.mySqlConnection queryString:revokeStatement];
+	[[self connection] queryString:revokeStatement];
 	[self _checkAndDisplayMySqlError];
 }
 
@@ -1299,14 +1304,14 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (BOOL)_checkAndDisplayMySqlError
 {
-	if ([self.mySqlConnection queryErrored]) {
+	if ([[self connection] queryErrored]) {
 		if (isSaving) {
-			[errorsString appendFormat:@"%@\n", [self.mySqlConnection lastErrorMessage]];
+			[errorsString appendFormat:@"%@\n", [[self connection] lastErrorMessage]];
 		} 
 		else {
 			SPBeginAlertSheet(NSLocalizedString(@"An error occurred", @"mysql error occurred message"), 
 							  NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil, 
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [self.mySqlConnection lastErrorMessage]]);
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred whilst trying to perform the operation.\n\nMySQL said: %@", @"mysql error occurred informative message"), [[self connection] lastErrorMessage]]);
 		}
 
 		return NO;
@@ -1348,7 +1353,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		[query addParameter:@"User" operator:QKEqualityOperator value:originalUser];
 		[query addParameter:@"Host" operator:QKEqualityOperator value:originalHost];
 		
-		SPMySQLResult *result = [mySqlConnection queryString:[query query]];
+		SPMySQLResult *result = [connection queryString:[query query]];
 		
 		if ([[[result getRowAsArray] objectAtIndex:0] integerValue] == 1) {
 			QKQuery *updateQuery = [QKQuery queryTable:@"user"];
@@ -1366,7 +1371,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		}
 	}
 	
-	[mySqlConnection queryString:renameQuery];
+	[connection queryString:renameQuery];
 }
 
 #pragma mark -
@@ -1382,7 +1387,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
     [persistentStoreCoordinator release];
     [managedObjectModel release];
 	[privColumnToGrantMap release];
-	[mySqlConnection release];
+	[connection release];
 	[privsSupportedByServer release];
 	[schemas release];
 	[availablePrivs release];
