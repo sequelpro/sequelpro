@@ -397,6 +397,8 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (NSString *)displayName;
 #ifndef SP_REFACTOR /* method decls */
 - (NSUndoManager *)undoManager;
+- (NSArray *)allTableNames;
+- (SPTablesList *)tablesListInstance;
 
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
@@ -461,8 +463,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 #ifdef SP_REFACTOR /* method decls */
 - (SPConnectionController*)createConnectionController;
 - (void)connect;
-- (NSArray*)allTableNames;
-- (SPTablesList*)tablesListInstance;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
 
