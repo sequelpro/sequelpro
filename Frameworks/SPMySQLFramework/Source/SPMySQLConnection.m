@@ -435,10 +435,15 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 				isReconnecting = NO;
 				[reconnectionPool release];
 				return NO;
+
+			// By default attempt a reconnect, returning if it fails.  If it succeeds, continue
+			// on to the end of the function to restore details if appropriate.
 			default:
 				isReconnecting = NO;
-				[reconnectionPool release];
-				return [self reconnect];
+				if (![self reconnect]) {
+					[reconnectionPool release];
+					return NO;
+				}
 		}
 	}
 
