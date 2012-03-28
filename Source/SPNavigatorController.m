@@ -581,10 +581,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 {
 
 	// Reset everything for current active doc connection
-	id doc = [[NSApp delegate] frontDocument];
-	if(!doc) return;
+	SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
+	if (!doc) return;
 	NSString *connectionID = [doc connectionID];
-	if(!connectionID || [connectionID length] < 2) return;
+	if (!connectionID || [connectionID length] < 2) return;
 
 	[searchField setStringValue:@""];
 	[schemaDataFiltered removeAllObjects];
@@ -600,8 +600,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[syncButton setState:NSOffState];
 	isFiltered = NO;
 
-	if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) return;
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc valueForKeyPath:@"mySQLConnection"] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	if (![[doc getConnection] isConnected]) return;
+	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 }
 
