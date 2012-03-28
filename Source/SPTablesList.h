@@ -78,8 +78,8 @@
 #endif
 #ifndef SP_REFACTOR
 	IBOutlet id toolbarActionsButton;
-	IBOutlet id toolbarReloadButton;
 #endif
+	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
 #ifndef SP_REFACTOR
 	IBOutlet id truncateTableButton;

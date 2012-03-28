@@ -1967,8 +1967,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[toolbarAddButton setEnabled:NO];
 #ifndef SP_REFACTOR
 	[toolbarActionsButton setEnabled:NO];
-	[toolbarReloadButton setEnabled:NO];
 #endif
+	[toolbarReloadButton setEnabled:NO];
 }
 
 /**
@@ -1980,8 +1980,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[toolbarAddButton setEnabled:YES];
 #ifndef SP_REFACTOR
 	[toolbarActionsButton setEnabled:YES];
-	[toolbarReloadButton setEnabled:YES];
 #endif
+	[toolbarReloadButton setEnabled:YES];
 }
 
 /**
