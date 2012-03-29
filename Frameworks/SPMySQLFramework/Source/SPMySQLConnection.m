@@ -54,8 +54,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 #pragma mark -
 #pragma mark Synthesized properties
 
-@synthesize delegate;
-@synthesize proxy;
 @synthesize host;
 @synthesize username;
 @synthesize password;
@@ -124,6 +122,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		previousEncodingUsesLatin1Transport = NO;
 
 		// Initialise default delegate settings
+		delegate = nil;
 		delegateSupportsWillQueryString = NO;
 		delegateSupportsConnectionLost = NO;
 		delegateQueryLogging = YES;

@@ -131,9 +131,6 @@
 #pragma mark -
 #pragma mark Synthesized properties
 
-@property (readwrite, assign, nonatomic) NSObject <SPMySQLConnectionDelegate> *delegate;
-@property (readwrite, assign, nonatomic) NSObject <SPMySQLConnectionProxy> *proxy;
-
 @property (readwrite, retain) NSString *host;
 @property (readwrite, retain) NSString *username;
 @property (readwrite, retain) NSString *password;
