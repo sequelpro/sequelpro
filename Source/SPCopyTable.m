@@ -31,10 +31,14 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPGeometryDataView.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
+#endif
 #import "SPTablesList.h"
 #import <SPMySQL/SPMySQL.h>
 

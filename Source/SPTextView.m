@@ -33,9 +33,13 @@
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPDatabaseViewController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#endif
 #import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
 

@@ -46,8 +46,10 @@
 #import "SPAlertSheets.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
+#endif
 #include <pthread.h>
 
 #ifndef SP_REFACTOR /* headers */

@@ -40,6 +40,7 @@
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
+#ifndef SP_REFACTOR
 	if ([prefs boolForKey:SPConsoleEnableLogging]) {
 		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
 			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
@@ -48,6 +49,7 @@
 			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name]];
 		}
 	}
+#endif
 }
 
 /**
@@ -55,9 +57,11 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
+#ifndef SP_REFACTOR
 	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
 		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name]];
 	}
+#endif
 }
 
 /**
@@ -127,8 +131,10 @@
 		// Ensure the window isn't miniaturized
 		if ([[self parentWindow] isMiniaturized]) [[self parentWindow] deminiaturize:self];
 
+#ifndef SP_REFACTOR
 		// Ensure the window and tab are frontmost
 		[self makeKeyDocument];
+#endif
 		
 		// Display the connection error dialog and wait for the return code
 		[NSApp beginSheet:connectionErrorDialog modalForWindow:[self parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -169,6 +175,7 @@
  */
 - (void) closeAndDisconnect
 {
+#ifndef SP_REFACTOR
 	NSWindow *theParentWindow = [self parentWindow];
 	_isConnected = NO;
 	if ([[[self parentTabViewItem] tabView] numberOfTabViewItems] == 1) {
@@ -180,6 +187,7 @@
 		[theParentWindow performSelector:@selector(makeKeyAndOrderFront:) withObject:nil afterDelay:0.6];
 	}
 	[self parentTabDidClose];	
+#endif
 }
 
 @end

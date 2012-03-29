@@ -98,8 +98,8 @@ enum {
 // Constants
 #ifndef SP_REFACTOR
 static NSString *SPCreateSyntx = @"SPCreateSyntax";
-static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
+static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 @interface SPDatabaseDocument ()
 
@@ -110,7 +110,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
+#ifndef SP_REFACTOR /* method decls */
 - (void)_processDatabaseChangedBundleTriggerActions;
+#endif
 
 @end
 
@@ -6039,6 +6041,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskPool drain];
 }
 
+#ifndef SP_REFACTOR
 - (void)_processDatabaseChangedBundleTriggerActions
 {
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
@@ -6087,5 +6090,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		}
 	}
 }
+#endif
 
 @end

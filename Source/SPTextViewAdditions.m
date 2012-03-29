@@ -24,9 +24,13 @@
 
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPCustomQuery.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"
 #import "SPWindowController.h"

@@ -51,8 +51,10 @@
 #import "SPGeometryDataView.h"
 #import "SPTextView.h"
 #import "SPDatabaseViewController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPCustomQuery.h"
 #import <pthread.h>
 

@@ -31,14 +31,18 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContentDelegate.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#endif
 #import "SPDatabaseDocument.h"
 #import "SPDataStorage.h"
 #import "SPGeometryDataView.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
 #import <SPMySQL/SPMySQL.h>
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPCopyTable.h"
 #import "SPAlertSheets.h"
 #import "SPTableData.h"
