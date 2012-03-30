@@ -25,10 +25,10 @@
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
-#import "SPMySQL.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPGrowlController.h"
 #endif
+#import <SPMySQL/SPMySQL.h>
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -46,8 +46,10 @@
 #import "SPAlertSheets.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
+#endif
 #include <pthread.h>
 
 #ifndef SP_REFACTOR /* headers */
@@ -861,7 +863,9 @@
 							];
 		}
 	}
+#ifndef SP_REFACTOR
 	[[affectedRowsText onMainThread] setStringValue:statusString];
+#endif
 
 	// Restore automatic query retries
 	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
@@ -1292,9 +1296,11 @@
 	// If errors occur, display them
 	if ( [mySQLConnection lastQueryWasCancelled] || ([errorsString length] && !queryIsTableSorter)) {
 
+#ifndef SP_REFACTOR
 		// set the error text
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 		[[errorTextScrollView verticalScroller] setFloatValue:1.0f];
+#endif
 
 		// try to select the line x of the first error if error message with ID 1064 contains "at line x"
 		// by capturing the last number of the error string
@@ -1368,6 +1374,9 @@
 		[queryInfoButton setState:NSOffState];
 		[self toggleQueryInfoPaneCollapse:queryInfoButton];
 	}
+#else
+	if ( [errorsString length] > 0 )
+		NSRunAlertPanel(LOCAL(@"Query Error"), @"%@", LOCAL(@"OK"), nil, nil, errorsString);
 #endif
 }
 
@@ -1530,11 +1539,11 @@
 	[autouppercaseKeywordsMenuItem setState:(YES?NSOnState:NSOffState)];
 #endif
 
+#ifndef SP_REFACTOR
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
 
 	// Populate query favorites
-#ifndef SP_REFACTOR
 	[self queryFavoritesHaveBeenUpdated:nil];
 #endif
 
@@ -2516,15 +2525,15 @@
 	// Retrieve the original index of the column from the identifier
 	NSInteger columnIndex = [[[[aNotification userInfo] objectForKey:@"NSTableColumn"] identifier] integerValue];
 	NSDictionary *columnDefinition = NSArrayObjectAtIndex(cqColumnDefinition, columnIndex);
+	NSString *table = [columnDefinition objectForKey:@"org_table"];
+	NSString *col = [columnDefinition objectForKey:@"org_name"];
 
 	// Don't save if the column doesn't map to an underlying SQL field
-	if (![columnDefinition objectForKey:@"org_name"] || ![(NSString *)[columnDefinition objectForKey:@"org_name"] length])
+	if (!table || ![table length] || !col || ![col length])
 		return;
 
 	NSMutableDictionary *tableColumnWidths;
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
-	NSString *table = [columnDefinition objectForKey:@"org_table"];
-	NSString *col = [columnDefinition objectForKey:@"org_name"];
 
 	// Retrieve or instantiate the tableColumnWidths object
 #ifndef SP_REFACTOR

@@ -24,7 +24,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <Cocoa/Cocoa.h>
+#ifndef SP_REFACTOR
 #import <FeedbackReporter/FRFeedbackReporter.h>
+#endif
 
 @class SPPreferenceController, SPAboutController, SPDatabaseDocument, SPBundleEditorController;
 

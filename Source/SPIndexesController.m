@@ -28,7 +28,7 @@
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableView.h"

@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionControllerDelegateProtocol.h"
+#import <SPMySQL/SPMySQLConnectionDelegate.h>
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPFavoritesOutlineView.h"
@@ -50,7 +51,7 @@
 @end
 #endif
 
-@interface SPConnectionController : NSViewController 
+@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	

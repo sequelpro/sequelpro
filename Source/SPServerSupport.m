@@ -50,6 +50,7 @@
 @synthesize supportsCharacterSetDatabaseVar;
 @synthesize supportsPost41CharacterSetHandling;
 @synthesize supportsCreateUser;
+@synthesize supportsRenameUser;
 @synthesize supportsDropUser;
 @synthesize supportsFullDropUser;
 @synthesize supportsUserMaxVars;
@@ -140,6 +141,9 @@
 	
 	// The CREATE USER statement wasn't added until MySQL 5.0.2
 	supportsCreateUser = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:2];
+	
+	// The RENAME USER statement wasn't added until MySQL 5.0.2
+	supportsRenameUser = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:2];
 	
 	// The DROP USER statement wasn't added until MySQL 4.1.1
 	supportsDropUser = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:1];
@@ -249,6 +253,7 @@
 	supportsCharacterSetDatabaseVar         = NO;
 	supportsPost41CharacterSetHandling      = NO;
 	supportsCreateUser                      = NO;
+	supportsRenameUser                      = NO;
 	supportsDropUser                        = NO;
 	supportsFullDropUser                    = NO;
 	supportsUserMaxVars                     = NO;

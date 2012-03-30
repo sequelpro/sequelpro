@@ -2,7 +2,7 @@
 //  $Id: QKQueryUtilities.h 3421 2011-09-10 22:58:45Z stuart02 $
 //
 //  QKQueryUtilities.h
-//  sequel-pro
+//  QueryKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
@@ -27,8 +27,6 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "QKQueryOperators.h"
 

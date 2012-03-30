@@ -49,7 +49,7 @@
 		5884165614D2306A0078027F /* SPMySQLResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 5884165414D2306A0078027F /* SPMySQLResult.m */; };
 		58C006C814E0B18A00AC489A /* SPMySQLUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C006C714E0B18A00AC489A /* SPMySQLUtilities.h */; };
 		58C008CD14E2AC7D00AC489A /* SPMySQLConnectionProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C008CC14E2AC7D00AC489A /* SPMySQLConnectionProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		58C009D514E31D3800AC489A /* SPMySQLStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */; };
+		58C009D514E31D3800AC489A /* SPMySQLStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C009D314E31D3800AC489A /* SPMySQLStringAdditions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58C009D614E31D3800AC489A /* SPMySQLStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C009D414E31D3800AC489A /* SPMySQLStringAdditions.m */; };
 		58C00AA914E4869C00AC489A /* Max Packet Size.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C00AA714E4869C00AC489A /* Max Packet Size.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58C00AAA14E4869C00AC489A /* Max Packet Size.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C00AA814E4869C00AC489A /* Max Packet Size.m */; };
@@ -516,6 +516,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Source/SPMySQLFramework_Prefix.pch;
+				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";

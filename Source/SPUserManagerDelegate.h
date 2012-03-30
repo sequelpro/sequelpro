@@ -1,11 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionDelegate.h
+//  SPUserManagerDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 13, 2009
-//  Copyright (c) 2009 Stuart Connolly. All rights reserved.
+//  Created by Mark Townsend on Jan 01, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,15 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPDatabaseDocument.h"
+#import "SPUserManager.h"
 
-#import <SPMySQL/SPMySQLConnectionDelegate.h>
-
-@interface SPDatabaseDocument (SPConnectionDelegate) <SPMySQLConnectionDelegate>
-
-- (void) closeAndDisconnect;
-
-- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection;
-- (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection;
+@interface SPUserManager (SPUserManagerDelegate)
 
 @end

@@ -330,6 +330,11 @@
 	NSString *theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
 	NSUInteger theErrorID = mysql_errno(mySQLConnection);
 
+	// Update the connection's stored insert ID if available
+	if (mySQLConnection->insert_id) {
+		lastQueryInsertID = mySQLConnection->insert_id;
+	}
+
 	// If the query was cancelled, override the error state
 	if (lastQueryWasCancelled) {
 		theErrorMessage = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");

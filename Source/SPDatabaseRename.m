@@ -26,7 +26,7 @@
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
 #import "SPDatabaseInfo.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPDatabaseRename
 

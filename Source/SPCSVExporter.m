@@ -28,7 +28,7 @@
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPCSVExporter
 

@@ -26,7 +26,7 @@
 #import "SPDatabaseData.h"
 #import "SPServerSupport.h"
 #import "SPDatabaseCharacterSets.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPDatabaseData (PrivateAPI)
 

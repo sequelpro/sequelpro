@@ -30,7 +30,7 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #include <pthread.h>
 
 @interface SPTableData (PrivateAPI)
@@ -773,7 +773,10 @@
 			encodingString = [[NSString alloc] initWithString:[createTableParser substringWithRange:NSMakeRange(stringStart, i-stringStart)]];
 		}
 
-	// If no DEFAULT CHARSET is present, it's likely MySQL < 4; fall back to latin1.
+	// If no DEFAULT CHARSET is present, fall back to either the database encoding (works back to MySQL 3),
+	// or if no document is available to supply the database encoding, Latin1.
+	} else if ([tableDocumentInstance databaseEncoding]) {
+		encodingString = [[NSString alloc] initWithString:[tableDocumentInstance databaseEncoding]];
 	} else {
 		encodingString = [[NSString alloc] initWithString:@"latin1"];
 	}

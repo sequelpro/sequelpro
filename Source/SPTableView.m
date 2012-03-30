@@ -241,6 +241,34 @@
 	emptyDoubleClickAction = aSelector;
 }
 
+#ifdef SP_REFACTOR
+
+- (void)delete:(id)sender
+{
+	if ( [[self delegate] respondsToSelector:@selector(removeField:)] )
+	{
+		[[self delegate] performSelector:@selector(removeField:) withObject:self];
+	}
+	else if ( [[self delegate] respondsToSelector:@selector(removeIndex:)] )
+	{
+		[[self delegate] performSelector:@selector(removeIndex:) withObject:self];
+	}
+}
+
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	if ( [menuItem action] == @selector(delete:) )
+	{	
+		if ( [self numberOfSelectedRows] == 0 )
+			return NO;
+	}
+	
+	return YES;
+}
+
+#endif
+
 @end
 
 

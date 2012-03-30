@@ -42,7 +42,7 @@
 #import "SPExportFileUtilities.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPExportController (SPExportInitializer)
 

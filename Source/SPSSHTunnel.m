@@ -27,7 +27,7 @@
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 #import <netinet/in.h>
 

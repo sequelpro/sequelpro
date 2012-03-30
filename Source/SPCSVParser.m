@@ -281,7 +281,7 @@
 	// Update the total parsed length (differs from parserPosition following trims)
 	totalLengthParsed += parserPosition - startingParserPosition;
 
-	// Skip empty rows
+	// Skip empty rows.  Note the NSNull pointer comparison; as [NSNull null] is a singleton this works correctly.
 	if ([csvRowArray count] == 0
 		|| ([csvRowArray count] == 1
 			&& ([csvRowArray objectAtIndex:0] == [NSNull null]

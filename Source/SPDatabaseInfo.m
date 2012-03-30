@@ -24,7 +24,7 @@
 
 #import "SPDBActionCommons.h"
 #import "SPDatabaseInfo.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPDatabaseInfo
 

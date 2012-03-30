@@ -27,7 +27,7 @@
 #import "SPExportFile.h"
 #import "SPFileHandle.h"
 #import "SPExportUtilities.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPXMLExporter
 
@@ -258,7 +258,9 @@
 					
 					[xmlItem setString:[NSString stringWithString:dataConversionString]];
 					[dataConversionString release];
-				} 
+				}
+
+				// Check for null value using a pointer comparison; as [NSNull null] is a singleton this works correctly.
 				else if (data == [NSNull null]) {
 					dataIsNULL = YES;
 					

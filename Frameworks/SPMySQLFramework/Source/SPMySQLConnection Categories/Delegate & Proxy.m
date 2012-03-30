@@ -39,8 +39,8 @@
 #pragma mark Connection delegate
 
 /**
- * Override the synthesized delegate setter, to allow optimisations to oft-made
- * checks by precacheing availability.
+ * Set the delegate of the connection object, precaching availability of
+ * oft-called methods to allow optimisation.
  */
 - (void)setDelegate:(NSObject <SPMySQLConnectionDelegate> *)aDelegate
 {
@@ -51,12 +51,22 @@
 	delegateSupportsConnectionLost = [delegate respondsToSelector:@selector(connectionLost:)];
 }
 
+/**
+ * Return the current instance delegate.
+ */
+- (NSObject <SPMySQLConnectionDelegate> *)delegate
+{
+	return delegate;
+}
+
 #pragma mark -
 #pragma mark Connection proxy
 
 /**
- * Override the synthesized proxy setter, to record the initial state and to
- * set the state change selector.
+ * Set the connection proxy, used by the class to set up a connection pre-requisite, and
+ * monitored for state changes.  This allows the MySQL connection to be routed over
+ * another helper class providing a port or socket.  This method also records the initial
+ * state and sets the state change selector.
  */
 - (void)setProxy:(NSObject <SPMySQLConnectionProxy> *)aProxy
 {
@@ -64,7 +74,15 @@
 	previousProxyState = [aProxy state];
 
 	[proxy setConnectionStateChangeSelector:@selector(_proxyStateChange:) delegate:self];
-}	
+}
+
+/**
+ * Return the current instance proxy.
+ */
+- (NSObject <SPMySQLConnectionProxy> *)proxy
+{
+	return proxy;
+}
 
 @end
 

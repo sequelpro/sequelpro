@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKSelectQueryGroupByTests.m
+//  QKQueryUpdateParameter.m
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on February 25, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,51 +28,54 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKSelectQueryGroupByTests.h"
+#import "QKQueryUpdateParameter.h"
 
-static NSString *QKTestTableName = @"test_table";
+@implementation QKQueryUpdateParameter
 
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
-
-@implementation QKSelectQueryGroupByTests
+@synthesize _field;
+@synthesize _value;
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Initialisation
 
-- (void)setUp
++ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value
 {
-	_query = [QKQuery selectQueryFromTable:QKTestTableName];
+	return [[[QKQueryUpdateParameter alloc] initUpdateParamWithField:field value:value] autorelease];
+}
+
+- (id)initUpdateParamWithField:(NSString *)field value:(id)value
+{
+	if ((self = [super init])) {
+		[self setField:field];
+		[self setValue:value];
+	}
 	
-	[_query addField:QKTestFieldOne];
-	[_query addField:QKTestFieldTwo];
+	return self;
 }
 
 #pragma mark -
-#pragma mark Tests
 
-- (void)testSelectQueryTypeIsCorrect
+- (NSString *)description
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	NSMutableString *string = [NSMutableString string]; 
+	
+	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	[string appendString:field];
+	[string appendString:@" = "];
+	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
+	
+	return string;
 }
 
-- (void)testSelectQueryGroupByIsCorrect
-{	
-	[_query groupByField:QKTestFieldOne];
-	
-	NSString *query = [NSString stringWithFormat:@"GROUP BY %@", QKTestFieldOne];
-	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
-}
+#pragma mark -
 
-- (void)testSelectQueryGroupByMultipleFieldsIsCorrect
-{	
-	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
+- (void)dealloc
+{
+	if (_field) [_field release], _field = nil;
+	if (_value) [_value release], _value = nil;
 	
-	NSString *query = [NSString stringWithFormat:@"GROUP BY %@, %@", QKTestFieldOne, QKTestFieldTwo];
-	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
+	[super dealloc];
 }
-
 
 @end

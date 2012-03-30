@@ -285,6 +285,7 @@
  */
 - (IBAction)saveFavoriteToFile:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
@@ -294,17 +295,17 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-#ifndef SP_REFACTOR
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-#endif
 	
 	[encodingPopUp setEnabled:YES];
 	
 	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveQuery"];
+#endif
 }
 
 - (IBAction)exportFavorites:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
@@ -315,10 +316,12 @@
 	[panel setCanCreateDirectories:YES];
 
 	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFavorites"];
+#endif
 }
 
 - (IBAction)importFavoritesByAdding:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
@@ -333,6 +336,7 @@
 				  modalDelegate:self 
 				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
 					contextInfo:NULL];
+#endif
 }
 
 - (IBAction)importFavoritesByReplacing:(id)sender
@@ -740,6 +744,7 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 
 	if (returnCode == NSOKButton) {
 
@@ -798,6 +803,7 @@
 			}
 		}
 	}
+#endif
 }
 
 
@@ -806,15 +812,14 @@
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
 		if (returnCode == NSOKButton) {
 			NSError *error = nil;
 		
-#ifndef SP_REFACTOR
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
-#endif
 		
 			[[favoriteQueryTextView string] writeToURL:[panel URL] atomically:YES encoding:[[encodingPopUp selectedItem] tag] error:&error];
 		
@@ -866,6 +871,7 @@
 
 		}
 	}
+#endif
 }
 
 - (void)_initWithNoSelection

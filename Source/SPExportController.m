@@ -34,7 +34,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPDatabaseDocument.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 // Constants
 static const NSUInteger SPExportUIPadding = 20;

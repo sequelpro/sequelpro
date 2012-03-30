@@ -36,7 +36,7 @@
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -699,10 +699,15 @@
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"];
+#endif
 
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
 }

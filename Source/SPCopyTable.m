@@ -31,12 +31,16 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPGeometryDataView.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
+#endif
 #import "SPTablesList.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
@@ -111,6 +115,15 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 #endif
 }
+
+#ifdef SP_REFACTOR
+
+- (void)delete:(id)sender
+{
+	[tableInstance removeRow:self];
+}
+
+#endif
 
 /**
  * Get selected rows a string of newline separated lines of tab separated fields
@@ -979,6 +992,16 @@ static const NSInteger kBlobAsImageFile = 4;
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
+#ifdef SP_REFACTOR
+	if ( [anItem action] == @selector(selectAll:) )
+		return YES;
+		
+	if ( [anItem action] == @selector(delete:) )
+	{
+		if ( [self numberOfSelectedRows] > 0 )
+			return YES;
+	}
+#endif
 	return NO;
 }
 
@@ -1158,7 +1181,18 @@ static const NSInteger kBlobAsImageFile = 4;
 {
 
 	// Retrieve the column definition
+#if SP_REFACTOR
+	NSDictionary *columnDefinition;
+	
+	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
+		columnDefinition = [[(SPTableContent*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	
+	else if ( [[self delegate] isKindOfClass:[SPCustomQuery class]] )
+		columnDefinition = [[(SPCustomQuery*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+#else
 	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+#endif
+
 	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.

@@ -5,15 +5,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>SPMySQL</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.${PRODUCT_NAME:rfc1034Identifier}</string>
+	<string>com.sequelpro.spmysql</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>${PRODUCT_NAME}</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
@@ -22,7 +18,5 @@
 	<string>SPDT</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>NSPrincipalClass</key>
-	<string></string>
 </dict>
 </plist>

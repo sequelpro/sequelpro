@@ -27,7 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 

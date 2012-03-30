@@ -33,7 +33,7 @@
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"
 #import "SPServerSupport.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 static NSString *SPUpdateTableTypeCurrentType = @"SPUpdateTableTypeCurrentType";
 static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
