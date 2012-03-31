@@ -179,6 +179,8 @@ static NSMutableArray *deliciousBindingKeys = nil;
             } else if ([view isKindOfClass:[NSTableView class]]) {
                 for (NSTableColumn *column in [(NSTableView*)view tableColumns]) {
                     [self _localizeStringValueOfObject:[column headerCell] table:table];
+                    NSString *localizedHeaderTip = [self _localizedStringForString:[column headerToolTip] table:table];
+                    if (localizedHeaderTip) [column setHeaderToolTip:localizedHeaderTip];
                 }
             
             } else if ([view isKindOfClass:[NSTextField class]]) {
