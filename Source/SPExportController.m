@@ -59,7 +59,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable;
-- (void)_toggleSQLExportTableNameTokenAvailability;
 
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
@@ -1053,27 +1052,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable
 {
 	[exportButton setEnabled:[enable boolValue]];
-}
-
-/**
- * Toggles the available filename tokens for and SQL export.
- */
-- (void)_toggleSQLExportTableNameTokenAvailability
-{
-	NSUInteger i = 0;
-	
-	for (NSArray *table in tables)
-	{
-		if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
-			i++;
-			
-			if (i == 2) break;
-		}
-	}
-	
-	[exportCustomFilenameTokensField setStringValue:(i > 1) ? 
-	 NSLocalizedString(@"host,database,date,year,month,day,time", @"custom export filename tokens without table") :
-	 NSLocalizedString(@"host,database,table,date,year,month,day,time", @"default custom export filename tokens")];
 }
 
 @end
