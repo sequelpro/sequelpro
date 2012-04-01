@@ -59,6 +59,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable;
+- (void)_toggleSQLExportTableNameTokenAvailability;
 
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
@@ -615,6 +616,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (IBAction)toggleNewFilePerTable:(NSButton *)sender
 {
 	[self _updateExportFormatInformation];
+	[self updateAvailableExportFilenameTokens];
 }
 
 /**
@@ -835,7 +837,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	}
 		
 	if (j > i) {
-		NSUInteger diff = (j - i);
+		NSUInteger diff = j - i;
 		
 		SPBeginAlertSheet(NSLocalizedString(@"The list of tables has changed", @"table list change alert message"), 
 						  NSLocalizedString(@"Continue", @"continue button"), 
@@ -975,9 +977,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	BOOL isHTML = (exportType == SPHTMLExport);
 	BOOL isPDF  = (exportType == SPPDFExport);
 	
-	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] integerValue];
-	BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] integerValue];
-	BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] integerValue];
+	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] boolValue];
+	BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] boolValue];
+	BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] boolValue];
 		
 	if (isCSV || isXML || isHTML || isPDF || (isSQL && ((!structureEnabled) || (!dropEnabled)))) {
 		enable = NO;
@@ -1012,8 +1014,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 				}
 			}
 		}
-		// Disable if structure is unchecked, but content and drop are as dropping a table then trying to insert
-		// into it is obviously an error.
+		// Disable if structure is unchecked, but content and drop are as dropping a 
+		// table then trying to insert into it is obviously an error.
 		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
 			enable = NO;
 		}
@@ -1054,118 +1056,24 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 }
 
 /**
- * Resizes the export window's height by the supplied delta, while retaining the position of 
- * all interface controls to accommodate the custom filename view.
- *
- * @param delta The height delta for which the height should be adjusted for.
+ * Toggles the available filename tokens for and SQL export.
  */
-- (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta
+- (void)_toggleSQLExportTableNameTokenAvailability
 {
-	NSUInteger popUpMask              = [exportInputPopUpButton autoresizingMask];
-	NSUInteger fileCheckMask          = [exportFilePerTableCheck autoresizingMask];
-	NSUInteger scrollMask             = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask          = [exportTableListButtonBar autoresizingMask];
-	NSUInteger buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
-	NSUInteger textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
-	NSUInteger customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
-	NSUInteger tabBarMask             = [exportOptionsTabBar autoresizingMask];
+	NSUInteger i = 0;
 	
-	NSRect frame = [[self window] frame];
-	
-	if (frame.size.height > 600 && delta > heightOffset1) {
-		frame.origin.y += [exportCustomFilenameView frame].size.height;
-		frame.size.height -= [exportCustomFilenameView frame].size.height;
-		
-		[[self window] setFrame:frame display:YES animate:YES];
+	for (NSArray *table in tables)
+	{
+		if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
+			i++;
+			
+			if (i == 2) break;
+		}
 	}
 	
-	[exportInputPopUpButton setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportFilePerTableCheck setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportCustomFilenameViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportCustomFilenameViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportCustomFilenameView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	
-	NSInteger newMinHeight = (windowMinHeigth - heightOffset1 + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset1 + delta;
-	
-	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
-	
-	frame.origin.y += heightOffset1;
-	frame.size.height -= heightOffset1;
-	
-	heightOffset1 = delta;
-	
-	frame.origin.y -= heightOffset1;
-	frame.size.height += heightOffset1;
-	
-	[[self window] setFrame:frame display:YES animate:YES];
-	
-	[exportInputPopUpButton setAutoresizingMask:popUpMask];
-	[exportFilePerTableCheck setAutoresizingMask:fileCheckMask];
-	[exportTablelistScrollView setAutoresizingMask:scrollMask];
-	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
-	[exportCustomFilenameViewButton setAutoresizingMask:buttonMask];
-	[exportCustomFilenameViewLabelButton setAutoresizingMask:textFieldMask];
-	[exportCustomFilenameView setAutoresizingMask:customFilenameViewMask];
-	[exportOptionsTabBar setAutoresizingMask:tabBarMask];
-}
-
-/**
- * Resizes the export window's height by the supplied delta, while retaining the position of 
- * all interface controls to accommodate the advanced options view.
- *
- * @param delta The height delta for which the height should be adjusted for.
- */
-- (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
-{
-	NSUInteger scrollMask        = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask     = [exportTableListButtonBar autoresizingMask];
-	NSUInteger tabBarMask        = [exportTypeTabBar autoresizingMask];
-	NSUInteger optionsTabBarMask = [exportOptionsTabBar autoresizingMask];
-	NSUInteger buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
-	NSUInteger advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
-	
-	NSRect frame = [[self window] frame];
-	
-	if (frame.size.height > 600 && delta > heightOffset2) {
-		frame.origin.y += [exportAdvancedOptionsView frame].size.height;
-		frame.size.height -= [exportAdvancedOptionsView frame].size.height;
-		
-		[[self window] setFrame:frame display:YES animate:YES];
-	}
-	
-	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportTypeTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	
-	NSInteger newMinHeight = (windowMinHeigth - heightOffset2 + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset2 + delta;
-	
-	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
-	
-	frame.origin.y += heightOffset2;
-	frame.size.height -= heightOffset2;
-	
-	heightOffset2 = delta;
-	
-	frame.origin.y -= heightOffset2;
-	frame.size.height += heightOffset2;
-	
-	[[self window] setFrame:frame display:YES animate:YES];
-	
-	[exportTablelistScrollView setAutoresizingMask:scrollMask];
-	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
-	[exportTypeTabBar setAutoresizingMask:tabBarMask];
-	[exportOptionsTabBar setAutoresizingMask:optionsTabBarMask];
-	[exportAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
-	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
-	[exportAdvancedOptionsView setAutoresizingMask:advancedViewMask];
+	[exportCustomFilenameTokensField setStringValue:(i > 1) ? 
+	 NSLocalizedString(@"host,database,date,year,month,day,time", @"custom export filename tokens without table") :
+	 NSLocalizedString(@"host,database,table,date,year,month,day,time", @"default custom export filename tokens")];
 }
 
 @end

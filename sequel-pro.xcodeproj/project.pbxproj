@@ -92,6 +92,7 @@
 		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
 		17AF787B11FC41C00073D043 /* SPExportFilenameUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */; };
+		17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17BA2A3115275D8600389803 /* SPExportInterfaceController.m */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
@@ -717,6 +718,8 @@
 		17B7B58F1016028F00F057DE /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
 		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		17BA2A3015275D8600389803 /* SPExportInterfaceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInterfaceController.h; sourceTree = "<group>"; };
+		17BA2A3115275D8600389803 /* SPExportInterfaceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInterfaceController.m; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		17CC97F110B4ABE90034CD7A /* SPAboutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAboutController.h; sourceTree = "<group>"; };
@@ -2184,6 +2187,8 @@
 				17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */,
 				17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */,
 				17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */,
+				17BA2A3015275D8600389803 /* SPExportInterfaceController.h */,
+				17BA2A3115275D8600389803 /* SPExportInterfaceController.m */,
 				175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */,
 				175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */,
 				582F022F1370B52600B30621 /* SPExportFileNameTokenObject.h */,
@@ -3237,6 +3242,7 @@
 				17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */,
 				17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */,
 				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
+				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

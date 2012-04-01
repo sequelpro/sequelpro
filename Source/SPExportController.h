@@ -263,6 +263,4 @@
 - (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender;
 - (IBAction)toggleNewFilePerTable:(NSButton *)sender;
 
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
-
 @end
