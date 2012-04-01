@@ -23,7 +23,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPMySQLConnection, BWAnchoredButtonBar;
+@class SPDatabaseDocument, 
+       SPTableContent, 
+       SPCustomQuery, 
+       SPTablesList, 
+       SPTableData, 
+       SPMySQLConnection, 
+       BWAnchoredButtonBar;
 
 /**
  * @class SPExportController SPExportController.h
@@ -35,11 +41,11 @@
 @interface SPExportController : NSWindowController
 {	
 	// Controllers
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tableContentInstance;
-	IBOutlet id customQueryInstance;
-	IBOutlet id tablesListInstance;
-	IBOutlet id tableDataInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTableContent *tableContentInstance;
+	IBOutlet SPCustomQuery *customQueryInstance;
+	IBOutlet SPTablesList *tablesListInstance;
+	IBOutlet SPTableData *tableDataInstance;
 	
 	// Export window
 	IBOutlet NSView *exporterView;
@@ -93,9 +99,6 @@
 	IBOutlet NSTextField *exportSQLInsertNValueTextField;
 	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
 	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
-	
-	// Excel
-	IBOutlet NSMatrix *exportExcelSheetOrFilePerTableMatrix;
 	
 	// CSV
 	IBOutlet NSButton *exportCSVIncludeFieldNamesCheck;
