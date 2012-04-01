@@ -32,6 +32,13 @@
 
 #import "SPExportController.h"
 
+/**
+ * @category SPExportInterfaceController SPExportInterfaceController.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Export interface category.
+ */
 @interface SPExportController (SPExportInterfaceController)
 
 @end

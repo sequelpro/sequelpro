@@ -166,7 +166,6 @@
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
 		29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */ = {isa = PBXBuildFile; fileRef = 29FA88221114619E00D1AF3D /* SPTableTriggers.m */; };
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */; };
-		380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
@@ -846,7 +845,6 @@
 		296DC8A70F909194002A3258 /* MGTemplateEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MGTemplateEngine.m; sourceTree = "<group>"; };
 		296DC8A80F909194002A3258 /* MGTemplateEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGTemplateEngine.h; sourceTree = "<group>"; };
 		296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICUTemplateMatcher.h; sourceTree = "<group>"; };
-		296DC8AA0F909194002A3258 /* DeepMutableCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeepMutableCopy.h; sourceTree = "<group>"; };
 		296DC8AB0F909194002A3258 /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICUTemplateMatcher.m; sourceTree = "<group>"; };
 		296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MGTemplateStandardMarkers.m; sourceTree = "<group>"; };
@@ -869,8 +867,6 @@
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditionsTest.h; sourceTree = "<group>"; };
 		380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditionsTest.m; sourceTree = "<group>"; };
-		380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKitTest.h; sourceTree = "<group>"; };
-		380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPKitTest.m; sourceTree = "<group>"; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
 		387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelations.h; sourceTree = "<group>"; };
@@ -1679,6 +1675,15 @@
 			path = Scripts;
 			sourceTree = "<group>";
 		};
+		177486451528EE820036121C /* RegexKitLite */ = {
+			isa = PBXGroup;
+			children = (
+				296DC8B00F909194002A3258 /* RegexKitLite.h */,
+				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
+			);
+			name = RegexKitLite;
+			sourceTree = "<group>";
+		};
 		1792C28910AE1C7200ABE758 /* Controller Categories */ = {
 			isa = PBXGroup;
 			children = (
@@ -1784,6 +1789,7 @@
 				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
 				17DC8826126B22F200E9AAEC /* Views */,
 				58B909A111C3B8EC000826E5 /* Localization */,
+				177486451528EE820036121C /* RegexKitLite */,
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 			);
 			name = "Third Party";
@@ -1833,15 +1839,6 @@
 				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
 			);
 			name = "Text Views";
-			sourceTree = "<group>";
-		};
-		17DC885B126B36CF00E9AAEC /* MCPKit */ = {
-			isa = PBXGroup;
-			children = (
-				380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */,
-				380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */,
-			);
-			name = MCPKit;
 			sourceTree = "<group>";
 		};
 		17DC886A126B378A00E9AAEC /* Category Additions */ = {
@@ -2210,14 +2207,6 @@
 			name = Model;
 			sourceTree = "<group>";
 		};
-		17FC366814141A4B00AC3602 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				17DC885B126B36CF00E9AAEC /* MCPKit */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		17FC36AE141425D600AC3602 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -2260,9 +2249,6 @@
 				296DC8A70F909194002A3258 /* MGTemplateEngine.m */,
 				296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */,
 				296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */,
-				296DC8AA0F909194002A3258 /* DeepMutableCopy.h */,
-				296DC8B00F909194002A3258 /* RegexKitLite.h */,
-				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 				296DC8AF0F909194002A3258 /* NSArray_DeepMutableCopy.h */,
 				296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */,
 				296DC8B20F909194002A3258 /* NSDictionary_DeepMutableCopy.h */,
@@ -2302,7 +2288,6 @@
 		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17FC366814141A4B00AC3602 /* Frameworks */,
 				1198F5B41174EDDE00670590 /* Database Actions */,
 				17DC886A126B378A00E9AAEC /* Category Additions */,
 			);
@@ -2323,9 +2308,9 @@
 		584754CC120A05660057631F /* QuickLook Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				584754D2120A05910057631F /* main.c */,
 				584754D0120A05910057631F /* GeneratePreviewForURL.m */,
 				584754D1120A05910057631F /* GenerateThumbnailForURL.m */,
-				584754D2120A05910057631F /* main.c */,
 			);
 			name = "QuickLook Plugin";
 			sourceTree = "<group>";
@@ -3023,7 +3008,6 @@
 				115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */,
 				1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
-				380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */,
 				1760599F1336199D0098E162 /* SPMenuAdditionsTests.m in Sources */,
 				176059B713361D380098E162 /* SPDatabaseRenameTest.m in Sources */,
 				176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */,
