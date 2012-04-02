@@ -202,17 +202,8 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-	//stop any animations that may be running
-	[_animationTimer invalidate];
-	[_animationTimer release]; _animationTimer = nil;
-	
-	[_showHideAnimationTimer invalidate];
-	[_showHideAnimationTimer release]; _showHideAnimationTimer = nil;
 
-	//Also unwind the spring, if it's wound.
-	[_springTimer invalidate];
-	[_springTimer release]; _springTimer = nil;
+	[self destroyAnimations];
 
 	//unbind all the items to prevent crashing
 	//not sure if this is necessary or not
@@ -796,7 +787,7 @@
 
 - (void)hideTabBar:(BOOL)hide animate:(BOOL)animate
 {
-    if (!_awakenedFromNib || (_isHidden && hide) || (!_isHidden && !hide) || (_currentStep != kPSMIsNotBeingResized)) {
+    if (!_awakenedFromNib || (_isHidden && hide) || (!_isHidden && !hide)) {
         return;
 	}
 	
@@ -830,55 +821,35 @@
 			partnerOriginalSize = [[self window] frame].size.height;
 			partnerOriginalOrigin = [[self window] frame].origin.y;
 		}
-		
+
+		// Determine the target sizes
+		if (_isHidden) {
+			myTargetSize = kPSMTabBarControlHeightCollapsed;
+		} else {
+			myTargetSize = kPSMTabBarControlHeight;
+		}
+
 		if (partnerView) {
+			partnerTargetSize = partnerOriginalSize + myOriginalSize - myTargetSize;
+
 			// above or below me?
-			if ((myOriginalOrigin - 22) > partnerOriginalOrigin) {
-				// partner is below me
-				if (_isHidden) {
-					// I'm shrinking
-					myTargetOrigin = myOriginalOrigin + 21;
-					myTargetSize = myOriginalSize - 21;
-					partnerTargetOrigin = partnerOriginalOrigin;
-					partnerTargetSize = partnerOriginalSize + 21;
-				} else {
-					// I'm growing
-					myTargetOrigin = myOriginalOrigin - 21;
-					myTargetSize = myOriginalSize + 21;
-					partnerTargetOrigin = partnerOriginalOrigin;
-					partnerTargetSize = partnerOriginalSize - 21;
-				}
+			if ((myOriginalOrigin - kPSMTabBarControlHeight) > partnerOriginalOrigin) {
+
+				// partner is below me, keeps its origin
+				partnerTargetOrigin = partnerOriginalOrigin;
+				myTargetOrigin = myOriginalOrigin + myOriginalSize - myTargetSize;
 			} else {
-				// partner is above me
-				if (_isHidden) {
-					// I'm shrinking
-					myTargetOrigin = myOriginalOrigin;
-					myTargetSize = myOriginalSize - 21;
-					partnerTargetOrigin = partnerOriginalOrigin - 21;
-					partnerTargetSize = partnerOriginalSize + 21;
-				} else {
-					// I'm growing
-					myTargetOrigin = myOriginalOrigin;
-					myTargetSize = myOriginalSize + 21;
-					partnerTargetOrigin = partnerOriginalOrigin + 21;
-					partnerTargetSize = partnerOriginalSize - 21;
-				}
+
+				// partner is above me, I keep my origin
+				myTargetOrigin = myOriginalOrigin;
+				partnerTargetOrigin = partnerOriginalOrigin + myOriginalSize - myTargetSize;
 			}
 		} else {
+
 			// for window movement
-			if (_isHidden) {
-				// I'm shrinking
-				myTargetOrigin = myOriginalOrigin;
-				myTargetSize = myOriginalSize - 21;
-				partnerTargetOrigin = partnerOriginalOrigin + 21;
-				partnerTargetSize = partnerOriginalSize - 21;
-			} else {
-				// I'm growing
-				myTargetOrigin = myOriginalOrigin;
-				myTargetSize = myOriginalSize + 21;
-				partnerTargetOrigin = partnerOriginalOrigin - 21;
-				partnerTargetSize = partnerOriginalSize + 21;
-			}
+			myTargetOrigin = myOriginalOrigin;
+			partnerTargetOrigin = partnerOriginalOrigin + myOriginalSize - myTargetSize;
+			partnerTargetSize = partnerOriginalSize - myOriginalSize + myTargetSize;
 		}
 	} else /* vertical */ {
 		// current (original) values
@@ -1044,6 +1015,21 @@
     [partnerView release];
     [view retain];
     partnerView = view;
+}
+
+- (void)destroyAnimations
+{
+	// Stop any animations that may be running
+
+	[_animationTimer invalidate];
+	[_animationTimer release]; _animationTimer = nil;
+	
+	[_showHideAnimationTimer invalidate];
+	[_showHideAnimationTimer release]; _showHideAnimationTimer = nil;
+
+	// Also unwind the spring, if it's wound.
+	[_springTimer invalidate];
+	[_springTimer release]; _springTimer = nil;
 }
 
 #pragma mark -

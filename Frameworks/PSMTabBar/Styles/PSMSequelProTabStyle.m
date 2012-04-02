@@ -364,7 +364,7 @@
 	}
 	
 	[self drawBackgroundInRect:rect];
-	
+
 	// no tab view == not connected
     if (![bar tabView]) {
         NSRect labelRect = rect;
@@ -530,7 +530,7 @@
 	NSRect aRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, cellFrame.size.width, cellFrame.size.height);
 
 	// If the tab bar is hidden, don't draw the top pixel
-	if ([tabBar isTabBarHidden]) {
+	if ([tabBar isTabBarHidden] && [tabBar frame].size.height == kPSMTabBarControlHeightCollapsed) {
 		aRect.origin.y++;
 		aRect.size.height--;
 	}
