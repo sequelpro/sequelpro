@@ -1354,7 +1354,7 @@
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    if ([self lastMouseDownEvent] == nil) {
+    if (![self lastMouseDownEvent]) {
         return;
     }
     
@@ -1412,6 +1412,10 @@
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
+	if (![self lastMouseDownEvent]) {
+		return;
+	}
+
 	if (_resizing) {
 		_resizing = NO;
 		[[NSCursor arrowCursor] set];
@@ -1460,6 +1464,9 @@
 		
 		_closeClicked = NO;
 	}
+
+	// Clear the last mouse down event to prevent drag issues
+	[self setLastMouseDownEvent:nil];
 }
 
 - (NSMenu *)menuForEvent:(NSEvent *)event
