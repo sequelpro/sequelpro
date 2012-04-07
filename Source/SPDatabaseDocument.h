@@ -350,11 +350,10 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (IBAction)focusOnTableContentFilter:(id)sender;
 - (IBAction)focusOnTableListFilter:(id)sender;
 - (IBAction)export:(id)sender;
-
 - (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
-- (void) setQueryMode:(NSInteger)theQueryMode;
+- (void)setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
@@ -376,7 +375,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (void)setIsSavedInBundle:(BOOL)savedInBundle;
 - (void)setFileURL:(NSURL *)fileURL;
 - (void)connect;
-
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
@@ -456,7 +454,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (NSDictionary*)shellVariables;
 
 // State saving and setting
-- (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
+- (NSDictionary *)stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
 - (void)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
