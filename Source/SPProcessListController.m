@@ -796,12 +796,12 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Perform filtering
 	for (NSDictionary *process in processes) 
 	{
-		if (([[process objectForKey:@"Id"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+		if (([[[process objectForKey:@"Id"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[process objectForKey:@"User"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[process objectForKey:@"Host"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			((![[process objectForKey:@"db"] isNSNull]) && ([[process objectForKey:@"db"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			([[process objectForKey:@"Command"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[process objectForKey:@"Time"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+			([[[process objectForKey:@"Time"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			((![[process objectForKey:@"State"] isNSNull]) && ([[process objectForKey:@"State"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			((![[process objectForKey:@"Info"] isNSNull]) && ([[process objectForKey:@"Info"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)))
 		{
