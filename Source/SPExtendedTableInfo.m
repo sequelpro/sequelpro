@@ -90,12 +90,18 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
 	// Check if the user selected the same type
 	if ([currentType isEqualToString:newType]) return;
-		
+
+	// If the table is empty, perform the change directly
+	if ([[[tableDataInstance statusValues] objectForKey:@"Rows"] isEqualToString:@"0"]) {
+		[self _changeCurrentTableTypeFrom:currentType to:newType];
+		return;
+	}
+
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Change table type", @"change table type message")
 									 defaultButton:NSLocalizedString(@"Change", @"change button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of it's data. This action cannot be undone.", @"change table type informative message"), newType];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of its data. This action cannot be undone.", @"change table type informative message"), newType];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
