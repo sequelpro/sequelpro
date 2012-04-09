@@ -97,6 +97,7 @@
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
+		17D3583F1533768E00A654D7 /* SPWindowControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */; };
 		17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */; };
 		17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */; };
 		17D390C8127B65AF00672B13 /* SPGeneralPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */; };
@@ -725,6 +726,8 @@
 		17CC97F210B4ABE90034CD7A /* SPAboutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAboutController.m; sourceTree = "<group>"; };
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
+		17D3583D1533768E00A654D7 /* SPWindowControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowControllerDelegate.h; sourceTree = "<group>"; };
+		17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowControllerDelegate.m; sourceTree = "<group>"; };
 		17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructureDelegate.h; sourceTree = "<group>"; };
 		17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureDelegate.m; sourceTree = "<group>"; };
 		17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFieldValidation.h; sourceTree = "<group>"; };
@@ -1706,6 +1709,17 @@
 			name = Icons;
 			sourceTree = "<group>";
 		};
+		17D3583C1533766800A654D7 /* Window */ = {
+			isa = PBXGroup;
+			children = (
+				58A8A78F11A036C000B95749 /* SPWindowController.h */,
+				58A8A79011A036C000B95749 /* SPWindowController.m */,
+				17D3583D1533768E00A654D7 /* SPWindowControllerDelegate.h */,
+				17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */,
+			);
+			name = Window;
+			sourceTree = "<group>";
+		};
 		17D38EFB12777B2300672B13 /* Data Import */ = {
 			isa = PBXGroup;
 			children = (
@@ -1948,10 +1962,9 @@
 			children = (
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
-				58A8A78F11A036C000B95749 /* SPWindowController.h */,
-				58A8A79011A036C000B95749 /* SPWindowController.m */,
 				1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */,
 				1798AB901267924D000D946A /* SPAppleScriptSupport.m */,
+				17D3583C1533766800A654D7 /* Window */,
 				173567BA12AC1306000DCCEF /* Bundle Support */,
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
 				173E70D2107FF687008733C9 /* Subview Controllers */,
@@ -3227,6 +3240,7 @@
 				17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */,
 				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
 				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,
+				17D3583F1533768E00A654D7 /* SPWindowControllerDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
