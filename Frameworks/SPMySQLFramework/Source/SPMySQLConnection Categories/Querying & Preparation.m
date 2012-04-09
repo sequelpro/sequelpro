@@ -339,6 +339,13 @@
 	if (lastQueryWasCancelled) {
 		theErrorMessage = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 		theErrorID = 1317;
+
+		// If the query was cancelled on a MySQL <5 server, check the connection to allow reconnects
+		// after query kills.  This is also handled within the class for internal cancellations, but
+		// as other external classes may also cancel the query.
+		if (![self serverVersionIsGreaterThanOrEqualTo:5 minorVersion:0 releaseVersion:0]) {
+			[self checkConnection];
+		}
 	}
 
 	// Unlock the connection if appropriate - if not a streaming result type.
