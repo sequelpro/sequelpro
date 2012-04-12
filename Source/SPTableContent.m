@@ -4418,6 +4418,9 @@
 	[dataColumns release];
 	[oldRow release];
 #ifndef SP_REFACTOR
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];	
+	[nibObjectsToRelease release];
+
 	[filterTableData release];
 	if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];
 	if (filterTableDefaultOperator) [filterTableDefaultOperator release];

@@ -108,7 +108,6 @@
 	NSMutableArray *funcs  = [NSMutableArray array];
 	
 	NSMutableString *metaString = [NSMutableString string];
-	NSMutableString *cellValue  = [NSMutableString string];
 	NSMutableString *errors     = [[NSMutableString alloc] init];
 	NSMutableString *sqlString  = [[NSMutableString alloc] init];
 	
@@ -287,6 +286,8 @@
 			{
 				// Check for cancellation flag
 				if ([self isCancelled]) {
+					[errors release];
+					[sqlString release];
 					[pool release];
 					return;
 				}
@@ -345,51 +346,58 @@
 						[streamingResult cancelResultLoad];
 						[streamingResult release];
 						[sqlExportPool release];
+						[errors release];
+						[sqlString release];
 						[pool release];
-						
+
 						return;
 					}
-					
+
 					j++;
 					k++;
-					
+
 					[sqlString setString:@""];
-											
-					// Update the progress 
+
+					// Update the progress
 					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
-					
+
 					if (progress > lastProgressValue) {
 						[self setExportProgressValue:progress];
 						lastProgressValue = progress;
-						
+
 						// Inform the delegate that the export's progress has been updated
 						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 					}
-					
-					for (t = 0; t < colCount; t++) 
+
+					for (t = 0; t < colCount; t++)
 					{
 						// Check for cancellation flag
 						if ([self isCancelled]) {
+							[connection cancelCurrentQuery];
+							[streamingResult cancelResultLoad];
+							[streamingResult release];
 							[sqlExportPool release];
+							[errors release];
+							[sqlString release];
 							[pool release];
-							
+
 							return;
 						}
-						
+
 						id object = NSArrayObjectAtIndex(row, t);
-												
+
 						// Add NULL values directly to the output row; use a pointer comparison to the singleton
 						// instance for speed.
 						if (object == [NSNull null]) {
 							[sqlString appendString:@"NULL"];
-						} 
+						}
 						// If the field is off type BIT, the values need a binary prefix of b'x'.
 						else if ([[NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], t) objectForKey:@"type"] isEqualToString:@"BIT"]) {
 							[sqlString appendFormat:@"b'%@'", [object description]];
 						}
 						// Add data types directly as hex data
 						else if ([object isKindOfClass:[NSData class]]) {
-							
+
 							if ([self sqlOutputEncodeBLOBasHex]) {
 								[sqlString appendString:[connection escapeAndQuoteData:object]];
 							}
@@ -415,19 +423,18 @@
 							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
 						}
 						else {
-							[cellValue setString:[object description]];
 							
 							// Add empty strings as a pair of quotes
-							if ([cellValue length] == 0) {
+							if ([object length] == 0) {
 								[sqlString appendString:@"''"];
 							} 
 							else {	
 								if ([NSArrayObjectAtIndex(tableColumnNumericStatus, t) boolValue]) {
-									[sqlString appendString:cellValue];
+									[sqlString appendString:object];
 								} 
 								// Otherwise add a quoted string with special characters escaped
 								else {
-									[sqlString appendString:[connection escapeAndQuoteString:cellValue]];
+									[sqlString appendString:[connection escapeAndQuoteString:object]];
 								}
 							}
 						}
@@ -874,6 +881,7 @@
 	[sqlDatabaseName release], sqlDatabaseName = nil;
 	[sqlExportCurrentTable release], sqlExportCurrentTable = nil;
 	[sqlDatabaseVersion release], sqlDatabaseVersion = nil;
+	[sqlExportErrors release], sqlExportErrors = nil;
 	
 	[super dealloc];
 }
