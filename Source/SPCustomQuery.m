@@ -798,6 +798,7 @@
 	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
 	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 
+	if (lastExecutedQuery) [lastExecutedQuery release];
 	lastExecutedQuery = [[tempQueries lastObject] retain];
 
 	// Perform empty query if no query is given
@@ -3705,6 +3706,7 @@
 	if ((self = [super init])) {
 
 		usedQuery = [[NSString stringWithString:@""] retain];
+		lastExecutedQuery = nil;
 		fieldIDQueryString = nil;
 		sortField = nil;
 		isDesc = NO;
@@ -4040,6 +4042,7 @@
 
 	[self clearQueryLoadTimer];
 	[usedQuery release];
+	[lastExecutedQuery release];
 	[resultData release];
 	[favoritesManager release];
 
