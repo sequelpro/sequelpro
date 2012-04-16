@@ -32,6 +32,7 @@
 
 
 #import "Encoding.h"
+#import "SPMySQLStringAdditions.h"
 
 @implementation SPMySQLConnection (Encoding)
 

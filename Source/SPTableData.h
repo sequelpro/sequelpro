@@ -35,6 +35,7 @@
 	NSMutableArray *constraints;
 	NSArray *triggers;
 	NSMutableDictionary *status;
+	NSMutableArray *primaryKeyColumns;
 	
 	NSString *tableEncoding;
 	NSString *tableCreateSyntax;

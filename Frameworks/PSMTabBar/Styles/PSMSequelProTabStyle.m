@@ -364,7 +364,7 @@
 	}
 	
 	[self drawBackgroundInRect:rect];
-	
+
 	// no tab view == not connected
     if (![bar tabView]) {
         NSRect labelRect = rect;
@@ -530,7 +530,7 @@
 	NSRect aRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y, cellFrame.size.width, cellFrame.size.height);
 
 	// If the tab bar is hidden, don't draw the top pixel
-	if ([tabBar isTabBarHidden]) {
+	if ([tabBar isTabBarHidden] && [tabBar frame].size.height == kPSMTabBarControlHeightCollapsed) {
 		aRect.origin.y++;
 		aRect.size.height--;
 	}
@@ -655,21 +655,10 @@
 {
     NSRect cellFrame = [cell frame];
 	CGFloat insetLabelWidth = 0;
-	BOOL tabBarIsRightOfSelectedTab = NO;
-	
-	// Determine if the selected tab is right of this tab
-	for (PSMTabBarCell *aCell in [tabBar cells]) {
-		if (aCell == cell) break;
-		if ([aCell state] == NSOnState) {
-			tabBarIsRightOfSelectedTab = YES;
-			break;
-		}
-	}
-    
+
     // close button
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed] && [cell isHighlighted]) {
 		
-        NSSize closeButtonSize = NSZeroSize;
         NSRect closeButtonRect = [cell closeButtonRectForFrame:cellFrame];
         NSImage * closeButton = nil;
 
@@ -677,9 +666,7 @@
 		
         if ([cell closeButtonOver]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonOver : sequelProCloseButtonOver;
         if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonDown : sequelProCloseButtonDown;
-        
-        closeButtonSize = [closeButton size];
-		
+
         if ([controlView isFlipped]) {
             closeButtonRect.origin.y += closeButtonRect.size.height;
         }

@@ -31,12 +31,16 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPGeometryDataView.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
+#endif
 #import "SPTablesList.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 NSInteger MENU_EDIT_COPY             = 2001;
 NSInteger MENU_EDIT_COPY_WITH_COLUMN = 2002;
@@ -120,6 +124,15 @@ NSInteger kBlobAsImageFile = 4;
 	}
 #endif
 }
+
+#ifdef SP_REFACTOR
+
+- (void)delete:(id)sender
+{
+	[tableInstance removeRow:self];
+}
+
+#endif
 
 /**
  * Get selected rows a string of newline separated lines of tab separated fields
@@ -425,7 +438,6 @@ NSInteger kBlobAsImageFile = 4;
 	NSUInteger rowCounter = 0;
 	NSUInteger penultimateRowIndex = [selectedRows count];
 	NSUInteger c;
-	NSUInteger valueLength = 0;
 
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
 
@@ -472,7 +484,10 @@ NSInteger kBlobAsImageFile = 4;
 		[value appendString:@"\t("];
 		cellData = nil;
 		rowCounter++;
-		for ( c = 0; c < numColumns; c++ )
+
+		NSMutableArray *rowValues = [[NSMutableArray alloc] initWithCapacity:numColumns];
+
+		for (c = 0; c < numColumns; c++)
 		{
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
@@ -498,7 +513,7 @@ NSInteger kBlobAsImageFile = 4;
 
 			// Check for NULL value
 			if ([cellData isNSNull]) {
-				[value appendString:@"NULL, "];
+				[rowValues addObject:@"NULL"];
 				continue;
 
 			} else if (cellData) {
@@ -508,28 +523,29 @@ NSInteger kBlobAsImageFile = 4;
 
 					// Convert numeric types to unquoted strings
 					case 0:
-						[value appendFormat:@"%@, ", [cellData description]];
+						[rowValues addObject:[cellData description]];
 						break;
 
 					// Quote string, text and blob types appropriately
 					case 1:
 					case 2:
 						if ([cellData isKindOfClass:nsDataClass]) {
-							[value appendString:[mySQLConnection escapeAndQuoteData:cellData]];
+							[rowValues addObject:[mySQLConnection escapeAndQuoteData:cellData]];
 						} else {
-							[value appendString:[mySQLConnection escapeAndQuoteString:[cellData description]]];
+							[rowValues addObject:[mySQLConnection escapeAndQuoteString:[cellData description]]];
 						}
 						break;
 
 					// GEOMETRY
 					case 3:
-						[value appendString:[mySQLConnection escapeAndQuoteData:[cellData data]]];
+						[rowValues addObject:[mySQLConnection escapeAndQuoteData:[cellData data]]];
 						break;
 					// Unhandled cases - abort
 					default:
 						NSBeep();
 						free(columnMappings);
 						free(columnTypes);
+						[rowValues release];
 						return nil;
 				}
 
@@ -538,27 +554,27 @@ NSInteger kBlobAsImageFile = 4;
 				NSBeep();
 				free(columnMappings);
 				free(columnTypes);
+
+				[rowValues release];
+				
 				return nil;
 			}
 		}
 
-		// Remove the trailing ', ' from the query
-		if ( [value length] > 2 )
-			[value deleteCharactersInRange:NSMakeRange([value length]-2, 2)];
-
-		valueLength += [value length];
+		// Add to the string in comma-separated form, and increment the string length
+		[value appendString:[rowValues componentsJoinedByString:@", "]];
+		[rowValues release];
 
 		// Close this VALUES group and set up the next one if appropriate
 		if ( rowCounter != penultimateRowIndex ) {
 
 			// Add a new INSERT starter command every ~250k of data.
-			if ( valueLength > 250000 ) {
+			if ([value length] > 250000) {
 				[result appendFormat:@"%@);\n\nINSERT INTO %@ (%@)\nVALUES\n",
 						value,
 						[(selectedTable == nil) ? @"<table>" : selectedTable backtickQuotedString],
 						[tbHeader componentsJoinedAndBacktickQuoted]];
 				[value setString:@""];
-				valueLength = 0;
 			} else {
 				[value appendString:@"),\n"];
 			}
@@ -989,6 +1005,16 @@ NSInteger kBlobAsImageFile = 4;
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
+#ifdef SP_REFACTOR
+	if ( [anItem action] == @selector(selectAll:) )
+		return YES;
+		
+	if ( [anItem action] == @selector(delete:) )
+	{
+		if ( [self numberOfSelectedRows] > 0 )
+			return YES;
+	}
+#endif
 	return NO;
 }
 
@@ -1170,7 +1196,18 @@ NSInteger kBlobAsImageFile = 4;
 {
 
 	// Retrieve the column definition
+#if SP_REFACTOR
+	NSDictionary *columnDefinition;
+	
+	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
+		columnDefinition = [[(SPTableContent*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	
+	else if ( [[self delegate] isKindOfClass:[SPCustomQuery class]] )
+		columnDefinition = [[(SPCustomQuery*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+#else
 	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+#endif
+
 	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.

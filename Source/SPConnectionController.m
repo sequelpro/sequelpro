@@ -40,7 +40,8 @@
 #import "SPTreeNode.h"
 #import "SPFavoritesExporter.h"
 #import "SPFavoritesImporter.h"
-#import "SPMySQL.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 // Constants
 static NSString *SPRemoveNode              = @"RemoveNode";
@@ -1440,6 +1441,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+	if (favoritesRoot) [favoritesRoot release], favoritesRoot = nil;
     
     [super dealloc];
 }

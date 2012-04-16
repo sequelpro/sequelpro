@@ -307,6 +307,7 @@
  */
 - (IBAction)exportContentFilter:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
@@ -317,6 +318,7 @@
 	[panel setCanCreateDirectories:YES];
 
 	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFilter"];
+#endif
 }
 
 /**
@@ -324,6 +326,7 @@
  */
 - (IBAction)importContentFilterByAdding:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
@@ -338,6 +341,7 @@
 				  modalDelegate:self
 				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:)
 					contextInfo:NULL];
+#endif
 }
 
 /**
@@ -828,6 +832,7 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 	if (returnCode == NSOKButton) {
 
 		NSString *filename = [[panel filenames] objectAtIndex:0];
@@ -885,6 +890,7 @@
 			}
 		}
 	}
+#endif
 }
 
 
@@ -894,6 +900,7 @@
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
+#ifndef SP_REFACTOR
 	if([contextInfo isEqualToString:@"exportFilter"]) {
 		if (returnCode == NSOKButton) {
 
@@ -941,6 +948,7 @@
 
 		}
 	}
+#endif
 }
 
 @end

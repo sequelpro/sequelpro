@@ -414,7 +414,7 @@
 		}
 
 		// Copy the data into a local buffer
-		NSData *dataToBeWritten = [NSData dataWithData:buffer];
+		NSData *dataToBeWritten = [buffer copy];
 		[buffer setLength:0];
 		bufferDataLength = 0;
 		pthread_mutex_unlock(&bufferLock);
@@ -453,6 +453,8 @@
 			allDataWritten = YES;
 		}
 		pthread_mutex_unlock(&bufferLock);
+
+		[dataToBeWritten release];
 	}
 
 	[writePool drain];

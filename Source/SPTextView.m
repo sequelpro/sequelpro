@@ -33,10 +33,14 @@
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPDatabaseViewController.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
-#import "SPMySQL.h"
+#endif
+#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
 
 #pragma mark -
@@ -104,6 +108,13 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize shouldHiliteQuery;
 @synthesize completionIsOpen;
 @synthesize completionWasReinvokedAutomatically;
+
+#ifdef SP_REFACTOR
+@synthesize tableDocumentInstance;
+@synthesize tablesListInstance;
+@synthesize customQueryInstance;
+@synthesize mySQLConnection;
+#endif
 
 /**
  * Sort function (mainly used to sort the words in the textView)

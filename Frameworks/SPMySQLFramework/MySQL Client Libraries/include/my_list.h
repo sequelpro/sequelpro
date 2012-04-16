@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 MySQL AB
+/* Copyright (c) 2000, 2010, Oracle and/or its affiliates. All rights reserved.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,7 +11,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA */
 
 #ifndef _list_h_
 #define _list_h_
@@ -37,7 +37,7 @@ extern int list_walk(LIST *,list_walk_action action,unsigned char * argument);
 
 #define list_rest(a) ((a)->next)
 #define list_push(a,b) (a)=list_cons((b),(a))
-#define list_pop(A) {LIST *old=(A); (A)=list_delete(old,old) ; my_free((unsigned char *) old,MYF(MY_FAE)); }
+#define list_pop(A) {LIST *old=(A); (A)=list_delete(old,old); my_free(old); }
 
 #ifdef	__cplusplus
 }

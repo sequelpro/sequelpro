@@ -41,6 +41,9 @@
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */; };
+		17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17386E0A15192526002DC206 /* SPTableContentDataSource.m */; };
+		17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17386E0D1519257E002DC206 /* SPTableContentDelegate.m */; };
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
 		173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C44D71044A6B0001F3A30 /* SPOutlineView.m */; };
@@ -99,10 +102,12 @@
 		17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A7773311C52D8E001E27B4 /* SPIndexesController.m */; };
 		17A7773811C52E61001E27B4 /* IndexesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17A7773611C52E61001E27B4 /* IndexesView.xib */; };
 		17AF787B11FC41C00073D043 /* SPExportFilenameUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */; };
+		17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17BA2A3115275D8600389803 /* SPExportInterfaceController.m */; };
 		17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */ = {isa = PBXBuildFile; fileRef = 17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */; };
 		17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17CC97F210B4ABE90034CD7A /* SPAboutController.m */; };
 		17CC97F710B4AC6C0034CD7A /* AboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 17CC97F510B4AC6C0034CD7A /* AboutPanel.xib */; };
 		17CC993B10B4C9C80034CD7A /* License.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 17CC993A10B4C9C80034CD7A /* License.rtf */; };
+		17D3583F1533768E00A654D7 /* SPWindowControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */; };
 		17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */; };
 		17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D38F6F1279E23A00672B13 /* SPTableFieldValidation.m */; };
 		17D390C8127B65AF00672B13 /* SPGeneralPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */; };
@@ -172,7 +177,6 @@
 		29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = 29A1B7E40FD1293A000B88E8 /* SPPrintAccessory.m */; };
 		29FA88231114619E00D1AF3D /* SPTableTriggers.m in Sources */ = {isa = PBXBuildFile; fileRef = 29FA88221114619E00D1AF3D /* SPTableTriggers.m */; };
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */; };
-		380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
@@ -622,6 +626,12 @@
 		172A65100F7BED7A001E861A /* SPConsoleMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConsoleMessage.m; sourceTree = "<group>"; };
 		173284E81088FEDE0062E892 /* SPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConstants.h; sourceTree = "<group>"; };
 		173284E91088FEDE0062E892 /* SPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConstants.m; sourceTree = "<group>"; };
+		17381854151FB34E0078FFE2 /* SPUserManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManagerDelegate.h; sourceTree = "<group>"; };
+		17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManagerDelegate.m; sourceTree = "<group>"; };
+		17386E0915192526002DC206 /* SPTableContentDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentDataSource.h; sourceTree = "<group>"; };
+		17386E0A15192526002DC206 /* SPTableContentDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContentDataSource.m; sourceTree = "<group>"; };
+		17386E0C1519257E002DC206 /* SPTableContentDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentDelegate.h; sourceTree = "<group>"; };
+		17386E0D1519257E002DC206 /* SPTableContentDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContentDelegate.m; sourceTree = "<group>"; };
 		173C4361104455CA001F3A30 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/QueryFavoriteManager.xib; sourceTree = "<group>"; };
 		173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPQueryFavoriteManager.h; sourceTree = "<group>"; };
 		173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryFavoriteManager.m; sourceTree = "<group>"; };
@@ -740,12 +750,16 @@
 		17B7B58F1016028F00F057DE /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
 		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
+		17BA2A3015275D8600389803 /* SPExportInterfaceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInterfaceController.h; sourceTree = "<group>"; };
+		17BA2A3115275D8600389803 /* SPExportInterfaceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInterfaceController.m; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
 		17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNarrowDownCompletion.m; sourceTree = "<group>"; };
 		17CC97F110B4ABE90034CD7A /* SPAboutController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAboutController.h; sourceTree = "<group>"; };
 		17CC97F210B4ABE90034CD7A /* SPAboutController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAboutController.m; sourceTree = "<group>"; };
 		17CC97F610B4AC6C0034CD7A /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/AboutPanel.xib; sourceTree = "<group>"; };
 		17CC993A10B4C9C80034CD7A /* License.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = License.rtf; sourceTree = "<group>"; };
+		17D3583D1533768E00A654D7 /* SPWindowControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowControllerDelegate.h; sourceTree = "<group>"; };
+		17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowControllerDelegate.m; sourceTree = "<group>"; };
 		17D38EBA12771A1C00672B13 /* SPTableStructureDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructureDelegate.h; sourceTree = "<group>"; };
 		17D38EBB12771A1C00672B13 /* SPTableStructureDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureDelegate.m; sourceTree = "<group>"; };
 		17D38F6E1279E23A00672B13 /* SPTableFieldValidation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFieldValidation.h; sourceTree = "<group>"; };
@@ -866,7 +880,6 @@
 		296DC8A70F909194002A3258 /* MGTemplateEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MGTemplateEngine.m; sourceTree = "<group>"; };
 		296DC8A80F909194002A3258 /* MGTemplateEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGTemplateEngine.h; sourceTree = "<group>"; };
 		296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ICUTemplateMatcher.h; sourceTree = "<group>"; };
-		296DC8AA0F909194002A3258 /* DeepMutableCopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeepMutableCopy.h; sourceTree = "<group>"; };
 		296DC8AB0F909194002A3258 /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
 		296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ICUTemplateMatcher.m; sourceTree = "<group>"; };
 		296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MGTemplateStandardMarkers.m; sourceTree = "<group>"; };
@@ -889,8 +902,6 @@
 		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		380F4EF30FC0B68F00B0BFD7 /* SPStringAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPStringAdditionsTest.h; sourceTree = "<group>"; };
 		380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditionsTest.m; sourceTree = "<group>"; };
-		380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MCPKitTest.h; sourceTree = "<group>"; };
-		380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MCPKitTest.m; sourceTree = "<group>"; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
 		387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelations.h; sourceTree = "<group>"; };
@@ -1476,6 +1487,30 @@
 			name = "Bundle Support";
 			sourceTree = "<group>";
 		};
+		17381853151FB29C0078FFE2 /* User Manager */ = {
+			isa = PBXGroup;
+			children = (
+				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
+				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
+				17381854151FB34E0078FFE2 /* SPUserManagerDelegate.h */,
+				17381855151FB34E0078FFE2 /* SPUserManagerDelegate.m */,
+			);
+			name = "User Manager";
+			sourceTree = "<group>";
+		};
+		17386E08151924E9002DC206 /* Table Content */ = {
+			isa = PBXGroup;
+			children = (
+				17E6414E0EF01EF6001BC333 /* SPTableContent.h */,
+				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
+				17386E0C1519257E002DC206 /* SPTableContentDelegate.h */,
+				17386E0D1519257E002DC206 /* SPTableContentDelegate.m */,
+				17386E0915192526002DC206 /* SPTableContentDataSource.h */,
+				17386E0A15192526002DC206 /* SPTableContentDataSource.m */,
+			);
+			name = "Table Content";
+			sourceTree = "<group>";
+		};
 		173C836C11AAD24300B8B084 /* Exporters */ = {
 			isa = PBXGroup;
 			children = (
@@ -1550,13 +1585,12 @@
 				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
 				29FA88211114619E00D1AF3D /* SPTableTriggers.h */,
 				29FA88221114619E00D1AF3D /* SPTableTriggers.m */,
-				17E6414E0EF01EF6001BC333 /* SPTableContent.h */,
-				17E6414F0EF01EF6001BC333 /* SPTableContent.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
 				17D3DC1E1281816E002A163A /* SPDatabaseViewController.h */,
 				17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */,
 				17D38FC2127B0C9500672B13 /* Connection View */,
+				17386E08151924E9002DC206 /* Table Content */,
 				17D38F691279E17D00672B13 /* Table Structure */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
@@ -1580,14 +1614,13 @@
 				1792C13610AD75C800ABE758 /* SPServerVariablesController.m */,
 				17E6415E0EF01F15001BC333 /* SPTableInfo.h */,
 				17E6415F0EF01F15001BC333 /* SPTableInfo.m */,
-				4D90B798101E0CDF00D116A1 /* SPUserManager.h */,
-				4D90B799101E0CDF00D116A1 /* SPUserManager.m */,
 				17E641600EF01F15001BC333 /* SPTablesList.h */,
 				17E641610EF01F15001BC333 /* SPTablesList.m */,
 				BC27779E11514B940034DF6A /* SPNavigatorController.h */,
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
+				17381853151FB29C0078FFE2 /* User Manager */,
 				1713C73D140D88D400CFD461 /* Query Controller */,
 			);
 			name = "Subview Controllers";
@@ -1701,6 +1734,15 @@
 			path = Scripts;
 			sourceTree = "<group>";
 		};
+		177486451528EE820036121C /* RegexKitLite */ = {
+			isa = PBXGroup;
+			children = (
+				296DC8B00F909194002A3258 /* RegexKitLite.h */,
+				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
+			);
+			name = RegexKitLite;
+			sourceTree = "<group>";
+		};
 		1792C28910AE1C7200ABE758 /* Controller Categories */ = {
 			isa = PBXGroup;
 			children = (
@@ -1721,6 +1763,17 @@
 				17A66F6A10B1ED59004C9B12 /* old-appicon.icns */,
 			);
 			name = Icons;
+			sourceTree = "<group>";
+		};
+		17D3583C1533766800A654D7 /* Window */ = {
+			isa = PBXGroup;
+			children = (
+				58A8A78F11A036C000B95749 /* SPWindowController.h */,
+				58A8A79011A036C000B95749 /* SPWindowController.m */,
+				17D3583D1533768E00A654D7 /* SPWindowControllerDelegate.h */,
+				17D3583E1533768E00A654D7 /* SPWindowControllerDelegate.m */,
+			);
+			name = Window;
 			sourceTree = "<group>";
 		};
 		17D38EFB12777B2300672B13 /* Data Import */ = {
@@ -1811,6 +1864,7 @@
 				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
 				17DC8826126B22F200E9AAEC /* Views */,
 				58B909A111C3B8EC000826E5 /* Localization */,
+				177486451528EE820036121C /* RegexKitLite */,
 				296DC8A40F90914B002A3258 /* MGTemplateEngine */,
 			);
 			name = "Third Party";
@@ -1860,15 +1914,6 @@
 				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
 			);
 			name = "Text Views";
-			sourceTree = "<group>";
-		};
-		17DC885B126B36CF00E9AAEC /* MCPKit */ = {
-			isa = PBXGroup;
-			children = (
-				380F4F230FC0C3D300B0BFD7 /* MCPKitTest.h */,
-				380F4F240FC0C3D300B0BFD7 /* MCPKitTest.m */,
-			);
-			name = MCPKit;
 			sourceTree = "<group>";
 		};
 		17DC886A126B378A00E9AAEC /* Category Additions */ = {
@@ -1980,10 +2025,9 @@
 			children = (
 				17E6414A0EF01EF6001BC333 /* SPAppController.h */,
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
-				58A8A78F11A036C000B95749 /* SPWindowController.h */,
-				58A8A79011A036C000B95749 /* SPWindowController.m */,
 				1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */,
 				1798AB901267924D000D946A /* SPAppleScriptSupport.m */,
+				17D3583C1533766800A654D7 /* Window */,
 				173567BA12AC1306000DCCEF /* Bundle Support */,
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
 				173E70D2107FF687008733C9 /* Subview Controllers */,
@@ -2217,6 +2261,8 @@
 				17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */,
 				17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */,
 				17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */,
+				17BA2A3015275D8600389803 /* SPExportInterfaceController.h */,
+				17BA2A3115275D8600389803 /* SPExportInterfaceController.m */,
 				175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */,
 				175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */,
 				582F022F1370B52600B30621 /* SPExportFileNameTokenObject.h */,
@@ -2236,14 +2282,6 @@
 				17F90E471210B42700274C98 /* SPExportFile.m */,
 			);
 			name = Model;
-			sourceTree = "<group>";
-		};
-		17FC366814141A4B00AC3602 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				17DC885B126B36CF00E9AAEC /* MCPKit */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		17FC36AE141425D600AC3602 /* Frameworks */ = {
@@ -2288,9 +2326,6 @@
 				296DC8A70F909194002A3258 /* MGTemplateEngine.m */,
 				296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */,
 				296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */,
-				296DC8AA0F909194002A3258 /* DeepMutableCopy.h */,
-				296DC8B00F909194002A3258 /* RegexKitLite.h */,
-				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 				296DC8AF0F909194002A3258 /* NSArray_DeepMutableCopy.h */,
 				296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */,
 				296DC8B20F909194002A3258 /* NSDictionary_DeepMutableCopy.h */,
@@ -2331,7 +2366,6 @@
 		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17FC366814141A4B00AC3602 /* Frameworks */,
 				1198F5B41174EDDE00670590 /* Database Actions */,
 				17DC886A126B378A00E9AAEC /* Category Additions */,
 			);
@@ -2352,9 +2386,9 @@
 		584754CC120A05660057631F /* QuickLook Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				584754D2120A05910057631F /* main.c */,
 				584754D0120A05910057631F /* GeneratePreviewForURL.m */,
 				584754D1120A05910057631F /* GenerateThumbnailForURL.m */,
-				584754D2120A05910057631F /* main.c */,
 			);
 			name = "QuickLook Plugin";
 			sourceTree = "<group>";
@@ -3054,7 +3088,6 @@
 				115D63E3117CBC5900419057 /* SPDatabaseInfo.m in Sources */,
 				1198F7541174FFCF00670590 /* SPDatabaseCopy.m in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTest.m in Sources */,
-				380F4F250FC0C3D300B0BFD7 /* MCPKitTest.m in Sources */,
 				1760599F1336199D0098E162 /* SPMenuAdditionsTests.m in Sources */,
 				176059B713361D380098E162 /* SPDatabaseRenameTest.m in Sources */,
 				176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */,
@@ -3279,6 +3312,11 @@
 				174136931516294000DF1EE6 /* SPFavoritesExporter.m in Sources */,
 				174136941516294000DF1EE6 /* SPFavoritesImporter.m in Sources */,
 				174137641516793B00DF1EE6 /* SPDataBase64EncodingAdditions.m in Sources */,
+				17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */,
+				17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */,
+				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
+				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,
+				17D3583F1533768E00A654D7 /* SPWindowControllerDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4134,6 +4172,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"",
+					"\"$(SRCROOT)/Frameworks/QueryKit/build/Debug\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4141,7 +4181,6 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";
@@ -4285,13 +4324,14 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
+				HEADER_SEARCH_PATHS = "";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -4310,11 +4350,12 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
+				HEADER_SEARCH_PATHS = "";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -4332,11 +4373,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				FRAMEWORK_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"";
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -4355,6 +4396,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Frameworks/QueryKit/build/Debug\"",
+					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4364,7 +4407,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";
@@ -4384,6 +4427,8 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"",
+					"\"$(SRCROOT)/Frameworks/QueryKit/build/Debug\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4391,7 +4436,7 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/Sequel-Pro.pch";
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Frameworks/SPMySQLFramework/**";
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";

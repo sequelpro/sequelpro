@@ -2,7 +2,7 @@
 //  $Id$
 //
 //  QKSelectQueryTests.h
-//  sequel-pro
+//  QueryKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
@@ -27,8 +27,6 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import <QueryKit/QueryKit.h>
 #import <SenTestingKit/SenTestingKit.h>

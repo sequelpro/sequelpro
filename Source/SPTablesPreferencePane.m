@@ -53,7 +53,6 @@
 	NSFont *font = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 	
 	[globalResultTableFontName setFont:font];
-	[globalResultTableFontName setStringValue:[NSString stringWithFormat:@"%@, %.1f pt", [font displayName], [font pointSize]]];
 }
 
 #pragma mark -

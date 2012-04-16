@@ -24,11 +24,13 @@
 
 @interface NSData (SPDataAdditions)
 
-- (NSString *)dataToFormattedHexString;
-- (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
 - (NSData *)dataEncryptedWithPassword:(NSString *)password;
 - (NSData *)dataDecryptedWithPassword:(NSString *)password;
 - (NSData *)compress;
 - (NSData *)decompress;
+
+- (NSString *)dataToFormattedHexString;
+- (NSString *)stringRepresentationUsingEncoding:(NSStringEncoding)encoding;
+- (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
 
 @end

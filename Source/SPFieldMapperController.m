@@ -31,7 +31,7 @@
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
@@ -192,7 +192,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	showAdvancedView = NO;
 	targetTableHasPrimaryKey = NO;
-	primaryKeyField = nil;
+	primaryKeyFields = nil;
 	heightOffset = 0;
 	[advancedReplaceView setHidden:YES];
 	[advancedUpdateView setHidden:YES];
@@ -225,7 +225,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release];
 	if (fieldMappingGlobalValuesSQLMarked) [fieldMappingGlobalValuesSQLMarked release];
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
-	if (primaryKeyField) [primaryKeyField release];
+	if (primaryKeyFields) [primaryKeyFields release];
 	if (toBeEditedRowIndexes) [toBeEditedRowIndexes release];
 	[super dealloc];
 }
@@ -293,7 +293,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	NSMutableArray *globals = [NSMutableArray array];
 	for(NSUInteger i=0; i < [fieldMappingGlobalValues count]; i++) {
 		id glob = NSArrayObjectAtIndex(fieldMappingGlobalValues, i);
-		if([NSArrayObjectAtIndex(fieldMappingGlobalValuesSQLMarked, i) boolValue] || glob == [NSNull null])
+		if([NSArrayObjectAtIndex(fieldMappingGlobalValuesSQLMarked, i) boolValue] || [glob isNSNull])
 			[globals addObject:glob];
 		else
 			[globals addObject:[NSString stringWithFormat:@"'%@'", [(NSString*)glob stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
@@ -567,8 +567,8 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 					[fieldMappingTableDefaultValues addObject:@"0"];
 				}
 				targetTableHasPrimaryKey = YES;
-				if (primaryKeyField) [primaryKeyField release];
-				primaryKeyField = [[tableDetails objectForKey:@"primarykeyfield"] retain];
+				if (primaryKeyFields) [primaryKeyFields release];
+				primaryKeyFields = [[tableDetails objectForKey:@"primarykeyfield"] retain];
 			} else {
 				if([column objectForKey:@"unique"]) {
 					[type appendFormat:@",%@",@"UNIQUE"];
@@ -841,7 +841,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 		columnCounter = 0;
 		for(id col in row) {
-			if(col && col != [NSNull null]) {
+			if(col && ![col isNSNull]) {
 				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < (NSInteger)[(NSString*)col length]) {
 					maxLengthOfSourceColumns[columnCounter] = [(NSString*)col length];
 				}
@@ -1248,7 +1248,11 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[onupdateCheckBox setEnabled:NO];
 			[onupdateTextView setEditable:YES];
 			[onupdateTextView setSelectedRange:NSMakeRange(0,[[onupdateTextView string] length])];
-			[onupdateTextView insertText:[NSString stringWithFormat:@"%@ = %@", [primaryKeyField backtickQuotedString], [primaryKeyField backtickQuotedString]]];
+			NSMutableArray *queryParts = [NSMutableArray arrayWithCapacity:[primaryKeyFields count]];
+			for (NSString *eachFieldName in primaryKeyFields) {
+				[queryParts addObject:[NSString stringWithFormat:@"%@ = %@", [eachFieldName backtickQuotedString], [eachFieldName backtickQuotedString]]];
+			}
+			[onupdateTextView insertText:[queryParts componentsJoinedByString:@" AND "]];
 			[onupdateTextView setBackgroundColor:[NSColor lightGrayColor]];
 			[onupdateTextView setEditable:NO];
 		} else {
@@ -1487,7 +1491,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		fieldMappingArray = [[NSMutableArray alloc] init];
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count]
-					&& NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) != [NSNull null]) {
+					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isNSNull]) {
 				value = i;
 			} else {
 				value = 0;

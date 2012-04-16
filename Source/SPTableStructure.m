@@ -36,7 +36,7 @@
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -292,15 +292,19 @@
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	if ([encodings count]) {
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemWithTitle:@""];
 
 		// Populate encoding popup button
+		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
+		[encodingTitles addObject:@""];
 		for (NSDictionary *encoding in encodings)
-			[[encodingPopupCell onMainThread] addItemWithTitle:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
+			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
 
+		[[encodingPopupCell onMainThread] removeAllItems];
+		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
+		[encodingTitles release];
 	}
 	else {
+		[[encodingPopupCell onMainThread] removeAllItems];
 		[[encodingPopupCell onMainThread] addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 
@@ -547,6 +551,7 @@
 		return;
 	}
 
+	[theResult setReturnDataAsStrings:YES];
 	NSDictionary *analysisResult = [theResult getRowAsDictionary];
 
 	NSString *type = [analysisResult objectForKey:@"Optimal_fieldtype"];
@@ -694,10 +699,15 @@
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"];
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"];
+#endif
 
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
 }

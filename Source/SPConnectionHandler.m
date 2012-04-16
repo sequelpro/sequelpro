@@ -29,7 +29,8 @@
 #import "SPSSHTunnel.h"
 #import "SPKeychain.h"
 #import "RegexKitLite.h"
-#import "SPMySQL.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 static NSString *SPLocalhostAddress = @"127.0.0.1"; 
 

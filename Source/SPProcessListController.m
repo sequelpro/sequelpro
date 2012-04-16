@@ -27,7 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 // Constants
 static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
@@ -799,12 +799,12 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// Perform filtering
 	for (NSDictionary *process in processes) 
 	{
-		if (([[process objectForKey:@"Id"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+		if (([[[process objectForKey:@"Id"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[process objectForKey:@"User"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			([[process objectForKey:@"Host"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			((![[process objectForKey:@"db"] isNSNull]) && ([[process objectForKey:@"db"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			([[process objectForKey:@"Command"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[process objectForKey:@"Time"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+			([[[process objectForKey:@"Time"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			((![[process objectForKey:@"State"] isNSNull]) && ([[process objectForKey:@"State"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			((![[process objectForKey:@"Info"] isNSNull]) && ([[process objectForKey:@"Info"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)))
 		{

@@ -32,6 +32,7 @@
 
 #import "Databases & Tables.h"
 #import "SPMySQL Private APIs.h"
+#import "SPMySQLStringAdditions.h"
 
 @implementation SPMySQLConnection (Databases_and_Tables)
 

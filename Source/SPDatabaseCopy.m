@@ -25,7 +25,7 @@
 #import "SPDBActionCommons.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPDatabaseCopy
 

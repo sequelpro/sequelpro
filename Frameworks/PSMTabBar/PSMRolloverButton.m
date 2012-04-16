@@ -24,6 +24,8 @@
 	[self resetCursorRects];
 	
 	_myTrackingRectTag = -1;
+	_rolloverImage = nil;
+	_usualImage = nil;
 }
 
 - (void)dealloc
@@ -31,6 +33,8 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[self removeTrackingRect];
+	[_rolloverImage release];
+	[_usualImage release];
 	
 	[super dealloc];
 }

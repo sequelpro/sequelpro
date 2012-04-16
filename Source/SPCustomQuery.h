@@ -237,7 +237,7 @@
 
 // Accessors
 - (NSArray *)currentResult;
-- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs truncateDataFields:(BOOL)truncate;
 - (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
 
 // Retrieving and setting table state

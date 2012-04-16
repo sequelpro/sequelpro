@@ -27,7 +27,7 @@
 #import "SPXMLExporter.h"
 #import "SPDatabaseDocument.h"
 #import "SPExportFile.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPExportController (SPXMLExporterDelegate)
 

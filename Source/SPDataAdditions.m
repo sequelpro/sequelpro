@@ -76,7 +76,6 @@
 
 - (NSData *)dataDecryptedWithPassword:(NSString *)password
 {
-
 	// Create the key from the password hash
 	unsigned char passwordDigest[20];
 	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
@@ -190,10 +189,10 @@
 	return [NSData dataWithData: zipData];
 }
 
-- (NSString *)dataToFormattedHexString
-/*
- returns the hex representation of the given data
+/**
+ * Returns the hex representation of the given data.
  */
+- (NSString *)dataToFormattedHexString
 {
 	NSUInteger i, j;
 	NSUInteger totalLength = [self length];
@@ -258,26 +257,33 @@
 	return retVal;
 }
 
+/**
+ * Converts data instances to their string representation.
+ */
+- (NSString *)stringRepresentationUsingEncoding:(NSStringEncoding)encoding
+{	
+	NSString *string = [[[NSString alloc] initWithData:self encoding:encoding] autorelease];
+	
+	return !string ? [[[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding] autorelease] : string;
+}
+
 /*
  * Convert data objects to their string representation (max 255 chars)
  * in the current encoding, falling back to ascii. (Mainly used for displaying
  * large blob data in a tableView)
  */
-- (NSString *) shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding
+- (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding
 {
-	NSString *tmp = [[[NSString alloc] initWithData:self encoding:encoding] autorelease];
+	NSString *string = [self stringRepresentationUsingEncoding:encoding];
 
-	if (tmp == nil)
-		tmp = [[[NSString alloc] initWithData:self encoding:NSASCIIStringEncoding] autorelease];
-	if (tmp == nil)
-		return @"- cannot be displayed -";
-	else {
-		if([tmp length] > 255)
-			return [tmp substringToIndex:255];
-		else
-			return tmp;
+	if (!string) {
+		string = @"-- cannot display --";
 	}
-	return @"- cannot be displayed -";
+	else if ([string length] > 255) {
+		string = [string substringToIndex:255];
+	}
+	
+	return string;
 }
 
 @end

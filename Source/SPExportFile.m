@@ -26,7 +26,7 @@
 #import "SPExportFile.h"
 #import "SPFileHandle.h"
 
-@interface SPExportFile (PrivateAPI)
+@interface SPExportFile ()
 
 - (SPExportFileHandleStatus)_createFileHandle;
 
@@ -104,6 +104,7 @@
 	if ([fileManager fileExistsAtPath:[self exportFilePath]]) {
 		return [[NSFileManager defaultManager] removeItemAtPath:[self exportFilePath] error:nil];
 	}
+	
 	return NO;
 }
 

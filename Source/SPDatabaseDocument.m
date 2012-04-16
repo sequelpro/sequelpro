@@ -36,7 +36,7 @@ enum {
 #import "SPConnectionController.h"
 #import "SPConnectionControllerInitializer.h"
 
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
@@ -92,7 +92,7 @@ enum {
 
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
-#import "NSNotificationAdditions.h"
+#import "NSNotificationCenterThreadingAdditions.h"
 #import "SPCustomQuery.h"
 #import "SPDatabaseRename.h"
 #endif
@@ -101,6 +101,7 @@ enum {
 #ifndef SP_REFACTOR
 static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
+static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 @interface SPDatabaseDocument ()
 
@@ -111,6 +112,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
+#ifndef SP_REFACTOR /* method decls */
+- (void)_processDatabaseChangedBundleTriggerActions;
+#endif
 
 @end
 
@@ -141,6 +145,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 @synthesize databaseRenameSheet;
 @synthesize databaseRenameNameField;
 @synthesize renameDatabaseButton;
+@synthesize chooseDatabaseButton;
 #endif
 
 - (id)init
@@ -568,7 +573,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  *
  * @return The document's connection
  */
-- (SPMySQLConnection *) getConnection 
+- (SPMySQLConnection *)getConnection 
 {
 	return mySQLConnection;
 }
@@ -659,10 +664,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		return;
 	}
 
-	if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
+	if ([chooseDatabaseButton indexOfSelectedItem] == 0) {
 		if ([self database]) {
 			[chooseDatabaseButton selectItemWithTitle:[self database]];
 		}
+		
 		return;
 	}
 
@@ -677,30 +683,32 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 /**
  * Select the specified database and, optionally, table.
  */
-- (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem
+- (void)selectDatabase:(NSString *)database item:(NSString *)item
 {
 #ifndef SP_REFACTOR /* update navigator controller */
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
 	// If Navigator runs in syncMode let it follow the selection
-	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+	if ([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
+		
 		[schemaPath setString:[self connectionID]];
-		if([chooseDatabaseButton titleOfSelectedItem] && [[chooseDatabaseButton titleOfSelectedItem] length]) {
+		
+		if ([chooseDatabaseButton titleOfSelectedItem] && [[chooseDatabaseButton titleOfSelectedItem] length]) {
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:[chooseDatabaseButton titleOfSelectedItem]];
 		}
+		
 		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
 	}
 #endif
 
 	// Start a task
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading database '%@'...", @"Loading database task string"), [chooseDatabaseButton titleOfSelectedItem]]];
-	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										aDatabase, @"database",
-										anItem, @"item",
-										nil];
+	
+	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:database, @"database", item, @"item", nil];
+	
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
 	} 
@@ -793,7 +801,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"renameDatabase"];
+		  contextInfo:SPRenameDatabaseAction];
 }
 
 /**
@@ -816,17 +824,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"]; // Esc = Cancel
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"]; // Return = OK
+#endif
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
 	[alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"removeDatabase"];
 }
 
-#ifndef SP_REFACTOR
 /**
  * Refreshes the tables list by calling SPTablesList's updateTables.
  */
@@ -835,6 +847,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance updateTables:self];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Displays the database server variables sheet.
  */
@@ -897,7 +910,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 #ifndef SP_REFACTOR
-	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+	if ([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
 		return;
 	}
@@ -914,6 +927,17 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
 		}
+#ifdef SP_REFACTOR
+		else {
+			// Reset chooseDatabaseButton
+			if ([[self database] length]) {
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			}
+			else {
+				[chooseDatabaseButton selectItemAtIndex:0];
+			}
+		}
+#endif
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
@@ -923,12 +947,15 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 			// Query the structure of all databases in the background (mainly for completion)
 			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:databaseStructureRetrieval withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
-		} else {
-			// reset chooseDatabaseButton
-			if([[self database] length])
+		} 
+		else {
+			// Reset chooseDatabaseButton
+			if ([[self database] length]) {
 				[chooseDatabaseButton selectItemWithTitle:[self database]];
-			else
+			}
+			else {
 				[chooseDatabaseButton selectItemAtIndex:0];
+			}
 		}
 	} 
 #ifndef SP_REFACTOR
@@ -938,10 +965,21 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		}
 	}
 #endif
-	else if ([contextInfo isEqualToString:@"renameDatabase"]) {
+	else if ([contextInfo isEqualToString:SPRenameDatabaseAction]) {
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];		
 		}
+#ifdef SP_REFACTOR
+		else {
+			// Reset chooseDatabaseButton
+			if ([[self database] length]) {
+				[chooseDatabaseButton selectItemWithTitle:[self database]];
+			}
+			else {
+				[chooseDatabaseButton selectItemAtIndex:0];
+			}
+		}
+#endif
 	}
 #ifndef SP_REFACTOR
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
@@ -1265,7 +1303,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
  */
 - (void) endTask
 {
-
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
@@ -2285,7 +2322,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
     {
         userManagerInstance = [[SPUserManager alloc] init];
 		
-        [userManagerInstance setMySqlConnection:mySQLConnection];
+        [userManagerInstance setConnection:mySQLConnection];
 		[userManagerInstance setServerSupport:serverSupport];
     }
     
@@ -2579,6 +2616,16 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 - (BOOL)isSaveInBundle
 {
 	return _isSavedInBundle;
+}
+
+- (NSArray *)allTableNames
+{
+	return [tablesListInstance allTableNames];
+}
+
+- (SPTablesList *)tablesListInstance
+{
+	return tablesListInstance;
 }
 
 #pragma mark -
@@ -4297,16 +4344,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		if ([tableContentInstance filterSettings])
 			[sessionState setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
 
-		NSIndexSet *contentSelectedIndexSet = [tableContentInstance selectedRowIndexes];
-		if (contentSelectedIndexSet && [contentSelectedIndexSet count]) {
-			NSMutableArray *indices = [NSMutableArray array];
-			NSUInteger indexBuffer[[contentSelectedIndexSet count]];
-			NSUInteger limit = [contentSelectedIndexSet getIndexes:indexBuffer maxCount:[contentSelectedIndexSet count] inIndexRange:NULL];
-			NSUInteger idx;
-			for (idx = 0; idx < limit; idx++) {
-				[indices addObject:[NSNumber numberWithInteger:indexBuffer[idx]]];
-			}
-			[sessionState setObject:indices forKey:@"contentSelectedIndexSet"];
+		NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
+		if (contentSelectedRows) {
+			[sessionState setObject:contentSelectedRows forKey:@"contentSelection"];
 		}
 	}
 
@@ -4734,14 +4774,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
 
 		// Restore table selection indexes
-		if([spfSession objectForKey:@"contentSelectedIndexSet"]) {
-			NSMutableIndexSet *anIndexSet = [NSMutableIndexSet indexSet];
-			NSArray *items = [spfSession objectForKey:@"contentSelectedIndexSet"];
-			NSUInteger i;
-			for(i=0; i<[items count]; i++)
-				[anIndexSet addIndex:[NSArrayObjectAtIndex(items, i) integerValue]];
-
-			[tableContentInstance setSelectedRowIndexesToRestore:anIndexSet];
+		if([spfSession objectForKey:@"contentSelection"]) {
+			[tableContentInstance setSelectionToRestore:[spfSession objectForKey:@"contentSelection"]];
 		}
 
 		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
@@ -5578,7 +5612,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 
 #pragma mark -
-#pragma mark status accessory view
+#pragma mark Status accessory view
 
 - (IBAction)copyChecksumFromSheet:(id)sender
 {
@@ -5610,7 +5644,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 }
 
 #endif
-
 
 #pragma mark -
 
@@ -5693,15 +5726,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[super dealloc];
 }
 
-- (NSArray*)allTableNames
-{
-	return [tablesListInstance allTableNames];
-}
-
-- (SPTablesList*)tablesListInstance
-{
-	return tablesListInstance;
-}
+#pragma mark -
 
 #ifndef SP_REFACTOR /* whole database operations */
 
@@ -5737,7 +5762,9 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 - (void)_renameDatabase 
 {
-	if ([[databaseRenameNameField stringValue] isEqualToString:@""]) {
+	NSString *newDatabaseName = [databaseRenameNameField stringValue];
+	
+	if ([newDatabaseName isEqualToString:@""]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
@@ -5747,30 +5774,26 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[dbActionRename setConnection:[self getConnection]];
 	[dbActionRename setMessageWindow:parentWindow];
 	
-	if ([dbActionRename renameDatabaseFrom:[self database] to:[databaseRenameNameField stringValue]]) {
-		[self selectDatabase:[databaseRenameNameField stringValue] item:nil];
+	if ([dbActionRename renameDatabaseFrom:[self database] to:newDatabaseName]) {
+		[self setDatabases:self];
+		[self selectDatabase:newDatabaseName item:nil];
 	}
 	else {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to rename database", @"unable to rename database message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], [databaseRenameNameField stringValue]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], newDatabaseName]);
 	}
 	
 	[dbActionRename release];
-	
-	// Update DB list
-	[self setDatabases:self];
 
 #ifdef SP_REFACTOR
-	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+	if (delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)]) {
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+	}
 
-	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
-	{
-		if ( [allDatabases count] > 0 )
-		{
-			NSString* db = [databaseRenameNameField stringValue];
-			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:db];
+	if (delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)]) {
+		if ([allDatabases count] > 0 ) {
+			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:newDatabaseName];
 		}
 	}
 #endif
@@ -5873,7 +5896,6 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	// that's why we can run this on main thread
 	[databaseStructureRetrieval queryDbStructureWithUserInfo:nil];
 
-	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	
 	[self setDatabases:self];
@@ -5881,9 +5903,10 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_REFACTOR /* ui */
 	[self updateWindowTitle:self];
 #endif
+	
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
@@ -5911,6 +5934,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
 	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
+	
 	if (!historyStateChanging) {
 		[spHistoryControllerInstance updateHistoryEntries];
 		[spHistoryControllerInstance setModifyingState:YES];
@@ -5921,13 +5945,11 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 		// Attempt to select the specified database, and abort on failure
 #ifndef SP_REFACTOR /* patch */
-		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound
-			|| ![mySQLConnection selectDatabase:targetDatabaseName])
+		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
-		if ( ![mySQLConnection selectDB:targetDatabaseName] )
+		if (![mySQLConnection selectDatabase:targetDatabaseName])
 #endif
 		{
-
 			// End the task first to ensure the database dropdown can be reselected
 			[self endTask];
 
@@ -5996,7 +6018,8 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 	if (![targetItemName isEqualToString:[self table]]) {
 		if (targetItemName) {
 			[tablesListInstance selectItemWithName:targetItemName];
-		} else {
+		} 
+		else {
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
 			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
 			[[tablesListInstance onMainThread] setTableListSelectability:NO];
@@ -6005,43 +6028,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 	[self endTask];
 #ifndef SP_REFACTOR /* triggered commands */
-
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
-	for(NSString* cmdPath in triggeredCommands) {
-		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
-		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
-		[aMenuItem setTag:0];
-		[aMenuItem setToolTip:[data objectAtIndex:0]];
-
-		// For HTML output check if corresponding window already exists
-		BOOL stopTrigger = NO;
-		if ([(NSString *)[data objectAtIndex:2] length]) {
-			BOOL correspondingWindowFound = NO;
-			NSString *uuid = [data objectAtIndex:2];
-			for(id win in [NSApp windows]) {
-				if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
-					if([[[win delegate] windowUUID] isEqualToString:uuid]) {
-						correspondingWindowFound = YES;
-						break;
-					}
-				}
-			}
-			if(!correspondingWindowFound) stopTrigger = YES;
-		}
-		if(!stopTrigger) {
-			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
-			}
-			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
-				if([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"])
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
-			}
-			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
-				if([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]])
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
-			}
-		}
-	}
+	[self _processDatabaseChangedBundleTriggerActions];
 #endif
 
 #ifdef SP_REFACTOR /* glue */
@@ -6052,5 +6039,56 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 
 	[taskPool drain];
 }
+
+#ifndef SP_REFACTOR
+- (void)_processDatabaseChangedBundleTriggerActions
+{
+	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	
+	for (NSString* cmdPath in triggeredCommands) 
+	{
+		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
+		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		
+		[aMenuItem setTag:0];
+		[aMenuItem setToolTip:[data objectAtIndex:0]];
+		
+		// For HTML output check if corresponding window already exists
+		BOOL stopTrigger = NO;
+		
+		if ([(NSString *)[data objectAtIndex:2] length]) {
+			BOOL correspondingWindowFound = NO;
+			NSString *uuid = [data objectAtIndex:2];
+			
+			for (id win in [NSApp windows]) 
+			{
+				if ([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
+					if ([[[win delegate] windowUUID] isEqualToString:uuid]) {
+						correspondingWindowFound = YES;
+						break;
+					}
+				}
+			}
+			
+			if (!correspondingWindowFound) stopTrigger = YES;
+		}
+		if (!stopTrigger) {
+			if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+			}
+			else if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {
+					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
+				}
+			}
+			else if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+				if ([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]]) {
+					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+				}
+			}
+		}
+	}
+}
+#endif
 
 @end

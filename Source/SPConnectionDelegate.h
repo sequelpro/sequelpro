@@ -25,7 +25,7 @@
 
 #import "SPDatabaseDocument.h"
 
-#import "SPMySQLConnectionDelegate.h"
+#import <SPMySQL/SPMySQLConnectionDelegate.h>
 
 @interface SPDatabaseDocument (SPConnectionDelegate) <SPMySQLConnectionDelegate>
 

@@ -25,13 +25,13 @@
 
 #import "SPExportInitializer.h"
 #import "SPTableData.h"
+#import "SPTableContent.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPGrowlController.h"
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
 #import "SPAlertSheets.h"
-
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
@@ -41,7 +41,8 @@
 #import "SPExportFileUtilities.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
-#import "SPMySQL.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPExportController (SPExportInitializer)
 
@@ -97,10 +98,10 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			dataArray = [tableContentInstance currentResult];
+			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
 			break;
 		case SPQueryExport:
-			dataArray = [customQueryInstance currentResult];
+			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
 			break;
 		case SPTableExport:
 			// Create an array of tables to export
@@ -210,9 +211,10 @@
 		// export, create the single file now and assign it to all subsequently created exporters.
 		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
 			NSString *selectedTableName = nil;
+			
 			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
 
-			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
+			[exportFilename setString:createCustomFilename ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
 
 			// Only append the extension if necessary
 			if (![[exportFilename pathExtension] length]) {

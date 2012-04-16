@@ -33,7 +33,7 @@
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"
 #import "SPServerSupport.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 static NSString *SPUpdateTableTypeCurrentType = @"SPUpdateTableTypeCurrentType";
 static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
@@ -90,12 +90,18 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
 	// Check if the user selected the same type
 	if ([currentType isEqualToString:newType]) return;
-		
+
+	// If the table is empty, perform the change directly
+	if ([[[tableDataInstance statusValues] objectForKey:@"Rows"] isEqualToString:@"0"]) {
+		[self _changeCurrentTableTypeFrom:currentType to:newType];
+		return;
+	}
+
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Change table type", @"change table type message")
 									 defaultButton:NSLocalizedString(@"Change", @"change button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of it's data. This action cannot be undone.", @"change table type informative message"), newType];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to change this table's type to %@?\n\nPlease be aware that changing a table's type has the potential to cause the loss of some or all of its data. This action cannot be undone.", @"change table type informative message"), newType];
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
@@ -610,16 +616,17 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	
 	if ([connection queryErrored]) {
 
-		// Reload the table's data
-		[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
-	}
-	else {
 		[tableTypePopUpButton selectItemWithTitle:currentType];
 		
 		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection lastErrorMessage]]);
+		
+		return;
 	}
+	
+	// Reload the table's data
+	[tableDocumentInstance loadTable:selectedTable ofType:[tableDocumentInstance tableType]];
 }
 
 /**

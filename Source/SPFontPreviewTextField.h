@@ -4,9 +4,6 @@
 //  SPFontPreviewTextField.h
 //  sequel-pro
 //
-//  This is a heavily modified version of JVFontPreviewField from
-//  the Colloquy Project <http://colloquy.info/>
-//
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or
@@ -24,9 +21,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 @interface SPFontPreviewTextField : NSTextField 
-{
-	NSFont *_actualFont;
-}
 
 - (void)setFont:(NSFont *)font;
 

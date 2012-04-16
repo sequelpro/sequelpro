@@ -31,6 +31,7 @@
 @interface SPExportController (SPExportControllerPrivateAPI)
 
 - (void)_toggleExportButtonOnBackgroundThread;
+- (void)_toggleSQLExportTableNameTokenAvailability;
 - (void)_updateExportFormatInformation;
 - (void)_switchTab;
 
@@ -55,6 +56,7 @@
 {	
 	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
 	
+	[self updateAvailableExportFilenameTokens];
 	[self _toggleExportButtonOnBackgroundThread];
 	[self _updateExportFormatInformation];
 }
@@ -67,9 +69,9 @@
 	return (tableView == exportTableList);
 }
 
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	[aCell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
 #pragma mark -
@@ -102,23 +104,29 @@
  */
 - (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index
 {
-	NSMutableArray *processedTokens = [NSMutableArray array];
 	NSUInteger i, j;
+	NSMutableArray *processedTokens = [NSMutableArray array];
 	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
 
-	for (NSString *inputToken in tokens) {
+	for (NSString *inputToken in tokens) 
+	{
 		j = 0;
-		for (i = 0; i < [inputToken length]; i++) {
+		
+		for (i = 0; i < [inputToken length]; i++) 
+		{
 			if (![alphanumericSet characterIsMember:[inputToken characterAtIndex:i]]) {
 				if (i > j) {
-					[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i-j)]]];
+					[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i - j)]]];
 				}
+				
 				[processedTokens addObject:[inputToken substringWithRange:NSMakeRange(i, 1)]];
-				j = i+1;
+				
+				j = i + 1;
 			}
 		}
+		
 		if (j < i) {
-			[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i-j)]]];
+			[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i - j)]]];
 		}
 	}
 
@@ -146,9 +154,9 @@
  * During text entry into the token field, update the displayed filename and also
  * trigger tokenization after a short delay.
  */
-- (void)controlTextDidChange:(NSNotification *)aNotification
+- (void)controlTextDidChange:(NSNotification *)notification
 {
-	if ([aNotification object] == exportCustomFilenameTokenField) {
+	if ([notification object] == exportCustomFilenameTokenField) {
 		[self updateDisplayedExportFilename];
 		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tokenizeCustomFilenameTokenField) object:nil];
 		[self performSelector:@selector(tokenizeCustomFilenameTokenField) withObject:nil afterDelay:0.5];

@@ -26,13 +26,13 @@
 #import "SPDatabaseData.h"
 #import "SPServerSupport.h"
 #import "SPDatabaseCharacterSets.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPDatabaseData (PrivateAPI)
 
 - (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
-
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
+NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 
 @end
 
@@ -228,7 +228,7 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		}
 	}
 	
-	return storageEngines;
+	return [storageEngines sortedArrayUsingFunction:_sortStorageEngineEntry context:nil];
 }
 
 /**
@@ -325,6 +325,14 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
 {
 	return [[itemOne objectForKey:@"Charset"] compare:[itemTwo objectForKey:@"Charset"]];
+}
+
+/**
+ * Sorts a storage engine array by the Engine key.
+ */
+NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
+{
+	return [[itemOne objectForKey:@"Engine"] compare:[itemTwo objectForKey:@"Engine"]];
 }
 
 @end

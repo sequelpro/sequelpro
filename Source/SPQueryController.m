@@ -403,6 +403,7 @@ static SPQueryController *sharedQueryController = nil;
 #endif
 }
 
+#ifndef SP_REFACTOR
 /**
  * Return the AutoSaveName of the Query Console.
  */
@@ -410,6 +411,7 @@ static SPQueryController *sharedQueryController = nil;
 {
 	return SPQueryConsoleWindowAutoSaveName;
 }
+#endif
 
 /**
  * Updates the filtered result set based on any filter string and whether or not

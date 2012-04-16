@@ -247,6 +247,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 @property (assign) id databaseNameField;
 @property (assign) id databaseEncodingButton;
 @property (assign) id addDatabaseButton;
+@property (assign) id chooseDatabaseButton;
 
 @property (assign) id databaseRenameNameField;
 @property (assign) id renameDatabaseButton;
@@ -293,8 +294,8 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)refreshTables:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)copyDatabase:(id)sender;
 #endif
 - (IBAction)renameDatabase:(id)sender;
@@ -349,11 +350,10 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (IBAction)focusOnTableContentFilter:(id)sender;
 - (IBAction)focusOnTableListFilter:(id)sender;
 - (IBAction)export:(id)sender;
-
 - (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
-- (void) setQueryMode:(NSInteger)theQueryMode;
+- (void)setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
@@ -375,7 +375,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (void)setIsSavedInBundle:(BOOL)savedInBundle;
 - (void)setFileURL:(NSURL *)fileURL;
 - (void)connect;
-
 - (void)showConsole:(id)sender;
 - (IBAction)showNavigator:(id)sender;
 - (IBAction)toggleNavigator:(id)sender;
@@ -396,7 +395,11 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (NSString *)displayName;
 #ifndef SP_REFACTOR /* method decls */
 - (NSUndoManager *)undoManager;
+#endif
+- (NSArray *)allTableNames;
+- (SPTablesList *)tablesListInstance;
 
+#ifndef SP_REFACTOR /* method decls */
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
 - (void)hasPerformedQuery:(NSNotification *)notification;
@@ -451,7 +454,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 - (NSDictionary*)shellVariables;
 
 // State saving and setting
-- (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
+- (NSDictionary *)stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
 - (void)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
@@ -460,8 +463,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 #ifdef SP_REFACTOR /* method decls */
 - (SPConnectionController*)createConnectionController;
 - (void)connect;
-- (NSArray*)allTableNames;
-- (SPTablesList*)tablesListInstance;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
 

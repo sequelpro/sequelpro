@@ -23,8 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPCopyTable.h"
 #import "SPDatabaseViewController.h"
 #import "SPHistoryController.h"
@@ -32,7 +34,7 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
 #endif

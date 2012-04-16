@@ -33,4 +33,12 @@
 
 @interface SPMySQLConnection (Delegate_and_Proxy)
 
+// Connection delegage
+- (void)setDelegate:(NSObject <SPMySQLConnectionDelegate> *)aDelegate;
+- (NSObject <SPMySQLConnectionDelegate> *)delegate;
+
+// Connection proxy
+- (void)setProxy:(NSObject <SPMySQLConnectionProxy> *)aProxy;
+- (NSObject <SPMySQLConnectionProxy> *)proxy;
+
 @end

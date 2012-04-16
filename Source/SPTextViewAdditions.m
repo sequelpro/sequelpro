@@ -24,9 +24,13 @@
 
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
+#endif
 #import "SPCustomQuery.h"
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"
 #import "SPWindowController.h"
@@ -553,7 +557,7 @@
 			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
 
 			if(selfIsQueryEditor) {
-				currentQueryRange = [[self delegate] currentQueryRange];
+				currentQueryRange = [(SPCustomQuery*)[self delegate] currentQueryRange];
 			} else {
 				currentQueryRange = currentLineRange;
 			}
@@ -617,8 +621,8 @@
 				}
 			}
 
-			if(selfIsQueryEditor && [[self delegate] currentQueryRange].length)
-				[env setObject:[[self string] substringWithRange:[[self delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
+			if(selfIsQueryEditor && [(SPCustomQuery*)[self delegate] currentQueryRange].length)
+				[env setObject:[[self string] substringWithRange:[(SPCustomQuery*)[self delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
 
 			if(currentSelectionRange.length)
 				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];

@@ -26,7 +26,7 @@
 #import "SPServerVariablesController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAppController.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPServerVariablesController (PrivateAPI)
 

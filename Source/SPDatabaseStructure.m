@@ -28,7 +28,7 @@
 #import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 #import <pthread.h>
 
 @interface SPDatabaseStructure (Private_API)

@@ -78,8 +78,8 @@
 #endif
 #ifndef SP_REFACTOR
 	IBOutlet id toolbarActionsButton;
-	IBOutlet id toolbarReloadButton;
 #endif
+	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
 #ifndef SP_REFACTOR
 	IBOutlet id truncateTableButton;
@@ -139,10 +139,10 @@
 
 // IBAction methods
 - (IBAction)updateTables:(id)sender;
-
 - (IBAction)addTable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
+
 #ifndef SP_REFACTOR /* method decls */
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
@@ -150,15 +150,19 @@
 - (IBAction)openTableInNewTab:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 #endif
+
 // Additional methods
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
+
 #ifndef SP_REFACTOR /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
+#endif
 
 // Getters
 - (NSArray *)selectedTableNames;
+#ifndef SP_REFACTOR /* method decls */
 - (NSArray *)selectedTableItems;
 - (NSArray *)selectedTableTypes;
 #endif
@@ -181,9 +185,9 @@
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
-- (void) showFilter;
-- (void) hideFilter;
-- (void) clearFilter;
+- (void)showFilter;
+- (void)hideFilter;
+- (void)clearFilter;
 #endif
 - (IBAction) updateFilter:(id)sender;
 
@@ -199,16 +203,19 @@
 @property (assign) SPTableContent* tableContentInstance;
 @property (assign) id toolbarAddButton;
 @property (assign) id toolbarDeleteButton;
+@property (assign) id toolbarReloadButton;
 @property (assign) id tableSheet;
 @property (assign) id tableNameField;
 @property (assign) id tableEncodingButton;
 @property (assign) id tableTypeButton;
 @property (assign) id databaseDataInstance;
 @property (assign) id addTableButton;
-@property (assign) NSTableView* tablesListView;
+@property (assign) SPTableView* tablesListView;
 @property (assign) SQLSidebarViewController* sidebarViewController;
 
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)setDatabaseDocument:(SPDatabaseDocument*)val;
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+
 #endif
 @end

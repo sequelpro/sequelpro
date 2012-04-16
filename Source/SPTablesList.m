@@ -27,7 +27,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseViewController.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 #ifndef SP_REFACTOR /* headers */
 #import "SPTableContent.h"
@@ -74,8 +74,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)_addTable;
 #ifndef SP_REFACTOR
 - (void)_copyTable;
-- (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 #endif
+- (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 
 @end
 
@@ -86,6 +86,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 @synthesize databaseDataInstance;
 @synthesize toolbarAddButton;
 @synthesize toolbarDeleteButton;
+@synthesize toolbarReloadButton;
 @synthesize tableSourceInstance;
 @synthesize tableContentInstance;
 @synthesize tableSheet;
@@ -95,6 +96,83 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 @synthesize addTableButton;
 @synthesize tablesListView;
 #endif
+
+#pragma mark -
+#pragma mark Initialisation
+
+/**
+ * Standard init method. Performs various ivar initialisations.
+ */
+- (id)init
+{
+	if ((self = [super init])) {
+		tables = [[NSMutableArray alloc] init];
+		filteredTables = tables;
+		tableTypes = [[NSMutableArray alloc] init];
+		filteredTableTypes = tableTypes;
+		isTableListFiltered = NO;
+		tableListIsSelectable = YES;
+		tableListContainsViews = NO;
+		selectedTableType = SPTableTypeNone;
+		selectedTableName = nil;
+#ifndef SP_REFACTOR
+		[tables addObject:NSLocalizedString(@"TABLES", @"header for table list")];
+		
+		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+#endif
+	}
+	
+	return self;
+}
+
+/**
+ * Standard awakeFromNib method for interface loading.
+ */
+- (void)awakeFromNib
+{
+#ifndef SP_REFACTOR
+	// Collapse the table information pane if preference to do so is set
+	if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPTableInformationPanelCollapsed] boolValue]
+		&& [tableListSplitView collapsibleSubview]) {
+		[tableInfoCollapseButton setNextState];
+		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
+		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:NO];
+		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
+		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
+		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
+	} 
+	else {
+		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
+	}
+	
+	// Start the table filter list collapsed
+	if ([tableListFilterSplitView collapsibleSubview]) {
+		[tableListFilterSplitView setValue:[NSNumber numberWithFloat:[tableListFilterSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
+		// Set search bar view to the height of 1 instead of 0 to ensure that the view will be visible
+		// after opening a next connection window which has more than 20 tables
+		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
+		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
+	}
+	
+	// Disable tab edit behaviour in the tables list
+	[tablesListView setTabEditingDisabled:YES];
+#endif
+	
+	// Add observers for document task activity
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(startDocumentTaskForTab:)
+												 name:SPDocumentTaskStartNotification
+											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(endDocumentTaskForTab:)
+												 name:SPDocumentTaskEndNotification
+											   object:tableDocumentInstance];
+	
+#ifndef SP_REFACTOR
+	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, nil]];
+#endif
+}
 
 #pragma mark -
 #pragma mark IBAction methods
@@ -214,58 +292,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				}
 			}
 		}
-#endif		/*
-		BOOL addedPFHeader = FALSE;
-		NSString *pQuery = [NSString stringWithFormat:@"SHOW PROCEDURE STATUS WHERE db = '%@'",[tableDocumentInstance database]];
-		theResult = [mySQLConnection queryString:pQuery];
-
-		if( [theResult numOfRows] ) {
-			// add the header row
-			[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-			[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeNone]];
-			addedPFHeader = TRUE;
-			[theResult dataSeek:0];
-
-			if( [theResult numOfFields] == 1 ) {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeProc]];
-				}
-			} else {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					resultRow = [theResult fetchRowAsArray];
-					[tables addObject:[resultRow objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeProc]];
-				}
-			}
-		}
-
-		pQuery = [NSString stringWithFormat:@"SHOW FUNCTION STATUS WHERE db = '%@'",[tableDocumentInstance database]];
-		theResult = [mySQLConnection queryString:pQuery];
-
-		if( [theResult numOfRows] ) {
-			if( !addedPFHeader ) {
-				// add the header row
-				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
-				[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeNone]];
-			}
-			[theResult dataSeek:0];
-
-			if( [theResult numOfFields] == 1 ) {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					[tables addObject:[[theResult fetchRowAsArray] objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeFunc]];
-				}
-			} else {
-				for( i = 0; i < [theResult numOfRows]; i++ ) {
-					resultRow = [theResult fetchRowAsArray];
-					[tables addObject:[resultRow objectAtIndex:1]];
-					[tableTypes addObject:[NSNumber numberWithInt:SPTableTypeFunc]];
-				}
-			}
-		}
-		*/
-
+#endif
+		
 		// Restore encoding if appropriate
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
@@ -273,6 +301,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 	}
 
+#ifndef SP_REFACTOR
 	// Add the table headers even if no tables were found
 	if (tableListContainsViews) {
 		[tables insertObject:NSLocalizedString(@"TABLES & VIEWS",@"header for table & views list") atIndex:0];
@@ -282,9 +311,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	
 	[tableTypes insertObject:[NSNumber numberWithInteger:SPTableTypeNone] atIndex:0];
+#endif
 
 #ifndef SP_REFACTOR /* ui manipulation */
 	[[tablesListView onMainThread] reloadData];
+#else
+	[sidebarViewController setTableNames:[self allTableNames] selectedTableName:selectedTableName];
+	[sidebarViewController tableViewSelectionDidChange:nil];
+
 #endif
 
 	// if the previous selected table still exists, select it
@@ -432,10 +466,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	NSArray *buttons = [alert buttons];
 
+#ifndef SP_REFACTOR
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+#else
+	[[buttons objectAtIndex:0] setKeyEquivalent:@"\r"]; // Return = OK
+	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"]; // Esc = Cancel
+#endif
 
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
@@ -558,38 +597,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
     if (![[self tableName] length]) return;
 
     [tablesListView editColumn:0 row:[tablesListView selectedRow] withEvent:nil select:YES];
-
-    /*
-
-    [tableRenameField setStringValue:[self tableName]];
-	[renameTableButton setEnabled:NO];
-
-	NSString *tableType;
-
-	switch([self tableType]){
-		case SPTableTypeTable:
-		tableType = NSLocalizedString(@"table",@"table");
-		break;
-		case SPTableTypeView:
-		tableType = NSLocalizedString(@"view",@"view");
-		break;
-		case SPTableTypeProc:
-		tableType = NSLocalizedString(@"procedure",@"procedure");
-		break;
-		case SPTableTypeFunc:
-		tableType = NSLocalizedString(@"function",@"function");
-		break;
-	}
-
-	[tableRenameText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename %@ '%@' to:",@"rename item name to:"), tableType, [self tableName]]];
-
-
-	[NSApp beginSheet:tableRenameSheet
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"renameTable"];
-    */
 }
 
 /**
@@ -677,10 +684,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)])
+	if ([sheet respondsToSelector:@selector(orderOut:)]) {
 		[sheet orderOut:nil];
-	else if ([sheet respondsToSelector:@selector(window)])
+	}
+	else if ([sheet respondsToSelector:@selector(window)]) {
 		[[sheet window] orderOut:nil];
+	}
 
 	if ([contextInfo isEqualToString:SPAddRow]) {
 		alertSheetOpened = NO;
@@ -721,6 +730,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
+	
 	[self updateTables:self];
 }
 
@@ -777,7 +787,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	// First handle empty or multiple selections
 	if (!selectionDetails || ![selectionDetails objectForKey:@"name"]) {
+#ifndef SP_REFACTOR
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+#endif
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release];
 		selectedTableName = nil;
@@ -1099,11 +1111,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 }
 
-#ifndef SP_REFACTOR /* getters */
-
 #pragma mark -
 #pragma mark Getter methods
-
 
 - (NSArray *)selectedTableNames
 {
@@ -1120,6 +1129,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	return selTables;
 }
 
+#ifndef SP_REFACTOR /* getters */
 - (NSArray *)selectedTableItems
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
@@ -1187,6 +1197,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	return returnArray;
 }
+
 - (NSArray *)allTableNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
@@ -1198,6 +1209,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	return returnArray;
 }
+
 - (NSArray *)allViewNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
@@ -1210,6 +1222,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
+
 - (NSArray *)allProcedureNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
@@ -1262,10 +1275,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	return tableTypes;
 }
 
-
 #pragma mark -
 #pragma mark Setter methods
-
 
 /**
  * Select an item using the provided name; returns YES if the
@@ -1445,7 +1456,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-
 	// During imports the table view sometimes appears to request items beyond the end of the array.
 	// Using a hinted noteNumberOfRowsChanged after dropping tables fixes this but then seems to stick
 	// even after override, so check here for the time being and display empty rows during import.
@@ -1461,7 +1471,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	return ![tableDocumentInstance isWorking];
 }
-
+#endif
 
 /**
  * Renames a table (in tables-array and mysql-db).
@@ -1516,13 +1526,16 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, [myException reason]);
 	}
 
+#ifndef SP_REFACTOR
 	// Set window title to reflect the new table name
 	[tableDocumentInstance updateWindowTitle:self];
+#endif
 
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
+#ifndef SP_REFACTOR
 #pragma mark -
 #pragma mark TableView delegate methods
 
@@ -1704,7 +1717,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[aCell setFont:smallSystemFont];
 		}
 
-	} else {
+	} 
+	else {
 		[aCell setImage:nil];
 		[aCell setIndentationLevel:0];
 	}
@@ -1832,7 +1846,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (IBAction) updateFilter:(id)sender
 {
-
 	// Don't try and maintain selections of multiple rows through filtering
 	if ([tablesListView numberOfSelectedRows] > 1) {
 		[tablesListView deselectAll:self];
@@ -1862,6 +1875,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				if (substringRange.location == NSNotFound) continue;
 			}
 
+#ifndef SP_REFACTOR
 			// Add a title if necessary
 			if ((tableType == SPTableTypeTable || tableType == SPTableTypeView) && lastTableType == NSNotFound)
 			{
@@ -1877,6 +1891,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				[filteredTables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 				[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 			}
+#endif
 			lastTableType = tableType;
 
 			// Add the item
@@ -1899,7 +1914,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 
 		isTableListFiltered = YES;
-	} else if (isTableListFiltered) {
+	} 
+	else if (isTableListFiltered) {
 		isTableListFiltered = NO;
 		[filteredTables release];
 #endif
@@ -1910,18 +1926,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 #endif
 
-#ifdef SP_REFACTOR
-	[sidebarViewController setTableNames:[self allTableNames]];
-#endif
-	
+#ifndef SP_REFACTOR
 	// Reselect correct row and reload the table view display
 	if ([tablesListView numberOfRows] < (NSInteger)[filteredTables count]) [tablesListView noteNumberOfRowsChanged];
-	if (selectedTableName) [tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[filteredTables indexOfObject:selectedTableName]
-#ifdef SP_REFACTOR
-	- 1 
-#endif
-	] byExtendingSelection:NO];
+	if (selectedTableName) [tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:[filteredTables indexOfObject:selectedTableName]] byExtendingSelection:NO];
 	[tablesListView reloadData];
+#endif
 }
 
 /**
@@ -1948,33 +1958,33 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Disable all table list interactive elements during an ongoing task.
  */
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
 	tableListIsSelectable = NO;
 	[toolbarAddButton setEnabled:NO];
 #ifndef SP_REFACTOR
 	[toolbarActionsButton setEnabled:NO];
-	[toolbarReloadButton setEnabled:NO];
 #endif
+	[toolbarReloadButton setEnabled:NO];
 }
 
 /**
  * Enable all table list interactive elements after an ongoing task.
  */
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
 	tableListIsSelectable = YES;
 	[toolbarAddButton setEnabled:YES];
 #ifndef SP_REFACTOR
 	[toolbarActionsButton setEnabled:YES];
-	[toolbarReloadButton setEnabled:YES];
 #endif
+	[toolbarReloadButton setEnabled:YES];
 }
 
 /**
  * Set the table list to selectable or not during the task process.
  */
-- (void) setTableListSelectability:(BOOL)isSelectable
+- (void)setTableListSelectability:(BOOL)isSelectable
 {
 	tableListIsSelectable = isSelectable;
 }
@@ -1993,77 +2003,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #pragma mark -
 #pragma mark Other
 
-/**
- * Standard init method. Performs various ivar initialisations.
- */
-- (id)init
+#ifdef SP_REFACTOR /* glue */
+- (void)setDatabaseDocument:(SPDatabaseDocument*)val
 {
-	if ((self = [super init])) {
-		tables = [[NSMutableArray alloc] init];
-		filteredTables = tables;
-		tableTypes = [[NSMutableArray alloc] init];
-		filteredTableTypes = tableTypes;
-		isTableListFiltered = NO;
-		tableListIsSelectable = YES;
-		tableListContainsViews = NO;
-		selectedTableType = SPTableTypeNone;
-		selectedTableName = nil;
-		[tables addObject:NSLocalizedString(@"TABLES",@"header for table list")];
-#ifndef SP_REFACTOR /* font */
-		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-#endif
-	}
-
-	return self;
+	tableDocumentInstance = val;
 }
-
-/**
- * Standard awakeFromNib method for interface loading.
- */
-- (void)awakeFromNib
-{
-#ifndef SP_REFACTOR
-	// Collapse the table information pane if preference to do so is set
-	if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPTableInformationPanelCollapsed] boolValue]
-		&& [tableListSplitView collapsibleSubview]) {
-		[tableInfoCollapseButton setNextState];
-		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
-		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:NO];
-		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
-		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
-		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
-	} else {
-		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
-	}
-
-	// Start the table filter list collapsed
-	if ([tableListFilterSplitView collapsibleSubview]) {
-		[tableListFilterSplitView setValue:[NSNumber numberWithFloat:[tableListFilterSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		// Set search bar view to the height of 1 instead of 0 to ensure that the view will be visible
-		// after opening a next connection window which has more than 20 tables
-		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
-		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
-	}
-
-	// Disable tab edit behaviour in the tables list
-	[tablesListView setTabEditingDisabled:YES];
 #endif
 
-	// Add observers for document task activity
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(startDocumentTaskForTab:)
-												 name:SPDocumentTaskStartNotification
-											   object:tableDocumentInstance];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(endDocumentTaskForTab:)
-												 name:SPDocumentTaskEndNotification
-											   object:tableDocumentInstance];
-
-#ifndef SP_REFACTOR
-	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, nil]];
-#endif
-}
+#pragma mark -
 
 /**
  * Standard dealloc method.
@@ -2083,15 +2030,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[super dealloc];
 }
 
-
-#ifdef SP_REFACTOR /* glue */
-- (void)setDatabaseDocument:(SPDatabaseDocument*)val
-{
-	tableDocumentInstance = val;
-}
-#endif
-
-#ifndef SP_REFACTOR /* operations performed on whole tables */
+#pragma mark -
+#pragma mark Private API
 
 /**
  * Removes the selected object (table, view, procedure, function, etc.) from the database and tableView.
@@ -2178,14 +2118,20 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	[tablesListView deselectAll:self];
 
+#ifndef SP_REFACTOR
 	// set window title
 	[tableDocumentInstance updateWindowTitle:self];
-
+#endif
+#ifdef SP_REFACTOR
+	[sidebarViewController setTableNames:filteredTables selectedTableName:nil];
+#endif
 
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 }
+
+#ifndef SP_REFACTOR /* operations performed on whole tables */
 
 /**
  * Trucates the selected table(s).
@@ -2211,12 +2157,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 									[filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
-			// NSArray *buttons = [alert buttons];
-			// // Change the alert's cancel button to have the key equivalent of return
-			// [[buttons objectAtIndex:0] setKeyEquivalent:@"t"];
-			// [[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
-			// [[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
+			
+			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+							  modalDelegate:self 
+							 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+								contextInfo:@"truncateTableError"];
 		}
 
 		// Get next index (beginning from the end)
@@ -2240,7 +2185,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[NSThread detachNewThreadSelector:@selector(_addTable) toTarget:self withObject:nil];
 		return;
 	}
+	
 	NSAutoreleasePool *tableAdditionPool = [[NSAutoreleasePool alloc] init];
+	
 	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
 
 	NSString *charSetStatement = @"";
@@ -2251,6 +2198,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Ensure the use of UTF8 when creating new tables
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
+	
 	if (changeEncoding) {
 		[mySQLConnection storeEncodingForRestoration];
 		[mySQLConnection setEncoding:@"utf8"];
@@ -2259,7 +2207,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableEncodingButton indexOfSelectedItem] > 0) {
 		NSString *encodingName = [[tableEncodingButton title] stringByMatching:@"\\((.*)\\)" capture:1L];
+		
 		if (!encodingName) encodingName = @"utf8";
+		
 		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
 	}
 
@@ -2318,9 +2268,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[tableDocumentInstance viewStructure:self];
 #endif
 
-		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+#ifdef SP_REFACTOR
+		[sidebarViewController setTableNames:[self allTableNames] selectedTableName:selectedTableName];
+#endif
 
+		// Query the structure of all databases in the background (mainly for completion)
+		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) 
+								 toTarget:[tableDocumentInstance databaseStructureRetrieval] 
+							   withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 	}
 	else {
 		// Error while creating new table
@@ -2330,14 +2285,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
 						  @selector(sheetDidEnd:returnCode:contextInfo:), SPAddRow,
 						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@'.\n\nMySQL said: %@", @"error adding new table informative message"), tableName, [mySQLConnection lastErrorMessage]]);
-
+		
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+		
 		[[tablesListView onMainThread] reloadData];
 	}
 
 	// Clear table name
 	[[tableNameField onMainThread] setStringValue:@""];
-
+	
 	[tableDocumentInstance endTask];
 	[tableAdditionPool release];
 }
@@ -2527,6 +2483,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 }
+#endif
 
 /**
  * Renames a table, view, procedure or function. Also handles only changes in case!
@@ -2616,6 +2573,5 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
 }
-#endif
 
 @end

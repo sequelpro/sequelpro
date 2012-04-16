@@ -1,11 +1,10 @@
 //
 //  $Id$
 //
-//  MCPKitTest.h
+//  SPUserManagerDelegate.h
 //  sequel-pro
 //
-//  Created by J Knight on 17/05/09.
-//  Copyright 2009 J Knight. All rights reserved.
+//  Created by Mark Townsend on Jan 01, 2009
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,24 +22,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import "SPUserManager.h"
 
-@class MCPConnection;
-
-/**
- * @class MCPKitTest MCPKitTest.h
- *
- * MCPKit test case class.
- *
- * Note that this test case class uses the 'sakila' database to perform it's tests. It is available from: 
- *
- * http://downloads.mysql.com/docs/sakila-db.zip
- *
- * You must also create a user called 'sp_tester' with no password and all permissions on the database 'sakila'.
- */
-@interface MCPKitTest : SenTestCase 
-{	
-	MCPConnection *connection;
-}
+@interface SPUserManager (SPUserManagerDelegate)
 
 @end

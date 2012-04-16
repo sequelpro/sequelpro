@@ -153,11 +153,11 @@
 - (void)dealloc
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	if(stateTimer != nil) {
+	if (stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];
+		stateTimer = nil;
 	}
-	stateTimer = nil;
 	if (staticPrefix) [staticPrefix release];
 	[mutablePrefix release];
 	[textualInputCharacters release];
@@ -178,6 +178,7 @@
 	if (stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];
+		stateTimer = nil;
 	}
 
 	closeMe = YES;

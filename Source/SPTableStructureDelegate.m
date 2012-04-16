@@ -30,7 +30,7 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
-#import "SPMySQL.h"
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPTableStructure (SPTableStructureDelegate)
 
@@ -49,7 +49,7 @@
 	
 	if([[tableColumn identifier] isEqualToString:@"collation"]) {
 		NSInteger idx = 0;
-		if((idx = [[NSArrayObjectAtIndex(tableFields,rowIndex) objectForKey:@"encoding"] integerValue]) > 0) {
+		if((idx = [[NSArrayObjectAtIndex(tableFields,rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
 			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
 			NSInteger start = [enc rangeOfString:@"("].location+1;
 			NSInteger end = [enc length] - start - 1;
