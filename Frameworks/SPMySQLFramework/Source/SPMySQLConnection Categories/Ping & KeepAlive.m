@@ -187,6 +187,9 @@ void _backgroundPingTask(void *ptr)
 	// Set up a cleanup routine
 	pthread_cleanup_push(_pingThreadCleanup, pingDetails);
 
+	// Initialise MySQL variables and handling on this thread
+	mysql_thread_init();
+
 	// Set up a signal handler for SIGUSR1, to handle forced timeouts.
 	signal(SIGUSR1, _forceThreadExit);
 
@@ -209,6 +212,9 @@ void _pingThreadCleanup(void *pingDetails)
 {
 	SPMySQLConnectionPingDetails *pingDetailsStruct = pingDetails;
 	*(pingDetailsStruct->keepAlivePingActivePointer) = NO;
+
+	// Clean up MySQL variables and handlers
+	mysql_thread_end();
 }
 
 @end

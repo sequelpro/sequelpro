@@ -39,7 +39,6 @@
 #import "Locking.h"
 #import "Conversion.h"
 
-
 @interface SPMySQLConnection (PrivateAPI)
 
 - (MYSQL *)_makeRawMySQLConnectionWithEncoding:(NSString *)encodingName isMasterConnection:(BOOL)isMaster;
@@ -47,6 +46,8 @@
 - (void)_updateConnectionVariables;
 - (void)_restoreConnectionVariables;
 - (BOOL)_checkConnectionIfNecessary;
+- (void)_validateThreadSetup;
++ (void)_removeThreadVariables:(NSNotification *)aNotification;
 
 @end
 

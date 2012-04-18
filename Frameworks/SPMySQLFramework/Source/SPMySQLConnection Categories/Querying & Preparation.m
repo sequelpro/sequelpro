@@ -76,6 +76,9 @@
 	}
 	if (![self _checkConnectionIfNecessary]) return nil;
 
+	// Ensure per-thread variables are set up
+	[self _validateThreadSetup];
+
 	// Perform a lossy conversion to bytes, using NSData to do the hard work.  Preserves
 	// nul characters correctly.
 	NSData *cData = [theString dataUsingEncoding:stringEncoding allowLossyConversion:YES];
@@ -228,6 +231,9 @@
 		}
 		return nil;
 	}
+
+	// Ensure per-thread variables are set up
+	[self _validateThreadSetup];
 
 	// Check the connection if necessary, returning nil if the query couldn't be validated
 	if (![self _checkConnectionIfNecessary]) return nil;
