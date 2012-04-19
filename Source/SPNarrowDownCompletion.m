@@ -862,7 +862,7 @@
 					break;
 				}
 			}
-			else if(key == NSCarriageReturnCharacter || (key == NSTabCharacter && !triggerMode))
+			else if(key == NSCarriageReturnCharacter || key == NSEnterCharacter  || key == NSRightArrowFunctionKey || (key == NSTabCharacter && !triggerMode))
 			{
 				[self completeAndInsertSnippet];
 			}
