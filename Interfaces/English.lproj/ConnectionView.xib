@@ -21,6 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="5796"/>
 			<integer value="4910"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -2559,7 +2560,7 @@
 				</object>
 			</object>
 			<object class="NSCustomView" id="507288218">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2572,7 +2573,7 @@
 						<object class="NSTextFieldCell" key="NSCell" id="485439419">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">138412032</int>
-							<string key="NSContents">Note that for security reasons, your connection favorite passwords are not included in the export.</string>
+							<string key="NSContents">For security reasons, your connection favorite passwords are not included in the export.</string>
 							<reference key="NSSupport" ref="807120225"/>
 							<reference key="NSControlView" ref="300705398"/>
 							<reference key="NSBackgroundColor" ref="644242225"/>
@@ -2581,6 +2582,7 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{365, 52}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -7385,7 +7387,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{140, 543}, {365, 52}}</string>
+					<string>{{383, 441}, {365, 52}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSAffineTransform">
