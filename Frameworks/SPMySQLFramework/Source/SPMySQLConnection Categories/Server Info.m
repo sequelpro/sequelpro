@@ -137,6 +137,9 @@
 	// Lock the connection before using it
 	[self _lockConnection];
 
+	// Ensure per-thread variables are set up
+	[self _validateThreadSetup];
+
 	// Get the process list
 	MYSQL_RES *mysqlResult = mysql_list_processes(mySQLConnection);
 

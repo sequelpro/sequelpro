@@ -36,6 +36,9 @@
 #include <pthread.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
 
+// Thread flag constant
+static pthread_key_t mySQLThreadInitFlagKey;
+static void *mySQLThreadFlag;
 
 #pragma mark Class constants
 
@@ -74,6 +77,24 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 #pragma mark -
 #pragma mark Initialisation and teardown
+
+/**
+ * In the one-off class initialisation, set up MySQL as necessary
+ */
++ (void)initialize
+{
+
+	// Set up a pthread thread-specific data key to be used across all classes and threads
+	pthread_key_create(&mySQLThreadInitFlagKey, NULL);
+	mySQLThreadFlag = malloc(1);
+
+	// MySQL requires mysql_library_init() to be called before any other MySQL
+	// functions are used; although mysql_init() will call it automatically, it
+	// won't do so in a thread-safe manner, so setting it up first is safer.
+	// No arguments are required.
+	// Note that this will install MySQL's SIGPIPE handler.
+	mysql_library_init(0, NULL, NULL);
+}
 
 /**
  * Initialise the SPMySQLConnection object, setting up class defaults.
@@ -631,6 +652,13 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	MYSQL *theConnection = mysql_init(NULL);
 	if (!theConnection) return NULL;
 
+	// Calling mysql_init will have automatically installed per-thread variables if necessary,
+	// so track their installation for removal and to avoid recreating again.
+	if (!pthread_getspecific(mySQLThreadInitFlagKey)) {
+		pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
+		[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
+	}
+
 	// Disable automatic reconnection, as it's handled in-framework to preserve
 	// options, encodings and connection state.
 	my_bool falseMyBool = FALSE;
@@ -835,4 +863,37 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	// Otherwise check the connection
 	return [self checkConnection];
 }
+
+/**
+ * Ensure that the thread this method is called on has been registered for
+ * use with MySQL.  MySQL requires thread-specific variables for safe
+ * execution.
+ */
+- (void)_validateThreadSetup
+{
+
+	// Check to see whether the handler has already been installed
+	if (pthread_getspecific(mySQLThreadInitFlagKey)) return;
+
+	// If not, install it
+	mysql_thread_init();
+
+	// Mark the thread to avoid multiple installs
+	pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
+
+	// Set up the notification handler to deregister it
+	[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
+}
+
+/**
+ * Remove the MySQL variables and handlers from each closing thread which
+ * has had them installed to avoid memory leaks.
+ * This is a class method for easy global tracking; it will be called on the appropriate
+ * thread automatically.
+ */
++ (void)_removeThreadVariables:(NSNotification *)aNotification
+{
+	mysql_thread_end();
+}
+
 @end

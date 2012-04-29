@@ -27,6 +27,8 @@
 
 @implementation SPWindow
 
+@synthesize isSheetWhichCanBecomeMain;
+
 #pragma mark -
 #pragma mark Keyboard shortcut additions
 
@@ -116,6 +118,9 @@
 	[super sendEvent:theEvent];
 }
 
+#pragma mark -
+#pragma mark Undo manager handling
+
 /**
  * If this window is controlled by an SPWindowController, and thus supports being asked
  * for the frontmost SPTableDocument, request the undoController for that table
@@ -128,6 +133,29 @@
 		return [[[self windowController] selectedTableDocument] undoManager];
 	}
 	return [super undoManager];
+}
+
+#pragma mark -
+#pragma mark Method overrides
+
+/**
+ * Allow sheets to become main if necessary, for example if they are acting as an
+ * editor for a window.
+ */
+- (BOOL)canBecomeMainWindow
+{
+
+	// If this window is a sheet which is permitted to become main, respond appropriately
+	if ([self isSheet] && isSheetWhichCanBecomeMain) {
+		return [self isVisible];
+	}
+
+	// Otherwise, if this window has a sheet attached which can become main, return NO.
+	if ([[self attachedSheet] isKindOfClass:[SPWindow class]] && [(SPWindow *)[self attachedSheet] isSheetWhichCanBecomeMain]) {
+		return NO;
+	}
+
+	return [super canBecomeMainWindow];
 }
 
 @end

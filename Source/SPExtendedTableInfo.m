@@ -526,6 +526,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
  */
 - (void)confirmChangeTableTypeDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSDictionary *)contextInfo
 {
+	[[alert window] orderOut:self];
 	if (returnCode == NSAlertDefaultReturn) {
 		[self _changeCurrentTableTypeFrom:[contextInfo objectForKey:SPUpdateTableTypeCurrentType] 
 									   to:[contextInfo objectForKey:SPUpdateTableTypeNewType]];

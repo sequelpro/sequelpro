@@ -65,32 +65,38 @@
 	BOOL isCSV = exportType == SPCSVExport;
 	BOOL isDot = exportType == SPDotExport;
 	BOOL isXML = exportType == SPXMLExport;
-	
-	NSString *tokens = NSLocalizedString(@"host,database,table,date,year,month,day,time", @"default custom export filename tokens");;
-	NSString *tokensWithoutTable = NSLocalizedString(@"host,database,date,year,month,day,time", @"custom export filename tokens without table");
-	
+
+	NSMutableArray *exportTokens = [NSMutableArray arrayWithObjects:
+										NSLocalizedString(@"host", @"export filename host token"),
+										NSLocalizedString(@"database", @"export filename database token"),
+										NSLocalizedString(@"table", @"table"),
+										NSLocalizedString(@"date", @"export filename date token"),
+										NSLocalizedString(@"year", @"export filename date token"),
+										NSLocalizedString(@"month", @"export filename date token"),
+										NSLocalizedString(@"day", @"export filename date token"),
+										NSLocalizedString(@"time", @"export filename time token"),
+									nil];
+
+	// Determine whether to remove the table from the tokens list
 	if (exportSource == SPQueryExport || isDot) {
-		tokens = tokensWithoutTable;
+		removeTable = YES;
 	}
 	else if (isSQL || isCSV || isXML) {
 		for (NSArray *table in tables)
 		{
 			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
 				i++;
-				removeTable = YES;
-				
 				if (i == 2) break;
 			}
 		}
 		
 		if (i > 1) {
 			removeTable = isSQL ? YES : ![exportFilePerTableCheck state];
-			
-			tokens = isSQL ? tokensWithoutTable : ([exportFilePerTableCheck state] ? tokens : tokensWithoutTable); 
 		}
 	}
 	
 	if (removeTable) {
+		[exportTokens removeObject:NSLocalizedString(@"table", @"table")];
 		NSArray *tokenParts = [exportCustomFilenameTokenField objectValue];
 		
 		for (id token in [exportCustomFilenameTokenField objectValue])
@@ -107,8 +113,8 @@
 			}
 		}
 	}
-	
-	[exportCustomFilenameTokensField setStringValue:tokens];
+
+	[exportCustomFilenameTokensField setStringValue:[exportTokens componentsJoinedByString:@","]];
 }
 
 /**

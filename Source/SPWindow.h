@@ -25,5 +25,10 @@
 #import <Cocoa/Cocoa.h>
 
 @interface SPWindow : NSWindow
+{
+	BOOL isSheetWhichCanBecomeMain;
+}
+
+@property (assign) BOOL isSheetWhichCanBecomeMain;
 
 @end
