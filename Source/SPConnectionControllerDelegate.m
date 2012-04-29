@@ -40,6 +40,7 @@ static NSString *SPDatabaseImage = @"database-small";
 @interface SPConnectionController ()
 
 - (void)_checkHost;
+- (void)_sortFavorites;
 - (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
@@ -526,6 +527,17 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (void)favoritesImportData:(NSArray *)data
 {
+	// Add each of the imported favorites to the root node
+	for (NSMutableDictionary *favorite in data)
+	{
+		[favoritesController addFavoriteNodeWithData:favorite asChildOfNode:nil];
+	}
+	
+	if (currentSortItem > SPFavoritesSortUnsorted) {
+		[self _sortFavorites];
+	}
+	
+	[self _reloadFavoritesViewData];
 }
 
 /**
