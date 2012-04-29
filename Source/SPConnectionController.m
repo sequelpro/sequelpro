@@ -201,6 +201,7 @@
 	[nibObjectsToRelease release];
 
 	if (favorites) [favorites release];
+	if (favoritesRoot) [favoritesRoot release], favoritesRoot = nil;
 #endif
 	if (mySQLConnection) [mySQLConnection release];
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];

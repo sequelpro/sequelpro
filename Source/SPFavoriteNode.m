@@ -38,7 +38,7 @@
 		[self setNodeIsGroup:NO];
 		[self setNodeName:nil];
 		[self setNodeFavorite:nil];
-		[self setNodeChildren:[[NSMutableArray alloc] init]];
+		[self setNodeChildren:[NSMutableArray array]];
 	}
 	
 	return self;

@@ -32,6 +32,7 @@
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
 #import "SPCopyTable.h"
+#import "SPWindow.h"
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
@@ -84,6 +85,10 @@
 
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
+
+		// Permit the field edit sheet to become main if necessary; this allows fields within the sheet to
+		// support full interactivity, for example use of the NSFindPanel inside NSTextViews.
+		[editSheet setIsSheetWhichCanBecomeMain:YES];
 
 		allowUndo = NO;
 		selectionChanged = NO;
@@ -431,19 +436,7 @@
 		editSheetWillBeInitialized = NO;
 
 		[editSheetProgressBar stopAnimation:self];
-
-		// The field editor sheet runs as sheet thus a NSTextView won't respond to the Find Panel
-		// since the Find Panel validate its buttons against [[NSApp mainWindow] firstResponder] == NSTextView.
-		// After ordering out this sheet SPCopyTable remains the first responder thus set it hard.
-		// This only works in conjunction with [NSTextView becomeFirstResponder] and [NSTextView resignFirstResponder]
-		// which has to return YES.
-#ifndef SP_REFACTOR
-		if([[self window] firstResponder] == editTextView)
-			[[NSApp mainWindow] makeFirstResponder:[[self window] firstResponder]];
-#endif
-
 	}
-
 }
 
 /**

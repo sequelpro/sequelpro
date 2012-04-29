@@ -139,10 +139,10 @@
 
 // IBAction methods
 - (IBAction)updateTables:(id)sender;
-
 - (IBAction)addTable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
+
 #ifndef SP_REFACTOR /* method decls */
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
@@ -150,9 +150,11 @@
 - (IBAction)openTableInNewTab:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 #endif
+
 // Additional methods
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
+
 #ifndef SP_REFACTOR /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
@@ -183,9 +185,9 @@
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
-- (void) showFilter;
-- (void) hideFilter;
-- (void) clearFilter;
+- (void)showFilter;
+- (void)hideFilter;
+- (void)clearFilter;
 #endif
 - (IBAction) updateFilter:(id)sender;
 
@@ -214,5 +216,6 @@
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
 - (void)setDatabaseDocument:(SPDatabaseDocument*)val;
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+
 #endif
 @end

@@ -8,7 +8,8 @@
 #import "MGTemplateEngine.h"
 #import "MGTemplateStandardMarkers.h"
 #import "MGTemplateStandardFilters.h"
-#import "DeepMutableCopy.h"
+#import "NSArray_DeepMutableCopy.h"
+#import "NSDictionary_DeepMutableCopy.h"
 
 
 #define DEFAULT_MARKER_START		@"{%"

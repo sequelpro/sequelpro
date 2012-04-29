@@ -54,11 +54,67 @@
 }
 
 /**
- * Updates the available export filename tokens.
+ * Updates the available export filename tokens based on the currently selected options.
  */
 - (void)updateAvailableExportFilenameTokens
 {		
-	[exportCustomFilenameTokensField setStringValue:((exportSource == SPQueryExport) || (exportType == SPDotExport)) ? NSLocalizedString(@"host,database,date,year,month,day,time", @"custom export filename tokens without table") : NSLocalizedString(@"host,database,table,date,year,month,day,time", @"default custom export filename tokens")];
+	NSUInteger i = 0;
+	BOOL removeTable = NO;
+	
+	BOOL isSQL = exportType == SPSQLExport;
+	BOOL isCSV = exportType == SPCSVExport;
+	BOOL isDot = exportType == SPDotExport;
+	BOOL isXML = exportType == SPXMLExport;
+
+	NSMutableArray *exportTokens = [NSMutableArray arrayWithObjects:
+										NSLocalizedString(@"host", @"export filename host token"),
+										NSLocalizedString(@"database", @"export filename database token"),
+										NSLocalizedString(@"table", @"table"),
+										NSLocalizedString(@"date", @"export filename date token"),
+										NSLocalizedString(@"year", @"export filename date token"),
+										NSLocalizedString(@"month", @"export filename date token"),
+										NSLocalizedString(@"day", @"export filename date token"),
+										NSLocalizedString(@"time", @"export filename time token"),
+									nil];
+
+	// Determine whether to remove the table from the tokens list
+	if (exportSource == SPQueryExport || isDot) {
+		removeTable = YES;
+	}
+	else if (isSQL || isCSV || isXML) {
+		for (NSArray *table in tables)
+		{
+			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
+				i++;
+				if (i == 2) break;
+			}
+		}
+		
+		if (i > 1) {
+			removeTable = isSQL ? YES : ![exportFilePerTableCheck state];
+		}
+	}
+	
+	if (removeTable) {
+		[exportTokens removeObject:NSLocalizedString(@"table", @"table")];
+		NSArray *tokenParts = [exportCustomFilenameTokenField objectValue];
+		
+		for (id token in [exportCustomFilenameTokenField objectValue])
+		{
+			if ([token isKindOfClass:[SPExportFileNameTokenObject class]]) {
+				if ([[token tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) {
+					NSMutableArray *newTokens = [NSMutableArray arrayWithArray:tokenParts];
+					
+					[newTokens removeObjectAtIndex:[tokenParts indexOfObject:token]];
+					
+					[exportCustomFilenameTokenField setObjectValue:newTokens];
+					break;
+				}
+			}
+		}
+	}
+
+	[exportCustomFilenameTokensField setStringValue:[exportTokens componentsJoinedByString:@","]];
 }
 
 /**
@@ -69,7 +125,9 @@
 {
 	if ([[exportCustomFilenameTokensField objectValue] containsObject:stringToTokenize]) {
 		SPExportFileNameTokenObject *newToken = [[SPExportFileNameTokenObject alloc] init];
+		
 		[newToken setTokenContent:stringToTokenize];
+		
 		return [newToken autorelease];
 	}
 
@@ -78,6 +136,7 @@
 
 /**
  * Tokenize the filename field.
+ *
  * This is called on a delay after text entry to update the tokens during text entry.
  * There's no API to perform tokenizing, but the same result can be achieved by using the return key;
  * however, this only works if the cursor is after text, not after a token.
@@ -90,6 +149,7 @@
 	if ([exportCustomFilenameTokenField currentEditor] == nil) return;
 
 	NSRange selectedRange = [[exportCustomFilenameTokenField currentEditor] selectedRange];
+	
 	if (selectedRange.location == NSNotFound) return;
 	if (selectedRange.length > 0) return;
 
@@ -98,10 +158,15 @@
 
 	// Walk through the strings - not the tokens - and determine whether any need tokenizing
 	BOOL tokenizingRequired = NO;
-	for (id representedObject in representedObjects) {
+	
+	for (id representedObject in representedObjects) 
+	{
 		if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) continue;
+		
 		NSArray *tokenParts = [representedObject componentsSeparatedByCharactersInSet:nonAlphanumericSet];
-		for (NSString *tokenPart in tokenParts) {
+		
+		for (NSString *tokenPart in tokenParts) 
+		{
 			if ([validTokens containsObject:tokenPart]) {
 				tokenizingRequired = YES;
 				break;
@@ -115,12 +180,16 @@
 	// Detect where the cursor is currently located.  If it's at the end of a token, also return -
 	// or the enter key would result in closing the sheet.
 	NSUInteger stringPosition = 0;
-	for (id representedObject in representedObjects) {
+	
+	for (id representedObject in representedObjects) 
+	{
 		if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
 			stringPosition++;
-		} else {
+		} 
+		else {
 			stringPosition += [(NSString *)representedObject length];
 		}
+		
 		if (selectedRange.location <= stringPosition) {
 			if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) return;
 			break;
@@ -128,7 +197,17 @@
 	}
 
 	// All conditions met - synthesize the return key to trigger tokenization.
-	NSEvent *tokenizingEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[exportCustomFilenameTokenField window] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24];
+	NSEvent *tokenizingEvent = [NSEvent keyEventWithType:NSKeyDown 
+												location:NSMakePoint(0,0) 
+										   modifierFlags:0 
+											   timestamp:0 
+											windowNumber:[[exportCustomFilenameTokenField window] windowNumber] 
+												 context:[NSGraphicsContext currentContext] 
+											  characters:nil 
+							 charactersIgnoringModifiers:nil 
+											   isARepeat:NO 
+												 keyCode:0x24];
+	
 	[[NSApplication sharedApplication] postEvent:tokenizingEvent atStart:NO];
 
 	// Update the filename preview
@@ -235,7 +314,6 @@
 			} 
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"table", @"table")]) {
 				[string appendString:(table) ? table : @""];
-
 			} 
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"date", @"export filename date token")]) {
 				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
@@ -259,7 +337,6 @@
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
-
 			}
 		} 
 		else {

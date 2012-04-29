@@ -365,8 +365,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	for (NSDictionary *rowDict in queryResults) 
 	{
-		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges"
-																inManagedObjectContext:[self managedObjectContext]];
+		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges" inManagedObjectContext:[self managedObjectContext]];
+		
 		for (NSString *key in rowDict)
 		{
 			if ([key hasSuffix:@"_priv"]) {
@@ -440,7 +440,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
     if (coordinator != nil) {
         managedObjectContext = [[NSManagedObjectContext alloc] init];
-        [managedObjectContext setPersistentStoreCoordinator: coordinator];
+        [managedObjectContext setPersistentStoreCoordinator:coordinator];
     }
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self 
@@ -459,7 +459,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doCancel:(id)sender
 {
-
 	// Change the first responder to end editing in any field
 	[[self window] makeFirstResponder:self];
 

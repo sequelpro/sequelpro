@@ -151,11 +151,11 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 		retVal = parent ? ([[parent children] count] > 0) : ([[selectedObject children] count] > 0); 
         
 		if (!retVal) {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"User doesn't have any hosts."
+            NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"User has no hosts", @"user has no hosts message")
                                              defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
                                            alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
                                                otherButton:nil
-                                 informativeTextWithFormat:@"This user doesn't have any hosts associated with it. User will be deleted unless one is added"];
+                                 informativeTextWithFormat:NSLocalizedString(@"This user doesn't have any hosts associated with it. It will be deleted unless one is added", @"user has no hosts informative message")];
             
 			if ([alert runModal] == NSAlertDefaultReturn) {
                 [self addHost:nil];
@@ -276,14 +276,14 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 			NSString *name = [selectedObject valueForKey:@"user"];
 			NSArray *results = [self _fetchUserWithUserName:name];
 			
-			if ([results count] > 1)
-			{
-				NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate User"
+			if ([results count] > 1) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Duplicate User", @"duplicate user message")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
-									 informativeTextWithFormat:@"A user with that name already exists"];
+									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name]];
 				[alert runModal];
+				
 				return NO;
 			}
 		}
@@ -296,11 +296,11 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 			{
 				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
 				{
-					NSAlert *alert = [NSAlert alertWithMessageText:@"Duplicate Host"
+					NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Duplicate Host", @"duplicate host message")
 													 defaultButton:NSLocalizedString(@"OK", @"OK button")
 												   alternateButton:nil
 													   otherButton:nil
-										 informativeTextWithFormat:@"A user with that host already exists"];
+										 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host]];
 					
 					[alert runModal];
 					

@@ -1302,7 +1302,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) endTask
 {
-
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
@@ -5897,7 +5896,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// that's why we can run this on main thread
 	[databaseStructureRetrieval queryDbStructureWithUserInfo:nil];
 
-	// Delete was successful
 	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 	
 	[self setDatabases:self];
@@ -5905,9 +5903,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_REFACTOR /* ui */
 	[self updateWindowTitle:self];
 #endif
+	
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];

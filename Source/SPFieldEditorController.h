@@ -22,6 +22,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+@class SPWindow;
 
 /**
  * @class SPFieldEditorController SPFieldEditorController.h
@@ -44,7 +45,7 @@
 	IBOutlet id hexTextView;
 	IBOutlet id editTextScrollView;
 	IBOutlet id hexTextScrollView;
-	IBOutlet id editSheet;
+	IBOutlet SPWindow *editSheet;
 	IBOutlet id editSheetCancelButton;
 	IBOutlet id editSheetIsNotEditableCancelButton;
 	IBOutlet id editSheetOkButton;

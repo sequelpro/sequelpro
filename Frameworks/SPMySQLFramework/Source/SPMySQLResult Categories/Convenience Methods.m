@@ -65,7 +65,7 @@
 	// Instead of empty arrays, return nil if there are no rows.
 	if (![rowsToReturn count]) return nil;
 
-	return rowsToReturn;
+	return [rowsToReturn autorelease];
 }
 
 @end

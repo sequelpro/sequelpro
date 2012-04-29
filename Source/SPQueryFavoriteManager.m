@@ -38,6 +38,8 @@
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
 
+#define SP_Int(x) [NSNumber numberWithInteger:x]
+
 @interface SPQueryFavoriteManager (Private)
 
 - (void)_initWithNoSelection;
@@ -349,7 +351,70 @@
  */
 - (IBAction)insertPlaceholder:(id)sender
 {
-	NSString *placeholder = [[[sender selectedItem] toolTip] substringToIndex:[[[sender selectedItem] toolTip] rangeOfString:@" – "].location];
+
+	// Look up the sender's tag to determine the placeholder to insert.
+	// Note that tag values alter behaviour slightly - see below.
+	NSDictionary *lookupTable = [NSDictionary dictionaryWithObjectsAndKeys:
+		NSLocalizedString(@"default_value", @"Query snippet default value placeholder"), SP_Int(100),
+		NSLocalizedString(@"$(shell_command)", @"Query snippet shell command syntax and placeholder"), SP_Int(101),
+		@"$1", SP_Int(501),
+		@"¦a¦b¦", SP_Int(102),
+		@"¦¦a¦b¦¦", SP_Int(103),
+		@"¦", SP_Int(104),
+		@"$SP_SELECTED_TABLE", SP_Int(105),
+		@"$SP_SELECTED_TABLES", SP_Int(106),
+		@"$SP_SELECTED_DATABASE", SP_Int(107),
+		@"¦$SP_ASLIST_ALL_FIELDS¦", SP_Int(108),
+		@"¦¦$SP_ASLIST_ALL_FIELDS¦¦", SP_Int(109),
+		@"¦$SP_ASLIST_ALL_TABLES¦", SP_Int(110),
+		@"¦¦$SP_ASLIST_ALL_TABLES¦¦", SP_Int(111),
+		@"¦$SP_ASLIST_ALL_DATABASES¦", SP_Int(112),
+		@"¦¦$SP_ASLIST_ALL_DATABASES¦¦", SP_Int(113),
+	nil];
+	NSString *placeholder = [lookupTable objectForKey:SP_Int([[sender selectedItem] tag])];
+	if (!placeholder) [NSException raise:NSInternalInconsistencyException format:@"Inserted placeholder (%lld) not found", (long long)[[sender selectedItem] tag]];
+
+	// Iterate through the current snippets, to get the lowest unused tab counter, and
+	// to determine whether the current selection is inside a tab snippet or not
+	NSMutableDictionary *snippetNumbers = [NSMutableDictionary dictionary];
+	BOOL selectionInsideSnippet = NO;
+	NSUInteger rangeStart = 0;
+	NSString *queryString = [[favoriteQueryTextView textStorage] string];
+	NSRange selRange = [favoriteQueryTextView selectedRange];
+	NSString *snipRegex = @"(?s)(?<!\\\\)\\$\\{(1?\\d):(.{0}|[^\\{\\}]*?[^\\\\])\\}";
+	while (true) {
+		NSRange matchedRange = [queryString rangeOfRegex:snipRegex inRange:NSMakeRange(rangeStart, [queryString length] - rangeStart)];
+		if (matchedRange.location == NSNotFound) break;
+
+		// Check whether the selection range lies within the snippet
+		if (selRange.location != NSNotFound
+			&& selRange.location > matchedRange.location + 1
+			&& selRange.location + selRange.length < matchedRange.location + matchedRange.length)
+		{
+			selectionInsideSnippet = YES;
+		}
+
+		// Identify the tab completion index
+		NSRange snippetNumberRange = [queryString rangeOfRegex:snipRegex options:RKLNoOptions inRange:matchedRange capture:1L error:NULL];
+		NSInteger snippetNumber = [[queryString substringWithRange:snippetNumberRange] integerValue];
+		[snippetNumbers setObject:[NSNumber numberWithBool:YES] forKey:[NSNumber numberWithInteger:snippetNumber]];
+
+		rangeStart = matchedRange.location + matchedRange.length;
+	}
+
+	// If the selection is not inside a snippet, wrap it inside the snippet syntax.
+	// Never do this for items with a tag above 500: these are not permitted inside a snippet.
+	if (!selectionInsideSnippet && [[sender selectedItem] tag] < 500) {
+
+		// Work out the lowest unused tab counter to use
+		NSInteger snippetNumber = 0;
+		while ([snippetNumbers objectForKey:[NSNumber numberWithInteger:snippetNumber]]) {
+			snippetNumber++;
+		}
+
+		placeholder = [NSString stringWithFormat:@"${%lld:%@}", (long long)snippetNumber, placeholder];
+	}
+
 	[favoriteQueryTextView insertText:placeholder];
 }
 

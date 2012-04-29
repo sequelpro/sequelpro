@@ -16,6 +16,7 @@
 #define PSMTabDragDidBeginNotification @"PSMTabDragDidBeginNotification"
 
 #define kPSMTabBarControlHeight 22
+#define kPSMTabBarControlHeightCollapsed 1
 // internal cell border
 #define MARGIN_X        6
 #define MARGIN_Y        3
@@ -205,6 +206,7 @@ enum {
 - (void)hideTabBar:(BOOL)hide animate:(BOOL)animate;
 - (BOOL)isTabBarHidden;
 - (BOOL)isAnimating;
+- (void)destroyAnimations;
 
 // internal bindings methods also used by the tab drag assistant
 - (void)bindPropertiesForCell:(PSMTabBarCell *)cell andTabViewItem:(NSTabViewItem *)item;

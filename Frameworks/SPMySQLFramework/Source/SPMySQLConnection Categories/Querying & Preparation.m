@@ -76,6 +76,9 @@
 	}
 	if (![self _checkConnectionIfNecessary]) return nil;
 
+	// Ensure per-thread variables are set up
+	[self _validateThreadSetup];
+
 	// Perform a lossy conversion to bytes, using NSData to do the hard work.  Preserves
 	// nul characters correctly.
 	NSData *cData = [theString dataUsingEncoding:stringEncoding allowLossyConversion:YES];
@@ -229,6 +232,9 @@
 		return nil;
 	}
 
+	// Ensure per-thread variables are set up
+	[self _validateThreadSetup];
+
 	// Check the connection if necessary, returning nil if the query couldn't be validated
 	if (![self _checkConnectionIfNecessary]) return nil;
 
@@ -339,6 +345,13 @@
 	if (lastQueryWasCancelled) {
 		theErrorMessage = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 		theErrorID = 1317;
+
+		// If the query was cancelled on a MySQL <5 server, check the connection to allow reconnects
+		// after query kills.  This is also handled within the class for internal cancellations, but
+		// as other external classes may also cancel the query.
+		if (![self serverVersionIsGreaterThanOrEqualTo:5 minorVersion:0 releaseVersion:0]) {
+			[self checkConnection];
+		}
 	}
 
 	// Unlock the connection if appropriate - if not a streaming result type.

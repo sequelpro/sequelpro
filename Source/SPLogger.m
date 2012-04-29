@@ -33,10 +33,11 @@
 
 static SPLogger *logger = nil;
 
-@interface SPLogger (PrivateAPI)
+@interface SPLogger ()
 
 - (void)_initLogFile;
 - (void)_outputTimeString;
+
 int _isSPLeaksLog(struct direct *entry);
 
 @end

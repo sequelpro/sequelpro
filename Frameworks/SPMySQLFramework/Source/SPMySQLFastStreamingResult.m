@@ -398,6 +398,11 @@ typedef struct st_spmysqlstreamingrowdata {
     [parentConnection _unlockConnection];
     connectionUnlocked = YES;
 
+	// If the connection query may have been cancelled with a query kill, double-check connection
+	if ([parentConnection lastQueryWasCancelled] && [parentConnection serverMajorVersion] < 5) {
+		[parentConnection checkConnection];
+	}
+
 	dataDownloaded = YES;
 	[downloadPool drain];
 }
