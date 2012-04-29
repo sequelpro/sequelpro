@@ -524,9 +524,8 @@ static NSString *SPDatabaseImage = @"database-small";
 /**
  * Called by the favorites importer when the imported data is available.
  */
-- (void)favoritesImportData:(NSDictionary *)data
+- (void)favoritesImportData:(NSArray *)data
 {
-	// TODO: do something with the data
 }
 
 /**

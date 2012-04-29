@@ -37,7 +37,7 @@
  *
  * @param data The imported data as a dictionary.
  */
-- (void)favoritesImportData:(NSDictionary *)data;
+- (void)favoritesImportData:(NSArray *)data;
 
 /**
  * Invoked when the favorites import proccess completes.
