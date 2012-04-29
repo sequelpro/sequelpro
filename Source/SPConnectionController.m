@@ -892,7 +892,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[openPanel beginSheetForDirectory:nil
 								 file:nil
-								types:nil
+								types:[NSArray arrayWithObject:@"plist"]
 					   modalForWindow:[dbDocument parentWindow]
 						modalDelegate:self
 					   didEndSelector:@selector(importExportFavoritesSheetDidEnd:returnCode:contextInfo:)
