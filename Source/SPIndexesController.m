@@ -225,7 +225,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// initial key has a required size
 	[indexSizeTableColumn setHidden:![requiresLength containsObject:[[initialField objectForKey:@"type"] uppercaseString]]];
 
-	[indexedColumnsTableView reloadData];
+	[self _reloadIndexedColumnsTableData];
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 
@@ -385,7 +385,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[self _reloadIndexedColumnsTableData];
 
 	// Select new added row
-	[indexedColumnsTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[indexedFields count]-1] byExtendingSelection:NO];
+	[indexedColumnsTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[indexedFields count] - 1] byExtendingSelection:NO];
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 }
@@ -446,9 +446,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	}
 	else {
 		id object = [[indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+		
 		if ([[tableColumn identifier] isEqualToString:@"Size"] && object) {
 			object = [NSNumber numberWithLongLong:[object longLongValue]];
 		}
+		
 		return object;
 	}
 }
@@ -474,9 +476,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		if ([object isKindOfClass:[NSNumber class]]) {
 			object = [NSString stringWithFormat:@"%llu", [object unsignedLongLongValue]];
 		}
+		
 		if (object) {
 			[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
-		} else {
+		} 
+		else {
 			[[indexedFields objectAtIndex:rowIndex] removeObjectForKey:[tableColumn identifier]];
 		}
 	}
@@ -775,22 +779,25 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	NSUInteger sizeRequiredFieldAndNotYetSet = 0;
 	NSUInteger sizeRequired = 0;
 
-	for (NSDictionary *field in indexedFields) {
+	for (NSDictionary *field in indexedFields) 
+	{
 		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) {
 			sizeRequired++;
 			sizeRequiredFieldAndNotYetSet++;
-			if([field objectForKey:@"Size"] && [(NSString *)[field objectForKey:@"Size"] length])
+			
+			if ([field objectForKey:@"Size"] && [(NSString *)[field objectForKey:@"Size"] length]) {
 				sizeRequiredFieldAndNotYetSet--;
+			}
 		}
 	}
 
 #ifndef SP_REFACTOR
 	// Only toggle the sizes column if the advanced view is hidden and at least one field requires a size
-	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!sizeRequired)];
+	if (!showAdvancedView) [indexSizeTableColumn setHidden:!sizeRequired];
 #endif
 
 	// Validate Add Button
-	[confirmAddIndexButton setEnabled:(!sizeRequiredFieldAndNotYetSet)];
+	[confirmAddIndexButton setEnabled:!sizeRequiredFieldAndNotYetSet];
 
 	[indexedColumnsTableView reloadData];
 }
