@@ -68,6 +68,7 @@
 #endif
 		
 	BOOL _mainNibLoaded;
+	BOOL isMyISAMTale;
 	NSString *table;
 	
 	NSMutableArray *fields, *indexes, *indexedFields;

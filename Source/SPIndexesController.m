@@ -44,6 +44,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 @interface SPIndexesController (PrivateAPI)
 
+- (void)_addAdditionalIndexTypes;
 - (void)_reloadIndexedColumnsTableData;
 
 - (void)_addIndexUsingDetails:(NSDictionary *)indexDetails;
@@ -115,7 +116,6 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (void)awakeFromNib
 {
-
 	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
 	if (_mainNibLoaded) return;
 	_mainNibLoaded = YES;
@@ -162,6 +162,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 	
+	isMyISAMTale = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
+	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
 
@@ -170,19 +172,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
 
-	// Remove any existing SPATIAL menu item
-	if ([indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag] != -1)
-		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag]];
-
-	// If the table is of type MyISAM and Spatial extension support is available, (re-)add the SPATIAL type
-	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
-	
-	if ([engine isEqualToString:@"MyISAM"] && [[dbDocument serverSupport] supportsSpatialExtensions]) {
-		NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
-		[spatialMenuItem setTitle:NSLocalizedString(@"SPATIAL", @"Spatial index menu item title")];
-		[spatialMenuItem setTag:SPSpatialMenuTag];
-		[[indexTypePopUpButton menu] addItem:spatialMenuItem];
-	}
+	[self _addAdditionalIndexTypes];
 	
 	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
 	for (NSDictionary *field in fields)
@@ -242,7 +232,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #ifndef SP_REFACTOR
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
-	[indexStorageTypePopUpButton setEnabled:(!([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"]))];
+	[indexStorageTypePopUpButton setEnabled:(!(isMyISAMTale || [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"]))];
 
 	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
 	// if it's not supported.
@@ -298,7 +288,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
+						 informativeTextWithFormat:hasForeignKey ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -337,9 +327,12 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
 		
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
-		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"])];
+		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !(isMyISAMTale || [engine isEqualToString:@"InnoDB"])];
 #endif
 	}
+	
+	[indexSizeTableColumn setHidden:[[indexTypePopUpButton selectedItem] tag] == SPFullTextMenuTag];
+	[indexesTableView reloadData];
 }
 
 /**
@@ -423,11 +416,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// When hiding the advanced options, the size column would normally be hidden as well
 	// - unless any of the ndexes fields have a required key size.
 	BOOL hideSizesColumn = !showAdvancedView;
+	
 	if (hideSizesColumn) {
-		for (NSDictionary *aField in indexedFields) {
+		for (NSDictionary *aField in indexedFields) 
+		{
 			if ([requiresLength containsObject:[[aField objectForKey:@"type"] uppercaseString]]) hideSizesColumn = NO;
 		}
 	}
+	
 	[indexSizeTableColumn setHidden:hideSizesColumn];
 
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([indexAdvancedOptionsView frame].size.height + 10) : 0];
@@ -493,8 +489,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	if ([[tableColumn identifier] isEqualToString:@"Size"]) {
 
 		// If the field is of type TEXT or BLOB then a index prefix length is required so change the default
-		// placeholder of 'optional' to 'required'.
-		[cell setPlaceholderString:([requiresLength containsObject:[[[indexedFields objectAtIndex:rowIndex] objectForKey:@"type"] uppercaseString]]) ? NSLocalizedString(@"required", @"required placeholder string") : NSLocalizedString(@"optional", @"optional placeholder string")];
+		// placeholder of 'optional' to 'required', BUT only if the index type is not FULLTEXT.
+		BOOL isFullTextType = [[indexTypePopUpButton selectedItem] tag] == SPFullTextMenuTag;
+		
+		[cell setPlaceholderString:([requiresLength containsObject:[[[indexedFields objectAtIndex:rowIndex] objectForKey:@"type"] uppercaseString]] && !isFullTextType) ? NSLocalizedString(@"required", @"required placeholder string") : NSLocalizedString(@"optional", @"optional placeholder string")];
 	}
 }
 
@@ -609,7 +607,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		[indexDetails setObject:indexedFields forKey:SPNewIndexIndexedColumns];
 		[indexDetails setObject:[indexNameTextField stringValue] forKey:SPNewIndexIndexName];
-		switch ([[indexTypePopUpButton selectedItem] tag]) {
+		
+		switch ([[indexTypePopUpButton selectedItem] tag]) 
+		{
 			case SPPrimaryKeyMenuTag:
 				[indexDetails setObject:@"PRIMARY KEY" forKey:SPNewIndexIndexType];
 				break;
@@ -735,6 +735,39 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #pragma mark Private API methods
 
 /**
+ * Adds any additional index types depending on the table type.
+ */
+- (void)_addAdditionalIndexTypes
+{	
+	if ([indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag] > -1) {
+		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag]];
+	}
+	
+	if ([indexTypePopUpButton indexOfItemWithTag:SPFullTextMenuTag] > -1) {
+		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPFullTextMenuTag]];
+	}
+	
+	// FULLTEXT and SPATIAL index types are only available using the MyISAM engine
+	if (isMyISAMTale) {
+		if ([[dbDocument serverSupport] supportsSpatialExtensions]) {
+			NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
+			
+			[spatialMenuItem setTitle:NSLocalizedString(@"SPATIAL", @"spatial index menu item title")];
+			[spatialMenuItem setTag:SPSpatialMenuTag];
+			
+			[[indexTypePopUpButton menu] addItem:spatialMenuItem];
+		}
+	
+		NSMenuItem *fullTextMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		
+		[fullTextMenuItem setTitle:NSLocalizedString(@"FULLTEXT", @"full text index menu item title")];
+		[fullTextMenuItem setTag:SPFullTextMenuTag];
+		
+		[[indexTypePopUpButton menu] addItem:fullTextMenuItem];
+	}
+}
+
+/**
  * Reloads the indexed columns table view data and displays the size column if required.
  */
 - (void)_reloadIndexedColumnsTableData
@@ -802,11 +835,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 			if ((![columnName length]) || (![columnType length])) continue;
 
+			BOOL isFullTextType = [indexType isEqualToString:@"FULLTEXT"];
+			
 			// If this field type requires a length and one hasn't been specified (interface validation
 			// should ensure this doesn't happen), then skip it.
-			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length])) continue;
+			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length]) && !isFullTextType) continue;
 
-			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType]) {
+			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType] && !isFullTextType) {
 
 				[tempIndexedColumns addObject:[NSString stringWithFormat:@"%@ (%@)", [columnName backtickQuotedString], [column objectForKey:@"Size"]]];
 			}
@@ -1041,13 +1076,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[super dealloc];
 }
 
-
 #ifdef SP_REFACTOR
 - (void)setDatabaseDocument:(SPDatabaseDocument*)db
 {
 	dbDocument = db;
 }
 #endif
-
 
 @end

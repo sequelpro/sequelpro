@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10J869</string>
+		<string key="IBDocument.SystemVersion">10K549</string>
 		<string key="IBDocument.InterfaceBuilderVersion">851</string>
-		<string key="IBDocument.AppKitVersion">1038.35</string>
+		<string key="IBDocument.AppKitVersion">1038.36</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="55"/>
+			<integer value="14"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -84,23 +84,23 @@
 								</object>
 								<int key="NSPeriodicDelay">400</int>
 								<int key="NSPeriodicInterval">75</int>
-								<object class="NSMenuItem" key="NSMenuItem" id="71932948">
+								<object class="NSMenuItem" key="NSMenuItem" id="453090810">
 									<reference key="NSMenu" ref="71441725"/>
-									<string key="NSTitle">FULLTEXT</string>
+									<string key="NSTitle">UNIQUE</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<int key="NSState">1</int>
-									<object class="NSCustomResource" key="NSOnImage" id="600203078">
+									<object class="NSCustomResource" key="NSOnImage" id="206997792">
 										<string key="NSClassName">NSImage</string>
 										<string key="NSResourceName">NSMenuCheckmark</string>
 									</object>
-									<object class="NSCustomResource" key="NSMixedImage" id="752378347">
+									<object class="NSCustomResource" key="NSMixedImage" id="551729884">
 										<string key="NSClassName">NSImage</string>
 										<string key="NSResourceName">NSMenuMixedState</string>
 									</object>
 									<string key="NSAction">_popUpItemAction:</string>
-									<int key="NSTag">3</int>
+									<int key="NSTag">2</int>
 									<reference key="NSTarget" ref="431781347"/>
 								</object>
 								<bool key="NSMenuItemRespectAlignment">YES</bool>
@@ -116,8 +116,8 @@
 											<string key="NSKeyEquiv"/>
 											<int key="NSKeyEquivModMask">1048576</int>
 											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="600203078"/>
-											<reference key="NSMixedImage" ref="752378347"/>
+											<reference key="NSOnImage" ref="206997792"/>
+											<reference key="NSMixedImage" ref="551729884"/>
 											<string key="NSAction">_popUpItemAction:</string>
 											<reference key="NSTarget" ref="431781347"/>
 										</object>
@@ -127,28 +127,16 @@
 											<string key="NSKeyEquiv"/>
 											<int key="NSKeyEquivModMask">1048576</int>
 											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="600203078"/>
-											<reference key="NSMixedImage" ref="752378347"/>
+											<reference key="NSOnImage" ref="206997792"/>
+											<reference key="NSMixedImage" ref="551729884"/>
 											<string key="NSAction">_popUpItemAction:</string>
 											<int key="NSTag">1</int>
 											<reference key="NSTarget" ref="431781347"/>
 										</object>
-										<object class="NSMenuItem" id="453090810">
-											<reference key="NSMenu" ref="71441725"/>
-											<string key="NSTitle">UNIQUE</string>
-											<string key="NSKeyEquiv"/>
-											<int key="NSKeyEquivModMask">1048576</int>
-											<int key="NSMnemonicLoc">2147483647</int>
-											<reference key="NSOnImage" ref="600203078"/>
-											<reference key="NSMixedImage" ref="752378347"/>
-											<string key="NSAction">_popUpItemAction:</string>
-											<int key="NSTag">2</int>
-											<reference key="NSTarget" ref="431781347"/>
-										</object>
-										<reference ref="71932948"/>
+										<reference ref="453090810"/>
 									</object>
 								</object>
-								<int key="NSSelectedIndex">3</int>
+								<int key="NSSelectedIndex">2</int>
 								<int key="NSPreferredEdge">3</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
 								<bool key="NSAltersState">YES</bool>
@@ -593,8 +581,8 @@
 															<int key="NSKeyEquivModMask">1048576</int>
 															<int key="NSMnemonicLoc">2147483647</int>
 															<int key="NSState">1</int>
-															<reference key="NSOnImage" ref="600203078"/>
-															<reference key="NSMixedImage" ref="752378347"/>
+															<reference key="NSOnImage" ref="206997792"/>
+															<reference key="NSMixedImage" ref="551729884"/>
 															<string key="NSAction">_popUpItemAction:</string>
 															<reference key="NSTarget" ref="747441327"/>
 														</object>
@@ -611,8 +599,8 @@
 																	<string key="NSTitle"/>
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="600203078"/>
-																	<reference key="NSMixedImage" ref="752378347"/>
+																	<reference key="NSOnImage" ref="206997792"/>
+																	<reference key="NSMixedImage" ref="551729884"/>
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="747441327"/>
 																</object>
@@ -622,8 +610,8 @@
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="600203078"/>
-																	<reference key="NSMixedImage" ref="752378347"/>
+																	<reference key="NSOnImage" ref="206997792"/>
+																	<reference key="NSMixedImage" ref="551729884"/>
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="747441327"/>
 																</object>
@@ -633,8 +621,8 @@
 																	<string key="NSKeyEquiv"/>
 																	<int key="NSKeyEquivModMask">1048576</int>
 																	<int key="NSMnemonicLoc">2147483647</int>
-																	<reference key="NSOnImage" ref="600203078"/>
-																	<reference key="NSMixedImage" ref="752378347"/>
+																	<reference key="NSOnImage" ref="206997792"/>
+																	<reference key="NSMixedImage" ref="551729884"/>
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="747441327"/>
 																</object>
@@ -966,8 +954,8 @@
 						<string key="NSTitle">Remove Field</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
-						<reference key="NSOnImage" ref="600203078"/>
-						<reference key="NSMixedImage" ref="752378347"/>
+						<reference key="NSOnImage" ref="206997792"/>
+						<reference key="NSMixedImage" ref="551729884"/>
 					</object>
 				</object>
 			</object>
@@ -1339,7 +1327,6 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="453090810"/>
-							<reference ref="71932948"/>
 							<reference ref="262306657"/>
 							<reference ref="828450159"/>
 						</object>
@@ -1348,11 +1335,6 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">17</int>
 						<reference key="object" ref="453090810"/>
-						<reference key="parent" ref="71441725"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">18</int>
-						<reference key="object" ref="71932948"/>
 						<reference key="parent" ref="71441725"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -1747,8 +1729,6 @@
 					<string>16.ImportedFromIB2</string>
 					<string>17.IBPluginDependency</string>
 					<string>17.ImportedFromIB2</string>
-					<string>18.IBPluginDependency</string>
-					<string>18.ImportedFromIB2</string>
 					<string>19.IBPluginDependency</string>
 					<string>23.IBPluginDependency</string>
 					<string>24.IBPluginDependency</string>
@@ -1870,9 +1850,7 @@
 					<integer value="1041"/>
 					<boolean value="YES"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{683, 655}, {167, 71}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<integer value="1"/>
+					<string>{{536, 557}, {167, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1989,13 +1967,6 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Frameworks/MCPKit/MCPFoundationKit/MCPNull.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Frameworks/PSMTabBar/PSMTabBarCell.h</string>
 					</object>
 				</object>
@@ -2046,6 +2017,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPNotLoaded.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPObjectAdditions.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2323,7 +2301,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -2446,7 +2424,7 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">toggleQueryInfoPaneCollapse:</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 						</object>
 					</object>
@@ -3242,7 +3220,6 @@
 							<string>statusTableAccessoryView</string>
 							<string>statusTableCopyChecksum</string>
 							<string>statusTableView</string>
-							<string>statusValues</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
@@ -3271,7 +3248,7 @@
 							<string>NSWindow</string>
 							<string>NSSplitView</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSButton</string>
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>NSTextView</string>
@@ -3310,7 +3287,6 @@
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3393,7 +3369,6 @@
 							<string>statusTableAccessoryView</string>
 							<string>statusTableCopyChecksum</string>
 							<string>statusTableView</string>
-							<string>statusValues</string>
 							<string>tableContentInstance</string>
 							<string>tableDataInstance</string>
 							<string>tableDumpInstance</string>
@@ -3439,7 +3414,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">copyDatabaseDataButton</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">copyDatabaseMessageField</string>
@@ -3615,10 +3590,6 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">statusTableView</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">statusValues</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
@@ -4096,13 +4067,14 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addRow:</string>
 							<string>closeSheet:</string>
-							<string>copyRow:</string>
+							<string>duplicateRow:</string>
 							<string>filterTable:</string>
 							<string>navigatePaginationFromButton:</string>
 							<string>reloadTable:</string>
 							<string>removeRow:</string>
 							<string>setCompareTypes:</string>
 							<string>setDefaultOperator:</string>
+							<string>showDefaultOperaterHelp:</string>
 							<string>showFilterTable:</string>
 							<string>swapFilterTable:</string>
 							<string>tableFilterClear:</string>
@@ -4131,6 +4103,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
@@ -4139,13 +4112,14 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addRow:</string>
 							<string>closeSheet:</string>
-							<string>copyRow:</string>
+							<string>duplicateRow:</string>
 							<string>filterTable:</string>
 							<string>navigatePaginationFromButton:</string>
 							<string>reloadTable:</string>
 							<string>removeRow:</string>
 							<string>setCompareTypes:</string>
 							<string>setDefaultOperator:</string>
+							<string>showDefaultOperaterHelp:</string>
 							<string>showFilterTable:</string>
 							<string>swapFilterTable:</string>
 							<string>tableFilterClear:</string>
@@ -4166,7 +4140,7 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">copyRow:</string>
+								<string key="name">duplicateRow:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -4191,6 +4165,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">setDefaultOperator:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">showDefaultOperaterHelp:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -4223,7 +4201,7 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">togglePagination:</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 						</object>
 					</object>
@@ -4235,10 +4213,9 @@
 							<string>argumentField</string>
 							<string>betweenTextField</string>
 							<string>compareField</string>
-							<string>contentFilterManager</string>
 							<string>contentViewPane</string>
-							<string>copyButton</string>
 							<string>countText</string>
+							<string>duplicateButton</string>
 							<string>fieldField</string>
 							<string>filterButton</string>
 							<string>filterTableClearButton</string>
@@ -4280,7 +4257,6 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
 							<string>NSView</string>
 							<string>id</string>
 							<string>id</string>
@@ -4301,7 +4277,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
@@ -4328,10 +4304,9 @@
 							<string>argumentField</string>
 							<string>betweenTextField</string>
 							<string>compareField</string>
-							<string>contentFilterManager</string>
 							<string>contentViewPane</string>
-							<string>copyButton</string>
 							<string>countText</string>
+							<string>duplicateButton</string>
 							<string>fieldField</string>
 							<string>filterButton</string>
 							<string>filterTableClearButton</string>
@@ -4386,19 +4361,15 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">contentFilterManager</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
 								<string key="name">contentViewPane</string>
 								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">copyButton</string>
+								<string key="name">countText</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">countText</string>
+								<string key="name">duplicateButton</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
@@ -4471,7 +4442,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">multipleLineEditingButton</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">paginationButton</string>
@@ -4542,6 +4513,20 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Source/SPTableContent.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableContent</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPTableContentDataSource.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableContent</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Source/SPTableContentDelegate.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -4675,7 +4660,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addField:</string>
 							<string>closeSheet:</string>
-							<string>copyField:</string>
+							<string>duplicateField:</string>
 							<string>reloadTable:</string>
 							<string>removeField:</string>
 							<string>resetAutoIncrement:</string>
@@ -4692,7 +4677,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>NSMenuItem</string>
 							<string>id</string>
 						</object>
 					</object>
@@ -4702,7 +4687,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addField:</string>
 							<string>closeSheet:</string>
-							<string>copyField:</string>
+							<string>duplicateField:</string>
 							<string>reloadTable:</string>
 							<string>removeField:</string>
 							<string>resetAutoIncrement:</string>
@@ -4721,7 +4706,7 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">copyField:</string>
+								<string key="name">duplicateField:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -4742,7 +4727,7 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">toggleColumnView:</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">NSMenuItem</string>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">unhideIndexesView:</string>
@@ -4757,8 +4742,8 @@
 							<string>addFieldButton</string>
 							<string>addIndexButton</string>
 							<string>chooseKeyButton</string>
-							<string>copyFieldButton</string>
 							<string>databaseDataInstance</string>
+							<string>duplicateFieldButton</string>
 							<string>editTableButton</string>
 							<string>encodingPopupCell</string>
 							<string>extendedTableInfoInstance</string>
@@ -4787,8 +4772,8 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
 							<string>SPDatabaseData</string>
+							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButtonCell</string>
 							<string>id</string>
@@ -4820,8 +4805,8 @@
 							<string>addFieldButton</string>
 							<string>addIndexButton</string>
 							<string>chooseKeyButton</string>
-							<string>copyFieldButton</string>
 							<string>databaseDataInstance</string>
+							<string>duplicateFieldButton</string>
 							<string>editTableButton</string>
 							<string>encodingPopupCell</string>
 							<string>extendedTableInfoInstance</string>
@@ -4860,12 +4845,12 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
-								<string key="name">copyFieldButton</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBToOneOutletInfo">
 								<string key="name">databaseDataInstance</string>
 								<string key="candidateClassName">SPDatabaseData</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">duplicateFieldButton</string>
+								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">editTableButton</string>
@@ -5073,6 +5058,8 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addTableButton</string>
+							<string>copyCreateSyntaxContextMenuItem</string>
+							<string>copyCreateSyntaxMenuItem</string>
 							<string>copyTableButton</string>
 							<string>copyTableContentSwitch</string>
 							<string>copyTableMessageField</string>
@@ -5116,6 +5103,7 @@
 							<string>tablesListView</string>
 							<string>toolbarActionsButton</string>
 							<string>toolbarAddButton</string>
+							<string>toolbarDeleteButton</string>
 							<string>toolbarReloadButton</string>
 							<string>truncateTableButton</string>
 							<string>truncateTableContextMenuItem</string>
@@ -5123,13 +5111,15 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
+							<string>NSMenuItem</string>
+							<string>NSMenuItem</string>
 							<string>id</string>
 							<string>NSButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>SPDatabaseData</string>
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>id</string>
@@ -5149,7 +5139,7 @@
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
 							<string>SPHistoryController</string>
-							<string>id</string>
+							<string>SPTableContent</string>
 							<string>id</string>
 							<string>SPDatabaseDocument</string>
 							<string>id</string>
@@ -5160,10 +5150,11 @@
 							<string>NSSplitView</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
+							<string>SPTableStructure</string>
 							<string>id</string>
 							<string>id</string>
 							<string>SPTableView</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -5176,6 +5167,8 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addTableButton</string>
+							<string>copyCreateSyntaxContextMenuItem</string>
+							<string>copyCreateSyntaxMenuItem</string>
 							<string>copyTableButton</string>
 							<string>copyTableContentSwitch</string>
 							<string>copyTableMessageField</string>
@@ -5219,6 +5212,7 @@
 							<string>tablesListView</string>
 							<string>toolbarActionsButton</string>
 							<string>toolbarAddButton</string>
+							<string>toolbarDeleteButton</string>
 							<string>toolbarReloadButton</string>
 							<string>truncateTableButton</string>
 							<string>truncateTableContextMenuItem</string>
@@ -5228,6 +5222,14 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">addTableButton</string>
 								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">copyCreateSyntaxContextMenuItem</string>
+								<string key="candidateClassName">NSMenuItem</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">copyCreateSyntaxMenuItem</string>
+								<string key="candidateClassName">NSMenuItem</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">copyTableButton</string>
@@ -5255,7 +5257,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">databaseDataInstance</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">SPDatabaseData</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">duplicateTableContextMenuItem</string>
@@ -5335,7 +5337,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableContentInstance</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">SPTableContent</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableDataInstance</string>
@@ -5379,7 +5381,7 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableSourceInstance</string>
-								<string key="candidateClassName">id</string>
+								<string key="candidateClassName">SPTableStructure</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">tableTriggersInstance</string>
@@ -5399,6 +5401,10 @@
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">toolbarAddButton</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">toolbarDeleteButton</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBToOneOutletInfo">
