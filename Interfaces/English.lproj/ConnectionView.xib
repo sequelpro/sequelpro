@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4910"/>
+			<integer value="5743"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -239,7 +239,7 @@
 														<int key="NSKeyEquivModMask">1048576</int>
 														<int key="NSMnemonicLoc">2147483647</int>
 														<int key="NSState">1</int>
-														<object class="NSCustomResource" key="NSImage" id="848649524">
+														<object class="NSCustomResource" key="NSImage">
 															<string key="NSClassName">NSImage</string>
 															<string key="NSResourceName">NSActionTemplate</string>
 														</object>
@@ -363,7 +363,6 @@
 															</object>
 														</object>
 													</object>
-													<int key="NSSelectedIndex">2</int>
 													<bool key="NSPullDown">YES</bool>
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
@@ -396,7 +395,10 @@
 														<int key="NSKeyEquivModMask">1048576</int>
 														<int key="NSMnemonicLoc">2147483647</int>
 														<int key="NSState">1</int>
-														<reference key="NSImage" ref="848649524"/>
+														<object class="NSCustomResource" key="NSImage">
+															<string key="NSClassName">NSImage</string>
+															<string key="NSResourceName">NSAddTemplate</string>
+														</object>
 														<reference key="NSOnImage" ref="1022504326"/>
 														<reference key="NSMixedImage" ref="329345764"/>
 														<string key="NSAction">_popUpItemAction:</string>
@@ -435,7 +437,7 @@
 													<int key="NSPreferredEdge">1</int>
 													<bool key="NSUsesItemFromMenu">YES</bool>
 													<bool key="NSAltersState">YES</bool>
-													<int key="NSArrowPosition">2</int>
+													<int key="NSArrowPosition">1</int>
 												</object>
 											</object>
 										</object>
@@ -2592,7 +2594,7 @@
 				</object>
 			</object>
 			<object class="NSCustomView" id="507288218">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2601,7 +2603,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{-3, 12}, {371, 34}}</string>
 						<reference key="NSSuperview" ref="507288218"/>
-						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="485439419">
 							<int key="NSCellFlags">67239424</int>
@@ -2615,8 +2616,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{365, 52}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -6901,6 +6900,7 @@
 					<string>5764.IBViewBoundsToFrameTransform</string>
 					<string>5765.IBPluginDependency</string>
 					<string>5769.IBPluginDependency</string>
+					<string>5769.IBViewBoundsToFrameTransform</string>
 					<string>5770.IBPluginDependency</string>
 					<string>5771.IBEditorWindowLastContentRect</string>
 					<string>5771.IBPluginDependency</string>
@@ -7451,8 +7451,11 @@
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.brandonwalkin.BWToolkit</string>
+					<object class="NSAffineTransform">
+						<bytes key="NSTransformStruct">P4AAAL+AAABB8AAAwagAAA</bytes>
+					</object>
 					<string>com.brandonwalkin.BWToolkit</string>
-					<string>{{215, 256}, {128, 54}}</string>
+					<string>{{199, 315}, {128, 62}}</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
 					<string>com.brandonwalkin.BWToolkit</string>
@@ -9126,6 +9129,7 @@
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<string>KeyTemplate</string>
 				<string>NSActionTemplate</string>
+				<string>NSAddTemplate</string>
 				<string>NSMenuCheckmark</string>
 				<string>NSMenuMixedState</string>
 				<string>NSSwitch</string>
@@ -9134,6 +9138,7 @@
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<string>{16, 8}</string>
 				<string>{10, 10}</string>
+				<string>{8, 8}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
 				<string>{15, 15}</string>
