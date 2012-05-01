@@ -118,7 +118,37 @@
 	[self setExportProcessIsRunning:YES];
 	
 	lastProgressValue = 0;
-	
+
+	// Before the streaming query is started, build an array of numeric columns if a table
+	// is being exported
+	if ([self csvTableName] && (![self csvDataArray])) {
+		NSDictionary *tableDetails = nil;
+		
+		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
+		
+		if ([queryResult numberOfRows]) {
+			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
+			
+			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+		}
+		
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		{
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:
+				([tableColumnTypeGrouping isEqualToString:@"bit"]
+					|| [tableColumnTypeGrouping isEqualToString:@"integer"]
+					|| [tableColumnTypeGrouping isEqualToString:@"float"])
+			]]; 
+		}
+		
+		[tableDetails release];
+	}
+
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self csvDataArray]) && [self csvTableName]) {
 		totalRows		= [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] integerValue];
@@ -177,35 +207,7 @@
 	
 	if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
 	if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
-	
-	if ([self csvTableName] && (![self csvDataArray])) {
 		
-		NSDictionary *tableDetails = nil;
-		
-		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numberOfRows]) {
-			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
-			
-			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-		}
-		
-		[tableDetails release];
-	}
-	
 	// Drop into the processing loop
 	NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
 	
