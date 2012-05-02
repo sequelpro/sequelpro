@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPConnectionControllerInitializer.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on January 22, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -24,16 +24,21 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
 
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
+ * @category SPConnectionControllerInitializer SPConnectionControllerInitializer.h
  *
  * @author Stuart Connolly http://stuconnolly.com/ 
  *
- * Connection controller delegate category.
+ * Connection controller initialization category.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@interface SPConnectionController (SPConnectionControllerInitializer)
+
+- (id)initWithDocument:(SPDatabaseDocument *)document;
+
+- (void)loadNib;
+- (void)registerForNotifications;
+- (void)setUpFavoritesOutlineView;
+- (void)setUpSelectedConnectionFavorite;
 
 @end

@@ -167,12 +167,10 @@
 - (NSSize)cellSize
 {
 	NSSize cellSize = [super cellSize];
+	
 	cellSize.width += (image ? [image size].width : 0) + ((1 - MIN(1,INDENT_AMOUNT)) * 3) + (INDENT_AMOUNT * _indentationLevel) + 2;
-	// TODO : this has to be generalized yet
-	if (image != nil)
-		cellSize.height += 2;
-	else
-		cellSize.height += 8;
+	cellSize.height += image ? 2 : 8;
+	
 	return cellSize;
 }
 

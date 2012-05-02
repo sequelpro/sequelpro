@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPTreeNode.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 23, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,17 +23,34 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
+/**
+ * @class SPTreeNode SPTreeNode.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * NSTreeNode subclass which adds some convenience methods.
+ */
+@interface SPTreeNode : NSTreeNode <NSCoding>
+{
+	BOOL isGroup;
+}
 
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate category.
+ * @property isGroup Indicates whether or not the node is a group.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@property (readwrite, assign) BOOL isGroup;
+
+- (void)removeObjectFromChildren:(id)object;
+
+- (NSMutableArray *)descendants;
+- (NSMutableArray *)childLeafs;
+- (NSMutableArray *)allChildLeafs;
+- (NSMutableArray *)groupChildren;
+
+- (SPTreeNode *)parentFromArray:(NSArray *)array;
+
+- (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes;
+
+- (NSDictionary *)dictionaryRepresentation;
 
 @end

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPGroupNode.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 21, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,17 +23,25 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
+/**
+ * @class SPGroupNode SPGroupNode.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Tree node that represents a group.
+ */
+@interface SPGroupNode : NSObject <NSCopying, NSCoding>
+{
+	NSString *nodeName;
+}
 
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate category.
+ * @property nodeName The group node's name
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@property (readwrite, retain) NSString *nodeName;
+
+- (id)initWithName:(NSString *)name;
+
++ (SPGroupNode *)groupNodeWithName:(NSString *)name;
 
 @end

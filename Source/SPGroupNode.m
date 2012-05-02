@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPFavoriteNode.m
+//  SPGroupNode.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 21, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -23,15 +23,14 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPTreeNode.h"
-#import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
 
 // Constants
-static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
+static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 
-@implementation SPFavoriteNode
+@implementation SPGroupNode
 
-@synthesize nodeFavorite;
+@synthesize nodeName;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -39,24 +38,24 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 - (id)init
 {
 	if ((self = [super init])) {
-		[self setNodeFavorite:nil];
+		[self setNodeName:nil];
 	}
 	
 	return self;
 }
 
-- (id)initWithDictionary:(NSMutableDictionary *)dictionary
+- (id)initWithName:(NSString *)name
 {
 	if ((self = [self init])) {
-		[self setNodeFavorite:dictionary];
+		[self setNodeName:name];
 	}
 	
 	return self;
 }
 
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSMutableDictionary *)dictionary
++ (SPGroupNode *)groupNodeWithName:(NSString *)name
 {
-	return [[[self alloc] initWithDictionary:dictionary] autorelease];
+	return [[[self alloc] initWithName:name] autorelease];
 }
 
 #pragma mark -
@@ -64,9 +63,9 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (id)copyWithZone:(NSZone *)zone
 {
-	SPFavoriteNode *node = [[[self class] allocWithZone:zone] init];
+	SPGroupNode *node = [[[self class] allocWithZone:zone] init];
 	
-	[node setNodeFavorite:[[self nodeFavorite] copyWithZone:zone]];
+	[node setNodeName:[self nodeName]];
 	
 	return node;
 }
@@ -76,14 +75,14 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-	[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
+	[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
 	
 	return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder
-{	
-	[coder encodeObject:[self nodeFavorite] forKey:SPFavoriteNodeKey];
+{
+	[coder encodeObject:[self nodeName] forKey:SPGroupNodeNameKey];
 }
 
 #pragma mark -
@@ -91,16 +90,14 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [[self nodeFavorite] objectForKey:SPFavoriteNameKey]];
+	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [self nodeName]];
 }
 
 #pragma mark -
 
 - (void)dealloc
 {
-	if (nodeFavorite) [nodeFavorite release], nodeFavorite = nil;
-	
-	[super dealloc];
+	if (nodeName) [nodeName release], nodeName = nil;
 }
 
 @end

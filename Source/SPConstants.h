@@ -228,10 +228,6 @@ typedef enum
 // Narrow down completion max rows
 extern const NSUInteger SPNarrowDownCompletionMaxRows;
 
-// Kill mode constants
-extern NSString *SPKillProcessQueryMode;
-extern NSString *SPKillProcessConnectionMode;
-
 // Default monospaced font name
 extern NSString *SPDefaultMonospacedFontName;
 
@@ -270,7 +266,7 @@ extern NSString *SPDataSupportFolder;
 // General Prefpane
 extern NSString *SPDefaultFavorite;
 extern NSString *SPSelectLastFavoriteUsed;
-extern NSString *SPLastFavoriteIndex;
+extern NSString *SPLastFavoriteID;
 extern NSString *SPAutoConnectToDefault;
 extern NSString *SPDefaultViewMode;
 extern NSString *SPLastViewMode;
@@ -458,6 +454,9 @@ extern NSString *SPFavoriteSSLCertificateFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
+
+// Favorites import/export
+extern NSString *SPFavoritesDataRootKey;
 
 // Bundle Files and Bundle Editor
 extern NSString *SPBundleScopeQueryEditor;

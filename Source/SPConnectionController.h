@@ -27,12 +27,18 @@
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
 
 #ifndef SP_REFACTOR /* headers */
-#import "SPFavoritesOutlineView.h"
 #endif
 
-@class SPDatabaseDocument, SPSSHTunnel, SPKeychain, SPMySQLConnection
+@class SPDatabaseDocument, 
+	   SPFavoritesController, 
+	   SPSSHTunnel,
+	   SPTreeNode,
+	   SPFavoritesOutlineView,
+       SPMySQLConnection
 #ifndef SP_REFACTOR /* class decl */
-, BWAnchoredButtonBar, SPFavoriteNode
+	   ,SPKeychain, 
+	   BWAnchoredButtonBar, 
+	   SPFavoriteNode
 #endif
 ;
 
@@ -44,36 +50,31 @@
 
 @end
 
-@interface SPFlippedView : NSView
-
-- (BOOL)isFlipped;
-
-@end
 #endif
 
 @interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
-	SPDatabaseDocument *tableDocument;
+	SPDatabaseDocument *dbDocument;
+	SPSSHTunnel *sshTunnel;
+	SPMySQLConnection *mySQLConnection;
+	
 #ifndef SP_REFACTOR	/* ivars */
+	SPKeychain *keychain;
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
 	NSOpenPanel *keySelectionPanel;
 #endif
-	SPKeychain *keychain;
 	NSUserDefaults *prefs;
-#ifndef SP_REFACTOR
 	NSMutableArray *favorites;
-#endif
-	SPSSHTunnel *sshTunnel;
-	SPMySQLConnection *mySQLConnection;
+
 #ifndef SP_REFACTOR	/* ivars */
 	BOOL automaticFavoriteSelection;
-#endif
 	BOOL cancellingConnection;
 	BOOL isConnecting;
-#ifndef SP_REFACTOR	/* ivars */
+	
+	// Standard details
 	NSInteger previousType;
 #endif
 	NSInteger type;
@@ -84,37 +85,39 @@
 	NSString *database;
 	NSString *socket;
 	NSString *port;
-	int useSSL;
-	int sslKeyFileLocationEnabled;
+	
+	// SSL details
+	NSInteger useSSL;
+	NSInteger sslKeyFileLocationEnabled;
 	NSString *sslKeyFileLocation;
-	int sslCertificateFileLocationEnabled;
+	NSInteger sslCertificateFileLocationEnabled;
 	NSString *sslCertificateFileLocation;
-	int sslCACertFileLocationEnabled;
+	NSInteger sslCACertFileLocationEnabled;
 	NSString *sslCACertFileLocation;
+	
+	// SSH details
 	NSString *sshHost;
 	NSString *sshUser;
 	NSString *sshPassword;
-	int sshKeyLocationEnabled;
+	NSInteger sshKeyLocationEnabled;
 	NSString *sshKeyLocation;
 	NSString *sshPort;
-#ifndef SP_REFACTOR	/* ivars */
-	@private NSString *favoritesPBoardType;
-#endif
 
 	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
+#ifndef SP_REFACTOR	/* ivars */
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
 
-#ifndef SP_REFACTOR	/* ivars */
 	NSMutableArray *nibObjectsToRelease;
 
 	IBOutlet NSView *connectionView;
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
+	IBOutlet NSTextField *connectionInstructionsTextField;
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
-	IBOutlet SPFavoritesOutlineView *favoritesTable;
+	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 
 	IBOutlet NSWindow *errorDetailWindow;
 	IBOutlet NSTextView *errorDetailText;
@@ -130,8 +133,14 @@
 	IBOutlet NSView *sslCertificateLocationHelp;
 	IBOutlet NSView *sslCACertLocationHelp;
 
+	IBOutlet NSTextField *standardNameField;
+	IBOutlet NSTextField *sshNameField;
+	IBOutlet NSTextField *socketNameField;
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
+	IBOutlet NSTextField *standardUserField;
+	IBOutlet NSTextField *socketUserField;
+	IBOutlet NSTextField *sshUserField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -150,15 +159,22 @@
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
+	IBOutlet NSView *exportPanelAccessoryView;
 	
+	BOOL isEditing;
     BOOL reverseFavoritesSort;
 #endif
-
 	BOOL mySQLConnectionCancelled;
-#ifndef SP_REFACTOR	/* ivars */
-    SPFavoritesSortItem previousSortItem, currentSortItem;
+	BOOL favoriteNameFieldWasTouched;
 	
-	SPFavoriteNode *favoritesRoot;
+#ifndef SP_REFACTOR	/* ivars */
+	NSArray *draggedNodes;
+	NSImage *folderImage;
+	
+	SPTreeNode *favoritesRoot;
+	SPFavoriteNode *currentFavorite;
+	SPFavoritesController *favoritesController;
+	SPFavoritesSortItem previousSortItem, currentSortItem;
 #endif
 }
 
@@ -171,64 +187,66 @@
 @property (readwrite, retain) NSString *database;
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
-@property (readwrite, assign) int useSSL;
-@property (readwrite, assign) int sslKeyFileLocationEnabled;
+@property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;
-@property (readwrite, assign) int sslCertificateFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCertificateFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCertificateFileLocation;
-@property (readwrite, assign) int sslCACertFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCACertFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCACertFileLocation;
 @property (readwrite, retain) NSString *sshHost;
 @property (readwrite, retain) NSString *sshUser;
 @property (readwrite, retain) NSString *sshPassword;
-@property (readwrite, assign) int sshKeyLocationEnabled;
+@property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
+#ifndef SP_REFACTOR	/* ivars */
+
 @property (readwrite, retain) NSString *connectionKeychainItemName;
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
-
-@property (readonly, assign) BOOL isConnecting;
-#ifndef SP_REFACTOR	/* ivars */
-@property (readonly, assign) NSString *favoritesPBoardType;
 #endif
 
-- (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;
+@property (readonly, assign) BOOL isConnecting;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
+#ifndef SP_REFACTOR /* method decls */
 - (IBAction)cancelMySQLConnection:(id)sender;
-- (void)initiateSSHTunnelConnection;
-- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
-- (void)initiateMySQLConnection;
-- (void)cancelConnection;
-- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
-- (void)addConnectionToDocument;
 
 // Interface interaction
-- (IBAction)chooseKeyLocation:(NSButton *)sender;
-#ifndef SP_REFACTOR /* method decls */
-- (IBAction)editFavorites:(id)sender;
+- (IBAction)nodeDoubleClicked:(id)sender;
+- (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
 - (IBAction)updateKeyLocationFileVisibility:(id)sender;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(NSMenuItem *)sender;
-#endif
 
-// Connection details interaction
-- (BOOL)checkHost;
+- (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 
-#ifndef SP_REFACTOR
 // Favorites interaction
-- (void)updateFavorites;
 - (void)updateFavoriteSelection:(id)sender;
-- (id)selectedFavorite;
-- (IBAction)addFavorite:(id)sender;
+- (NSMutableDictionary *)selectedFavorite;
+- (SPTreeNode *)selectedFavoriteNode;
+- (NSArray *)selectedFavoriteNodes;
 
-- (void)scrollViewFrameChanged:(NSNotification *)aNotification;
+- (IBAction)addFavorite:(id)sender;
+- (IBAction)addFavoriteUsingCurrentDetails:(id)sender;
+- (IBAction)addGroup:(id)sender;
+- (IBAction)removeNode:(id)sender;
+- (IBAction)duplicateFavorite:(id)sender;
+- (IBAction)renameNode:(id)sender;
+- (IBAction)makeSelectedFavoriteDefault:(id)sender;
+
+// Import/export favorites
+- (IBAction)importFavorites:(id)sender;
+- (IBAction)exportFavorites:(id)sender;
+
+// Accessors
+- (SPFavoritesOutlineView *)favoritesOutlineView;
 
 #endif
 @end

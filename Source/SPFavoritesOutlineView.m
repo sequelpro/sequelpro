@@ -52,6 +52,19 @@
 	return [self menu];
 }
 
+- (void)keyDown:(NSEvent *)event
+{
+	// Enter or Return initiates a connection to the selected favorite, which is the same as double-clicking
+	// one, so call the same selector.
+	if (([self numberOfSelectedRows] == 1) && (([event keyCode] == 36) || ([event keyCode] == 76))) {
+		[[self delegate] performSelector:[self doubleAction]];
+		
+		return;
+	}
+	
+	[super keyDown:event];
+}
+
 /**
  * To prevent right-clicking in a column's 'group' heading, ask the delegate if we support selecting it
  * as this normally doesn't apply to left-clicks. If we do support selecting this row, simply pass on the event.

@@ -585,7 +585,7 @@
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
-	// TODO: Not yet implemented
+	// TODO: Implement me
 	return;
 }
 

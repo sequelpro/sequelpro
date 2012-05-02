@@ -30,6 +30,7 @@
  */
 
 #import "SPArrayAdditions.h"
+#import "SPMutableArrayAdditions.h"
 #import "SPStringAdditions.h"
 #import "SPObjectAdditions.h"
 #import "SPTextViewAdditions.h"

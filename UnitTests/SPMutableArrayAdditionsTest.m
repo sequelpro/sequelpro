@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPMutableArrayAdditionsTest.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on February 2, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,17 +23,19 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
+#import "SPMutableArrayAdditionsTest.h"
+#import "SPMutableArrayAdditions.h"
 
-/**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate category.
- */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@implementation SPMutableArrayAdditionsTest
+
+- (void)testReverse
+{
+	NSMutableArray *testArray = [NSMutableArray arrayWithObjects:@"1", @"2", @"3", @"4", @"5", nil];
+	NSMutableArray *expectedArray = [NSMutableArray arrayWithObjects:@"5", @"4", @"3", @"2", @"1", nil];
+	
+	[testArray reverse];
+	
+	STAssertEqualObjects(testArray, expectedArray, @"The reversed array should look like: %@", expectedArray);
+}
 
 @end

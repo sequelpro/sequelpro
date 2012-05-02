@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPConnectionHandler.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on November 15, 2010
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
@@ -24,16 +24,26 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
 
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
+ * @category SPConnectionHandler SPConnectionHandler.h
  *
  * @author Stuart Connolly http://stuconnolly.com/ 
  *
- * Connection controller delegate category.
+ * Connection handler category. Handles all connection related non-interface processes.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@interface SPConnectionController (SPConnectionHandler)
+
+- (void)initiateMySQLConnection;
+- (void)initiateMySQLConnectionInBackground;
+- (void)initiateSSHTunnelConnection;
+
+- (void)mySQLConnectionEstablished;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+
+- (void)cancelConnection;
+- (void)addConnectionToDocument;
+
+- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
 
 @end

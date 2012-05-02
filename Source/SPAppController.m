@@ -94,7 +94,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
 
 	// Migrate old connection favorites to the app's support directory (only uncomment when ready)
-	//SPMigrateConnectionFavoritesData();
+	SPMigrateConnectionFavoritesData();
 }
 
 /**

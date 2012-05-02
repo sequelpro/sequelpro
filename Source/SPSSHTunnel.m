@@ -356,19 +356,6 @@
 	// Launch and run the tunnel
 	[task launch];
 
-	// TODO: The below code doesn't actually appear to work.  We will probably have to switch to system()/exec() for grouped children...
-	// Apply the process group to the child task to ensure it quits with the parent process.
-	// Note that if run from within Xcode, Xcode is the parent process!
-/*	pid_t group = setsid();
-	if (group == -1) group = getpgrp();
-	if(setpgid([task processIdentifier], group) == -1) {
-		connectionState = SPSSH_STATE_IDLE;
-		[task terminate];
-		if (lastError) [lastError release];
-		lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel could not safely be marked as belonging to Sequel Pro, and so has been shut down for security reasons.  Please try again.\n\n(Error %i)", @"SSH tunnel could not be security marked by Sequel Pro"), errno];
-		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
-	}*/
-
 	// Listen for output
 	[task waitUntilExit];
 

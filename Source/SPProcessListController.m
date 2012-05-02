@@ -29,7 +29,10 @@
 #import "SPAppController.h"
 #import <SPMySQL/SPMySQL.h>
 
-static const NSString *SPTableViewIDColumnIdentifier = @"Id";
+// Constants
+static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
+static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
+static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -62,6 +65,8 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 		
 		autoRefreshTimer = nil;
 		processListThreadRunning = NO;
+		
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 		
 		processes = [[NSMutableArray alloc] init];
 		

@@ -28,38 +28,20 @@
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * This class is designed to be a simple wrapper around a connection favorite to allow us to easily represent
- * them in a tree structure for use in an outline view. If the node is a group item (i.e. a folder) then it
- * should have a name as well as zero or more child nodes. Similarly, actual connection favorite nodes, don't
- * have a name and should have no children.
+ * Tree node the represents a connection favorite.
  */
-@interface SPFavoriteNode : NSObject 
-{
-	BOOL nodeIsGroup;
-	NSString *nodeName;
-	
-	NSDictionary *nodeFavorite;
-	NSMutableArray *nodeChildren;
+@interface SPFavoriteNode : NSObject <NSCopying, NSCoding>
+{	
+	NSMutableDictionary *nodeFavorite;
 }
-
-/**
- * @property nodeIsGroup Indicates whether this node is a group item
- */
-@property (readwrite, assign) BOOL nodeIsGroup;
-
-/**
- * @property nodeName The node's name if it's a group item
- */
-@property (readwrite, retain) NSString *nodeName;
 
 /**
  * @property nodeFavorite The actual favorite dictionary
  */
-@property (readwrite, retain) NSDictionary *nodeFavorite;
+@property (readwrite, retain) NSMutableDictionary *nodeFavorite;
 
-/**
- * @property nodeChildren This node's children
- */
-@property (readwrite, retain) NSMutableArray *nodeChildren;
+- (id)initWithDictionary:(NSMutableDictionary *)dictionary;
+
++ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSMutableDictionary *)dictionary;
 
 @end

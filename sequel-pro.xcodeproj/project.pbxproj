@@ -75,7 +75,6 @@
 		1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */; };
 		1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */; };
 		1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */; };
-		1785EA26127DB4DC00F468C8 /* SPFavoritesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */; };
 		1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */; };
 		1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB62127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m */; };
 		1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB65127DD5EA00F468C8 /* SPNetworkPreferencePane.m */; };
@@ -86,6 +85,16 @@
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C26010AE1A2D00ABE758 /* SPConnectionDelegate.m */; };
 		1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798AB901267924D000D946A /* SPAppleScriptSupport.m */; };
+		1798F1871550175B004B0AB8 /* SPFavoritesExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */; };
+		1798F1881550175B004B0AB8 /* SPFavoritesImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */; };
+		1798F18F1550178E004B0AB8 /* SPConnectionControllerDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */; };
+		1798F1901550178E004B0AB8 /* SPConnectionControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */; };
+		1798F1911550178E004B0AB8 /* SPConnectionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */; };
+		1798F1951550181B004B0AB8 /* SPGroupNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1941550181B004B0AB8 /* SPGroupNode.m */; };
+		1798F19815501838004B0AB8 /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */; };
+		1798F19B1550185B004B0AB8 /* SPTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19A1550185B004B0AB8 /* SPTreeNode.m */; };
+		1798F19E15501892004B0AB8 /* SPFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19D15501892004B0AB8 /* SPFlippedView.m */; };
+		1798F1C4155018E2004B0AB8 /* SPMutableArrayAdditionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1C2155018D4004B0AB8 /* SPMutableArrayAdditionsTest.m */; };
 		179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		179F15060F7C433C00579954 /* SPEditorTokens.l in Sources */ = {isa = PBXBuildFile; fileRef = 179F15050F7C433C00579954 /* SPEditorTokens.l */; };
 		17A20AC6124F9B110095CEFB /* SPServerSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 17A20AC5124F9B110095CEFB /* SPServerSupport.m */; };
@@ -680,8 +689,6 @@
 		1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceControllerDelegate.m; sourceTree = "<group>"; };
 		1785EA21127DAF3300F468C8 /* SPTablesPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTablesPreferencePane.h; sourceTree = "<group>"; };
 		1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTablesPreferencePane.m; sourceTree = "<group>"; };
-		1785EA24127DB4DC00F468C8 /* SPFavoritesPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesPreferencePane.h; sourceTree = "<group>"; };
-		1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesPreferencePane.m; sourceTree = "<group>"; };
 		1785EB5E127DD5A800F468C8 /* SPNotificationsPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNotificationsPreferencePane.h; sourceTree = "<group>"; };
 		1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPNotificationsPreferencePane.m; sourceTree = "<group>"; };
 		1785EB61127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAutoUpdatePreferencePane.h; sourceTree = "<group>"; };
@@ -704,6 +711,29 @@
 		1798AB0C12676CD9000D946A /* localize.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = localize.sh; sourceTree = "<group>"; };
 		1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPAppleScriptSupport.h; sourceTree = "<group>"; };
 		1798AB901267924D000D946A /* SPAppleScriptSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPAppleScriptSupport.m; sourceTree = "<group>"; };
+		1798F17E1550171B004B0AB8 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		1798F1811550175B004B0AB8 /* SPFavoritesExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesExporter.h; sourceTree = "<group>"; };
+		1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesExporter.m; sourceTree = "<group>"; };
+		1798F1831550175B004B0AB8 /* SPFavoritesExportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesExportProtocol.h; sourceTree = "<group>"; };
+		1798F1841550175B004B0AB8 /* SPFavoritesImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImporter.h; sourceTree = "<group>"; };
+		1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesImporter.m; sourceTree = "<group>"; };
+		1798F1861550175B004B0AB8 /* SPFavoritesImportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImportProtocol.h; sourceTree = "<group>"; };
+		1798F1891550178E004B0AB8 /* SPConnectionControllerDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDataSource.h; sourceTree = "<group>"; };
+		1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDataSource.m; sourceTree = "<group>"; };
+		1798F18B1550178E004B0AB8 /* SPConnectionControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerInitializer.h; sourceTree = "<group>"; };
+		1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerInitializer.m; sourceTree = "<group>"; };
+		1798F18D1550178E004B0AB8 /* SPConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionHandler.h; sourceTree = "<group>"; };
+		1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionHandler.m; sourceTree = "<group>"; };
+		1798F1931550181B004B0AB8 /* SPGroupNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGroupNode.h; sourceTree = "<group>"; };
+		1798F1941550181B004B0AB8 /* SPGroupNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGroupNode.m; sourceTree = "<group>"; };
+		1798F19615501838004B0AB8 /* SPMutableArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableArrayAdditions.h; sourceTree = "<group>"; };
+		1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableArrayAdditions.m; sourceTree = "<group>"; };
+		1798F1991550185B004B0AB8 /* SPTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTreeNode.h; sourceTree = "<group>"; };
+		1798F19A1550185B004B0AB8 /* SPTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTreeNode.m; sourceTree = "<group>"; };
+		1798F19C15501892004B0AB8 /* SPFlippedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFlippedView.h; sourceTree = "<group>"; };
+		1798F19D15501892004B0AB8 /* SPFlippedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFlippedView.m; sourceTree = "<group>"; };
+		1798F1C1155018D4004B0AB8 /* SPMutableArrayAdditionsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableArrayAdditionsTest.h; sourceTree = "<group>"; };
+		1798F1C2155018D4004B0AB8 /* SPMutableArrayAdditionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMutableArrayAdditionsTest.m; sourceTree = "<group>"; };
 		179ECEC611F265EE009C6A40 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		179F15040F7C433C00579954 /* SPEditorTokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEditorTokens.h; sourceTree = "<group>"; };
 		179F15050F7C433C00579954 /* SPEditorTokens.l */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.lex; path = SPEditorTokens.l; sourceTree = "<group>"; };
@@ -1698,6 +1728,32 @@
 			name = "Controller Categories";
 			sourceTree = "<group>";
 		};
+		1798F1801550172A004B0AB8 /* Import & Export */ = {
+			isa = PBXGroup;
+			children = (
+				1798F1841550175B004B0AB8 /* SPFavoritesImporter.h */,
+				1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */,
+				1798F1811550175B004B0AB8 /* SPFavoritesExporter.h */,
+				1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */,
+				1798F1861550175B004B0AB8 /* SPFavoritesImportProtocol.h */,
+				1798F1831550175B004B0AB8 /* SPFavoritesExportProtocol.h */,
+			);
+			name = "Import & Export";
+			sourceTree = "<group>";
+		};
+		1798F192155017FB004B0AB8 /* Tree Nodes */ = {
+			isa = PBXGroup;
+			children = (
+				1798F1991550185B004B0AB8 /* SPTreeNode.h */,
+				1798F19A1550185B004B0AB8 /* SPTreeNode.m */,
+				1798F1931550181B004B0AB8 /* SPGroupNode.h */,
+				1798F1941550181B004B0AB8 /* SPGroupNode.m */,
+				17D3C22012859E070047709F /* SPFavoriteNode.h */,
+				17D3C22112859E070047709F /* SPFavoriteNode.m */,
+			);
+			name = "Tree Nodes";
+			sourceTree = "<group>";
+		};
 		17BFC80D10D3FF5200A3B112 /* Icons */ = {
 			isa = PBXGroup;
 			children = (
@@ -1747,11 +1803,18 @@
 		17D38FC2127B0C9500672B13 /* Connection View */ = {
 			isa = PBXGroup;
 			children = (
+				1798F18D1550178E004B0AB8 /* SPConnectionHandler.h */,
+				1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
 				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
 				17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */,
+				1798F18B1550178E004B0AB8 /* SPConnectionControllerInitializer.h */,
+				1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */,
+				1798F1891550178E004B0AB8 /* SPConnectionControllerDataSource.h */,
+				1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */,
 				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
+				1798F1801550172A004B0AB8 /* Import & Export */,
 			);
 			name = "Connection View";
 			sourceTree = "<group>";
@@ -1780,8 +1843,6 @@
 				17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */,
 				1785EA21127DAF3300F468C8 /* SPTablesPreferencePane.h */,
 				1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */,
-				1785EA24127DB4DC00F468C8 /* SPFavoritesPreferencePane.h */,
-				1785EA25127DB4DC00F468C8 /* SPFavoritesPreferencePane.m */,
 				1785EB5E127DD5A800F468C8 /* SPNotificationsPreferencePane.h */,
 				1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */,
 				1785EB68127DD79300F468C8 /* SPEditorPreferencePane.h */,
@@ -1862,6 +1923,8 @@
 				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTest.m */,
 				1760599D1336199D0098E162 /* SPMenuAdditionsTests.h */,
 				1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */,
+				1798F1C1155018D4004B0AB8 /* SPMutableArrayAdditionsTest.h */,
+				1798F1C2155018D4004B0AB8 /* SPMutableArrayAdditionsTest.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -1984,14 +2047,13 @@
 				BCA6271B1031B9D40047E5D5 /* SPTooltip.m */,
 				17D3C66F128AD8160047709F /* SPSingleton.h */,
 				17D3C670128AD8160047709F /* SPSingleton.m */,
-				17D3C22012859E070047709F /* SPFavoriteNode.h */,
-				17D3C22112859E070047709F /* SPFavoriteNode.m */,
 				172A650F0F7BED7A001E861A /* SPConsoleMessage.h */,
 				172A65100F7BED7A001E861A /* SPConsoleMessage.m */,
 				17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */,
 				17C058870FC9FC390077E9CF /* SPNarrowDownCompletion.m */,
 				BC0ED3D812A9196C00088461 /* SPChooseMenuItemDialog.h */,
 				BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */,
+				1798F192155017FB004B0AB8 /* Tree Nodes */,
 				173E70A1107FF495008733C9 /* Core Data */,
 			);
 			name = Model;
@@ -2006,6 +2068,8 @@
 				17E6417F0EF01FA8001BC333 /* SPImageView.m */,
 				584094CC1107BD0500260CFD /* SPAlertSheets.h */,
 				584095181107CB6600260CFD /* SPAlertSheets.m */,
+				1798F19C15501892004B0AB8 /* SPFlippedView.h */,
+				1798F19D15501892004B0AB8 /* SPFlippedView.m */,
 				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
@@ -2277,6 +2341,7 @@
 		2A37F4AAFDCFA73011CA2CEA /* sequel-pro */ = {
 			isa = PBXGroup;
 			children = (
+				1798F17E1550171B004B0AB8 /* LICENSE */,
 				1791346512F75CC1000B27C1 /* README */,
 				17E641420EF01E8A001BC333 /* Source */,
 				380F4EF20FC0B67A00B0BFD7 /* Unit Tests */,
@@ -2533,8 +2598,6 @@
 				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
 				BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */,
 				BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */,
-				584D899B15162CBE00F24774 /* SPDataBase64EncodingAdditions.h */,
-				584D899C15162CBE00F24774 /* SPDataBase64EncodingAdditions.m */,
 				582A01E7107C0C170027D42B /* SPNotLoaded.h */,
 				582A01E8107C0C170027D42B /* SPNotLoaded.m */,
 				5870868210FA3E9C00D58E1C /* SPDataStorage.h */,
@@ -2545,6 +2608,10 @@
 				BC85F5CF12193B7D00E255B5 /* SPColorAdditions.m */,
 				BC32F240121D66260067305E /* SPFileManagerAdditions.h */,
 				BC32F241121D66260067305E /* SPFileManagerAdditions.m */,
+				1798F19615501838004B0AB8 /* SPMutableArrayAdditions.h */,
+				1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */,
+				584D899B15162CBE00F24774 /* SPDataBase64EncodingAdditions.h */,
+				584D899C15162CBE00F24774 /* SPDataBase64EncodingAdditions.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -3026,6 +3093,7 @@
 				176059B813361D380098E162 /* SPDatabaseInfoTest.m in Sources */,
 				176059B913361D390098E162 /* SPTableCopyTest.m in Sources */,
 				176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */,
+				1798F1C4155018E2004B0AB8 /* SPMutableArrayAdditionsTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3209,7 +3277,6 @@
 				1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */,
 				1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */,
 				1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */,
-				1785EA26127DB4DC00F468C8 /* SPFavoritesPreferencePane.m in Sources */,
 				1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */,
 				1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */,
 				1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */,
@@ -3241,6 +3308,15 @@
 				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
 				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,
 				17D3583F1533768E00A654D7 /* SPWindowControllerDelegate.m in Sources */,
+				1798F1871550175B004B0AB8 /* SPFavoritesExporter.m in Sources */,
+				1798F1881550175B004B0AB8 /* SPFavoritesImporter.m in Sources */,
+				1798F18F1550178E004B0AB8 /* SPConnectionControllerDataSource.m in Sources */,
+				1798F1901550178E004B0AB8 /* SPConnectionControllerInitializer.m in Sources */,
+				1798F1911550178E004B0AB8 /* SPConnectionHandler.m in Sources */,
+				1798F1951550181B004B0AB8 /* SPGroupNode.m in Sources */,
+				1798F19815501838004B0AB8 /* SPMutableArrayAdditions.m in Sources */,
+				1798F19B1550185B004B0AB8 /* SPTreeNode.m in Sources */,
+				1798F19E15501892004B0AB8 /* SPFlippedView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

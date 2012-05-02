@@ -91,23 +91,27 @@
 {
 	BOOL success = YES;
 	
-	//disable foreign key checks
+	// Disable foreign key checks
 	[connection queryString:@"/*!32352 SET foreign_key_checks=0 */"];
-	if([connection queryErrored]) 
-		success = NO;
 	
-	//copy tables
-	for(NSString *tableName in tablesArray) {
-		if(![self copyTable:tableName from:sourceDB to:targetDB withContent:copyWithContent])
-			success = NO;
+	if ([connection queryErrored]) {
+		success = NO;
 	}
 	
-	//enable foreign key checks
-	[connection queryString:@"/*!32352 SET foreign_key_checks=1 */"];
-	if([connection queryErrored]) 
-		success = NO;
+	for (NSString *tableName in tablesArray) 
+	{
+		if (![self copyTable:tableName from:sourceDB to:targetDB withContent:copyWithContent]) {
+			success = NO;
+		}
+	}
 	
-	//done
+	// Enable foreign key checks
+	[connection queryString:@"/*!32352 SET foreign_key_checks=1 */"];
+	
+	if ([connection queryErrored]) {
+		success = NO;
+	}
+	
 	return success;
 }
 
@@ -119,12 +123,10 @@
 							   [targetDB backtickQuotedString],
 							   [tableName backtickQuotedString]
 							   ];
-	// Move the table
+
 	[connection queryString:moveStatement];
 	
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
+	return ![connection queryErrored];
 }
 
 @end

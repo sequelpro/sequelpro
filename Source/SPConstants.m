@@ -28,10 +28,6 @@
 // Narrow down completion max rows
 const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
 
-// Kill mode constants
-NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
-NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
-
 // Default monospaced font name
 NSString *SPDefaultMonospacedFontName            = @"Monaco";
 
@@ -69,7 +65,7 @@ NSString *SPDataSupportFolder                    = @"Data";
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
 NSString *SPSelectLastFavoriteUsed               = @"SelectLastFavoriteUsed";
-NSString *SPLastFavoriteIndex                    = @"LastFavoriteIndex";
+NSString *SPLastFavoriteID                       = @"SPLastFavoriteID";
 NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
 NSString *SPDefaultViewMode                      = @"DefaultViewMode";
 NSString *SPLastViewMode                         = @"LastViewMode";
@@ -279,6 +275,9 @@ NSString *SPFavoriteSSLCertificateFileLocationEnabledKey = @"sslCertificateFileL
 NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileLocation";
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
+
+// Favorites import/export
+NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";
 
 // Bundle Files and Bundle Editor
 NSString *SPBundleScopeQueryEditor                          = @"editor";

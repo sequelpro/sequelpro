@@ -27,7 +27,6 @@
 
 @class SPGeneralPreferencePane,
 	   SPTablesPreferencePane,
-	   SPFavoritesPreferencePane,
 	   SPNotificationsPreferencePane,
 	   SPEditorPreferencePane,
 	   SPAutoUpdatePreferencePane,
@@ -45,7 +44,6 @@
 	// Preference pane controllers
 	IBOutlet SPGeneralPreferencePane <SPPreferencePaneProtocol>       *generalPreferencePane;
 	IBOutlet SPTablesPreferencePane  <SPPreferencePaneProtocol>       *tablesPreferencePane;
-	IBOutlet SPFavoritesPreferencePane <SPPreferencePaneProtocol>     *favoritesPreferencePane;
 	IBOutlet SPNotificationsPreferencePane <SPPreferencePaneProtocol> *notificationsPreferencePane;
 	IBOutlet SPEditorPreferencePane <SPPreferencePaneProtocol>        *editorPreferencePane;
 	IBOutlet SPAutoUpdatePreferencePane <SPPreferencePaneProtocol>    *autoUpdatePreferencePane;
@@ -69,7 +67,6 @@
 
 @property (readonly) SPGeneralPreferencePane       *generalPreferencePane;
 @property (readonly) SPTablesPreferencePane        *tablesPreferencePane;
-@property (readonly) SPFavoritesPreferencePane     *favoritesPreferencePane;
 @property (readonly) SPNotificationsPreferencePane *notificationsPreferencePane;
 @property (readonly) SPEditorPreferencePane        *editorPreferencePane;
 @property (readonly) SPAutoUpdatePreferencePane    *autoUpdatePreferencePane;
@@ -81,14 +78,11 @@
  */
 @property (readwrite, assign) NSUInteger fontChangeTarget;
 
-
 // Toolbar item IBAction methods
 - (IBAction)displayPreferencePane:(id)sender;
 - (IBAction)displayTablePreferences:(id)sender;
-- (IBAction)displayFavoritePreferences:(id)sender;
 - (IBAction)displayEditorPreferences:(id)sender;
 
-// Other
 - (void)changeFont:(id)sender;
 
 @end

@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPMutableArrayAdditions.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on February 2, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,17 +23,15 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
-#import "SPFavoritesImportProtocol.h"
-
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
+ * @category SPMutableArrayAdditionsTest SPMutableArrayAdditionsTest.h
  *
- * @author Stuart Connolly http://stuconnolly.com/ 
+ * @author Stuart Connolly http://stuconnolly.com/
  *
- * Connection controller delegate category.
+ * NSMutableArray additions category.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@interface NSMutableArray (SPMutableArrayAdditions)
+
+- (void)reverse;
 
 @end

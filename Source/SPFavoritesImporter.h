@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPConnectionControllerDelegate.h
+//  SPFavoritesImporter.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 29, 2010
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on May 14, 2011
+//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -23,17 +23,22 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPConnectionController.h"
-#import "SPFavoritesExportProtocol.h"
 #import "SPFavoritesImportProtocol.h"
 
+@interface SPFavoritesImporter : NSObject 
+{
+	NSObject <SPFavoritesImportProtocol> *delegate;
+		
+	NSString *importPath;
+}
+
+@property (readwrite, assign) NSObject <SPFavoritesImportProtocol> *delegate;
+
 /**
- * @category SPConnectionControllerDelegate SPConnectionControllerDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/ 
- *
- * Connection controller delegate category.
+ * @property exportPath The file path to import from
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@property (readwrite, retain) NSString *importPath;
+
+- (void)importFavoritesFromFileAtPath:(NSString *)path;
 
 @end
