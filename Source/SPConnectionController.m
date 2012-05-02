@@ -64,6 +64,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_reloadFavoritesViewData;
 - (void)_restoreConnectionInterface;
 - (void)_selectNode:(SPTreeNode *)node;
+- (void)_removeNode:(SPTreeNode *)node;
 
 - (NSNumber *)_createNewFavoriteID;
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
@@ -570,7 +571,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSArray *nodes = [self selectedFavoriteNodes];
 	
-	return ([nodes count]) ? (SPTreeNode *)[[self selectedFavoriteNodes] objectAtIndex:0] : nil;
+	return ([nodes count]) ? (SPTreeNode *)[nodes objectAtIndex:0] : nil;
 }
 
 /**
@@ -767,8 +768,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	if ([favoritesOutlineView numberOfSelectedRows] == 1) {
 		
+		BOOL suppressWarning = NO;
 		SPTreeNode *node = [self selectedFavoriteNode];
-		
+				
 		NSString *message = @"";
 		NSString *informativeMessage = @"";
 		
@@ -776,30 +778,38 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			message            = [NSString stringWithFormat:NSLocalizedString(@"Delete favorite '%@'?", @"delete database message"), [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey]];
 			informativeMessage = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the favorite '%@'? This operation cannot be undone.", @"delete database informative message"), [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey]];
 		}
-		else {
+		else if ([[node childNodes] count] > 0) {
 			message            = [NSString stringWithFormat:NSLocalizedString(@"Delete group '%@'?", @"delete database message"), [[node representedObject] nodeName]];
-			informativeMessage = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the group '%@'? All favorites within this group will also be deleted. This operation cannot be undone.", @"delete database informative message"), [[node representedObject] nodeName]];
+			informativeMessage = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the group '%@'? All groups and favorites within this group will also be deleted. This operation cannot be undone.", @"delete database informative message"), [[node representedObject] nodeName]];
+		}
+		else {
+			suppressWarning = YES;
 		}
 		
-		NSAlert *alert = [NSAlert alertWithMessageText:message
-										 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
-									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
-										   otherButton:nil 
-							 informativeTextWithFormat:informativeMessage];
-		
-		NSArray *buttons = [alert buttons];
-		
-		// Change the alert's cancel button to have the key equivalent of return
-		[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
-		[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
-		[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
-		
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		
-		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
-						  modalDelegate:self 
-						 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-							contextInfo:SPRemoveNode];
+		if (!suppressWarning) {
+			NSAlert *alert = [NSAlert alertWithMessageText:message
+											 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
+										   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
+											   otherButton:nil 
+								 informativeTextWithFormat:informativeMessage];
+			
+			NSArray *buttons = [alert buttons];
+			
+			// Change the alert's cancel button to have the key equivalent of return
+			[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
+			[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
+			[[buttons objectAtIndex:1] setKeyEquivalent:@"\r"];
+			
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			
+			[alert beginSheetModalForWindow:[dbDocument parentWindow] 
+							  modalDelegate:self 
+							 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+								contextInfo:SPRemoveNode];
+		}
+		else{
+			[self _removeNode:node];
+		}
 	}
 }
 
@@ -961,43 +971,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Remove the current favorite/group node
 	if ([contextInfo isEqualToString:SPRemoveNode]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			
-			SPTreeNode *node = [self selectedFavoriteNode];
-			
-			if (![node isGroup]) {
-				NSDictionary *favorite = [[node representedObject] nodeFavorite];
-				
-				// Get selected favorite's details
-				NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
-				NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
-				NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
-				NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
-				NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
-				NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
-				NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
-				
-				// Remove passwords from the Keychain
-				[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
-										account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
-				[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
-										account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
-				
-				// Reset last used favorite
-				if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
-					[prefs setInteger:0	forKey:SPLastFavoriteID];
-				}
-				
-				// If required, reset the default favorite
-				if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
-					[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
-				}
-			}
-			
-			[favoritesController removeFavoriteNode:node];
-			
-			[self _reloadFavoritesViewData];
-			
-			[[(SPPreferenceController *)[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
+			[self _removeNode:[self selectedFavoriteNode]];
 		}
 	}	
 }
@@ -1283,11 +1257,56 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 /**
  * Selected the supplied node in the favorites outline view.
+ *
+ * @param node The node to select
  */
 - (void)_selectNode:(SPTreeNode *)node
 {
 	[favoritesOutlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[favoritesOutlineView rowForItem:node]] byExtendingSelection:NO];
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
+}
+
+/**
+ * Removes the supplied tree node.
+ *
+ * @param node The node to remove
+ */
+- (void)_removeNode:(SPTreeNode *)node
+{
+	if (![node isGroup]) {
+		NSDictionary *favorite = [[node representedObject] nodeFavorite];
+		
+		// Get selected favorite's details
+		NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
+		NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
+		NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
+		NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
+		NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
+		NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
+		NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
+		
+		// Remove passwords from the Keychain
+		[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
+								account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
+		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
+								account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
+		
+		// Reset last used favorite
+		if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
+			[prefs setInteger:0	forKey:SPLastFavoriteID];
+		}
+		
+		// If required, reset the default favorite
+		if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
+			[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
+		}
+	}
+	
+	[favoritesController removeFavoriteNode:node];
+	
+	[self _reloadFavoritesViewData];
+	
+	[[(SPPreferenceController *)[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
 }
 
 /**
