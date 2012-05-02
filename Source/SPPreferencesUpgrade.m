@@ -337,6 +337,7 @@ void SPMigrateConnectionFavoritesData(void)
 	
 	if (error) {
 		NSLog(@"Error loading favorites: %@", [error localizedDescription]);
+		[favorites release];
 		return;
 	}
 	
@@ -367,6 +368,7 @@ void SPMigrateConnectionFavoritesData(void)
 		else if (errorString) {
 			NSLog(@"Error converting migrating favorites data to plist format: %@", errorString);
 			
+			[favorites release];
 			[errorString release];
 			return;
 		}

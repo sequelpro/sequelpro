@@ -69,6 +69,8 @@
 		
 		NSArray *favorites = [importData valueForKey:SPFavoritesDataRootKey];
 		
+		[importData release];
+		
 		if (favorites) {
 			[self _informDelegateOfImportDataAvailable:favorites];
 		}

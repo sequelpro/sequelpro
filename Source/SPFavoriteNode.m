@@ -68,7 +68,7 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 	
 	[node setNodeFavorite:[[self nodeFavorite] copyWithZone:zone]];
 	
-	return node;
+	return [node autorelease];
 }
 
 #pragma mark -

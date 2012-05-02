@@ -273,8 +273,6 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		SPTreeNode *node = [self _constructBranchForNodeData:favorite];
 				
 		[[favoritesNode mutableChildNodes] addObject:node];
-		
-		[node release];
 	}
 	
 	[[rootNode mutableChildNodes] addObject:favoritesNode];
@@ -307,24 +305,26 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 		treeNode = [[SPTreeNode alloc] initWithRepresentedObject:node];
 		
+		[node release];
+		
 		[treeNode setIsGroup:YES];
 				
 		for (NSDictionary *favorite in [nodeData objectForKey:SPFavoriteChildrenKey])
 		{
 			SPTreeNode *innerNode = [self _constructBranchForNodeData:favorite];
 			
-			[[treeNode mutableChildNodes] addObject:innerNode];
-			
-			[innerNode release];
+			[[treeNode mutableChildNodes] addObject:innerNode];			
 		}
 	}
 	else {
 		node = [[SPFavoriteNode alloc] initWithDictionary:nodeData];
 		
 		treeNode = [[SPTreeNode alloc] initWithRepresentedObject:node];
+		
+		[node release];
 	}
 	
-	return treeNode;
+	return [treeNode autorelease];
 }
 
 /**

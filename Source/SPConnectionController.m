@@ -1127,7 +1127,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSMutableArray *nodes = [[node mutableChildNodes] mutableCopy];
 	
 	// If this node only has one child and it's not another group node, don't bother proceeding
-	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) return;
+	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) {
+		[nodes release];
+		return;
+	}
 	
 	for (SPTreeNode *treeNode in nodes)
 	{
@@ -1166,6 +1169,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[[node mutableChildNodes] setArray:nodes];
 	
+	[nodes release];
 	[groupNodes release];
 }
 

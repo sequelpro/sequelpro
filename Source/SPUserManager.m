@@ -1370,7 +1370,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		}
 	}
 	
-	[connection queryString:renameQuery];
+	if (renameQuery) {
+		[connection queryString:renameQuery];
+	}
 }
 
 #pragma mark -

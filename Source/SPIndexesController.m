@@ -520,7 +520,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	
 	[availableFields removeObjectsInArray:indexedFields];
 	
-	return [[availableFields objectAtIndex:index] objectForKey:@"name"];
+	NSString *name = [[availableFields objectAtIndex:index] objectForKey:@"name"];
+	
+	[availableFields release];
+	
+	return name;
 }
 
 #pragma mark -
