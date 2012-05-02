@@ -216,9 +216,7 @@ static NSString *SPDatabaseImage = @"database-small";
 		[menuItem setState:NSOffState];
 	}
 	
-	NSArray *nodes = draggedNodes;
-	
-	if (![nodes count]) return acceptedDrop;
+	if (![draggedNodes count]) return acceptedDrop;
 	
 	if ([node isGroup]) {		
 		if (index == NSOutlineViewDropOnItemIndex) {
@@ -237,7 +235,7 @@ static NSString *SPDatabaseImage = @"database-small";
 			
 	NSMutableArray *childNodeArray = [node mutableChildNodes];
 	
-    for (SPTreeNode *treeNode in nodes) 
+    for (SPTreeNode *treeNode in draggedNodes) 
 	{
         // Remove the node from its old location
         NSInteger oldIndex = [childNodeArray indexOfObject:treeNode];

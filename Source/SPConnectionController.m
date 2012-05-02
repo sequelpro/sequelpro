@@ -291,7 +291,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Opens the SSH/SSL key selection window, ready to select a key file.
  */
-- (IBAction)chooseKeyLocation:(id)sender
+- (IBAction)chooseKeyLocation:(NSButton *)sender
 {
 	[favoritesOutlineView deselectAll:self];
 	NSString *directoryPath = nil;
@@ -433,7 +433,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)sortFavorites:(id)sender
 {	
-    previousSortItem = currentSortItem;
+    SPFavoritesSortItem previousSortItem = currentSortItem;
 	currentSortItem  = [[sender menu] indexOfItem:sender];
 	
 	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
@@ -449,7 +449,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Reverses the favorites table view sorting based on the selected criteria.
  */
-- (void)reverseSortFavorites:(id)sender
+- (void)reverseSortFavorites:(NSMenuItem *)sender
 {
     reverseFavoritesSort = (![sender state]);
     
@@ -469,6 +469,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	automaticFavoriteSelection = YES;
 
 	// Clear the keychain referral items as appropriate
+	if (connectionKeychainID) [connectionKeychainID release], connectionKeychainID = nil;
 	if (connectionKeychainItemName) [connectionKeychainItemName release], connectionKeychainItemName = nil;
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
@@ -481,8 +482,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	// Keep a copy of the favorite as it currently stands
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-	
-	currentFavorite = [[node representedObject] copy];
+	currentFavorite = [fav copy];
 	
 	[connectionResizeContainer setHidden:NO];
 	
@@ -526,7 +526,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[connectionKeychainItemName release], connectionKeychainItemName = nil;
 		[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
 	}
-	
+
+	// Store the selected favorite ID for use with the document on connection
+	if ([fav objectForKey:SPFavoriteIDKey]) connectionKeychainID = [[fav objectForKey:SPFavoriteIDKey] copy];
+
 	// And the same for the SSH password
 	connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[fav objectForKey:SPFavoriteNameKey] id:[fav objectForKey:SPFavoriteIDKey]] retain];
 	connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[fav objectForKey:SPFavoriteSSHUserKey] sshHost:[fav objectForKey:SPFavoriteSSHHostKey]] retain];
@@ -694,19 +697,19 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if ([self database]) [newFavorite setObject:[self database] forKey:SPFavoriteDatabaseKey];
 	
 	// SSL details
-	if ([self useSSL]) [newFavorite setObject:[NSNumber numberWithInt:[self useSSL]] forKey:SPFavoriteUseSSLKey];
-	[newFavorite setObject:[NSNumber numberWithInt:[self sslKeyFileLocationEnabled]] forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
+	if ([self useSSL]) [newFavorite setObject:[NSNumber numberWithInteger:[self useSSL]] forKey:SPFavoriteUseSSLKey];
+	[newFavorite setObject:[NSNumber numberWithInteger:[self sslKeyFileLocationEnabled]] forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
 	if ([self sslKeyFileLocation]) [newFavorite setObject:[self sslKeyFileLocation] forKey:SPFavoriteSSLKeyFileLocationKey];
-	[newFavorite setObject:[NSNumber numberWithInt:[self sslCertificateFileLocationEnabled]] forKey:SPFavoriteSSLCertificateFileLocationEnabledKey];
+	[newFavorite setObject:[NSNumber numberWithInteger:[self sslCertificateFileLocationEnabled]] forKey:SPFavoriteSSLCertificateFileLocationEnabledKey];
 	if ([self sslCertificateFileLocation]) [newFavorite setObject:[self sslCertificateFileLocation] forKey:SPFavoriteSSLCertificateFileLocationKey];
-	[newFavorite setObject:[NSNumber numberWithInt:[self sslCACertFileLocationEnabled]] forKey:SPFavoriteSSLCACertFileLocationEnabledKey];
+	[newFavorite setObject:[NSNumber numberWithInteger:[self sslCACertFileLocationEnabled]] forKey:SPFavoriteSSLCACertFileLocationEnabledKey];
 	if ([self sslCACertFileLocation]) [newFavorite setObject:[self sslCACertFileLocation] forKey:SPFavoriteSSLCACertFileLocationKey];
 	
 	// SSH details
 	if ([self sshHost]) [newFavorite setObject:[self sshHost] forKey:SPFavoriteSSHHostKey];
 	if ([self sshUser]) [newFavorite setObject:[self sshUser] forKey:SPFavoriteSSHUserKey];
 	if ([self sshPort]) [newFavorite setObject:[self sshPort] forKey:SPFavoriteSSHPortKey];
-	[newFavorite setObject:[NSNumber numberWithInt:[self sshKeyLocationEnabled]] forKey:SPFavoriteSSHKeyLocationEnabledKey];
+	[newFavorite setObject:[NSNumber numberWithInteger:[self sshKeyLocationEnabled]] forKey:SPFavoriteSSHKeyLocationEnabledKey];
 	if ([self sshKeyLocation]) [newFavorite setObject:[self sshKeyLocation] forKey:SPFavoriteSSHKeyLocationKey];
 
 	// Add the password to keychain as appropriate
@@ -1366,7 +1369,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	if (!currentFavorite) return;
 	
-	NSDictionary *oldFavorite = [currentFavorite nodeFavorite];
+	NSDictionary *oldFavorite = currentFavorite;
 	NSDictionary *newFavorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
 	
 	NSString *passwordValue;
@@ -1445,7 +1448,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
 	
 	if ([[favoritesOutlineView selectedRowIndexes] count]) {
-		currentFavorite = [[[self selectedFavoriteNode] representedObject] copy];
+		currentFavorite = [[[[self selectedFavoriteNode] representedObject] nodeFavorite] copy];
 	}
 }
 
@@ -1464,10 +1467,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	if (mySQLConnection) [mySQLConnection release];
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
+
+	if (connectionKeychainID) [connectionKeychainID release];
 	if (connectionKeychainItemName) [connectionKeychainItemName release];
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
 	if (favoritesRoot) [favoritesRoot release], favoritesRoot = nil;
     

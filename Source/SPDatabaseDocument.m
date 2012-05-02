@@ -4246,7 +4246,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 				connectionType = @"SPSSHTunnelConnection";
 				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
-				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
+				[connection setObject:[NSNumber numberWithInteger:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
 				if ([connectionController sshKeyLocation])
 					[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 				if ([connectionController sshPort] && [[connectionController sshPort] length])
@@ -4281,12 +4281,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 		}
 
-		[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController useSSL]] forKey:@"useSSL"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
 		if ([connectionController sslKeyFileLocation]) [connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
 		if ([connectionController sslCertificateFileLocation]) [connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
 		if ([connectionController sslCACertFileLocation]) [connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 
 		[stateDetails setObject:[NSDictionary dictionaryWithDictionary:connection] forKey:@"connection"];

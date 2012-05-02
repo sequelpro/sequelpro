@@ -56,6 +56,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		databaseConnectionView = [dbDocument valueForKey:@"contentViewSplitter"];
 		
 		// Keychain references
+		connectionKeychainID = nil;
 		connectionKeychainItemName = nil;
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
@@ -68,6 +69,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		cancellingConnection = NO;
 		mySQLConnectionCancelled = NO;
 		favoriteNameFieldWasTouched = YES;
+		automaticFavoriteSelection = NO;
 		
 		[self loadNib];
 		[self registerForNotifications];
@@ -92,8 +94,9 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// and the tree to be constructed.
 		favoritesController = [SPFavoritesController sharedFavoritesController];
 		
-		// Tree reference
+		// Tree references
 		favoritesRoot = [favoritesController favoritesTree];
+		currentFavorite = nil;
 		
 		// Update the UI
 		[self _reloadFavoritesViewData];

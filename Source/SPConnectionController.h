@@ -67,7 +67,6 @@
 	NSOpenPanel *keySelectionPanel;
 #endif
 	NSUserDefaults *prefs;
-	NSMutableArray *favorites;
 
 #ifndef SP_REFACTOR	/* ivars */
 	BOOL automaticFavoriteSelection;
@@ -174,7 +173,7 @@
 	SPTreeNode *favoritesRoot;
 	SPFavoriteNode *currentFavorite;
 	SPFavoritesController *favoritesController;
-	SPFavoritesSortItem previousSortItem, currentSortItem;
+	SPFavoritesSortItem currentSortItem;
 #endif
 }
 
