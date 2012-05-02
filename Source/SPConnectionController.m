@@ -528,7 +528,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	// Store the selected favorite ID for use with the document on connection
-	if ([fav objectForKey:SPFavoriteIDKey]) connectionKeychainID = [[fav objectForKey:SPFavoriteIDKey] copy];
+	if ([fav objectForKey:SPFavoriteIDKey]) connectionKeychainID = [[[fav objectForKey:SPFavoriteIDKey] stringValue] retain];
 
 	// And the same for the SSH password
 	connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[fav objectForKey:SPFavoriteNameKey] id:[fav objectForKey:SPFavoriteIDKey]] retain];
@@ -1456,6 +1456,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 - (void)dealloc
 {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
     [keychain release];
     [prefs release];
 	
@@ -1475,7 +1477,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
 
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-	if (favoritesRoot) [favoritesRoot release], favoritesRoot = nil;
     
     [super dealloc];
 }

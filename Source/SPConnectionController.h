@@ -171,7 +171,7 @@
 	NSImage *folderImage;
 	
 	SPTreeNode *favoritesRoot;
-	SPFavoriteNode *currentFavorite;
+	NSDictionary *currentFavorite;
 	SPFavoritesController *favoritesController;
 	SPFavoritesSortItem currentSortItem;
 #endif
