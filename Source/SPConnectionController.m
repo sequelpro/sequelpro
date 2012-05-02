@@ -270,19 +270,21 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #pragma mark Interface interaction
 
 /**
- * Registered in initWithDocument: to be the double click action of the favorites outline view.
+ * Registered to be the double click action of the favorites outline view.
  */
 - (IBAction)nodeDoubleClicked:(id)sender
 {
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
-	// Only proceed to initiate a connection if a leaf node (i.e. a favorite and not a group) was double clicked.
-	if (![node isGroup]) {
-		[self initiateConnection:self];
-	}
-	// Otherwise start editing the group node's name
-	else {
-		[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
+	if (node) {
+		// Only proceed to initiate a connection if a leaf node (i.e. a favorite and not a group) was double clicked.
+		if (![node isGroup]) {
+			[self initiateConnection:self];
+		}
+		// Otherwise start editing the group node's name
+		else {
+			[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
+		}
 	}
 }
 
