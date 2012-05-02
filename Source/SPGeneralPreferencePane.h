@@ -34,14 +34,13 @@
  */
 @interface SPGeneralPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
 {	
-	IBOutlet NSPopUpButton *defaultFavoritePopup;
+	NSImage *folderImage;
 	
-	IBOutlet NSArrayController *favoritesController;
+	IBOutlet NSPopUpButton *defaultFavoritePopup;
 }
 
 - (IBAction)updateDefaultFavorite:(id)sender;
 
 - (void)updateDefaultFavoritePopup;
-- (void)updateDefaultFavoritePopupSelection;
 
 @end

@@ -24,8 +24,31 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPGeneralPreferencePane.h"
+#import "SPFavoritesController.h"
+#import "SPTreeNode.h"
+#import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
+
+static NSString *SPDatabaseImage = @"database-small";
+
+@interface SPGeneralPreferencePane ()
+
+- (NSArray *)_constructMenuItemsForNode:(SPTreeNode *)node atLevel:(NSUInteger)level;
+
+@end
 
 @implementation SPGeneralPreferencePane
+
+#pragma mark -
+#pragma mark Initialisation
+
+- (void)awakeFromNib
+{
+	// Generic folder image for use in the outline view's groups
+	folderImage = [[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericFolderIcon)] retain];
+	
+	[folderImage setSize:NSMakeSize(16, 16)];
+}
 
 #pragma mark -
 #pragma mark IB action methods
@@ -34,11 +57,18 @@
  * Updates the default favorite.
  */ 
 - (IBAction)updateDefaultFavorite:(id)sender
-{
-	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
+{		
+	for (NSMenuItem *item in [defaultFavoritePopup itemArray])
+	{
+		[item setState:NSOffState];
+	}
 	
-	// Minus 2 from index to account for the "Last Used" and separator items
-	[prefs setInteger:([defaultFavoritePopup indexOfSelectedItem] - 2) forKey:SPDefaultFavorite];
+	[sender setState:NSOnState];
+	[defaultFavoritePopup setTitle:[sender title]];
+	
+	[prefs setBool:([defaultFavoritePopup indexOfSelectedItem] == 0) forKey:SPSelectLastFavoriteUsed];
+			
+	[prefs setInteger:[sender tag] forKey:SPDefaultFavorite];
 }
 
 #pragma mark -
@@ -51,43 +81,79 @@
 {
 	[defaultFavoritePopup removeAllItems];
 	
-	// Use the last used favorite
 	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Last Used", @"Last Used entry in favorites menu")];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
 	// Add all favorites to the menu
-	for (NSString *favorite in [[favoritesController arrangedObjects] valueForKeyPath:@"name"])
+	for (SPTreeNode *node in [[[[[SPFavoritesController sharedFavoritesController] favoritesTree] childNodes] objectAtIndex:0] childNodes])
 	{
-		NSMenuItem *favoriteMenuItem = [[NSMenuItem alloc] initWithTitle:favorite action:NULL keyEquivalent:@""];
+		NSArray *items = [self _constructMenuItemsForNode:node atLevel:0];
 		
-		[[defaultFavoritePopup menu] addItem:favoriteMenuItem];
-		
-		[favoriteMenuItem release];
+		for (NSMenuItem *item in items)
+		{
+			[[defaultFavoritePopup menu] addItem:item];
+		}
 	}
 	
-	// Add item to switch to edit favorites pane
-	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
-	
-	NSMenuItem *editMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Favorites…", @"edit favorites menu item") action:@selector(displayFavoritePreferences:) keyEquivalent:@""];
-	
-	[editMenuItem setTarget:[[[self view] window] delegate]];
-	
-	[[defaultFavoritePopup menu] addItem:editMenuItem];
-	
-	[editMenuItem release];
-	
-	// Select the default favorite from prefs
-	[self updateDefaultFavoritePopupSelection];
+	// Select the default favorite from prefs	
+	[defaultFavoritePopup selectItemWithTag:[prefs boolForKey:SPSelectLastFavoriteUsed] ? 0 : [prefs integerForKey:SPDefaultFavorite]];
 }
 
+#pragma mark -
+#pragma mark Private API
+
 /**
- * Resets the default favorite popup button selection based on the user's preferences.
+ * Builds a menu item and sub-menu (if required) of the supplied tree node.
+ *
+ * @param node The node to build the menu item for
+ *
+ * @return The menu item
  */
-- (void)updateDefaultFavoritePopupSelection
-{
-	NSUInteger index = [prefs integerForKey:SPDefaultFavorite];
+- (NSArray *)_constructMenuItemsForNode:(SPTreeNode *)node atLevel:(NSUInteger)level
+{	
+	NSMutableArray *items = [NSMutableArray array];
 	
-	[defaultFavoritePopup selectItemAtIndex:(![prefs boolForKey:SPSelectLastFavoriteUsed] && index > 0 && index < [[defaultFavoritePopup itemArray] count]) ? index + 2 : 0];
+	if ([node isGroup]) {
+		
+		level++;
+		
+		SPGroupNode *groupNode = (SPGroupNode *)[node representedObject];
+		
+		NSMenuItem *groupItem = [[NSMenuItem alloc] initWithTitle:[groupNode nodeName] action:NULL keyEquivalent:@""];
+		
+		NSUInteger groupLevel = level - 1;
+		
+		[groupItem setEnabled:NO];
+		[groupItem setImage:folderImage];
+		[groupItem setIndentationLevel:groupLevel];
+		
+		[items addObject:groupItem];
+		
+		[groupItem release];
+		
+		for (SPTreeNode *childNode in [node childNodes])
+		{
+			NSArray *innerItems = [self _constructMenuItemsForNode:childNode atLevel:level];
+	
+			[items addObjectsFromArray:innerItems];
+		}
+	}
+	else {
+		NSDictionary *favorite = [(SPFavoriteNode *)[node representedObject] nodeFavorite];
+		
+		NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[favorite objectForKey:SPFavoriteNameKey] action:@selector(updateDefaultFavorite:) keyEquivalent:@""];
+	
+		[menuItem setTag:[[favorite objectForKey:SPFavoriteIDKey] integerValue]];
+		[menuItem setImage:[NSImage imageNamed:SPDatabaseImage]];
+		[menuItem setIndentationLevel:level];
+		[menuItem setTarget:self];
+		
+		[items addObject:menuItem];
+		
+		[menuItem release];
+	}
+	
+	return items;
 }
 
 #pragma mark -
@@ -121,6 +187,15 @@
 - (BOOL)preferencePaneAllowsResizing
 {
 	return NO;
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[folderImage release], folderImage = nil;
+	
+	[super dealloc];
 }
 
 @end

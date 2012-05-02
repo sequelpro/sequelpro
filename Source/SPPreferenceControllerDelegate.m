@@ -51,7 +51,7 @@
 {
 	[[NSColorPanel sharedColorPanel] close];
 	
-	return ([sender showsResizeIndicator]) ? frameSize : [sender frame].size;
+	return [sender showsResizeIndicator] ? frameSize : [sender frame].size;
 }
 
 #pragma mark -
