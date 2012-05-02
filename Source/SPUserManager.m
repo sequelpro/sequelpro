@@ -916,7 +916,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 					[self _renameUserFrom:[user valueForKey:@"originaluser"] 
 									 host:[child valueForKey:@"originalhost"] ? [child valueForKey:@"originalhost"] : [child host]
 									   to:[user valueForKey:@"user"]
-									 host:[child valueForKey:@"host"]];
+									 host:[child host]];
 				}
 			}
 
