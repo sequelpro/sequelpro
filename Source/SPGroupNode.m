@@ -27,10 +27,12 @@
 
 // Constants
 static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
+static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 
 @implementation SPGroupNode
 
 @synthesize nodeName;
+@synthesize nodeIsExpanded;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -39,6 +41,7 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 {
 	if ((self = [super init])) {
 		[self setNodeName:nil];
+		[self setNodeIsExpanded:YES];
 	}
 	
 	return self;
@@ -66,6 +69,7 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 	SPGroupNode *node = [[[self class] allocWithZone:zone] init];
 	
 	[node setNodeName:[self nodeName]];
+	[node setNodeIsExpanded:[self nodeIsExpanded]];
 	
 	return node;
 }
@@ -76,6 +80,7 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 - (id)initWithCoder:(NSCoder *)coder
 {
 	[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
+	[self setNodeIsExpanded:[[coder decodeObjectForKey:SPGroupNodeIsExpandedKey] boolValue]];
 	
 	return self;
 }
@@ -83,6 +88,7 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 - (void)encodeWithCoder:(NSCoder *)coder
 {
 	[coder encodeObject:[self nodeName] forKey:SPGroupNodeNameKey];
+	[coder encodeObject:[NSNumber numberWithBool:[self nodeIsExpanded]] forKey:SPGroupNodeIsExpandedKey];
 }
 
 #pragma mark -
@@ -90,7 +96,7 @@ static NSString *SPGroupNodeNameKey = @"SPGroupNodeName";
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [self nodeName]];
+	return [NSString stringWithFormat:@"<%@: %p ('%@', %@)>", [self className], self, [self nodeName], [NSNumber numberWithBool:[self nodeIsExpanded]]];
 }
 
 #pragma mark -

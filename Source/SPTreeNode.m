@@ -248,6 +248,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 		NSString *name = (![self parentNode]) ? NSLocalizedString(@"Favorites", @"favorites label") : [object nodeName];
 		
 		[dictionary setObject:name ? name : @"" forKey:SPFavoritesGroupNameKey];
+		[dictionary setObject:[NSNumber numberWithBool:[object nodeIsExpanded]] forKey:SPFavoritesGroupIsExpandedKey];
 		[dictionary setObject:children forKey:SPFavoriteChildrenKey];
 	}
 	

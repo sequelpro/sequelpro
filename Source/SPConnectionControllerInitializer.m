@@ -26,7 +26,9 @@
 #import "SPConnectionControllerInitializer.h"
 #import "SPKeychain.h"
 #import "SPFavoritesController.h"
+#import "SPTreeNode.h"
 #import "SPFavoriteNode.h"
+#import "SPGroupNode.h"
 #import "SPDatabaseViewController.h"
 
 static NSString *SPConnectionViewNibName = @"ConnectionView";
@@ -35,6 +37,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 - (void)_reloadFavoritesViewData;
 - (void)_selectNode:(SPTreeNode *)node;
+- (void)_restoreOutlineViewStateNode:(SPTreeNode *)node;
 
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
 
@@ -102,6 +105,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		[self _reloadFavoritesViewData];
 		[self setUpFavoritesOutlineView];
 		[self setUpSelectedConnectionFavorite];
+		[self _restoreOutlineViewStateNode:favoritesRoot];
 		
         // Set sort items
         currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
@@ -240,10 +244,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	
 	// Register drag types for the favorites outline view
 	[favoritesOutlineView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
-	[favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];
-	
-	// Preserve expanded group nodes
-	[favoritesOutlineView setAutosaveExpandedItems:YES];
+	[favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];	
 }
 
 /**
@@ -268,6 +269,33 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		previousType = SPTCPIPConnection;
 		
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
+	}
+}
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Restores the outline views group nodes expansion state.
+ *
+ * @param node The node to traverse
+ */
+- (void)_restoreOutlineViewStateNode:(SPTreeNode *)node
+{
+	if ([node isGroup]) {
+		if ([[node representedObject] nodeIsExpanded]) {
+			[favoritesOutlineView expandItem:node];
+		}
+		else {
+			[favoritesOutlineView collapseItem:node];
+		}
+		
+		for (SPTreeNode *childNode in [node childNodes])
+		{
+			if ([childNode isGroup]) {
+				[self _restoreOutlineViewStateNode:childNode];
+			}
+		}
 	}
 }
 

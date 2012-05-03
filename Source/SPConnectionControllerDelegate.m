@@ -47,6 +47,8 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
+- (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification;
+
 @end
 
 @implementation SPConnectionController (SPConnectionControllerDelegate)
@@ -152,6 +154,16 @@ static NSString *SPDatabaseImage = @"database-small";
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {	
 	return ([[item parentNode] parentNode] != nil);
+}
+
+- (void)outlineViewItemDidCollapse:(NSNotification *)notification
+{	
+	[self _setNodeIsExpanded:NO fromNotification:notification];
+}
+
+- (void)outlineViewItemDidExpand:(NSNotification *)notification
+{
+	[self _setNodeIsExpanded:YES fromNotification:notification];
 }
 
 #pragma mark -
@@ -555,6 +567,16 @@ static NSString *SPDatabaseImage = @"database-small";
 						 didEndSelector:NULL
 							contextInfo:NULL];
 	}
+}
+
+#pragma mark -
+#pragma mark Private API
+
+- (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification
+{
+	SPGroupNode *node = [[[notification userInfo] valueForKey:@"NSObject"] representedObject];
+	
+	[node setNodeIsExpanded:expanded];	
 }
 
 @end

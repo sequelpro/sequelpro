@@ -60,7 +60,7 @@
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
 	SPTreeNode *node = (SPTreeNode *)item;
-	
+
 	return (![node isGroup]) ? [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey] : [[node representedObject] nodeName];
 }
 
@@ -88,16 +88,6 @@
 			[self _reloadFavoritesViewData];
 		}
 	}
-}
-
-- (id)outlineView:(NSOutlineView *)outlineView itemForPersistentObject:(id)object
-{
-	return [NSKeyedUnarchiver unarchiveObjectWithData:object];
-}
-
-- (id)outlineView:(NSOutlineView *)outlineView persistentObjectForItem:(id)item
-{
-	return [NSKeyedArchiver archivedDataWithRootObject:item];
 }
 
 @end

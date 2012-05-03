@@ -262,6 +262,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	SPGroupNode *rootGroupNode = [[SPGroupNode alloc] init];
 	SPGroupNode *favoritesGroupNode = [[SPGroupNode alloc] initWithName:[[root objectForKey:SPFavoritesGroupNameKey] uppercaseString]];
 	
+	[favoritesGroupNode setNodeIsExpanded:[[root objectForKey:SPFavoritesGroupIsExpandedKey] boolValue]];
+	
 	SPTreeNode *rootNode = [[SPTreeNode alloc] initWithRepresentedObject:rootGroupNode];
 	SPTreeNode *favoritesNode = [[SPTreeNode alloc] initWithRepresentedObject:favoritesGroupNode];
 		
@@ -282,7 +284,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	[favoritesNode release];
 	
 	favoritesTree = rootNode;
-	
+		
 	pthread_mutex_unlock(&favoritesLock);
 }
 
@@ -298,10 +300,12 @@ static SPFavoritesController *sharedFavoritesController = nil;
 {
 	id node = nil;
 	SPTreeNode *treeNode = nil;
-	
+		
 	if ([nodeData objectForKey:SPFavoritesGroupNameKey] && [nodeData objectForKey:SPFavoriteChildrenKey]) {
 		
 		node = [[SPGroupNode alloc] initWithName:[nodeData objectForKey:SPFavoritesGroupNameKey]];
+		
+		[node setNodeIsExpanded:[[nodeData objectForKey:SPFavoritesGroupIsExpandedKey] boolValue]];
 		
 		treeNode = [[SPTreeNode alloc] initWithRepresentedObject:node];
 		
@@ -323,7 +327,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 		[node release];
 	}
-	
+		
 	return [treeNode autorelease];
 }
 

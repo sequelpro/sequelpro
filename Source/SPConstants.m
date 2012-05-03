@@ -255,6 +255,7 @@ NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcut
 NSString *SPFavoritesRootKey                             = @"Favorites Root";
 NSString *SPFavoriteChildrenKey                          = @"Children";
 NSString *SPFavoritesGroupNameKey                        = @"Name";
+NSString *SPFavoritesGroupIsExpandedKey                  = @"IsExpanded";
 NSString *SPFavoriteIDKey                                = @"id";
 NSString *SPFavoriteNameKey                              = @"name";
 NSString *SPFavoriteDatabaseKey                          = @"database";

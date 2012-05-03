@@ -38,11 +38,11 @@
 #import "SPAlertSheets.h"
 #import "SPChooseMenuItemDialog.h"
 #import "SPCustomQuery.h"
+#import "SPFavoritesController.h"
+#import "SPEditorTokens.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
-
-#import "SPEditorTokens.h"
 
 #pragma mark lex init
 
@@ -2227,21 +2227,27 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /**
- * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller
+ * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller.
+ *
+ * TODO: Remove a lot of this duplicate code.
  */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-
-	if(lastBundleBlobFilesDirectory != nil)
+	if (lastBundleBlobFilesDirectory != nil) {
 		[[NSFileManager defaultManager] removeItemAtPath:lastBundleBlobFilesDirectory error:nil];
+	}
 
 	// Kill all registered BASH commands
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			for(SPDatabaseDocument *doc in [[aWindow windowController] documents]) {
-				for(NSDictionary* cmd in [doc runningActivities]) {
+	for (NSWindow *aWindow in [NSApp orderedWindows]) 
+	{
+		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+			for (SPDatabaseDocument *doc in [[aWindow windowController] documents]) 
+			{
+				for (NSDictionary* cmd in [doc runningActivities]) 
+				{
 					NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
 					NSTask *killTask = [[NSTask alloc] init];
+					
 					[killTask setLaunchPath:@"/bin/sh"];
 					[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
 					[killTask launch];
@@ -2251,9 +2257,12 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			}
 		}
 	}
-	for(NSDictionary* cmd in [self runningActivities]) {
+	
+	for (NSDictionary* cmd in [self runningActivities]) 
+	{
 		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
 		NSTask *killTask = [[NSTask alloc] init];
+		
 		[killTask setLaunchPath:@"/bin/sh"];
 		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
 		[killTask launch];
@@ -2261,9 +2270,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[killTask release];
 	}
 
-	for(id c in bundleHTMLOutputController) {
+	for (id c in bundleHTMLOutputController) 
+	{
 		[c release];
 	}
+	
+	// Make sure we save any changes made to the connection outline view's state
+	[[SPFavoritesController sharedFavoritesController] saveFavorites];
 
 	return YES;
 
@@ -2278,13 +2291,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	if(bundleItems) [bundleItems release];
-	if(bundleUsedScopes) [bundleUsedScopes release];
-	if(bundleHTMLOutputController) [bundleHTMLOutputController release];
-	if(bundleCategories) [bundleCategories release];
-	if(bundleTriggers) [bundleTriggers release];
-	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
-	if(installedBundleUUIDs) [installedBundleUUIDs release];
+	if (bundleItems) [bundleItems release];
+	if (bundleUsedScopes) [bundleUsedScopes release];
+	if (bundleHTMLOutputController) [bundleHTMLOutputController release];
+	if (bundleCategories) [bundleCategories release];
+	if (bundleTriggers) [bundleTriggers release];
+	if (bundleKeyEquivalents) [bundleKeyEquivalents release];
+	if (installedBundleUUIDs) [installedBundleUUIDs release];
 	if (runningActivitiesArray) [runningActivitiesArray release];
 
 	[prefsController release], prefsController = nil;

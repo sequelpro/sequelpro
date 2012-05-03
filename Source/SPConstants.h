@@ -434,6 +434,7 @@ extern NSString *SPPreferenceToolbarShortcuts;
 extern NSString *SPFavoritesRootKey;
 extern NSString *SPFavoriteChildrenKey;
 extern NSString *SPFavoritesGroupNameKey;
+extern NSString *SPFavoritesGroupIsExpandedKey;
 extern NSString *SPFavoriteIDKey;
 extern NSString *SPFavoriteNameKey;
 extern NSString *SPFavoriteDatabaseKey;

@@ -32,6 +32,8 @@
  */
 @interface SPGroupNode : NSObject <NSCopying, NSCoding>
 {
+	BOOL nodeIsExpanded;
+	
 	NSString *nodeName;
 }
 
@@ -39,6 +41,11 @@
  * @property nodeName The group node's name
  */
 @property (readwrite, retain) NSString *nodeName;
+
+/**
+ * @property nodeIsExpanded Indicates whether the group node is expanded
+ */
+@property (readwrite, assign) BOOL nodeIsExpanded;
 
 - (id)initWithName:(NSString *)name;
 
