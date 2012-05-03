@@ -1457,9 +1457,29 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	// Unregister observers
+	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
+	[self removeObserver:self forKeyPath:SPFavoriteHostKey];
+	[self removeObserver:self forKeyPath:SPFavoriteUserKey];
+	[self removeObserver:self forKeyPath:SPFavoriteDatabaseKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSocketKey];
+	[self removeObserver:self forKeyPath:SPFavoritePortKey];
+	[self removeObserver:self forKeyPath:SPFavoriteUseSSLKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSHHostKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSHUserKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSHPortKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSHKeyLocationEnabledKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSHKeyLocationKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey];
+	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey];
 
-    [keychain release];
-    [prefs release];
+	[keychain release];
+	[prefs release];
 	
 	[folderImage release], folderImage = nil;
 	
@@ -1478,7 +1498,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
     
-    [super dealloc];
+	[super dealloc];
 }
 
 @end
