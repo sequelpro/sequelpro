@@ -23,47 +23,54 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <OCMock/OCMock.h>
 #import "SPTableCopy.h"
 #import "SPTableCopyTest.h"
 
+#import <OCMock/OCMock.h>
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPTableCopyTest
 
-- (id) getMockConnection {
-	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
-	return [mockConnection autorelease];
+- (id)getMockConnection 
+{
+	return [[OCMockObject niceMockForClass:[SPMySQLConnection class]] autorelease];
 }
 
-- (id) getMockResult {
-	id mockResult = [OCMockObject niceMockForClass:[MCPResult class]];
-	return mockResult;
+- (id)getMockResult 
+{
+	return [OCMockObject niceMockForClass:[SPMySQLResult class]];
 }
 
-- (SPTableCopy *) getTableCopyFixture {
-    SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
-	return [tableCopy autorelease];
+- (SPTableCopy *)getTableCopyFixture 
+{
+    return [[[SPTableCopy alloc] init] autorelease];
 }
 
-- (void)testCopyTableFromToWithData {
+- (void)testCopyTableFromToWithData 
+{
 	id mockResult = [self getMockResult];
+	
 	unsigned long long varOne = 1;
 	NSValue *valueOne = [NSValue value:&varOne withObjCType:@encode(__typeof__(varOne))];
 	BOOL varNo = NO;
+	
 	NSValue *valueNo = [NSValue value:&varNo withObjCType:@encode(BOOL)];
 	NSArray *resultArray = [[NSArray alloc] initWithObjects:@"", @"CREATE TABLE `table_name` ()", nil];
-	[[[mockResult expect] andReturnValue:valueOne] numOfRows];
-	[[[mockResult expect] andReturn:resultArray] fetchRowAsArray];
+	
+	[[[mockResult expect] andReturnValue:valueOne] numberOfRows];
+	[[[mockResult expect] andReturn:resultArray] getRowAsArray];
 	
 	id mockConnection = [self getMockConnection];
+	
 	[[[mockConnection expect] andReturn:mockResult] queryString:@"SHOW CREATE TABLE `source_db`.`table_name`"];
 	[[mockConnection expect] queryString:@"CREATE TABLE `target_db`.`table_name` ()"];
 	[[mockConnection expect] queryString:@"INSERT INTO `target_db`.`table_name` SELECT * FROM `source_db`.`table_name`"];
 	[[[mockConnection stub] andReturnValue:valueNo] queryErrored];
 
 	id tableCopy = [self getTableCopyFixture];
+	
 	[tableCopy setConnection:mockConnection];
-	[tableCopy copyTable: @"table_name" from: @"source_db" to: @"target_db" withContent: YES];
+	[tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db" withContent:YES];
 	[mockResult verify];
 	[mockConnection verify];
 	[resultArray release];

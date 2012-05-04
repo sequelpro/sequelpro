@@ -23,43 +23,28 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <OCMock/OCMock.h>
-
 #import "SPDatabaseRenameTest.h"
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
-#import "MCPConnection.h"
-#import "SPDatabaseInfo.h"
 #import "SPLogger.h"
+
+#import <OCMock/OCMock.h>
 
 @implementation SPDatabaseRenameTest
 
 - (SPDatabaseRename *)getDatabaseRenameFixture 
 {
-    SPDatabaseRename *dbRename = [[SPDatabaseRename alloc] init];
-	
-	return [dbRename autorelease];
+    return [[[SPDatabaseRename alloc] init] autorelease];	
 }
 
 - (SPTableCopy *)getTableCopyFixture 
 {
-    SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
-	
-	return [tableCopy autorelease];
+    return [[[SPTableCopy alloc] init] autorelease];
 }
 
 - (id)getMockConnection 
 {
-	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
-	
-	return mockConnection;
-}
-
-- (id)getMockDBInfo 
-{
-	id mockDBInfo = [OCMockObject niceMockForClass:[SPDatabaseInfo class]];
-	
-	return mockDBInfo;
+	return [OCMockObject niceMockForClass:[SPMySQLConnection class]];
 }
 
 - (void)testRenameDatabase 

@@ -1409,10 +1409,10 @@
 		1198F5B41174EDDE00670590 /* Database Actions */ = {
 			isa = PBXGroup;
 			children = (
-				1198F5C21174EF3F00670590 /* SPDatabaseCopyTest.h */,
-				1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */,
 				112730541180788A000737FD /* SPTableCopyTest.h */,
 				112730551180788A000737FD /* SPTableCopyTest.m */,
+				1198F5C21174EF3F00670590 /* SPDatabaseCopyTest.h */,
+				1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */,
 				11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */,
 				11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */,
 			);
@@ -3976,7 +3976,7 @@
 					"-framework",
 					SenTestingKit,
 					"-framework",
-					MCPKit,
+					SPMySQL,
 					"-framework",
 					QueryKit,
 				);
@@ -4010,7 +4010,7 @@
 					"-framework",
 					SenTestingKit,
 					"-framework",
-					MCPKit,
+					SPMySQL,
 					"-framework",
 					QueryKit,
 				);
@@ -4043,7 +4043,7 @@
 					"-framework",
 					SenTestingKit,
 					"-framework",
-					MCPKit,
+					SPMySQL,
 					"-framework",
 					OCMock,
 					"-framework",

@@ -29,34 +29,27 @@
 #import "SPDatabaseCopyTest.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
-#import "MCPConnection.h"
-#import "SPDatabaseInfo.h"
 #import "SPLogger.h"
 
 @implementation SPDatabaseCopyTest
 
-- (SPDatabaseCopy *) getDatabaseCopyFixture {
-    SPDatabaseCopy *dbCopy = [[SPDatabaseCopy alloc] init];
-	return [dbCopy autorelease];
+- (SPDatabaseCopy *)getDatabaseCopyFixture 
+{
+    return [[[SPDatabaseCopy alloc] init] autorelease];
 }
 
-- (SPTableCopy *) getTableCopyFixture {
-    SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
-	return [tableCopy autorelease];
+- (SPTableCopy *)getTableCopyFixture 
+{
+    return [[[SPTableCopy alloc] init] autorelease];
 }
 
-- (id) getMockConnection {
-	id mockConnection = [OCMockObject niceMockForClass:[MCPConnection class]];
-	return mockConnection;
+- (id)getMockConnection 
+{
+	return [OCMockObject niceMockForClass:[SPMySQLConnection class]];
 }
 
-- (id) getMockDBInfo {
-	id mockDBInfo = [OCMockObject niceMockForClass:[SPDatabaseInfo class]];
-	return mockDBInfo;
-}
-
-- (void)testCopyDatabase {
-
+- (void)testCopyDatabase 
+{
 	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
 	id mockConnection = [self getMockConnection];
 	[[mockConnection expect] queryString:@"CREATE DATABASE `target_name`"];
