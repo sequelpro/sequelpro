@@ -55,7 +55,7 @@
 	return mockDBInfo;
 }
 
-- (void) testCopyDatabase {
+- (void)testCopyDatabase {
 
 	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
 	id mockConnection = [self getMockConnection];

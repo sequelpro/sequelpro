@@ -27,11 +27,8 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface SPTableCopyTest : SenTestCase {
-
-}
+@interface SPTableCopyTest : SenTestCase
 
 - (void)testCopyTableFromToWithData;
-
 
 @end

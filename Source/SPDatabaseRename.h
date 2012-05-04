@@ -24,28 +24,10 @@
 
 #import "SPDBActionCommons.h"
 
-@class SPDatabaseInfo;
-
 /**
  * The SPDatabaseRename class povides functionality to rename a database.
  */
-@interface SPDatabaseRename : SPDBActionCommons 
-{
-	SPDatabaseInfo *dbInfo;
-}
-
-/**
- * @property SPDatabaseInfo an instance of the database info class
- */
-@property (retain) SPDatabaseInfo *dbInfo;
-
-/**
- * This method retrieves the dbInfo object if it exists; otherwise it is generated and the
- * connection is passed to it.
- *
- * @result SPDatabaseInfo dbInfo object
- */
-- (SPDatabaseInfo *)getDBInfoObject;
+@interface SPDatabaseRename : SPDBActionCommons
 
 /**
  * This method renames an existing database.
@@ -54,22 +36,6 @@
  * @param NSString targetDatabaseName the name of the target database
  * @result BOOL success
  */
-- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName;
-
-/**
- * This method creates a new database.
- *
- * @param NSString newDatabaseName name of the new database to be created
- * @return BOOL YES on success, otherwise NO
- */
-- (BOOL)createDatabase:(NSString *)newDatabaseName;
-
-/**
- * This method drops a database.
- *
- * @param NSString databaseName name of the database to drop
- * @return BOOL YES on success, otherwise NO
- */
-- (BOOL)dropDatabase:(NSString *)databaseName;
+- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabase to:(NSString *)targetDatabase;
 
 @end

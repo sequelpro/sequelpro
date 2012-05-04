@@ -37,7 +37,7 @@
  * @param targetDB name of the target database
  * @return YES on success, NO on any kind of error (unspecified)
  */
-- (BOOL)copyTable:(NSString *)name from: (NSString *)sourceDB to: (NSString *)targetDB;
+- (BOOL)copyTable:(NSString *)name from:(NSString *)sourceDB to:(NSString *)targetDB;
 
 /**
  * This method moves a table from one db to another.
@@ -46,7 +46,7 @@
  * @param sourceDB name of the source database
  * @param targetDB name of the target database
  */
-- (BOOL)moveTable:(NSString *)name from: (NSString *)sourceDB to: (NSString *)targetDB;
+- (BOOL)moveTable:(NSString *)name from:(NSString *)sourceDB to:(NSString *)targetDB;
 
 /**
  * This method copies a table including its data from one db to another.
@@ -57,7 +57,7 @@
  * @param copyWithContent whether to copy the content too, otherwise only structure
  * @return YES on success, NO on any kind of error (unspecified)
  */
-- (BOOL)copyTable:(NSString *)tableName from: (NSString *)sourceDB to: (NSString *)targetDB withContent:(BOOL)copyWithContent;
+- (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to: (NSString *)targetDB withContent:(BOOL)copyWithContent;
 
 /**
  * This method copies a bunch of tables including their data from one db to another.

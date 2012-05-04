@@ -34,7 +34,7 @@
 
 @implementation SPDatabaseRenameTest
 
-- (SPDatabaseRename *) getDatabaseRenameFixture 
+- (SPDatabaseRename *)getDatabaseRenameFixture 
 {
     SPDatabaseRename *dbRename = [[SPDatabaseRename alloc] init];
 	

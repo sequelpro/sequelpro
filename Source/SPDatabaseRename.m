@@ -25,95 +25,108 @@
 #import "SPDBActionCommons.h"
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
-#import "SPDatabaseInfo.h"
+#import "SPViewCopy.h"
+#import "SPTablesList.h"
+
 #import <SPMySQL/SPMySQL.h>
+
+@interface SPDatabaseRename ()
+
+- (BOOL)_createDatabase:(NSString *)database;
+- (BOOL)_dropDatabase:(NSString *)database;
+
+- (void)_moveTables:(NSArray *)tables fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase;
+- (void)_moveViews:(NSArray *)views fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase;
+
+@end
 
 @implementation SPDatabaseRename
 
-@synthesize dbInfo;
-
-- (SPDatabaseInfo *)getDBInfoObject 
+- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabase to:(NSString *)targetDatabase
 {
-	if (dbInfo != nil) {
-		return dbInfo;
-	} 
-	else {
-		dbInfo = [[SPDatabaseInfo alloc] init];
-		
-		[dbInfo setConnection:[self connection]];
-		[dbInfo setMessageWindow:messageWindow];
-	}
+	NSArray *tables = nil;
+	NSArray *views = nil;
 	
-	return dbInfo;
-}
-
-- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName 
-{
-	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
-
-	// Check, whether the source database exists and the target database doesn't.
-	NSArray *tables = nil; 
-	
-	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
-	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];
+	// Check, whether the source database exists and the target database doesn't
+	BOOL sourceExists = [[connection databases] containsObject:sourceDatabase];
+	BOOL targetExists = [[connection databases] containsObject:targetDatabase];
 	
 	if (sourceExists && !targetExists) {
-		
-		// Retrieve the list of tables/views/funcs/triggers from the source database
-		tables = [connection tablesFromDatabase:sourceDatabaseName];
+		tables = [tablesList allTableNames];
+		views = [tablesList allViewNames];
 	}
 	else {
 		return NO;
 	}
 		
-	BOOL success = [self createDatabase:targetDatabaseName];
+	BOOL success = [self _createDatabase:targetDatabase];
 	
-	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
+	[self _moveTables:tables fromDatabase:sourceDatabase toDatabase:targetDatabase];
 	
-	[dbActionTableCopy setConnection:connection];
-	
-	for (NSString *currentTable in tables) 
-	{
-		success = [dbActionTableCopy moveTable:currentTable from:sourceDatabaseName to:targetDatabaseName];
-	}
-	
-	[dbActionTableCopy release];
-		
-	tables = [connection tablesFromDatabase:sourceDatabaseName];
+	tables = [connection tablesFromDatabase:sourceDatabase];
 		
 	if ([tables count] == 0) {
-		[self dropDatabase:sourceDatabaseName];
+		[self _dropDatabase:sourceDatabase];
 	} 
 		
 	return success;
 }
 
-- (BOOL)createDatabase:(NSString *)newDatabaseName 
-{
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [newDatabaseName backtickQuotedString]];
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * This method creates a new database.
+ *
+ * @param NSString newDatabaseName name of the new database to be created
+ * @return BOOL YES on success, otherwise NO
+ */
+- (BOOL)_createDatabase:(NSString *)database 
+{	
+	[connection queryString:[NSString stringWithFormat:@"CREATE DATABASE %@", [database backtickQuotedString]]];	
 	
-	[connection queryString:createStatement];	
-	
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
+	return ![connection queryErrored];
 }
 
-- (BOOL)dropDatabase:(NSString *)databaseName 
-{
-	NSString *dropStatement = [NSString stringWithFormat:@"DROP DATABASE %@", [databaseName backtickQuotedString]];
+/**
+ * This method drops a database.
+ *
+ * @param NSString databaseName name of the database to drop
+ * @return BOOL YES on success, otherwise NO
+ */
+- (BOOL)_dropDatabase:(NSString *)database 
+{	
+	[connection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [database backtickQuotedString]]];	
 	
-	[connection queryString:dropStatement];	
-	
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
+	return ![connection queryErrored];
 }
 
-- (void)dealloc 
+- (void)_moveTables:(NSArray *)tables fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase
 {
-	[dbInfo release], dbInfo = nil;
-	[super dealloc];
+	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
+	
+	[dbActionTableCopy setConnection:connection];
+	
+	for (NSString *table in tables) 
+	{
+		[dbActionTableCopy moveTable:table from:sourceDatabase to:targetDatabase];
+	}
+	
+	[dbActionTableCopy release];
+}
+
+- (void)_moveViews:(NSArray *)views fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase
+{
+	SPViewCopy *dbActionViewCopy = [[SPViewCopy alloc] init];
+	
+	[dbActionViewCopy setConnection:connection];
+	
+	for (NSString *view in views) 
+	{
+		[dbActionViewCopy moveView:view from:sourceDatabase to:targetDatabase];
+	}
+	
+	[dbActionViewCopy release];
 }
 
 @end

@@ -24,26 +24,21 @@
 
 #import "SPDBActionCommons.h"
 #import "SPTableCopy.h"
+
 #import <SPMySQL/SPMySQL.h>
+
+@interface SPTableCopy ()
+
+- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase; 
+
+@end
+
 
 @implementation SPTableCopy
 
-- (NSString *)getCreateTableStatementFor:(NSString *)tableName inDB:(NSString *)sourceDB 
-{
-	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@", [sourceDB backtickQuotedString], [tableName backtickQuotedString]];
-	
-	SPMySQLResult *theResult = [connection queryString:showCreateTableStatment];
-	
-	if ([theResult numberOfRows] != 0) {
-		return [[theResult getRowAsArray] objectAtIndex:1];
-	}
-	
-	return @"";
-}
-
 - (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 
 {
-	NSString *createTableResult = [self getCreateTableStatementFor:tableName inDB:sourceDB];
+	NSString *createTableResult = [self _createTableStatementFor:tableName inDatabase:sourceDB];
 	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 	
 	if ([[createTableStatement substringToIndex:12] isEqualToString:@"CREATE TABLE"]) {
@@ -115,18 +110,29 @@
 	return success;
 }
 
-- (BOOL)moveTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 
+- (BOOL)moveTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB
 {	
 	NSString *moveStatement = [NSString stringWithFormat:@"RENAME TABLE %@.%@ TO %@.%@", 
 							   [sourceDB backtickQuotedString],
 							   [tableName backtickQuotedString],
 							   [targetDB backtickQuotedString],
-							   [tableName backtickQuotedString]
-							   ];
+							   [tableName backtickQuotedString]];
 
 	[connection queryString:moveStatement];
 	
 	return ![connection queryErrored];
+}
+
+#pragma mark -
+#pragma mark Private API
+
+- (NSString *)_createTableStatementFor:(NSString *)tableName inDatabase:(NSString *)sourceDatabase 
+{
+	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@", [sourceDatabase backtickQuotedString], [tableName backtickQuotedString]];
+	
+	SPMySQLResult *theResult = [connection queryString:showCreateTableStatment];
+	
+	return [theResult numberOfRows] > 0 ? [[theResult getRowAsArray] objectAtIndex:1] : @"";
 }
 
 @end

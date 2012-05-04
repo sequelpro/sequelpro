@@ -1170,7 +1170,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Returns the currently selected table type, or -1 if no table or multiple tables are selected
  */
-- (SPTableType) tableType
+- (SPTableType)tableType
 {
 	return selectedTableType;
 }

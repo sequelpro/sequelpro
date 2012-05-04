@@ -5773,6 +5773,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
 	
+	[dbActionRename setTablesList:tablesListInstance];
 	[dbActionRename setConnection:[self getConnection]];
 	[dbActionRename setMessageWindow:parentWindow];
 	

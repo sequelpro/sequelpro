@@ -22,22 +22,30 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPMySQLConnection;
+#import <SPMySQL/SPMySQL.h>
+
+@class SPTablesList;
 
 @interface SPDBActionCommons : NSObject 
 {
-	SPMySQLConnection *connection;
 	NSWindow *messageWindow;
+	SPTablesList *tablesList;
+	SPMySQLConnection *connection;
 }
 
 /**
  * @property connection References the SPMySQL.framework MySQL connection; it has to be set.
  */
-@property (retain) SPMySQLConnection *connection;
+@property (readwrite, assign) SPMySQLConnection *connection;
 
 /**
  * @property messageWindow The NSWindow instance to send message sheets to.
  */
-@property (assign) NSWindow *messageWindow;
+@property (readwrite, assign) NSWindow *messageWindow;
+
+/**
+ * @property tablesList
+ */
+@property (readwrite, assign) SPTablesList *tablesList;
 
 @end

@@ -25,36 +25,18 @@
 #import "SPDBActionCommons.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @implementation SPDatabaseCopy
 
-@synthesize dbInfo;
-
-- (SPDatabaseInfo *)getDBInfoObject 
-{
-	if (dbInfo != nil) {
-		return dbInfo;
-	} 
-	else {
-		dbInfo = [[SPDatabaseInfo alloc] init];
-		
-		[dbInfo setConnection:[self connection]];
-		[dbInfo setMessageWindow:messageWindow];
-	}
-	
-	return dbInfo;
-}
-
 - (BOOL)copyDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent 
 {
 	NSArray *tables = nil;
-	
-	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
-	
-	// Check, whether the source database exists and the target database doesn't.	
-	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
-	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];
+		
+	// Check whether the source database exists and the target database doesn't.	
+	BOOL sourceExists = [[connection databases] containsObject:sourceDatabaseName];
+	BOOL targetExists = [[connection databases] containsObject:targetDatabaseName];
 	
 	if (sourceExists && !targetExists) {
 		
@@ -65,9 +47,8 @@
 		return NO;
 	}
 
-	//abort here if database creation failed
-	if(![self createDatabase:targetDatabaseName]) 
-		return NO;
+	// Abort if database creation failed
+	if (![self createDatabase:targetDatabaseName]) return NO;
 	
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
 	
@@ -89,12 +70,6 @@
 	if ([connection queryErrored]) return NO;
 	
 	return YES;
-}
-
-- (void)dealloc 
-{
-	[dbInfo release], dbInfo = nil;
-	[super dealloc];
 }
 
 @end

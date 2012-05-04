@@ -27,9 +27,9 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface SPDatabaseCopyTest : SenTestCase {
-}
-- (void) testCopyDatabase;
-- (void) testCreateDatabase;
+@interface SPDatabaseCopyTest : SenTestCase
+
+- (void)testCopyDatabase;
+- (void)testCreateDatabase;
 
 @end

@@ -28,5 +28,6 @@
 
 @synthesize connection;
 @synthesize messageWindow;
+@synthesize tablesList;
 
 @end

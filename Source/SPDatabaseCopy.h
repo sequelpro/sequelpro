@@ -23,28 +23,11 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPDBActionCommons.h"
-#import "SPDatabaseInfo.h"
 
 /**
  * The SPDatabaseCopy class povides functionality to create a copy of a database.
  */
-@interface SPDatabaseCopy : SPDBActionCommons 
-{
-	SPDatabaseInfo *dbInfo;
-}
-
-/**
- * @property SPDatabaseInfo an instance of the database info class
- */
-@property (retain) SPDatabaseInfo *dbInfo;
-
-/**
- * This method retrieves the dbInfo object if it exists; otherwise it is generated and the
- * connection is passed to it.
- *
- * @result SPDatabaseInfo dbInfo object
- */
-- (SPDatabaseInfo *)getDBInfoObject;
+@interface SPDatabaseCopy : SPDBActionCommons
 
 /**
  * This method clones an existing database.
