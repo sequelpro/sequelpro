@@ -22,12 +22,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPDBActionCommons.h"
+#import "SPDatabaseAction.h"
 
 /**
  * The SPDatabaseCopy class povides functionality to create a copy of a database.
  */
-@interface SPDatabaseCopy : SPDBActionCommons
+@interface SPDatabaseCopy : SPDatabaseAction
 
 /**
  * This method clones an existing database.

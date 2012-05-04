@@ -30,7 +30,9 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPViewCopy : SPDBActionCommons
+#import "SPDatabaseAction.h"
+
+@interface SPViewCopy : SPDatabaseAction
 
 - (BOOL)moveView:(NSString *)view from:(NSString *)sourceDatabase to:(NSString *)targetDatabase;
 

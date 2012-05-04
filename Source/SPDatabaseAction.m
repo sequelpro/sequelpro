@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPDBActionCommons.h
+//  SPDBActionCommons.m
 //  sequel-pro
 //
 //  Created by David Rekowski on Apr 29, 2010
@@ -22,30 +22,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <SPMySQL/SPMySQL.h>
+#import "SPDatabaseAction.h"
 
-@class SPTablesList;
+@implementation SPDatabaseAction
 
-@interface SPDBActionCommons : NSObject 
-{
-	NSWindow *messageWindow;
-	SPTablesList *tablesList;
-	SPMySQLConnection *connection;
-}
-
-/**
- * @property connection References the SPMySQL.framework MySQL connection; it has to be set.
- */
-@property (readwrite, assign) SPMySQLConnection *connection;
-
-/**
- * @property messageWindow The NSWindow instance to send message sheets to.
- */
-@property (readwrite, assign) NSWindow *messageWindow;
-
-/**
- * @property tablesList
- */
-@property (readwrite, assign) SPTablesList *tablesList;
+@synthesize connection;
+@synthesize messageWindow;
+@synthesize tablesList;
 
 @end

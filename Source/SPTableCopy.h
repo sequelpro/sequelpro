@@ -22,12 +22,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPDBActionCommons.h"
+#import "SPDatabaseAction.h"
 
 /**
  * The SPTableCopy class povides functionality to copy tables between databases.
  */
-@interface SPTableCopy : SPDBActionCommons
+@interface SPTableCopy : SPDatabaseAction
 
 /**
  * This method copies a table structure from one db to another.
