@@ -43,8 +43,8 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (void)_updateSelectedAutoRefreshIntervalInterface;
 - (void)_startAutoRefreshTimerWithInterval:(NSTimeInterval)interval;
 - (void)_getDatabaseProcessListInBackground:(id)object;
-- (void)_killProcessQueryWithId:(NSUInteger)processId;
-- (void)_killProcessConnectionWithId:(NSUInteger)processId;
+- (void)_killProcessQueryWithId:(long long)processId;
+- (void)_killProcessConnectionWithId:(long long)processId;
 - (void)_updateServerProcessesFilterForFilterString:(NSString *)filterString;
 
 @end
@@ -239,13 +239,13 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 		
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill query?", @"kill query message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lu?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), (unsigned long)processId]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), processId]];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -267,13 +267,13 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill connection?", @"kill connection message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lu?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), (unsigned long)processId]];
+						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), processId]];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -375,7 +375,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
 		}
 		else {
-			NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+			long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 			
 			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
@@ -703,17 +703,17 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		{
 			//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
 			NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
-			
+
+			// The ID can be a 64-bit value on 64-bit servers
 			id idColumn = [rowsFixed objectForKey:@"Id"];
-			//Id is a signed int(11) - this is a signed 32 bit int value
-			if(idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
-				int numRaw = [(NSString *)idColumn intValue];
-				NSNumber *num = [NSNumber numberWithInt:numRaw];
+			if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
+				long long numRaw = [(NSString *)idColumn longLongValue];
+				NSNumber *num = [NSNumber numberWithLongLong:numRaw];
 				[rowsFixed setObject:num forKey:@"Id"];
 			}
 
+			// Time is a signed int(7) - this is a 32 bit int value
 			id timeColumn = [rowsFixed objectForKey:@"Time"];
-			//Time is a signed int(7) - this is the same 32 bit int value
 			if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
 				int numRaw = [(NSString *)timeColumn intValue];
 				NSNumber *num = [NSNumber numberWithInt:numRaw];
@@ -735,15 +735,15 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Attempts to kill the query executing on the connection associate with the supplied ID.
  */
-- (void)_killProcessQueryWithId:(NSUInteger)processId
+- (void)_killProcessQueryWithId:(long long)processId
 {
 	// Kill the query
-	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lu", (unsigned long)processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lld", processId]];
 	
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -753,15 +753,15 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Attempts the kill the connection associated with the supplied ID.
  */
-- (void)_killProcessConnectionWithId:(NSUInteger)processId
+- (void)_killProcessConnectionWithId:(long long)processId
 {
 	// Kill the connection
-	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lu", (unsigned long)processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lld", processId]];
 	
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list
