@@ -34,7 +34,7 @@ static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
 /**
  * stringByRemovingCharactersInSet test case.
  */
-- (void)testStringByRemovingCharactersInSet
+/*- (void)testStringByRemovingCharactersInSet
 {
 	NSString *charsToRemove = @"abc',ü";
 	
@@ -55,6 +55,6 @@ static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
 						 expectedUTFString, 
 						 @"The following characters should have been removed %@", 
 						 charsToRemove);
-}
+}*/
 
 @end

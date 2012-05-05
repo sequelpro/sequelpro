@@ -115,6 +115,8 @@
 		17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */; };
 		17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3DC1F1281816E002A163A /* SPDatabaseViewController.m */; };
 		17D5B49E1553059F00EF3BB3 /* SPViewCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D5B49D1553059F00EF3BB3 /* SPViewCopy.m */; };
+		17DB5F441555CA300046834B /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */; };
+		17DB5F4A1555CA810046834B /* SPMenuAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DC10D212A1B8DF00B76DA5 /* SPMenuAdditions.m */; };
 		17DD52B7115071D0007D8950 /* SPPrintTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52B6115071D0007D8950 /* SPPrintTemplate.html */; };
 		17DD52C3115074B3007D8950 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C1115074B3007D8950 /* InfoPlist.strings */; };
 		17DD52C6115074CB007D8950 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 17DD52C4115074CB007D8950 /* Localizable.strings */; };
@@ -457,13 +459,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1798AAFF12676BAD000D946A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D15AC270486D014006FF6A4;
-			remoteInfo = "Sequel Pro";
-		};
 		1798AB2712676F14000D946A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -1310,13 +1305,6 @@
 			files = (
 				58B9077E11BD9B64000826E5 /* Carbon.framework in Frameworks */,
 				1734696B11C1167000AB3D16 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		58B9095F11C3A42B000826E5 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2659,7 +2647,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				1798AB0012676BAD000D946A /* PBXTargetDependency */,
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
@@ -2707,7 +2694,6 @@
 			buildConfigurationList = 58B9096A11C3A431000826E5 /* Build configuration list for PBXNativeTarget "xibLocalizationPostprocessor" */;
 			buildPhases = (
 				58B9095E11C3A42B000826E5 /* Sources */,
-				58B9095F11C3A42B000826E5 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3068,7 +3054,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run build tasks\n\"${SRCROOT}/Scripts/run-tests.sh\"\n";
+			shellScript = "\"${SRCROOT}/Scripts/run-tests.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3086,6 +3072,8 @@
 				176059B913361D390098E162 /* SPTableCopyTest.m in Sources */,
 				176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */,
 				1798F1C4155018E2004B0AB8 /* SPMutableArrayAdditionsTest.m in Sources */,
+				17DB5F441555CA300046834B /* SPMutableArrayAdditions.m in Sources */,
+				17DB5F4A1555CA810046834B /* SPMenuAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3315,11 +3303,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		1798AB0012676BAD000D946A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
-			targetProxy = 1798AAFF12676BAD000D946A /* PBXContainerItemProxy */;
-		};
 		1798AB2812676F14000D946A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
