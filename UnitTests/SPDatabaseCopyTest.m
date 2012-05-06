@@ -48,7 +48,7 @@
 	return [OCMockObject niceMockForClass:[SPMySQLConnection class]];
 }
 
-- (void)testCopyDatabase 
+/*- (void)testCopyDatabase 
 {
 	SPDatabaseCopy *dbCopy = [self getDatabaseCopyFixture];
 	id mockConnection = [self getMockConnection];
@@ -79,6 +79,6 @@
 - (void)testCreateDatabase 
 {
 	[self getDatabaseCopyFixture];
-}
+}*/
 
 @end

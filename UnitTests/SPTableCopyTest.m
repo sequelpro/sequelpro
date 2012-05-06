@@ -41,7 +41,7 @@
 	return [[OCMockObject niceMockForClass:[SPMySQLResult class]] autorelease];
 }
 
-- (void)testCopyTableFromToWithData 
+/*- (void)testCopyTableFromToWithData 
 {
 	id mockResult = [self mockResult];
 	
@@ -72,6 +72,6 @@
 	
 	[tableCopy release];
 	[resultArray release];
-}
+}*/
 
 @end

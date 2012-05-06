@@ -47,7 +47,7 @@
 	return [OCMockObject niceMockForClass:[SPMySQLConnection class]];
 }
 
-- (void)testRenameDatabase 
+/*- (void)testRenameDatabase 
 {
 	SPDatabaseRename *dbRename = [self getDatabaseRenameFixture];
 
@@ -79,6 +79,6 @@
 - (void)testCreateDatabase 
 {
 	[self getDatabaseRenameFixture];
-}
+}*/
 
 @end

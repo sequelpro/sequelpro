@@ -29,7 +29,7 @@
 
 @interface SPDatabaseCopyTest : SenTestCase
 
-- (void)testCopyDatabase;
-- (void)testCreateDatabase;
+//- (void)testCopyDatabase;
+//- (void)testCreateDatabase;
 
 @end
