@@ -32,8 +32,8 @@
 
 static NSString *QKTestTableName = @"test_table";
 
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
+static NSString *QKTestFieldOne = @"test_field1";
+static NSString *QKTestFieldTwo = @"test_field2";
 
 @implementation QKSelectQueryGroupByTests
 
