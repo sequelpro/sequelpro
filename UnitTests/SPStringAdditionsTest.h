@@ -28,5 +28,6 @@
 @interface SPStringAdditionsTest : SenTestCase
 
 - (void)testStringByRemovingCharactersInSet;
+- (void)testStringWithNewUUID;
 
 @end

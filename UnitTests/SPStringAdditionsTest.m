@@ -25,9 +25,7 @@
 
 #import "SPStringAdditionsTest.h"
 #import "SPStringAdditions.h"
-
-static NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
-static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
+#import "RegexKitLite.h"
 
 @implementation SPStringAdditionsTest
 
@@ -36,6 +34,9 @@ static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
  */
 - (void)testStringByRemovingCharactersInSet
 {
+	static NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
+	static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
+	
 	NSString *charsToRemove = @"abc',ü";
 	
 	NSCharacterSet *junk = [NSCharacterSet characterSetWithCharactersInString:charsToRemove];
@@ -55,6 +56,13 @@ static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
 						 expectedUTFString, 
 						 @"The following characters should have been removed %@", 
 						 charsToRemove);
+}
+
+- (void)testStringWithNewUUID
+{	
+	NSString *uuid = [NSString stringWithNewUUID];
+		
+	STAssertTrue([uuid isMatchedByRegex:@"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}"], @"UUID %@ doesn't match regex", uuid);
 }
 
 @end

@@ -146,7 +146,7 @@
 /**
  * Returns a new created UUID string.
  */
-+ (NSString* )stringWithNewUUID
++ (NSString *)stringWithNewUUID
 {
 	// Create a new UUID
 	CFUUIDRef uuidObj = CFUUIDCreate(nil);
