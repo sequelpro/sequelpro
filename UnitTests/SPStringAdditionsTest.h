@@ -27,4 +27,6 @@
 
 @interface SPStringAdditionsTest : SenTestCase
 
+- (void)testStringByRemovingCharactersInSet;
+
 @end

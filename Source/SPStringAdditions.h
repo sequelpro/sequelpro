@@ -23,12 +23,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-/*
+/**
  * NSStringUTF8String(@"a String") function can be used to speed up
  * the convertion from a NSString to NSData or const char* resp.
  * NSData *d = [aStr UTF8String];  :== NSData *d = NSStringUTF8String(aStr);
  */
-static inline const char* NSStringUTF8String(NSString* self) 
+static inline const char *NSStringUTF8String(NSString *self) 
 {
 	typedef const char* (*SPUTF8StringMethodPtr)(NSString*, SEL);
 	static SPUTF8StringMethodPtr SPNSStringGetUTF8String;
@@ -37,7 +37,7 @@ static inline const char* NSStringUTF8String(NSString* self)
 	return to_return;
 }
 
-static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAttributedString* self, NSString* aStr, id aValue, NSRange aRange) 
+static inline void NSMutableAttributedStringAddAttributeValueRange(NSMutableAttributedString *self, NSString *aStr, id aValue, NSRange aRange) 
 {
 	typedef void (*SPMutableAttributedStringAddAttributeValueRangeMethodPtr)(NSMutableAttributedString*, SEL, NSString*, id, NSRange);
 	static SPMutableAttributedStringAddAttributeValueRangeMethodPtr SPMutableAttributedStringAddAttributeValueRange;
@@ -46,7 +46,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	return;
 }
 
-static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedString* self, NSString* aStr, NSUInteger anIndex, NSRangePointer aRange) 
+static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedString *self, NSString *aStr, NSUInteger anIndex, NSRangePointer aRange) 
 {
 	typedef id (*SPMutableAttributedStringAttributeAtIndexMethodPtr)(NSMutableAttributedString*, SEL, NSString*, NSUInteger, NSRangePointer);
 	static SPMutableAttributedStringAttributeAtIndexMethodPtr SPMutableAttributedStringAttributeAtIndex;
@@ -59,8 +59,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 + (NSString *)stringForByteSize:(long long)byteSize;
 + (NSString *)stringForTimeInterval:(double)timeInterval;
-+ (NSString*)stringWithNewUUID;
-
++ (NSString *)stringWithNewUUID;
 
 - (NSString *)rot13;
 - (NSString *)HTMLEscapeString;
@@ -70,16 +69,11 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString*)getGeomFromTextString;
+- (NSString *)getGeomFromTextString;
 
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet options:(NSUInteger)mask;
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet options:(NSUInteger)mask;
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
-
-#ifndef SP_REFACTOR /* run self as bash commands */
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError;
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError;
-#endif
 
 @end

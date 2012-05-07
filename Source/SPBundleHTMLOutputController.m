@@ -26,6 +26,7 @@
 #import "SPAlertSheets.h"
 #import "SPPrintAccessory.h"
 #import "SPAppController.h"
+#import "SPBundleCommandRunner.h"
 
 @class WebScriptCallFrame;
 
@@ -659,7 +660,7 @@
 
 	NSString *output = nil;
 	if(uuid == nil)
-		output = [command runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+		output = [SPBundleCommandRunner runBashCommand:command withEnvironment:nil atCurrentDirectoryPath:nil error:&err];
 	else {
 		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 		[theEnv addEntriesFromDictionary:[[NSApp delegate] shellEnvironmentForDocument:nil]];
@@ -668,15 +669,16 @@
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultStatusPathHeader, uuid] forKey:SPBundleShellVariableQueryResultStatusFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultMetaPathHeader, uuid] forKey:SPBundleShellVariableQueryResultMetaFile];
-		output = [command runBashCommandWithEnvironment:theEnv 
+		
+		output = [SPBundleCommandRunner runBashCommand:command 
+									   withEnvironment:theEnv 
 								atCurrentDirectoryPath:nil 
-								callerInstance:[NSApp delegate] 
-								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-										@"JavaScript", @"name",
-										NSLocalizedString(@"General", @"general menu item label"), @"scope",
-										uuid, SPBundleFileInternalexecutionUUID,
-										nil]
-								error:&err];
+										callerInstance:[NSApp delegate] 
+										   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+														@"JavaScript", @"name",
+														NSLocalizedString(@"General", @"general menu item label"), @"scope",
+														uuid, SPBundleFileInternalexecutionUUID, nil]
+												 error:&err];
 	}
 
 	if(err != nil) {

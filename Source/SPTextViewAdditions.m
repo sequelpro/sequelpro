@@ -35,6 +35,7 @@
 #import "SPTextView.h"
 #import "SPWindowController.h"
 #import "SPDatabaseDocument.h"
+#import "SPBundleCommandRunner.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -651,15 +652,14 @@
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
-											error:&err];
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
+											  atCurrentDirectoryPath:nil 
+													  callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
+														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+																	  NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
+															   error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 

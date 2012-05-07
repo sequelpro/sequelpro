@@ -23,8 +23,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPBundleEditorController.h"
-#import "SPArrayAdditions.h"
 #import "SPMenuAdditions.h"
+#import "SPBundleCommandRunner.h"
 
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
@@ -1021,7 +1021,9 @@
 					// Use a AppleScript script since NSWorkspace performFileOperation or NSFileManager moveItemAtPath 
 					// have problems probably due access rights.
 					NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", thePath];
-					[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					
+					[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					
 					if(error != nil) {
 						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Bundle Editor : Trash-Bundle(s)-Error : error dialog title"), thePath]
 														 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button") 

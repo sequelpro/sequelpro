@@ -40,8 +40,10 @@
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #endif
-#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
+#import "SPBundleCommandRunner.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 #pragma mark -
 #pragma mark lex init
@@ -1853,7 +1855,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 				NSRange cmdRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\(\\s*(.*)\\s*\\)" capture:1L];
 				if(cmdRange.length) {
 					NSError *err = nil;
-					NSString *cmdResult = [[theHintString substringWithRange:cmdRange] runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+					NSString *cmdResult = [SPBundleCommandRunner runBashCommand:[theHintString substringWithRange:cmdRange] withEnvironment:nil atCurrentDirectoryPath:nil error:&err];
 					if(err == nil) {
 						[theHintString replaceCharactersInRange:tagRange withString:cmdResult];
 					} else if([err code] != 9) { // Suppress an error message if command was killed

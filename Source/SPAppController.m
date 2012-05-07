@@ -40,6 +40,7 @@
 #import "SPCustomQuery.h"
 #import "SPFavoritesController.h"
 #import "SPEditorTokens.h"
+#import "SPBundleCommandRunner.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -572,7 +573,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 						NSError *error = nil;
 						NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([(NSString *)[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
 						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", removePath];
-						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+						
+						[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+						
 						if(error != nil) {
 							alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
 															 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : OK button") 
@@ -981,15 +984,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:self 
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"General", @"general menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
-											error:&err];
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd 
+													 withEnvironment:env 
+											  atCurrentDirectoryPath:nil 
+													  callerInstance:self 
+														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+																	  NSLocalizedString(@"General", @"general menu item label"), @"scope",
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
+															   error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1681,7 +1684,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 												error = nil;
 												NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
-												[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+												
+												[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 
 												if(error != nil) {
 													NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdDataOld objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]

@@ -35,6 +35,7 @@
 		1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */; };
 		1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */; };
 		17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */ = {isa = PBXBuildFile; fileRef = 17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */; };
+		1717F9661557E0450065C036 /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
 		17292443107AC41000B21980 /* SPXMLExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 17292442107AC41000B21980 /* SPXMLExporter.m */; };
 		172A65110F7BED7A001E861A /* SPConsoleMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 172A65100F7BED7A001E861A /* SPConsoleMessage.m */; };
 		173284EA1088FEDE0062E892 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
@@ -65,6 +66,7 @@
 		176059B913361D390098E162 /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
 		176059BA13361D3A0098E162 /* SPDatabaseCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5C31174EF3F00670590 /* SPDatabaseCopyTest.m */; };
 		1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1761FD460EF03A6F00331368 /* MainMenu.xib */; };
+		176E14D115570FE300FAF326 /* SPBundleCommandRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 176E14D015570FE300FAF326 /* SPBundleCommandRunner.m */; };
 		177E792E0FCB54EC00E9E122 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792B0FCB54EC00E9E122 /* database-small.png */; };
 		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
 		177E79300FCB54EC00E9E122 /* table-small-square.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 177E792D0FCB54EC00E9E122 /* table-small-square.tiff */; };
@@ -667,6 +669,8 @@
 		1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMenuAdditionsTests.m; sourceTree = "<group>"; };
 		1761FD470EF03A6F00331368 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1761FD9D0EF0488900331368 /* build-version.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "build-version.pl"; sourceTree = "<group>"; };
+		176E14CF15570FE300FAF326 /* SPBundleCommandRunner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBundleCommandRunner.h; sourceTree = "<group>"; };
+		176E14D015570FE300FAF326 /* SPBundleCommandRunner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBundleCommandRunner.m; sourceTree = "<group>"; };
 		177E792B0FCB54EC00E9E122 /* database-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "database-small.png"; sourceTree = "<group>"; };
 		177E792C0FCB54EC00E9E122 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
 		177E792D0FCB54EC00E9E122 /* table-small-square.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "table-small-square.tiff"; sourceTree = "<group>"; };
@@ -1463,6 +1467,8 @@
 			children = (
 				BC68BFC5128D4EAE004907D9 /* SPBundleEditorController.h */,
 				BC68BFC6128D4EAE004907D9 /* SPBundleEditorController.m */,
+				176E14CF15570FE300FAF326 /* SPBundleCommandRunner.h */,
+				176E14D015570FE300FAF326 /* SPBundleCommandRunner.m */,
 				BC77C5E2129AA69E009AD832 /* SPBundleHTMLOutputController.h */,
 				BC77C5E3129AA69E009AD832 /* SPBundleHTMLOutputController.m */,
 			);
@@ -3074,6 +3080,7 @@
 				1798F1C4155018E2004B0AB8 /* SPMutableArrayAdditionsTest.m in Sources */,
 				17DB5F441555CA300046834B /* SPMutableArrayAdditions.m in Sources */,
 				17DB5F4A1555CA810046834B /* SPMenuAdditions.m in Sources */,
+				1717F9661557E0450065C036 /* SPStringAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3297,6 +3304,7 @@
 				1798F19B1550185B004B0AB8 /* SPTreeNode.m in Sources */,
 				1798F19E15501892004B0AB8 /* SPFlippedView.m in Sources */,
 				17D5B49E1553059F00EF3BB3 /* SPViewCopy.m in Sources */,
+				176E14D115570FE300FAF326 /* SPBundleCommandRunner.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

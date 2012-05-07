@@ -40,6 +40,8 @@
 #import "SPAppController.h"
 #endif
 #import "SPTablesList.h"
+#import "SPBundleCommandRunner.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 NSInteger SPEditMenuCopy            = 2001;
@@ -1407,15 +1409,14 @@ static const NSInteger kBlobAsImageFile = 4;
 			}
 
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:[[NSApp delegate] frontDocument] 
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
-											error:&err];
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
+											  atCurrentDirectoryPath:nil 
+													  callerInstance:[[NSApp delegate] frontDocument] 
+														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+																	  NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
+															   error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
