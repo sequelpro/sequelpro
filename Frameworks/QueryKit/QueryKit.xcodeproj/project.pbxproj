@@ -230,7 +230,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 17E596A614F307CE0054EE08 /* Build configuration list for PBXNativeTarget "Tests" */;
 			buildPhases = (
-				17E5969914F307CE0054EE08 /* Resources */,
 				17E5969A14F307CE0054EE08 /* Sources */,
 				17E5969B14F307CE0054EE08 /* Frameworks */,
 				17E5969C14F307CE0054EE08 /* ShellScript */,
@@ -291,13 +290,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		17E5969914F307CE0054EE08 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8DC2EF520486A6940098B216 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -319,7 +311,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
