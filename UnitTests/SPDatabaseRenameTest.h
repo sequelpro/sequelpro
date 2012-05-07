@@ -29,7 +29,7 @@
 
 @interface SPDatabaseRenameTest : SenTestCase
 
-//- (void)testRenameDatabase;
-//- (void)testCreateDatabase;
+- (void)testRenameDatabase;
+- (void)testCreateDatabase;
 
 @end

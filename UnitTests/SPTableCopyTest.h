@@ -29,6 +29,6 @@
 
 @interface SPTableCopyTest : SenTestCase
 
-//- (void)testCopyTableFromToWithData;
+- (void)testCopyTableFromToWithData;
 
 @end
