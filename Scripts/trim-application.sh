@@ -144,6 +144,6 @@ then
     find "$APP_PATH" -type f | while read FILE; do if [ -s "${FILE}/rsrc" ]; then; printf "\tRemoving reource: ${FILE}/rsrc\n"; cp /dev/null "${FILE}/rsrc"; fi; done;
 fi
 
-printf "\nTrimming application bundle '`basename $APP_PATH`' complete\n"
+printf "\nTrimming application bundle '`basename \"$APP_PATH\"`' complete\n"
 
 exit 0
