@@ -4155,8 +4155,8 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"",
-					"\"$(SRCROOT)/Frameworks/QueryKit/build/Debug\"",
+					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Distribution\"",
+					"\"$(SRCROOT)/Frameworks/QueryKit/build/Distribution\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
@@ -4410,8 +4410,8 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
-					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug\"",
-					"\"$(SRCROOT)/Frameworks/QueryKit/build/Debug\"",
+					"\"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release\"",
+					"\"$(SRCROOT)/Frameworks/QueryKit/build/Release\"",
 					"\"$(SRCROOT)/Frameworks\"",
 					"\"$(SRCROOT)\"",
 				);
