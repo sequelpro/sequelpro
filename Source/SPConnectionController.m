@@ -843,26 +843,28 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		
 		// Create new keychain items if appropriate
 		if (password && [password length]) {
-			NSString *keychainName        = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-			NSString *keychainAccount     = [keychain accountForUser:[favorite objectForKey:SPFavoriteUserKey] host:((duplicatedFavoriteType == SPSocketConnection) ? @"localhost" : [favorite objectForKey:SPFavoriteHostKey]) database:[favorite objectForKey:SPFavoriteDatabaseKey]];
-			NSString *favoritePassword    = [keychain getPasswordForName:keychainName account:keychainAccount];
-			
-			keychainName = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-			
-			[keychain addPassword:favoritePassword forName:keychainName account:keychainAccount];
-			
+			NSString *oldKeychainName = [keychain nameForFavoriteName:[[self selectedFavorite] objectForKey:SPFavoriteNameKey] id:[[self selectedFavorite] objectForKey:SPFavoriteIDKey]];
+			NSString *newKeychainName = [keychain nameForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+
+			NSString *keychainAccount = [keychain accountForUser:[favorite objectForKey:SPFavoriteUserKey] host:((duplicatedFavoriteType == SPSocketConnection) ? @"localhost" : [favorite objectForKey:SPFavoriteHostKey]) database:[favorite objectForKey:SPFavoriteDatabaseKey]];
+
+			NSString *favoritePassword = [keychain getPasswordForName:oldKeychainName account:keychainAccount];
+
+			[keychain addPassword:favoritePassword forName:newKeychainName account:keychainAccount];
+
 			favoritePassword = nil;
 		}
 		
 		if (sshPassword && [sshPassword length]) {
-			NSString *keychainSSHName     = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-			NSString *keychainSSHAccount  = [keychain accountForSSHUser:[favorite objectForKey:SPFavoriteSSHUserKey] sshHost:[favorite objectForKey:SPFavoriteSSHHostKey]];
-			NSString *favoriteSSHPassword = [keychain getPasswordForName:keychainSSHName account:keychainSSHAccount];
-			
-			keychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
-			
-			[keychain addPassword:favoriteSSHPassword forName:keychainSSHName account:keychainSSHAccount];
-		
+			NSString *oldKeychainSSHName = [keychain nameForSSHForFavoriteName:[[self selectedFavorite] objectForKey:SPFavoriteNameKey] id:[[self selectedFavorite] objectForKey:SPFavoriteIDKey]];
+			NSString *newKeychainSSHName = [keychain nameForSSHForFavoriteName:[favorite objectForKey:SPFavoriteNameKey] id:[favorite objectForKey:SPFavoriteIDKey]];
+
+			NSString *keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:SPFavoriteSSHUserKey] sshHost:[favorite objectForKey:SPFavoriteSSHHostKey]];
+
+			NSString *favoriteSSHPassword = [keychain getPasswordForName:oldKeychainSSHName account:keychainSSHAccount];
+
+			[keychain addPassword:favoriteSSHPassword forName:newKeychainSSHName account:keychainSSHAccount];
+
 			favoriteSSHPassword = nil;
 		}
 		
