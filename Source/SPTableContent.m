@@ -1485,11 +1485,16 @@
 	[self setPaginationViewVisibility:FALSE];
 #endif
 
-	// Select the correct pagination value
-	if (![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
+	// Select the correct pagination value.
+	// If the filter button was used, or if pagination is disabled, reset to page one
+	if ([sender isKindOfClass:[NSButton class]] || [sender isKindOfClass:[NSTextField class]] || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
 		contentPage = 1;
+
+	// If the current page is out of bounds, move it within bounds
 	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
 		contentPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+
+	// Otherwise, use the pagination value
 	else
 		contentPage = [paginationPageField integerValue];
 
@@ -1684,11 +1689,11 @@
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
 		[paginationPageField setIntegerValue:(contentPage - 1)];
-		[self filterTable:sender];
+		[self filterTable:self];
 	} else if (sender == paginationNextButton) {
 		if ((NSInteger)contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
 		[paginationPageField setIntegerValue:(contentPage + 1)];
-		[self filterTable:sender];
+		[self filterTable:self];
 	}
 }
 
