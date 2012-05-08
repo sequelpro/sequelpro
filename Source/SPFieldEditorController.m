@@ -340,10 +340,10 @@
 		
 		[usedSheet setFrame:
 		 NSMakeRect(sheet.origin.x, sheet.origin.y, 
-					(sheet.size.width > screen.width) ? screen.width - 50 : sheet.size.width, 
+					(sheet.size.width > screen.width) ? screen.width : sheet.size.width, 
 					(sheet.size.height > screen.height) ? screen.height - 100 : sheet.size.height)
 					display:YES];
-					
+							
 		[NSApp beginSheet:usedSheet 
 		   modalForWindow:theWindow 
 			modalDelegate:self 
