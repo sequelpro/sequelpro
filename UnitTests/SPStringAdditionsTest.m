@@ -34,8 +34,8 @@
  */
 - (void)testStringByRemovingCharactersInSet
 {
-	static NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
-	static NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
+	NSString *SPASCIITestString = @"this is a big, crazy test st'ring  with som'e random  spaces and quot'es";
+	NSString *SPUTFTestString   = @"In der Kürze liegt die Würz";
 	
 	NSString *charsToRemove = @"abc',ü";
 	
@@ -58,11 +58,27 @@
 						 charsToRemove);
 }
 
+/**
+ * stringWithNewUUID test case.
+ */
 - (void)testStringWithNewUUID
 {	
 	NSString *uuid = [NSString stringWithNewUUID];
 		
 	STAssertTrue([uuid isMatchedByRegex:@"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}"], @"UUID %@ doesn't match regex", uuid);
+}
+
+/**
+ * createViewSyntaxPrettifier test case.
+ */
+- (void)testCreateViewSyntaxPrettifier
+{
+	NSString *originalSyntax = @"CREATE VIEW `test_view` AS select `test_table`.`id` AS `id` from `test_table`;";
+	NSString *expectedSyntax = @"CREATE VIEW `test_view`\nAS SELECT\n   `test_table`.`id` AS `id`\nFROM `test_table`;";
+	
+	NSString *actualSyntax = [originalSyntax createViewSyntaxPrettifier];
+	
+	STAssertEqualObjects([actualSyntax description], [expectedSyntax description], @"Actual view syntax '%@' does not equal expected syntax '%@'", actualSyntax, expectedSyntax);
 }
 
 @end

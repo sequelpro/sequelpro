@@ -29,5 +29,6 @@
 
 - (void)testStringByRemovingCharactersInSet;
 - (void)testStringWithNewUUID;
+- (void)testCreateViewSyntaxPrettifier;
 
 @end

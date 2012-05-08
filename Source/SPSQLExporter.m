@@ -251,10 +251,10 @@
 		}
 		
 		// Add a 'DROP TABLE' command if required
-		if (sqlOutputIncludeDropSyntax)
+		if (sqlOutputIncludeDropSyntax) {
 			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable) ? @"TABLE" : @"VIEW"), [tableName backtickQuotedString]]
-								   dataUsingEncoding:[self exportOutputEncoding]]];
-		
+												dataUsingEncoding:[self exportOutputEncoding]]];
+		}
 		
 		// Add the create syntax for the table if specified in the export dialog
 		if (sqlOutputIncludeStructure && createTableSyntax) {
@@ -575,7 +575,7 @@
 		[metaString setString:@"\n\n"];
 		// Add the name of table
 		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", tableName];
-		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"DROP TABLE %@;\n\n", [tableName backtickQuotedString]];
 		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
 		
 		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];

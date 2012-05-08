@@ -265,37 +265,43 @@
 {
 	NSRange searchRange = NSMakeRange(0, [self length]);
 	NSRange matchedRange;
-	NSError *err = NULL;
 	NSMutableString *tblSyntax = [NSMutableString stringWithCapacity:[self length]];
-	NSString * re = @"(.*?) AS select (.*?) (from.*)";
+	NSString *re = @"(.*?) AS select (.*?) (from.*)";
 	
 	// Create view syntax
-	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:1 error:&err];
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:1 error:nil];
 	
-	if (!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	if (!matchedRange.length || matchedRange.length > [self length]) return [self description];
 	
 	[tblSyntax appendString:[self substringWithRange:matchedRange]];
-	[tblSyntax appendString:@"\nAS select\n   "];
+	[tblSyntax appendString:@"\nAS SELECT\n   "];
 	
 	// Match all column definitions, split them by ',', and rejoin them by '\n'
-	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:2 error:&err];
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:2 error:nil];
 	
-	if (!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	if (!matchedRange.length || matchedRange.length > [self length]) return [self description];
 	
 	[tblSyntax appendString:[[[self substringWithRange:matchedRange] componentsSeparatedByString:@"`,`"] componentsJoinedByString:@"`,\n   `"]];
 	
-	// From ... at a new line
-	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:3 error:&err];
+	// FROM ... on a new line
+	matchedRange = [self rangeOfRegex:re options:(RKLMultiline|RKLDotAll) inRange:searchRange capture:3 error:nil];
 	
-	if (!matchedRange.length || matchedRange.length > [self length]) return([self description]);
+	if (!matchedRange.length || matchedRange.length > [self length]) return [self description];
+	
+	NSMutableString *from = [[NSMutableString alloc] initWithString:[self substringWithRange:matchedRange]];
+	
+	// Uppercase FROM
+	[from replaceCharactersInRange:NSMakeRange(0, 4) withString:@"FROM"];
 	
 	[tblSyntax appendString:@"\n"];
-	[tblSyntax appendString:[self substringWithRange:matchedRange]];
+	[tblSyntax appendString:from];
+	
+	[from release];
 	
 	// Where clause at a new line if given
-	[tblSyntax replaceOccurrencesOfString:@" where (" withString:@"\nwhere (" options:NSLiteralSearch range:NSMakeRange(0, [tblSyntax length])];
+	[tblSyntax replaceOccurrencesOfString:@" WHERE (" withString:@"\nWHERE (" options:NSLiteralSearch range:NSMakeRange(0, [tblSyntax length])];
 	
-	return(tblSyntax);
+	return tblSyntax;
 }
 
 /**

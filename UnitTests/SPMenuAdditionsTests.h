@@ -25,6 +25,13 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
+/**
+ * @class SPMenuAdditionsTests SPMenuAdditionsTests.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * SPMenuAdditionsTests tests class.
+ */
 @interface SPMenuAdditionsTests : SenTestCase
 {
 	NSMenu *menu;
