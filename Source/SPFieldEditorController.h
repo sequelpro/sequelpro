@@ -169,7 +169,6 @@
 	NSUndoManager *esUndoManager;
 
 	NSDictionary *editedFieldInfo;
-
 }
 
 @property(readwrite, retain) NSDictionary *editedFieldInfo;

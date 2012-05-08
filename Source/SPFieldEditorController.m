@@ -185,27 +185,18 @@
  * Main method for editing data. It will validate several settings and display a modal sheet for theWindow whioch waits until the user closes the sheet.
  *
  * @param data The to be edited table field data.
- *
  * @param fieldName The name of the currently edited table field.
- *
  * @param anEncoding The used encoding while editing.
- *
  * @param isFieldBlob If YES the underlying table field is a TEXT/BLOB field. This setting handles several controls which are offered in the sheet to the user.
- *
  * @param isEditable If YES the underlying table field is editable, if NO the field is not editable and the SPFieldEditorController sheet do not show a "OK" button for saving.
- *
  * @param theWindow The window for displaying the sheet.
- *
  * @param sender The calling instance.
- *
  * @param contextInfo context info for processing the edited data in sender.
- *
  */
 - (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
 		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
 		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo
 {
-
 	usedSheet = nil;
 
 	_isEditable = isEditable;
@@ -258,10 +249,13 @@
 
 		usedSheet = bitSheet;
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
-
-	} else {
-
+		[NSApp beginSheet:usedSheet 
+		   modalForWindow:theWindow 
+			modalDelegate:self 
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:nil];
+	} 
+	else {
 		usedSheet = editSheet;
 
 		// If required, use monospaced fonts
@@ -332,7 +326,8 @@
 		if (_isBlob || _isBINARY || _isGeometry) {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 			[usedSheet setMinSize:NSMakeSize(650, 200)];
-		} else {
+		} 
+		else {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
 			[usedSheet setMinSize:NSMakeSize(390, 150)];
 		}
@@ -340,7 +335,20 @@
 		[editTextView setEditable:_isEditable];
 		[editImage setEditable:_isEditable];
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+		NSSize screen = [[NSScreen mainScreen] visibleFrame].size;
+		NSRect sheet = [usedSheet frame];
+		
+		[usedSheet setFrame:
+		 NSMakeRect(sheet.origin.x, sheet.origin.y, 
+					(sheet.size.width > screen.width) ? screen.width - 50 : sheet.size.width, 
+					(sheet.size.height > screen.height) ? screen.height - 100 : sheet.size.height)
+					display:YES];
+					
+		[NSApp beginSheet:usedSheet 
+		   modalForWindow:theWindow 
+			modalDelegate:self 
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:nil];
 
 		[editSheetProgressBar startAnimation:self];
 
@@ -431,7 +439,8 @@
 				[usedSheet makeFirstResponder:editImage];
 
 		}
-		if(stringValue) [stringValue release], stringValue = nil;
+		
+		if (stringValue) [stringValue release], stringValue = nil;
 
 		editSheetWillBeInitialized = NO;
 
@@ -784,11 +793,9 @@
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
- *
  */
 - (void)createTemporaryQuickLookFileOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-
 	// Create a temporary file name to store the data as file
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
@@ -835,7 +842,6 @@
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
- *
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
@@ -934,7 +940,6 @@
 	// Due to the unknown image format disable image sharing
 	[panel setShowsAddToiPhotoButton:NO];
 #endif
-
 }
 
 /**
