@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPStringAdditionsTest.m
+//  SPStringAdditionsTests.m
 //  sequel-pro
 //
 //  Created by J Knight on 17/05/09.
@@ -23,11 +23,11 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "SPStringAdditionsTest.h"
+#import "SPStringAdditionsTests.h"
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
-@implementation SPStringAdditionsTest
+@implementation SPStringAdditionsTests
 
 /**
  * stringByRemovingCharactersInSet test case.

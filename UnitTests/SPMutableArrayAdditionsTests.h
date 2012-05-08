@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  SPMutableArrayAdditionsTest.h
+//  SPMutableArrayAdditionsTests.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on February 2, 2011
@@ -32,6 +32,6 @@
  *
  * SPMutableArrayAdditions tests class.
  */
-@interface SPMutableArrayAdditionsTest : SenTestCase
+@interface SPMutableArrayAdditionsTests : SenTestCase
 
 @end
