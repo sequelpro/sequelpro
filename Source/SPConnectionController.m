@@ -958,9 +958,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {	
 	id oldObject = [change objectForKey:NSKeyValueChangeOldKey];
 	id newObject = [change objectForKey:NSKeyValueChangeNewKey];
-		
+	
 	if (oldObject != newObject) {
-		[[self selectedFavorite] setObject:(newObject) ? newObject : @"" forKey:keyPath];
+		[[self selectedFavorite] setObject:![newObject isNSNull] ? newObject : @"" forKey:keyPath];
 			
 		// Save the new data to disk
 		[favoritesController saveFavorites];
@@ -1375,7 +1375,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	NSDictionary *oldFavorite = currentFavorite;
 	NSDictionary *newFavorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
-	
+		
 	NSString *passwordValue;
 	NSString *oldKeychainName, *newKeychainName;
 	NSString *oldKeychainAccount, *newKeychainAccount;
