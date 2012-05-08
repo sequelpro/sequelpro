@@ -32,6 +32,7 @@
 
 
 #import "Ping & KeepAlive.h"
+#import "SPMySQL Private APIs.h"
 #import "Locking.h"
 #import <pthread.h>
 
@@ -81,9 +82,21 @@
 - (void)_threadedKeepAlive
 {
 
-	// If the maximum number of ping failures has been reached, trigger a reconnect
+	// If the maximum number of ping failures has been reached, determine whether to reconnect.
 	if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
-		[self reconnect];
+
+		// If the connection has been used within the last fifteen minutes,
+		// attempt a single reconnection in the background
+		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
+			[self _reconnectAfterBackgroundConnectionLoss];
+
+		// Otherwise set the state to connection lost for automatic reconnect on
+		// next use.
+		} else {
+			state = SPMySQLConnectionLostInBackground;
+		}
+
+		// Return as no further ping action required this cycle.
 		return;
 	}
 

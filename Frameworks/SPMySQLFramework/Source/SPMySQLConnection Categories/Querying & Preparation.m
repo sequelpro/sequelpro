@@ -235,7 +235,7 @@
 	// Ensure per-thread variables are set up
 	[self _validateThreadSetup];
 
-	// Check the connection if necessary, returning nil if the query couldn't be validated
+	// Check the connection if necessary, returning nil if the state couldn't be validated
 	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Determine whether a maximum query size needs to be restored from a previous query

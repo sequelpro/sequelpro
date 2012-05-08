@@ -42,6 +42,8 @@
 @interface SPMySQLConnection (PrivateAPI)
 
 - (MYSQL *)_makeRawMySQLConnectionWithEncoding:(NSString *)encodingName isMasterConnection:(BOOL)isMaster;
+- (BOOL)_reconnectAllowingRetries:(BOOL)canRetry;
+- (BOOL)_reconnectAfterBackgroundConnectionLoss;
 - (BOOL)_waitForNetworkConnectionWithTimeout:(double)timeoutSeconds;
 - (void)_updateConnectionVariables;
 - (void)_restoreConnectionVariables;

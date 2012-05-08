@@ -109,8 +109,19 @@
 		// Clear the state change selector on the proxy until a connection is re-established
 		proxyStateChangeNotificationsIgnored = YES;
 
-		// Trigger a reconnect
-		[NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
+		// Trigger a reconnect depending on connection usage recently.  If the connection has
+		// actively been used in the last couple of minutes, trigger a full reconnection attempt.
+		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 2) {
+			[NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
+		
+		// If used within the last fifteen minutes, trigger a background/single reconnection attempt
+		} else if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
+			[NSThread detachNewThreadSelector:@selector(_reconnectAfterBackgroundConnectionLoss) toTarget:self withObject:nil];
+
+		// Otherwise set the state to connection lost for automatic reconnect on next use
+		} else {
+			state = SPMySQLConnectionLostInBackground;
+		}
 	}
 
 	// Update the state record

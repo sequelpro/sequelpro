@@ -422,12 +422,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if (doc && [doc isKindOfClass:[SPDatabaseDocument class]]) {
 
-		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
-
-		if(!theConnection || ![theConnection isConnected]) return;
+		SPMySQLConnection *theConnection = [doc getConnection];
+		if (!theConnection || ![theConnection isConnected]) return;
 
 		NSString *connectionID = [doc connectionID];
-
 		NSString *connectionName = [doc connectionID];
 
 		if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) {
