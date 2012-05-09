@@ -184,7 +184,7 @@
 		}
 
 		// Update progress
-		NSInteger progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
+		double progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
 		
 		[self setExportProgressValue:progress];
 		[delegate performSelectorOnMainThread:@selector(dotExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];

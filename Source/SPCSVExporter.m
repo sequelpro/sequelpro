@@ -83,11 +83,12 @@
 	BOOL csvCellIsNumeric;
 	BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
 
-	NSUInteger i, totalRows, lastProgressValue, csvCellCount = 0;
+	double lastProgressValue;
+	NSUInteger i, totalRows, csvCellCount = 0;
 	
 	// Check to see if we have at least a table name or data array
-	if ((![self csvTableName]) && (![self csvDataArray]) ||
-		([[self csvTableName] isEqualToString:@""]) && ([[self csvDataArray] count] == 0))
+	if ((![self csvTableName] && ![self csvDataArray]) ||
+		([[self csvTableName] isEqualToString:@""] && [[self csvDataArray] count] == 0))
 	{
 		[pool release];
 		return;
@@ -371,7 +372,7 @@
 		// Update the progress
 		if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
 			
-			NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+			double progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
 			
 			[self setExportProgressValue:progress];
 			

@@ -23,12 +23,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR
-static NSString *SPQueryConsoleWindowAutoSaveName = @"QueryConsole";
-
-// Table view column identifier constants
-static NSString *SPTableViewDateColumnID       = @"messageDate";
-static NSString *SPTableViewConnectionColumnID = @"messageConnection";
+#ifndef SP_REFACTOR /* constants */
+extern NSString *SPQueryConsoleWindowAutoSaveName;
+extern NSString *SPTableViewDateColumnID;
+extern NSString *SPTableViewConnectionColumnID;
 #endif
 
 @interface SPQueryController : NSWindowController 

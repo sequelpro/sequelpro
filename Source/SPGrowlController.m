@@ -53,7 +53,9 @@ static SPGrowlController *sharedGrowlController = nil;
 {    
     @synchronized(self) {
 		return [[self sharedGrowlController] retain]; 
-    }    
+    } 
+	
+	return nil;
 }
 
 - (id)init

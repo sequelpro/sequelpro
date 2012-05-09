@@ -1671,11 +1671,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 												NSData *dData = [NSData dataWithContentsOfFile:duplicatedBundleCommand options:NSUncachedRead error:&readError1];
 												[dupData setDictionary:[NSPropertyListSerialization propertyListFromData:dData 
 														mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError1]];
-												if(!dupData && ![dupData count] || readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+												
+												if ((!dupData && ![dupData count]) || (readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0))) {
 													NSLog(@"“%@” file couldn't be read.", duplicatedBundleCommand);
 													NSBeep();
 													continue;
 												}
+												
 												[dupData setObject:[NSString stringWithNewUUID] forKey:SPBundleFileUUIDKey];
 												NSString *orgName = [dupData objectForKey:SPBundleFileNameKey];
 												[dupData setObject:[NSString stringWithFormat:@"%@ (user)", orgName] forKey:SPBundleFileNameKey];

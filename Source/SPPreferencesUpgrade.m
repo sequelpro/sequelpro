@@ -67,7 +67,7 @@ void SPApplyRevisionChanges(void)
 		NSEnumerator *databaseEnumerator, *tableEnumerator, *columnEnumerator;
 		NSString *databaseKey, *tableKey, *columnKey;
 		NSMutableDictionary *newDatabase, *newTable;
-		CGFloat columnWidth;
+		double columnWidth;
 		NSMutableDictionary *newTableColumnWidths = [[NSMutableDictionary alloc] init];
 		
 		databaseEnumerator = [[prefs objectForKey:SPTableColumnWidths] keyEnumerator];

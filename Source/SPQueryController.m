@@ -30,6 +30,12 @@
 
 #import "pthread.h"
 
+#ifndef SP_REFACTOR
+NSString *SPQueryConsoleWindowAutoSaveName = @"QueryConsole";
+NSString *SPTableViewDateColumnID          = @"messageDate";
+NSString *SPTableViewConnectionColumnID    = @"messageConnection";
+#endif
+
 @interface SPQueryController ()
 
 - (void)_updateFilterState;

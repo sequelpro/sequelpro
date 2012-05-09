@@ -71,7 +71,7 @@
 {		
 	[self _setupToolbar];
 
-	[generalPreferencePane updateDefaultFavoritePopup];
+	[(SPGeneralPreferencePane *)generalPreferencePane updateDefaultFavoritePopup];
 	
 	preferencePanes = [[NSArray alloc] initWithObjects:
 					   generalPreferencePane,
@@ -121,7 +121,7 @@
 	
 	[toolbar setSelectedItemIdentifier:[tablesPreferencePane preferencePaneIdentifier]];
 	
-	[tablesPreferencePane updateDisplayedTableFontName];
+	[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
 	
 	[self _resizeWindowForContentView:[tablesPreferencePane preferencePaneView]];
 }
@@ -131,15 +131,15 @@
  */
 - (IBAction)displayEditorPreferences:(id)sender
 {
-	[editorPreferencePane updateColorSchemeSelectionMenu];
-	[editorPreferencePane updateDisplayColorThemeName];
+	[(SPEditorPreferencePane *)editorPreferencePane updateColorSchemeSelectionMenu];
+	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayColorThemeName];
 	
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:[editorPreferencePane preferencePaneAllowsResizing]];
 	
 	[toolbar setSelectedItemIdentifier:[editorPreferencePane preferencePaneIdentifier]];
 	
-	[editorPreferencePane updateDisplayedEditorFontName];
+	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
 	
 	[self _resizeWindowForContentView:[editorPreferencePane preferencePaneView]];
 }
@@ -164,14 +164,14 @@
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPGlobalResultTableFont];
 			
-			[tablesPreferencePane updateDisplayedTableFontName];
+			[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
 			break;
 		case 2:
 			font = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPCustomQueryEditorFont];
 			
-			[editorPreferencePane updateDisplayedEditorFontName];
+			[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
 			break;
 	}
 }

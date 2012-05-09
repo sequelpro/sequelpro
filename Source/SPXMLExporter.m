@@ -81,11 +81,12 @@
 	NSMutableString *xmlItem   = [NSMutableString string];
 	
 	NSUInteger xmlRowCount = 0;
-	NSUInteger i, totalRows, currentRowIndex, lastProgressValue, currentPoolDataLength;
+	double lastProgressValue = 0;
+	NSUInteger i, totalRows, currentRowIndex, currentPoolDataLength;
 	
 	// Check to see if we have at least a table name or data array
-	if ((![self xmlTableName]) && (![self xmlDataArray]) ||
-		([[self xmlTableName] length] == 0) && ([[self xmlDataArray] count] == 0) ||
+	if ((![self xmlTableName] && ![self xmlDataArray]) ||
+		([[self xmlTableName] length] == 0 && [[self xmlDataArray] count] == 0) ||
 		(([self xmlFormat] == SPXMLExportMySQLFormat) && ((![self xmlOutputIncludeStructure]) && (![self xmlOutputIncludeContent]))) ||
 		(([self xmlFormat] == SPXMLExportPlainFormat) && (![self xmlNULLString])))
 	{
@@ -98,9 +99,7 @@
 	
 	// Mark the process as running
 	[self setExportProcessIsRunning:YES];
-	
-	lastProgressValue = 0;
-	
+		
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self xmlDataArray]) && [self xmlTableName]) {
 		
@@ -307,7 +306,7 @@
 			// Update the progress
 			if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
 				
-				NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+				double progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
 				
 				[self setExportProgressValue:progress];
 				
