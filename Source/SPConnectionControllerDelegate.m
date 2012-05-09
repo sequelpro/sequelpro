@@ -191,15 +191,15 @@ static NSString *SPDatabaseImage = @"database-small";
 	return result;
 }
 
-- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
+- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)childIndex
 {
 	NSDragOperation result = NSDragOperationNone;
 	
 	// Prevent dropping favorites on other favorites (non-groups)
-	if ((index == NSOutlineViewDropOnItemIndex) && (![item isGroup])) return result;
+	if ((childIndex == NSOutlineViewDropOnItemIndex) && (![item isGroup])) return result;
 	
 	if ([info draggingSource] == outlineView) {
-		[outlineView setDropItem:item dropChildIndex:index];
+		[outlineView setDropItem:item dropChildIndex:childIndex];
 		
 		result = NSDragOperationMove;
 	}
@@ -207,7 +207,7 @@ static NSString *SPDatabaseImage = @"database-small";
 	return result;
 }
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)index
+- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex
 {
 	BOOL acceptedDrop = NO;
 	
@@ -231,13 +231,13 @@ static NSString *SPDatabaseImage = @"database-small";
 	if (![draggedNodes count]) return acceptedDrop;
 	
 	if ([node isGroup]) {		
-		if (index == NSOutlineViewDropOnItemIndex) {
-			index = 0;
+		if (childIndex == NSOutlineViewDropOnItemIndex) {
+			childIndex = 0;
 		}
 	}
 	else {
-		if (index == NSOutlineViewDropOnItemIndex) {
-			index = 0;
+		if (childIndex == NSOutlineViewDropOnItemIndex) {
+			childIndex = 0;
 		}
 	}
 	
@@ -251,13 +251,13 @@ static NSString *SPDatabaseImage = @"database-small";
 	{
         // Remove the node from its old location
         NSInteger oldIndex = [childNodeArray indexOfObject:treeNode];
-        NSInteger newIndex = index;
+        NSInteger newIndex = childIndex;
         
 		if (oldIndex != NSNotFound) {
 			
             [childNodeArray removeObjectAtIndex:oldIndex];
             
-			if (index > oldIndex) {
+			if (childIndex > oldIndex) {
                 newIndex--;
             }
         } 

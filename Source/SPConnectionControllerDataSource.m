@@ -45,11 +45,11 @@
 	return [[node childNodes] count];
 }
 
-- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
+- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)childIndex ofItem:(id)item
 {
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
 	
-	return NSArrayObjectAtIndex([node childNodes], index);
+	return NSArrayObjectAtIndex([node childNodes], childIndex);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
