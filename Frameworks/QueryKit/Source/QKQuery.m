@@ -250,7 +250,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
  */
 - (void)_validateRequiements
 {
-	if (_queryType == -1) {
+	if (_queryType == (QKQueryType)-1) {
 		[NSException raise:QKNoQueryTypeException format:@"Attempt to build query with no query type specified."];
 	}
 	
