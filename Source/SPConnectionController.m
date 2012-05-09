@@ -1407,22 +1407,25 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		oldKeychainName = [keychain nameForFavoriteName:[oldFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
 		oldKeychainAccount = [keychain accountForUser:[oldFavorite objectForKey:SPFavoriteUserKey] host:oldHostnameForPassword database:[oldFavorite objectForKey:SPFavoriteDatabaseKey]];
 		
-		// Delete the old keychain item
-		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-		
-		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-		newKeychainAccount = [keychain accountForUser:[newFavorite objectForKey:SPFavoriteUserKey] host:newHostnameForPassword database:[newFavorite objectForKey:SPFavoriteDatabaseKey]];
-		
-		// Add the new keychain item if the password field has a value
-		if ([passwordValue length]) {
-			[keychain addPassword:passwordValue forName:newKeychainName account:newKeychainAccount];
+		// If there's no new password, remove the old item from the keychain
+		if (![passwordValue length]) {
+			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Otherwise, set up the new keychain name and account strings and create or edit the item
+		} else {
+			newKeychainName = [keychain nameForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
+			newKeychainAccount = [keychain accountForUser:[newFavorite objectForKey:SPFavoriteUserKey] host:newHostnameForPassword database:[newFavorite objectForKey:SPFavoriteDatabaseKey]];
+			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
+				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:passwordValue];
+			} else {
+				[keychain addPassword:passwordValue forName:newKeychainName account:newKeychainAccount];
+			}
 		}
 		
 		// Synch password changes
-		[standardPasswordField setStringValue:passwordValue];
-		[socketPasswordField setStringValue:passwordValue];
-		[sshPasswordField setStringValue:passwordValue];
+		[standardPasswordField setStringValue:passwordValue?passwordValue:@""];
+		[socketPasswordField setStringValue:passwordValue?passwordValue:@""];
+		[sshPasswordField setStringValue:passwordValue?passwordValue:@""];
 		
 		passwordValue = @"";
 	}
@@ -1436,17 +1439,20 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		// Get the old keychain name and account strings
 		oldKeychainName = [keychain nameForSSHForFavoriteName:[oldFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
 		oldKeychainAccount = [keychain accountForSSHUser:[oldFavorite objectForKey:SPFavoriteSSHUserKey] sshHost:[oldFavorite objectForKey:SPFavoriteSSHHostKey]];
-		
-		// Delete the old keychain item
-		[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-		
-		// Set up the new keychain name and account strings
-		newKeychainName = [keychain nameForSSHForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-		newKeychainAccount = [keychain accountForSSHUser:[newFavorite objectForKey:SPFavoriteSSHUserKey] sshHost:[newFavorite objectForKey:SPFavoriteSSHHostKey]];
-		
-		// Add the new keychain item if the password field has a value
-		if ([[sshPasswordField stringValue] length]) {
-			[keychain addPassword:[sshSSHPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+
+		// If there's no new password, delete the keychain item
+		if (![[sshSSHPasswordField stringValue] length]) {
+			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
+
+		// Otherwise, set up the new keychain name and account strings and create or update the keychain item
+		} else {
+			newKeychainName = [keychain nameForSSHForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
+			newKeychainAccount = [keychain accountForSSHUser:[newFavorite objectForKey:SPFavoriteSSHUserKey] sshHost:[newFavorite objectForKey:SPFavoriteSSHHostKey]];
+			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
+				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:[sshSSHPasswordField stringValue]];
+			} else {
+				[keychain addPassword:[sshSSHPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
+			}
 		}
 	}
 	
