@@ -1222,31 +1222,30 @@
 
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
-	if([item isKindOfClass:[NSDictionary class]] && [item objectForKey:kChildrenKey])
-		return YES;
-	return NO;
+	return [item isKindOfClass:[NSDictionary class]] && [item objectForKey:kChildrenKey];
 }
 
 - (NSInteger)outlineView:(id)outlineView numberOfChildrenOfItem:(id)item
 {
-	if(item == nil) item = commandBundleTree;
+	if (item == nil) item = commandBundleTree;
 	
-	if([item isKindOfClass:[NSDictionary class]])
-		if([item objectForKey:kChildrenKey])
-			return [[item objectForKey:kChildrenKey] count];
-		else
-			return [item count];
+	if ([item isKindOfClass:[NSDictionary class]]) {
+		return [item objectForKey:kChildrenKey] ? [[item objectForKey:kChildrenKey] count] : [item count];
+	}
 
-	if([item isKindOfClass:[NSArray class]])
+	if ([item isKindOfClass:[NSArray class]]) {
 		return [item count];
+	}
 	
 	return 0;
 }
 
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-	if(item && [[item representedObject] respondsToSelector:@selector(objectForKey:)])
+	if (item && [[item representedObject] respondsToSelector:@selector(objectForKey:)]) {
 		return [[item representedObject] objectForKey:kBundleNameKey];
+	}
+	
 	return @"";
 }
 
@@ -2129,4 +2128,3 @@
 }
 
 @end
-
