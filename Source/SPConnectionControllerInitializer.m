@@ -104,8 +104,13 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Update the UI
 		[self _reloadFavoritesViewData];
 		[self setUpFavoritesOutlineView];
-		[self setUpSelectedConnectionFavorite];
 		[self _restoreOutlineViewStateNode:favoritesRoot];
+
+		// Set up the selected favourite, and scroll after a small delay to fix animation delay on Lion
+		[self setUpSelectedConnectionFavorite];
+		if ([favoritesOutlineView selectedRow] != -1) {
+			[self performSelector:@selector(_scrollToSelectedNode) withObject:nil afterDelay:0.0];
+		}
 		
         // Set sort items
         currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
@@ -262,8 +267,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		
 		[self _selectNode:favorite];
 		[self resizeTabViewToConnectionType:[[[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey] integerValue] animating:NO];
-		
-		[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
+
+		[self _scrollToSelectedNode];
 	} 
 	else {
 		previousType = SPTCPIPConnection;

@@ -64,6 +64,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_reloadFavoritesViewData;
 - (void)_restoreConnectionInterface;
 - (void)_selectNode:(SPTreeNode *)node;
+- (void)_scrollToSelectedNode;
 - (void)_removeNode:(SPTreeNode *)node;
 
 - (NSNumber *)_createNewFavoriteID;
@@ -1230,7 +1231,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {	
 	[favoritesOutlineView reloadData];
 	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:NO];
-	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
+	[self _scrollToSelectedNode];
 }
 
 /**
@@ -1278,6 +1279,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)_selectNode:(SPTreeNode *)node
 {
 	[favoritesOutlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[favoritesOutlineView rowForItem:node]] byExtendingSelection:NO];
+	[self _scrollToSelectedNode];
+}
+
+/**
+ * Scroll to the currently selected node.
+ */
+- (void)_scrollToSelectedNode
+{
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
 }
 
@@ -1469,6 +1478,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	
 	// Unregister observers
 	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
