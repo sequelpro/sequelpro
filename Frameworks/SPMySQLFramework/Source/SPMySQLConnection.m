@@ -249,7 +249,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
-		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected."];
+		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (%d).", state];
 		return NO;
 	}
 	state = SPMySQLConnecting;

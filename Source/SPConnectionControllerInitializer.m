@@ -37,6 +37,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 - (void)_reloadFavoritesViewData;
 - (void)_selectNode:(SPTreeNode *)node;
+- (void)_scrollToSelectedNode;
 - (void)_restoreOutlineViewStateNode:(SPTreeNode *)node;
 
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
