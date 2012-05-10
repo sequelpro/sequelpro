@@ -1160,13 +1160,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 	}
 	
-	NSUInteger i = [indexes firstIndex];
+	NSUInteger i = [indexes lastIndex];
 	
 	while (i != NSNotFound)
 	{
 		[nodes removeObjectAtIndex:i];
 		
-		i = [indexes indexGreaterThanIndex:i];
+		i = [indexes indexLessThanIndex:i];
 	}
 	
 	[indexes release];
