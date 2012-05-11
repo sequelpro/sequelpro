@@ -121,7 +121,7 @@
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
 	NSMutableArray *filteredTableTypes;
-	NSInteger selectedTableType;
+	SPTableType selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;

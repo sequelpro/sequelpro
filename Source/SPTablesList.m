@@ -1318,9 +1318,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[tablesListView deselectAll:nil];
 #endif
 			if (selectedTableName) [selectedTableName release];
+			
 			selectedTableName = [[NSString alloc] initWithString:[tables objectAtIndex:itemIndex]];
-			selectedTableType = [[tableTypes objectAtIndex:itemIndex] integerValue];
+			selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemIndex] integerValue];
+			
 			[self updateFilter:self];
+			
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 #ifndef SP_REFACTOR /* table list filtering */
 		}
@@ -1569,7 +1572,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
 {
-
 	// Don't allow selection changes while performing a task.
 	if (!tableListIsSelectable) return NO;
 
@@ -1599,8 +1601,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[self setSelectionState:nil];
 			[tableInfoInstance tableChanged:nil];
 		}
+		
 		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		
 		selectedTableType = SPTableTypeNone;
+		
 		return;
 	}
 
@@ -1616,6 +1621,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Perform no action if the selected table hasn't actually changed - reselection etc
 	NSString *newName = [filteredTables objectAtIndex:selectedRowIndex];
 	SPTableType newType = (SPTableType)[[filteredTableTypes objectAtIndex:selectedRowIndex] integerValue];
+	
 	if ([selectedTableName isEqualToString:newName] && selectedTableType == newType) {
 		return;
 	}
@@ -1628,7 +1634,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	selectedTableType = newType;
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
-	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+	if ([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
 		[schemaPath setString:[tableDocumentInstance connectionID]];
 		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
@@ -2256,6 +2262,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Set the selected table name and type, and then update the filter list and the
 		// selection.
 		if (selectedTableName) [selectedTableName release];
+		
 		selectedTableName = [[NSString alloc] initWithString:tableName];
 		selectedTableType = SPTableTypeTable;
 
@@ -2384,9 +2391,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		{
 			// get the create syntax
 			SPMySQLResult *theResult;
-			if(selectedTableType == SPTableTypeProc)
+			
+			if (selectedTableType == SPTableTypeProc)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
-			else if([self tableType] == SPTableTypeFunc)
+			else if ([self tableType] == SPTableTypeFunc)
 				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [selectedTableName backtickQuotedString]]];
 			else
 				return;
@@ -2471,9 +2479,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 			// Set the selected table name and type, and use updateFilter to update the filter list and selection
 			if (selectedTableName) [selectedTableName release];
+			
 			selectedTableName = [[NSString alloc] initWithString:[copyTableNameField stringValue]];
 			selectedTableType = tblType;
+			
 			[self updateFilter:self];
+			
 			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 

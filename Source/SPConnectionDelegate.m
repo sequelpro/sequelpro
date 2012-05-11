@@ -123,7 +123,7 @@
  */
 - (SPMySQLConnectionLostDecision)connectionLost:(id)connection
 {
-	NSInteger connectionErrorCode = SPMySQLConnectionLostDisconnect;
+	SPMySQLConnectionLostDecision connectionErrorCode = SPMySQLConnectionLostDisconnect;
 	
 	// Only display the reconnect dialog if the window is visible
 	if ([self parentWindow] && [[self parentWindow] isVisible]) {

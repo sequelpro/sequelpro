@@ -166,11 +166,11 @@
  */
 - (SPMySQLConnectionProxyState)state
 {
-
 	// See if an auth dialog is up
 	if (![answerAvailableLock tryLock]) {
 		return SPMySQLProxyWaitingForAuth;
 	}
+	
 	[answerAvailableLock unlock];
 
 	// Return the currently recorded state

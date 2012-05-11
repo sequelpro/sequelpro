@@ -23,8 +23,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <SPMySQL/SPMySQLConnectionProxy.h>
-#import <SPMySQL/SPMySQLConstants.h>
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPSSHTunnel : NSObject <SPMySQLConnectionProxy>
 {
@@ -51,7 +50,7 @@
 	NSInteger remotePort;
 	NSUInteger localPort;
 	NSUInteger localPortFallback;
-	NSInteger connectionState;
+	SPMySQLConnectionProxyState connectionState;
     
     NSLock *answerAvailableLock;
     NSString *currentKeyName;

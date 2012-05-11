@@ -25,7 +25,6 @@
 
 #import "SPDatabaseDocument.h"
 
-
 @interface SPDatabaseDocument (SPDatabaseViewController)
 
 // Getters
@@ -49,7 +48,7 @@
 - (void)setStatusRequiresReload:(BOOL)reload;
 
 // Table control
-- (void)loadTable:(NSString *)aTable ofType:(NSInteger)aTableType;
+- (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;
 
 #ifndef SP_REFACTOR /* method decls */
 - (NSView *)databaseView;

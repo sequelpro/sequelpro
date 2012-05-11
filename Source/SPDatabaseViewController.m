@@ -287,9 +287,8 @@
  * If this method is supplied with the currently selected name, a reload rather than
  * a load will be triggered.
  */
-- (void)loadTable:(NSString *)aTable ofType:(NSInteger)aTableType
+- (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType
 {
-
 	// Ensure a connection is still present
 	if (![mySQLConnection isConnected]) return;
 
