@@ -113,9 +113,9 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 			[self performSelector:@selector(_scrollToSelectedNode) withObject:nil afterDelay:0.0];
 		}
 		
-        // Set sort items
-        currentSortItem = [prefs integerForKey:SPFavoritesSortedBy];
-        reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
+		// Set sort items
+		currentSortItem = (SPFavoritesSortItem)[prefs integerForKey:SPFavoritesSortedBy];
+		reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
 	}
 	
 	return self;

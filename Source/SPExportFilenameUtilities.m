@@ -268,7 +268,7 @@
 	
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {
 		
-		SPFileCompressionFormat compressionFormat = [exportOutputCompressionFormatPopupButton indexOfSelectedItem];
+		SPFileCompressionFormat compressionFormat = (SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem];
 		
 		if ([extension length] > 0) {
 			extension = [extension stringByAppendingPathExtension:(compressionFormat == SPGzipCompression) ? @"gz" : @"bz2"];

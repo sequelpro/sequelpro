@@ -279,7 +279,7 @@ SPExportErrorChoice;
 			if ([file exportFileHandleStatus] == SPExportFileHandleExists) {
 				
 				if ([file createExportFileHandle:YES] == SPExportFileHandleCreated) {
-					[file setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+					[file setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 					
 					if ([file exportFileNeedsCSVHeader]) {
 						[self writeCSVHeaderToExportFile:file];

@@ -435,7 +435,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)sortFavorites:(id)sender
 {	
     SPFavoritesSortItem previousSortItem = currentSortItem;
-	currentSortItem  = [[sender menu] indexOfItem:sender];
+	currentSortItem  = (SPFavoritesSortItem)[[sender menu] indexOfItem:sender];
 	
 	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
 	

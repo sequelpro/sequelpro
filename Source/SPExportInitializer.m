@@ -420,7 +420,7 @@
 		[exporter setExportOutputEncoding:[connection stringEncoding]];
 		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
-		[exporter setExportOutputCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+		[exporter setExportOutputCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}
 		
@@ -431,7 +431,7 @@
 	{		
 		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
 
-			[exportFile setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+			[exportFile setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 			
 			if ([exportFile exportFileNeedsCSVHeader]) {
 				[self writeCSVHeaderToExportFile:exportFile];
