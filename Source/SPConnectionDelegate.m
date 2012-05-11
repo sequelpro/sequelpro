@@ -138,7 +138,7 @@
 		
 		// Display the connection error dialog and wait for the return code
 		[NSApp beginSheet:connectionErrorDialog modalForWindow:[self parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-		connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+		connectionErrorCode = (SPMySQLConnectionLostDecision)[NSApp runModalForWindow:connectionErrorDialog];
 		
 		[NSApp endSheet:connectionErrorDialog];
 		[connectionErrorDialog orderOut:nil];
