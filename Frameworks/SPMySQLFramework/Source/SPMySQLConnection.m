@@ -720,6 +720,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If the reconnection succeeded, restore the connection state as appropriate
 	if (state == SPMySQLConnected) {
+		reconnectSucceeded = YES;
 		if (databaseToRestore) {
 			[self selectDatabase:databaseToRestore];
 			[databaseToRestore release], databaseToRestore = nil;
