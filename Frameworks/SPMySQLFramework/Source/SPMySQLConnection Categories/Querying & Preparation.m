@@ -434,7 +434,8 @@
  */
 - (NSString *)lastErrorMessage
 {
-	return queryErrorMessage;
+	if (!queryErrorMessage) return nil;
+	return [NSString stringWithString:queryErrorMessage];
 }
 
 /**
