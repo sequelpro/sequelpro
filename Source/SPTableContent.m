@@ -861,7 +861,7 @@
 			BOOL columnsFound = YES;
 			NSArray *primaryKeyFieldNames = [selectionToRestore objectForKey:@"keys"];
 			NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
-			NSUInteger primaryKeyFieldIndexes[primaryKeyFieldCount];
+			NSUInteger *primaryKeyFieldIndexes = malloc(primaryKeyFieldCount * sizeof(NSUInteger));
 			for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
 				primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
 				if (primaryKeyFieldIndexes[i] == NSNotFound) {
@@ -870,7 +870,7 @@
 			}
 
 			// Only proceed with reselection if all columns were found
-			if (columnsFound) {
+			if (columnsFound && primaryKeyFieldCount) {
 				NSDictionary *selectionKeysToRestore = [selectionToRestore objectForKey:@"rows"];
 				NSUInteger rowsToSelect = [selectionKeysToRestore count];
 				BOOL rowMatches = NO;
@@ -902,6 +902,8 @@
 					}
 				}
 			}
+
+			free(primaryKeyFieldIndexes);
 
 		} else if ([[selectionToRestore objectForKey:@"type"] isEqualToString:SPSelectionDetailTypeIndexed]) {
 			selectionSet = [selectionToRestore objectForKey:@"rows"];
@@ -3710,7 +3712,7 @@
 
 		// Set up an array of the column indexes to store
 		NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
-		NSUInteger primaryKeyFieldIndexes[primaryKeyFieldCount];
+		NSUInteger *primaryKeyFieldIndexes = malloc(sizeof(NSUInteger) * primaryKeyFieldCount);
 		BOOL problemColumns = NO;
 		for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
 			primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
@@ -3752,6 +3754,7 @@
 				}
 			}
 			free(indexBuffer);
+			free(primaryKeyFieldIndexes);
 
 			return [NSDictionary dictionaryWithObjectsAndKeys:
 						SPSelectionDetailTypePrimaryKeyed, @"type",
@@ -3759,6 +3762,7 @@
 						primaryKeyFieldNames, @"keys",
 					nil];
 		}
+		free(primaryKeyFieldIndexes);
 	}
 
 	// If no primary key was available, fall back to using just the selected row indexes if permitted
