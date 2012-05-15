@@ -302,7 +302,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		// If so, don't remove it.
 		if ([[NSApp delegate] frontDocument]) {
 			for(id doc in [[NSApp delegate] orderedDocuments]) {
-				if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
 				if([[doc connectionID] isEqualToString:connectionID])
 					docCounter++;
 				if(docCounter > 1) break;

@@ -131,7 +131,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		keepAliveInterval = 60;
 		keepAlivePingFailures = 0;
 		lastKeepAliveTime = 0;
-		keepAlivePingThread = NULL;
+		keepAliveThread = nil;
+		keepAlivePingThread_t = NULL;
 		keepAlivePingThreadActive = NO;
 		keepAliveLastPingSuccess = NO;
 		keepAliveLastPingBlocked = NO;
@@ -205,6 +206,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	// Clear the keepalive timer
 	[keepAliveTimer invalidate];
 	[keepAliveTimer release];
+
+	// If a keepalive thread is active, cancel it
+	[self _cancelKeepAlives];
 
 	// Disconnect if appropriate (which should also disconnect any proxy)
 	[self disconnect];
@@ -326,8 +330,16 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 - (void)disconnect
 {
 
+	// If state is connection lost, set state directly to disconnected.
+	if (state == SPMySQLConnectionLostInBackground) {
+		state = SPMySQLDisconnected;
+	}
+
 	// Only continue if a connection is active
-	if (state != SPMySQLConnected && state != SPMySQLConnecting) return;
+	if (state != SPMySQLConnected && state != SPMySQLConnecting) {
+		return;
+	}
+
 	state = SPMySQLDisconnecting;
 
 	// If a query is active, cancel it
@@ -335,12 +347,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// Allow any pings or cancelled queries  to complete, inside a time limit of ten seconds
 	uint64_t disconnectStartTime_t = mach_absolute_time();
-	do {
+	while (![self _tryLockConnection]) {
 		usleep(100000);
 		if (_elapsedSecondsSinceAbsoluteTime(disconnectStartTime_t) > 10) break;
-	} while (![self _tryLockConnection]);
+	}
 	[self _unlockConnection];
-	if (keepAlivePingThread != NULL) pthread_cancel(keepAlivePingThread), keepAlivePingThread = NULL;
+	[self _cancelKeepAlives];
 
 	// Close the underlying MySQL connection if it still appears to be active, and not reading
 	// or writing.  While this may result in a leak of the MySQL object, it prevents crashes
@@ -499,6 +511,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (MYSQL *)_makeRawMySQLConnectionWithEncoding:(NSString *)encodingName isMasterConnection:(BOOL)isMaster
 {
+	if ([[NSThread currentThread] isCancelled]) return NULL;
 
 	// Set up the MySQL connection object
 	MYSQL *theConnection = mysql_init(NULL);
@@ -625,6 +638,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		}
 	}
 
+	if ([[NSThread currentThread] isCancelled]) {
+		[reconnectionPool release];
+		return NO;
+	}
+
 	isReconnecting = YES;
 
 	// Store certain details about the connection, so that if the reconnection is successful
@@ -647,6 +665,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If no network is present, wait for a short time for one to become available
 	[self _waitForNetworkConnectionWithTimeout:10];
+
+	if ([[NSThread currentThread] isCancelled]) {
+		isReconnecting = NO;
+		[reconnectionPool release];
+		return NO;
+	}
 
 	// If there is a proxy, attempt to reconnect it in blocking fashion
 	if (proxy) {
@@ -719,7 +743,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	}
 
 	// If the reconnection succeeded, restore the connection state as appropriate
-	if (state == SPMySQLConnected) {
+	if (state == SPMySQLConnected && ![[NSThread currentThread] isCancelled]) {
 		reconnectSucceeded = YES;
 		if (databaseToRestore) {
 			[self selectDatabase:databaseToRestore];
@@ -733,7 +757,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If the connection failed and the connection is permitted to retry,
 	// then retry the reconnection.
-	} else if (canRetry) {
+	} else if (canRetry && ![[NSThread currentThread] isCancelled]) {
 
 		// Default to attempting another reconnect
 		SPMySQLConnectionLostDecision connectionLostDecision = SPMySQLConnectionLostReconnect;

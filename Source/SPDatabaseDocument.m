@@ -3961,12 +3961,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// edits in progress in various views.
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
 
-	// Auto-save spf file based connection and return whether the save was successful
+	// Auto-save spf file based connection and return if the save was not successful
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled]) {
 		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil];
-		if(isSaved)
+		if (isSaved) {
 			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
-		return isSaved;
+		} else {
+			return NO;
+		}
 	}
 
 	// Terminate all running BASH commands

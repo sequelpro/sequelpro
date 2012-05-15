@@ -86,7 +86,8 @@
 	CGFloat keepAliveInterval;
 	uint64_t lastKeepAliveTime;
 	NSUInteger keepAlivePingFailures;
-	pthread_t keepAlivePingThread;
+	NSThread *keepAliveThread;
+	pthread_t keepAlivePingThread_t;
 	BOOL keepAlivePingThreadActive;
 	BOOL keepAliveLastPingSuccess;
 	BOOL keepAliveLastPingBlocked;

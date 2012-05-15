@@ -49,7 +49,8 @@
 - (void)_keepAlive
 {
 
-	// Do nothing if not connected or if keepalive is disabled
+	// Do nothing if not connected, if keepalive is disabled, or a keepalive is in
+	// progress.
 	if (state != SPMySQLConnected || !useKeepAlive) return;
 
 	// Check to see whether a ping is required.  First, compare the last query
@@ -81,6 +82,7 @@
  */
 - (void)_threadedKeepAlive
 {
+	keepAliveThread = [NSThread currentThread];
 
 	// If the maximum number of ping failures has been reached, determine whether to reconnect.
 	if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
@@ -97,6 +99,7 @@
 		}
 
 		// Return as no further ping action required this cycle.
+		keepAliveThread = nil;
 		return;
 	}
 
@@ -107,6 +110,7 @@
 	} else {
 		keepAlivePingFailures++;
 	}
+	keepAliveThread = nil;
 }
 
 #pragma mark -
@@ -142,16 +146,16 @@
 	if (timeout > 0) pingTimeout = timeout;
 
 	// Set up a struct containing details the ping task will need
-	SPMySQLConnectionPingDetails pingDetails;
-	pingDetails.mySQLConnection = mySQLConnection;
-	pingDetails.keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess;
-	pingDetails.keepAlivePingActivePointer = &keepAlivePingThreadActive;
+	SPMySQLConnectionPingDetails *pingDetails = malloc(sizeof(SPMySQLConnectionPingDetails));
+	pingDetails->mySQLConnection = mySQLConnection;
+	pingDetails->keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess;
+	pingDetails->keepAlivePingActivePointer = &keepAlivePingThreadActive;
 
 	// Create a pthread for the ping
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&keepAlivePingThread, &attr, (void *)&_backgroundPingTask, &pingDetails);
+	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, pingDetails);
 
 	// Record the ping start time
 	pingStartTime_t = mach_absolute_time();
@@ -161,25 +165,29 @@
 		usleep((useconds_t)loopDelay);
 		pingElapsedTime = _elapsedSecondsSinceAbsoluteTime(pingStartTime_t);
 
-		// If the ping timeout has been exceeded, force a timeout; double-check that the
-		// thread is still active.
-		if (pingElapsedTime > pingTimeout && keepAlivePingThreadActive && !threadCancelled) {
-			pthread_cancel(keepAlivePingThread);
+		// If the ping timeout has been exceeded, or the ping thread has been
+		// cancelled, force a timeout; double-check that the thread is still active.
+		if (([keepAliveThread isCancelled] || pingElapsedTime > pingTimeout)
+			&& keepAlivePingThreadActive
+			&& !threadCancelled)
+		{
+			pthread_cancel(keepAlivePingThread_t);
 			threadCancelled = YES;
 
 		// If the timeout has been exceeded by an additional two seconds, and the thread is
 		// still active, kill the thread.  This can occur in certain network conditions causing
 		// a blocking read.
 		} else if (pingElapsedTime > (pingTimeout + 2) && keepAlivePingThreadActive) {
-			pthread_kill(keepAlivePingThread, SIGUSR1);	
+			pthread_kill(keepAlivePingThread_t, SIGUSR1);	
 			keepAlivePingThreadActive = NO;
 			keepAliveLastPingBlocked = YES;
 		}
 	} while (keepAlivePingThreadActive);
 
 	// Clean up
-	keepAlivePingThread = NULL;
+	keepAlivePingThread_t = NULL;
 	pthread_attr_destroy(&attr);
+	free(pingDetails);
 
     // Unlock the connection
 	[self _unlockConnection];
@@ -221,6 +229,11 @@ void _forceThreadExit(int signalNumber)
 	pthread_exit(NULL);
 }
 
+/**
+ * A thread cleanup routine.  This is added to the thread using a
+ * pthread_cleanup_push call; a pthread_exit or a pthread_cleanup_pop
+ * both execute this function.
+ */
 void _pingThreadCleanup(void *pingDetails)
 {
 	SPMySQLConnectionPingDetails *pingDetailsStruct = pingDetails;
@@ -228,6 +241,32 @@ void _pingThreadCleanup(void *pingDetails)
 
 	// Clean up MySQL variables and handlers
 	mysql_thread_end();
+}
+
+#pragma mark -
+#pragma mark Cancellation
+
+/**
+ * If a keepalive thread is active, cancel it, and wait a short time for it
+ * to exit.
+ */
+- (void)_cancelKeepAlives
+{
+
+	// If no keepalive thread is active, return
+	if (!keepAliveThread) {
+		return;
+	}
+
+	// Mark the thread as cancelled
+	[keepAliveThread cancel];
+
+	// Wait inside a time limit of ten seconds for it to exit
+	uint64_t threadCancelStartTime_t = mach_absolute_time();
+	do {
+		usleep(100000);
+		if (_elapsedSecondsSinceAbsoluteTime(threadCancelStartTime_t) > 10) break;
+	} while (keepAliveThread);
 }
 
 @end
