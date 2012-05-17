@@ -720,7 +720,7 @@
 				shouldBeginEditing = YES;
 				break;
 			default:
-				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
 							   atLocation:pos
 								   ofType:@"text"];
 				shouldBeginEditing = NO;

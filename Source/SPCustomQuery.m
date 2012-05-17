@@ -1993,8 +1993,8 @@
 #endif
 	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field of table `%@` was changed.", @"message of panel when error while updating field to db after enabling it"),
-									(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", [columnDefinition objectForKey:@"org_table"]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed.", @"message of panel when error while updating field to db after enabling it"),
+									(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, [columnDefinition objectForKey:@"org_table"]]);
 
 	}
 }
@@ -3754,7 +3754,7 @@
 
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload data, check encoding, or try to add\na primary key field or more fields\nin your SELECT statement for table '%@'\nto identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row");
 		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
-		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Query result editing error - could not match row being edited uniquely");
+		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld matches).", @"Query result editing error - could not match row being edited uniquely");
 
 	}
 
@@ -3837,7 +3837,7 @@
 		break;
 
 		default:
-		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
 				atLocation:pos
 				ofType:@"text"];
 		shouldBeginEditing = NO;
