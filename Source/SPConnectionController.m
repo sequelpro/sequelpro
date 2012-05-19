@@ -1509,7 +1509,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[nibObjectsToRelease release];
 	
-	if (mySQLConnection) [mySQLConnection release];
+	if (mySQLConnection) {
+		[mySQLConnection setDelegate:nil];
+		[mySQLConnection release];
+	}
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 
 	if (connectionKeychainID) [connectionKeychainID release];
