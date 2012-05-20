@@ -141,11 +141,28 @@ static NSString *SPDatabaseImage = @"database-small";
 		
 		toolTip = ([favoriteHostname length]) ? [NSString stringWithFormat:@"%@ (%@)", favoriteName, favoriteHostname] : favoriteName;	
 	}
-	// Only display a tooltip for group nodes that are a child of the root node
+
+	// Only display a tooltip for group nodes that are a descendant of the root node
 	else if ([[node parentNode] parentNode]) {
-		NSUInteger favCount = [[node childNodes] count];
-		
-		toolTip = [NSString stringWithFormat:@"%@ - %d %@", [[node representedObject] nodeName], favCount, (favCount == 1) ? NSLocalizedString(@"favorite", @"favorite singular label") : NSLocalizedString(@"favorites", @"favorites plural label")];
+		NSUInteger favCount = 0;
+		NSUInteger groupCount = 0;
+		for (SPTreeNode *eachNode in [node childNodes]) {
+			if ([eachNode isGroup]) {
+				groupCount++;
+			} else {
+				favCount++;
+			}
+		}
+
+		NSMutableArray *tooltipParts = [NSMutableArray arrayWithCapacity:2];
+		if (favCount || !groupCount) {
+			[tooltipParts addObject:[NSString stringWithFormat:@"%d %@", favCount, (favCount == 1) ? NSLocalizedString(@"favorite", @"favorite singular label") : NSLocalizedString(@"favorites", @"favorites plural label")]];
+		}
+		if (groupCount) {
+			[tooltipParts addObject:[NSString stringWithFormat:@"%d %@", groupCount, (groupCount == 1) ? NSLocalizedString(@"group", @"favorite group singular label") : NSLocalizedString(@"groups", @"favorite groups plural label")]];
+		}
+
+		toolTip = [NSString stringWithFormat:@"%@ - %@", [[node representedObject] nodeName], [tooltipParts componentsJoinedByString:@", "]];
 	}
 	
 	return toolTip;
@@ -153,6 +170,16 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {	
+	return ([[item parentNode] parentNode] != nil);
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
+{
+	return ([[item parentNode] parentNode] != nil);
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldCollapseItem:(id)item
+{
 	return ([[item parentNode] parentNode] != nil);
 }
 
@@ -170,7 +197,13 @@ static NSString *SPDatabaseImage = @"database-small";
 #pragma mark Outline view drag & drop
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
-{	
+{
+
+	// Prevent a drag which includes the outline title group from taking place
+	for (id item in items) {
+		if (![[item parentNode] parentNode]) return NO;
+	}
+
 	// If the user is in the process of changing a node's name, trigger a save and prevent dragging.
 	if (isEditing) {
 		[favoritesController saveFavorites];
@@ -197,7 +230,16 @@ static NSString *SPDatabaseImage = @"database-small";
 	
 	// Prevent dropping favorites on other favorites (non-groups)
 	if ((childIndex == NSOutlineViewDropOnItemIndex) && (![item isGroup])) return result;
-	
+
+	// Ensure that none of the dragged nodes are being dragged into children of themselves; if they are,
+	// prevent the drag.
+	id itemToCheck = item;
+	do {
+		if ([draggedNodes containsObject:itemToCheck]) {
+			return result;
+		}
+	} while ((itemToCheck = [itemToCheck parentNode]));
+
 	if ([info draggingSource] == outlineView) {
 		[outlineView setDropItem:item dropChildIndex:childIndex];
 		
@@ -214,7 +256,10 @@ static NSString *SPDatabaseImage = @"database-small";
 	if ((!item) || ([info draggingSource] != outlineView)) return acceptedDrop;
 	
 	SPTreeNode *node = item ? item : [[[[favoritesRoot childNodes] objectAtIndex:0] childNodes] objectAtIndex:0];
-		
+
+	// Cache the selected nodes for selection restoration afterwards
+	NSArray *preDragSelection = [self selectedFavoriteNodes];
+
 	// Disable all automatic sorting
 	currentSortItem = -1;
 	reverseFavoritesSort = NO;
@@ -275,7 +320,14 @@ static NSString *SPDatabaseImage = @"database-small";
 	[self _reloadFavoritesViewData];
 	
 	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
-	
+
+	// Update the selection to account for rearranged faourites
+	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];
+	for (SPTreeNode *eachNode in preDragSelection) {
+		[restoredSelection addIndex:[favoritesOutlineView rowForItem:eachNode]];
+	}
+	[favoritesOutlineView selectRowIndexes:restoredSelection byExtendingSelection:NO];
+
 	acceptedDrop = YES;
 	
 	return acceptedDrop;
@@ -490,7 +542,7 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 	
 	// Rename selected favorite/group
-	if (action == @selector(renameFavorite:)) {
+	if (action == @selector(renameNode:)) {
 		return ([favoritesOutlineView numberOfSelectedRows] == 1);
 	}
 	

@@ -3484,7 +3484,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	// If validation for the sort favorites tableview items reaches here then the preferences window isn't
 	// open return NO.
-	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseFavoritesSortOrder:))) {
+	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseSortFavorites:))) {
 		return NO;
 	}
 
