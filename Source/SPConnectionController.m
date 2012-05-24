@@ -72,6 +72,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+- (void)_resetConnectionDetailsInputInterface;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 
@@ -743,7 +744,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 					  account:[keychain accountForSSHUser:[self sshUser] sshHost:[self sshHost]]];
 	}
 	
-	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:newFavorite asChildOfNode:nil];
+	SPTreeNode *selectedNode = [self selectedFavoriteNode];
+	
+	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:newFavorite asChildOfNode:[selectedNode isGroup] ? selectedNode : nil];
 	
 	[self _reloadFavoritesViewData];
 	[self _selectNode:node];
@@ -1328,6 +1331,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[favoritesController removeFavoriteNode:node];
 	
+	[self _resetConnectionDetailsInputInterface];
 	[self _reloadFavoritesViewData];
 
 	// Clear the selection
@@ -1474,6 +1478,39 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if ([[favoritesOutlineView selectedRowIndexes] count]) {
 		currentFavorite = [[[[self selectedFavoriteNode] representedObject] nodeFavorite] copy];
 	}
+}
+
+/**
+ * Resets the connection details input interface to an empty state.
+ */
+- (void)_resetConnectionDetailsInputInterface
+{
+	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+	
+	[self setName:@""];
+	[self setHost:@""];
+	[self setSocket:@""];
+	[self setUser:@""];
+	[self setPort:@""];
+	[self setDatabase:@""];
+	[self setPassword:@""];
+	
+	// SSL details
+	[self setUseSSL:NSOffState];
+	[self setSslKeyFileLocationEnabled:NSOffState];
+	[self setSslKeyFileLocation:@""];
+	[self setSslCertificateFileLocationEnabled:NSOffState];
+	[self setSslCertificateFileLocation:@""];
+	[self setSslCACertFileLocationEnabled:NSOffState];
+	[self setSslCACertFileLocation:@""];
+	
+	// SSH details
+	[self setSshHost:@""];
+	[self setSshUser:@""];
+	[self setSshPassword:@""];
+	[self setSshKeyLocationEnabled:NSOffState];
+	[self setSshKeyLocation:@""];
+	[self setSshPort:@""];
 }
 
 #pragma mark -

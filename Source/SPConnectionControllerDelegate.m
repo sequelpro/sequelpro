@@ -33,8 +33,6 @@
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 
-#define CELL(cell) (SPTableTextFieldCell *)cell
-
 static NSString *SPDatabaseImage = @"database-small";
 
 @interface SPConnectionController ()
@@ -47,6 +45,7 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
+- (void)_resetConnectionDetailsInputInterface;
 - (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification;
 
 @end
@@ -79,7 +78,7 @@ static NSString *SPDatabaseImage = @"database-small";
 }
 
 - (void)outlineViewSelectionDidChange:(NSNotification *)notification
-{			
+{				
 	NSInteger selected = [favoritesOutlineView numberOfSelectedRows];
 	
 	if (selected == 1) {
@@ -92,14 +91,15 @@ static NSString *SPDatabaseImage = @"database-small";
 			[addToFavoritesButton setEnabled:NO];
 			
 			favoriteNameFieldWasTouched = YES;
+		}
+		else {	
+			[addToFavoritesButton setEnabled:YES];
 			
-			[connectionResizeContainer setHidden:NO];
-			[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
+			[self _resetConnectionDetailsInputInterface];
 		}
-		else {
-			[connectionResizeContainer setHidden:YES];
-			[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Please choose a favorite", @"please choose a favorite connection view label")];
-		}
+		
+		[connectionResizeContainer setHidden:NO];
+		[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
 	}
 	else if (selected > 1) {
 		[connectionResizeContainer setHidden:YES];
@@ -111,16 +111,8 @@ static NSString *SPDatabaseImage = @"database-small";
 {
 	SPTreeNode *node = (SPTreeNode *)item;
 	
-	[CELL(cell) setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	
-	[CELL(cell) setTextColor:([favoritesOutlineView isEnabled]) ? [NSColor blackColor] : [NSColor grayColor]];
-	
-	if (![[node parentNode] parentNode]) {
-		[CELL(cell) setImage:nil];
-	}
-	else {
-		[CELL(cell) setImage:(![node isGroup]) ? [NSImage imageNamed:SPDatabaseImage] : folderImage];
-	}	
+	[(SPTableTextFieldCell *)cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[(SPTableTextFieldCell *)cell setImage:(![[node parentNode] parentNode]) ? nil : (![node isGroup]) ? [NSImage imageNamed:SPDatabaseImage] : folderImage];
 }
 
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item
@@ -624,6 +616,12 @@ static NSString *SPDatabaseImage = @"database-small";
 #pragma mark -
 #pragma mark Private API
 
+/**
+ * Sets the expanded state of the node from the supplied outline view notification.
+ *
+ * @param expanded     The state of the node
+ * @param notification The notification genrated from the state change
+ */
 - (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification
 {
 	SPGroupNode *node = [[[notification userInfo] valueForKey:@"NSObject"] representedObject];
