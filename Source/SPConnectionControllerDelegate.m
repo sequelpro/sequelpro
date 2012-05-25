@@ -498,56 +498,55 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-    SEL action = [menuItem action];
+	SEL action = [menuItem action];
 	
 	SPTreeNode *node = [self selectedFavoriteNode];
+	NSInteger selectedRows = [favoritesOutlineView numberOfSelectedRows];
 	
-    if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
+	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
+		
+		if ([[favoritesRoot allChildLeafs] count] < 2) return NO;
 		
 		// Loop all the items in the sort by menu only checking the currently selected one
 		for (NSMenuItem *item in [[menuItem menu] itemArray])
 		{
-			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem) ? NSOnState : NSOffState];
+			[item setState:([[menuItem menu] indexOfItem:item] == currentSortItem)];
 		}
 		
 		// Check or uncheck the reverse sort item
 		if (action == @selector(reverseSortFavorites:)) {
 			[menuItem setState:reverseFavoritesSort];
 		}
-    }
+	}
 	
-	// Remove the selected favorite
-	if (action == @selector(removeNode:)) {
-		return ([favoritesOutlineView numberOfSelectedRows] == 1);
+	// Remove/rename the selected node
+	if (action == @selector(removeNode:) || action == @selector(renameNode:)) {
+		return selectedRows == 1;
 	}
 	
 	// Duplicate and make the selected favorite the default
 	if (action == @selector(duplicateFavorite:)) {
-		return (([favoritesOutlineView numberOfSelectedRows] == 1) && (![node isGroup]));
+		return ((selectedRows == 1) && (![node isGroup]));
 	}
 	
 	// Make selected favorite the default
 	if (action == @selector(makeSelectedFavoriteDefault:)) {
 		NSInteger favoriteID = [[[self selectedFavorite] objectForKey:SPFavoriteIDKey] integerValue];
 				
-		return (([favoritesOutlineView numberOfSelectedRows] == 1) && (![node isGroup]) && (favoriteID != [prefs integerForKey:SPDefaultFavorite]));
-	}
-	
-	// Rename selected favorite/group
-	if (action == @selector(renameNode:)) {
-		return ([favoritesOutlineView numberOfSelectedRows] == 1);
+		return ((selectedRows == 1) && (![node isGroup]) && (favoriteID != [prefs integerForKey:SPDefaultFavorite]));
 	}
 	
 	// Favorites export
 	if (action == @selector(exportFavorites:)) {
-		
-		NSInteger rows = [favoritesOutlineView numberOfSelectedRows];
-		
-		if (rows > 1) {
-			[menuItem setTitle:NSLocalizedString(@"Export Selected...", @"export selected favorites menu item")];
+				
+		if ([[favoritesRoot allChildLeafs] count] == 0) {
+			return NO;
 		}
-		else if (rows == 1) {
+		else if (selectedRows == 1) {
 			return (![[self selectedFavoriteNode] isGroup]);
+		}
+		else if (selectedRows > 1) {
+			[menuItem setTitle:NSLocalizedString(@"Export Selected...", @"export selected favorites menu item")];
 		}
 	}
 		
