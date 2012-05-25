@@ -27,28 +27,16 @@
 
 @implementation SPExportController (SPPDFExporterDelegate)
 
-/**
- * 
- */
 - (void)pdfExportProcessWillBegin:(SPPDFExporter *)exporter
 {
-	
 }
 
-/**
- * 
- */
 - (void)pdfExportProcessComplete:(SPPDFExporter *)exporter
-{
-	
+{	
 }
 
-/**
- * 
- */
 - (void)pdfExportProcessWillBeginWritingData:(SPPDFExporter *)exporter
-{
-	
+{	
 }
 
 @end

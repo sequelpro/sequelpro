@@ -81,4 +81,5 @@
 - (void)writeData:(NSData *)data;
 - (SPExportFileHandleStatus)createExportFileHandle:(BOOL)overwrite;
 - (void)setCompressionFormat:(SPFileCompressionFormat)fileCompressionFormat;
+
 @end

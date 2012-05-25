@@ -27,13 +27,11 @@
 #import "SPXMLExporter.h"
 #import "SPDatabaseDocument.h"
 #import "SPExportFile.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @implementation SPExportController (SPXMLExporterDelegate)
 
-/**
- *
- */
 - (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter
 {
 	[[exportProgressText onMainThread] displayIfNeeded];
@@ -57,9 +55,6 @@
 	[[exportProgressText onMainThread] displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)xmlExportProcessComplete:(SPXMLExporter *)exporter
 {
 	NSUInteger exportCount = [exporters count];
@@ -114,17 +109,11 @@
 	}
 }
 
-/**
- *
- */
 - (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter
 {
 	[[exportProgressIndicator onMainThread] setDoubleValue:[exporter exportProgressValue]];
 }
 
-/**
- *
- */
 - (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter
 {
 	// Only update the progress text if this is a table export

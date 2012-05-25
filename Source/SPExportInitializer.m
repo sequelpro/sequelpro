@@ -85,7 +85,7 @@
 	NSArray *dataArray = nil;
 	
 	// Get rid of the cached connection encoding
-	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
+	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
 	
 	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
 	
@@ -282,8 +282,8 @@
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
 		
 		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
+		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 				
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 				
@@ -381,9 +381,9 @@
 		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
 		
-		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
+		// Cache the current connection encoding then change it to UTF-8 to allow dumps to work
+		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 		
 		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
 		

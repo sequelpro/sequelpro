@@ -29,9 +29,6 @@
 
 @implementation SPExportController (SPDotExporterDelegate)
 
-/**
- *
- */
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter
 {
 	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting Dot File", @"text showing that the application is exporting a Dot file")];
@@ -43,9 +40,6 @@
 	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
 }
 
-/**
- * 
- */
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter
 {
 	[NSApp endSheet:exportProgressWindow returnCode:0];
@@ -54,23 +48,17 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 		
 	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 
 	// Display Growl notification
 	[self displayExportFinishedGrowlNotification];
 }
 
-/**
- *
- */
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter
 {
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
-/**
- *
- */
 - (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter forTableWithIndex:(NSUInteger)tableIndex
 {
 	// Update the current table export index
@@ -81,9 +69,6 @@
 	[exportProgressText displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter
 {
 	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];

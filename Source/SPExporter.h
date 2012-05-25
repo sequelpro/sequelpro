@@ -61,7 +61,6 @@
 	BOOL exportUsingLowMemoryBlockingStreaming;
 	BOOL exportOutputCompressFile;
 	
-	
 	SPFileCompressionFormat exportOutputCompressionFormat;
 	
 	NSString *exportData;

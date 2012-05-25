@@ -210,12 +210,12 @@
 	/**
 	 * Previous connection encoding
 	 */
-	NSString *sqlPreviousConnectionEncoding;
+	NSString *previousConnectionEncoding;
 
 	/**
 	 * Previous connection encoding was via Latin1
 	 */
-	BOOL sqlPreviousConnectionEncodingViaLatin1;
+	BOOL previousConnectionEncodingViaLatin1;
 
 	/**
 	 * The server's lower_case_table_names setting

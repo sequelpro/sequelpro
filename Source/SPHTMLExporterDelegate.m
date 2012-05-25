@@ -27,28 +27,16 @@
 
 @implementation SPExportController (SPHTMLExporterDelegate)
 
-/**
- * 
- */
 - (void)htmlExportProcessWillBegin:(SPHTMLExporter *)exporter
-{
-	
+{	
 }
 
-/**
- * 
- */
 - (void)htmlExportProcessComplete:(SPHTMLExporter *)exporter
-{
-	
+{	
 }
 
-/**
- * 
- */
 - (void)htmlExportProcessWillBeginWritingData:(SPHTMLExporter *)exporter
-{
-	
+{	
 }
 
 @end

@@ -95,7 +95,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		exportTypeLabel = @"";
 		
 		createCustomFilename = NO;
-		sqlPreviousConnectionEncodingViaLatin1 = NO;
+		previousConnectionEncodingViaLatin1 = NO;
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
@@ -723,7 +723,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[operationQueue release], operationQueue = nil;
 	[exportFilename release], exportFilename = nil;
 	
-	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
+	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
 	
 	[super dealloc];
 }

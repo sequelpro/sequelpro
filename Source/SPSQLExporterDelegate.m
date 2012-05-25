@@ -29,9 +29,6 @@
 
 @implementation SPExportController (SPSQLExporterDelegate)
 
-/**
- *
- */
 - (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter
 {
 	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
@@ -41,9 +38,6 @@
 	[[exportProgressText onMainThread] displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)sqlExportProcessComplete:(SPSQLExporter *)exporter
 {
 	[exportProgressIndicator stopAnimation:self];
@@ -53,7 +47,7 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	
 	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 	
 	// Display Growl notification
 	[self displayExportFinishedGrowlNotification];
@@ -64,21 +58,16 @@
 	}
 }
 
-/**
- *
- */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
 {
 	if ([exportProgressIndicator doubleValue] == 0) {
 		[exportProgressIndicator stopAnimation:self];
 		[exportProgressIndicator setIndeterminate:NO];
 	}
+	
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
-/**
- *
- */
 - (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter
 {
 	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
@@ -89,9 +78,6 @@
 	[exportProgressIndicator setDoubleValue:0];
 }
 
-/**
- * 
- */
 - (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
 {
 	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];

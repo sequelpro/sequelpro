@@ -23,8 +23,6 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <Cocoa/Cocoa.h>
-
 #import "SPCSVExporter.h"
 #import "SPCSVExporterDelegate.h"
 #import "SPDatabaseDocument.h"
@@ -32,9 +30,6 @@
 
 @implementation SPExportController (SPCSVExporterDelegate)
 
-/**
- *
- */
 - (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter
 {	
 	[[exportProgressText onMainThread] displayIfNeeded];
@@ -57,9 +52,6 @@
 	[[exportProgressText onMainThread] displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)csvExportProcessComplete:(SPCSVExporter *)exporter
 {		
 	NSUInteger exportCount = [exporters count];
@@ -108,9 +100,6 @@
 	}
 }
 
-/**
- *
- */
 - (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter
 {
 	// Only update the progress text if this is a table export
@@ -129,9 +118,6 @@
 	[[exportProgressIndicator onMainThread] setDoubleValue:0];
 }
 
-/**
- *
- */
 - (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter
 {		
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
