@@ -84,15 +84,25 @@ static NSString *SPDatabaseImage = @"database-small";
 	[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"Last Used", @"Last Used entry in favorites menu")];
 	[[defaultFavoritePopup menu] addItem:[NSMenuItem separatorItem]];
 	
-	// Add all favorites to the menu
-	for (SPTreeNode *node in [[[[[SPFavoritesController sharedFavoritesController] favoritesTree] childNodes] objectAtIndex:0] childNodes])
-	{
-		NSArray *items = [self _constructMenuItemsForNode:node atLevel:0];
+	NSArray *favorites = [[[[[SPFavoritesController sharedFavoritesController] favoritesTree] childNodes] objectAtIndex:0] childNodes];
+	
+	if ([favorites count] > 0) {
 		
-		for (NSMenuItem *item in items)
+		// Add all favorites to the menu
+		for (SPTreeNode *node in favorites)
 		{
-			[[defaultFavoritePopup menu] addItem:item];
+			NSArray *items = [self _constructMenuItemsForNode:node atLevel:0];
+			
+			for (NSMenuItem *item in items)
+			{
+				[[defaultFavoritePopup menu] addItem:item];
+			}
 		}
+	}
+	else {
+		[defaultFavoritePopup addItemWithTitle:NSLocalizedString(@"No Favorties", @"No favorites entry in favorites menu")]; 
+		
+		[[defaultFavoritePopup itemAtIndex:2] setEnabled:NO];
 	}
 	
 	// Select the default favorite from prefs	
