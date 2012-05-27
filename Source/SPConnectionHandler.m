@@ -29,6 +29,7 @@
 #import "SPSSHTunnel.h"
 #import "SPKeychain.h"
 #import "RegexKitLite.h"
+#import "SPCategoryAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -176,7 +177,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			// Tidy up
 			isConnecting = NO;
 			
-			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 			
 			[mySQLConnection release], mySQLConnection = nil;
 			if (!cancellingConnection) [self _restoreConnectionInterface];
@@ -409,7 +410,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	// Inform the delegate that the connection attempt failed
 	if (delegate && [delegate respondsToSelector:@selector(connectionControllerConnectAttemptFailed:)]) {
-		[delegate connectionControllerConnectAttemptFailed:self];
+		[[(NSObject *)delegate onMainThread] connectionControllerConnectAttemptFailed:self];
 	}
 	
 	// Only display the connection error message if there is a window visible and the connection attempt
@@ -423,7 +424,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  * Alert sheet callback method - invoked when an error sheet is closed.
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{	
+{
 	// Restore the passwords from keychain for editing if appropriate
 	if (connectionKeychainItemName) {
 		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];

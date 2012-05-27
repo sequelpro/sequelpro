@@ -69,7 +69,6 @@
 	NSUserDefaults *prefs;
 
 #ifndef SP_REFACTOR	/* ivars */
-	BOOL automaticFavoriteSelection;
 	BOOL cancellingConnection;
 	BOOL isConnecting;
 	

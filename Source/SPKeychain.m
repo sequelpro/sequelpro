@@ -283,6 +283,14 @@
 	status = SecKeychainItemModifyAttributesAndData(itemRef, &attList, (UInt32)strlen([password UTF8String]), [password UTF8String]);
 
 	if (status != noErr) {
+
+		// An error of -25299 indicates that the keychain item is a duplicate.  As connection names include a unique ID,
+		// this indicates an issue when previously altering keychain items; delete the old item and try again.
+		if ((int)status == -25299) {
+			[self deletePasswordForName:newName account:newAccount];
+			return [self updateItemWithName:name account:account toName:newName account:newAccount password:password];
+		}
+
 		NSLog(@"Error (%i) while updating keychain item for name: %@ account: %@", (int)status, name, account);
 		SPBeginAlertSheet(NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"), 
 						  NSLocalizedString(@"OK", @"OK button"), 

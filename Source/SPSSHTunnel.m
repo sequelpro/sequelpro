@@ -390,11 +390,15 @@
 {
     if (connectionState == SPMySQLProxyIdle) return;
 
+	// If there's a delegate set, clear it to prevent unexpected state change messaging
+	if (delegate) {
+		delegate = nil;
+		stateChangeSelector = NULL;
+	}
+
 	// Before terminating the tunnel, check that it's actually running. This is to accommodate tunnels which
 	// suddenly disappear as a result of network disconnections. 
     if ([task isRunning]) [task terminate];
-	
-	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 }
  
 /*
@@ -663,6 +667,7 @@
 	delegate = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (connectionState != SPMySQLProxyIdle) [self disconnect];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[sshHost release];
 	[sshLogin release];
 	[remoteHost release];

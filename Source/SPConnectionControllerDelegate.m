@@ -437,10 +437,6 @@ static NSString *SPDatabaseImage = @"database-small";
 {
 	NSInteger selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
 		
-	// Deselect any selected favorite for manual changes
-	if (!automaticFavoriteSelection) [favoritesOutlineView deselectAll:self];
-	automaticFavoriteSelection = NO;
-	
 	if (selectedTabView == previousType) return;
 	
 	[self resizeTabViewToConnectionType:selectedTabView animating:YES];

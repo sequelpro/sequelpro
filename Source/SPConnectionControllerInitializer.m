@@ -73,7 +73,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		cancellingConnection = NO;
 		mySQLConnectionCancelled = NO;
 		favoriteNameFieldWasTouched = YES;
-		automaticFavoriteSelection = NO;
 		
 		[self loadNib];
 		[self registerForNotifications];
@@ -148,6 +147,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 											   object:nil];
 	
 	// Registered to be notified of changes to connection information
+	[self addObserver:self 
+		   forKeyPath:SPFavoriteTypeKey 
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
+			  context:NULL];
+	
 	[self addObserver:self 
 		   forKeyPath:SPFavoriteNameKey 
 			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 

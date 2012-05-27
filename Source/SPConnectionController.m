@@ -468,7 +468,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)updateFavoriteSelection:(id)sender
 {
-	automaticFavoriteSelection = YES;
 
 	// Clear the keychain referral items as appropriate
 	if (connectionKeychainID) [connectionKeychainID release], connectionKeychainID = nil;
@@ -1218,7 +1217,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 	
 	// Update the name for newly added favorites if not already touched by the user, by triggering a KVO update
-	if (!favoriteNameFieldWasTouched) {
+	if (![[self name] length]) {
 		[self setName:[NSString stringWithFormat:@"%@@%@", 
 					   ([favorite objectForKey:SPFavoriteUserKey]) ? [favorite objectForKey:SPFavoriteUserKey] : @"", 
 						((previousType == SPSocketConnection) ? @"localhost" :
@@ -1290,6 +1289,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)_scrollToSelectedNode
 {
+
+	// Don't scroll if no node is currently selected
+	if ([favoritesOutlineView selectedRow] == -1) return;
+
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
 }
 
