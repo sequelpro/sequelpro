@@ -147,6 +147,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	[node setIsGroup:YES];
 	
 	[self _addNode:node asChildOfNode:parent];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 	
 	return node;
 }
@@ -165,6 +167,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 	[self _addNode:node asChildOfNode:parent];
 	
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+
 	return node;
 }
 
@@ -180,6 +184,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	// Save data to disk
 	[self saveFavorites];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 }
 
 #pragma mark -

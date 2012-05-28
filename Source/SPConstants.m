@@ -276,6 +276,7 @@ NSString *SPFavoriteSSLCertificateFileLocationEnabledKey = @"sslCertificateFileL
 NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileLocation";
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
+NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
 
 // Favorites import/export
 NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";

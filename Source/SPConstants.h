@@ -455,6 +455,7 @@ extern NSString *SPFavoriteSSLCertificateFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
+extern NSString *SPConnectionFavoritesChangedNotification;
 
 // Favorites import/export
 extern NSString *SPFavoritesDataRootKey;

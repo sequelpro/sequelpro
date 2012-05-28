@@ -971,6 +971,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[favoritesController saveFavorites];
 		
 		[self _reloadFavoritesViewData];
+
+		if ([keyPath isEqualToString:SPFavoriteNameKey]) {
+			[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+		}
 	}
 }
 
@@ -1126,6 +1130,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[favoritesController saveFavorites];
 	 
 	[self _reloadFavoritesViewData];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 }
 
 /**
@@ -1524,6 +1530,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	
 	// Unregister observers
+	[self removeObserver:self forKeyPath:SPFavoriteTypeKey];
 	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
 	[self removeObserver:self forKeyPath:SPFavoriteHostKey];
 	[self removeObserver:self forKeyPath:SPFavoriteUserKey];

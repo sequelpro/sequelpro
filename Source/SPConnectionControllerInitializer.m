@@ -35,6 +35,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 @interface SPConnectionController ()
 
+- (void)_processFavoritesDataChange;
 - (void)_reloadFavoritesViewData;
 - (void)_selectNode:(SPTreeNode *)node;
 - (void)_scrollToSelectedNode;
@@ -144,6 +145,10 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(scrollViewFrameChanged:) 
 												 name:NSViewFrameDidChangeNotification 
+											   object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(_processFavoritesDataChange:) 
+												 name:SPConnectionFavoritesChangedNotification 
 											   object:nil];
 	
 	// Registered to be notified of changes to connection information
@@ -284,6 +289,30 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 #pragma mark -
 #pragma mark Private API
+
+/**
+ * Responds to notifications that the favorites root has changed,
+ * and updates the interface to match.
+ */
+- (void)_processFavoritesDataChange:(NSNotification *)aNotification
+{
+
+	// Check the supplied notification for the sender; if the sender
+	// was this object, ignore it
+	if ([aNotification object] == self) return;
+
+	NSArray *selectedFavoriteNodes = [self selectedFavoriteNodes];
+
+	[self _reloadFavoritesViewData];
+
+	NSMutableIndexSet *selectionIndexes = [NSMutableIndexSet indexSet];
+	for (SPTreeNode *eachNode in selectedFavoriteNodes) {
+		NSInteger anIndex = [favoritesOutlineView rowForItem:eachNode];
+		if (anIndex == -1) continue;
+		[selectionIndexes addIndex:anIndex];
+	}
+	[favoritesOutlineView selectRowIndexes:selectionIndexes byExtendingSelection:NO];
+}
 
 /**
  * Restores the outline views group nodes expansion state.

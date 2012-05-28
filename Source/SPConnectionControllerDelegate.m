@@ -310,7 +310,9 @@ static NSString *SPDatabaseImage = @"database-small";
 	[favoritesController saveFavorites];
 	
 	[self _reloadFavoritesViewData];
-	
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+
 	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
 
 	// Update the selection to account for rearranged faourites
