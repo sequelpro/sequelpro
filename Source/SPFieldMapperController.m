@@ -447,13 +447,17 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[createString appendFormat:@"CREATE TABLE %@ (\n", [[newTableNameTextField stringValue] backtickQuotedString]];
 		NSInteger columnIndex = 0;
 		NSInteger numberOfColumns = [fieldMappingTableColumnNames count];
-		for(columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
-			// add to the new table only those fields which are markes as "Do Import"
-			if([fieldMappingOperatorArray objectAtIndex:columnIndex] == doImport) {
-				[createString appendFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]];
-				if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
+		NSMutableArray *columnDetails = [NSMutableArray array];
+		for (columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
+
+			// Skip fields which aren't marked as imported
+			if ([fieldMappingOperatorArray objectAtIndex:columnIndex] != doImport) {
+				continue;
 			}
+
+			[columnDetails addObject:[NSString stringWithFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]]];
 		}
+		[createString appendString:[columnDetails componentsJoinedByString:@", \n"]];
 		[createString appendString:@")"];
 
 #ifndef SP_REFACTOR
