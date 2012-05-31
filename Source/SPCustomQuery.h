@@ -133,7 +133,6 @@
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
-	NSRange oldThreadedQueryRange;
 
 	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
@@ -170,7 +169,6 @@
 	NSString *fieldIDQueryString;
 
 	NSUInteger numberOfQueries;
-	NSUInteger queryTextViewStartPosition;
 	NSUInteger queryInfoPanePaddingHeight;
 
 	NSInteger currentHistoryOffsetIndex;
@@ -197,7 +195,6 @@
 
 // IBAction methods
 - (IBAction)runAllQueries:(id)sender;
-- (void) runAllQueriesCallback;
 - (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;

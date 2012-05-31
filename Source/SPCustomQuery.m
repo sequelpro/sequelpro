@@ -115,40 +115,13 @@
 
 	[queryParser release];
 
-	oldThreadedQueryRange = [textView selectedRange];
-
-	// Unselect a selection if given to avoid interfering with error highlighting
-	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location, 0)];
-
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
 	reloadingExistingResult = NO;
 	[self clearResultViewDetailsToRestore];
 
-	// Remember query start position for error highlighting
-	queryTextViewStartPosition = 0;
-
-	[self performQueries:queries withCallback:@selector(runAllQueriesCallback)];
-}
-
-- (void)runAllQueriesCallback
-{
-	// If no error was selected, reconstruct a given selection.  This
-	// may no longer be valid if the query text has changed in the
-	// meantime, so error-checking is required.
-	if (oldThreadedQueryRange.location + oldThreadedQueryRange.length <= [[textView string] length]) {
-
-		if ([textView selectedRange].length == 0)
-			[textView setSelectedRange:oldThreadedQueryRange];
-
-		// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-		NSRange oldRange = [textView selectedRange];
-		[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
-		[textView insertText:@""];
-		[textView setSelectedRange:oldRange];
-		[textView scrollRangeToVisible:oldRange];
-	}
+	[self performQueries:queries withCallback:NULL];
 }
 
 /*
@@ -182,9 +155,6 @@
 		}
 		queries = [NSArray arrayWithObject:[SPSQLParser normaliseQueryForExecution:query]];
 
-		// Remember query start position for error highlighting
-		queryTextViewStartPosition = currentQueryRange.location;
-
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
@@ -201,9 +171,6 @@
 		}
 
 		[queryParser release];
-
-		// Remember query start position for error highlighting
-		queryTextViewStartPosition = selectedRange.location;
 	}
 
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
