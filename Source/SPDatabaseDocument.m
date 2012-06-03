@@ -4109,7 +4109,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #ifndef SP_REFACTOR
 		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
 #endif
-		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
+		[connectionController updateFavoriteSelection:self];
 	}
 
 	parentWindow = aWindow;
@@ -4393,39 +4393,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller
+	// Deselect all favorites on the connection controller.  This will automatically
+	// clear and reset the connection state.
 	[[connectionController favoritesOutlineView] deselectAll:connectionController];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen
 	// that the SPF file runs out of sync.
 	[[connectionController favoritesOutlineView] setEnabled:NO];
-
-	// Ensure the connection controller is set to a blank slate
-	[connectionController setName:@""];
-	[connectionController setUser:@""];
-	[connectionController setHost:@""];
-	[connectionController setPort:@""];
-	[connectionController setSocket:@""];
-	[connectionController setUseSSL:NSOffState];
-	[connectionController setSslKeyFileLocationEnabled:NSOffState];
-	[connectionController setSslKeyFileLocation:nil];
-	[connectionController setSslCertificateFileLocationEnabled:NSOffState];
-	[connectionController setSslCertificateFileLocation:nil];
-	[connectionController setSslCACertFileLocationEnabled:NSOffState];
-	[connectionController setSslCACertFileLocation:nil];
-	[connectionController setSshHost:@""];
-	[connectionController setSshUser:@""];
-	[connectionController setSshKeyLocationEnabled:NSOffState];
-	[connectionController setSshKeyLocation:nil];
-	[connectionController setSshPort:@""];
-	[connectionController setDatabase:@""];
-	[connectionController setPassword:nil];
-	[connectionController setConnectionKeychainItemName:nil];
-	[connectionController setConnectionKeychainItemAccount:nil];
-	[connectionController setSshPassword:nil];
-	[connectionController setConnectionSSHKeychainItemName:nil];
-	[connectionController setConnectionSSHKeychainItemAccount:nil];
 
 	// Set the correct connection type
 	if ([connection objectForKey:@"type"]) {

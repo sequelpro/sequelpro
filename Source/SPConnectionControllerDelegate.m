@@ -45,7 +45,6 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
-- (void)_resetConnectionDetailsInputInterface;
 - (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification;
 
 @end
@@ -85,17 +84,15 @@ static NSString *SPDatabaseImage = @"database-small";
 
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
-		if (![node isGroup]) {
-			[self updateFavoriteSelection:self];
-			
+		[self updateFavoriteSelection:self];
+
+		if (![node isGroup]) {			
 			[addToFavoritesButton setEnabled:NO];
-			
+
 			favoriteNameFieldWasTouched = YES;
 		}
 		else {	
 			[addToFavoritesButton setEnabled:YES];
-			
-			[self _resetConnectionDetailsInputInterface];
 		}
 		
 		[connectionResizeContainer setHidden:NO];
@@ -415,6 +412,7 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
+	
 	// Request a password refresh to keep keychain references in sync with favorites, but only if a favorite
 	// is selected, meaning we're editing an existing one, not a new one.
 	if (((id)control != (id)favoritesOutlineView) && ([self selectedFavoriteNode])) {

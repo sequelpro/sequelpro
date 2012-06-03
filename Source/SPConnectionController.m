@@ -62,6 +62,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_sortTreeNode:(SPTreeNode *)node usingKey:(NSString *)key;
 - (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
+- (void)_updateFavoriteFirstResponder;
 - (void)_restoreConnectionInterface;
 - (void)_selectNode:(SPTreeNode *)node;
 - (void)_scrollToSelectedNode;
@@ -72,7 +73,6 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
-- (void)_resetConnectionDetailsInputInterface;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 
@@ -476,6 +476,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	
 	SPTreeNode *node = [self selectedFavoriteNode];
+	if ([node isGroup]) node = nil;
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
 	NSDictionary *fav = [[node representedObject] nodeFavorite];
@@ -545,18 +546,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[prefs setInteger:[[fav objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
 	
 	// Set first responder to password field if it is empty
-	switch ([self type]) 
-	{
-		case SPTCPIPConnection:
-			if (![[standardPasswordField stringValue] length]) [[dbDocument parentWindow] makeFirstResponder:standardPasswordField];
-			break;
-		case SPSocketConnection:
-			if (![[socketPasswordField stringValue] length]) [[dbDocument parentWindow] makeFirstResponder:socketPasswordField];
-			break;
-		case SPSSHTunnelConnection:
-			if (![[sshPasswordField stringValue] length]) [[dbDocument parentWindow] makeFirstResponder:sshPasswordField];
-			break;
-	}
+	[self performSelector:@selector(_updateFavoriteFirstResponder) withObject:nil afterDelay:0.0];
 }
 
 /**
@@ -959,12 +949,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  * This method is called as part of Key Value Observing.
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{	
+{
+	NSMutableDictionary *selectedFavorite = [self selectedFavorite];
+	if (!selectedFavorite) return;
+
 	id oldObject = [change objectForKey:NSKeyValueChangeOldKey];
 	id newObject = [change objectForKey:NSKeyValueChangeNewKey];
-	
+
 	if (oldObject != newObject) {
-		[[self selectedFavorite] setObject:![newObject isNSNull] ? newObject : @"" forKey:keyPath];
+		[selectedFavorite setObject:![newObject isNSNull] ? newObject : @"" forKey:keyPath];
 			
 		// Save the new data to disk
 		[favoritesController saveFavorites];
@@ -1214,7 +1207,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)_favoriteTypeDidChange
 {	
-	NSDictionary *favorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
+	NSDictionary *favorite = [self selectedFavorite];
 	
 	// If either socket or host is localhost, clear.
 	if ((previousType != SPSocketConnection) && [[favorite objectForKey:SPFavoriteHostKey] isEqualToString:@"localhost"]) {
@@ -1239,6 +1232,36 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[favoritesOutlineView reloadData];
 	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:NO];
 	[self _scrollToSelectedNode];
+}
+
+/**
+ * Update the first responder status on password fields if they are empty and
+ * some host details are set, usually as a response to favourite selection changes.
+ */
+- (void)_updateFavoriteFirstResponder
+{
+
+	// Skip auto-selection changes if there is no user set
+	if (![[self user] length]) return;
+
+	switch ([self type]) 
+	{
+		case SPTCPIPConnection:
+			if (![[standardPasswordField stringValue] length]) {
+				[[dbDocument parentWindow] makeFirstResponder:standardPasswordField];
+			}
+			break;
+		case SPSocketConnection:
+			if (![[socketPasswordField stringValue] length]) {
+				[[dbDocument parentWindow] makeFirstResponder:socketPasswordField];
+			}
+			break;
+		case SPSSHTunnelConnection:
+			if (![[sshPasswordField stringValue] length]) {
+				[[dbDocument parentWindow] makeFirstResponder:sshPasswordField];
+			}
+			break;
+	}
 }
 
 /**
@@ -1339,11 +1362,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[favoritesController removeFavoriteNode:node];
 	
-	[self _resetConnectionDetailsInputInterface];
 	[self _reloadFavoritesViewData];
 
-	// Clear the selection
+	// Clear the selection and update the interface to match
 	[favoritesOutlineView selectRowIndexes:nil byExtendingSelection:NO];
+	[self updateFavoriteSelection:self];
 	
 	[connectionResizeContainer setHidden:NO];
 	[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
@@ -1486,39 +1509,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if ([[favoritesOutlineView selectedRowIndexes] count]) {
 		currentFavorite = [[[[self selectedFavoriteNode] representedObject] nodeFavorite] copy];
 	}
-}
-
-/**
- * Resets the connection details input interface to an empty state.
- */
-- (void)_resetConnectionDetailsInputInterface
-{
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-	
-	[self setName:@""];
-	[self setHost:@""];
-	[self setSocket:@""];
-	[self setUser:@""];
-	[self setPort:@""];
-	[self setDatabase:@""];
-	[self setPassword:@""];
-	
-	// SSL details
-	[self setUseSSL:NSOffState];
-	[self setSslKeyFileLocationEnabled:NSOffState];
-	[self setSslKeyFileLocation:@""];
-	[self setSslCertificateFileLocationEnabled:NSOffState];
-	[self setSslCertificateFileLocation:@""];
-	[self setSslCACertFileLocationEnabled:NSOffState];
-	[self setSslCACertFileLocation:@""];
-	
-	// SSH details
-	[self setSshHost:@""];
-	[self setSshUser:@""];
-	[self setSshPassword:@""];
-	[self setSshKeyLocationEnabled:NSOffState];
-	[self setSshKeyLocation:@""];
-	[self setSshPort:@""];
 }
 
 #pragma mark -
