@@ -47,40 +47,43 @@
 	// Return a placeholder if the table is reloading
 	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
 	
-	if([[tableColumn identifier] isEqualToString:@"collation"]) {
+	if ([[tableColumn identifier] isEqualToString:@"collation"]) {
 		NSInteger idx = 0;
-		if((idx = [[NSArrayObjectAtIndex(tableFields,rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
+		
+		if ((idx = [[NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
 			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
-			NSInteger start = [enc rangeOfString:@"("].location+1;
-			NSInteger end = [enc length] - start - 1;
-			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, end)]];
-		} else {
 
+			NSUInteger start = [enc rangeOfString:@"("].location + 1;
+			
+			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)]];
+		} 
+		else {
 			// If the structure has loaded (not still loading!) and the table encoding
 			// is set, use the appropriate collations.
-			if([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) {
-				collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
-			} else {
-				collations = [NSArray array];
-			}
+			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : [NSArray array];
 		}
 		
 		[[tableColumn dataCell] removeAllItems];
 		
 		if ([collations count] > 0) {
 			[[tableColumn dataCell] addItemWithTitle:@""];
+			
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
+			{
 				[[tableColumn dataCell] addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
+			}
 		}
 	}
-
-	else if([[tableColumn identifier] isEqualToString:@"Extra"]) {
+	else if ([[tableColumn identifier] isEqualToString:@"Extra"]) {
 		id dataCell = [tableColumn dataCell];
+		
 		[dataCell removeAllItems];
+		
 		// Populate Extra suggestion popup button
-		for (id item in extraFieldSuggestions) {
-			if(!(isCurrentExtraAutoIncrement && [item isEqualToString:@"auto_increment"])) {
+		for (id item in extraFieldSuggestions) 
+		{
+			if (!(isCurrentExtraAutoIncrement && [item isEqualToString:@"auto_increment"])) {
 				[dataCell addItemWithObjectValue:item];
 			}
 		}
@@ -524,7 +527,7 @@
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
-		else if ([[aTableColumn identifier] isEqualToString:@"collation"]){
+		else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
  			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
 		}
 		
