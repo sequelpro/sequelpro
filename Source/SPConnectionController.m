@@ -1065,9 +1065,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (returnCode == NSAlertAlternateReturn) {
 		[self setType:SPSocketConnection];
 		[self setHost:@""];
+		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 	} 
 	else {
 		[self setHost:@"127.0.0.1"];
+		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 	}
 }
 
@@ -1221,6 +1223,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 						((previousType == SPSocketConnection) ? @"localhost" :
 						(([favorite objectForKey:SPFavoriteHostKey]) ? [favorite valueForKeyPath:SPFavoriteHostKey] : @""))
 					   ]];
+	}
+
+	// Trigger a password change
+	if (previousType == SPSocketConnection) {
+		[self _updateFavoritePasswordsFromField:socketPasswordField];
+	} else if (previousType == SPSSHTunnelConnection) {
+		[self _updateFavoritePasswordsFromField:sshPasswordField];
+	} else {
+		[self _updateFavoritePasswordsFromField:standardPasswordField];
 	}
 }
 

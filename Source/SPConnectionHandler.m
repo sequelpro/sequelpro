@@ -452,6 +452,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		// Change connection details
 		[self setPort:tunnelPort];
 		[self setHost:SPLocalhostAddress];
+		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 		
 		// Change to standard TCP/IP connection view
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:YES];
