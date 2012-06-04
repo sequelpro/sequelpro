@@ -93,7 +93,7 @@
 	NSArray *row;
 	NSString *tableName;
 	NSDictionary *tableDetails;
-	NSMutableArray *tableColumnNumericStatus;
+	BOOL *useRawDataForColumnAtIndex, *useRawHexDataForColumnAtIndex;
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
@@ -209,7 +209,12 @@
 		sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(table, 1) boolValue];
 		sqlOutputIncludeContent    = [NSArrayObjectAtIndex(table, 2) boolValue];
 		sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(table, 3) boolValue];
-		
+
+		// Skip tables if not set to output any detail for them
+		if (!sqlOutputIncludeStructure && !sqlOutputIncludeContent && !sqlOutputIncludeDropSyntax) {
+			continue;
+		}
+
 		// Set the current table
 		[self setSqlExportCurrentTable:tableName];
 		
@@ -279,22 +284,46 @@
 			tableDetails = [NSDictionary dictionaryWithDictionary:[sqlTableDataInstance informationForTable:tableName]];
 							
 			NSUInteger colCount = [[tableDetails objectForKey:@"columns"] count];
+			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
+			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
-			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
+			useRawDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
+			useRawHexDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
 							
+			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
 			for (j = 0; j < colCount; j++) 
 			{
-				// Check for cancellation flag
-				if ([self isCancelled]) {
-					[errors release];
-					[sqlString release];
-					[pool release];
-					return;
+				NSDictionary *theColumnDetail = NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j);
+				NSString *theTypeGrouping = [theColumnDetail objectForKey:@"typegrouping"];
+
+				// Start by setting the column as non-safe
+				useRawDataForColumnAtIndex[j] = NO;
+				useRawHexDataForColumnAtIndex[j] = NO;
+
+				// Determine whether the column should be retrieved as hex data from the server - for binary strings, to
+				// avoid encoding issues when processing
+				if ([self sqlOutputEncodeBLOBasHex]
+					&& [theTypeGrouping isEqualToString:@"string"]
+					&& ([[theColumnDetail objectForKey:@"binary"] boolValue] || [[theColumnDetail objectForKey:@"collation"] hasSuffix:@"_bin"]))
+				{
+					useRawHexDataForColumnAtIndex[j] = YES;
+				}
+
+				// Floats, integers and bits can be output directly assuming they're non-binary
+				if (![[theColumnDetail objectForKey:@"binary"] boolValue]
+					&& ([theTypeGrouping isEqualToString:@"bit"] || [theTypeGrouping isEqualToString:@"integer"] || [theTypeGrouping isEqualToString:@"float"]))
+				{
+					useRawDataForColumnAtIndex[j] = YES;
+				}
+
+				// Set up the column query string parts
+				[rawColumnNames addObject:[theColumnDetail objectForKey:@"name"]];
+				if (useRawHexDataForColumnAtIndex[j]) {
+					[queryColumnDetails addObject:[NSString stringWithFormat:@"HEX(%@)", [[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]]];
+				} else {
+					[queryColumnDetails addObject:[[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]];
 				}
 				
-				NSString *tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
-				
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"] || [tableColumnTypeGrouping isEqualToString:@"float"])]];
 			}
 																			
 			// Retrieve the number of rows in the table for progress bar drawing
@@ -303,7 +332,8 @@
 			if ([connection queryErrored] || ![rowArray count]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
-				
+				free(useRawDataForColumnAtIndex);
+				free(useRawHexDataForColumnAtIndex);
 				continue;
 			}
 			
@@ -312,10 +342,8 @@
 			if (rowCount) {
 
 				// Set up a result set in streaming mode
-				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
-				
-				NSArray *fieldNames = [streamingResult fieldNames];
-				
+				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
+
 				// Inform the delegate that we are about to start writing data for the current table
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 
@@ -328,7 +356,7 @@
 				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 				
 				// Construct the start of the insertion command
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				j = 0, k = 0;
@@ -349,6 +377,8 @@
 						[errors release];
 						[sqlString release];
 						[pool release];
+						free(useRawDataForColumnAtIndex);
+						free(useRawHexDataForColumnAtIndex);
 
 						return;
 					}
@@ -380,6 +410,8 @@
 							[errors release];
 							[sqlString release];
 							[pool release];
+							free(useRawDataForColumnAtIndex);
+							free(useRawHexDataForColumnAtIndex);
 
 							return;
 						}
@@ -391,52 +423,54 @@
 						if (object == [NSNull null]) {
 							[sqlString appendString:@"NULL"];
 						}
-						// If the field is off type BIT, the values need a binary prefix of b'x'.
+
+						// Add trusted raw values directly
+						else if (useRawDataForColumnAtIndex[t]) {
+							[sqlString appendString:object];
+						}
+
+						// If the field is of type BIT, the values need a binary prefix of b'x'.
 						else if ([[NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], t) objectForKey:@"type"] isEqualToString:@"BIT"]) {
 							[sqlString appendFormat:@"b'%@'", [object description]];
 						}
-						// Add data types directly as hex data
+
+						// Add pre-encoded hex types (binary strings) as enclosed but otherwise trusted data
+						else if (useRawHexDataForColumnAtIndex[t]) {
+							[sqlString appendFormat:@"X'%@'", object];
+						}
+
+						// GEOMETRY data types directly as hex data
+						else if ([object isKindOfClass:[SPMySQLGeometryData class]]) {
+							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
+						}
+
+						// Add zero-length data or strings as an empty string
+						else if ([object length] == 0) {
+							[sqlString appendString:@"''"];
+						}
+						
+						// Add other data types as hex data
 						else if ([object isKindOfClass:[NSData class]]) {
 
 							if ([self sqlOutputEncodeBLOBasHex]) {
 								[sqlString appendString:[connection escapeAndQuoteData:object]];
 							}
-							else {
-								[sqlString appendString:@"'"];
-								
+							else {								
 								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
 									data = [[NSString alloc] initWithData:object encoding:NSASCIIStringEncoding];
 								}
 								
-								[sqlString appendString:data];
+								[sqlString appendFormat:@"'%@'", data];
 								
 								[data release];
-
-								[sqlString appendString:@"'"];
 							}
 						} 
 
-						// GEOMETRY data types directly as hex data
-						else if ([object isKindOfClass:[SPMySQLGeometryData class]]) {
-							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
-						}
+						// Otherwise add a quoted string with special characters escaped
 						else {
-							
-							// Add empty strings as a pair of quotes
-							if ([object length] == 0) {
-								[sqlString appendString:@"''"];
-							} 
-							else {	
-								if ([NSArrayObjectAtIndex(tableColumnNumericStatus, t) boolValue]) {
-									[sqlString appendString:object];
-								} 
-								// Otherwise add a quoted string with special characters escaped
-								else {
-									[sqlString appendString:[connection escapeAndQuoteString:object]];
-								}
-							}
+							[sqlString appendString:[connection escapeAndQuoteString:object]];
 						}
 						
 						// Add the field separator if this isn't the last cell in the row
@@ -455,7 +489,7 @@
 							[sqlString appendString:@");\n\nINSERT INTO "];
 							[sqlString appendString:[tableName backtickQuotedString]];
 							[sqlString appendString:@" ("];
-							[sqlString appendString:[fieldNames componentsJoinedAndBacktickQuoted]];
+							[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
 							[sqlString appendString:@")\nVALUES\n\t("];
 														
 							queryLength = 0, k = 0;
@@ -491,7 +525,10 @@
 				// Release the result set
 				[streamingResult release];
 			}
-			
+
+			free(useRawDataForColumnAtIndex);
+			free(useRawHexDataForColumnAtIndex);
+
 			if ([connection queryErrored]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
