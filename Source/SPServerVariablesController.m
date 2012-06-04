@@ -26,9 +26,10 @@
 #import "SPServerVariablesController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAppController.h"
+
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPServerVariablesController (PrivateAPI)
+@interface SPServerVariablesController ()
 
 - (void)_getDatabaseServerVariables;
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
@@ -266,31 +267,16 @@
 }
 
 #pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	[variables release], variables = nil;
-	
-	[super dealloc];
-}
-
-@end
-
-@implementation SPServerVariablesController (PrivateAPI)
+#pragma mark Private API
 
 /**
  * Gets the database's current server variables.
  */
 - (void)_getDatabaseServerVariables
 {
-	
-	// Get processes
+	// Get variables
 	SPMySQLResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
+	
 	[serverVariables setReturnDataAsStrings:YES];
 	
 	[variables removeAllObjects];
@@ -391,6 +377,20 @@
 		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
+}
+
+#pragma mark -
+
+/**
+ * Dealloc
+ */
+- (void)dealloc
+{
+	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[variables release], variables = nil;
+	
+	[super dealloc];
 }
 
 @end
