@@ -39,6 +39,8 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 
 - (void)_restoreConnectionInterface;
 
+- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+
 @end
 
 @implementation SPConnectionController (SPConnectionHandler)

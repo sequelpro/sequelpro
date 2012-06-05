@@ -486,9 +486,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	currentFavorite = [fav copy];
 	
 	[connectionResizeContainer setHidden:NO];
-	
+
+	// Set up the type, also storing it in the previous type store to prevent type "changes" triggering actions
+	NSUInteger connectionType = ([fav objectForKey:SPFavoriteTypeKey] ? [[fav objectForKey:SPFavoriteTypeKey] integerValue] : SPTCPIPConnection);
+	previousType = connectionType;
+	[self setType:connectionType];
+
 	// Standard details
-	[self setType:([fav objectForKey:SPFavoriteTypeKey] ? [[fav objectForKey:SPFavoriteTypeKey] integerValue] : SPTCPIPConnection)];
 	[self setName:([fav objectForKey:SPFavoriteNameKey] ? [fav objectForKey:SPFavoriteNameKey] : @"")];
 	[self setHost:([fav objectForKey:SPFavoriteHostKey] ? [fav objectForKey:SPFavoriteHostKey] : @"")];
 	[self setSocket:([fav objectForKey:SPFavoriteSocketKey] ? [fav objectForKey:SPFavoriteSocketKey] : @"")];
