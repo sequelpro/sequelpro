@@ -1225,14 +1225,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 					   ]];
 	}
 
-	// Trigger a password change
-	if (previousType == SPSocketConnection) {
-		[self _updateFavoritePasswordsFromField:socketPasswordField];
-	} else if (previousType == SPSSHTunnelConnection) {
-		[self _updateFavoritePasswordsFromField:sshPasswordField];
-	} else {
-		[self _updateFavoritePasswordsFromField:standardPasswordField];
-	}
+	// Trigger a password change in response to host changes
+	[self _updateFavoritePasswordsFromField:nil];
 }
 
 /**
