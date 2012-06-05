@@ -418,7 +418,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	frameRect.size.height = targetResizeRect.size.height + additionalFormHeight;
 
-	if (animate) {
+	if (animate && initComplete) {
 		[[connectionResizeContainer animator] setFrame:frameRect];
 	} 
 	else {
@@ -517,7 +517,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setSshPort:([fav objectForKey:SPFavoriteSSHPortKey] ? [fav objectForKey:SPFavoriteSSHPortKey] : @"")];
 	
 	// Trigger an interface update
-	[self resizeTabViewToConnectionType:[self type] animating:YES];
+	[self resizeTabViewToConnectionType:[self type] animating:(sender == self)];
 	
 	// Check whether the password exists in the keychain, and if so add it; also record the
 	// keychain details so we can pass around only those details if the password doesn't change

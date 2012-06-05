@@ -66,7 +66,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
 		connectionSSHKeychainItemAccount = nil;
-		
+
+		initComplete = NO;
 		isEditing = NO;
 		isConnecting = NO;
 		sshTunnel = nil;
@@ -116,6 +117,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Set sort items
 		currentSortItem = (SPFavoritesSortItem)[prefs integerForKey:SPFavoritesSortedBy];
 		reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
+
+		initComplete = YES;
 	}
 	
 	return self;

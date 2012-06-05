@@ -162,6 +162,7 @@
 	BOOL isEditing;
     BOOL reverseFavoritesSort;
 #endif
+	BOOL initComplete;
 	BOOL mySQLConnectionCancelled;
 	BOOL favoriteNameFieldWasTouched;
 	
