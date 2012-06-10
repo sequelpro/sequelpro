@@ -28,9 +28,10 @@
 #import "SPDatabaseCharacterSets.h"
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPDatabaseData (PrivateAPI)
+@interface SPDatabaseData ()
 
 - (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
+
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 
@@ -51,6 +52,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	if ((self = [super init])) {
 		characterSetEncoding = nil;
+		defaultCharacterSetEncoding = nil;
 		
 		collations             = [[NSMutableArray alloc] init];
 		characterSetCollations = [[NSMutableArray alloc] init];
@@ -281,25 +283,48 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	return characterSetEncodings;
 }
 
-#pragma mark -
-#pragma mark Other
-
 /**
- * Deallocate ivars.
+ * Returns the databases's default character set encoding.
+ *
+ * @return The default encoding as a string
  */
-- (void)dealloc
+- (NSString *)getDatabaseDefaultCharacterSet
 {
-	if (characterSetEncoding != nil) {
-		[characterSetEncoding release], characterSetEncoding = nil;
+	if (!defaultCharacterSetEncoding) {
+		[defaultCharacterSetEncoding release];
+						
+		NSString *variable = [serverSupport supportsCharacterSetDatabaseVar] ? @"character_set_database" : @"character_set";
+	
+		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [variable tickQuotedString]]];
+		
+		[result setReturnDataAsStrings:YES];
+		
+		defaultCharacterSetEncoding = [[result getRowAsDictionary] objectForKey:@"Value"];
 	}
 	
-	[collations release], collations = nil;
-	[characterSetCollations release], characterSetCollations = nil;
-	[storageEngines release], storageEngines = nil;
-	[characterSetEncodings release], characterSetEncodings = nil;
-	[cachedCollationsByEncoding release], cachedCollationsByEncoding = nil;
+	return defaultCharacterSetEncoding;
+}
+
+/**
+ * Returns the database's default storage engine.
+ *
+ * @return The default storage engine as a string
+ */
+- (NSString *)getDatabaseDefaultStorageEngine
+{
+	if (!defaultStorageEngine) {
+		
+		[defaultStorageEngine release];
+			
+		// Use 'table_type' variable rather than 'storage_engine' as it's been available since MySQL 3.23.0
+		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'table_type'"];
+		
+		[result setReturnDataAsStrings:YES];
+		
+		defaultStorageEngine = [[result getRowAsDictionary] objectForKey:@"Value"];
+	}
 	
-	[super dealloc];
+	return defaultStorageEngine;
 }
 
 #pragma mark -
@@ -312,9 +337,9 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 - (NSArray *)_getDatabaseDataForQuery:(NSString *)query
 {
 	SPMySQLResult *result = [connection queryString:query];
-
+	
 	if ([connection queryErrored]) return [NSArray array];
-
+	
 	[result setReturnDataAsStrings:YES];
 	return [result getAllRows];
 }
@@ -333,6 +358,26 @@ NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
 {
 	return [[itemOne objectForKey:@"Engine"] compare:[itemTwo objectForKey:@"Engine"]];
+}
+
+#pragma mark -
+#pragma mark Other
+
+/**
+ * Deallocate ivars.
+ */
+- (void)dealloc
+{
+	if (characterSetEncoding) [characterSetEncoding release], characterSetEncoding = nil;
+	if (defaultCharacterSetEncoding) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
+	
+	[collations release], collations = nil;
+	[characterSetCollations release], characterSetCollations = nil;
+	[storageEngines release], storageEngines = nil;
+	[characterSetEncodings release], characterSetEncodings = nil;
+	[cachedCollationsByEncoding release], cachedCollationsByEncoding = nil;
+	
+	[super dealloc];
 }
 
 @end

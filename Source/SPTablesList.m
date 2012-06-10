@@ -388,7 +388,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSArray *engines = [databaseDataInstance getDatabaseStorageEngines];
 
 	// Add default menu item
-	[tableTypeButton addItemWithTitle:NSLocalizedString(@"Default",@"New Table Sheet : Table Engine Dropdown : Default")];
+	[tableTypeButton addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Default (%@)", @"New Table Sheet : Table Engine Dropdown : Default"), [databaseDataInstance getDatabaseDefaultStorageEngine]]];
 	[[tableTypeButton menu] addItem:[NSMenuItem separatorItem]];
 
 	for (NSDictionary *engine in engines)
@@ -398,7 +398,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Populate the table encoding popup button with a default menu item
 	[tableEncodingButton removeAllItems];
-	[tableEncodingButton addItemWithTitle:NSLocalizedString(@"Default",@"New Table Sheet : Table Encoding Dropdown : Default")];
+	[tableEncodingButton addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Default (%@)", @"New Table Sheet : Table Encoding Dropdown : Default"), [tableDocumentInstance databaseEncoding]]];
 
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
@@ -413,6 +413,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		for (NSDictionary *encoding in encodings) 
 		{
 			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
+			
 			[tableEncodingButton addItemWithTitle:menuItemTitle];
 
 			// If the UTF8 entry has been encountered, store the menu title

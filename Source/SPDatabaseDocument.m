@@ -1567,8 +1567,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 									nil];
 	NSString *mysqlEncoding = [translationMap valueForKey:[NSString stringWithFormat:@"%i", [encodingTag intValue]]];
 
-	if (!mysqlEncoding)
-		return @"utf8";
+	if (!mysqlEncoding) return @"utf8";
 
 	return mysqlEncoding;
 }
@@ -1588,30 +1587,21 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)detectDatabaseEncoding
 {
-	SPMySQLResult *charSetResult;
-	NSString *mysqlEncoding = nil;
-
 	_supportsEncoding = YES;
 
-	// MySQL >= 4.1
-	if ([serverSupport supportsCharacterSetDatabaseVar]) {
-		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
-		[charSetResult setReturnDataAsStrings:YES];
-		mysqlEncoding = [[charSetResult getRowAsDictionary] objectForKey:@"Value"];
-	} 
-	// MySQL 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
-	else {
-		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] getRowAsDictionary] objectForKey:@"Value"];
-	}
+	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
 
 	[selectedDatabaseEncoding release];
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
-	if ( !mysqlEncoding ) {
+	if (!mysqlEncoding) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
+		
 		_supportsEncoding = NO;
-	} else {
+	} 
+	else {
 		selectedDatabaseEncoding = [mysqlEncoding retain];
 	}
 }

@@ -44,9 +44,9 @@
 <NSTextFieldDelegate>
 #endif
 {
-	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
-	IBOutlet SPTableStructure* tableSourceInstance;
-	IBOutlet SPTableContent* tableContentInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTableStructure *tableSourceInstance;
+	IBOutlet SPTableContent *tableContentInstance;
 #ifndef SP_REFACTOR /* ivars */
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
