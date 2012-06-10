@@ -68,6 +68,15 @@
 		   didEndSelector:nil 
 			  contextInfo:nil];
 	}
+
+	// If using an export type that requires the connection to start in UTF8, cache the current connection
+	// encoding and then set it here.
+	if (exportType == SPSQLExport || exportType == SPDotExport) {
+		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
+				
+		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];	
+	}
 		
 	// Add the first exporter to the operation queue
 	[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -281,12 +290,6 @@
 		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
 		
-		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-				
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-				
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
@@ -380,13 +383,7 @@
 		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
 		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-		
-		// Cache the current connection encoding then change it to UTF-8 to allow dumps to work
-		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-		
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-		
+
 		[dotExporter setDotExportTables:exportTables];
 		
 		// Create custom filename if required
