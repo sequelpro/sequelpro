@@ -1591,7 +1591,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
 
-	[selectedDatabaseEncoding release];
+	[selectedDatabaseEncoding release], selectedDatabaseEncoding = nil;
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if (!mysqlEncoding) {

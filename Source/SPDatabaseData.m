@@ -299,7 +299,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		
 		[result setReturnDataAsStrings:YES];
 		
-		defaultCharacterSetEncoding = [[result getRowAsDictionary] objectForKey:@"Value"];
+		defaultCharacterSetEncoding = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
 	}
 	
 	return defaultCharacterSetEncoding;
