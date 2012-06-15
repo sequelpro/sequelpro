@@ -84,6 +84,8 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
 
+	[addTriggerPanel setInitialFirstResponder:triggerNameTextField];
+	
 	for (NSTableColumn *column in [triggersTableView tableColumns])
 	{
 		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -270,7 +272,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
-
+	
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
