@@ -398,7 +398,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Populate the table encoding popup button with a default menu item
 	[tableEncodingButton removeAllItems];
-	[tableEncodingButton addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Default (%@)", @"New Table Sheet : Table Encoding Dropdown : Default"), [tableDocumentInstance databaseEncoding]]];
+	[tableEncodingButton addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Encoding Dropdown : Default inherited from database"), [tableDocumentInstance databaseEncoding]]];
 
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];

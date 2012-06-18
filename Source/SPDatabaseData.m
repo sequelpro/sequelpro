@@ -315,13 +315,24 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (!defaultStorageEngine) {
 		
 		[defaultStorageEngine release];
-			
-		// Use 'table_type' variable rather than 'storage_engine' as it's been available since MySQL 3.23.0
-		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'table_type'"];
-		
+
+		// Determine which variable to use based on server version.  'table_type' has been available since MySQL 3.23.0.
+		NSString *storageEngineKey = @"table_type";
+
+		// Post 5.5, storage_engine was deprecated; use default_storage_engine
+		if ([serverSupport isEqualToOrGreaterThanMajorVersion:5 minor:5 release:0]) {
+			storageEngineKey = @"default_storage_engine";
+
+		// For the rest of 5.x, use storage_engine
+		} else if ([serverSupport isEqualToOrGreaterThanMajorVersion:5 minor:0 release:0]) {
+			storageEngineKey = @"storage_engine";
+		}
+
+		// Retrieve the corresponding value for the determined key, ensuring return as a string
+		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [storageEngineKey tickQuotedString]]];;
 		[result setReturnDataAsStrings:YES];
 		
-		defaultStorageEngine = [[result getRowAsDictionary] objectForKey:@"Value"];
+		defaultStorageEngine = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
 	}
 	
 	return defaultStorageEngine;
