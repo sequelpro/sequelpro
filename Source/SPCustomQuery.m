@@ -3063,6 +3063,7 @@
 		[helpWebViewWindow close];
 		return SP_HELP_NOT_AVAILABLE;
 	}
+
 	// nothing found?
 	if(![theResult numberOfRows]) {
 
@@ -3073,6 +3074,10 @@
 		if(![theResult numberOfRows])
 			return @"";
 	}
+
+	// Ensure rows are returned as strings to prevent data problems with older 4.1 servers
+	[theResult setReturnDataAsStrings:YES];
+
 	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult getRowAsDictionary]];
 
 	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
