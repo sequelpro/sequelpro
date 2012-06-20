@@ -1683,20 +1683,22 @@
 #pragma mark Pagination
 
 /**
- * Move the pagination backwards or forwards one page
+ * Move the pagination backwards or forwards one page, or update
+ * the page to respect the submitted field.
  */
 - (IBAction) navigatePaginationFromButton:(id)sender
 {
 	if (![self saveRowOnDeselect]) return;
+
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
 		[paginationPageField setIntegerValue:(contentPage - 1)];
-		[self filterTable:self];
 	} else if (sender == paginationNextButton) {
 		if ((NSInteger)contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
 		[paginationPageField setIntegerValue:(contentPage + 1)];
-		[self filterTable:self];
 	}
+
+	[self filterTable:self];
 }
 
 /**
