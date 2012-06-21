@@ -3111,37 +3111,12 @@
 				if(safeCnt > 200)
 					break;
 			}
-			// detect and generate mysql links for "[HELP keyword]"
-			aRange = NSMakeRange(0,0);
-			safeCnt = 0;
-			while(1){
-				// TODO how to catch in HELP 'grant' last see [HELP SHOW GRANTS] ?? it's ridiculous
-				aRange = [desc rangeOfRegex:@"\\[HELP ([^ ]*?)\\]" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length+53, [desc length]-53-aRange.location-aRange.length) capture:1 error:&err1];
-				if(aRange.location != NSNotFound) {
-					aUrl = [[desc substringWithRange:aRange] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
-				}
-				else
-					break;
-				safeCnt++;
-				if(safeCnt > 200)
-					break;
-			}
-			// detect and generate mysql links for capitalzed letters
-			// aRange = NSMakeRange(0,0);
-			// safeCnt = 0;
-			// while(1){
-			// 	aRange = [desc rangeOfRegex:@"(?<!\\w)([A-Z_]{2,}( [A-Z_]{2,})?)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
-			// 	if(aRange.location != NSNotFound) {
-			// 		aUrl = [desc substringWithRange:aRange];
-			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
-			// 	}
-			// 	else
-			// 		break;
-			// 	safeCnt++;
-			// 	if(safeCnt > 200)
-			// 		break;
-			// }
+
+			// Detect and generate cross-links.  First, handle the old-style [HELP ...] text.
+			[desc replaceOccurrencesOfRegex:@"\\[HELP ([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"<a title='%@ “$1”' href='$1' class='internallink'>[$1]</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for")]];
+
+			// Handle "see [...]" and "in [...]"-style 5.x links.
+			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP )?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 <a title='%@ “$2”' href='$2' class='internallink'>[$2]</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for")]];
 
 			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
 		}
