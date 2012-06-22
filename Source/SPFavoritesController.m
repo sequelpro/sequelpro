@@ -356,7 +356,21 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	NSError *error = nil;
 	NSString *errorString = nil;
-	
+
+	// Before starting the file actions, attempt to create a dictionary
+	// from the current favourites tree and convert it to a dictionary representation
+	// to create the plist data.  This is done before file changes as it can sometimes
+	// be terminated during shutdown.
+	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:data forKey:SPFavoritesRootKey];
+	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
+																   format:NSPropertyListXMLFormat_v1_0
+														 errorDescription:&errorString];
+	if (errorString) {
+		NSLog(@"Error converting favorites data to plist format: %@", errorString);
+		[errorString release];
+	}
+
+
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
 	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
@@ -389,33 +403,19 @@ static SPFavoritesController *sharedFavoritesController = nil;
 			return;
 		}
 	}
-	
-	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:data forKey:SPFavoritesRootKey];
-	
-	// Convert the current favorites tree to a dictionary representation to create the plist data
-	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
-																   format:NSPropertyListXMLFormat_v1_0
-														 errorDescription:&errorString];
-	
-	if (plistData) {
-		[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+
+	// Write the converted data to the favourites file
+	[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+
+	if (error) {
+		NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
 		
-		if (error) {
-			NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
-			
-			// Restore the original data file
-			[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:NULL];
-		}
-		else {
-			// Remove the original backup
-			[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
-		}
+		// Restore the original data file
+		[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:NULL];
 	}
-	else if (errorString) {
-		NSLog(@"Error converting favorites data to plist format: %@", errorString);
-		
-		[errorString release];
-		
+	else {
+
+		// Remove the original backup
 		[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
 	}
 	

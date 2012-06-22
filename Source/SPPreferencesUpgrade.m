@@ -298,7 +298,12 @@ void SPApplyRevisionChanges(void)
 		
 		[prefs setObject:newMappedValue forKey:@"DefaultEncodingTag"];
 	}
-	
+
+	// For versions prior to 3695 (<1.0), migrate the favourites across if appropriate
+	if (recordedVersionNumber < 3695) {
+		SPMigrateConnectionFavoritesData();
+	}
+
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];
 }
@@ -312,9 +317,20 @@ void SPMigrateConnectionFavoritesData(void)
 	NSError *error = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-	
+
+	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
+	if (error) {
+		NSLog(@"Error loading favorites: %@", [error localizedDescription]);
+		return;
+	}
+
+	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
+
+	// If the favourites file already exists, don't proceed
+	if ([fileManager fileExistsAtPath:favoritesFile]) return;
+
 	NSMutableArray *favorites = [[NSMutableArray alloc] initWithArray:[prefs objectForKey:SPOldFavoritesKey]];
-	
+
 	// Change the last used favorite and default favorite's indexes to be ID based
 	if (![prefs objectForKey:SPLastFavoriteID] && [favorites count]) {
 		
@@ -332,46 +348,32 @@ void SPMigrateConnectionFavoritesData(void)
 		// TOOD: Favorites migration - only uncomment when we want to remove backwards compatibility
 		//[prefs removeObjectForKey:@"LastFavoriteIndex"];
 	}
+
+	NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 	
-	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
+	error = nil;
+	NSString *errorString = nil;
 	
-	if (error) {
-		NSLog(@"Error loading favorites: %@", [error localizedDescription]);
-		[favorites release];
-		return;
+	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
+																   format:NSPropertyListXMLFormat_v1_0
+														 errorDescription:&errorString];
+	if (plistData) {
+		[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
+		
+		if (error) {
+			NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
+		}
+		else {
+			// TOOD: Favorites migration - only uncomment when we want to remove backwards compatibility
+			//[prefs removeObjectForKey:SPOldFavoritesKey];
+		}
 	}
-	
-	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
-	
-	// Only proceed if the new favorites plist doesn't already exist
-	if (![fileManager fileExistsAtPath:favoritesFile]) {	
+	else if (errorString) {
+		NSLog(@"Error converting migrating favorites data to plist format: %@", errorString);
 		
-		NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
-		
-		error = nil;
-		NSString *errorString = nil;
-		
-		NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
-																	   format:NSPropertyListXMLFormat_v1_0
-															 errorDescription:&errorString];
-		if (plistData) {
-			[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
-			
-			if (error) {
-				NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
-			}
-			else {
-				// TOOD: Favorites migration - only uncomment when we want to remove backwards compatibility
-				//[prefs removeObjectForKey:SPOldFavoritesKey];
-			}
-		}
-		else if (errorString) {
-			NSLog(@"Error converting migrating favorites data to plist format: %@", errorString);
-			
-			[favorites release];
-			[errorString release];
-			return;
-		}
+		[favorites release];
+		[errorString release];
+		return;
 	}
 		
 	[favorites release];
