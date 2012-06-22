@@ -2791,7 +2791,12 @@
  */
 - (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp
 {
-	if(![searchString length]) return;
+
+	// If there's no search string, show nothing if called by autohelp, and the index otherwise
+	if (![searchString length]) {
+		if (autoHelp) return;
+		searchString = SP_HELP_TOC_SEARCH_STRING;
+	}
 
 	NSString *helpString = [self getHTMLformattedMySQLHelpFor:searchString calledByAutoHelp:autoHelp];
 
@@ -3044,6 +3049,9 @@
 
 	if(![searchString length]) return @"";
 
+	// Don't escape % when being used as a wildcard, but escape it when it's being used by itself.
+	if ([searchString isEqualToString:@"%"]) searchString = @"\\%";
+
 	NSRange         aRange;
 	SPMySQLResult   *theResult = nil;
 	NSDictionary    *tableDetails;
@@ -3071,8 +3079,8 @@
 		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"HELP '%@%%'", [searchString stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
 
 		// really nothing found?
-		if(![theResult numberOfRows])
-			return @"";
+		if (![theResult numberOfRows])
+			return [NSString stringWithFormat:@"<em style='color: gray'>%@</em>", NSLocalizedString(@"No results found.", @"No results found for a help search")];
 	}
 
 	// Ensure rows are returned as strings to prevent data problems with older 4.1 servers
@@ -3128,8 +3136,6 @@
 
 		}
 	} else { // list all found topics
-		NSUInteger r = (NSUInteger)[theResult numberOfRows];
-		if (r) [theResult seekToRow:0];
 
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
