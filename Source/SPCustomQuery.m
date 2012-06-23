@@ -60,6 +60,7 @@
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
 - (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate;
++ (NSString *)linkToHelpTopic:(NSString *)aTopic;
 
 @end
 
@@ -3080,7 +3081,7 @@
 
 		// really nothing found?
 		if (![theResult numberOfRows])
-			return [NSString stringWithFormat:@"<em style='color: gray'>%@</em>", NSLocalizedString(@"No results found.", @"No results found for a help search")];
+			return [NSString stringWithFormat:@"<em style='color: gray'>%@</em>", NSLocalizedString(@"No results found.", @"Mysql Help Viewer : Search : No results")];
 	}
 
 	// Ensure rows are returned as strings to prevent data problems with older 4.1 servers
@@ -3121,10 +3122,11 @@
 			}
 
 			// Detect and generate cross-links.  First, handle the old-style [HELP ...] text.
-			[desc replaceOccurrencesOfRegex:@"\\[HELP ([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"<a title='%@ “$1”' href='$1' class='internallink'>[$1]</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for")]];
+			[desc replaceOccurrencesOfRegex:@"(\\[HELP ([^\\]]*?)\\]" withString:[SPCustomQuery linkToHelpTopic:@"$1"]];
 
 			// Handle "see [...]" and "in [...]"-style 5.x links.
-			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP )?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 <a title='%@ “$2”' href='$2' class='internallink'>[$2]</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for")]];
+			//look-behind won't work here because of the \s+
+			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP\\s+)?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 $2",[SPCustomQuery linkToHelpTopic:@"$2"]]];
 
 			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
 		}
@@ -3132,14 +3134,14 @@
 		if([tableDetails objectForKey:@"example"]){
 			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
 			if([examples length])
-				[theHelp appendFormat:@"<br><i><b>Example:</b></i><br><pre class='example'>%@</pre>", examples];
+				[theHelp appendFormat:@"<br><i><b>%1$@</b></i><br><pre class='example'>%2$@</pre>",NSLocalizedString(@"Example:",@"Mysql Help Viewer : Help Topic: Example section title"), examples];
 
 		}
 	} else { // list all found topics
 
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
-			[theHelp appendFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
+			[theHelp appendFormat:@"<br><i>%@</i><br>", [NSString stringWithFormat:NSLocalizedString(@"Help topics for “%@”", @"MySQL Help Viewer : Results list : Page title"), searchString]];
 		else
 			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString];
 
@@ -3148,8 +3150,7 @@
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 		for (NSArray *eachRow in theResult) {
 			NSString *topic = [eachRow objectAtIndex:[eachRow count]-2];
-			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>",
-				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
+			[theHelp appendFormat:@"<li>%@</li>",[SPCustomQuery linkToHelpTopic:topic]];
 		}
 		[theHelp appendString:@"</ul>"];
 	}
@@ -3157,6 +3158,12 @@
 	[tableDetails release];
 
 	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
+}
+
++ (NSString *)linkToHelpTopic:(NSString *)aTopic 
+{
+	NSString *linkTitle = [NSString stringWithFormat:NSLocalizedString(@"Show MySQL help for “%@”", @"MySQL Help Viewer : Results list : Link tooltip"),aTopic];
+	return [NSString stringWithFormat:@"<a title='%2$@' href='%1$@' class='internallink'>%1$@</a>", aTopic, linkTitle];
 }
 
 #pragma mark -

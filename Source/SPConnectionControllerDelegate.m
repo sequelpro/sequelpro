@@ -145,10 +145,10 @@ static NSString *SPDatabaseImage = @"database-small";
 
 		NSMutableArray *tooltipParts = [NSMutableArray arrayWithCapacity:2];
 		if (favCount || !groupCount) {
-			[tooltipParts addObject:[NSString stringWithFormat:@"%d %@", favCount, (favCount == 1) ? NSLocalizedString(@"favorite", @"favorite singular label") : NSLocalizedString(@"favorites", @"favorites plural label")]];
+			[tooltipParts addObject:[NSString stringWithFormat:((favCount == 1) ? NSLocalizedString(@"%d favorite", @"favorite singular label (%d == 1)") : NSLocalizedString(@"%d favorites", @"favorites plural label (%d != 1)")), favCount]];
 		}
 		if (groupCount) {
-			[tooltipParts addObject:[NSString stringWithFormat:@"%d %@", groupCount, (groupCount == 1) ? NSLocalizedString(@"group", @"favorite group singular label") : NSLocalizedString(@"groups", @"favorite groups plural label")]];
+			[tooltipParts addObject:[NSString stringWithFormat:((groupCount == 1) ? NSLocalizedString(@"%d group", @"favorite group singular label (%d == 1)") : NSLocalizedString(@"%d groups", @"favorite groups plural label (%d != 1)")), groupCount]];
 		}
 
 		toolTip = [NSString stringWithFormat:@"%@ - %@", [[node representedObject] nodeName], [tooltipParts componentsJoinedByString:@", "]];
