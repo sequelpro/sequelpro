@@ -4509,8 +4509,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 /**
  * Initialise the document with the connection file at the supplied path.
+ * Returns whether the document was initialised successfully.
  */
-- (void)setStateFromConnectionFile:(NSString *)path
+- (BOOL)setStateFromConnectionFile:(NSString *)path
 {
 	NSError *readError = nil;
 	NSString *convError = nil;
@@ -4538,7 +4539,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[alert runModal];
 		if (spf) [spf release];
 		[self closeAndDisconnect];
-		return;
+		return NO;
 	}
 
 	// If the .spf format is unhandled, error.
@@ -4553,7 +4554,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[spf release];
 		[self closeAndDisconnect];
 		[alert runModal];
-		return;
+		return NO;
 	}
 
 	// Error if the expected data source wasn't present in the file
@@ -4568,7 +4569,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[alert runModal];
 		[spf release];
 		[self closeAndDisconnect];
-		return;
+		return NO;
 	}
 
 	// Ask for a password if SPF file passwords were encrypted, via a sheet
@@ -4616,7 +4617,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			} else {
 				[self closeAndDisconnect];
 				[spf release];
-				return;
+				return NO;
 			}
 		}
 	}
@@ -4642,7 +4643,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[alert runModal];
 			[self closeAndDisconnect];
 			[spf release];
-			return;
+			return NO;
 		}
 	}
 
@@ -4664,7 +4665,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[alert runModal];
 		[self closeAndDisconnect];
 		[spf release];
-		return;
+		return NO;
 	}
 
 	// Move favourites and history into the data dictionary to pass to setState:
@@ -4702,6 +4703,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[self setState:data];
 
 	[spf release];
+
+	return YES;
 }
 
 /**

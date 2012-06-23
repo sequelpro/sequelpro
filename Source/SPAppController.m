@@ -134,6 +134,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	[self reloadBundles:self];
 
+	// If no documents are open, open one
+	if (![self frontDocument]) {
+		[self newWindow:self];
+
+		// Set autoconnection if appropriate
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
+			[[self frontDocument] connect];
+		}
+	}
 }
 
 /**
@@ -447,7 +456,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 								[newWindowController addNewConnection:self];
 
 								[[self frontDocument] setIsSavedInBundle:isBundleFile];
-								[[self frontDocument] setStateFromConnectionFile:fileName];
+								if (![[self frontDocument] setStateFromConnectionFile:fileName]) {
+									break;
+								}
 							}
 
 						} else {
@@ -2081,24 +2092,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 #pragma mark Other methods
-
-/**
- * Override the default open-blank-document methods to automatically connect automatically opened windows
- * if the preference is set
- */
-- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
-{
-	// Manually open a table document
-	[self newWindow:self];
-
-	// Set autoconnection if appropriate
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
-		[[self frontDocument] connect];
-	}
-
-	// Return NO to the automatic opening
-	return NO;
-}
 
 /**
  * Implement this method to prevent the above being called in the case of a reopen (for example, clicking 

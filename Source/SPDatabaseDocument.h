@@ -456,7 +456,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 // State saving and setting
 - (NSDictionary *)stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
-- (void)setStateFromConnectionFile:(NSString *)path;
+- (BOOL)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
 #endif
 
