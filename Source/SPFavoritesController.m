@@ -35,7 +35,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 
 - (void)_loadFavorites;
 - (void)_constructFavoritesTree;
-- (void)_saveFavoritesDataInBackground:(NSDictionary *)data;
+- (void)_saveFavoritesData:(NSDictionary *)data;
 - (void)_addNode:(SPTreeNode *)node asChildOfNode:(SPTreeNode *)parent;
 
 - (SPTreeNode *)_constructBranchForNodeData:(NSDictionary *)nodeData;
@@ -101,16 +101,25 @@ static SPFavoritesController *sharedFavoritesController = nil;
  * Saves the current favorites dictionary in memory to disk. Note that the current favorites data file is moved
  * rather than overwritten in the event that we can't write the new file, the original can simply be restored.
  * This method also does a lot of error checking to ensure we don't lose the user's favorites data.
+ * Saves the data in the background so any UI tasks can stay responsive.
  */
 - (void)saveFavorites
 {
 	pthread_mutex_lock(&favoritesLock);
 	
-	[NSThread detachNewThreadSelector:@selector(_saveFavoritesDataInBackground:) 
+	[NSThread detachNewThreadSelector:@selector(_saveFavoritesData:) 
 							 toTarget:self 
 						   withObject:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
 	
 	pthread_mutex_unlock(&favoritesLock);
+}
+
+/**
+ * Save the current favorites dictionary in memory to disk, in the foreground, in a blocking manner.
+ */
+- (void)saveFavoritesSynchronously
+{
+	[self _saveFavoritesData:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
 }
 
 /**
@@ -343,7 +352,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
  *
  * @param data The raw plist data (serialized NSDictionary) to be saved 
  */
-- (void)_saveFavoritesDataInBackground:(NSDictionary *)data
+- (void)_saveFavoritesData:(NSDictionary *)data
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
@@ -411,7 +420,11 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		NSLog(@"Error writing favorites data. Restoring backup if available: %@", [error localizedDescription]);
 		
 		// Restore the original data file
-		[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:NULL];
+		error = nil;
+		[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:&error];
+		if (error) {
+			NSLog(@"Could not restore backup; favorites.plist left renamed as %@ due to error (%@)", favoritesBackupFile, [error localizedDescription]);
+		}
 	}
 	else {
 

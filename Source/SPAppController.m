@@ -2236,27 +2236,37 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+	BOOL shouldSaveFavorites = NO;
+
 	if (lastBundleBlobFilesDirectory != nil) {
 		[[NSFileManager defaultManager] removeItemAtPath:lastBundleBlobFilesDirectory error:nil];
 	}
 
-	// Kill all registered BASH commands
+	// Iterate through each open window
 	for (NSWindow *aWindow in [NSApp orderedWindows]) 
 	{
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			for (SPDatabaseDocument *doc in [[aWindow windowController] documents]) 
+		if (![[aWindow windowController] isMemberOfClass:[SPWindowController class]]) continue;
+
+		// Iterate through each document in the window
+		for (SPDatabaseDocument *doc in [[aWindow windowController] documents]) 
+		{
+
+			// Kill any BASH commands which are currently active
+			for (NSDictionary* cmd in [doc runningActivities]) 
 			{
-				for (NSDictionary* cmd in [doc runningActivities]) 
-				{
-					NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
-					NSTask *killTask = [[NSTask alloc] init];
-					
-					[killTask setLaunchPath:@"/bin/sh"];
-					[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
-					[killTask launch];
-					[killTask waitUntilExit];
-					[killTask release];
-				}
+				NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+				NSTask *killTask = [[NSTask alloc] init];
+				
+				[killTask setLaunchPath:@"/bin/sh"];
+				[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+				[killTask launch];
+				[killTask waitUntilExit];
+				[killTask release];
+			}
+
+			// If the connection view is active, mark the favourites for saving
+			if (![doc getConnection]) {
+				shouldSaveFavorites = YES;
 			}
 		}
 	}
@@ -2278,8 +2288,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		[c release];
 	}
 	
-	// Make sure we save any changes made to the connection outline view's state
-	[[SPFavoritesController sharedFavoritesController] saveFavorites];
+	// If required, make sure we save any changes made to the connection outline view's state
+	if (shouldSaveFavorites) {
+		[[SPFavoritesController sharedFavoritesController] saveFavoritesSynchronously];
+	}
 
 	return YES;
 

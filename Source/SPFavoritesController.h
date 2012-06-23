@@ -57,6 +57,7 @@
 + (SPFavoritesController *)sharedFavoritesController;
 
 - (void)saveFavorites;
+- (void)saveFavoritesSynchronously;
 - (void)reloadFavoritesWithSave:(BOOL)save;
 
 - (SPTreeNode *)addGroupNodeWithName:(NSString *)name asChildOfNode:(SPTreeNode *)parent;
