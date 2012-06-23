@@ -164,6 +164,11 @@
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"updated: %@", @"updated: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
 			}
+			
+			// Check for 'Engine' == NULL - should not happen (at least not with MySQL)
+			if (![[tableStatus objectForKey:@"Engine"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"engine: %@", @"Table Info Section : Table Engine"), [tableStatus objectForKey:@"Engine"]]];
+			}
 
 			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
 			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
