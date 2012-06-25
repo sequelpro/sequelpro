@@ -1777,6 +1777,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1853,6 +1854,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1929,6 +1931,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2004,6 +2007,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2079,6 +2083,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
