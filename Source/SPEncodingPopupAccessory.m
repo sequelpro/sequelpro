@@ -29,13 +29,17 @@
 + (NSView *)encodingAccessory:(NSUInteger)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup 
 {
 	SPEncodingPopupAccessory *owner = [[[SPEncodingPopupAccessory alloc] init] autorelease];
+	
 	// Rather than caching, load the accessory view everytime, as it might appear in multiple panels simultaneously.
 	if (![NSBundle loadNibNamed:@"EncodingPopupView" owner:owner])  {
 		NSLog(@"Failed to load EncodingPopupView.nib");
 		return nil;
 	}
+	
 	if (popup) *popup = owner->encodingPopUp;
+	
 	[[self class] setupPopUp:owner->encodingPopUp selectedEncoding:encoding withDefaultEntry:includeDefaultItem];
+	
 	return [owner->encodingAccessoryView autorelease];
 }
 
@@ -55,17 +59,16 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 	if (first == second) return 0;
 
 	if (macEncodingForFirst == kCFStringEncodingUnicode || macEncodingForSecond == kCFStringEncodingUnicode) {
-		if (macEncodingForSecond == macEncodingForFirst) 
+		if (macEncodingForSecond == macEncodingForFirst) {
 			// Both Unicode; compare second order
 			return (first > second) ? 1 : -1;
+		} 
+			
 		// First is Unicode
 		return (macEncodingForFirst == kCFStringEncodingUnicode) ? -1 : 1;
 	}
 
-	if ((macEncodingForFirst > macEncodingForSecond) || ((macEncodingForFirst == macEncodingForSecond) && (first > second)))
-		return 1;
-
-	return -1;
+	return ((macEncodingForFirst > macEncodingForSecond) || ((macEncodingForFirst == macEncodingForSecond) && (first > second))) ? 1 : -1;
 }
 
 /**
@@ -80,18 +83,29 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 		const CFStringEncoding *cfEncodings = CFStringGetListOfAvailableEncodings();
 		CFStringEncoding *tmp;
 		NSInteger cnt, num = 0;
+		
 		while (cfEncodings[num] != kCFStringEncodingInvalidId) num++;
+		
 		tmp = malloc(sizeof(CFStringEncoding) * num);
+		
 		memcpy(tmp, cfEncodings, sizeof(CFStringEncoding) * num);
+		
 		qsort(tmp, num, sizeof(CFStringEncoding), encodingCompare);
+		
 		allEncodings = [[NSMutableArray alloc] init];
-		for (cnt = 0; cnt < num; cnt++) {
+		
+		for (cnt = 0; cnt < num; cnt++) 
+		{
 			NSStringEncoding nsEncoding = CFStringConvertEncodingToNSStringEncoding(tmp[cnt]);
-			if (nsEncoding && [NSString localizedNameOfStringEncoding:nsEncoding])
+			
+			if (nsEncoding && [NSString localizedNameOfStringEncoding:nsEncoding]) {
 				[allEncodings addObject:[NSNumber numberWithUnsignedInteger:nsEncoding]];
+			}
 		}
+		
 		free(tmp);
 	}
+	
 	return allEncodings;
 }
 
@@ -114,11 +128,14 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 	numEncodings = [encs count];
 
 	// Fill with encodings
-	for (cnt = 0; cnt < numEncodings; cnt++) {
+	for (cnt = 0; cnt < numEncodings; cnt++) 
+	{
 		NSStringEncoding enc = [[encs objectAtIndex:cnt] unsignedIntegerValue];
+		
 		[popup addItemWithTitle:[NSString localizedNameOfStringEncoding:enc]];
 		[[popup lastItem] setTag:enc];
 		[[popup lastItem] setEnabled:YES];
+		
 		if (enc == selectedEncoding) itemToSelect = [popup numberOfItems] - 1;
 	}
 

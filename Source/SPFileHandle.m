@@ -32,7 +32,7 @@
 // waits until some has been written out.  This can affect speed and memory usage.
 #define SPFH_MAX_WRITE_BUFFER_SIZE 1048576
 
-@interface SPFileHandle (PrivateAPI)
+@interface SPFileHandle ()
 
 - (void)_writeBufferToData;
 
@@ -41,7 +41,6 @@
 @implementation SPFileHandle
 
 #pragma mark -
-#pragma mark Setup and teardown
 
 /**
  * Initialises and returns a SPFileHandle with a specified file (FILE, gzFile or BZFILE).
@@ -146,19 +145,6 @@
 	return self;
 }
 
-/**
- * Dealloc.
- */
-- (void)dealloc
-{
-	[self closeFile];
-	if (processingThread) [processingThread release];
-	free(wrappedFilePath);
-	[buffer release];
-	pthread_mutex_destroy(&bufferLock);
-	[super dealloc];
-}
-
 #pragma mark -
 #pragma mark Class methods
 
@@ -210,22 +196,22 @@
  */
 - (NSMutableData *)readDataOfLength:(NSUInteger)length
 {	
-	long theDataLength = 0;
-	void *theData = malloc(length);
+	long dataLength = 0;
+	void *data = malloc(length);
 			
 	if (useCompression) {
 		if (compressionFormat == SPGzipCompression) {
-			theDataLength = gzread(wrappedFile, theData, (unsigned)length);
+			dataLength = gzread(wrappedFile, data, (unsigned)length);
 		}
 		else if (compressionFormat == SPBzip2Compression) {
-			theDataLength = BZ2_bzread(wrappedFile, theData, (int)length);
+			dataLength = BZ2_bzread(wrappedFile, data, (int)length);
 		}		
 	}
 	else {
-		theDataLength = fread(theData, 1, length, wrappedFile);
+		dataLength = fread(data, 1, length, wrappedFile);
 	}
 		
-	return [NSMutableData dataWithBytesNoCopy:theData length:theDataLength freeWhenDone:YES];
+	return [NSMutableData dataWithBytesNoCopy:data length:dataLength freeWhenDone:YES];
 }
 
 /**
@@ -316,11 +302,13 @@
 	}
 
 	// If the buffer is large, wait for some to be written out
-	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) {
+	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) 
+	{
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
 	}
+	
 	pthread_mutex_unlock(&bufferLock);
 }
 
@@ -330,11 +318,14 @@
 - (void)synchronizeFile
 {
 	pthread_mutex_lock(&bufferLock);
-	while (!allDataWritten) {
+	
+	while (!allDataWritten) 
+	{
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
 	}
+	
 	pthread_mutex_unlock(&bufferLock);
 }
 
@@ -389,10 +380,6 @@
 	return compressionFormat;
 }
 
-@end
-
-@implementation SPFileHandle (PrivateAPI)
-
 /**
  * A method to be called on a background thread, allowing write data to build
  * up in a buffer and write to disk in chunks as the buffer fills.  This allows
@@ -407,6 +394,7 @@
 
 		// Check whether any data in the buffer needs to be written out - using thread locks for safety
 		pthread_mutex_lock(&bufferLock);
+		
 		if (!bufferDataLength) {
 			pthread_mutex_unlock(&bufferLock);
 			usleep(1000);
@@ -415,8 +403,10 @@
 
 		// Copy the data into a local buffer
 		NSData *dataToBeWritten = [buffer copy];
+		
 		[buffer setLength:0];
 		bufferDataLength = 0;
+		
 		pthread_mutex_unlock(&bufferLock);
 
 		// Write out the data
@@ -441,23 +431,44 @@
 
 		// Restore data to the buffer if it wasn't written out
 		pthread_mutex_lock(&bufferLock);
+		
 		if (bufferLengthWrittenOut < (NSInteger)[dataToBeWritten length]) {
 			if ([buffer length]) {
 				long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
 				[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];
 				bufferDataLength += dataLengthToRestore;
 			}
-
+		} 
 		// Otherwise, mark all data as written if it has been - allows synching to hard disk.
-		} else if (![buffer length]) {
+		else if (![buffer length]) {
 			allDataWritten = YES;
 		}
+		
 		pthread_mutex_unlock(&bufferLock);
 
 		[dataToBeWritten release];
 	}
 
 	[writePool drain];
+}
+
+#pragma mark -
+
+/**
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	[self closeFile];
+	
+	if (processingThread) [processingThread release];
+	
+	free(wrappedFilePath);
+	[buffer release];
+	
+	pthread_mutex_destroy(&bufferLock);
+	
+	[super dealloc];
 }
 
 @end
