@@ -210,7 +210,7 @@
  */
 - (NSMutableData *)readDataOfLength:(NSUInteger)length
 {	
-	long theDataLength;
+	long theDataLength = 0;
 	void *theData = malloc(length);
 			
 	if (useCompression) {

@@ -213,9 +213,8 @@ enum {
 /**
  * Move the currently selected tab to a new window.
  */
-- (IBAction) moveSelectedTabInNewWindow:(id)sender
+- (IBAction)moveSelectedTabInNewWindow:(id)sender
 {
-
 	static NSPoint cascadeLocation = {.x = 0, .y = 0};
 
 	SPDatabaseDocument *selectedDocument = [[tabView selectedTabViewItem] identifier];
@@ -226,6 +225,7 @@ enum {
 	NSWindow *newWindow = [newWindowController window];
 
 	CGFloat toolbarHeight = 0;
+	
 	if ([[[self window] toolbar] isVisible]) {
 		NSRect innerFrame = [NSWindow contentRectForFrameRect:[[self window] frame] styleMask:[[self window] styleMask]];
 		toolbarHeight = innerFrame.size.height - [[[self window] contentView] frame].size.height;
@@ -277,8 +277,7 @@ enum {
 	// Update tabBar of the new window
 	[newWindowController tabView:[tabBar tabView] didDropTabViewItem:[selectedCell representedObject] inTabBar:control];
 
-	[newWindow makeKeyAndOrderFront:nil];
-
+	[newWindow makeKeyAndOrderFront:nil];	
 }
 
 /**
@@ -290,7 +289,6 @@ enum {
 	[tabBar setHideForSingleTab:![tabBar hideForSingleTab]];
 	[[NSUserDefaults standardUserDefaults] setBool:![tabBar hideForSingleTab] forKey:SPAlwaysShowWindowTabBar];
 }
-
 
 /**
  * Menu validation

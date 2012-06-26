@@ -1332,7 +1332,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost
 {
-	NSString *renameQuery;
+	NSString *renameQuery = nil;
 	
 	if ([serverSupport supportsRenameUser]) {
 		renameQuery = [NSString stringWithFormat:@"RENAME USER %@@%@ TO %@@%@",
