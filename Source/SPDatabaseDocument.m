@@ -3207,6 +3207,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Determine whether to use encryption when adding the data
 	[spfStructure setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 	if (![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
+
+		// Convert the content selection to encoded data
+		if ([[spfData objectForKey:@"session"] objectForKey:@"contentSelection"]) {
+			NSMutableDictionary *sessionInfo = [NSMutableDictionary dictionaryWithDictionary:[spfData objectForKey:@"session"]];
+			NSMutableData *dataToEncode = [[[NSMutableData alloc] init] autorelease];
+			NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:dataToEncode] autorelease];
+			[archiver encodeObject:[sessionInfo objectForKey:@"contentSelection"] forKey:@"data"];
+			[archiver finishEncoding];
+			[sessionInfo setObject:dataToEncode forKey:@"contentSelection"];
+			[spfData setObject:sessionInfo forKey:@"session"];
+		}
+
 		[spfStructure setObject:spfData forKey:@"data"];
 	} else {
 		NSMutableData *dataToEncrypt = [[[NSMutableData alloc] init] autorelease];
@@ -4629,6 +4641,16 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	if ([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
 		data = [NSMutableDictionary dictionaryWithDictionary:[spf objectForKey:@"data"]];
+
+		// If a content selection data key exists in the session, decode it
+		if ([[[data objectForKey:@"session"] objectForKey:@"contentSelection"] isKindOfClass:[NSData class]]) {
+			NSMutableDictionary *sessionInfo = [NSMutableDictionary dictionaryWithDictionary:[data objectForKey:@"session"]];
+			NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[sessionInfo objectForKey:@"contentSelection"]] autorelease];
+			[sessionInfo setObject:[unarchiver decodeObjectForKey:@"data"] forKey:@"contentSelection"];
+			[unarchiver finishDecoding];
+			[data setObject:sessionInfo forKey:@"session"];
+		}
+
 	else if ([[spf objectForKey:@"data"] isKindOfClass:[NSData class]]) {
 		NSData *decryptdata = nil;
 		decryptdata = [[[NSMutableData alloc] initWithData:[(NSData *)[spf objectForKey:@"data"] dataDecryptedWithPassword:encryptpw]] autorelease];
