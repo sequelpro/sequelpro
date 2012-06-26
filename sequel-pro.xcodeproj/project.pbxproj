@@ -776,27 +776,6 @@
 		17DD52B811507217007D8950 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = English; path = English.lproj/Credits.rtf; sourceTree = "<group>"; };
 		17DD52C2115074B3007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		17DD52C5115074CB007D8950 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
-		17DD52D1115075B1007D8950 /* bar.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = bar.gif; sourceTree = "<group>"; };
-		17DD52D2115075B1007D8950 /* english_help idx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "english_help idx"; sourceTree = "<group>"; };
-		17DD52D3115075B1007D8950 /* icon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = icon.gif; sourceTree = "<group>"; };
-		17DD52D4115075B1007D8950 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		17DD52D5115075B1007D8950 /* sequel-pro_logo.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "sequel-pro_logo.jpg"; sourceTree = "<group>"; };
-		17DD52D7115075B1007D8950 /* bar.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = bar.gif; sourceTree = "<group>"; };
-		17DD52D8115075B1007D8950 /* connect.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = connect.html; sourceTree = "<group>"; };
-		17DD52D9115075B1007D8950 /* connect.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = connect.jpg; sourceTree = "<group>"; };
-		17DD52DA115075B1007D8950 /* console.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = console.html; sourceTree = "<group>"; };
-		17DD52DB115075B1007D8950 /* data.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = data.html; sourceTree = "<group>"; };
-		17DD52DC115075B1007D8950 /* dump.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = dump.html; sourceTree = "<group>"; };
-		17DD52DD115075B1007D8950 /* encoding.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = encoding.html; sourceTree = "<group>"; };
-		17DD52DE115075B1007D8950 /* preferences.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = preferences.html; sourceTree = "<group>"; };
-		17DD52DF115075B1007D8950 /* preferences.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = preferences.jpg; sourceTree = "<group>"; };
-		17DD52E0115075B1007D8950 /* query.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = query.html; sourceTree = "<group>"; };
-		17DD52E1115075B1007D8950 /* reference.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = reference.html; sourceTree = "<group>"; };
-		17DD52E2115075B1007D8950 /* sample_query.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample_query.html; sourceTree = "<group>"; };
-		17DD52E3115075B1007D8950 /* sample_tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = sample_tables.html; sourceTree = "<group>"; };
-		17DD52E4115075B1007D8950 /* sequel-pro_logo.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "sequel-pro_logo.jpg"; sourceTree = "<group>"; };
-		17DD52E5115075B1007D8950 /* syntax.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = syntax.html; sourceTree = "<group>"; };
-		17DD52E6115075B1007D8950 /* tables.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = tables.html; sourceTree = "<group>"; };
 		17E090E611498FC9007FC1B4 /* SPPrintController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPrintController.h; sourceTree = "<group>"; };
 		17E090E711498FC9007FC1B4 /* SPPrintController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrintController.m; sourceTree = "<group>"; };
 		17E0937D114AE154007FC1B4 /* SPTableInfoPrintTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = SPTableInfoPrintTemplate.html; path = Templates/SPTableInfoPrintTemplate.html; sourceTree = "<group>"; };
@@ -1912,42 +1891,6 @@
 			name = "Category Additions";
 			sourceTree = "<group>";
 		};
-		17DD52D0115075B1007D8950 /* Help */ = {
-			isa = PBXGroup;
-			children = (
-				17DD52D1115075B1007D8950 /* bar.gif */,
-				17DD52D2115075B1007D8950 /* english_help idx */,
-				17DD52D3115075B1007D8950 /* icon.gif */,
-				17DD52D4115075B1007D8950 /* index.html */,
-				17DD52D5115075B1007D8950 /* sequel-pro_logo.jpg */,
-				17DD52D6115075B1007D8950 /* topics */,
-			);
-			path = Help;
-			sourceTree = "<group>";
-		};
-		17DD52D6115075B1007D8950 /* topics */ = {
-			isa = PBXGroup;
-			children = (
-				17DD52D7115075B1007D8950 /* bar.gif */,
-				17DD52D8115075B1007D8950 /* connect.html */,
-				17DD52D9115075B1007D8950 /* connect.jpg */,
-				17DD52DA115075B1007D8950 /* console.html */,
-				17DD52DB115075B1007D8950 /* data.html */,
-				17DD52DC115075B1007D8950 /* dump.html */,
-				17DD52DD115075B1007D8950 /* encoding.html */,
-				17DD52DE115075B1007D8950 /* preferences.html */,
-				17DD52DF115075B1007D8950 /* preferences.jpg */,
-				17DD52E0115075B1007D8950 /* query.html */,
-				17DD52E1115075B1007D8950 /* reference.html */,
-				17DD52E2115075B1007D8950 /* sample_query.html */,
-				17DD52E3115075B1007D8950 /* sample_tables.html */,
-				17DD52E4115075B1007D8950 /* sequel-pro_logo.jpg */,
-				17DD52E5115075B1007D8950 /* syntax.html */,
-				17DD52E6115075B1007D8950 /* tables.html */,
-			);
-			path = topics;
-			sourceTree = "<group>";
-		};
 		17DF51241163C68600E3F396 /* Outline Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -1988,7 +1931,6 @@
 		17E641430EF01E90001BC333 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				17DD52D0115075B1007D8950 /* Help */,
 				1740F8370FC306C900CF3699 /* Plists */,
 				17E6418B0EF01FF7001BC333 /* Images */,
 				1740F8360FC306AE00CF3699 /* Scripting */,
