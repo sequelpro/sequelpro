@@ -214,6 +214,12 @@ typedef enum
 	SPExportFileHandleExists  = 2
 } SPExportFileHandleStatus;
 
+typedef enum
+{
+	SPPrefFontChangeTargetTable  = 1,
+	SPPrefFontChangeTargetEditor = 2
+} SPPreferenceFontChangeTarget;
+
 // Predefined localisable URLs
 #define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"http://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"http://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")

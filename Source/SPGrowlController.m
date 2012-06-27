@@ -33,6 +33,12 @@ static SPGrowlController *sharedGrowlController = nil;
 
 @class SPWindowController;
 
+@interface SPGrowlController ()
+
+- (double)milliTime;
+
+@end
+
 @implementation SPGrowlController
 
 /**
@@ -71,6 +77,8 @@ static SPGrowlController *sharedGrowlController = nil;
     
     return self;
 }
+
+#pragma mark -
 
 /**
  * Posts a Growl notification using the supplied details and default values.
@@ -121,8 +129,8 @@ static SPGrowlController *sharedGrowlController = nil;
 
 	// Don't post the notification if the notification document is frontmost
 	// as that suggests the user is already viewing the notification result.
-	if ([[document parentWindow] isKeyWindow]
-		&& [[[document parentTabViewItem] tabView] selectedTabViewItem] == [document parentTabViewItem])
+	if ([[document parentWindow] isKeyWindow] && 
+		[[[document parentTabViewItem] tabView] selectedTabViewItem] == [document parentTabViewItem])
 	{
 		postNotification = NO;
 	}
@@ -159,9 +167,11 @@ static SPGrowlController *sharedGrowlController = nil;
 		NSUInteger documentHash = [[clickContext objectForKey:@"notificationDocumentHash"] unsignedIntegerValue];
 
 		// Loop through the windows, looking for the document
-		for (NSWindow *eachWindow in [NSApp orderedWindows]) {
+		for (NSWindow *eachWindow in [NSApp orderedWindows]) 
+		{
 			if ([[eachWindow windowController] isKindOfClass:[SPWindowController class]]) {
-				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) {
+				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) 
+				{
 					if ([eachDocument hash] == documentHash) {
 						[NSApp activateIgnoringOtherApps:YES];
 						[eachDocument makeKeyDocument];

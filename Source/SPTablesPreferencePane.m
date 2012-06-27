@@ -36,7 +36,7 @@
  */
 - (IBAction)showGlobalResultTableFontPanel:(id)sender
 {	
-	[(SPPreferenceController *)[[[self view] window] delegate] setFontChangeTarget:1];
+	[(SPPreferenceController *)[[[self view] window] delegate] setFontChangeTarget:SPPrefFontChangeTargetEditor];
 	
 	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];

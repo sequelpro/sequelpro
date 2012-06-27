@@ -63,6 +63,5 @@
 
 // Timing functions
 - (void)setVisibilityForNotificationName:(NSString *)name;
-- (double)milliTime;
 
 @end

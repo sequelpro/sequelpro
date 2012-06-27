@@ -62,7 +62,7 @@
 	NSToolbarItem *editorItem;
 	NSToolbarItem *shortcutItem;
 	
-	NSUInteger fontChangeTarget;
+	SPPreferenceFontChangeTarget fontChangeTarget;
 }
 
 @property (readonly) SPGeneralPreferencePane       *generalPreferencePane;
@@ -73,10 +73,9 @@
 @property (readonly) SPNetworkPreferencePane       *networkPreferencePane;
 
 /**
- * @property fontChangeTarget Indicates which font was changed (1 for global table font, 2 for custom 
- * query font).
+ * @property fontChangeTarget Indicates which font was changed. See SPPreferenceFontChangeTarget for values.
  */
-@property (readwrite, assign) NSUInteger fontChangeTarget;
+@property (readwrite, assign) SPPreferenceFontChangeTarget fontChangeTarget;
 
 // Toolbar item IBAction methods
 - (IBAction)displayPreferencePane:(id)sender;
