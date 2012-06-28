@@ -26,5 +26,5 @@
 
 - (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut;
 - (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory createIfNotExists:(BOOL)create error:(NSError **)errorOut;
-
++ (NSString *)temporaryDirectory;
 @end

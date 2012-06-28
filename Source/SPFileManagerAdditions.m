@@ -147,4 +147,13 @@ NSString* const DirectoryLocationDomain = @"DirectoryLocationDomain";
 	
 }
 
++ (NSString *)temporaryDirectory
+{
+	NSString *tempDir = NSTemporaryDirectory();
+	if (!tempDir) {
+		tempDir = @"/tmp";
+	}
+	return tempDir;
+}
+
 @end

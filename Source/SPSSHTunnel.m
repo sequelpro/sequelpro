@@ -298,7 +298,7 @@
 	[taskArguments addObject:@"-N"]; // Tunnel only
 	[taskArguments addObject:@"-v"]; // Verbose mode for messages
 	[taskArguments addObject:@"-o ControlMaster=auto"]; // Support 'master' mode for connection sharing
-	[taskArguments addObject:@"-o ControlPath=/tmp/SequelPro-%r@%h:%p"]; // Set a custom control path to avoid picking up existing masters without forwarding enabled
+	[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SequelPro-%%r@%%h:%%p", [NSFileManager temporaryDirectory]]]; // Set a custom control path to avoid picking up existing masters without forwarding enabled
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];

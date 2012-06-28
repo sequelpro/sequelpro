@@ -1546,7 +1546,7 @@
 	NSString *bundleFileName = [bundleDict objectForKey:kBundleNameKey];
 	NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
 
-	draggedFilePath = [[NSString stringWithFormat:@"/tmp/%@.%@", bundleFileName, SPUserBundleFileExtension] retain];
+	draggedFilePath = [[NSString stringWithFormat:@"%@/%@.%@", [NSFileManager temporaryDirectory], bundleFileName, SPUserBundleFileExtension] retain];
 
 	BOOL isDir;
 
