@@ -96,11 +96,6 @@
 @property (assign) id reloadFieldsButton;
 #endif
 
-// Table loading
-- (void)loadTable:(NSString *)aTable;
-- (IBAction)reloadTable:(id)sender;
-- (void)setTableDetails:(NSDictionary *)tableDetails;
-
 #ifdef SP_REFACTOR /* method decls */
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
 - (void)setTableListInstance:(SPTablesList*)list;

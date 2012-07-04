@@ -30,6 +30,8 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
+#import "SPTableStructureLoading.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @implementation SPTableStructure (SPTableStructureDelegate)
