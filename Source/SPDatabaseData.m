@@ -52,6 +52,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	if ((self = [super init])) {
 		characterSetEncoding = nil;
+		defaultCollation = nil;
 		defaultCharacterSetEncoding = nil;
 		
 		collations             = [[NSMutableArray alloc] init];
@@ -306,6 +307,26 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 }
 
 /**
+ * Returns the database's default collation.
+ *
+ * @return The default collation as a string
+ */
+- (NSString *)getDatabaseDefaultCollation
+{
+	if (!defaultCollation) {
+		[defaultCollation release];
+				
+		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'collation_database'"];
+		
+		[result setReturnDataAsStrings:YES];
+		
+		defaultCollation = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
+	}
+		
+	return defaultCollation;
+}
+
+/**
  * Returns the database's default storage engine.
  *
  * @return The default storage engine as a string
@@ -330,6 +351,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 
 		// Retrieve the corresponding value for the determined key, ensuring return as a string
 		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [storageEngineKey tickQuotedString]]];;
+		
 		[result setReturnDataAsStrings:YES];
 		
 		defaultStorageEngine = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
@@ -352,6 +374,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if ([connection queryErrored]) return [NSArray array];
 	
 	[result setReturnDataAsStrings:YES];
+	
 	return [result getAllRows];
 }
 
@@ -381,6 +404,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	if (characterSetEncoding) [characterSetEncoding release], characterSetEncoding = nil;
 	if (defaultCharacterSetEncoding) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
+	if (defaultCollation) [defaultCollation release], defaultCollation = nil;
 	
 	[collations release], collations = nil;
 	[characterSetCollations release], characterSetCollations = nil;

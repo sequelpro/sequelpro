@@ -37,6 +37,7 @@
 {
 	NSString *characterSetEncoding;
 	NSString *defaultCharacterSetEncoding;
+	NSString *defaultCollation;
 	NSString *defaultStorageEngine;
 	
 	NSMutableArray *collations;
@@ -67,6 +68,7 @@
 - (NSArray *)getDatabaseCharacterSetEncodings;
 
 - (NSString *)getDatabaseDefaultCharacterSet;
+- (NSString *)getDatabaseDefaultCollation;
 - (NSString *)getDatabaseDefaultStorageEngine;
 
 @end

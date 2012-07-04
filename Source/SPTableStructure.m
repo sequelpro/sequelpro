@@ -231,12 +231,10 @@
  */
 - (void)loadTable:(NSString *)aTable
 {
-	NSArray *theTableIndexes;
 	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
-	SPMySQLResult *indexResult;
 
 	// Check whether a save of the current row is required.
-	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
+	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 	// If no table is selected, reset the interface and return
 	if (!aTable || ![aTable length]) {
@@ -247,11 +245,13 @@
 	NSMutableArray *theTableFields = [[NSMutableArray alloc] init];
 
 	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
-	for (id col in [tableDataInstance columns])
+	for (id col in [tableDataInstance columns]) 
+	{
 		[theTableFields addObject:[[col mutableCopy] autorelease]];
+	}
 
 	// Retrieve the indexes for the table
-	indexResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]];
+	SPMySQLResult *indexResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]];
 
 	// If an error occurred, reset the interface and abort
 	if ([mySQLConnection queryErrored]) {
@@ -269,21 +269,26 @@
 	}
 
 	// Process the indexes into a local array of dictionaries
-	theTableIndexes = [self convertIndexResultToArray:indexResult];
+	NSArray *theTableIndexes = [self convertIndexResultToArray:indexResult];
 
 	// Set the Key column
 	for (NSDictionary* theIndex in theTableIndexes) 
 	{
 		for (id field in theTableFields) 
 		{
-			if([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
-				if([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"])
+			if ([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
+				if ([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"]) {
 					[field setObject:@"PRI" forKey:@"Key"];
-				else
-					if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
-						[field setObject:@"SPA" forKey:@"Key"];
-					else
+				}
+				else {
+					if ([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
+						[field setObject:@"SPA" forKey:@"Key"];	
+					}
+					else {
 						[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
+					}
+				}
+				
 				break;
 			}
 		}
@@ -291,13 +296,18 @@
 
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	
 	if ([encodings count]) {
 
 		// Populate encoding popup button
 		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
+		
 		[encodingTitles addObject:@""];
+		
 		for (NSDictionary *encoding in encodings)
+		{
 			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
+		}
 
 		[[encodingPopupCell onMainThread] removeAllItems];
 		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
@@ -309,39 +319,71 @@
 	}
 
 	// Process all the fields to normalise keys and add additional information
-	for (id theField in theTableFields) {
-
+	for (id theField in theTableFields) 
+	{
 		// Select and re-map encoding and collation since [self dataSource] stores the choice as NSNumbers
 		NSString *fieldEncoding = @"";
 		NSInteger selectedIndex = 0;
-		if([theField objectForKey:@"encoding"]) {
-			for(id enc in encodings) {
-				if([[enc objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:[theField objectForKey:@"encoding"]]) {
-					fieldEncoding = [theField objectForKey:@"encoding"];
+		
+		NSString *type = [[[theField objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+				
+		NSString *collation = nil; 
+		NSString *encoding = nil;
+				
+		if ([fieldValidation isFieldTypeString:type] || ![type hasSuffix:@"BINARY"] || ![type hasSuffix:@"BLOB"]) {
+			
+			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [[tableDataInstance statusValues] objectForKey:@"collation"];
+			encoding = [theField objectForKey:@"encoding"] ? [theField objectForKey:@"encoding"] : [tableDataInstance tableEncoding];
+						
+			// If we still don't have a collation then fallback on the database default (not available on MySQL < 4.1.1).
+			if (!collation) {
+				collation = [databaseDataInstance getDatabaseDefaultCollation];
+			}
+		}
+		
+		if (encoding) {
+			for (id enc in encodings) 
+			{
+				if ([[enc objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:encoding]) {
+					fieldEncoding = encoding;
 					break;
 				}
+				
 				selectedIndex++;
 			}
-			selectedIndex++; // due to leading @"" in popup list
+			
+			// Due to leading @"" in popup list
+			selectedIndex++;
 		}
+		
 		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"encoding"];
+		
 		selectedIndex = 0;
-		if([fieldEncoding length] && [theField objectForKey:@"collation"]) {
+		
+		if (encoding && collation) {
+		
 			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-			for(id col in theCollations) {
-				if([[col objectForKey:@"COLLATION_NAME"] isEqualToString:[theField objectForKey:@"collation"]]) {
+	
+			for (id col in theCollations) 
+			{
+				if ([[col objectForKey:@"COLLATION_NAME"] isEqualToString:collation]) {
+					
 					// Set BINARY if collation ends with _bin for convenience
-					if([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"])
+					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {
 						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
+					}
+					
 					break;
 				}
+				
 				selectedIndex++;
 			}
-			selectedIndex++; // due to leading @"" in popup list
+		
+			// Due to leading @"" in popup list
+			selectedIndex++;
 		}
+		
 		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"collation"];
-
-		NSString *type = [[theField objectForKey:@"type"] uppercaseString];
 
 		// Get possible values if the field is an enum or a set
 		if (([type isEqualToString:@"ENUM"] || [type isEqualToString:@"SET"]) && [theField objectForKey:@"values"]) {
@@ -378,6 +420,7 @@
 									theTableIndexes, @"tableIndexes",
 									theTableEnumLists, @"enumLists",
 									nil];
+	
 	[[self onMainThread] setTableDetails:tableDetails];
 
 	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
