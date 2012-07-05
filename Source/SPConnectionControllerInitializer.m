@@ -149,6 +149,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)registerForNotifications
 {
+#ifndef SP_REFACTOR
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(scrollViewFrameChanged:) 
 												 name:NSViewFrameDidChangeNotification 
@@ -253,6 +254,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		   forKeyPath:SPFavoriteSSLCACertFileLocationKey 
 			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
 			  context:NULL];
+#endif
 }
 
 /**
