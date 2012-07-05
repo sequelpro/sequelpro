@@ -34,6 +34,9 @@
  *
  * Connection controller delegate category.
  */
-@interface SPConnectionController (SPConnectionControllerDelegate) <SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+@interface SPConnectionController (SPConnectionControllerDelegate) 
+#ifndef SP_REFACTOR
+	<SPFavoritesImportProtocol, SPFavoritesExportProtocol>
+#endif
 
 @end

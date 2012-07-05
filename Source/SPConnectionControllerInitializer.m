@@ -57,8 +57,10 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Weak reference
 		dbDocument = document;
 		
+#ifndef SP_REFACTOR
 		databaseConnectionSuperview = [dbDocument databaseView];
 		databaseConnectionView = [dbDocument valueForKey:@"contentViewSplitter"];
+#endif
 		
 		// Keychain references
 		connectionKeychainID = nil;
@@ -79,6 +81,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		[self loadNib];
 		[self registerForNotifications];
 		
+#ifndef SP_REFACTOR
 		// Hide the main view and position and display the connection view
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
@@ -117,6 +120,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Set sort items
 		currentSortItem = (SPFavoritesSortItem)[prefs integerForKey:SPFavoritesSortedBy];
 		reverseFavoritesSort = [prefs boolForKey:SPFavoritesSortedInReverse];
+#endif
 
 		initComplete = YES;
 	}
@@ -270,6 +274,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)setUpSelectedConnectionFavorite 
 {
+#ifndef SP_REFACTOR
 	SPTreeNode *favorite = [self _favoriteNodeForFavoriteID:[prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteID : SPDefaultFavorite]];
 	
 	if (favorite) {
@@ -288,6 +293,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:NO];
 	}
+#endif
 }
 
 #pragma mark -
@@ -299,7 +305,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)_processFavoritesDataChange:(NSNotification *)aNotification
 {
-
+#ifndef SP_REFACTOR
 	// Check the supplied notification for the sender; if the sender
 	// was this object, ignore it
 	if ([aNotification object] == self) return;
@@ -315,6 +321,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		[selectionIndexes addIndex:anIndex];
 	}
 	[favoritesOutlineView selectRowIndexes:selectionIndexes byExtendingSelection:NO];
+#endif
 }
 
 /**
@@ -322,6 +329,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  *
  * @param node The node to traverse
  */
+#ifndef SP_REFACTOR
 - (void)_restoreOutlineViewStateNode:(SPTreeNode *)node
 {
 	if ([node isGroup]) {
@@ -340,5 +348,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		}
 	}
 }
+#endif
 
 @end

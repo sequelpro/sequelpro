@@ -24,6 +24,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPConnectionControllerDelegate.h"
+#ifndef SP_REFACTOR
 #import "SPFavoritesController.h"
 #import "SPTableTextFieldCell.h"
 #import "SPPreferenceController.h"
@@ -32,6 +33,7 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
+#endif
 
 static NSString *SPDatabaseImage = @"database-small";
 
@@ -54,6 +56,8 @@ static NSString *SPDatabaseImage = @"database-small";
 #pragma mark -
 #pragma mark SplitView delegate methods
 
+#ifndef SP_REFACTOR
+
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
 {
 	return [connectionSplitViewButtonBar splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
@@ -68,8 +72,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Outline view delegate methods
+
+#ifndef SP_REFACTOR
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item
 {		
@@ -182,8 +190,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	[self _setNodeIsExpanded:YES fromNotification:notification];
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Outline view drag & drop
+
+#ifndef SP_REFACTOR
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
@@ -324,8 +336,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	return acceptedDrop;
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Textfield delegate methods
+
+#ifndef SP_REFACTOR
 
 /**
  * Trap and control the 'name' field of the selected favorite. If the user pressed
@@ -423,8 +439,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	return YES;
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Tab bar delegate methods
+
+#ifndef SP_REFACTOR
 
 /**
  * Trigger a resize action whenever the tab view changes. The connection
@@ -454,8 +474,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	[self _favoriteTypeDidChange];
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Scroll view notifications
+
+#ifndef SP_REFACTOR
 
 /**
  * As the scrollview resizes, keep the details centered within it if
@@ -486,8 +510,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Menu Validation
+
+#ifndef SP_REFACTOR
 
 /**
  * Menu item validation.
@@ -549,8 +577,12 @@ static NSString *SPDatabaseImage = @"database-small";
     return YES;
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Favorites import/export delegate methods
+
+#ifndef SP_REFACTOR
 
 /**
  * Called by the favorites exporter when the export completes.
@@ -608,8 +640,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	}
 }
 
+#endif
+
 #pragma mark -
 #pragma mark Private API
+
+#ifndef SP_REFACTOR
 
 /**
  * Sets the expanded state of the node from the supplied outline view notification.
@@ -623,5 +659,7 @@ static NSString *SPDatabaseImage = @"database-small";
 	
 	[node setNodeIsExpanded:expanded];	
 }
+
+#endif
 
 @end

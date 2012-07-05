@@ -38,6 +38,8 @@
 
 @implementation SPConnectionController (SPConnectionControllerDataSource)
 
+#ifndef SP_REFACTOR
+
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {	
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
@@ -89,5 +91,7 @@
 		}
 	}
 }
+
+#endif
 
 @end
