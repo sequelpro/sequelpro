@@ -162,7 +162,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		databaseListIsSelectable = YES;
 		_queryMode = SPInterfaceQueryMode;
 		chooseDatabaseButton = nil;
+#ifndef SP_REFACTOR /* init ivars */
 		chooseDatabaseToolbarItem = nil;
+#endif
 		connectionController = nil;
 
 		selectedTableName = nil;
@@ -201,6 +203,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		runningActivitiesArray = [[NSMutableArray alloc] init];
 
 		titleAccessoryView = nil;
+#ifndef SP_REFACTOR /* init ivars */
 		taskProgressWindow = nil;
 		taskDisplayIsIndeterminate = YES;
 		taskDisplayLastValue = 0;
@@ -211,6 +214,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		taskCanBeCancelled = NO;
 		taskCancellationCallbackObject = nil;
 		taskCancellationCallbackSelector = NULL;
+#endif
 
 		keyChainID = nil;
 #ifndef SP_REFACTOR /* init ivars */
@@ -321,6 +325,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
 	}
 	[nibLoader release];
+
+	// SP_REFACTOR can't use progress indicator because of BWToolkit dependency
+	
 	NSArray *progressIndicatorLayerTopLevelObjects = nil;
 	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
 	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
@@ -332,7 +339,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Retain the icon accessory view to allow it to be added and removed from windows
 	[titleAccessoryView retain];
+#endif
 
+#ifndef SP_REFACTOR
 	// Set up the progress indicator child window and layer - change indicator color and size
 	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
 	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
@@ -1170,6 +1179,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Increment the task level
 	_isWorkingLevel++;
 
+#ifndef SP_REFACTOR 
 	// Reset the progress indicator if necessary
 	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = YES;
@@ -1177,20 +1187,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskProgressIndicator startAnimation:self];
 		taskDisplayLastValue = 0;
 	}
+#endif
 
 	// If the working level just moved to start a task, set up the interface
 	if (_isWorkingLevel == 1) {
+#ifndef SP_REFACTOR 
 		[taskCancelButton setHidden:YES];
+#endif
 
 		// Set flags and prevent further UI interaction in this window
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
+#ifndef SP_REFACTOR
 		[mainToolbar validateVisibleItems];
 		[chooseDatabaseButton setEnabled:NO];
 				
 		// Schedule appearance of the task window in the near future, using a frame timer.
 		taskFadeInStartDate = [[NSDate alloc] init];
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0 target:self selector:@selector(fadeInTaskProgressWindow:) userInfo:nil repeats:YES] retain];
+#endif
 	}
 }
 
@@ -1199,6 +1214,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) fadeInTaskProgressWindow:(NSTimer *)theTimer
 {
+#ifndef SP_REFACTOR 
 	double timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
 
 	// Keep the window hidden for the first ~0.5 secs
@@ -1219,6 +1235,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
 		[taskFadeInStartDate release], taskFadeInStartDate = nil; 
 	}
+#endif
 }
 
 
@@ -1227,6 +1244,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskDescription:(NSString *)description
 {
+#ifndef SP_REFACTOR 
 	NSShadow *textShadow = [[NSShadow alloc] init];
 	[textShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
 	[textShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
@@ -1243,6 +1261,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[string release];
 	[attributes release];
 	[textShadow release];
+#endif
 }
 
 /**
@@ -1252,6 +1271,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskPercentage:(CGFloat)taskPercentage
 {
+#ifndef SP_REFACTOR 
 
 	// If the task display is currently indeterminate, set it to determinate on the main thread.
 	if (taskDisplayIsIndeterminate) {
@@ -1275,6 +1295,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		}
 		taskDisplayLastValue = taskProgressValue;
 	}
+#endif
 }
 
 /**
@@ -1286,6 +1307,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
+#ifndef SP_REFACTOR 
 	if (afterDelay) {
 		[self performSelector:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:nil afterDelay:0.5];
 		return;
@@ -1297,6 +1319,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskProgressIndicator setIndeterminate:YES];
 	[taskProgressIndicator startAnimation:self];
 	taskDisplayLastValue = 0;
+#endif
 }
 
 /**
@@ -1304,6 +1327,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) endTask
 {
+
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
@@ -1316,6 +1340,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If all tasks have ended, re-enable the interface
 	if (!_isWorkingLevel) {
 
+#ifndef SP_REFACTOR 
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) {
 			[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
@@ -1327,11 +1352,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskProgressWindow setAlphaValue:0.0f];
 		taskDisplayIsIndeterminate = YES;
 		[taskProgressIndicator setIndeterminate:YES];
+#endif
 
 		// Re-enable window interface
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
+#ifndef SP_REFACTOR 
 		[mainToolbar validateVisibleItems];
+#endif
 		[chooseDatabaseButton setEnabled:_isConnected];
 	}
 }
@@ -1342,6 +1370,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction
 {
+#ifndef SP_REFACTOR 
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
@@ -1358,6 +1387,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskCancelButton setTitle:buttonTitle];
 	[taskCancelButton setEnabled:YES];
 	[taskCancelButton setHidden:NO];
+#endif
 }
 
 /**
@@ -1365,6 +1395,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) disableTaskCancellation
 {
+#ifndef SP_REFACTOR 
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
@@ -1376,6 +1407,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	taskCancellationCallbackObject = nil;
 	taskCancellationCallbackSelector = NULL;
 	[taskCancelButton setHidden:YES];
+#endif
 }
 
 /**
@@ -1383,6 +1415,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction) cancelTask:(id)sender
 {
+#ifndef SP_REFACTOR 
 	if (!taskCanBeCancelled) return;
 
 	[taskCancelButton setEnabled:NO];
@@ -1399,6 +1432,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (taskCancellationCallbackObject && taskCancellationCallbackSelector) {
 		[taskCancellationCallbackObject performSelector:taskCancellationCallbackSelector];
 	}
+#endif
 }
 
 /**
@@ -1423,6 +1457,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) centerTaskWindow
 {
+#ifndef SP_REFACTOR 
 	NSPoint newBottomLeftPoint;
 	NSRect mainWindowRect = [parentWindow frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
@@ -1431,6 +1466,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	newBottomLeftPoint.y = roundf(mainWindowRect.origin.y + mainWindowRect.size.height/2 - taskWindowRect.size.height/2);
 
 	[taskProgressWindow setFrameOrigin:newBottomLeftPoint];
+#endif
 }
 
 /**
@@ -1439,11 +1475,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskIndicatorShouldAnimate:(BOOL)shouldAnimate
 {
+#ifndef SP_REFACTOR 
 	if (shouldAnimate) {
 		[[taskProgressIndicator onMainThread] startAnimation:self];
 	} else {
 		[[taskProgressIndicator onMainThread] stopAnimation:self];
 	}
+#endif
 }
 
 #pragma mark -
@@ -2448,6 +2486,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (BOOL)couldCommitCurrentViewActions
 {
 	[parentWindow endEditingFor:nil];
+#ifndef SP_REFACTOR 
 	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
 		// Table structure view
@@ -2463,6 +2502,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	return YES;
+#else
+	return [tableSourceInstance saveRowOnDeselect] && [tableContentInstance saveRowOnDeselect];
+#endif
 }
 
 #pragma mark -
@@ -4025,8 +4067,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	else [connectionController cancelConnection];
 #ifndef SP_REFACTOR
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-#endif
 	[createTableSyntaxWindow orderOut:nil];
+#endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self setParentWindow:nil];
 
@@ -4111,13 +4153,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)setParentWindow:(NSWindow *)aWindow
 {
+#ifndef SP_REFACTOR
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
-#ifndef SP_REFACTOR
 		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
-#endif
 		[connectionController updateFavoriteSelection:self];
 	}
+#endif
 
 	parentWindow = aWindow;
 	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
@@ -4830,11 +4872,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
+#ifdef SP_REFACTOR /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )
+		[delegate performSelector:@selector(databaseDocumentConnectionFailed:) withObject:self];
+#endif
+
 #ifndef SP_REFACTOR /* updateWindowTitle: */
 	// Reset the window title
 	[self updateWindowTitle:self];
 #endif
 }
+
+
+#ifdef SP_REFACTOR
+- (void)databaseDocumentConnectionFailed:(id)sender
+{
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )
+		[delegate performSelector:@selector(databaseDocumentConnectionFailed:) withObject:self];
+}
+#endif
 
 
 #ifndef SP_REFACTOR /* scheme scripting methods */
@@ -5472,16 +5528,19 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseNameField stringValue]])]; 
 	}
+#ifndef SP_REFACTOR
 	else if (object == databaseCopyNameField) {
 		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseCopyNameField stringValue]])]; 
 	}
+#endif
 	else if (object == databaseRenameNameField) {
 		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseRenameNameField stringValue]])]; 
 	}
+#ifndef SP_REFACTOR
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
 	}
-
+#endif
 }
 
 #pragma mark -
@@ -5689,7 +5748,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[printWebView release];
 #endif
 	[selectedDatabaseEncoding release];
+#ifndef SP_REFACTOR
 	[taskProgressWindow close];
+#endif
 	
 	if (selectedTableName) [selectedTableName release];
 	if (connectionController) [connectionController release];
@@ -5700,17 +5761,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (mySQLConnection) [mySQLConnection release];
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
+#ifndef SP_REFACTOR
 	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
 	if (taskFadeInStartDate) [taskFadeInStartDate release];
+#endif
 	if (queryEditorInitString) [queryEditorInitString release];
 	if (spfFileURL) [spfFileURL release];
 	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
 	if (keyChainID) [keyChainID release];
+#ifndef SP_REFACTOR
 	if (mainToolbar) [mainToolbar release];
+#endif
 	if (titleAccessoryView) [titleAccessoryView release];
+#ifndef SP_REFACTOR
 	if (taskProgressWindow) [taskProgressWindow release];
+#endif
 	if (serverSupport) [serverSupport release];
 #ifndef SP_REFACTOR /* dealloc ivars */
 	if (processID) [processID release];
@@ -5903,10 +5970,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[tablesListInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR /* ui */
+#ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
 #endif
-	
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];

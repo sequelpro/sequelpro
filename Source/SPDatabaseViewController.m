@@ -37,6 +37,7 @@
 #import <SPMySQL/SPMySQL.h>
 #ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
+#import "SPTableStructureLoading.h"
 #endif
 
 @interface SPDatabaseDocument (SPDatabaseViewControllerPrivateAPI)
@@ -220,7 +221,11 @@
  */
 - (void)setStructureRequiresReload:(BOOL)reload
 {
+#ifndef SP_REFACTOR
 	if (reload && selectedTableName && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStructure) {
+#else
+	if (reload && selectedTableName ) {
+#endif
 		[tableSourceInstance loadTable:selectedTableName];
 	} else {
 		structureLoaded = !reload;

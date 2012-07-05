@@ -72,6 +72,7 @@
 @synthesize runAllButton;
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
+@synthesize affectedRowsText;
 #endif
 
 @synthesize textViewWasChanged;

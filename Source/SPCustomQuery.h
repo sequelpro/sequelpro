@@ -189,6 +189,7 @@
 @property (assign) SPTextView *textView;
 @property (assign) SPCopyTable *customQueryView;
 @property (assign) NSButton* runAllButton;
+@property (assign) id affectedRowsText;
 #endif
 
 @property(assign) BOOL textViewWasChanged;

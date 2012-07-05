@@ -25,10 +25,13 @@
 
 #import "SPConnectionController.h"
 #import "SPDatabaseDocument.h"
+
+#ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPPreferenceController.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
+#endif
 #import "SPAlertSheets.h"
 #import "SPKeychain.h"
 #import "SPSSHTunnel.h"
@@ -58,6 +61,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 @interface SPConnectionController ()
 
 - (BOOL)_checkHost;
+#ifndef SP_REFACTOR
 - (void)_sortFavorites;
 - (void)_sortTreeNode:(SPTreeNode *)node usingKey:(NSString *)key;
 - (void)_favoriteTypeDidChange;
@@ -75,6 +79,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
+#endif
 
 @end
 
@@ -102,6 +107,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize sshKeyLocationEnabled;
 @synthesize sshKeyLocation;
 @synthesize sshPort;
+
+#ifdef SP_REFACTOR
+@synthesize dbDocument;
+#endif
 
 @synthesize connectionKeychainItemName;
 @synthesize connectionKeychainItemAccount;
@@ -192,6 +201,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	isConnecting = YES;
 	cancellingConnection = NO;
 	
+#ifndef SP_REFACTOR
 	// Disable the favorites outline view to prevent further connections attempts
 	[favoritesOutlineView setEnabled:NO];
 	
@@ -200,6 +210,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[connectButton setEnabled:NO];
 	[progressIndicator startAnimation:self];
 	[progressIndicatorText setHidden:NO];
+#endif
 	
 	// Start the current tab's progress indicator
 	[dbDocument setIsProcessing:YES];
@@ -207,6 +218,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// If the password(s) are marked as having been originally sourced from a keychain, check whether they
 	// have been changed or not; if not, leave the mark in place and remove the password from the field
 	// for increased security.
+#ifndef SP_REFACTOR
 	if (connectionKeychainItemName) {
 		if ([[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount] isEqualToString:[self password]]) {
 			[self setPassword:[[NSString string] stringByPaddingToLength:[[self password] length] withString:@"sp" startingAtIndex:0]];
@@ -231,6 +243,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 		}
 	}
+#endif
 	
 	// Inform the delegate that we are starting the connection process
 	if (delegate && [delegate respondsToSelector:@selector(connectionControllerInitiatingConnection:)]) {
@@ -260,12 +273,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)cancelMySQLConnection:(id)sender
 {
+#ifndef SP_REFACTOR
 	[connectButton setEnabled:NO];
 	
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
 	
 	mySQLConnectionCancelled = YES;
+#endif
 }
 
 #pragma mark -
@@ -276,6 +291,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)nodeDoubleClicked:(id)sender
 {
+#ifndef SP_REFACTOR
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
 	if (node) {
@@ -288,6 +304,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
 		}
 	}
+#endif
 }
 
 /**
@@ -434,6 +451,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)sortFavorites:(id)sender
 {	
+#ifndef SP_REFACTOR
     SPFavoritesSortItem previousSortItem = currentSortItem;
 	currentSortItem  = (SPFavoritesSortItem)[[sender menu] indexOfItem:sender];
 	
@@ -445,6 +463,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (previousSortItem > SPFavoritesSortUnsorted) [[[sender menu] itemAtIndex:previousSortItem] setState:NSOffState];
 	
 	[[[sender menu] itemAtIndex:currentSortItem] setState:NSOnState];
+#endif
 }
 
 /**
@@ -452,6 +471,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)reverseSortFavorites:(NSMenuItem *)sender
 {
+#ifndef SP_REFACTOR
     reverseFavoritesSort = (![sender state]);
     
 	[prefs setBool:reverseFavoritesSort forKey:SPFavoritesSortedInReverse];
@@ -460,6 +480,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self _sortFavorites];
 	
 	[(NSMenuItem *)sender setState:reverseFavoritesSort]; 
+#endif
 }
 
 /**
@@ -467,6 +488,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)updateFavoriteSelection:(id)sender
 {
+#ifndef SP_REFACTOR
 
 	// Clear the keychain referral items as appropriate
 	if (connectionKeychainID) [connectionKeychainID release], connectionKeychainID = nil;
@@ -551,11 +573,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	// Set first responder to password field if it is empty
 	[self performSelector:@selector(_updateFavoriteFirstResponder) withObject:nil afterDelay:0.0];
+#endif
 }
 
 /**
  * Returns the selected favorite data dictionary or nil if nothing is selected.
  */
+#ifndef SP_REFACTOR
 - (NSMutableDictionary *)selectedFavorite
 {
 	SPTreeNode *node = [self selectedFavoriteNode];
@@ -989,6 +1013,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 	}	
 }
+#endif
 
 /**
  * Called after closing the SSH/SSL key selection sheet.
@@ -1041,6 +1066,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Called when the user dismisses either the import of export favorites panels.
  */
+#ifndef SP_REFACTOR
+
 - (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
 	if (returnCode == NSOKButton) {
@@ -1061,6 +1088,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 }
 
+#endif
+
 /**
  * Alert sheet callback method - invoked when the error sheet is closed.
  */
@@ -1069,11 +1098,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (returnCode == NSAlertAlternateReturn) {
 		[self setType:SPSocketConnection];
 		[self setHost:@""];
+#ifndef SP_REFACTOR
 		[self _updateFavoritePasswordsFromField:standardSQLHostField];
+#endif
 	} 
 	else {
 		[self setHost:@"127.0.0.1"];
+#ifndef SP_REFACTOR
 		[self _updateFavoritePasswordsFromField:standardSQLHostField];
+#endif
 	}
 }
 
@@ -1104,6 +1137,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Sorts the connection favorites based on the selected criteria.
  */
+
+#ifndef SP_REFACTOR
 - (void)_sortFavorites
 {
     NSString *sortKey = SPFavoriteNameKey;
@@ -1131,6 +1166,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 }
+#endif
 
 /**
  * Sorts the supplied tree node using the supplied sort key.
@@ -1211,6 +1247,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Updates the favorite's host when the type changes.
  */
+
+#ifndef SP_REFACTOR
+
 - (void)_favoriteTypeDidChange
 {	
 	NSDictionary *favorite = [self selectedFavorite];
@@ -1273,6 +1312,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 }
 
+#endif
+
 /**
  * Restores the connection interface to its original state.
  */
@@ -1309,6 +1350,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Revert the connect button back to its original selector
 	[connectButton setAction:@selector(initiateConnection:)];
 }
+
+#ifndef SP_REFACTOR
 
 /**
  * Selected the supplied node in the favorites outline view.
@@ -1409,6 +1452,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	return favoriteNode;
 }
+#endif
 
 /**
  * Strips any invalid characters form the supplied string. Invalid is defined as any characters that should
@@ -1421,6 +1465,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Check all fields used in the keychain names against the old values for that
  * favorite, and update the keychain names to match if necessary.
@@ -1519,6 +1564,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		currentFavorite = [[[[self selectedFavoriteNode] representedObject] nodeFavorite] copy];
 	}
 }
+#endif
 
 #pragma mark -
 
@@ -1528,6 +1574,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	
 	// Unregister observers
+#ifndef SP_REFACTOR
 	[self removeObserver:self forKeyPath:SPFavoriteTypeKey];
 	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
 	[self removeObserver:self forKeyPath:SPFavoriteHostKey];
@@ -1547,11 +1594,16 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey];
+#endif
 
+#ifndef SP_REFACTOR
 	[keychain release];
+#endif
 	[prefs release];
 	
+#ifndef SP_REFACTOR
 	[folderImage release], folderImage = nil;
+#endif
 	
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
@@ -1569,7 +1621,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
 
+#ifndef SP_REFACTOR
 	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+#endif
     
 	[super dealloc];
 }

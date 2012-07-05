@@ -26,9 +26,6 @@
 #import "SPConnectionControllerDelegateProtocol.h"
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
 
-#ifndef SP_REFACTOR /* headers */
-#endif
-
 @class SPDatabaseDocument, 
 	   SPFavoritesController, 
 	   SPSSHTunnel,
@@ -64,17 +61,15 @@
 	SPKeychain *keychain;
 	NSView *databaseConnectionSuperview;
 	NSSplitView *databaseConnectionView;
-	NSOpenPanel *keySelectionPanel;
 #endif
+	NSOpenPanel *keySelectionPanel;
 	NSUserDefaults *prefs;
 
-#ifndef SP_REFACTOR	/* ivars */
 	BOOL cancellingConnection;
 	BOOL isConnecting;
 	
 	// Standard details
 	NSInteger previousType;
-#endif
 	NSInteger type;
 	NSString *name;
 	NSString *host;
@@ -103,7 +98,6 @@
 
 	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
-#ifndef SP_REFACTOR	/* ivars */
 	NSString *connectionKeychainItemAccount;
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
@@ -114,7 +108,9 @@
 	IBOutlet NSSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
 	IBOutlet NSTextField *connectionInstructionsTextField;
+#ifndef SP_REFACTOR
 	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
+#endif
 	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 
 	IBOutlet NSWindow *errorDetailWindow;
@@ -161,7 +157,6 @@
 	
 	BOOL isEditing;
     BOOL reverseFavoritesSort;
-#endif
 	BOOL initComplete;
 	BOOL mySQLConnectionCancelled;
 	BOOL favoriteNameFieldWasTouched;
@@ -199,21 +194,22 @@
 @property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
-#ifndef SP_REFACTOR	/* ivars */
-
 @property (readwrite, retain) NSString *connectionKeychainItemName;
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+
+#ifdef SP_REFACTOR
+@property (readwrite, assign) SPDatabaseDocument *dbDocument;
 #endif
 
 @property (readonly, assign) BOOL isConnecting;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
 - (IBAction)cancelMySQLConnection:(id)sender;
 
+#ifndef SP_REFACTOR
 // Interface interaction
 - (IBAction)nodeDoubleClicked:(id)sender;
 - (IBAction)chooseKeyLocation:(id)sender;

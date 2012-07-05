@@ -60,17 +60,21 @@
 
 - (IBAction)paste:(id)sender
 {
+#ifndef SP_REFACTOR
 	// Try to create an undo group
 	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
 		[[self delegate] setWasCutPaste];
+#endif
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
+#ifndef SP_REFACTOR
 	// Try to create an undo group
 	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
 		[[self delegate] setWasCutPaste];
+#endif
 	[super cut:sender];
 }
 
@@ -133,6 +137,7 @@
 		}
 	}
 
+#ifndef SP_REFACTOR
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
 	if([charactersIgnMod isEqualToString:@" "]
@@ -141,6 +146,7 @@
 		) {
 		[[self delegate] setDoGroupDueToChars];
 	}
+#endif
 
 	[super keyDown: theEvent];
 

@@ -37,12 +37,16 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
+#ifdef SP_REFACTOR /* patch */
+#import <SPMySQL/SPMySQLConnectionDelegate.h>
+#endif
+
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
 @interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol
 #ifdef SP_REFACTOR /* patch */
-	, NSTextFieldDelegate
+	, SPMySQLConnectionDelegate, NSTextFieldDelegate
 #endif
 >
 {
@@ -89,27 +93,32 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet id databaseRenameSheet;
 
 	IBOutlet NSProgressIndicator* queryProgressBar;
+#ifndef SP_REFACTOR
 	IBOutlet NSBox *taskProgressLayer;
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
 	IBOutlet NSButton *taskCancelButton;
 
 	IBOutlet id favoritesButton;
+#endif
 
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
 
+#ifndef SP_REFACTOR
 	IBOutlet id databaseCopyNameField;
 	IBOutlet NSButton *copyDatabaseDataButton;
 	IBOutlet id copyDatabaseMessageField;
 	IBOutlet id copyDatabaseButton;
+#endif
 
 	IBOutlet id databaseRenameNameField;
 	IBOutlet id renameDatabaseMessageField;
 	IBOutlet id renameDatabaseButton;
 
 	IBOutlet id chooseDatabaseButton;
+#ifndef SP_REFACTOR
 	IBOutlet id historyControl;
 	IBOutlet NSTabView *tableTabView;
 	
@@ -120,6 +129,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet id sidebarGrabber;
 	
 	IBOutlet NSPopUpButton *encodingPopUp;
+#endif
 	
 	IBOutlet NSTextView *customQueryTextView;
 	
@@ -130,6 +140,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet NSWindow *createTableSyntaxWindow;
 	IBOutlet NSWindow *connectionErrorDialog;
 
+#ifndef SP_REFACTOR
 	IBOutlet id saveConnectionAccessory;
 	IBOutlet NSButton *saveConnectionIncludeData;
 	IBOutlet NSButton *saveConnectionIncludeQuery;
@@ -144,6 +155,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet id inputTextWindowMessage;
 	IBOutlet id inputTextWindowSecureTextField;
 	NSInteger passwordSheetReturnCode;
+#endif
 	
 	// Master connection
 	SPMySQLConnection *mySQLConnection;
@@ -186,6 +198,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 
 	BOOL _workingTimeout;
 
+#ifndef SP_REFACTOR
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
 	CGFloat taskProgressValue;
@@ -200,7 +213,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
 	
-#ifndef SP_REFACTOR /* ivars */
 	WebView *printWebView;
 #endif
 	

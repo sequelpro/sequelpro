@@ -173,7 +173,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 #else
 	[self setAutopair:YES];
-	[self setAutouppercaseKeywords:YES];
+	//[self setAutouppercaseKeywords:YES]; // #18925
 #endif
 	[self setCompletionWasReinvokedAutomatically:NO];
 

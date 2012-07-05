@@ -50,6 +50,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)initiateMySQLConnection
 {	
+#ifndef SP_REFACTOR
 	[progressIndicatorText setStringValue:(sshTunnel) ? NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message") : NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
 	[progressIndicatorText display];
 	
@@ -57,6 +58,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[connectButton setAction:@selector(cancelMySQLConnection:)];
 	[connectButton setEnabled:YES];
 	[connectButton display];
+#endif
 	
 	[NSThread detachNewThreadSelector:@selector(initiateMySQLConnectionInBackground) toTarget:self withObject:nil];
 }
@@ -273,18 +275,22 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		return;
 	}
 	
+#ifndef SP_REFACTOR
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Connected", @"connection established message")];
 	[progressIndicatorText display];
+#endif
 	
 	// Stop the current tab's progress indicator
 	[dbDocument setIsProcessing:NO];
 	
 	// Successful connection!
+#ifndef SP_REFACTOR
 	[connectButton setEnabled:NO];
 	[connectButton display];
 	[progressIndicator stopAnimation:self];
 	[progressIndicatorText setHidden:YES];
 	[addToFavoritesButton setHidden:NO];
+#endif
 	
 	// If SSL was enabled, check it was established correctly
 	if (useSSL && ([self type] == SPTCPIPConnection || [self type] == SPSocketConnection)) {
@@ -292,13 +298,17 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			SPBeginAlertSheet(NSLocalizedString(@"SSL connection not established", @"SSL requested but not used title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil, NSLocalizedString(@"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.", @"SSL connection requested but not established error detail"));
 		} 
 		else {
+#ifndef SP_REFACTOR
 			[dbDocument setStatusIconToImageWithName:@"titlebarlock"]; 
+#endif
 		}
 	}
 	
+#ifndef SP_REFACTOR
 	// Re-enable favorites table view
 	[favoritesOutlineView setEnabled:YES];
 	[(NSView *)favoritesOutlineView display];
+#endif
 	
 	// Release the tunnel if set - will now be retained by the connection
 	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
@@ -326,19 +336,25 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	}
 	
 	if (newState == SPMySQLProxyIdle) {
+#ifndef SP_REFACTOR
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
+#endif
 		
 		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages] rawErrorText:[theTunnel lastError]];
 	
 		[self _restoreConnectionInterface];
 	}
 	else if (newState == SPMySQLProxyConnected) {
+#ifndef SP_REFACTOR
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
+#endif
 		
 		[self initiateMySQLConnection];
 	} 
 	else {
+#ifndef SP_REFACTOR
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
+#endif
 	}
 }
 
@@ -363,6 +379,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)addConnectionToDocument
 {					
+#ifndef SP_REFACTOR
 	// Hide the connection view and restore the main view
 	[connectionView removeFromSuperviewWithoutNeedingDisplay];
 	[databaseConnectionView setHidden:NO];
@@ -371,6 +388,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	NSArray *toolbarItems = [[[dbDocument parentWindow] toolbar] items];
 	
 	for (NSUInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
+#endif
 	
 	if (connectionKeychainID) [dbDocument setKeychainID:connectionKeychainID];
 	
@@ -387,6 +405,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 {
 	BOOL isSSHTunnelBindError = NO;
 	
+#ifndef SP_REFACTOR
 	// Clean up the interface
 	[progressIndicator stopAnimation:self];
 	[progressIndicator display];
@@ -396,6 +415,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[addToFavoritesButton display];
 	[connectButton setEnabled:YES];
 	[dbDocument clearStatusIcon];
+#endif
 	
 	// Release as appropriate
 	if (sshTunnel) {
@@ -427,6 +447,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
+#ifndef SP_REFACTOR
 	// Restore the passwords from keychain for editing if appropriate
 	if (connectionKeychainItemName) {
 		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
@@ -435,6 +456,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if (connectionSSHKeychainItemName) {
 		[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
 	}
+#endif
 	
 	if (returnCode == NSAlertAlternateReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
@@ -456,8 +478,10 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[self setHost:SPLocalhostAddress];
 		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 		
+#ifndef SP_REFACTOR
 		// Change to standard TCP/IP connection view
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:YES];
+#endif
 		
 		// Initiate the connection after a half second delay to give the connection view a chance to resize
 		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
