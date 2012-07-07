@@ -58,6 +58,7 @@
 		173C839511AAD32A00B8B084 /* SPXMLExporterDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C838F11AAD32A00B8B084 /* SPXMLExporterDelegate.m */; };
 		1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */; };
 		1748D50C15A4444F003562F2 /* SPTableStructureLoading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748D50B15A4444F003562F2 /* SPTableStructureLoading.m */; };
+		1748D58615A83E54003562F2 /* SPWindowManagement.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748D58515A83E54003562F2 /* SPWindowManagement.m */; };
 		174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */ = {isa = PBXBuildFile; fileRef = 174CE11C10AB80B5008F892B /* DatabaseProcessList.xib */; };
 		174CE14210AB9281008F892B /* SPProcessListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 174CE14110AB9281008F892B /* SPProcessListController.m */; };
 		175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */; };
@@ -657,6 +658,8 @@
 		1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseData.m; sourceTree = "<group>"; };
 		1748D50A15A4444F003562F2 /* SPTableStructureLoading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableStructureLoading.h; sourceTree = "<group>"; };
 		1748D50B15A4444F003562F2 /* SPTableStructureLoading.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableStructureLoading.m; sourceTree = "<group>"; };
+		1748D58415A83E54003562F2 /* SPWindowManagement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPWindowManagement.h; sourceTree = "<group>"; };
+		1748D58515A83E54003562F2 /* SPWindowManagement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPWindowManagement.m; sourceTree = "<group>"; };
 		174A345112DA4ED000DB0ADE /* create-test-stubs.pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.perl; path = "create-test-stubs.pl"; sourceTree = "<group>"; };
 		174CE11D10AB80B5008F892B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseProcessList.xib; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
@@ -1957,6 +1960,8 @@
 				17E6414B0EF01EF6001BC333 /* SPAppController.m */,
 				1798AB8F1267924D000D946A /* SPAppleScriptSupport.h */,
 				1798AB901267924D000D946A /* SPAppleScriptSupport.m */,
+				1748D58415A83E54003562F2 /* SPWindowManagement.h */,
+				1748D58515A83E54003562F2 /* SPWindowManagement.m */,
 				17D3583C1533766800A654D7 /* Window */,
 				173567BA12AC1306000DCCEF /* Bundle Support */,
 				173E70A6107FF61D008733C9 /* Main View Controllers */,
@@ -3243,6 +3248,7 @@
 				17D5B49E1553059F00EF3BB3 /* SPViewCopy.m in Sources */,
 				176E14D115570FE300FAF326 /* SPBundleCommandRunner.m in Sources */,
 				1748D50C15A4444F003562F2 /* SPTableStructureLoading.m in Sources */,
+				1748D58615A83E54003562F2 /* SPWindowManagement.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -30,6 +30,7 @@
 #import "SPCustomQuery.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#import "SPWindowManagement.h"
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"

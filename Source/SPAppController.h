@@ -63,12 +63,6 @@
 
 - (IBAction)bundleCommandDispatcher:(id)sender;
 
-// Window management
-- (IBAction)newWindow:(id)sender;
-- (IBAction)newTab:(id)sender;
-- (IBAction)duplicateTab:(id)sender;
-- (NSWindow *) frontDocumentWindow;
-
 // IBAction methods
 - (IBAction)openAboutPanel:(id)sender;
 - (IBAction)openPreferences:(id)sender;

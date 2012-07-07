@@ -41,6 +41,7 @@
 #import "SPFavoritesController.h"
 #import "SPEditorTokens.h"
 #import "SPBundleCommandRunner.h"
+#import "SPWindowManagement.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -59,6 +60,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 @implementation SPAppController
 
 @synthesize lastBundleBlobFilesDirectory;
+
+#pragma mark -
+#pragma mark Initialisation
 
 /**
  * Initialise the application's main controller, setting itself as the app delegate.
@@ -150,17 +154,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
 		[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
 		
 		return NO;
 	}
+	
 	if ([menuItem action] == @selector(newTab:))
 	{
 		return ([[self frontDocumentWindow] attachedSheet] == nil);
 	}
+	
 	if ([menuItem action] == @selector(duplicateTab:))
 	{
 		return ([[self frontDocument] getConnection] != nil);
@@ -1221,121 +1226,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 #pragma mark -
-#pragma mark Window management
-
-/**
- * Create a new window, containing a single tab.
- */
-- (IBAction)newWindow:(id)sender
-{
-	static NSPoint cascadeLocation = {.x = 0, .y = 0};
-
-	// Create a new window controller, and set up a new connection view within it.
-	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
-	NSWindow *newWindow = [newWindowController window];
-
-	// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
-	// and convert to a top left point.
-	NSPoint topLeftPoint = [newWindow frame].origin;
-	topLeftPoint.y += [newWindow frame].size.height;
-
-	// The first window should use autosaving; subsequent windows should cascade.
-	// So attempt to set the frame autosave name; this will succeed for the very
-	// first window, and fail for others.
-	BOOL usedAutosave = [newWindow setFrameAutosaveName:@"DBView"];
-	if (!usedAutosave) {
-		[newWindow setFrameUsingName:@"DBView"];
-	}
-
-	// Add the connection view
-	[newWindowController addNewConnection:self];
-
-	// Cascade according to the statically stored cascade location.
-	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
-
-	// Set the window controller as the window's delegate
-	[newWindow setDelegate:newWindowController];
-
-	// Show the window, and perform frontmost tasks again once the window has drawn
-	[newWindowController showWindow:self];
-	[[newWindowController selectedTableDocument] didBecomeActiveTabInWindow];
-}
-
-/**
- * Create a new tab in the frontmost window.
- */
-- (IBAction)newTab:(id)sender
-{
-	SPWindowController *frontController = nil;
-
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			frontController = [aWindow windowController];
-			break;
-		}
-	}
-
-	// If no window was found, create a new one
-	if (!frontController) {
-		[self newWindow:self];
-	} else {
-		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
-		[frontController addNewConnection:self];
-	}
-}
-
-/**
- * Duplicate the current connection tab
- */
-- (IBAction)duplicateTab:(id)sender
-{
-	SPDatabaseDocument *theFrontDocument = [self frontDocument];
-	if (!theFrontDocument) return [self newTab:sender];
-
-	// Add a new tab to the window
-	if ([[self frontDocumentWindow] isMiniaturized]) [[self frontDocumentWindow] deminiaturize:self];
-	[[[self frontDocumentWindow] windowController] addNewConnection:self];
-
-	// Get the state of the previously-frontmost document
-	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:YES], @"connection",
-										[NSNumber numberWithBool:YES], @"history",
-										[NSNumber numberWithBool:YES], @"session",
-										[NSNumber numberWithBool:YES], @"query",
-										[NSNumber numberWithBool:YES], @"password",
-										nil];
-	NSMutableDictionary *theFrontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
-
-	// Ensure it's set to autoconnect
-	[theFrontState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
-
-	// Set the connection on the new tab
-	[[self frontDocument] setState:theFrontState];
-}
-
-/**
- * Retrieve the frontmost document window; returns nil if not found.
- */
-- (NSWindow *) frontDocumentWindow
-{
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			return aWindow;
-		}
-	}
-
-	return nil;
-}
-
-/**
- * When tab drags start, bring all the windows in front of other applications.
- */
-- (void)tabDragStarted:(id)sender
-{
-	[NSApp arrangeInFront:self];
-}
-
-#pragma mark -
 #pragma mark IBAction methods
 
 /**
@@ -2075,18 +1965,20 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
 {
-	[preferences removeObjectsForKeys:[NSArray arrayWithObjects:@"ContentFilters",
-																@"favorites",
-																@"lastSqlFileName",
-																@"NSNavLastRootDirectory",
-																@"openPath",
-																@"queryFavorites",
-																@"queryHistory",
-																@"tableColumnWidths",
-																@"savePath",
-																@"NSRecentDocumentRecords",
-																nil]];
-
+	[preferences removeObjectsForKeys:
+	 [NSArray arrayWithObjects:
+	  @"ContentFilters",
+	  @"favorites",
+	  @"lastSqlFileName",
+	  @"NSNavLastRootDirectory",
+	  @"openPath",
+	  @"queryFavorites",
+	  @"queryHistory",
+	  @"tableColumnWidths",
+	  @"savePath",
+	  @"NSRecentDocumentRecords",
+	  nil]];
+	
 	return preferences;
 }
 

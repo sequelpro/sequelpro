@@ -63,6 +63,7 @@ enum {
 #import "SPDatabaseStructure.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
+#import "SPWindowManagement.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
