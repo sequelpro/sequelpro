@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKQueryUpdateParameter.m
+//  QKQueryGenericParameter.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,42 +28,26 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKQueryUpdateParameter.h"
-#import "QKQueryConstants.h"
-
-@implementation QKQueryUpdateParameter
-
-#pragma mark -
-#pragma mark Initialisation
-
-+ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value
+@interface QKQueryGenericParameter : NSObject 
 {
-	return [[[QKQueryUpdateParameter alloc] initUpdateParamWithField:field value:value] autorelease];
+	id _value;
+	NSString *_field;
+	BOOL _useQuotes;
 }
 
-- (id)initUpdateParamWithField:(NSString *)field value:(id)value
-{
-	if ((self = [super init])) {
-		[self setField:field];
-		[self setValue:value];
-	}
-	
-	return self;
-}
+/**
+ * @property _field The field component of the parameter.
+ */
+@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
 
-#pragma mark -
+/**
+ * @property _quoteField Indicates whether or not this parameters field should be quoted.
+ */
+@property (readwrite, assign, getter=useQuotes, setter=setUseQuotes:) BOOL _useQuotes;
 
-- (NSString *)description
-{
-	NSMutableString *string = [NSMutableString string]; 
-	
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendFormat:@"%@%@%@", [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING, field, [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING];
-	[string appendString:@" = "];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
-}
+/**
+ *@property _value The value component of the parameter.
+ */
+@property (readwrite, retain, getter=value, setter=setValue:) id _value;
 
 @end

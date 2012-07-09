@@ -28,6 +28,8 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
+#import "QKQueryGenericParameter.h"
+
 /**
  * @class QKQueryUpdateParameter QKQueryUpdateParameter.h
  *
@@ -35,22 +37,7 @@
  *
  * QueryKit update query parameter class. 
  */
-@interface QKQueryUpdateParameter : NSObject 
-{
-	NSString *_field;
-	
-	id _value;
-}
-
-/**
- * @property _field The field component of the parameter.
- */
-@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
-
-/**
- *@property _value The value component of the parameter.
- */
-@property (readwrite, retain, getter=value, setter=setValue:) id _value;
+@interface QKQueryUpdateParameter : QKQueryGenericParameter
 
 + (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value;
 

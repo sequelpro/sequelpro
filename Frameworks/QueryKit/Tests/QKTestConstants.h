@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKQueryUpdateParameter.m
+//  QKTestConstants.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,42 +28,14 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKQueryUpdateParameter.h"
-#import "QKQueryConstants.h"
+extern NSString *QKTestTableName;
 
-@implementation QKQueryUpdateParameter
+extern NSString *QKTestFieldOne;
+extern NSString *QKTestFieldTwo;
+extern NSString *QKTestFieldThree;
+extern NSString *QKTestFieldFour;
 
-#pragma mark -
-#pragma mark Initialisation
+extern NSString *QKTestUpdateValueOne;
+extern NSString *QKTestUpdateValueTwo;
 
-+ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value
-{
-	return [[[QKQueryUpdateParameter alloc] initUpdateParamWithField:field value:value] autorelease];
-}
-
-- (id)initUpdateParamWithField:(NSString *)field value:(id)value
-{
-	if ((self = [super init])) {
-		[self setField:field];
-		[self setValue:value];
-	}
-	
-	return self;
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	NSMutableString *string = [NSMutableString string]; 
-	
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendFormat:@"%@%@%@", [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING, field, [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING];
-	[string appendString:@" = "];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
-}
-
-@end
+extern NSUInteger QKTestParameterOne;

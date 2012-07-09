@@ -55,7 +55,7 @@
 	
 	QKQueryType _queryType;
 	
-	BOOL _quoteFields;
+	BOOL _useQuotes;
 	BOOL _orderDescending;
 }
 
@@ -90,9 +90,9 @@
 @property (readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
 
 /**
- * @property _quoteFields Indicates whether or not the query's fields should be quoted.
+ * @property _useQuotes Indicates whether or not the query's fields should be quoted.
  */
-@property (readwrite, assign, getter=quoteFields, setter=setQuoteFields:) BOOL _quoteFields;
+@property (readwrite, assign, getter=useQuotes) BOOL _useQuotes;
 
 + (QKQuery *)queryTable:(NSString *)table;
 + (QKQuery *)selectQueryFromTable:(NSString *)table;
@@ -101,6 +101,8 @@
 
 - (NSString *)query;
 - (void)clear;
+
+- (void)setUseQuotes:(BOOL)quote;
 
 - (void)addField:(NSString *)field;
 - (void)addFields:(NSArray *)fields;

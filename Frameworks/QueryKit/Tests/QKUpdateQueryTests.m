@@ -29,21 +29,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKUpdateQueryTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne = @"test_field1";
-static NSString *QKTestFieldTwo = @"test_field2";
-
-static NSString *QKTestUpdateValueOne = @"update_one";
-static NSString *QKTestUpdateValueTwo = @"update_two";
-
-static NSUInteger QKTestParameterOne = 10;
+#import "QKTestConstants.h"
 
 @implementation QKUpdateQueryTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Setup
 
 - (void)setUp
 {
@@ -62,21 +53,39 @@ static NSUInteger QKTestParameterOne = 10;
 
 - (void)testUpdateQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"UPDATE"], @"query type");
+	STAssertTrue([[_query query] hasPrefix:@"UPDATE"], @"update query type");
 }
 
 - (void)testUpdateQueryFieldsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = '%@', %@ = '%@'", QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
+	NSString *query = [NSString stringWithFormat:@"UPDATE `%@` SET `%@` = '%@', `%@` = '%@'", QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
 	
-	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
+	STAssertTrue([[_query query] hasPrefix:query], @"update query fields");
 }
 
-- (void)testUpdateQueryConstraintsAreCorrect
+- (void)testUpdateQueryFieldsWithoutQuotesAreCorrect
 {
+	[_query setUseQuotes:NO];
+	
+	NSString *query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = '%@', %@ = '%@'", QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
+		
+	STAssertTrue([[_query query] hasPrefix:query], @"update query fields without quotes");
+}
+
+- (void)testUpdateQueryConstraintIsCorrect
+{
+	NSString *query = [NSString stringWithFormat:@"WHERE `%@` %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	
+	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"update query constraint");
+}
+
+- (void)testUpdateQueryConstraintWithoutQuotesIsCorrect
+{
+	[_query setUseQuotes:NO];
+	
 	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	
-	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
+	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"update query constraint without quotes");
 }
 
 @end

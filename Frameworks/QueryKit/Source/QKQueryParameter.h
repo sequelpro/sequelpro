@@ -29,6 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQueryOperators.h"
+#import "QKQueryGenericParameter.h"
 
 /**
  * @class QKQueryParameter QKQueryParameter.h
@@ -37,29 +38,15 @@
  *
  * QueryKit query parameter class. 
  */
-@interface QKQueryParameter : NSObject 
-{
-	NSString *_field;
-	
+@interface QKQueryParameter : QKQueryGenericParameter 
+{	
 	QKQueryOperator _operator;
-	
-	id _value;
 }
-
-/**
- * @property _field The field component of the parameter.
- */
-@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
 
 /**
  * @property _operator The operator component of the parameter.
  */
 @property (readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
-
-/**
- *@property _value The value component of the parameter.
- */
-@property (readwrite, retain, getter=value, setter=setValue:) id _value;
 
 + (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
 

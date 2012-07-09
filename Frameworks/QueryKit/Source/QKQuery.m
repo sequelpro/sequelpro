@@ -29,6 +29,8 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQuery.h"
+#import "QKQueryConstants.h"
+#import "QKQueryGenericParameter.h"
 
 static NSString *QKNoQueryTypeException = @"QKNoQueryType";
 static NSString *QKNoQueryTableException = @"QKNoQueryTable";
@@ -57,7 +59,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 @synthesize _queryType;
 @synthesize _fields;
 @synthesize _updateParameters;
-@synthesize _quoteFields;
+@synthesize _useQuotes;
 
 #pragma mark -
 #pragma mark Initialization
@@ -84,7 +86,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[self setUpdateParameters:[[NSMutableArray alloc] init]];
 		[self setParameters:[[NSMutableArray alloc] init]];
 		[self setQueryType:(QKQueryType)-1];
-		[self setQuoteFields:NO];
+		[self setUseQuotes:YES];
 		
 		_orderDescending = NO;
 		
@@ -127,6 +129,24 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 }
 
 #pragma mark -
+#pragma mark Accessors
+
+- (void)setUseQuotes:(BOOL)quote
+{
+	_useQuotes = quote;
+	
+	for (QKQueryParameter *param in _parameters)
+	{
+		[param setUseQuotes:_useQuotes];
+	}
+	
+	for (QKQueryUpdateParameter *param in _updateParameters)
+	{
+		[param setUseQuotes:_useQuotes];
+	}
+}
+
+#pragma mark -
 #pragma mark Fields
 
 /**
@@ -160,7 +180,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
  */
 - (void)addParameter:(QKQueryParameter *)parameter
 {
-	if ([parameter field] && ([[parameter field] length] > 0) && ((NSInteger)[parameter operator] > -1) && [parameter value]) {
+	if ([parameter field] && ([[parameter field] length] > 0) && ((NSInteger)[parameter operator] > -1) && [parameter value]) {		
 		[_parameters addObject:parameter];
 	} 
 }
@@ -183,7 +203,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
  */
 - (void)addFieldToUpdate:(QKQueryUpdateParameter *)parameter
 {
-	if ([parameter field] && ([[parameter field] length] > 0) && [parameter value]) {
+	if ([parameter field] && ([[parameter field] length] > 0) && [parameter value]) {		
 		[_updateParameters addObject:parameter];
 	}
 }
@@ -287,10 +307,10 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	}
 	
 	if (_database && [_database length] > 0) {
-		[_query appendFormat:@"%@.", _database];
+		[_query appendFormat:@"%@%@%@.", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, _database, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
 	}
 	
-	[_query appendString:_table];
+	[_query appendFormat:@"%@%@%@", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, _table, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
 	
 	if (isUpdate) {
 		[_query appendFormat:@" %@", [self _buildUpdateClause]];
@@ -326,17 +346,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		
 		if ([field length] == 0) continue;
 		
-		if (_quoteFields) {
-			[fields appendString:@"`"];
-		}
-		
-		[fields appendString:field];
-		
-		if (_quoteFields) {
-			[fields appendString:@"`"];
-		}
-		
-		[fields appendString:@", "];
+		[fields appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
 	}
 	
 	if ([fields hasSuffix:@", "]) {
@@ -357,8 +367,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (QKQueryParameter *param in _parameters)
 	{
-		[constraints appendFormat:@"%@", param];
-		
+		[constraints appendString:[param description]];
 		[constraints appendString:@" AND "];
 	}
 	
@@ -384,8 +393,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (NSString *field in _groupByFields)
 	{
-		[groupBy appendString:field];
-		[groupBy appendString:@", "];
+		[groupBy appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
 	}
 	
 	if ([groupBy hasSuffix:@", "]) {
@@ -410,8 +418,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (NSString *field in _orderByFields)
 	{
-		[orderBy appendString:field];
-		[orderBy appendString:@", "];
+		[orderBy appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
 	}
 	
 	if ([orderBy hasSuffix:@", "]) {

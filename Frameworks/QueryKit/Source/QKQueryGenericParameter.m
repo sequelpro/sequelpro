@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKQueryUpdateParameter.m
+//  QKQueryGenericParameter.m
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,24 +28,21 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKQueryUpdateParameter.h"
-#import "QKQueryConstants.h"
+#import "QKQueryGenericParameter.h"
 
-@implementation QKQueryUpdateParameter
+@implementation QKQueryGenericParameter
+
+@synthesize _field;
+@synthesize _useQuotes;
+@synthesize _value;
 
 #pragma mark -
 #pragma mark Initialisation
 
-+ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value
-{
-	return [[[QKQueryUpdateParameter alloc] initUpdateParamWithField:field value:value] autorelease];
-}
-
-- (id)initUpdateParamWithField:(NSString *)field value:(id)value
+- (id)init
 {
 	if ((self = [super init])) {
-		[self setField:field];
-		[self setValue:value];
+		[self setUseQuotes:YES];
 	}
 	
 	return self;
@@ -53,17 +50,12 @@
 
 #pragma mark -
 
-- (NSString *)description
+- (void)dealloc
 {
-	NSMutableString *string = [NSMutableString string]; 
+	if (_field) [_field release], _field = nil;
+	if (_value) [_value release], _value = nil;
 	
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendFormat:@"%@%@%@", [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING, field, [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING];
-	[string appendString:@" = "];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
+	[super dealloc];
 }
 
 @end

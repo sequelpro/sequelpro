@@ -29,16 +29,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKSelectQueryOrderByTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
+#import "QKTestConstants.h"
 
 @implementation QKSelectQueryOrderByTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Setup
 
 - (void)setUp
 {
@@ -53,43 +49,83 @@ static NSString *QKTestFieldTwo   = @"test_field2";
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"select query type");
 }
 
 - (void)testSelectQueryOrderByAscendingIsCorrect
 {	
 	[_query orderByField:QKTestFieldOne descending:NO];
 	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY `%@` ASC", QKTestFieldOne];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by");
+}
+
+- (void)testSelectQueryOrderByAscendingWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query orderByField:QKTestFieldOne descending:NO];
+	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ ASC", QKTestFieldOne];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by without quotes");
 }
 
 - (void)testSelectQueryOrderByMultipleFieldsAscendingIsCorrect
 {	
 	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:NO];
 	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY `%@`, `%@` ASC", QKTestFieldOne, QKTestFieldTwo];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by multiple fields ascending when quoted");
+}
+
+- (void)testSelectQueryOrderByMultipleFieldsAscendingWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:NO];
+	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ ASC", QKTestFieldOne, QKTestFieldTwo];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by multiple fields ascending without quotes");
 }
 
 - (void)testSelectQueryOrderByDescendingIsCorrect
 {	
 	[_query orderByField:QKTestFieldOne descending:YES];
 	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY `%@` DESC", QKTestFieldOne];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by descending");
+}
+
+- (void)testSelectQueryOrderByDescendingWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query orderByField:QKTestFieldOne descending:YES];
+	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ DESC", QKTestFieldOne];
 		
-	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by descending without quotes");
 }
 
 - (void)testSelectQueryOrderByMultipleFieldsDescendingIsCorrect
 {	
 	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:YES];
 	
+	NSString *query = [NSString stringWithFormat:@"ORDER BY `%@`, `%@` DESC", QKTestFieldOne, QKTestFieldTwo];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by multiple fields descending");
+}
+
+- (void)testSelectQueryOrderByMultipleFieldsDescendingWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:YES];
+	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ DESC", QKTestFieldOne, QKTestFieldTwo];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query order by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query order by multiple fields descending without quotes");
 }
 
 @end

@@ -29,16 +29,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKSelectQueryGroupByTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne = @"test_field1";
-static NSString *QKTestFieldTwo = @"test_field2";
+#import "QKTestConstants.h"
 
 @implementation QKSelectQueryGroupByTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Setup
 
 - (void)setUp
 {
@@ -53,26 +49,45 @@ static NSString *QKTestFieldTwo = @"test_field2";
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"select query type");
 }
 
 - (void)testSelectQueryGroupByIsCorrect
 {	
 	[_query groupByField:QKTestFieldOne];
 	
+	NSString *query = [NSString stringWithFormat:@"GROUP BY `%@`", QKTestFieldOne];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query group by");
+}
+
+- (void)testSelectQueryGroupByWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query groupByField:QKTestFieldOne];
+	
 	NSString *query = [NSString stringWithFormat:@"GROUP BY %@", QKTestFieldOne];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query group by without quotes");
 }
 
 - (void)testSelectQueryGroupByMultipleFieldsIsCorrect
 {	
 	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
 	
-	NSString *query = [NSString stringWithFormat:@"GROUP BY %@, %@", QKTestFieldOne, QKTestFieldTwo];
+	NSString *query = [NSString stringWithFormat:@"GROUP BY `%@`, `%@`", QKTestFieldOne, QKTestFieldTwo];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
+	STAssertTrue([[_query query] hasSuffix:query], @"select query group by multiple fields");
 }
 
+- (void)testSelectQueryGroupByMultipleFieldsWithoutQuotesIsCorrect
+{	
+	[_query setUseQuotes:NO];
+	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
+	
+	NSString *query = [NSString stringWithFormat:@"GROUP BY %@, %@", QKTestFieldOne, QKTestFieldTwo];
+	
+	STAssertTrue([[_query query] hasSuffix:query], @"select query group by multiple fields without quotes");
+}
 
 @end
