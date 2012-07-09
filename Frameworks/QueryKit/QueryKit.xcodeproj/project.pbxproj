@@ -13,8 +13,8 @@
 		1719E47E151E8CA7003F98C5 /* QKQueryUpdateParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1719E47C151E8CA7003F98C5 /* QKQueryUpdateParameter.m */; };
 		1719E4BD151F51F1003F98C5 /* QKUpdateQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */; };
 		17577F6715A98FEA00CDF67A /* QKTestConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 17577F6615A98FEA00CDF67A /* QKTestConstants.m */; };
-		17577FC615A99AC000CDF67A /* QKQueryConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17577FC415A99AC000CDF67A /* QKQueryConstants.h */; };
-		1757801E15A9A14400CDF67A /* QKQueryGenericParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1757801C15A9A14400CDF67A /* QKQueryGenericParameter.h */; };
+		17577FC615A99AC000CDF67A /* QKQueryConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17577FC415A99AC000CDF67A /* QKQueryConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1757801E15A9A14400CDF67A /* QKQueryGenericParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1757801C15A9A14400CDF67A /* QKQueryGenericParameter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1757801F15A9A14400CDF67A /* QKQueryGenericParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757801D15A9A14400CDF67A /* QKQueryGenericParameter.m */; };
 		17E5951F14F301DF0054EE08 /* QKQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5951614F301DF0054EE08 /* QKQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E5952014F301DF0054EE08 /* QKQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E5951714F301DF0054EE08 /* QKQuery.m */; };
