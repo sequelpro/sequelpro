@@ -89,7 +89,7 @@ then
 	usage
 fi
 
-printf "Trimming application bundle '`basename $APP_PATH`' at '${APP_PATH}'...\n\n"
+printf "Trimming application bundle '`basename \"$APP_PATH\"`' at '${APP_PATH}'...\n\n"
 
 # Remove unnecessary files
 if [ $REMOVE_FILES ]
