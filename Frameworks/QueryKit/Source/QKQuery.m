@@ -60,6 +60,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 @synthesize _fields;
 @synthesize _updateParameters;
 @synthesize _useQuotes;
+@synthesize _groupByFields;
+@synthesize _orderByFields;
 
 #pragma mark -
 #pragma mark Initialization
@@ -85,7 +87,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		[self setFields:[[NSMutableArray alloc] init]];
 		[self setUpdateParameters:[[NSMutableArray alloc] init]];
 		[self setParameters:[[NSMutableArray alloc] init]];
-		[self setQueryType:(QKQueryType)-1];
+		[self setQueryType:QKUnknownQuery];
 		[self setUseQuotes:YES];
 		
 		_orderDescending = NO;
@@ -119,7 +121,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 {
 	[self setTable:nil];
 	[self setDatabase:nil];
-	[self setQueryType:(QKQueryType)-1];
+	[self setUseQuotes:YES];
+	[self setQueryType:QKUnknownQuery];
 	
 	[_fields removeAllObjects];
 	[_parameters removeAllObjects];

@@ -38,16 +38,16 @@
 /**
  * @property _field The field component of the parameter.
  */
-@property (readwrite, retain, getter=field, setter=setField:) NSString *_field;
+@property(readwrite, retain, getter=field, setter=setField:) NSString *_field;
 
 /**
  * @property _quoteField Indicates whether or not this parameters field should be quoted.
  */
-@property (readwrite, assign, getter=useQuotes, setter=setUseQuotes:) BOOL _useQuotes;
+@property(readwrite, assign, getter=useQuotes, setter=setUseQuotes:) BOOL _useQuotes;
 
 /**
  *@property _value The value component of the parameter.
  */
-@property (readwrite, retain, getter=value, setter=setValue:) id _value;
+@property(readwrite, retain, getter=value, setter=setValue:) id _value;
 
 @end

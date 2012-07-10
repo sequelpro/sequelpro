@@ -46,7 +46,7 @@
 /**
  * @property _operator The operator component of the parameter.
  */
-@property (readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
+@property(readwrite, assign, getter=operator, setter=setOperator:) QKQueryOperator _operator;
 
 + (QKQueryParameter *)queryParamWithField:(NSString *)field operator:(QKQueryOperator)op value:(id)value;
 

@@ -28,7 +28,8 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-NSString *QKTestTableName = @"test_table";
+NSString *QKTestDatabaseName = @"test_database";
+NSString *QKTestTableName    = @"test_table";
 
 NSString *QKTestFieldOne   = @"test_field1";
 NSString *QKTestFieldTwo   = @"test_field2";

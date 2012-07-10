@@ -35,6 +35,7 @@
  */
 typedef enum
 {
+	QKUnknownQuery = -1,
 	QKSelectQuery,
 	QKUpdateQuery,
 	QKInsertQuery,

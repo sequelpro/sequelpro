@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKTestConstants.h
+//  QKQueryTests.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 9, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,15 +28,12 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-extern NSString *QKTestDatabaseName;
-extern NSString *QKTestTableName;
+#import <QueryKit/QueryKit.h>
+#import <SenTestingKit/SenTestingKit.h>
 
-extern NSString *QKTestFieldOne;
-extern NSString *QKTestFieldTwo;
-extern NSString *QKTestFieldThree;
-extern NSString *QKTestFieldFour;
+@interface QKQueryTests : SenTestCase 
+{
+	QKQuery *_query;
+}
 
-extern NSString *QKTestUpdateValueOne;
-extern NSString *QKTestUpdateValueTwo;
-
-extern NSUInteger QKTestParameterOne;
+@end

@@ -62,37 +62,41 @@
 /**
  * @property _database The database the query is to be run against (optional).
  */
-@property (readwrite, retain, getter=database, setter=setDatabase:) NSString *_database;
+@property(readwrite, retain, getter=database, setter=setDatabase:) NSString *_database;
 
 /**
  * @property _table The table the query is to be run against.
  */
-@property (readwrite, retain, getter=table, setter=setTable:) NSString *_table; 
+@property(readwrite, retain, getter=table, setter=setTable:) NSString *_table; 
 
 /**
  * @property _parameters The parameters (constraints) of the query.
  */
-@property (readwrite, retain, getter=parameters, setter=setParameters:) NSMutableArray *_parameters;
+@property(readwrite, retain, getter=parameters, setter=setParameters:) NSMutableArray *_parameters;
 
 /**
  * @property _fields The fields of the query.
  */
-@property (readwrite, retain, getter=fields, setter=setFields:) NSMutableArray *_fields;
+@property(readwrite, retain, getter=fields, setter=setFields:) NSMutableArray *_fields;
 
 /**
  * @property _updateFields The fields of an UPDATE query.
  */
-@property (readwrite, retain, getter=updateParameters, setter=setUpdateParameters:) NSMutableArray *_updateParameters;
+@property(readwrite, retain, getter=updateParameters, setter=setUpdateParameters:) NSMutableArray *_updateParameters;
 
 /**
  * @property _queryType The type of query to be built.
  */
-@property (readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
+@property(readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
 
 /**
  * @property _useQuotes Indicates whether or not the query's fields should be quoted.
  */
-@property (readwrite, assign, getter=useQuotes) BOOL _useQuotes;
+@property(readwrite, assign, getter=useQuotes) BOOL _useQuotes;
+
+@property(readonly, getter=groupByFields) NSMutableArray *_groupByFields;
+
+@property(readonly, getter=orderByFields) NSMutableArray *_orderByFields;
 
 + (QKQuery *)queryTable:(NSString *)table;
 + (QKQuery *)selectQueryFromTable:(NSString *)table;
