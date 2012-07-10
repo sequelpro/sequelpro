@@ -1,11 +1,11 @@
 //
-//  $Id: QueryKit.h 3431 2011-09-26 22:26:24Z stuart02 $
+//  $Id$
 //
-//  QueryKit.h
+//  QKQueryDatabases.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on July 10, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,9 +28,14 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import <QueryKit/QKQuery.h>
-#import <QueryKit/QKQueryTypes.h>
-#import <QueryKit/QKQueryOperators.h>
-#import <QueryKit/QKQueryDatabases.h>
-#import <QueryKit/QKQueryParameter.h>
-#import <QueryKit/QKQueryUtilities.h>
+/**
+ * @enum QKQueryDatabase
+ *
+ * Used to specify the underlying database system we're generating queries for. 
+ */
+typedef enum
+{
+	QKDatabaseMySQL,
+	QKDatabasePostgreSQL
+}
+QKQueryDatabase;
