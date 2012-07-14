@@ -231,8 +231,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Convenience method for adding a new parameter.
  *
- * @param field
- * @param value
+ * @param field The field name of the parameter.
+ * @param value The field value of the parameter.
  */
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value
 {	
@@ -257,8 +257,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Convenience method for adding a new update parameter.
  *
- * @param field
- * @param value
+ * @param field The field name of the update parameter.
+ * @param value The field value of the update parameter.
  */
 - (void)addFieldToUpdate:(NSString *)field toValue:(id)value
 {
@@ -271,7 +271,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Adds the supplied field to the query's GROUP BY clause.
  *
- * @param field
+ * @param field The field to GROUP BY.
  */
 - (void)groupByField:(NSString *)field
 {
@@ -281,7 +281,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Convenience method for adding more than one field to the query's GROUP BY clause.
  *
- * @param fields
+ * @param fields An array of fields to GROUP BY.
  */
 - (void)groupByFields:(NSArray *)fields
 {
@@ -297,8 +297,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Adds the supplied field to the query's ORDER BY clause.
  *
- * @param field
- * @param descending
+ * @param field      The field to ORDER BY.
+ * @param descending Indicates whether the ORDER BY should be descending.
  */
 - (void)orderByField:(NSString *)field descending:(BOOL)descending
 {
