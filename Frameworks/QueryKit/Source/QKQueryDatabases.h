@@ -35,6 +35,7 @@
  */
 typedef enum
 {
+	QKDatabaseUnknown = -1,
 	QKDatabaseMySQL,
 	QKDatabasePostgreSQL
 }

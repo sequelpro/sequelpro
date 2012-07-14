@@ -40,7 +40,8 @@
 {
 	_query = [QKQuery selectQueryFromTable:QKTestTableName];
 	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
+	[_query setQueryDatabase:QKDatabaseMySQL];
 	
 	[_query setDatabase:QKTestDatabaseName];
 	
@@ -63,13 +64,17 @@
 	
 	STAssertNil([_query table], @"query table");
 	STAssertNil([_query database], @"query database");
-	STAssertTrue([_query useQuotes], @"query use quotes");
-	STAssertTrue([_query queryType] == QKUnknownQuery, @"query type");
+	
+	STAssertTrue([_query useQuotedIdentifiers], @"query use quoted identifiers");
+	STAssertTrue([[_query identifierQuote] isEqualToString:EMPTY_STRING], @"query identifier quote");
 	STAssertTrue([[_query fields] count] == 0, @"query fields");
 	STAssertTrue([[_query parameters] count] == 0, @"query parameters");
 	STAssertTrue([[_query updateParameters] count] == 0, @"query update parameters");
 	STAssertTrue([[_query groupByFields] count] == 0, @"query group by fields");
 	STAssertTrue([[_query orderByFields] count] == 0, @"query order by fields");
+	
+	STAssertEquals([_query queryType], QKUnknownQuery, @"query type");
+	STAssertEquals([_query queryDatabase], QKDatabaseUnknown, @"query database");
 }
 
 @end

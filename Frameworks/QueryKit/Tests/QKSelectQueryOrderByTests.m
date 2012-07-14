@@ -63,7 +63,7 @@
 
 - (void)testSelectQueryOrderByAscendingWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query orderByField:QKTestFieldOne descending:NO];
 	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ ASC", QKTestFieldOne];
@@ -82,7 +82,7 @@
 
 - (void)testSelectQueryOrderByMultipleFieldsAscendingWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:NO];
 	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ ASC", QKTestFieldOne, QKTestFieldTwo];
@@ -101,7 +101,7 @@
 
 - (void)testSelectQueryOrderByDescendingWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query orderByField:QKTestFieldOne descending:YES];
 	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@ DESC", QKTestFieldOne];
@@ -120,7 +120,7 @@
 
 - (void)testSelectQueryOrderByMultipleFieldsDescendingWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query orderByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil] descending:YES];
 	
 	NSString *query = [NSString stringWithFormat:@"ORDER BY %@, %@ DESC", QKTestFieldOne, QKTestFieldTwo];

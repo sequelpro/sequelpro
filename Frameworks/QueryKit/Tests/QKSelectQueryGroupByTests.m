@@ -63,7 +63,7 @@
 
 - (void)testSelectQueryGroupByWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query groupByField:QKTestFieldOne];
 	
 	NSString *query = [NSString stringWithFormat:@"GROUP BY %@", QKTestFieldOne];
@@ -82,7 +82,7 @@
 
 - (void)testSelectQueryGroupByMultipleFieldsWithoutQuotesIsCorrect
 {	
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
 	
 	NSString *query = [NSString stringWithFormat:@"GROUP BY %@, %@", QKTestFieldOne, QKTestFieldTwo];

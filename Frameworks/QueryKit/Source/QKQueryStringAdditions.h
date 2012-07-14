@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKQueryUpdateParameter.m
+//  QKQueryStringAdditions.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 24, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 12, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,42 +28,8 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKQueryUpdateParameter.h"
-#import "QKQueryConstants.h"
+@interface NSString (QKQueryStringAdditions)
 
-@implementation QKQueryUpdateParameter
-
-#pragma mark -
-#pragma mark Initialisation
-
-+ (QKQueryUpdateParameter *)queryUpdateParamWithField:(NSString *)field value:(id)value
-{
-	return [[[QKQueryUpdateParameter alloc] initUpdateParamWithField:field value:value] autorelease];
-}
-
-- (id)initUpdateParamWithField:(NSString *)field value:(id)value
-{
-	if ((self = [super init])) {
-		[self setField:field];
-		[self setValue:value];
-	}
-	
-	return self;
-}
-
-#pragma mark -
-
-- (NSString *)description
-{
-	NSMutableString *string = [NSMutableString string]; 
-	
-	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	[string appendFormat:@"%1$@%2$@%1$@", [self useQuotedIdentifier] ? _identiferQuote : EMPTY_STRING, field];
-	[string appendString:@" = "];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
-	
-	return string;
-}
+- (NSString *)quotedStringWithCharacter:(NSString *)character;
 
 @end

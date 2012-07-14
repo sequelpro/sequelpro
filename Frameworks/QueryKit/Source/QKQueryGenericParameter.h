@@ -31,8 +31,10 @@
 @interface QKQueryGenericParameter : NSObject 
 {
 	id _value;
+	BOOL _useQuotedIdentifier;
+	
 	NSString *_field;
-	BOOL _useQuotes;
+	NSString *_identiferQuote;
 }
 
 /**
@@ -41,9 +43,14 @@
 @property(readwrite, retain, getter=field, setter=setField:) NSString *_field;
 
 /**
- * @property _quoteField Indicates whether or not this parameters field should be quoted.
+ * @property _identifierQuote
  */
-@property(readwrite, assign, getter=useQuotes, setter=setUseQuotes:) BOOL _useQuotes;
+@property(readwrite, retain, getter=identifierQuote, setter=setIdentifierQuote:) NSString *_identiferQuote;
+
+/**
+ * @property _useQuotedIdentifier Indicates whether or not this parameters field should be quoted.
+ */
+@property(readwrite, assign, getter=useQuotedIdentifier, setter=setUseQuotedIdentifier:) BOOL _useQuotedIdentifier;
 
 /**
  *@property _value The value component of the parameter.

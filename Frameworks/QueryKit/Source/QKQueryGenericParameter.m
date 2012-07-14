@@ -33,7 +33,8 @@
 @implementation QKQueryGenericParameter
 
 @synthesize _field;
-@synthesize _useQuotes;
+@synthesize _useQuotedIdentifier;
+@synthesize _identiferQuote;
 @synthesize _value;
 
 #pragma mark -
@@ -42,7 +43,8 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		[self setUseQuotes:YES];
+		[self setUseQuotedIdentifier:YES];
+		[self setIdentifierQuote:EMPTY_STRING];
 	}
 	
 	return self;

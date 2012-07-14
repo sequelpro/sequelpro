@@ -29,6 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQueryTypes.h"
+#import "QKQueryDatabases.h"
 #import "QKQueryOperators.h"
 #import "QKQueryParameter.h"
 #import "QKQueryUpdateParameter.h"
@@ -44,6 +45,7 @@
 {
 	NSString *_database;
 	NSString *_table;
+	NSString *_identifierQuote;
 	
 	NSMutableString *_query;
 	
@@ -54,8 +56,9 @@
 	NSMutableArray *_orderByFields;
 	
 	QKQueryType _queryType;
+	QKQueryDatabase _queryDatabase;
 	
-	BOOL _useQuotes;
+	BOOL _useQuotedIdentifiers;
 	BOOL _orderDescending;
 }
 
@@ -90,23 +93,43 @@
 @property(readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
 
 /**
- * @property _useQuotes Indicates whether or not the query's fields should be quoted.
+ * @property _queryDatabase The underlying database system this query will be run against.
  */
-@property(readwrite, assign, getter=useQuotes) BOOL _useQuotes;
+@property(readwrite, assign, getter=queryDatabase, setter=setQueryDatabase:) QKQueryDatabase _queryDatabase;
 
+/**
+ * @property _useQuotedIdentifiers Indicates whether or not the query's fields should be quoted.
+ */
+@property(readwrite, assign, getter=useQuotedIdentifiers) BOOL _useQuotedIdentifiers;
+
+/**
+ * @property _groupByFields The group by fields of the query.
+ */
 @property(readonly, getter=groupByFields) NSMutableArray *_groupByFields;
 
+/**
+ * @property _orderByFields The order by fields of the query.
+ */
 @property(readonly, getter=orderByFields) NSMutableArray *_orderByFields;
 
+/**
+ * @property _identifierQuote The character to use when quoting identifiers.
+ */
+@property(readonly, getter=identifierQuote) NSString *_identifierQuote;
+
 + (QKQuery *)queryTable:(NSString *)table;
++ (QKQuery *)queryTable:(NSString *)table database:(NSString *)database;
+
 + (QKQuery *)selectQueryFromTable:(NSString *)table;
++ (QKQuery *)selectQueryFromTable:(NSString *)table database:(NSString *)database;
 
 - (id)initWithTable:(NSString *)table;
+- (id)initWithTable:(NSString *)table database:(NSString *)database;
 
 - (NSString *)query;
 - (void)clear;
 
-- (void)setUseQuotes:(BOOL)quote;
+- (void)setUseQuotedIdentifiers:(BOOL)quote;
 
 - (void)addField:(NSString *)field;
 - (void)addFields:(NSArray *)fields;

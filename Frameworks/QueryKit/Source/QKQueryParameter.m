@@ -63,8 +63,8 @@
 		
 	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
-	[string appendFormat:@"%@%@%@", [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING, field, [self useQuotes] ? QUERY_QUOTE : EMPTY_STRING];
-	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
+	[string appendFormat:@"%1$@%2$@%1$@", [self useQuotedIdentifier] ? _identiferQuote : EMPTY_STRING, field];
+	[string appendFormat:@" %@ ", [QKQueryUtilities stringRepresentationOfQueryOperator:_operator]];
 	[string appendFormat:![_value isKindOfClass:[NSNumber class]] ? @"'%@'" : @"%@", [_value description]];
 	
 	return string;

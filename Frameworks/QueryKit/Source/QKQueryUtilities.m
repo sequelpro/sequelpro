@@ -35,13 +35,34 @@ static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOpe
 @implementation QKQueryUtilities
 
 /**
- * Returns a string representation of the supplied operator type.
+ * Returns the identifier quote character for the supplied database.
+ *
+ * @param database The database to return the character for
+ *
+ * @return The character as a string.
+ */
++ (NSString *)identifierQuoteCharacterForDatabase:(QKQueryDatabase)database
+{
+	NSString *character = EMPTY_STRING;
+	
+	if (database == QKDatabaseMySQL) {
+		character = @"`";
+	}
+	else if (database == QKDatabasePostgreSQL) {
+		character = @"""";
+	}
+	
+	return character;
+}
+
+/**
+ * Returns a string representation of the supplied operator.
  *
  * @param operator The operator
  *
  * @return A string represenation of the operator.
  */
-+ (NSString *)operatorRepresentationForType:(QKQueryOperator)operator
++ (NSString *)stringRepresentationOfQueryOperator:(QKQueryOperator)operator
 {
 	NSString *opString = nil;
 	

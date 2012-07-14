@@ -65,7 +65,7 @@
 
 - (void)testSelectQueryFieldWithoutQuotesIsCorrect
 {
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	
 	NSString *query = [NSString stringWithFormat:@"SELECT %@", QKTestFieldOne];
 	
@@ -81,7 +81,7 @@
 
 - (void)testSelectQueryMultipleFieldsWithoutQuotesAreCorrect
 {
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	
 	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
 	
@@ -90,16 +90,16 @@
 
 - (void)testSelectQueryConstraintsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"WHERE `%@` %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	NSString *query = [NSString stringWithFormat:@"WHERE `%@` %@ %@", QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 			
 	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"select query constraint");
 }
 
 - (void)testSelectQueryConstraintsWithoutQuotesAreCorrect
 {
-	[_query setUseQuotes:NO];
+	[_query setUseQuotedIdentifiers:NO];
 	
-	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	
 	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"select query constraint without quotes");
 }

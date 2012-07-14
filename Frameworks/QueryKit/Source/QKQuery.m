@@ -29,6 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQuery.h"
+#import "QKQueryUtilities.h"
 #import "QKQueryConstants.h"
 #import "QKQueryGenericParameter.h"
 
@@ -55,11 +56,13 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 @synthesize _database;
 @synthesize _table;
+@synthesize _identifierQuote;
 @synthesize _parameters;
 @synthesize _queryType;
+@synthesize _queryDatabase;
 @synthesize _fields;
 @synthesize _updateParameters;
-@synthesize _useQuotes;
+@synthesize _useQuotedIdentifiers;
 @synthesize _groupByFields;
 @synthesize _orderByFields;
 
@@ -68,29 +71,54 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 + (QKQuery *)queryTable:(NSString *)table
 {
-	return [[[QKQuery alloc] initWithTable:table] autorelease];
+	return [QKQuery queryTable:table database:nil];	
+}
+
++ (QKQuery *)queryTable:(NSString *)table database:(NSString *)database
+{
+	return [[[QKQuery alloc] initWithTable:table database:database] autorelease];
 }
 
 + (QKQuery *)selectQueryFromTable:(NSString *)table
+{	
+	return [QKQuery selectQueryFromTable:table database:nil];
+}
+
++ (QKQuery *)selectQueryFromTable:(NSString *)table database:(NSString *)database
 {
-	QKQuery *query = [[[QKQuery alloc] initWithTable:table] autorelease];
+	QKQuery *query = [[[QKQuery alloc] initWithTable:table database:database] autorelease];
 	
 	[query setQueryType:QKSelectQuery];
 	
 	return query;
 }
 
+- (id)init
+{
+	return [self initWithTable:nil];
+}
+
 - (id)initWithTable:(NSString *)table
+{
+	return [self initWithTable:table database:nil];
+}
+
+- (id)initWithTable:(NSString *)table database:(NSString *)database
 {
 	if ((self = [super init])) {
 		[self setTable:table];
+		[self setDatabase:database];
 		[self setFields:[[NSMutableArray alloc] init]];
 		[self setUpdateParameters:[[NSMutableArray alloc] init]];
 		[self setParameters:[[NSMutableArray alloc] init]];
 		[self setQueryType:QKUnknownQuery];
-		[self setUseQuotes:YES];
+		[self setUseQuotedIdentifiers:YES];
+		
+		// Default to MySQL
+		[self setQueryDatabase:QKDatabaseMySQL];
 		
 		_orderDescending = NO;
+		_identifierQuote = EMPTY_STRING;
 		
 		_groupByFields = [[NSMutableArray alloc] init];
 		_orderByFields = [[NSMutableArray alloc] init];
@@ -111,7 +139,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
  */
 - (NSString *)query
 {
-	return _query ? [self _buildQuery] : @""; 
+	return _query ? [self _buildQuery] : EMPTY_STRING; 
 }
 
 /**
@@ -121,31 +149,41 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 {
 	[self setTable:nil];
 	[self setDatabase:nil];
-	[self setUseQuotes:YES];
+	[self setUseQuotedIdentifiers:YES];
 	[self setQueryType:QKUnknownQuery];
+	[self setQueryDatabase:QKDatabaseUnknown];
 	
 	[_fields removeAllObjects];
 	[_parameters removeAllObjects];
 	[_updateParameters removeAllObjects];
 	[_groupByFields removeAllObjects];
 	[_orderByFields removeAllObjects];
+	
+	_identifierQuote = EMPTY_STRING;
+	
+	if (_query) [_query release], _query = [[NSMutableString alloc] init];
 }
 
 #pragma mark -
 #pragma mark Accessors
 
-- (void)setUseQuotes:(BOOL)quote
+/**
+ * Sets whether to quote identifiers in the query.
+ *
+ * @param quote A BOOL indicating whether quoting should be used.
+ */
+- (void)setUseQuotedIdentifiers:(BOOL)quote
 {
-	_useQuotes = quote;
+	_useQuotedIdentifiers = quote;
 	
 	for (QKQueryParameter *param in _parameters)
 	{
-		[param setUseQuotes:_useQuotes];
+		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
 	}
 	
 	for (QKQueryUpdateParameter *param in _updateParameters)
 	{
-		[param setUseQuotes:_useQuotes];
+		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
 	}
 }
 
@@ -154,6 +192,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Shortcut for adding a new field to this query.
+ *
+ * @param field The field to add.
  */
 - (void)addField:(NSString *)field
 {
@@ -163,7 +203,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Convenience method for adding more than one field.
  *
- * @param The array (of strings) of fields to add.
+ * @param fields The array (of strings) of fields to add.
  */
 - (void)addFields:(NSArray *)fields
 {
@@ -190,6 +230,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Convenience method for adding a new parameter.
+ *
+ * @param field
+ * @param value
  */
 - (void)addParameter:(NSString *)field operator:(QKQueryOperator)operator value:(id)value
 {	
@@ -213,6 +256,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Convenience method for adding a new update parameter.
+ *
+ * @param field
+ * @param value
  */
 - (void)addFieldToUpdate:(NSString *)field toValue:(id)value
 {
@@ -224,6 +270,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Adds the supplied field to the query's GROUP BY clause.
+ *
+ * @param field
  */
 - (void)groupByField:(NSString *)field
 {
@@ -232,6 +280,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Convenience method for adding more than one field to the query's GROUP BY clause.
+ *
+ * @param fields
  */
 - (void)groupByFields:(NSArray *)fields
 {
@@ -246,6 +296,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Adds the supplied field to the query's ORDER BY clause.
+ *
+ * @param field
+ * @param descending
  */
 - (void)orderByField:(NSString *)field descending:(BOOL)descending
 {
@@ -256,6 +309,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Convenience method for adding more than one field to the query's ORDER BY clause.
+ *
+ * @param fields
+ * @param descending
  */
 - (void)orderByFields:(NSArray *)fields descending:(BOOL)descending
 {
@@ -284,6 +340,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Builds the actual query.
+ *
+ * @return The built SQL query.
  */
 - (NSString *)_buildQuery
 {
@@ -293,6 +351,20 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	BOOL isInsert = _queryType == QKInsertQuery;
 	BOOL isUpdate = _queryType == QKUpdateQuery;
 	BOOL isDelete = _queryType == QKDeleteQuery;
+	
+	if ([self useQuotedIdentifiers]) {
+		_identifierQuote = [QKQueryUtilities identifierQuoteCharacterForDatabase:_queryDatabase];
+		
+		for (QKQueryParameter *param in _parameters)
+		{
+			[param setIdentifierQuote:_identifierQuote];
+		}
+		
+		for (QKQueryUpdateParameter *param in _updateParameters)
+		{
+			[param setIdentifierQuote:_identifierQuote];
+		}
+	}
 	
 	NSString *fields = [self _buildFieldList];
 	
@@ -310,10 +382,10 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	}
 	
 	if (_database && [_database length] > 0) {
-		[_query appendFormat:@"%@%@%@.", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, _database, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
+		[_query appendFormat:@"%1$@%2$@%1$@.", _identifierQuote, _database];
 	}
 	
-	[_query appendFormat:@"%@%@%@", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, _table, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
+	[_query appendFormat:@"%1$@%2$@%1$@", _identifierQuote, _table];
 	
 	if (isUpdate) {
 		[_query appendFormat:@" %@", [self _buildUpdateClause]];
@@ -332,6 +404,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Builds the string representation of the query's field list.
+ *
+ * @return The field list as SQL.
  */
 - (NSString *)_buildFieldList
 {
@@ -349,7 +423,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		
 		if ([field length] == 0) continue;
 		
-		[fields appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
+		[fields appendFormat:@"%1$@%2$@%1$@, ", _identifierQuote, field];
 	}
 	
 	if ([fields hasSuffix:@", "]) {
@@ -361,6 +435,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Builds the string representation of the query's constraints.
+ *
+ * @return The query constraints as SQL.
  */
 - (NSString *)_buildConstraints
 {
@@ -384,7 +460,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Builds the string representation of the query's GROUP BY clause.
  *
- * @return The GROUP BY clause
+ * @return The GROUP BY SQL clause.
  */
 - (NSString *)_buildGroupByClause
 {
@@ -396,7 +472,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (NSString *field in _groupByFields)
 	{
-		[groupBy appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
+		[groupBy appendFormat:@"%1$@%2$@%1$@, ", _identifierQuote, field];
 	}
 	
 	if ([groupBy hasSuffix:@", "]) {
@@ -409,7 +485,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Builds the string representation of the query's ORDER BY clause.
  *
- * @return The ORDER BY clause
+ * @return The ORDER BY SQL clause.
  */
 - (NSString *)_buildOrderByClause
 {
@@ -421,7 +497,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	for (NSString *field in _orderByFields)
 	{
-		[orderBy appendFormat:@"%@%@%@, ", _useQuotes ? QUERY_QUOTE : EMPTY_STRING, field, _useQuotes ? QUERY_QUOTE : EMPTY_STRING];
+		[orderBy appendFormat:@"%1$@%2$@%1$@, ", _identifierQuote, field];
 	}
 	
 	if ([orderBy hasSuffix:@", "]) {
@@ -436,7 +512,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Builds the string representation of the query's UPDATE parameters.
  *
- * @return The fields to be updated
+ * @return The fields to update section of the SQL query.
  */
 - (NSString *)_buildUpdateClause
 {
@@ -510,6 +586,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 /**
  * Same as calling -query.
+ *
+ * @return the query that was built.
  */
 - (NSString *)description
 {
