@@ -310,8 +310,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 /**
  * Convenience method for adding more than one field to the query's ORDER BY clause.
  *
- * @param fields
- * @param descending
+ * @param fields     An array of fields to ORDER BY.
+ * @param descending Indicates whether the ORDER BY should be descending.
  */
 - (void)orderByFields:(NSArray *)fields descending:(BOOL)descending
 {
