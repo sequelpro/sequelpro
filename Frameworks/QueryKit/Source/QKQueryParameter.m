@@ -34,7 +34,7 @@
 
 @implementation QKQueryParameter
 
-@synthesize _operator;
+@synthesize operator = _operator;
 
 #pragma mark -
 #pragma mark Initialisation

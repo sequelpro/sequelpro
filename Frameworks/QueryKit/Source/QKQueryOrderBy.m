@@ -32,8 +32,8 @@
 
 @implementation QKQueryOrderBy
 
-@synthesize _orderByField;
-@synthesize _orderByDescending;
+@synthesize orderByField = _orderByField;
+@synthesize orderByDescending = _orderByDescending;
 
 #pragma mark -
 #pragma mark Initialisation

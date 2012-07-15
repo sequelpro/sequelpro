@@ -44,14 +44,14 @@
 }
 
 /**
- * @property _orderByField
+ * @property orderByField
  */
-@property(readwrite, retain, getter=orderByField, setter=setOrderByField:) NSString *_orderByField;
+@property(readwrite, retain) NSString *orderByField;
 
 /**
- * @property _orderByDescending
+ * @property orderByDescending
  */
-@property(readwrite, assign, getter=orderByDescending, setter=setOrderByDescending:) BOOL _orderByDescending;
+@property(readwrite, assign) BOOL orderByDescending;
 
 + (QKQueryOrderBy *)orderByField:(NSString *)field descending:(BOOL)descending;
 

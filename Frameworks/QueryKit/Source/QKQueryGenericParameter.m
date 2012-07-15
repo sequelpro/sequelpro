@@ -33,8 +33,8 @@
 
 @implementation QKQueryGenericParameter
 
-@synthesize _field;
-@synthesize _value;
+@synthesize field = _field;
+@synthesize value = _value;
 
 #pragma mark -
 

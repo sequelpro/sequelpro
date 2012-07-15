@@ -43,13 +43,13 @@
 }
 
 /**
- * @property _identifierQuote The quoute character to use for identifiers.
+ * @property identifierQuote The quoute character to use for identifiers.
  */
-@property(readwrite, retain, getter=identifierQuote, setter=setIdentifierQuote:) NSString *_identiferQuote;
+@property(readwrite, retain) NSString *identifierQuote;
 
 /**
- * @property _useQuotedIdentifier Indicates whether or not identifiers should be quoted.
+ * @property useQuotedIdentifier Indicates whether or not identifiers should be quoted.
  */
-@property(readwrite, assign, getter=useQuotedIdentifier, setter=setUseQuotedIdentifier:) BOOL _useQuotedIdentifier;
+@property(readwrite, assign) BOOL useQuotedIdentifier;
 
 @end

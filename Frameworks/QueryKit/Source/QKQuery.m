@@ -59,17 +59,17 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 
 @implementation QKQuery
 
-@synthesize _database;
-@synthesize _table;
-@synthesize _identifierQuote;
-@synthesize _parameters;
-@synthesize _queryType;
-@synthesize _queryDatabase;
-@synthesize _fields;
-@synthesize _updateParameters;
-@synthesize _useQuotedIdentifiers;
-@synthesize _groupByFields;
-@synthesize _orderByFields;
+@synthesize database = _database;
+@synthesize table = _table; 
+@synthesize identifierQuote = _identifierQuote;
+@synthesize parameters = _parameters;
+@synthesize queryType = _queryType;
+@synthesize queryDatabase = _queryDatabase;
+@synthesize fields = _fields;
+@synthesize updateParameters = _updateParameters;
+@synthesize useQuotedIdentifiers = _useQuotedIdentifiers;
+@synthesize groupByFields = _groupByFields;
+@synthesize orderByFields = _orderByFields;
 
 #pragma mark -
 #pragma mark Initialization

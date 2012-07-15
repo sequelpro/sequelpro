@@ -221,8 +221,6 @@
 			children = (
 				1726972715AAF6CE009586E1 /* QKQueryTests.h */,
 				1726972815AAF6CE009586E1 /* QKQueryTests.m */,
-				17577F6515A98FEA00CDF67A /* QKTestConstants.h */,
-				17577F6615A98FEA00CDF67A /* QKTestConstants.m */,
 			);
 			name = Common;
 			sourceTree = "<group>";
@@ -250,6 +248,7 @@
 		17E5969614F3079E0054EE08 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				17F48D1415B2DCA900C6455B /* Other */,
 				17577FA015A994EB00CDF67A /* Common */,
 				17322A7414FA646000F0CF9B /* UPDATE Tests */,
 				17322A7214FA645300F0CF9B /* SELECT Tests */,
@@ -268,6 +267,15 @@
 				1757801D15A9A14400CDF67A /* QKQueryGenericParameter.m */,
 			);
 			name = Common;
+			sourceTree = "<group>";
+		};
+		17F48D1415B2DCA900C6455B /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				17577F6515A98FEA00CDF67A /* QKTestConstants.h */,
+				17577F6615A98FEA00CDF67A /* QKTestConstants.m */,
+			);
+			name = Other;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -32,8 +32,8 @@
 
 @implementation QKQueryConstruct
 
-@synthesize _useQuotedIdentifier;
-@synthesize _identiferQuote;
+@synthesize useQuotedIdentifier = _useQuotedIdentifier;
+@synthesize identifierQuote = _identiferQuote;
 
 #pragma mark -
 #pragma mark Initialisation

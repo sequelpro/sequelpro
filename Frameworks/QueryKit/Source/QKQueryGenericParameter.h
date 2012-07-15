@@ -38,13 +38,13 @@
 }
 
 /**
- * @property _field The field component of the parameter.
+ * @property field The field component of the parameter.
  */
-@property(readwrite, retain, getter=field, setter=setField:) NSString *_field;
+@property(readwrite, retain) NSString *field;
 
 /**
- *@property _value The value component of the parameter.
+ *@property value The value component of the parameter.
  */
-@property(readwrite, retain, getter=value, setter=setValue:) id _value;
+@property(readwrite, retain) id value;
 
 @end

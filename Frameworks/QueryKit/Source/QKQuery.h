@@ -64,59 +64,59 @@
 }
 
 /**
- * @property _database The database the query is to be run against (optional).
+ * @property database The database the query is to be run against (optional).
  */
-@property(readwrite, retain, getter=database, setter=setDatabase:) NSString *_database;
+@property(readwrite, retain) NSString *database;
 
 /**
- * @property _table The table the query is to be run against.
+ * @property table The table the query is to be run against.
  */
-@property(readwrite, retain, getter=table, setter=setTable:) NSString *_table; 
+@property(readwrite, retain) NSString *table; 
 
 /**
- * @property _parameters The parameters (constraints) of the query.
+ * @property parameters The parameters (constraints) of the query.
  */
-@property(readwrite, retain, getter=parameters, setter=setParameters:) NSMutableArray *_parameters;
+@property(readwrite, retain) NSMutableArray *parameters;
 
 /**
- * @property _fields The fields of the query.
+ * @property fields The fields of the query.
  */
-@property(readwrite, retain, getter=fields, setter=setFields:) NSMutableArray *_fields;
+@property(readwrite, retain) NSMutableArray *fields;
 
 /**
- * @property _updateFields The fields of an UPDATE query.
+ * @property updateFields The fields of an UPDATE query.
  */
-@property(readwrite, retain, getter=updateParameters, setter=setUpdateParameters:) NSMutableArray *_updateParameters;
+@property(readwrite, retain) NSMutableArray *updateParameters;
 
 /**
- * @property _queryType The type of query to be built.
+ * @property queryType The type of query to be built.
  */
-@property(readwrite, assign, getter=queryType, setter=setQueryType:) QKQueryType _queryType;
+@property(readwrite, assign) QKQueryType queryType;
 
 /**
- * @property _queryDatabase The underlying database system this query will be run against.
+ * @property queryDatabase The underlying database system this query will be run against.
  */
-@property(readwrite, assign, getter=queryDatabase, setter=setQueryDatabase:) QKQueryDatabase _queryDatabase;
+@property(readwrite, assign) QKQueryDatabase queryDatabase;
 
 /**
- * @property _useQuotedIdentifiers Indicates whether or not the query's fields should be quoted.
+ * @property useQuotedIdentifiers Indicates whether or not the query's fields should be quoted.
  */
-@property(readwrite, assign, getter=useQuotedIdentifiers, setter=setUseQuotedIdentifiers:) BOOL _useQuotedIdentifiers;
+@property(readwrite, assign) BOOL useQuotedIdentifiers;
 
 /**
- * @property _groupByFields The group by fields of the query.
+ * @property groupByFields The group by fields of the query.
  */
-@property(readonly, getter=groupByFields) NSMutableArray *_groupByFields;
+@property(readonly) NSMutableArray *groupByFields;
 
 /**
- * @property _orderByFields The order by fields of the query.
+ * @property orderByFields The order by fields of the query.
  */
-@property(readonly, getter=orderByFields) NSMutableArray *_orderByFields;
+@property(readonly) NSMutableArray *orderByFields;
 
 /**
- * @property _identifierQuote The character to use when quoting identifiers.
+ * @property identifierQuote The character to use when quoting identifiers.
  */
-@property(readonly, getter=identifierQuote) NSString *_identifierQuote;
+@property(readonly) NSString *identifierQuote;
 
 + (QKQuery *)queryTable:(NSString *)table;
 + (QKQuery *)queryTable:(NSString *)table database:(NSString *)database;
