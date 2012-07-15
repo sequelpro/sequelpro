@@ -1,11 +1,11 @@
 //
-//  $Id: QueryKit.h 3431 2011-09-26 22:26:24Z stuart02 $
+//  $Id$
 //
-//  QueryKit.h
+//  QKQueryConstruct.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on July 15, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,10 +28,28 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import <QueryKit/QKQuery.h>
-#import <QueryKit/QKQueryTypes.h>
-#import <QueryKit/QKQueryOrderBy.h>
-#import <QueryKit/QKQueryOperators.h>
-#import <QueryKit/QKQueryDatabases.h>
-#import <QueryKit/QKQueryParameter.h>
-#import <QueryKit/QKQueryUtilities.h>
+/**
+ * @class QKQueryConstruct QKQueryConstruct.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * Acts as a base of all SQL constructs and provides various common properties.
+ */
+@interface QKQueryConstruct : NSObject 
+{
+	BOOL _useQuotedIdentifier;
+	
+	NSString *_identiferQuote;
+}
+
+/**
+ * @property _identifierQuote The quoute character to use for identifiers.
+ */
+@property(readwrite, retain, getter=identifierQuote, setter=setIdentifierQuote:) NSString *_identiferQuote;
+
+/**
+ * @property _useQuotedIdentifier Indicates whether or not identifiers should be quoted.
+ */
+@property(readwrite, assign, getter=useQuotedIdentifier, setter=setUseQuotedIdentifier:) BOOL _useQuotedIdentifier;
+
+@end

@@ -29,8 +29,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQuery.h"
+#import "QKQueryTypes.h"
+#import "QKQueryOrderBy.h"
 #import "QKQueryUtilities.h"
 #import "QKQueryConstants.h"
+#import "QKQueryParameter.h"
+#import "QKQueryUpdateParameter.h"
 #import "QKQueryGenericParameter.h"
 
 static NSString *QKNoQueryTypeException = @"QKNoQueryType";
@@ -39,6 +43,7 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 @interface QKQuery ()
 
 - (void)_validateRequiements;
+- (void)_configureQuoteIdentifiers;
 
 - (NSString *)_buildQuery;
 - (NSString *)_buildFieldList;
@@ -117,7 +122,6 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 		// Default to MySQL
 		[self setQueryDatabase:QKDatabaseMySQL];
 		
-		_orderDescending = NO;
 		_identifierQuote = EMPTY_STRING;
 		
 		_groupByFields = [[NSMutableArray alloc] init];
@@ -162,29 +166,6 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	_identifierQuote = EMPTY_STRING;
 	
 	if (_query) [_query release], _query = [[NSMutableString alloc] init];
-}
-
-#pragma mark -
-#pragma mark Accessors
-
-/**
- * Sets whether to quote identifiers in the query.
- *
- * @param quote A BOOL indicating whether quoting should be used.
- */
-- (void)setUseQuotedIdentifiers:(BOOL)quote
-{
-	_useQuotedIdentifiers = quote;
-	
-	for (QKQueryParameter *param in _parameters)
-	{
-		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
-	}
-	
-	for (QKQueryUpdateParameter *param in _updateParameters)
-	{
-		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
-	}
 }
 
 #pragma mark -
@@ -295,30 +276,26 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 #pragma mark Ordering
 
 /**
- * Adds the supplied field to the query's ORDER BY clause.
+ * Adds the supplied order by instance to this query.
+ *
+ * @param orderBy The order by instance to add.
+ */
+- (void)orderBy:(QKQueryOrderBy *)orderBy
+{
+	if ([orderBy orderByField] && [[orderBy orderByField] length] > 0) {
+		[_orderByFields addObject:orderBy];
+	}
+}
+
+/**
+ * Convenience method for adding a field to ORDER BY.
  *
  * @param field      The field to ORDER BY.
  * @param descending Indicates whether the ORDER BY should be descending.
  */
 - (void)orderByField:(NSString *)field descending:(BOOL)descending
 {
-	_orderDescending = descending;
-	
-	[self _addString:field toArray:_orderByFields];
-}
-
-/**
- * Convenience method for adding more than one field to the query's ORDER BY clause.
- *
- * @param fields     An array of fields to ORDER BY.
- * @param descending Indicates whether the ORDER BY should be descending.
- */
-- (void)orderByFields:(NSArray *)fields descending:(BOOL)descending
-{
-	for (NSString *field in fields)
-	{
-		[self orderByField:field descending:descending];
-	}
+	[self orderBy:[QKQueryOrderBy orderByField:field descending:descending]];
 }
 
 #pragma mark -
@@ -339,6 +316,32 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 }
 
 /**
+ * Configures the query's parameters, update parameters and order by field's quote identifier settings.
+ */
+- (void)_configureQuoteIdentifiers
+{
+	_identifierQuote = [QKQueryUtilities identifierQuoteCharacterForDatabase:_queryDatabase];
+	
+	for (QKQueryParameter *param in _parameters)
+	{
+		[param setIdentifierQuote:_identifierQuote];
+		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
+	}
+	
+	for (QKQueryOrderBy *orderBy in _orderByFields)
+	{
+		[orderBy setIdentifierQuote:_identifierQuote];
+		[orderBy setUseQuotedIdentifier:_useQuotedIdentifiers];
+	}
+
+	for (QKQueryUpdateParameter *param in _updateParameters)
+	{
+		[param setIdentifierQuote:_identifierQuote];
+		[param setUseQuotedIdentifier:_useQuotedIdentifiers];
+	}
+}
+
+/**
  * Builds the actual query.
  *
  * @return The built SQL query.
@@ -352,18 +355,8 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	BOOL isUpdate = _queryType == QKUpdateQuery;
 	BOOL isDelete = _queryType == QKDeleteQuery;
 	
-	if ([self useQuotedIdentifiers]) {
-		_identifierQuote = [QKQueryUtilities identifierQuoteCharacterForDatabase:_queryDatabase];
-		
-		for (QKQueryParameter *param in _parameters)
-		{
-			[param setIdentifierQuote:_identifierQuote];
-		}
-		
-		for (QKQueryUpdateParameter *param in _updateParameters)
-		{
-			[param setIdentifierQuote:_identifierQuote];
-		}
+	if (_useQuotedIdentifiers) {
+		[self _configureQuoteIdentifiers];
 	}
 	
 	NSString *fields = [self _buildFieldList];
@@ -495,17 +488,15 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	
 	[orderBy appendString:@"ORDER BY "];
 	
-	for (NSString *field in _orderByFields)
+	for (NSString *orderByField in _orderByFields)
 	{
-		[orderBy appendFormat:@"%1$@%2$@%1$@, ", _identifierQuote, field];
+		[orderBy appendFormat:@"%@, ", orderByField];
 	}
 	
 	if ([orderBy hasSuffix:@", "]) {
 		[orderBy setString:[orderBy substringToIndex:([orderBy length] - 2)]];
 	}
-	
-	[orderBy appendString:_orderDescending ? @" DESC" : @" ASC"];
-	
+		
 	return orderBy;
 }
 

@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKQueryGenericParameter.h
+//  QKQueryOrderBy.m
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 15, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,23 +28,54 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKQueryConstruct.h"
+#import "QKQueryOrderBy.h"
 
-@interface QKQueryGenericParameter : QKQueryConstruct 
+@implementation QKQueryOrderBy
+
+@synthesize _orderByField;
+@synthesize _orderByDescending;
+
+#pragma mark -
+#pragma mark Initialisation
+
++ (QKQueryOrderBy *)orderByField:(NSString *)field descending:(BOOL)descending
 {
-	id _value;
-	
-	NSString *_field;
+	return [[[QKQueryOrderBy alloc] initWithField:field descending:descending] autorelease];
 }
 
-/**
- * @property _field The field component of the parameter.
- */
-@property(readwrite, retain, getter=field, setter=setField:) NSString *_field;
+- (id)init
+{
+	return [self initWithField:nil descending:NO];
+}
 
-/**
- *@property _value The value component of the parameter.
- */
-@property(readwrite, retain, getter=value, setter=setValue:) id _value;
+- (id)initWithField:(NSString *)field descending:(BOOL)descending
+{
+	if ((self = [super init])) {
+		[self setOrderByField:field];
+		[self setOrderByDescending:descending];
+	}
+	
+	return self;
+}
+
+#pragma mark -
+
+- (NSString *)description
+{	
+	if (!_orderByField || [_orderByField length] == 0) return EMPTY_STRING;
+	
+	NSString *field = [_orderByField stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		
+	return [NSString stringWithFormat:@"%1$@%2$@%1$@ %3$@", [self useQuotedIdentifier] ? _identiferQuote : EMPTY_STRING, field, _orderByDescending ? @"DESC" : @"ASC"];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	if (_orderByField) [_orderByField release], _orderByField = nil;
+	
+	[super dealloc];
+}
 
 @end

@@ -31,8 +31,10 @@
 #import "QKQueryTypes.h"
 #import "QKQueryDatabases.h"
 #import "QKQueryOperators.h"
-#import "QKQueryParameter.h"
-#import "QKQueryUpdateParameter.h"
+
+@class QKQueryOrderBy;
+@class QKQueryParameter;
+@class QKQueryUpdateParameter;
 
 /**
  * @class QKQuery QKQuery.h
@@ -59,7 +61,6 @@
 	QKQueryDatabase _queryDatabase;
 	
 	BOOL _useQuotedIdentifiers;
-	BOOL _orderDescending;
 }
 
 /**
@@ -100,7 +101,7 @@
 /**
  * @property _useQuotedIdentifiers Indicates whether or not the query's fields should be quoted.
  */
-@property(readwrite, assign, getter=useQuotedIdentifiers) BOOL _useQuotedIdentifiers;
+@property(readwrite, assign, getter=useQuotedIdentifiers, setter=setUseQuotedIdentifiers:) BOOL _useQuotedIdentifiers;
 
 /**
  * @property _groupByFields The group by fields of the query.
@@ -129,8 +130,6 @@
 - (NSString *)query;
 - (void)clear;
 
-- (void)setUseQuotedIdentifiers:(BOOL)quote;
-
 - (void)addField:(NSString *)field;
 - (void)addFields:(NSArray *)fields;
 
@@ -143,7 +142,7 @@
 - (void)groupByField:(NSString *)field;
 - (void)groupByFields:(NSArray *)fields;
 
+- (void)orderBy:(QKQueryOrderBy *)orderBy;
 - (void)orderByField:(NSString *)field descending:(BOOL)descending;
-- (void)orderByFields:(NSArray *)fields descending:(BOOL)descending;
 
 @end

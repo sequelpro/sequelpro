@@ -35,7 +35,9 @@
 /**
  * Returns the string quoted with supplied character.
  *
- * @return The quoted string
+ * @param character The character (as a string) to use.
+ *
+ * @return The quoted string.
  */
 - (NSString *)quotedStringWithCharacter:(NSString *)character
 {

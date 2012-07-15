@@ -1,11 +1,11 @@
 //
-//  $Id: QueryKit.h 3431 2011-09-26 22:26:24Z stuart02 $
+//  $Id$
 //
-//  QueryKit.h
+//  QKQueryOrderBy.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on July 15, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,10 +28,33 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import <QueryKit/QKQuery.h>
-#import <QueryKit/QKQueryTypes.h>
-#import <QueryKit/QKQueryOrderBy.h>
-#import <QueryKit/QKQueryOperators.h>
-#import <QueryKit/QKQueryDatabases.h>
-#import <QueryKit/QKQueryParameter.h>
-#import <QueryKit/QKQueryUtilities.h>
+#import "QKQueryConstruct.h"
+
+/**
+ * @class QKQueryOrderBy QKQueryOrderBy.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * QueryKit SELECT query ORDER BY class.
+ */
+@interface QKQueryOrderBy : QKQueryConstruct 
+{
+	NSString *_orderByField;
+	BOOL _orderByDescending;
+}
+
+/**
+ * @property _orderByField
+ */
+@property(readwrite, retain, getter=orderByField, setter=setOrderByField:) NSString *_orderByField;
+
+/**
+ * @property _orderByDescending
+ */
+@property(readwrite, assign, getter=orderByDescending, setter=setOrderByDescending:) BOOL _orderByDescending;
+
++ (QKQueryOrderBy *)orderByField:(NSString *)field descending:(BOOL)descending;
+
+- (id)initWithField:(NSString *)field descending:(BOOL)descending;
+
+@end

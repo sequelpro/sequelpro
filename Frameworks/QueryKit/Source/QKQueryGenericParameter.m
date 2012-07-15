@@ -28,27 +28,13 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
+#import "QKQueryConstruct.h"
 #import "QKQueryGenericParameter.h"
 
 @implementation QKQueryGenericParameter
 
 @synthesize _field;
-@synthesize _useQuotedIdentifier;
-@synthesize _identiferQuote;
 @synthesize _value;
-
-#pragma mark -
-#pragma mark Initialisation
-
-- (id)init
-{
-	if ((self = [super init])) {
-		[self setUseQuotedIdentifier:YES];
-		[self setIdentifierQuote:EMPTY_STRING];
-	}
-	
-	return self;
-}
 
 #pragma mark -
 
