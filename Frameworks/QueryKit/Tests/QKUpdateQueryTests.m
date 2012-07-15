@@ -28,8 +28,17 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "QKUpdateQueryTests.h"
 #import "QKTestConstants.h"
+
+#import <QueryKit/QueryKit.h>
+#import <SenTestingKit/SenTestingKit.h>
+
+@interface QKUpdateQueryTests : SenTestCase
+{
+	QKQuery *_query;
+}
+
+@end
 
 @implementation QKUpdateQueryTests
 

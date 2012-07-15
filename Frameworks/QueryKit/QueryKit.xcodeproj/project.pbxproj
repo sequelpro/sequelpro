@@ -50,15 +50,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryOrderByTests.h; sourceTree = "<group>"; };
 		1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryOrderByTests.m; sourceTree = "<group>"; };
-		1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryGroupByTests.h; sourceTree = "<group>"; };
 		1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryGroupByTests.m; sourceTree = "<group>"; };
 		1719E47B151E8CA7003F98C5 /* QKQueryUpdateParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryUpdateParameter.h; sourceTree = "<group>"; };
 		1719E47C151E8CA7003F98C5 /* QKQueryUpdateParameter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryUpdateParameter.m; sourceTree = "<group>"; };
-		1719E4B9151F51EA003F98C5 /* QKUpdateQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKUpdateQueryTests.h; sourceTree = "<group>"; };
 		1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKUpdateQueryTests.m; sourceTree = "<group>"; };
-		1726972715AAF6CE009586E1 /* QKQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryTests.h; sourceTree = "<group>"; };
 		1726972815AAF6CE009586E1 /* QKQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryTests.m; sourceTree = "<group>"; };
 		1726976515AC3DD2009586E1 /* QKQueryDatabases.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryDatabases.h; sourceTree = "<group>"; };
 		1726979315AEE939009586E1 /* QKQueryStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryStringAdditions.h; sourceTree = "<group>"; };
@@ -78,7 +74,6 @@
 		17E5951D14F301DF0054EE08 /* QKQueryUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryUtilities.m; sourceTree = "<group>"; };
 		17E5951E14F301DF0054EE08 /* QueryKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QueryKit.h; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		17E5969714F307B70054EE08 /* QKSelectQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryTests.h; sourceTree = "<group>"; };
 		17E5969814F307B70054EE08 /* QKSelectQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryTests.m; sourceTree = "<group>"; };
 		17E5969E14F307CE0054EE08 /* Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17E5969F14F307CE0054EE08 /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Tests-Info.plist"; path = "Resources/Tests-Info.plist"; sourceTree = "<group>"; };
@@ -183,11 +178,8 @@
 		17322A7214FA645300F0CF9B /* SELECT Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17E5969714F307B70054EE08 /* QKSelectQueryTests.h */,
 				17E5969814F307B70054EE08 /* QKSelectQueryTests.m */,
-				1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */,
 				1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */,
-				1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */,
 				1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */,
 			);
 			name = "SELECT Tests";
@@ -196,7 +188,6 @@
 		17322A7414FA646000F0CF9B /* UPDATE Tests */ = {
 			isa = PBXGroup;
 			children = (
-				1719E4B9151F51EA003F98C5 /* QKUpdateQueryTests.h */,
 				1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */,
 			);
 			name = "UPDATE Tests";
@@ -219,7 +210,6 @@
 		17577FA015A994EB00CDF67A /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				1726972715AAF6CE009586E1 /* QKQueryTests.h */,
 				1726972815AAF6CE009586E1 /* QKQueryTests.m */,
 			);
 			name = Common;

@@ -31,6 +31,16 @@
 #import "QKQueryTests.h"
 #import "QKTestConstants.h"
 
+#import <QueryKit/QueryKit.h>
+#import <SenTestingKit/SenTestingKit.h>
+
+@interface QKQueryTests : SenTestCase 
+{
+	QKQuery *_query;
+}
+
+@end
+
 @implementation QKQueryTests
 
 #pragma mark -
