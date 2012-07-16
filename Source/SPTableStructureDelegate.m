@@ -210,11 +210,12 @@
 	if (aTableView != tableSourceView) return NO;
 	
 	// Check whether a save of the current field row is required.
-	if ( ![self saveRowOnDeselect] ) return NO;
+	if (![self saveRowOnDeselect]) return NO;
 	
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPDefaultPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
+		
 		return YES;
 	} 
 	else {
@@ -258,21 +259,18 @@
 {
     // Make sure that the drag operation is for the right table view
     if (tableView != tableSourceView) return NO;
-	
-	NSInteger originalRowIndex;
-	NSMutableString *queryString;
-	NSDictionary *originalRow;
-	
+		
 	// Extract the original row position from the pasteboard and retrieve the details
-	originalRowIndex = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
-	originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
+	NSInteger originalRowIndex = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
+	NSDictionary *originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 	
+	NSString *fieldType = [[originalRow objectForKey:@"type"] uppercaseString];
+	
 	// Begin construction of the reordering query
-	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
-				   [[originalRow objectForKey:@"name"] backtickQuotedString],
-				   [[originalRow objectForKey:@"type"] uppercaseString]];
+	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
+									[[originalRow objectForKey:@"name"] backtickQuotedString], fieldType];
 	
 	// Add the length parameter if necessary
 	if ([originalRow objectForKey:@"length"] && ![[originalRow objectForKey:@"length"] isEqualToString:@""]) {
@@ -280,12 +278,14 @@
 	}
 	
 	NSString *fieldEncoding = @"";
-	
+			
 	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0) {
 		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
-		NSInteger start = [enc rangeOfString:@"("].location+1;
-		NSInteger end = [enc length] - start - 1;
-		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
+		
+		NSInteger start = [enc rangeOfString:@"("].location + 1;
+		
+		fieldEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
+		
 		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
 	}
 	
@@ -295,7 +295,8 @@
 	
 	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0) {
 		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
+		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue] - 1] objectForKey:@"COLLATION_NAME"];
+		
 		[queryString appendFormat:@" COLLATE %@", col];
 	}
 
@@ -321,7 +322,7 @@
 		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
 	}
 	
-	BOOL isTimestampType = [[[originalRow objectForKey:@"type"] lowercaseString] isEqualToString:@"timestamp"];
+	BOOL isTimestampType = [fieldType isEqualToString:@"TIMESTAMP"];
 	
 	// Add the default value, skip it for auto_increment
 	if ([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
@@ -349,11 +350,12 @@
 	}
 	
 	// Add the new location
-	if ( destinationRowIndex == 0 ){
+	if (destinationRowIndex == 0) {
 		[queryString appendString:@" FIRST"];
-	} else {
+	} 
+	else {
 		[queryString appendFormat:@" AFTER %@",
-		 [[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"name"] backtickQuotedString]];
+		 [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
 	}
 	
 	// Run the query; report any errors, or reload the table on success
@@ -371,11 +373,7 @@
 		// Mark the content table cache for refresh
 		[tableDocumentInstance setContentRequiresReload:YES];
 		
-		if ( originalRowIndex < destinationRowIndex ) {
-			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex-1] byExtendingSelection:NO];
-		} else {
-			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex] byExtendingSelection:NO];
-		}
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex - (originalRowIndex < destinationRowIndex) ? 1 : 0] byExtendingSelection:NO];
 	}
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];

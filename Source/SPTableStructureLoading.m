@@ -148,8 +148,8 @@
 		NSString *collation = nil; 
 		NSString *encoding = nil;
 		
-		if ([fieldValidation isFieldTypeString:type] || ![type hasSuffix:@"BINARY"] || ![type hasSuffix:@"BLOB"]) {
-			
+		if ([fieldValidation isFieldTypeString:type] && ![type hasSuffix:@"BINARY"] && ![type hasSuffix:@"BLOB"]) {
+						
 			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [[tableDataInstance statusValues] objectForKey:@"collation"];
 			encoding = [theField objectForKey:@"encoding"] ? [theField objectForKey:@"encoding"] : [tableDataInstance tableEncoding];
 			
@@ -214,21 +214,25 @@
 			[theField setObject:[NSString stringWithFormat:@"%@,%@", [theField objectForKey:@"length"], [theField objectForKey:@"decimals"]] forKey:@"length"];
 		
 		// Normalize default
-		if(![theField objectForKey:@"default"])
+		if (![theField objectForKey:@"default"]) {
 			[theField setObject:@"" forKey:@"default"];
-		else if([[theField objectForKey:@"default"] isNSNull])
+		}
+		else if ([[theField objectForKey:@"default"] isNSNull]) {
 			[theField setObject:[prefs stringForKey:SPNullValue] forKey:@"default"];
+		}
 		
 		// Init Extra field
 		[theField setObject:@"None" forKey:@"Extra"];
 		
 		// Check for auto_increment and set Extra accordingly
-		if([[theField objectForKey:@"autoincrement"] integerValue])
+		if ([[theField objectForKey:@"autoincrement"] integerValue]) {
 			[theField setObject:@"auto_increment" forKey:@"Extra"];
+		}
 		
 		// For timestamps check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
-		else if ([type isEqualToString:@"TIMESTAMP"] && [[theField objectForKey:@"onupdatetimestamp"] integerValue])
+		else if ([type isEqualToString:@"TIMESTAMP"] && [[theField objectForKey:@"onupdatetimestamp"] integerValue]) {
 			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
+		}
 	}
 	
 	// Set up the table details for the new table, and request an data/interface update
@@ -274,7 +278,7 @@
  *
  * Should be called on the main thread.
  */
-- (void) setTableDetails:(NSDictionary *)tableDetails
+- (void)setTableDetails:(NSDictionary *)tableDetails
 {
 	NSString *newTableName = [tableDetails objectForKey:@"name"];
 	NSMutableDictionary *newDefaultValues;

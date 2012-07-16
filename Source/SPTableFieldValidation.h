@@ -29,7 +29,7 @@
 }
 
 /**
- * @property fieldTypes Field types array
+ * @property fieldTypes Field types array.
  */
 @property (readwrite, retain) NSArray *fieldTypes;
 
