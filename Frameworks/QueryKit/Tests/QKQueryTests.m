@@ -29,15 +29,12 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKTestConstants.h"
+#import "QKTestCase.h"
 
 #import <QueryKit/QueryKit.h>
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface QKQueryTests : SenTestCase 
-{
-	QKQuery *_query;
-}
-
+@interface QKQueryTests : QKTestCase
 @end
 
 @implementation QKQueryTests
@@ -47,21 +44,23 @@
 
 - (void)setUp
 {
-	_query = [QKQuery selectQueryFromTable:QKTestTableName];
+	QKQuery *query = [QKQuery selectQueryFromTable:QKTestTableName];
 	
-	[_query setUseQuotedIdentifiers:NO];
-	[_query setQueryDatabase:QKDatabaseMySQL];
+	[query setUseQuotedIdentifiers:NO];
+	[query setQueryDatabase:QKDatabaseMySQL];
 	
-	[_query setDatabase:QKTestDatabaseName];
+	[query setDatabase:QKTestDatabaseName];
 	
-	[_query addField:QKTestFieldOne];
-	[_query addField:QKTestFieldTwo];
-	[_query addField:QKTestFieldThree];
-	[_query addField:QKTestFieldFour];
+	[query addField:QKTestFieldOne];
+	[query addField:QKTestFieldTwo];
+	[query addField:QKTestFieldThree];
+	[query addField:QKTestFieldFour];
 	
-	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	[query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	
-	[_query orderByField:QKTestFieldOne descending:NO];
+	[query orderByField:QKTestFieldOne descending:NO];
+	
+	[self setQuery:query];
 }
 
 #pragma mark -
@@ -69,21 +68,21 @@
 
 - (void)testCallingClearOnAQueryCorretlyResetsItToItsDefaultState
 {
-	[_query clear];
+	[[self query] clear];
 	
-	STAssertNil([_query table], @"query table");
-	STAssertNil([_query database], @"query database");
+	STAssertNil([[self query] table], @"query table");
+	STAssertNil([[self query] database], @"query database");
 	
-	STAssertTrue([_query useQuotedIdentifiers], @"query use quoted identifiers");
-	STAssertTrue([[_query identifierQuote] isEqualToString:EMPTY_STRING], @"query identifier quote");
-	STAssertTrue([[_query fields] count] == 0, @"query fields");
-	STAssertTrue([[_query parameters] count] == 0, @"query parameters");
-	STAssertTrue([[_query updateParameters] count] == 0, @"query update parameters");
-	STAssertTrue([[_query groupByFields] count] == 0, @"query group by fields");
-	STAssertTrue([[_query orderByFields] count] == 0, @"query order by fields");
+	STAssertTrue([[self query] useQuotedIdentifiers], @"query use quoted identifiers");
+	STAssertTrue([[[self query] identifierQuote] isEqualToString:EMPTY_STRING], @"query identifier quote");
+	STAssertTrue([[[self query] fields] count] == 0, @"query fields");
+	STAssertTrue([[[self query] parameters] count] == 0, @"query parameters");
+	STAssertTrue([[[self query] updateParameters] count] == 0, @"query update parameters");
+	STAssertTrue([[[self query] groupByFields] count] == 0, @"query group by fields");
+	STAssertTrue([[[self query] orderByFields] count] == 0, @"query order by fields");
 	
-	STAssertEquals([_query queryType], QKUnknownQuery, @"query type");
-	STAssertEquals([_query queryDatabase], QKDatabaseUnknown, @"query database");
+	STAssertEquals([[self query] queryType], QKUnknownQuery, @"query type");
+	STAssertEquals([[self query] queryDatabase], QKDatabaseUnknown, @"query database");
 }
 
 @end

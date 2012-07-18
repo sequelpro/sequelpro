@@ -29,3 +29,6 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #define EMPTY_STRING @""
+
+extern NSString *QKMySQLIdentifierQuote;
+extern NSString *QKPostgreSQLIdentifierQuote;

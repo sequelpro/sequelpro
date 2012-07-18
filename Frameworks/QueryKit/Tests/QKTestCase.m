@@ -1,11 +1,11 @@
 //
-//  $Id: QueryKit.h 3431 2011-09-26 22:26:24Z stuart02 $
+//  $Id$
 //
-//  QueryKit.h
+//  QKTestCase.m
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 4, 2011
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on July 18, 2012
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,11 +28,28 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import <QueryKit/QKQuery.h>
-#import <QueryKit/QKQueryTypes.h>
-#import <QueryKit/QKQueryOrderBy.h>
-#import <QueryKit/QKQueryConstants.h>
-#import <QueryKit/QKQueryOperators.h>
-#import <QueryKit/QKQueryDatabases.h>
-#import <QueryKit/QKQueryParameter.h>
-#import <QueryKit/QKQueryUtilities.h>
+#import "QKTestCase.h"
+
+@implementation QKTestCase
+
+@synthesize query = _query;
+@synthesize identifierQuote = _identifierQuote;
+@synthesize database = _database;
+
+- (id)initWithInvocation:(NSInvocation *)invocation database:(QKQueryDatabase)database identifierQuote:(NSString *)quote
+{
+    if ((self = [super initWithInvocation:invocation])) {
+		[self setDatabase:database];
+		[self setIdentifierQuote:quote];
+    }
+	
+    return self;
+}
+
+- (void)dealloc
+{
+	if (_query) [_query release], _query = nil;
+	if (_identifierQuote) [_identifierQuote release], _identifierQuote = nil;
+}
+
+@end

@@ -46,10 +46,10 @@ static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOpe
 	NSString *character = EMPTY_STRING;
 	
 	if (database == QKDatabaseMySQL) {
-		character = @"`";
+		character = QKMySQLIdentifierQuote;
 	}
 	else if (database == QKDatabasePostgreSQL) {
-		character = @"""";
+		character = QKPostgreSQLIdentifierQuote;
 	}
 	
 	return character;
