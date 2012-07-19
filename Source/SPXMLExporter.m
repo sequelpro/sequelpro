@@ -278,7 +278,7 @@
 					[xmlString appendFormat:@"\t\t<field name=\"%@\"", [[NSArrayObjectAtIndex(fieldNames, i) description] HTMLEscapeString]];
 					
 					if (dataIsNULL) {
-						[xmlString appendString:@" xsi:nil=\"true\" \\>\n"];
+						[xmlString appendString:@" xsi:nil=\"true\" />\n"];
 					}
 					else {
 						[xmlString appendFormat:@">%@</field>\n", [xmlItem HTMLEscapeString]];
