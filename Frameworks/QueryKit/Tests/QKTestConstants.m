@@ -40,3 +40,4 @@ NSString *QKTestUpdateValueOne = @"update_one";
 NSString *QKTestUpdateValueTwo = @"update_two";
 
 NSUInteger QKTestParameterOne = 10;
+NSString *QKTestParameterTwo = @"test_value";

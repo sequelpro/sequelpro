@@ -1,10 +1,10 @@
 //
 //  $Id$
 //
-//  QKTestConstants.h
+//  QKDeleteQueryTests.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 8, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 21, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,18 +28,13 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#define EMPTY_STRING @""
+#import "QKTestCase.h"
 
-extern NSString *QKTestDatabaseName;
-extern NSString *QKTestTableName;
+#import <QueryKit/QueryKit.h>
+#import <SenTestingKit/SenTestingKit.h>
 
-extern NSString *QKTestFieldOne;
-extern NSString *QKTestFieldTwo;
-extern NSString *QKTestFieldThree;
-extern NSString *QKTestFieldFour;
+@interface QKDeleteQueryTests : QKTestCase
 
-extern NSString *QKTestUpdateValueOne;
-extern NSString *QKTestUpdateValueTwo;
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite;
 
-extern NSUInteger QKTestParameterOne;
-extern NSString *QKTestParameterTwo;
+@end
