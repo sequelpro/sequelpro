@@ -72,7 +72,7 @@ static NSString *QKUnrecognisedQueryOperatorException = @"QKUnrecognisedQueryOpe
 			opString = @"=";
 			break;
 		case QKNotEqualOperator:
-			opString = @"!=";
+			opString = @"<>";
 			break;
 		case QKLikeOperator:
 			opString = @"LIKE";
