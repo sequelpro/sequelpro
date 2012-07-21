@@ -86,6 +86,15 @@
 	STAssertTrue([[[self query] query] hasPrefix:@"UPDATE"], nil);
 }
 
+- (void)testUpdateQueryUsingDatabaseAndTableIsCorrect
+{	
+	[[self query] setDatabase:QKTestDatabaseName];
+	
+	NSString *query = [NSString stringWithFormat:@"UPDATE %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
+	
+	STAssertTrue([[[self query] query] hasPrefix:query], nil);
+}
+
 - (void)testUpdateQueryFieldsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"UPDATE %1$@%2$@%1$@ SET %1$@%3$@%1$@ = '%4$@', %1$@%5$@%1$@ = '%6$@'", [self identifierQuote], QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
