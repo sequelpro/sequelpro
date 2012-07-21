@@ -94,7 +94,16 @@
 	STAssertTrue([[[self query] query] hasPrefix:query], nil);
 }
 
-- (void)testSelectQueryMultipleFieldsWhenQuotedAreCorrect
+- (void)testSelectQueryFromDatabaseAndTableIsCorrect
+{	
+	[[self query] setDatabase:QKTestDatabaseName];
+	
+	NSString *query = [NSString stringWithFormat:@"FROM %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
+			
+	STAssertTrue([[[self query] query] rangeOfString:query].location != NSNotFound, nil);
+}
+
+- (void)testSelectQueryMultipleFieldsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"SELECT %1$@%2$@%1$@, %1$@%3$@%1$@, %1$@%4$@%1$@, %1$@%5$@%1$@", [self identifierQuote], QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
 	
