@@ -43,7 +43,7 @@
 {
 	NSString *escapedVersion = [NSString stringWithFormat:@"%@%@", character, character];
 	
-	return [NSString stringWithFormat: @"%@%@%@", character, [self stringByReplacingOccurrencesOfString:character withString:escapedVersion], character];
+	return [NSString stringWithFormat: @"%1$@2$%@%1$@", character, [self stringByReplacingOccurrencesOfString:character withString:escapedVersion]];
 }
 
 @end
