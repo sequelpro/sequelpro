@@ -71,7 +71,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	mySQLConnection = [[SPMySQLConnection alloc] init];
-	
+
 	// Set up shared details
 	[mySQLConnection setUsername:[self user]];
 	

@@ -528,10 +528,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Set focus to table list filter field if visible
 	// otherwise set focus to Table List view
-	if ([[tablesListInstance tables] count] > 20)
-		[parentWindow makeFirstResponder:listFilterField];
-	else
-		[parentWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
+	[self focusOnTableListFilter:self];
 
 	if (spfSession != nil) {
 
@@ -2296,7 +2293,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)focusOnTableListFilter:(id)sender
 {
-	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
+	[[tablesListInstance onMainThread] performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.25];
 }
 
 /**
@@ -5575,13 +5572,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #pragma mark -
 #pragma mark SplitView delegate methods
 #ifndef SP_REFACTOR /* SplitView delegate methods */
-/**
- * tells the splitView that it can collapse views
- */
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
-{
-	return subview == [[tableInfoTable superview] superview];
-}
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
@@ -6071,12 +6061,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 		// Set focus to table list filter field if visible
 		// otherwise set focus to Table List view
-		if ([[tablesListInstance tables] count] > 20) {
-			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
-		}
-		else {
-			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-		}
+		[self focusOnTableListFilter:self];
 #endif
 	}
 

@@ -33,7 +33,6 @@
 	IBOutlet NSTableView *activitiesTable;
 
 	IBOutlet NSScrollView *tableInfoScrollView;
-	IBOutlet NSView *containerView;
 
 	NSMutableArray *info;
 	NSMutableArray *activities;

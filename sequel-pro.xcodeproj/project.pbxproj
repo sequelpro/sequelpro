@@ -334,6 +334,8 @@
 		58DC0D5F1293293400B76DA5 /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */; };
 		58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */; };
 		58DC10D312A1B8DF00B76DA5 /* SPMenuAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DC10D212A1B8DF00B76DA5 /* SPMenuAdditions.m */; };
+		58DF9F3315AB26C2003B4330 /* SPDateAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */; };
+		58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F7215AB8509003B4330 /* SPSplitView.m */; };
 		58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -1113,6 +1115,10 @@
 		58DC0D5E1293293400B76DA5 /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ShortcutRecorder.framework; path = Frameworks/ShortcutRecorder.framework; sourceTree = "<group>"; };
 		58DC10D112A1B8DF00B76DA5 /* SPMenuAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMenuAdditions.h; sourceTree = "<group>"; };
 		58DC10D212A1B8DF00B76DA5 /* SPMenuAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMenuAdditions.m; sourceTree = "<group>"; };
+		58DF9F3115AB26C2003B4330 /* SPDateAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDateAdditions.h; sourceTree = "<group>"; };
+		58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDateAdditions.m; sourceTree = "<group>"; };
+		58DF9F7115AB8509003B4330 /* SPSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSplitView.h; sourceTree = "<group>"; };
+		58DF9F7215AB8509003B4330 /* SPSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSplitView.m; sourceTree = "<group>"; };
 		58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = KeyTemplate.pdf; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
@@ -2005,6 +2011,8 @@
 				584095181107CB6600260CFD /* SPAlertSheets.m */,
 				1798F19C15501892004B0AB8 /* SPFlippedView.h */,
 				1798F19D15501892004B0AB8 /* SPFlippedView.m */,
+				58DF9F7115AB8509003B4330 /* SPSplitView.h */,
+				58DF9F7215AB8509003B4330 /* SPSplitView.m */,
 				58C56EF30F438E120035701E /* SPDataCellFormatter.h */,
 				58C56EF40F438E120035701E /* SPDataCellFormatter.m */,
 				BC2898F1125F4488001B50E1 /* SPGeometryDataView.h */,
@@ -2533,6 +2541,8 @@
 				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
 				BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */,
 				BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */,
+				58DF9F3115AB26C2003B4330 /* SPDateAdditions.h */,
+				58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */,
 				582A01E7107C0C170027D42B /* SPNotLoaded.h */,
 				582A01E8107C0C170027D42B /* SPNotLoaded.m */,
 				5870868210FA3E9C00D58E1C /* SPDataStorage.h */,
@@ -3249,6 +3259,8 @@
 				176E14D115570FE300FAF326 /* SPBundleCommandRunner.m in Sources */,
 				1748D50C15A4444F003562F2 /* SPTableStructureLoading.m in Sources */,
 				1748D58615A83E54003562F2 /* SPWindowManagement.m in Sources */,
+				58DF9F3315AB26C2003B4330 /* SPDateAdditions.m in Sources */,
+				58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

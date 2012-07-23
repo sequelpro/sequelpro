@@ -123,8 +123,6 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet NSTabView *tableTabView;
 	
 	IBOutlet NSTableView *tableInfoTable;
-	IBOutlet NSButton *tableInfoCollapseButton;
-	IBOutlet NSSplitView *tableListSplitter;
 	IBOutlet NSSplitView *contentViewSplitter;
 	IBOutlet id sidebarGrabber;
 	

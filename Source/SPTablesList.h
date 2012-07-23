@@ -24,13 +24,13 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 @class SPHistoryController, SPTableView, SPMySQLConnection;
-@class SPDatabaseDocument, SPDatabaseData, SPTableStructure, SPTableContent;
+@class SPDatabaseDocument, SPDatabaseData, SPTableStructure, SPTableContent, SPSplitView;
 
 #ifdef SP_REFACTOR
 @class SQLSidebarViewController;
 #endif
 
-@interface NSObject (NSSplitView)
+@interface NSObject (BWSplitView)
 
 - (NSView *)collapsibleSubview;
 - (IBAction)toggleCollapse:(id)sender;
@@ -83,9 +83,8 @@
 	IBOutlet id addTableButton;
 #ifndef SP_REFACTOR
 	IBOutlet id truncateTableButton;
-	IBOutlet NSSplitView *tableListSplitView;
-	IBOutlet NSSplitView *tableListFilterSplitView;
-	IBOutlet NSButton *tableInfoCollapseButton;
+	IBOutlet SPSplitView *tableListSplitView;
+	IBOutlet SPSplitView *tableListFilterSplitView;
 
 	IBOutlet NSSearchField *listFilterField;
 

@@ -50,6 +50,7 @@
 #ifndef SP_REFACTOR /* headers */
 #import "SPWindowController.h"
 #import "SPAppController.h"
+#import "SPSplitView.h"
 #endif
 
 #ifdef SP_REFACTOR
@@ -131,29 +132,18 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)awakeFromNib
 {
 #ifndef SP_REFACTOR
-	// Collapse the table information pane if preference to do so is set
-	if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPTableInformationPanelCollapsed] boolValue]
-		&& [tableListSplitView collapsibleSubview]) {
-		[tableInfoCollapseButton setNextState];
-		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Show Table Information",@"Show Table Information")];
-		[tableListSplitView setValue:[NSNumber numberWithFloat:[tableListSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:NO];
-		[[tableListSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListSplitView collapsibleSubview].frame.size.width, 0)];
-		[tableListSplitView setCollapsibleSubviewCollapsed:YES];
-		[[tableListSplitView collapsibleSubview] setAutoresizesSubviews:YES];
-	} 
-	else {
-		[tableInfoCollapseButton setToolTip:NSLocalizedString(@"Hide Table Information",@"Hide Table Information")];
+
+	// Configure the table information pane
+	[tableListSplitView setCollapsibleSubviewIndex:1];
+
+	// Collapse the pane if the last state was collapsed
+	if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPTableInformationPanelCollapsed] boolValue]) {
+		[tableListSplitView setCollapsibleSubviewCollapsed:YES animate:NO];
 	}
-	
-	// Start the table filter list collapsed
-	if ([tableListFilterSplitView collapsibleSubview]) {
-		[tableListFilterSplitView setValue:[NSNumber numberWithFloat:[tableListFilterSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		// Set search bar view to the height of 1 instead of 0 to ensure that the view will be visible
-		// after opening a next connection window which has more than 20 tables
-		[[tableListFilterSplitView collapsibleSubview] setFrameSize:NSMakeSize([tableListFilterSplitView collapsibleSubview].frame.size.width, 1)];
-		[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES];
-	}
+
+	// Configure the table list filter, starting it collapsed
+	[tableListFilterSplitView setCollapsibleSubviewIndex:0];
+	[tableListFilterSplitView setCollapsibleSubviewCollapsed:YES animate:NO];
 	
 	// Disable tab edit behaviour in the tables list
 	[tablesListView setTabEditingDisabled:YES];
@@ -670,8 +660,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	[tableListSplitView toggleCollapse:sender];
 
-	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:([tableInfoCollapseButton state] == NSOffState)] forKey:SPTableInformationPanelCollapsed];
-	[tableInfoCollapseButton setToolTip:([tableInfoCollapseButton state] == NSOffState) ? NSLocalizedString(@"Show Table Information", @"Show Table Information") : NSLocalizedString(@"Hide Table Information", @"Hide Table Information")];
+	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithBool:[tableListSplitView isCollapsibleSubviewCollapsed]] forKey:SPTableInformationPanelCollapsed];
 }
 
 #endif
@@ -1807,7 +1796,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void) showFilter
 {
-	if ([tableListFilterSplitView collapsibleSubviewIsCollapsed]) {
+	if ([tableListFilterSplitView isCollapsibleSubviewCollapsed]) {
 		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
 	}
 }
@@ -1818,7 +1807,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (void) hideFilter
 {
-	if (![tableListFilterSplitView collapsibleSubviewIsCollapsed]) {
+	if (![tableListFilterSplitView isCollapsibleSubviewCollapsed]) {
 		[tableListFilterSplitView performSelectorOnMainThread:@selector(toggleCollapse:) withObject:nil waitUntilDone:NO];
 	}
 }
@@ -2000,10 +1989,38 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #pragma mark -
 #pragma mark SplitView Delegate Methods
 
+/**
+ * Prevent the table info pane from being resized manually, by making the splitter
+ * not-selectable.
+ */
 - (NSRect)splitView:(NSSplitView *)splitView effectiveRect:(NSRect)proposedEffectiveRect forDrawnRect:(NSRect)drawnRect ofDividerAtIndex:(NSInteger)dividerIndex
 {
-	return (splitView == tableListSplitView ? NSZeroRect : proposedEffectiveRect);
+	if (splitView == (NSSplitView *)tableListSplitView || splitView == (NSSplitView *)tableListFilterSplitView) {
+		return NSZeroRect;
+	}
+
+	return proposedEffectiveRect;
 }
+
+/**
+ * Never show the divider bar for the table list filter split view.
+ */
+- (BOOL)splitView:(NSSplitView *)splitView shouldHideDividerAtIndex:(NSInteger)dividerIndex
+{
+	if (splitView == (NSSplitView *)tableListFilterSplitView) {
+		return YES;
+	}
+
+	// Because both the info pane split view and filter view split view use this class
+	// as a delegate, we now have to duplicate some logic in SPSplitView to match the
+	// default behaviour - thanks to the override above.
+	if (splitView == (NSSplitView *)tableListSplitView) {
+		return [tableListSplitView isSubviewCollapsed:[[tableListSplitView subviews] objectAtIndex:1]];
+	}
+
+	return NO;
+}
+
 #endif
 
 
