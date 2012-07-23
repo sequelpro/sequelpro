@@ -92,7 +92,9 @@
 
 - (void)awakeFromNib
 {
-	[super awakeFromNib];
+	if ([super respondsToSelector:@selector(awakeFromNib)]) {
+		[super awakeFromNib];
+	}
 
 	delegate = [super delegate];
 	[super setDelegate:self];
