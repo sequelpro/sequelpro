@@ -48,6 +48,7 @@ enum {
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
+#import "SPSplitView.h"
 #endif
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
@@ -273,6 +274,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Set up the toolbar
 	[self setupToolbar];
 
+	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
+	[contentViewSplitter setCollapsibleSubviewIndex:0];
+
 	// Set up the connection controller
 	connectionController = [[SPConnectionController alloc] initWithDocument:self];
 	
@@ -357,8 +361,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
 	[taskProgressWindow setAlphaValue:0.0f];
 	[taskProgressWindow setContentView:taskProgressLayer];
-
-	[contentViewSplitter setDelegate:self];
 
 	[self updateTitlebarStatusVisibilityForcingHide:NO];
 #endif
@@ -5575,20 +5577,20 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
-	// Fix tablesList search field frame after collapsing the tablesList
-	[listFilterField setFrameSize:NSMakeSize([[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width - 8, [listFilterField frame].size.height)];
-
 	[self updateChooseDatabaseToolbarItemWidth];
-
 }
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex
 {
-	if (splitView == contentViewSplitter && sidebarGrabber != nil) {
-		return [sidebarGrabber splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
-	} else {
-		return NSZeroRect;
+	if (dividerIndex == 0 && proposedMinimumPosition < 40) {
+		return 40;
 	}
+	return proposedMinimumPosition;
+}
+
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex
+{
+	return proposedMaximumPosition;
 }
 
 - (void)updateChooseDatabaseToolbarItemWidth

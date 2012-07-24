@@ -92,7 +92,7 @@
 
 - (void)awakeFromNib
 {
-	if ([super respondsToSelector:@selector(awakeFromNib)]) {
+	if ([NSSplitView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
 	}
 
@@ -598,6 +598,9 @@
 	if (additionalDragHandleView) {
 		NSRect dragRect = [additionalDragHandleView frame];
 		dragRect.origin = [self convertPoint:dragRect.origin fromView:[additionalDragHandleView superview]];
+		if ([additionalDragHandleView isFlipped] != [self isFlipped]) {
+			dragRect.origin.y -= dragRect.size.height;
+		}
 		return dragRect;
 	}
 
@@ -761,7 +764,7 @@
 		if (i == collapsibleSubviewIndex && collapsibleSubviewCollapsed && !viewIsAnimating) {
 			minSizes[i] = 0.f;
 			maxSizes[i] = 0.f;
-		} else if (i == collapsibleSubviewIndex && !viewLength && animationTargetSize && [eachSubview isKindOfClass:[SPSplitViewHelperView class]]) {
+		} else if (i == collapsibleSubviewIndex && !viewLength && animationTargetSize && !viewIsAnimating && [eachSubview isKindOfClass:[SPSplitViewHelperView class]]) {
 			minSizes[i] = animationTargetSize;
 			maxSizes[i] = animationTargetSize;
 		} else if (respectStruts && ![self _isViewResizable:eachSubview]) {
@@ -778,6 +781,12 @@
 		// If this isn't the collapsible subview, or if there's no collapse animation, measure
 		// the view and continue.
 		if (!viewIsAnimating) {
+
+			// Restore the original view if necessary
+			if ([eachSubview isKindOfClass:[SPSplitViewHelperView class]] && !collapsibleSubviewCollapsed && (viewLength || animationTargetSize)) {
+				[(SPSplitViewHelperView *)eachSubview restoreOriginalView];
+			}
+
 			originalSizes[i] = viewLength;
 			totalCurrentSize += viewLength;
 			[outputSizes addObject:[NSNumber numberWithFloat:viewLength]];

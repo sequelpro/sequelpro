@@ -31,7 +31,7 @@
 
 @class SPConnectionController,
 #ifndef SP_REFACTOR /* class forward decls */
-SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController,
+SPProcessListController, SPServerVariablesController, SPUserManager, SPWindowController, SPSplitView,
 #endif
 SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPServerSupport, SPCustomQuery, SPDatabaseStructure, SPMySQLConnection;
 
@@ -123,8 +123,7 @@ SPDatabaseData, SPTablesList, SPTableStructure, SPTableContent, SPTableData, SPS
 	IBOutlet NSTabView *tableTabView;
 	
 	IBOutlet NSTableView *tableInfoTable;
-	IBOutlet NSSplitView *contentViewSplitter;
-	IBOutlet id sidebarGrabber;
+	IBOutlet SPSplitView *contentViewSplitter;
 	
 	IBOutlet NSPopUpButton *encodingPopUp;
 #endif

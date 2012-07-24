@@ -336,6 +336,8 @@
 		58DC10D312A1B8DF00B76DA5 /* SPMenuAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DC10D212A1B8DF00B76DA5 /* SPMenuAdditions.m */; };
 		58DF9F3315AB26C2003B4330 /* SPDateAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */; };
 		58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F7215AB8509003B4330 /* SPSplitView.m */; };
+		58DFB73C15BE16D7003B4330 /* button_pane_hide.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFB73A15BE16D7003B4330 /* button_pane_hide.tiff */; };
+		58DFB73D15BE16D7003B4330 /* button_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFB73B15BE16D7003B4330 /* button_pane_show.tiff */; };
 		58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -1119,6 +1121,8 @@
 		58DF9F3215AB26C2003B4330 /* SPDateAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDateAdditions.m; sourceTree = "<group>"; };
 		58DF9F7115AB8509003B4330 /* SPSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSplitView.h; sourceTree = "<group>"; };
 		58DF9F7215AB8509003B4330 /* SPSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSplitView.m; sourceTree = "<group>"; };
+		58DFB73A15BE16D7003B4330 /* button_pane_hide.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide.tiff; sourceTree = "<group>"; };
+		58DFB73B15BE16D7003B4330 /* button_pane_show.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show.tiff; sourceTree = "<group>"; };
 		58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = KeyTemplate.pdf; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
@@ -2102,7 +2106,9 @@
 				58C3506410B9A56C00D37E14 /* button_left.png */,
 				58C3506A10B9AA8B00D37E14 /* button_pagination.png */,
 				B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */,
+				58DFB73A15BE16D7003B4330 /* button_pane_hide.tiff */,
 				B5538AAD0FF251EE00219803 /* button_pane_show_icon.tif */,
+				58DFB73B15BE16D7003B4330 /* button_pane_show.tiff */,
 				58C3506610B9A57300D37E14 /* button_right.png */,
 				17E6418D0EF02036001BC333 /* clearconsole.tiff */,
 				B577483A0F7A8B57003B34F9 /* database.png */,
@@ -2973,6 +2979,8 @@
 				58D1006513A57F940092E019 /* SaveSPFAccessory.strings in Resources */,
 				58D1006613A57F940092E019 /* SSHQuestionDialog.strings in Resources */,
 				58D1006713A57F940092E019 /* UserManagerView.strings in Resources */,
+				58DFB73C15BE16D7003B4330 /* button_pane_hide.tiff in Resources */,
+				58DFB73D15BE16D7003B4330 /* button_pane_show.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
