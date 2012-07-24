@@ -234,10 +234,8 @@ static NSMutableArray *deliciousBindingKeys = nil;
     } else { 
 #ifdef BETA_BUILD
         NSLog(@"        not going to localize string %@", string);
-        return string; // [string uppercaseString]
-#else
-        return string;
 #endif
+        return nil;
     }
 }
 
