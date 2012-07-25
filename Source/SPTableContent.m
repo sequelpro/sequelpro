@@ -4264,7 +4264,7 @@
 		numberOfValues = 0;
 		for(NSInteger anIndex=0; anIndex<numberOfCols; anIndex++) {
 			NSString *filterCell;
-			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSNumber numberWithInteger:anIndex]]];
+			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSString stringWithFormat:@"%d",anIndex]]];
 
 			// Take filterTableData
 			if(currentValue == nil) {

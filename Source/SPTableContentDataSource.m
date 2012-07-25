@@ -47,7 +47,7 @@
 {
 #ifndef SP_REFACTOR
 	if (tableView == filterTableView) {
-		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
+		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:@"filter"] count];
 	}
 	else 
 #endif
