@@ -1402,6 +1402,14 @@
 			name = "Database Actions";
 			sourceTree = "<group>";
 		};
+		170DBD5815BEBE39007E95AB /* zlib */ = {
+			isa = PBXGroup;
+			children = (
+				583CE39C11722B84008F148E /* zlib.1.2.4.h */,
+			);
+			name = zlib;
+			sourceTree = "<group>";
+		};
 		17128B890FE6DFFA0035DD75 /* QuickLook */ = {
 			isa = PBXGroup;
 			children = (
@@ -1423,8 +1431,8 @@
 				171312CD109D23C700FB465F /* SPTableTextFieldCell.m */,
 				B57747DA0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.h */,
 				B57747DB0F7A89D0003B34F9 /* SPFavoriteTextFieldCell.m */,
-				BC5750D312A6233900911BA2 /* SPActivityTextFieldCell.m */,
 				BC5750D412A6233900911BA2 /* SPActivityTextFieldCell.h */,
+				BC5750D312A6233900911BA2 /* SPActivityTextFieldCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -1706,6 +1714,15 @@
 			name = "Controller Categories";
 			sourceTree = "<group>";
 		};
+		1798D17215BE9B8E008690E6 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				1798F1861550175B004B0AB8 /* SPFavoritesImportProtocol.h */,
+				1798F1831550175B004B0AB8 /* SPFavoritesExportProtocol.h */,
+			);
+			name = Protocols;
+			sourceTree = "<group>";
+		};
 		1798F1801550172A004B0AB8 /* Import & Export */ = {
 			isa = PBXGroup;
 			children = (
@@ -1713,8 +1730,7 @@
 				1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */,
 				1798F1811550175B004B0AB8 /* SPFavoritesExporter.h */,
 				1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */,
-				1798F1861550175B004B0AB8 /* SPFavoritesImportProtocol.h */,
-				1798F1831550175B004B0AB8 /* SPFavoritesExportProtocol.h */,
+				1798D17215BE9B8E008690E6 /* Protocols */,
 			);
 			name = "Import & Export";
 			sourceTree = "<group>";
@@ -1842,6 +1858,7 @@
 				584D88A81515034200F24774 /* NSNotificationCenterThreadingAdditions.m */,
 				5841929F101E57BB0089807F /* NSMutableArray-MultipleSort.h */,
 				584192A0101E57BB0089807F /* NSMutableArray-MultipleSort.m */,
+				170DBD5815BEBE39007E95AB /* zlib */,
 				17DC8826126B22F200E9AAEC /* Views */,
 				58B909A111C3B8EC000826E5 /* Localization */,
 				177486451528EE820036121C /* RegexKitLite */,
@@ -1886,12 +1903,12 @@
 		17DC8829126B337900E9AAEC /* Text Views */ = {
 			isa = PBXGroup;
 			children = (
-				BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */,
-				BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */,
 				17E641800EF01FA8001BC333 /* SPTextView.h */,
 				17E641810EF01FA8001BC333 /* SPTextView.m */,
 				BC1847E80FE6EC8400094BFB /* SPEditSheetTextView.h */,
 				BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */,
+				BC1944CE1297291800A236CD /* SPBundleCommandTextView.h */,
+				BC1944CF1297291800A236CD /* SPBundleCommandTextView.m */,
 			);
 			name = "Text Views";
 			sourceTree = "<group>";
@@ -2325,7 +2342,6 @@
 		583CE39511722B70008F148E /* File Compression */ = {
 			isa = PBXGroup;
 			children = (
-				583CE39C11722B84008F148E /* zlib.1.2.4.h */,
 				5885CF48116A63B200A85ACB /* SPFileHandle.h */,
 				5885CF49116A63B200A85ACB /* SPFileHandle.m */,
 			);

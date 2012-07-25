@@ -2,9 +2,9 @@
 //  $Id$
 //
 //  SPTableContentDataSource.m
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -35,8 +35,8 @@
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
 
-#import <SPMySQL/SPMySQL.h>
 #import <pthread.h>
+#import <SPMySQL/SPMySQL.h>
 
 @implementation SPTableContent (SPTableContentDataSource)
 

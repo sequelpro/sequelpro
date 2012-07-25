@@ -2,9 +2,9 @@
 //  $Id$
 //
 //  SPWindowManagement.h
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 7, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 7, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -27,6 +27,8 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPAppController.h"
 

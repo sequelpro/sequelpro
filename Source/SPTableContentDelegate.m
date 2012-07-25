@@ -2,9 +2,9 @@
 //  $Id$
 //
 //  SPTableContentDelegate.m
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -39,7 +39,6 @@
 #import "SPGeometryDataView.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
-#import <SPMySQL/SPMySQL.h>
 #ifndef SP_REFACTOR /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
@@ -49,6 +48,7 @@
 #import "SPFieldEditorController.h"
 
 #import <pthread.h>
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPTableContent (SPDeclaredAPI)
 

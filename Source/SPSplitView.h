@@ -4,7 +4,7 @@
 //  SPSplitView.h
 //  sequel-pro
 //
-//  Created by Rowan Beentje on April 25, 2012
+//  Created by Rowan Beentje on April 25, 2012.
 //  Copyright (c) 2012 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -30,11 +30,10 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#import <AppKit/NSSplitView.h>
-
 @class SPSplitViewAnimationRetainCycleBypass;
 
-@interface SPSplitView : NSSplitView {
+@interface SPSplitView : NSSplitView
+{
 	NSObject *delegate;
 
 	IBOutlet NSButton *collapseToggleButton;

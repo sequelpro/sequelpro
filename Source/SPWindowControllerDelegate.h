@@ -2,9 +2,9 @@
 //  $Id$
 //
 //  SPWindowControllerDelegate.h
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 9, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on April 9, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person

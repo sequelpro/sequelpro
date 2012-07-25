@@ -4,22 +4,29 @@
 //  SPMainThreadTrampoline.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 20/03/2010.
-//  Copyright 2010 Rowan Beentje. All rights reserved.
+//  Created by Rowan Beentje on March 20, 2010.
+//  Copyright (c) 2010 Rowan Beentje. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
@@ -32,7 +39,7 @@
  * object on the main thread.
  * This cannot be retained or released.
  */
-- (id) onMainThread
+- (id)onMainThread
 {
 
 	// Return an autoreleased trampoline object
@@ -42,13 +49,12 @@
 /**
  * Provide a retained version of the category
  */
-- (id) retainedOnMainThread
+- (id)retainedOnMainThread
 {
 	return [[SPMainThreadTrampoline alloc] initWithObject:self];
 }
 
 @end
-
 
 @implementation SPMainThreadTrampoline
 
@@ -56,11 +62,12 @@
  * The master initiliasation - the category implementation calls this
  * with the requested object.
  */
-- (id) initWithObject:(id)theObject
+- (id)initWithObject:(id)theObject
 {
 	if ((self = [super init])) {
 		trampolineObject = theObject;
 	}
+	
 	return self;
 }
 
@@ -69,7 +76,7 @@
  * of NSInvocation (see forwardInvocation: docs for background). Must be paired
  * with methodSignationForSelector:.
  */
-- (void) forwardInvocation:(NSInvocation *)theInvocation
+- (void)forwardInvocation:(NSInvocation *)theInvocation
 {
 	SEL theSelector = [theInvocation selector];
 	if (![trampolineObject respondsToSelector:theSelector]) [self doesNotRecognizeSelector:theSelector];
@@ -85,7 +92,7 @@
  * Return the correct method signatures for the trampolined object if
  * NSObject doesn't implement the requested methods.
  */
-- (NSMethodSignature *) methodSignatureForSelector:(SEL)theSelector
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)theSelector
 {
 	NSMethodSignature *defaultSignature = [super methodSignatureForSelector:theSelector];
 	if (defaultSignature) return defaultSignature;
@@ -97,7 +104,7 @@
  * Override the default repondsToSelector:, returning true if either NSObject
  * or the trampolined object supports the selector.
  */
-- (BOOL) respondsToSelector:(SEL)theSelector
+- (BOOL)respondsToSelector:(SEL)theSelector
 {	
 	return ([super respondsToSelector:theSelector] || [trampolineObject respondsToSelector:theSelector]);
 }
@@ -107,7 +114,7 @@
  * or performing the selector on the trampolined object.
  * Note that the return value from the trampolined object is not preserved in this case.
  */
-- (id) performSelector:(SEL)theSelector
+- (id)performSelector:(SEL)theSelector
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector];
 
@@ -125,7 +132,7 @@
  * Override the default performSelector:withObject: - see performSelector:
  * Note that the return value from the trampolined object is not preserved in this case.
  */
-- (id) performSelector:(SEL)theSelector withObject:(id)theObject
+- (id)performSelector:(SEL)theSelector withObject:(id)theObject
 {
 	if ([super respondsToSelector:theSelector]) return [super performSelector:theSelector withObject:theObject];
 
@@ -144,7 +151,7 @@
 /**
  * If the trampoline is sent the onMainThread category, just return the trampoline directly.
  */
-- (id) onMainThread
+- (id)onMainThread
 {
 	return self;
 }

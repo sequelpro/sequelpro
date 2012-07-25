@@ -4,7 +4,7 @@
 //  SPDateAdditions.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje (rowan.beent.je) on February 22, 2012
+//  Created by Rowan Beentje (rowan.beent.je) on February 22, 2012.
 //  Copyright (c) 2012 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
