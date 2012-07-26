@@ -53,7 +53,7 @@
 	NSView *wrappedView;
 }
 
-- (id)initReplacingView:(NSView *)aView;
+- (id)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView;
 - (void)restoreOriginalView;
 
 @end
@@ -211,7 +211,7 @@
 		// If collapsing, ensure the original view is wrapped in a helper view to avoid
 		// animation resizes of the contained view.  (Uncollapses will already be wrapped.)
 		if (![viewToAnimate isMemberOfClass:[SPSplitViewHelperView class]]) { 
-			[[[SPSplitViewHelperView alloc] initReplacingView:viewToAnimate] autorelease];
+			[[[SPSplitViewHelperView alloc] initReplacingView:viewToAnimate inVerticalSplitView:[self isVertical]] autorelease];
 			viewToAnimate = [[self subviews] objectAtIndex:collapsibleSubviewIndex];
 		}
 
@@ -1008,24 +1008,34 @@
  * specified view, adding it as a subview to maintain the same appearance, and then
  * can be animated without affecting the contained view.
  */
-- (id)initReplacingView:(NSView *)aView
+- (id)initReplacingView:(NSView *)aView inVerticalSplitView:(BOOL)verticalSplitView
 {
 	self = [super initWithFrame:[aView frame]];
 	if (!self) return nil;
+
+	NSUInteger wrappedResizeMask = [wrappedView autoresizingMask];
 
 	// Retain the wrapped view while this view exists
 	wrappedView = [aView retain];
 
 	// Copy over the autoresizing mask from the wrapped view to this view, to keep the same
 	// draw appearance during the resize.
-	[self setAutoresizingMask:[wrappedView autoresizingMask]];
+	[self setAutoresizingMask:wrappedResizeMask];
 
-	// Set the wrapped view to flexible margin, edge dependent on view ordering
-	if ([[[wrappedView superview] subviews] indexOfObject:wrappedView]) {
-		[wrappedView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+	// Amend the wrapped view's autoresize mask.  Keep the autosizing across the breadth of
+	// the split view, but amend the autosizing along the lengthwise axis of the split view
+	// so that no sizing occurs, only a flexible margin to allow resizing
+	if (verticalSplitView) {
+		wrappedResizeMask &= ~NSViewMinXMargin;
+		wrappedResizeMask &= ~NSViewWidthSizable;
+		wrappedResizeMask |= NSViewMaxXMargin;
 	} else {
-		[wrappedView setAutoresizingMask:NSViewMaxXMargin | NSViewMaxYMargin];
+		wrappedResizeMask &= ~NSViewMaxYMargin;
+		wrappedResizeMask &= ~NSViewHeightSizable;
+		wrappedResizeMask |= NSViewMinYMargin;
+	
 	}
+	[wrappedView setAutoresizingMask:wrappedResizeMask];
 
 	// Swap the views
 	[[wrappedView superview] replaceSubview:wrappedView with:self];

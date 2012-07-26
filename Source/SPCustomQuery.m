@@ -54,6 +54,7 @@
 #import "SPAlertSheets.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
+#import "SPSplitView.h"
 #import "SPTextView.h"
 #import "RegexKitLite.h"
 #ifndef SP_REFACTOR /* headers */
@@ -520,16 +521,6 @@
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
-}
-
-/**
- * Toggle whether the query info pane is visible.
- */
-- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender
-{
-	[queryInfoPaneSplitView toggleCollapse:sender];
-
-	[sender setToolTip:([sender state] == NSOffState) ? NSLocalizedString(@"Show Query Information", @"Show Query Information") : NSLocalizedString(@"Hide Query Information", @"Hide Query Information")];
 }
 
 #pragma mark -
@@ -1349,12 +1340,10 @@
 
 #ifndef SP_REFACTOR /* show/hide errror view */
 	// Show or hide the error area if necessary
-	if ([errorsString length] && [queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
-		[queryInfoButton setState:NSOnState];
-		[self toggleQueryInfoPaneCollapse:queryInfoButton];
-	} else if (![errorsString length] && ![queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
-		[queryInfoButton setState:NSOffState];
-		[self toggleQueryInfoPaneCollapse:queryInfoButton];
+	if ([errorsString length] && [queryInfoPaneSplitView isCollapsibleSubviewCollapsed]) {
+		[queryInfoPaneSplitView toggleCollapse:self];
+	} else if (![errorsString length] && ![queryInfoPaneSplitView isCollapsibleSubviewCollapsed]) {
+		[queryInfoPaneSplitView toggleCollapse:self];
 	}
 #else
 	if ( [errorsString length] > 0 )
@@ -2742,31 +2731,11 @@
 #ifndef SP_REFACTOR /* splitview delegate methods */
 
 /**
- * Tells the splitView that it can collapse views
+ * Tells the split views that they can collapse views
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
 	return YES;
-}
-
-/**
- * Defines max position of splitView
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
-	
-	return proposedMax;
-}
-
-/**
- * Defines min position of splitView
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
-	
-	return proposedMin;
 }
 
 /**
@@ -3902,6 +3871,14 @@
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
 
+	// Set up the split views
+	[queryEditorSplitView setMinSize:100 ofSubviewAtIndex:0];
+	[queryEditorSplitView setMinSize:100 ofSubviewAtIndex:1];
+
+	[queryInfoPaneSplitView setCollapsibleSubviewIndex:1];
+	[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES animate:NO];
+	
+	
 #ifndef SP_REFACTOR
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -3921,19 +3898,6 @@
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
 #endif
 
-	// Collapse the query information pane
-	if ([queryInfoPaneSplitView collapsibleSubview]) {
-		queryInfoPanePaddingHeight = [[queryInfoPaneSplitView collapsibleSubview] frame].size.height - [errorTextScrollView frame].size.height;
-
-		[queryInfoButton setNextState];
-		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
-
-		[queryInfoPaneSplitView setValue:[NSNumber numberWithFloat:[queryInfoPaneSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:NO];
-		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
-		[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES];
-		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:YES];
-	}
 }
 
 #pragma mark -

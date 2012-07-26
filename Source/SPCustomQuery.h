@@ -49,23 +49,14 @@
 #define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
 #define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
-#ifndef SP_REFACTOR
 @class SPCopyTable;
 @class SPQueryFavoriteManager;
 @class SPDataStorage;
-@class BWSplitView;
+@class SPSplitView;
 @class SPFieldEditorController;
 @class SPMySQLConnection;
 @class SPMySQLFastStreamingResult;
 @class SPTextView;
-#else
-@class SPCopyTable;
-@class SPQueryFavoriteManager;
-@class SPDataStorage;
-@class SPFieldEditorController;
-@class SPMySQLConnection
-@class SPMySQLFastStreamingResult;
-#endif
 
 @interface SPCustomQuery : NSObject 
 #ifdef SP_REFACTOR
@@ -106,7 +97,6 @@
 	IBOutlet id valueTextField;
 	IBOutlet id runSelectionButton;
 	IBOutlet id runAllButton;
-	IBOutlet id multipleLineEditingButton;
 
 	IBOutlet NSMenuItem *runSelectionMenuItem;
 	IBOutlet NSMenuItem *runAllMenuItem;
@@ -133,11 +123,8 @@
 #endif
 
 	IBOutlet NSButton *queryInfoButton;
-#ifndef SP_REFACTOR
-	IBOutlet BWSplitView *queryInfoPaneSplitView;
-#else
-	IBOutlet NSSplitView *queryInfoPaneSplitView;
-#endif
+	IBOutlet SPSplitView *queryInfoPaneSplitView;
+	IBOutlet SPSplitView *queryEditorSplitView;
 
 	SPFieldEditorController *fieldEditor;
 
@@ -234,7 +221,6 @@
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
 - (IBAction)showCompletionList:(id)sender;
-- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;

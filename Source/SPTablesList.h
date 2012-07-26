@@ -44,15 +44,6 @@
 @class SQLSidebarViewController;
 #endif
 
-@interface NSObject (BWSplitView)
-
-- (NSView *)collapsibleSubview;
-- (IBAction)toggleCollapse:(id)sender;
-- (BOOL)collapsibleSubviewIsCollapsed;
-- (void)setCollapsibleSubviewCollapsed:(BOOL)flag;
-
-@end
-
 @interface SPTablesList : NSObject 
 #ifdef SP_REFACTOR
 <NSTextFieldDelegate>
