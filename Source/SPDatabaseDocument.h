@@ -6,7 +6,7 @@
 //
 //  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
-//  Copyright (c) 2012 Sequel Pro Test. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
