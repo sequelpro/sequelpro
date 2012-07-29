@@ -35,6 +35,7 @@
 #import "SPBundleCommandRunner.h"
 #import "SPOutlineView.h"
 #import "SPBundleCommandTextView.h"
+#import "SPSplitView.h"
 
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
@@ -127,14 +128,16 @@
 - (void)awakeFromNib
 {
 
-	// Set up the splitview width manually; autosave appears to save but not restore this value
-	// here, so restore in code if present.
-	NSString *splitViewKeyName = [NSString stringWithFormat:@"NSSplitView Subview Frames %@", SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING];
-	if ([[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName]) {
-		NSString *detailString = [[[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName] objectAtIndex:0];
-		float dividerPosition = [[[detailString componentsSeparatedByString:@", "] objectAtIndex:2] floatValue];
-		[splitView setPosition:dividerPosition ofDividerAtIndex:0];
-	}
+	// Set the splitview up
+	[splitView setMinSize:122.f ofSubviewAtIndex:0];
+	[splitView setMinSize:588.f ofSubviewAtIndex:1];
+
+	// Set up the shortcut recorder control
+	[keyEquivalentField setAnimates:YES];
+	[keyEquivalentField setStyle:SRGreyStyle];
+	[keyEquivalentField setAllowedFlags:ShortcutRecorderAllFlags];
+	[keyEquivalentField setRequiredFlags:ShortcutRecorderEmptyFlags];
+	[keyEquivalentField setAllowsKeyOnly:NO escapeKeysRecord:NO];
 
 	// Init all needed variables; popup menus (with the chance for localization); and set
 	// defaults
@@ -1207,6 +1210,21 @@
 	}
 	[[self _currentSelectedObject] setObject:keyEq forKey:SPBundleFileKeyEquivalentKey];
 
+}
+
+#pragma mark -
+#pragma mark Split view delegates
+
+- (void)splitView:(NSSplitView *)theSplitView resizeSubviewsWithOldSize:(NSSize)oldSize
+{
+	NSView *nonResizableSubview = [[theSplitView subviews] objectAtIndex:0];
+	NSView *resizableSubview = [[theSplitView subviews] objectAtIndex:1];
+
+	CGFloat nonResizableSubviewTotal = [nonResizableSubview frame].size.width;
+	nonResizableSubviewTotal += [theSplitView dividerThickness];
+
+	[nonResizableSubview setFrameSize:NSMakeSize([nonResizableSubview frame].size.width, [splitView frame].size.height)];
+	[resizableSubview setFrameSize:NSMakeSize([theSplitView frame].size.width - nonResizableSubviewTotal, [splitView frame].size.height)];
 }
 
 #pragma mark -

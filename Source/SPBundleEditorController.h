@@ -33,7 +33,7 @@
 #import <ShortcutRecorder/ShortcutRecorder.h>
 
 @class SRRecorderControl;
-@class BWSplitView;
+@class SPSplitView;
 @class SPOutlineView;
 @class SPBundleCommandTextView;
 
@@ -68,7 +68,7 @@
 	IBOutlet SRRecorderControl *keyEquivalentField;
 	IBOutlet NSButton *disabledCheckbox;
 	IBOutlet NSScrollView *commandScrollView;
-	IBOutlet BWSplitView *splitView;
+	IBOutlet SPSplitView *splitView;
 
 	IBOutlet NSWindow *undeleteSheet;
 	IBOutlet NSWindow *metaInfoSheet;
