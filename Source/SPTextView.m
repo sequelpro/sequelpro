@@ -2980,12 +2980,13 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 - (void)drawRect:(NSRect)rect {
 
 
-	// Draw background only for screen display but not while printing
-	if([NSGraphicsContext currentContextDrawingToScreen]) {
+	// Draw background only for screen display but not while printing, and only if view
+	// background drawing is enabled.
+	if([NSGraphicsContext currentContextDrawingToScreen] && [self drawsBackground]) {
 
 		// Draw textview's background since due to the snippet highlighting we're responsible for it.
 		[[self queryEditorBackgroundColor] setFill];
-		NSRectFill(rect);
+		NSRectFillUsingOperation(rect, NSCompositeSourceOver);
 
 		if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 

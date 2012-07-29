@@ -62,7 +62,7 @@
 	IBOutlet id resultingClauseLabel;
 	IBOutlet id resultingClauseContentLabel;
 	IBOutlet id insertPlaceholderButton;
-	IBOutlet id suppressLeadingFiledPlaceholderCheckbox;
+	IBOutlet NSButton *suppressLeadingFiledPlaceholderCheckbox;
 	
 	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 

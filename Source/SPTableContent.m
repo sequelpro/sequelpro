@@ -45,6 +45,7 @@
 #import "SPTextAndLinkCell.h"
 #ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"
+#import "SPSplitView.h"
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
@@ -229,13 +230,16 @@
 	paginationViewFrame.size.height = 0;
 	[paginationView setFrame:paginationViewFrame];
 	[contentViewPane addSubview:paginationView];
+
+	// Modify the filter table split view sizes
+	[filterTableSplitView setMinSize:135 ofSubviewAtIndex:1];
 #endif
 
 	[tableContentView setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
 #ifndef SP_REFACTOR
 	// Init Filter Table GUI
-	[filterTableDistinctMenuItem setState:(filterTableDistinct) ? NSOnState : NSOffState];
+	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
 	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
 	[filterTableLiveSearchCheckbox setState:NSOffState];
 #endif
@@ -3591,6 +3595,12 @@
 #ifndef SP_REFACTOR
 	filterTableNegate = !filterTableNegate;
 
+	if (filterTableNegate) {
+		[filterTableQueryBox setTitle:NSLocalizedString(@"WHERE NOT query", @"Title of filter preview area when the query WHERE is negated")];
+	} else {
+		[filterTableQueryBox setTitle:NSLocalizedString(@"WHERE query", @"Title of filter preview area when the query WHERE is normal")];
+	}
+
 	// If live search is set perform filtering
 	if([filterTableLiveSearchCheckbox state] == NSOnState)
 		[self filterTable:filterTableFilterButton];
@@ -3606,7 +3616,7 @@
 #ifndef SP_REFACTOR
 	filterTableDistinct = !filterTableDistinct;
 
-	[filterTableDistinctMenuItem setState:(filterTableDistinct) ? NSOnState : NSOffState];
+	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
 
 	// If live search is set perform filtering
 	if([filterTableLiveSearchCheckbox state] == NSOnState)
@@ -3645,11 +3655,6 @@
 		  contextInfo:@"setdefaultoperator"];
 #endif
 
-}
-
-- (IBAction)swapFilterTable:(id)sender
-{
-	NSLog(@"SWAP");
 }
 
 /**
@@ -4226,14 +4231,14 @@
 	NSMutableString *newOp = [[[NSMutableString alloc] initWithCapacity:[anOperator length]] autorelease];
 	[newOp setString:anOperator];
 	[newOp replaceOccurrencesOfRegex:@"%" withString:@"%%"];
-	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%"];
+	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%@"];
 	return newOp;
 }
 
 /**
  * Update WHERE clause in Filter Table Window
  *
- * @param currentValue If currentValue == nil take the data from filterTableData, if currentValue == filterTableGearLookAllFields
+ * @param currentValue If currentValue == nil take the data from filterTableData, if currentValue == filterTableSearchAllFields
  * generate a WHERE clause to search in all given fields, if currentValue == a string take this string as table cell data of the
  * currently edited table cell
  */
@@ -4253,7 +4258,7 @@
 	NSInteger editedRow = [filterTableView editedRow];
 	
 
-	if(currentValue == filterTableGearLookAllFields) {
+	if(currentValue == filterTableSearchAllFields) {
 		numberOfRows = 1;
 		lookInAllFields = YES;
 	}

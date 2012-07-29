@@ -47,6 +47,9 @@
 @class SPTableStructure;
 @class SPTableList;
 @class SPContentFilterManager;
+#ifndef SP_REFACTOR
+@class SPSplitView;
+#endif
 
 @interface SPTableContent : NSObject
 #ifdef SP_REFACTOR
@@ -98,15 +101,17 @@
 
 	IBOutlet SPCopyTable *filterTableView;
 	IBOutlet NSPanel *filterTableWindow;
+	IBOutlet SPSplitView *filterTableSplitView;
+	IBOutlet NSBox *filterTableQueryBox;
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
 	IBOutlet NSButton *filterTableNegateCheckbox;
-	IBOutlet NSMenuItem *filterTableDistinctMenuItem;
+	IBOutlet NSButton *filterTableDistinctCheckbox;
 	IBOutlet NSButton *filterTableLiveSearchCheckbox;
-	IBOutlet NSMenuItem *filterTableGearLookAllFields;
+	IBOutlet NSButton *filterTableSearchAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
-	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
+	IBOutlet NSComboBox *filterTableSetDefaultOperatorValue;
 #endif
 	SPMySQLConnection *mySQLConnection;
 
@@ -239,7 +244,6 @@
 - (IBAction)toggleNegateClause:(id)sender;
 - (IBAction)toggleDistinctSelect:(id)sender;
 - (IBAction)setDefaultOperator:(id)sender;
-- (IBAction)swapFilterTable:(id)sender;
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)showDefaultOperaterHelp:(id)sender;
