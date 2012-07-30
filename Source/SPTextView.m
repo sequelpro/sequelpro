@@ -94,7 +94,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 
+@interface SPTextView (Private_API)
+
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
+
+@end
+
 
 // some helper functions for handling rectangles and points
 // needed in roundedBezierPathAroundRange:
@@ -127,14 +133,6 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize customQueryInstance;
 @synthesize mySQLConnection;
 #endif
-
-/**
- * Sort function (mainly used to sort the words in the textView)
- */
-NSInteger _alphabeticSort(id string1, id string2, void *reverse)
-{
-	return [string1 localizedCaseInsensitiveCompare:string2];
-}
 
 - (void) awakeFromNib
 {
@@ -212,7 +210,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[self setTextColor:otherTextColor];
 	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
 	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
-	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]], NSBackgroundColorAttributeName, nil]];
+
+	[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
 
 	// Register observers for the when editor background colors preference changes
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSelectionColor options:NSKeyValueObservingOptionNew context:NULL];
@@ -264,6 +263,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 		[self setQueryEditorBackgroundColor:backgroundColor];
 		[self setBackgroundColor:backgroundColor];
+		[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
 		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
@@ -275,7 +275,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorSelectionColor]) {
-		[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]], NSBackgroundColorAttributeName, nil]];
+		[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]] onBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
 		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
@@ -2990,7 +2990,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 
-			// Highlightes the current query if set in the Pref and no snippet session
+			// Highlights the current query if set in the Pref and no snippet session
 			// and if nothing is selected in the text view
 			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length && [[self string] length] < SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) {
 				NSUInteger rectCount;
@@ -3670,9 +3670,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 #pragma mark -
 
-
-#pragma mark -
-
 - (void) dealloc
 {
 
@@ -3682,6 +3679,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 #ifndef SP_REFACTOR
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorSelectionColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorCaretColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorFont];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor];
@@ -3715,3 +3714,43 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 }
 
 @end
+
+#pragma mark -
+#pragma mark Private API
+
+@implementation SPTextView (Private_API)
+
+/**
+ * Sort function (mainly used to sort the words in the textView)
+ */
+NSInteger _alphabeticSort(id string1, id string2, void *reverse)
+{
+	return [string1 localizedCaseInsensitiveCompare:string2];
+}
+
+/**
+ * Take a supplied text selection colour, and if it contains an alpha component,
+ * pre-multiply it by the background colour before setting it to avoid drawing problems.
+ */
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor
+{
+
+	// If the selection colour has an alpha component, modify it
+	if ([newSelectionColor alphaComponent] < 1.f) {
+		NSColorSpace *rgbColorSpace = [NSColorSpace genericRGBColorSpace];
+
+		newSelectionColor = [newSelectionColor colorUsingColorSpace:rgbColorSpace];
+		NSColor *backgroundColor = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]] colorUsingColorSpace:rgbColorSpace];
+
+		CGFloat modifiedRedComponent = ([backgroundColor redComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor redComponent] * [newSelectionColor alphaComponent]);
+		CGFloat modifiedGreenComponent = ([backgroundColor greenComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor greenComponent] * [newSelectionColor alphaComponent]);
+		CGFloat modifiedBlueComponent = ([backgroundColor blueComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor blueComponent] * [newSelectionColor alphaComponent]);
+		newSelectionColor = [NSColor colorWithDeviceRed:modifiedRedComponent green:modifiedGreenComponent blue:modifiedBlueComponent alpha:1.f];
+	}
+
+	// Set the selection colour
+	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
+}
+
+@end
+
