@@ -494,30 +494,18 @@
 
 	[self _ensureDefaultSubviewSizesToIndex:(dividerIndex + 1)];
 
-	// If the preceeding view is not resizable, treat it as fixed position
-	aView = [[self subviews] objectAtIndex:dividerIndex];
-	if (![self _isViewResizable:aView]) {
-		preMinPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView];
-	} else {
-
-		// Check the minimum size of the preceeding view
-		CGFloat preMinSize = [[viewMinimumSizes objectAtIndex:dividerIndex] floatValue];
-		if (preMinSize) {
-			preMinPosition = [self _startPositionOfView:aView] + preMinSize;
-		}
+	// Check the minimum size of the preceeding view
+	CGFloat preMinSize = [[viewMinimumSizes objectAtIndex:dividerIndex] floatValue];
+	if (preMinSize) {
+		aView = [[self subviews] objectAtIndex:dividerIndex];
+		preMinPosition = [self _startPositionOfView:aView] + preMinSize;
 	}
 
-	// If the following view is not resizable, treat it as fixed position
-	aView = [[self subviews] objectAtIndex:(dividerIndex + 1)];
-	if (![self _isViewResizable:aView]) {
-		postMaxPosition = [self _startPositionOfView:aView] - [self dividerThickness];
-	} else {
-
-		// Check the maximum size of the following view
-		CGFloat postMaxSize = [[viewMaximumSizes objectAtIndex:(dividerIndex + 1)] floatValue];
-		if (postMaxSize != FLT_MAX) {
-			postMaxPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView] - postMaxSize - [self dividerThickness];
-		}
+	// Check the maximum size of the following view
+	CGFloat postMaxSize = [[viewMaximumSizes objectAtIndex:(dividerIndex + 1)] floatValue];
+	if (postMaxSize != FLT_MAX) {
+		aView = [[self subviews] objectAtIndex:(dividerIndex + 1)];
+		postMaxPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView] - postMaxSize - [self dividerThickness];
 	}
 
 	CGFloat suggestedMinimum = fmaxf(preMinPosition, postMaxPosition);
@@ -548,30 +536,18 @@
 
 	[self _ensureDefaultSubviewSizesToIndex:(dividerIndex + 1)];
 
-	// If the preceeding view is not resizable, treat it as fixed position
-	aView = [[self subviews] objectAtIndex:dividerIndex];
-	if (![self _isViewResizable:aView]) {
-		preMaxPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView];
-	} else {
-
-		// Check the maximum size of the preceeding view
-		CGFloat preMaxSize = [[viewMaximumSizes objectAtIndex:dividerIndex] floatValue];
-		if (preMaxSize != FLT_MAX) {
-			preMaxPosition = [self _startPositionOfView:aView] + preMaxSize;
-		}
+	// Check the maximum size of the preceeding view
+	CGFloat preMaxSize = [[viewMaximumSizes objectAtIndex:dividerIndex] floatValue];
+	if (preMaxSize != FLT_MAX) {
+		aView = [[self subviews] objectAtIndex:dividerIndex];
+		preMaxPosition = [self _startPositionOfView:aView] + preMaxSize;
 	}
 
-	// If the following view is not resizable, treat it as fixed position
-	aView = [[self subviews] objectAtIndex:(dividerIndex + 1)];
-	if (![self _isViewResizable:aView]) {
-		postMinPosition = [self _startPositionOfView:aView] - [self dividerThickness];
-	} else {
-
-		// Check the minimum size of the following view
-		CGFloat postMinSize = [[viewMinimumSizes objectAtIndex:(dividerIndex + 1)] floatValue];
-		if (postMinSize) {
-			postMinPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView] - postMinSize - [self dividerThickness];
-		}
+	// Check the minimum size of the following view
+	CGFloat postMinSize = [[viewMinimumSizes objectAtIndex:(dividerIndex + 1)] floatValue];
+	if (postMinSize) {
+		aView = [[self subviews] objectAtIndex:(dividerIndex + 1)];
+		postMinPosition = [self _startPositionOfView:aView] + [self _lengthOfView:aView] - postMinSize - [self dividerThickness];
 	}
 
 	CGFloat suggestedMaximum = fminf(preMaxPosition, postMinPosition);

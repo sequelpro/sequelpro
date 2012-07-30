@@ -1213,21 +1213,6 @@
 }
 
 #pragma mark -
-#pragma mark Split view delegates
-
-- (void)splitView:(NSSplitView *)theSplitView resizeSubviewsWithOldSize:(NSSize)oldSize
-{
-	NSView *nonResizableSubview = [[theSplitView subviews] objectAtIndex:0];
-	NSView *resizableSubview = [[theSplitView subviews] objectAtIndex:1];
-
-	CGFloat nonResizableSubviewTotal = [nonResizableSubview frame].size.width;
-	nonResizableSubviewTotal += [theSplitView dividerThickness];
-
-	[nonResizableSubview setFrameSize:NSMakeSize([nonResizableSubview frame].size.width, [splitView frame].size.height)];
-	[resizableSubview setFrameSize:NSMakeSize([theSplitView frame].size.width - nonResizableSubviewTotal, [splitView frame].size.height)];
-}
-
-#pragma mark -
 #pragma mark TableView delegates
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
