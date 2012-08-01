@@ -3596,9 +3596,9 @@
 	filterTableNegate = !filterTableNegate;
 
 	if (filterTableNegate) {
-		[filterTableQueryBox setTitle:NSLocalizedString(@"WHERE NOT query", @"Title of filter preview area when the query WHERE is negated")];
+		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE NOT query", @"Title of filter preview area when the query WHERE is negated")];
 	} else {
-		[filterTableQueryBox setTitle:NSLocalizedString(@"WHERE query", @"Title of filter preview area when the query WHERE is normal")];
+		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE query", @"Title of filter preview area when the query WHERE is normal")];
 	}
 
 	// If live search is set perform filtering

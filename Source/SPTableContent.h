@@ -102,7 +102,7 @@
 	IBOutlet SPCopyTable *filterTableView;
 	IBOutlet NSPanel *filterTableWindow;
 	IBOutlet SPSplitView *filterTableSplitView;
-	IBOutlet NSBox *filterTableQueryBox;
+	IBOutlet NSTextField *filterTableQueryTitle;
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
