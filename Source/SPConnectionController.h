@@ -38,10 +38,10 @@
 	   SPSSHTunnel,
 	   SPTreeNode,
 	   SPFavoritesOutlineView,
-       SPMySQLConnection
+       SPMySQLConnection,
+	   SPSplitView
 #ifndef SP_REFACTOR /* class decl */
 	   ,SPKeychain, 
-	   BWAnchoredButtonBar, 
 	   SPFavoriteNode
 #endif
 ;
@@ -112,12 +112,9 @@
 	NSMutableArray *nibObjectsToRelease;
 
 	IBOutlet NSView *connectionView;
-	IBOutlet NSSplitView *connectionSplitView;
+	IBOutlet SPSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
 	IBOutlet NSTextField *connectionInstructionsTextField;
-#ifndef SP_REFACTOR
-	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
-#endif
 	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 
 	IBOutlet NSWindow *errorDetailWindow;
@@ -223,6 +220,7 @@
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
 - (IBAction)updateKeyLocationFileVisibility:(id)sender;
+- (void)updateSplitViewSize;
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(NSMenuItem *)sender;

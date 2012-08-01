@@ -412,6 +412,20 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 }
 
+/**
+ * Update the interface in response to external split view size changes.
+ */
+- (void)updateSplitViewSize
+{
+	if ([dbDocument getConnection]) {
+		return;
+	}
+
+	[connectionSplitView setDelegate:nil];
+	[connectionSplitView setPosition:[[[databaseConnectionView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	[connectionSplitView setDelegate:self];
+}
+
 #pragma mark -
 #pragma mark Connection details interaction and display
 

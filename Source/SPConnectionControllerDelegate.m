@@ -65,18 +65,15 @@ static NSString *SPDatabaseImage = @"database-small";
 
 #ifndef SP_REFACTOR
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
-{
-	return [connectionSplitViewButtonBar splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
-}
-
 /**
  * When the split view is resized, trigger a resize in the hidden table
  * width as well, to keep the connection view and connected view in sync.
  */
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
-	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	if (initComplete) {
+		[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	}
 }
 
 #endif

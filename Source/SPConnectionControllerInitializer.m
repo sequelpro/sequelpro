@@ -37,6 +37,7 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 #import "SPDatabaseViewController.h"
+#import "SPSplitView.h"
 
 static NSString *SPConnectionViewNibName = @"ConnectionView";
 
@@ -93,9 +94,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
 		[databaseConnectionSuperview addSubview:connectionView];		
-		[connectionSplitView setPosition:[[dbDocument valueForKey:@"dbTablesTableView"] frame].size.width ofDividerAtIndex:0];
-		[connectionSplitView setDelegate:self];
 		
+		// Set up the splitview
+		[connectionSplitView setMinSize:80.f ofSubviewAtIndex:0];
+		[connectionSplitView setMinSize:445.f ofSubviewAtIndex:1];
+
 		// Generic folder image for use in the outline view's groups
 		folderImage = [[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericFolderIcon)] retain];
 		

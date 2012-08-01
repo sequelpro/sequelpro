@@ -338,6 +338,7 @@
 		58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DF9F7215AB8509003B4330 /* SPSplitView.m */; };
 		58DFB73C15BE16D7003B4330 /* button_pane_hide.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFB73A15BE16D7003B4330 /* button_pane_hide.tiff */; };
 		58DFB73D15BE16D7003B4330 /* button_pane_show.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFB73B15BE16D7003B4330 /* button_pane_show.tiff */; };
+		58DFC0B215C728A5003B4330 /* button_add_folder.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFC0B115C728A5003B4330 /* button_add_folder.tiff */; };
 		58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -1123,6 +1124,7 @@
 		58DF9F7215AB8509003B4330 /* SPSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSplitView.m; sourceTree = "<group>"; };
 		58DFB73A15BE16D7003B4330 /* button_pane_hide.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide.tiff; sourceTree = "<group>"; };
 		58DFB73B15BE16D7003B4330 /* button_pane_show.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_show.tiff; sourceTree = "<group>"; };
+		58DFC0B115C728A5003B4330 /* button_add_folder.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_add_folder.tiff; sourceTree = "<group>"; };
 		58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = KeyTemplate.pdf; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
@@ -2108,6 +2110,7 @@
 				384582C60FB9603600DDACB6 /* proc-small.png */,
 				384582C30FB95FF800DDACB6 /* func-small.png */,
 				B58A323D0F6509D60003C243 /* button_action.tiff */,
+				58DFC0B115C728A5003B4330 /* button_add_folder.tiff */,
 				B58A323E0F6509D60003C243 /* button_add.tiff */,
 				B58A323F0F6509D60003C243 /* button_bar_handle.tiff */,
 				B58A32400F6509D60003C243 /* button_bar_spacer.tiff */,
@@ -2997,6 +3000,7 @@
 				58D1006713A57F940092E019 /* UserManagerView.strings in Resources */,
 				58DFB73C15BE16D7003B4330 /* button_pane_hide.tiff in Resources */,
 				58DFB73D15BE16D7003B4330 /* button_pane_show.tiff in Resources */,
+				58DFC0B215C728A5003B4330 /* button_add_folder.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -5585,6 +5585,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
 	[self updateChooseDatabaseToolbarItemWidth];
+	[connectionController updateSplitViewSize];
 }
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex

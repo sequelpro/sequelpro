@@ -96,11 +96,6 @@
 		[super awakeFromNib];
 	}
 
-	delegate = [super delegate];
-	[super setDelegate:self];
-
-	[self adjustSubviews];
-
 	[collapseToggleButton setState:(collapsibleSubviewCollapsed?NSOnState:NSOffState)];
 }
 
@@ -114,6 +109,14 @@
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[super dealloc];
+}
+
+#pragma mark -
+#pragma mark Delegate management
+
+- (void)setDelegate:(NSObject *)aDelegate
+{
+	delegate = aDelegate;
 }
 
 #pragma mark -
@@ -686,6 +689,9 @@
 	viewMinimumSizes = [[NSMutableArray alloc] initWithCapacity:l];
 	viewMaximumSizes = [[NSMutableArray alloc] initWithCapacity:l];
 	[self _ensureDefaultSubviewSizesToIndex:l-1];
+
+	delegate = [super delegate];
+	[super setDelegate:self];
 }
 
 /**
