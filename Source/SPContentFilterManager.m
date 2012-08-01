@@ -37,10 +37,7 @@
 #import "SPQueryDocumentsController.h"
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
-
-#ifndef SP_REFACTOR /* headers */
-#import <BWToolkitFramework/BWToolkitFramework.h>
-#endif
+#import "SPSplitView.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -89,6 +86,11 @@
  */
 - (void)awakeFromNib
 {
+
+	// Set up the split view
+	[contentFilterSplitView setMinSize:120.f ofSubviewAtIndex:0];
+	[contentFilterSplitView setMaxSize:245.f ofSubviewAtIndex:0];
+
 	// Add global group row to contentFilters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			NSLocalizedString(@"Global",@"Content Filter Manager : Filter Entry List: 'Global' Header"), @"MenuLabel",
@@ -151,11 +153,6 @@
 
 	// Set column header
 	[[[contentFilterTableView tableColumnWithIdentifier:@"MenuLabel"] headerCell] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ Fields Content Filters", @"table column header. Read: 'Showing all content filters for fields of type %@' (ContentFilterManager)"), filterType]];
-
-#ifndef SP_REFACTOR /* split view delegate */
-	// Set the button delegate
-	[splitViewButtonBar setSplitViewDelegate:self];
-#endif
 }
 
 #pragma mark -
@@ -406,25 +403,6 @@
 - (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
 {
 	[contentFilterTextView insertText:@""];
-}
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 245);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 120);
 }
 
 #pragma mark -

@@ -30,8 +30,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class BWAnchoredButtonBar;
 @class SPDatabaseDocument;
+@class SPSplitView;
 
 @interface NSObject (SPContentFilterManagerDelegate)
 
@@ -57,14 +57,13 @@
 	IBOutlet id contentFilterConjunctionTextField;
 	IBOutlet id contentFilterConjunctionLabel;
 	IBOutlet id contentFilterTextView;
+	IBOutlet SPSplitView *contentFilterSplitView;
 	IBOutlet id removeButton;
 	IBOutlet id numberOfArgsLabel;
 	IBOutlet id resultingClauseLabel;
 	IBOutlet id resultingClauseContentLabel;
 	IBOutlet id insertPlaceholderButton;
 	IBOutlet NSButton *suppressLeadingFiledPlaceholderCheckbox;
-	
-	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	IBOutlet id contentFilterArrayController;
 	
