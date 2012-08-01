@@ -747,7 +747,6 @@
 		17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFilenameUtilities.m; sourceTree = "<group>"; };
 		17B7B58F1016028F00F057DE /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
-		17B7B698101611C800F057DE /* build-mysql-client.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "build-mysql-client.sh"; sourceTree = "<group>"; };
 		17BA2A3015275D8600389803 /* SPExportInterfaceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInterfaceController.h; sourceTree = "<group>"; };
 		17BA2A3115275D8600389803 /* SPExportInterfaceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInterfaceController.m; sourceTree = "<group>"; };
 		17C058860FC9FC390077E9CF /* SPNarrowDownCompletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNarrowDownCompletion.h; sourceTree = "<group>"; };
@@ -1690,7 +1689,6 @@
 				1761FD9D0EF0488900331368 /* build-version.pl */,
 				178934980F30CDA10097539A /* trim-application.sh */,
 				174A345112DA4ED000DB0ADE /* create-test-stubs.pl */,
-				17B7B698101611C800F057DE /* build-mysql-client.sh */,
 				588593F30F7AEC9500ED0E67 /* package-application.sh */,
 			);
 			path = Scripts;
