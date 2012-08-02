@@ -341,6 +341,7 @@
 		58DFC0B215C728A5003B4330 /* button_add_folder.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFC0B115C728A5003B4330 /* button_add_folder.tiff */; };
 		58DFC8E315C9F402003B4330 /* button_select_all.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFC8E115C9F402003B4330 /* button_select_all.tiff */; };
 		58DFC8E415C9F402003B4330 /* button_select_none.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 58DFC8E215C9F402003B4330 /* button_select_none.tiff */; };
+		58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58DFC91515CB3501003B4330 /* BGHUDButtonCell.m */; };
 		58E205FC1234FE4F00A97059 /* KeyTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
@@ -1128,6 +1129,8 @@
 		58DFC0B115C728A5003B4330 /* button_add_folder.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_add_folder.tiff; sourceTree = "<group>"; };
 		58DFC8E115C9F402003B4330 /* button_select_all.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_select_all.tiff; sourceTree = "<group>"; };
 		58DFC8E215C9F402003B4330 /* button_select_none.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_select_none.tiff; sourceTree = "<group>"; };
+		58DFC91415CB3501003B4330 /* BGHUDButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BGHUDButtonCell.h; sourceTree = "<group>"; };
+		58DFC91515CB3501003B4330 /* BGHUDButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BGHUDButtonCell.m; sourceTree = "<group>"; };
 		58E205FB1234FE4F00A97059 /* KeyTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = KeyTemplate.pdf; sourceTree = "<group>"; };
 		58FEF16B0F23D66600518E8E /* SPSQLParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLParser.h; sourceTree = "<group>"; };
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
@@ -1878,6 +1881,8 @@
 				5841423E0F97E11000A34B47 /* NoodleLineNumberView.m */,
 				BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */,
 				BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */,
+				58DFC91415CB3501003B4330 /* BGHUDButtonCell.h */,
+				58DFC91515CB3501003B4330 /* BGHUDButtonCell.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -3295,6 +3300,7 @@
 				1748D58615A83E54003562F2 /* SPWindowManagement.m in Sources */,
 				58DF9F3315AB26C2003B4330 /* SPDateAdditions.m in Sources */,
 				58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */,
+				58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
