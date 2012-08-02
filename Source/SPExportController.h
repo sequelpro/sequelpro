@@ -36,7 +36,6 @@
 @class SPTablesList;
 @class SPTableData;
 @class SPMySQLConnection; 
-@class BWAnchoredButtonBar;
 
 /**
  * @class SPExportController SPExportController.h
@@ -81,7 +80,7 @@
 	IBOutlet NSButton *exportProcessLowMemoryButton;
 	IBOutlet NSPopUpButton *exportOutputCompressionFormatPopupButton;
 	
-	IBOutlet BWAnchoredButtonBar *exportTableListButtonBar;
+	IBOutlet NSBox *exportTableListButtonBar;
 	
 	// Export progress sheet
 	IBOutlet NSWindow *exportProgressWindow;

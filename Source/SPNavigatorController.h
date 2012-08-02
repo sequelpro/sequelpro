@@ -30,7 +30,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPNavigatorOutlineView;
+@class SPNavigatorOutlineView, SPSplitView;
 
 @interface SPNavigatorController : NSWindowController 
 {
@@ -41,7 +41,7 @@
 	IBOutlet id searchField;
 	IBOutlet NSButton *syncButton;
 
-	IBOutlet id schemaStatusSplitView;
+	IBOutlet SPSplitView *schemaStatusSplitView;
 	IBOutlet id schema12SplitView;
 
 	NSUserDefaults *prefs;

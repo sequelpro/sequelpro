@@ -30,22 +30,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR
-@class SPDatabaseDocument;
-@class SPTablesList;
-@class SPTableData;
-@class SPTableStructure;
-@class SPMySQLConnection;
-@class BWAnchoredButtonBar;
-@class SPTableView;
-#else
 @class SPDatabaseDocument;
 @class SPTablesList;
 @class SPTableData;
 @class SPTableStructure;
 @class SPMySQLConnection;
 @class SPTableView;
-#endif
 
 @interface SPIndexesController : NSWindowController 
 #ifdef SP_REFACTOR
@@ -75,7 +65,7 @@
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
 #ifndef SP_REFACTOR
-	IBOutlet BWAnchoredButtonBar *anchoredButtonBar;
+	IBOutlet NSBox *anchoredButtonBar;
 	
 	// Advanced options view
 	IBOutlet NSButton *indexAdvancedOptionsViewButton;

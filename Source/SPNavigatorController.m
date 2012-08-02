@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPNavigatorController.h"
+#import "SPSplitView.h"
 #ifndef SP_REFACTOR /* headers */
 #import "RegexKitLite.h"
 #import "SPNavigatorOutlineView.h"
@@ -149,6 +150,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (void)awakeFromNib
 {
 	prefs = [NSUserDefaults standardUserDefaults];
+
+	// Set up the splitview
+	[schemaStatusSplitView setMinSize:32.f ofSubviewAtIndex:0];
+	[schemaStatusSplitView setMinSize:16.f ofSubviewAtIndex:1];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
 	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil]];
