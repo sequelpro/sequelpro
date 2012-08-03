@@ -1,45 +1,10 @@
 BUILDING SEQUEL PRO
 -------------------
 
-Sequel Pro uses an external framework which comes with an .ibplugin (Interface Builder
-Plugins); to build Sequel Pro, Interface Builder must have detected this plugin.
+Building Sequel Pro should be straightforward, with no external dependencies or use of
+Interface Builder plugins.
 
-The frameworks is:
-
-	BWToolkit
-
-The framework is included in the Sequel Pro source tree with its .ibplugin;
-the location of the .ibplugin is:
-
-	./Frameworks/BWToolkitFramework.framework/Versions/A/Resources/BWToolkit.ibplugin
-
-(NOTE: Xcode 4 does not yet support interface builder plugins. Xcode 3.2.x is recommended)
-
-By including the .ibplugin within the frameworks, Interface Builder should detect 
-it automatically when you build.  If you get build errors complaining "Unable to 
-resolve plug-in dependency for ...", automatic detection has failed.  The first thing 
-to try is the following steps to try and make Xcode pick up the plugin itself:
-
-1) Quit Xcode and Interface Builder
-2) Re-open Xcode
-3) Locate one of the .xib files with dependencies, for example DBView.xib, and open it from Xcode
-4) Close it, and try building again.
-
-If this still fails, locate the .ibplugin and double click on it to add it to Interface Builder.
-
-If Interface Builder complains that it is already installed then you might want 
-to replace the current version with the version in the project; to do this go to the
-Interface Builder preferences, click on 'Plugins', and remove the BWToolkit plugin using the [ - ] button below the list.
-
-You will need to relaunch Interface Builder before you can re-add the plugin from the 
-locations mentioned above.
-
-Note, that Interface Builder always looks in the same location that plugins are originally 
-installed from and does not keep track of them when they are moved. If Interface Builder 
-complains that it can't a plugin dependency, either restore it to its originally location 
-or re-add it using the steps above.
-
-As a last resort jump onto IRC and join #sequel-pro on irc.freenode.net and any of the 
+For assistance please jump onto IRC and join #sequel-pro on irc.freenode.net and any of the 
 developers will be more than happy to help you out.
 
 - The Sequel Pro team

@@ -46,16 +46,6 @@
 #endif
 ;
 
-#ifndef SP_REFACTOR /* class decl */
-
-@interface NSObject (BWAnchoredButtonBar)
-
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex;
-
-@end
-
-#endif
-
 @interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;

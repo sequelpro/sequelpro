@@ -351,8 +351,6 @@
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
 		B52460D80F8EF92300171639 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D60F8EF92300171639 /* SPTextViewAdditions.m */; };
 		B52460DB0F8EF93B00171639 /* Console.xib in Resources */ = {isa = PBXBuildFile; fileRef = B52460D90F8EF93B00171639 /* Console.xib */; };
-		B52ECDDC10DDACE9009DC3E8 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B52ECDDB10DDACE9009DC3E8 /* BWToolkitFramework.framework */; };
-		B52ECE1410DDAD01009DC3E8 /* BWToolkitFramework.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = B52ECDDB10DDACE9009DC3E8 /* BWToolkitFramework.framework */; };
 		B53857340F9CC3B600EB2354 /* button_clear.tiff in Resources */ = {isa = PBXBuildFile; fileRef = B53857330F9CC3B600EB2354 /* button_clear.tiff */; };
 		B54F25E60FD909C400E2CF36 /* toolbar-switch-to-table-relations.png in Resources */ = {isa = PBXBuildFile; fileRef = B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */; };
 		B5538AAF0FF251EE00219803 /* button_pane_hide_icon.tif in Resources */ = {isa = PBXBuildFile; fileRef = B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */; };
@@ -567,7 +565,6 @@
 				58B907FB11BDA5A9000826E5 /* PSMTabBar.framework in Copy Frameworks */,
 				4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */,
 				4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */,
-				B52ECE1410DDAD01009DC3E8 /* BWToolkitFramework.framework in Copy Frameworks */,
 				586EBD5D11418D9400B3DE45 /* FeedbackReporter.framework in Copy Frameworks */,
 				58C6C71F11FBB18000A3F5E9 /* UniversalDetector.framework in Copy Frameworks */,
 				58DC0D7C12932AB200B76DA5 /* ShortcutRecorder.framework in Copy Frameworks */,
@@ -1144,7 +1141,6 @@
 		B52460D50F8EF92300171639 /* SPTextViewAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextViewAdditions.h; sourceTree = "<group>"; };
 		B52460D60F8EF92300171639 /* SPTextViewAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextViewAdditions.m; sourceTree = "<group>"; };
 		B52460DA0F8EF93B00171639 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/Console.xib; sourceTree = "<group>"; };
-		B52ECDDB10DDACE9009DC3E8 /* BWToolkitFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BWToolkitFramework.framework; path = Frameworks/BWToolkitFramework.framework; sourceTree = "<group>"; };
 		B53857330F9CC3B600EB2354 /* button_clear.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_clear.tiff; sourceTree = "<group>"; };
 		B54F25E50FD909C400E2CF36 /* toolbar-switch-to-table-relations.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-relations.png"; sourceTree = "<group>"; };
 		B5538AAC0FF251EE00219803 /* button_pane_hide_icon.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = button_pane_hide_icon.tif; sourceTree = "<group>"; };
@@ -1333,7 +1329,6 @@
 				586AAB1514FAD3AF007F82BF /* QueryKit.framework in Frameworks */,
 				296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */,
 				58B907CA11BDA541000826E5 /* PSMTabBar.framework in Frameworks */,
-				B52ECDDC10DDACE9009DC3E8 /* BWToolkitFramework.framework in Frameworks */,
 				586EBD2411418D7C00B3DE45 /* FeedbackReporter.framework in Frameworks */,
 				179ECECA11F265FC009C6A40 /* libbz2.dylib in Frameworks */,
 				58C6C71611FBB17200A3F5E9 /* UniversalDetector.framework in Frameworks */,
@@ -1351,7 +1346,6 @@
 				58B9077D11BD9B64000826E5 /* Carbon.framework */,
 				1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */,
 				4DECC3340EC2A170008D359E /* Growl.framework */,
-				B52ECDDB10DDACE9009DC3E8 /* BWToolkitFramework.framework */,
 				4DECC3320EC2A170008D359E /* Sparkle.framework */,
 				296DC89E0F8FD336002A3258 /* WebKit.framework */,
 				586EBD2311418D7C00B3DE45 /* FeedbackReporter.framework */,

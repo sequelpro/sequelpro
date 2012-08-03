@@ -354,13 +354,13 @@
 	[NSGraphicsContext saveGraphicsState];
 
 	if([self isEnabled]) {
-		NSShadow *shadow = [[NSShadow alloc] init];
-		[shadow setShadowColor: [NSColor blackColor]];
-		[shadow setShadowBlurRadius: 2];
-		[shadow setShadowOffset: NSMakeSize( 0, -1)];
+		NSShadow *dropShadow = [[NSShadow alloc] init];
+		[dropShadow setShadowColor: [NSColor blackColor]];
+		[dropShadow setShadowBlurRadius: 2];
+		[dropShadow setShadowOffset: NSMakeSize( 0, -1)];
 
-		[shadow set];
-		[shadow release];
+		[dropShadow set];
+		[dropShadow release];
 	}
 
 	//Draw Dark Border
@@ -490,13 +490,13 @@
 
 	//Draw dark border color
 	if([self isEnabled]) {
-		NSShadow *shadow = [[NSShadow alloc] init];
-		[shadow setShadowColor: [NSColor blackColor]];
-		[shadow setShadowBlurRadius: 2];
-		[shadow setShadowOffset: NSMakeSize( 0, -1)];
+		NSShadow *dropShadow = [[NSShadow alloc] init];
+		[dropShadow setShadowColor: [NSColor blackColor]];
+		[dropShadow setShadowBlurRadius: 2];
+		[dropShadow setShadowOffset: NSMakeSize( 0, -1)];
 
-		[shadow set];
-		[shadow release];
+		[dropShadow set];
+		[dropShadow release];
 	}
 	[[NSColor colorWithDeviceRed: 0.141f green: 0.141f blue: 0.141f alpha: 0.5f] set];
 	[path stroke];
@@ -590,13 +590,13 @@
 	[NSGraphicsContext saveGraphicsState];
 
 	if([self isEnabled]) {
-		NSShadow *shadow = [[NSShadow alloc] init];
-		[shadow setShadowColor: [NSColor blackColor]];
-		[shadow setShadowBlurRadius: 2];
-		[shadow setShadowOffset: NSMakeSize( 0, -1)];
+		NSShadow *dropShadow = [[NSShadow alloc] init];
+		[dropShadow setShadowColor: [NSColor blackColor]];
+		[dropShadow setShadowBlurRadius: 2];
+		[dropShadow setShadowOffset: NSMakeSize( 0, -1)];
 
-		[shadow set];
-		[shadow release];
+		[dropShadow set];
+		[dropShadow release];
 	}
 
 	[[NSColor colorWithDeviceRed: 0.141f green: 0.141f blue: 0.141f alpha: 0.5f] set];
@@ -933,13 +933,13 @@
 
 	//Draw Shadow
 	if([self isEnabled]) {
-		NSShadow *shadow = [[NSShadow alloc] init];
-		[shadow setShadowColor: [NSColor blackColor]];
-		[shadow setShadowBlurRadius: 2];
-		[shadow setShadowOffset: NSMakeSize( 0, -1)];
+		NSShadow *dropShadow = [[NSShadow alloc] init];
+		[dropShadow setShadowColor: [NSColor blackColor]];
+		[dropShadow setShadowBlurRadius: 2];
+		[dropShadow setShadowOffset: NSMakeSize( 0, -1)];
 
-		[shadow set];
-		[shadow release];
+		[dropShadow set];
+		[dropShadow release];
 	}
 	[[NSColor colorWithDeviceRed: 0.141f green: 0.141f blue: 0.141f alpha: 0.5f] set];
 	[path stroke];

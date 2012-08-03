@@ -65,10 +65,6 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-#ifndef SP_REFACTOR /* headers */
-#import <BWToolkitFramework/BWToolkitFramework.h>
-#endif
-
 @interface SPCustomQuery (PrivateAPI)
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
