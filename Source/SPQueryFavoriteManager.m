@@ -38,10 +38,7 @@
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
-
-#ifndef SP_REFACTOR
-#import <BWToolkitFramework/BWAnchoredButtonBar.h>
-#endif
+#import "SPSplitView.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -98,6 +95,10 @@
 			@"", @"query",
 			nil]];
 
+	// Set up the split view
+	[favoritesSplitView setMinSize:152.f ofSubviewAtIndex:0];
+	[favoritesSplitView setMinSize:385.f ofSubviewAtIndex:1];
+
 #ifndef SP_REFACTOR
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
@@ -135,11 +136,6 @@
 
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
-	
-#ifndef SP_REFACTOR /* split view delegate */
-	// Set the button bar delegate 
-	[splitViewButtonBar setSplitViewDelegate:self];
-#endif
 }
 
 #pragma mark -
@@ -473,25 +469,6 @@
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
-}
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 240);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 120);
 }
 
 #pragma mark -

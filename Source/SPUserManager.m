@@ -37,10 +37,10 @@
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
+#import "SPSplitView.h"
 
 #import <SPMySQL/SPMySQL.h>
 #import <QueryKit/QueryKit.h>
-#import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
@@ -117,15 +117,15 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (void)windowDidLoad
 {
 	[tabView selectTabViewItemAtIndex:0];
-	
+
+	[splitView setMinSize:120.f ofSubviewAtIndex:0];
+	[splitView setMinSize:620.f ofSubviewAtIndex:1];
+
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:SPTableViewNameColumnID];
 	ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
-	
-	// Set the button delegate 
-	[splitViewButtonBar setSplitViewDelegate:self];
 
 	// Set schema table double-click actions
 	[grantedTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];

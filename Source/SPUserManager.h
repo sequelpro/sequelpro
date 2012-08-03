@@ -32,7 +32,7 @@
 
 @class SPServerSupport;
 @class SPMySQLConnection;
-@class BWAnchoredButtonBar;
+@class SPSplitView;
 
 @interface SPUserManager : NSWindowController
 {	
@@ -43,7 +43,8 @@
 	
 	SPMySQLConnection *connection;
 	SPServerSupport *serverSupport;
-	
+
+	IBOutlet SPSplitView *splitView;
 	IBOutlet NSOutlineView *outlineView;
 	IBOutlet NSTabView *tabView;
 	IBOutlet NSTreeController *treeController;
@@ -67,8 +68,6 @@
 
 	IBOutlet NSWindow *errorsSheet;
 	IBOutlet NSTextView *errorsTextView;
-
-	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	NSMutableArray *schemas;
 	NSMutableArray *grantedSchemaPrivs;

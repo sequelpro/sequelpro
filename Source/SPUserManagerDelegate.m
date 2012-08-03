@@ -56,25 +56,6 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 @implementation SPUserManager (SPUserManagerDelegate)
 
 #pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return proposedMax - 620;
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return proposedMin + 120;
-}
-
-#pragma mark -
 #pragma mark TableView Delegate Methods
 
 - (void)tableViewSelectionDidChange:(NSNotification *)notification

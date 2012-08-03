@@ -31,8 +31,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 @class SPTextView;
-@class BWAnchoredButtonBar;
 @class SPDatabaseDocument;
+@class SPSplitView;
 
 @interface NSObject (SPQueryFavoriteManagerDelegate)
 
@@ -56,8 +56,8 @@
 	IBOutlet NSTextField *favoriteNameTextField;
 	IBOutlet NSTextField *favoriteTabTriggerTextField;
 	IBOutlet SPTextView  *favoriteQueryTextView;
+	IBOutlet SPSplitView *favoritesSplitView;
 	IBOutlet NSButton *removeButton;
-	IBOutlet BWAnchoredButtonBar *splitViewButtonBar;
 
 	IBOutlet NSArrayController *favoritesArrayController;
 
