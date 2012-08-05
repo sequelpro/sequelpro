@@ -137,7 +137,9 @@
 		// Take the encoding that matches the table's encoding and gray it out
 		if (defaultEncodingDescription) {
 			NSMenuItem *tableEncodingMenuItem = [[encodingPopupCell menu] itemWithTitle:defaultEncodingDescription];
-			NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, nil];
+			NSMutableParagraphStyle *menuStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+			[menuStyle setLineBreakMode:NSLineBreakByTruncatingTail];
+			NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, menuStyle, NSParagraphStyleAttributeName, nil];
 			NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:defaultEncodingDescription attributes:menuAttributes] autorelease];
 			[[tableEncodingMenuItem onMainThread] setAttributedTitle:itemString];
 		}
