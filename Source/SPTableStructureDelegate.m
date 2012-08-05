@@ -75,12 +75,25 @@
 		[[tableColumn dataCell] removeAllItems];
 		
 		if ([collations count] > 0) {
+			NSString *defaultCollation = [[tableDataInstance statusValues] objectForKey:@"collation"];
+			if (!defaultCollation) {
+				defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
+			}
 			[[tableColumn dataCell] addItemWithTitle:@""];
 			
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
 			{
-				[[tableColumn dataCell] addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
+				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+				[[tableColumn dataCell] addItemWithTitle:collationName];
+
+				// If this matches the table's collation, draw in gray
+				if ([collationName length] && [collationName isEqualToString:defaultCollation]) {
+					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
+					NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, nil];
+					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
+					[collationMenuItem setAttributedTitle:itemString];
+				}
 			}
 		}
 	}
@@ -380,7 +393,7 @@
 		// Mark the content table cache for refresh
 		[tableDocumentInstance setContentRequiresReload:YES];
 		
-		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex - (originalRowIndex < destinationRowIndex) ? 1 : 0] byExtendingSelection:NO];
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex - ((originalRowIndex < destinationRowIndex) ? 1 : 0)] byExtendingSelection:NO];
 	}
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];

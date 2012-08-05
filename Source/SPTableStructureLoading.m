@@ -116,6 +116,7 @@
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	
 	if ([encodings count]) {
+		NSString *defaultEncodingDescription = nil;
 		
 		// Populate encoding popup button
 		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
@@ -125,10 +126,22 @@
 		for (NSDictionary *encoding in encodings)
 		{
 			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
+			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:[tableDataInstance tableEncoding]]) {
+				defaultEncodingDescription = [encodingTitles lastObject];
+			}
 		}
 		
 		[[encodingPopupCell onMainThread] removeAllItems];
 		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
+
+		// Take the encoding that matches the table's encoding and gray it out
+		if (defaultEncodingDescription) {
+			NSMenuItem *tableEncodingMenuItem = [[encodingPopupCell menu] itemWithTitle:defaultEncodingDescription];
+			NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, nil];
+			NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:defaultEncodingDescription attributes:menuAttributes] autorelease];
+			[[tableEncodingMenuItem onMainThread] setAttributedTitle:itemString];
+		}
+
 		[encodingTitles release];
 	}
 	else {
@@ -158,23 +171,22 @@
 				collation = [databaseDataInstance getDatabaseDefaultCollation];
 			}
 		}
-		
+
 		if (encoding) {
 			for (id enc in encodings) 
 			{
 				if ([[enc objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:encoding]) {
 					fieldEncoding = encoding;
+
+					// Set the selected index as the match index +1 due to the leading @"" in the popup list
+					[theField setObject:[NSNumber numberWithInteger:(selectedIndex + 1)] forKey:@"encoding"];
 					break;
 				}
 				
 				selectedIndex++;
 			}
-			
-			// Due to leading @"" in popup list
-			selectedIndex++;
 		}
 		
-		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"encoding"];
 		
 		selectedIndex = 0;
 		
@@ -186,6 +198,9 @@
 			{
 				if ([[col objectForKey:@"COLLATION_NAME"] isEqualToString:collation]) {
 					
+					// Set the selected index as the match index +1 due to the leading @"" in the popup list
+					[theField setObject:[NSNumber numberWithInteger:(selectedIndex + 1)] forKey:@"collation"];
+
 					// Set BINARY if collation ends with _bin for convenience
 					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {
 						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
@@ -196,12 +211,8 @@
 				
 				selectedIndex++;
 			}
-			
-			// Due to leading @"" in popup list
-			selectedIndex++;
 		}
 		
-		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"collation"];
 		
 		// Get possible values if the field is an enum or a set
 		if (([type isEqualToString:@"ENUM"] || [type isEqualToString:@"SET"]) && [theField objectForKey:@"values"]) {
