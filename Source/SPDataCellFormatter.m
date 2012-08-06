@@ -36,13 +36,26 @@
 @implementation SPDataCellFormatter
 
 @synthesize textLimit;
+@synthesize displayLimit;
 @synthesize fieldType;
+
+- (id)init
+{
+	if ((self = [super init])) {
+		displayLimit = NSNotFound;
+	}
+	return self;
+}
 
 - (NSString *)stringForObjectValue:(id)anObject
 {
 	// Truncate the string for speed purposes if it's very long - improves table scrolling speed.
-	if ([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > 150) {
-		return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);
+	if (displayLimit != NSNotFound && [anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > displayLimit) {
+		return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:displayLimit - 3]]);
+	}
+
+	if (![anObject isKindOfClass:[NSString class]]) {
+		return [anObject description];
 	}
 
 	return anObject;

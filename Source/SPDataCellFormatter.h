@@ -33,10 +33,12 @@
 @interface SPDataCellFormatter : NSFormatter 
 {
 	NSInteger textLimit;
+	NSUInteger displayLimit;
 	NSString *fieldType;
 }
 
 @property (readwrite, assign) NSInteger textLimit;
+@property (readwrite, assign) NSUInteger displayLimit;
 @property (readwrite, retain) NSString* fieldType;
 
 @end

@@ -34,9 +34,7 @@
 #ifndef SP_REFACTOR
 #import "QLPreviewPanel.h"
 #endif
-#import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
-#import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
 #import "SPCopyTable.h"

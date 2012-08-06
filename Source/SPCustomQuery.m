@@ -1579,11 +1579,11 @@
 		[theCol setEditable:YES];
 		SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:YES];
-		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 		[dataCell setFont:tableFont];
 
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		[[dataCell formatter] setDisplayLimit:150];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]

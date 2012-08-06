@@ -34,6 +34,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
+#import "SPDataCellFormatter.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -107,6 +108,9 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	for (NSTableColumn *column in [processListTableView tableColumns])
 	{
 		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+
+		// Add a formatter for linebreak display
+		[[column dataCell] setFormatter:[[SPDataCellFormatter new] autorelease]];
 	
 		// Also, if available restore the table's column widths
 		NSNumber *columnWidth = [[prefs objectForKey:SPProcessListTableColumnWidths] objectForKey:[[column headerCell] stringValue]];
@@ -495,8 +499,18 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {	
 	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
-		
-	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
+
+	if ([object isNSNull]) {
+		return [prefs stringForKey:SPNullValue];
+	}
+
+	// If the string is exactly 100 characters long, and FULL process lists are not enabled, it's a safe
+	// bet that the string is truncated
+	if (!showFullProcessList && [object isKindOfClass:[NSString class]] && [(NSString *)object length] == 100) {
+		return [object stringByAppendingString:@"…"];
+	}
+
+	return object;
 }
 
 /**

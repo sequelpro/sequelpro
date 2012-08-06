@@ -605,6 +605,7 @@
 		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
+		[[dataCell formatter] setDisplayLimit:150];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
