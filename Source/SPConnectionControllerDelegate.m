@@ -239,11 +239,13 @@ static NSString *SPDatabaseImage = @"database-small";
 	// Ensure that none of the dragged nodes are being dragged into children of themselves; if they are,
 	// prevent the drag.
 	id itemToCheck = item;
+	
 	do {
 		if ([draggedNodes containsObject:itemToCheck]) {
 			return result;
 		}
-	} while ((itemToCheck = [itemToCheck parentNode]));
+	} 
+	while ((itemToCheck = [itemToCheck parentNode]));
 
 	if ([info draggingSource] == outlineView) {
 		[outlineView setDropItem:item dropChildIndex:childIndex];
@@ -357,61 +359,40 @@ static NSString *SPDatabaseImage = @"database-small";
 	id field = [notification object];
 	
 	if (((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) && [self selectedFavoriteNode]) {
-		
-		[field setStringValue:[self _stripInvalidCharactersFromString:[field stringValue]]];
-		
+						
 		favoriteNameFieldWasTouched = YES;
 		
-		BOOL nameFieldIsEmpty = [[field stringValue] isEqualToString:@""];
+		NSString *favoriteName = [self _stripInvalidCharactersFromString:[field stringValue]];
+		
+		BOOL nameFieldIsEmpty = [favoriteName length] == 0;
 		
 		switch (previousType) 
 		{
 			case SPTCPIPConnection:
-				
-				nameFieldIsEmpty = (nameFieldIsEmpty || [[standardNameField stringValue] isEqualToString:@""]);
-				
 				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == standardUserField || field == standardSQLHostField))) {
 					[standardNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [standardUserField stringValue], [standardSQLHostField stringValue]]];
-					
-					// Trigger KVO update
-					[self setName:[standardNameField stringValue]];
-					
-					// If name field is empty enable user@host update
-					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
 				}
 				
 				break;
 			case SPSocketConnection:
-				
-				nameFieldIsEmpty = (nameFieldIsEmpty || [[socketNameField stringValue] isEqualToString:@""]);
-				
 				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == socketUserField)) {
 					[socketNameField setStringValue:[NSString stringWithFormat:@"%@@localhost", [socketUserField stringValue]]];
-										
-					// Trigger KVO update
-					[self setName:[socketNameField stringValue]];
-					
-					// If name field is empty enable user@host update
-					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
 				}
 				
 				break;
 			case SPSSHTunnelConnection:
-				
-				nameFieldIsEmpty = (nameFieldIsEmpty || [[sshNameField stringValue] isEqualToString:@""]);
-				
 				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == sshUserField || field == sshSQLHostField))) {
 					[sshNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [sshUserField stringValue], [sshSQLHostField stringValue]]];
-					
-					// Trigger KVO update
-					[self setName:[sshNameField stringValue]];
-					
-					// If name field is empty enable user@host update
-					if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
 				}
 				
 				break;
 		}
+		
+		// Trigger KVO update
+		[self setName:favoriteName];
+		
+		// If name field is empty enable user@host update
+		if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
 	}
 }
 
@@ -432,7 +413,6 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
-	
 	// Request a password refresh to keep keychain references in sync with favorites, but only if a favorite
 	// is selected, meaning we're editing an existing one, not a new one.
 	if (((id)control != (id)favoritesOutlineView) && ([self selectedFavoriteNode])) {
