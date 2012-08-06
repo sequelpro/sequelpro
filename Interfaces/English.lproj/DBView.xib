@@ -315,7 +315,7 @@
                                     </object>
                                   </object>
                                 </object>
-                                <string key="NSFrameSize">{214, 26}</string>
+                                <string key="NSFrameSize">{214, 24}</string>
                                 <reference key="NSSuperview" ref="213762440"/>
                                 <reference key="NSWindow"/>
                               </object>
@@ -337,7 +337,7 @@
                                           <object class="NSTableView" id="251040077">
                                             <reference key="NSNextResponder" ref="73685676"/>
                                             <int key="NSvFlags">4352</int>
-                                            <string key="NSFrameSize">{214, 352}</string>
+                                            <string key="NSFrameSize">{214, 334}</string>
                                             <reference key="NSSuperview" ref="73685676"/>
                                             <reference key="NSWindow"/>
                                             <bool key="NSEnabled">YES</bool>
@@ -402,7 +402,7 @@
                                             <int key="NSTableViewGroupRowStyle">1</int>
                                           </object>
                                         </object>
-                                        <string key="NSFrameSize">{214, 352}</string>
+                                        <string key="NSFrameSize">{214, 334}</string>
                                         <reference key="NSSuperview" ref="233472824"/>
                                         <reference key="NSWindow"/>
                                         <reference key="NSNextKeyView" ref="251040077"/>
@@ -433,7 +433,7 @@
                                         <double key="NSPercent">0.99047619104385376</double>
                                       </object>
                                     </object>
-                                    <string key="NSFrameSize">{214, 352}</string>
+                                    <string key="NSFrameSize">{214, 334}</string>
                                     <reference key="NSSuperview" ref="1017775084"/>
                                     <reference key="NSWindow"/>
                                     <reference key="NSNextKeyView" ref="73685676"/>
@@ -444,18 +444,18 @@
                                     <bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
                                   </object>
                                 </object>
-                                <string key="NSFrame">{{0, 27}, {214, 352}}</string>
+                                <string key="NSFrame">{{0, 25}, {214, 334}}</string>
                                 <reference key="NSSuperview" ref="213762440"/>
                                 <reference key="NSWindow"/>
                               </object>
                             </object>
-                            <string key="NSFrameSize">{214, 379}</string>
+                            <string key="NSFrameSize">{214, 359}</string>
                             <reference key="NSSuperview" ref="131633443"/>
                             <reference key="NSWindow"/>
                             <int key="NSDividerStyle">2</int>
                           </object>
                         </object>
-                        <string key="NSFrameSize">{214, 379}</string>
+                        <string key="NSFrameSize">{214, 359}</string>
                         <reference key="NSSuperview" ref="298095498"/>
                         <reference key="NSWindow"/>
                       </object>
@@ -477,7 +477,7 @@
                                   <object class="NSTableView" id="794785393">
                                     <reference key="NSNextResponder" ref="242523705"/>
                                     <int key="NSvFlags">4352</int>
-                                    <string key="NSFrameSize">{216, 146}</string>
+                                    <string key="NSFrameSize">{216, 166}</string>
                                     <reference key="NSSuperview" ref="242523705"/>
                                     <reference key="NSWindow"/>
                                     <bool key="NSEnabled">YES</bool>
@@ -542,7 +542,7 @@
                                     <int key="NSTableViewGroupRowStyle">1</int>
                                   </object>
                                 </object>
-                                <string key="NSFrameSize">{216, 146}</string>
+                                <string key="NSFrameSize">{216, 166}</string>
                                 <reference key="NSSuperview" ref="561874764"/>
                                 <reference key="NSWindow"/>
                                 <reference key="NSNextKeyView" ref="794785393"/>
@@ -572,7 +572,7 @@
                                 <double key="NSPercent">0.76156586408615112</double>
                               </object>
                             </object>
-                            <string key="NSFrame">{{-1, 0}, {216, 146}}</string>
+                            <string key="NSFrame">{{-1, 0}, {216, 166}}</string>
                             <reference key="NSSuperview" ref="192579410"/>
                             <reference key="NSWindow"/>
                             <reference key="NSNextKeyView" ref="242523705"/>
@@ -595,7 +595,7 @@
                                   <object class="NSTableView" id="347093764">
                                     <reference key="NSNextResponder" ref="685057119"/>
                                     <int key="NSvFlags">4352</int>
-                                    <string key="NSFrameSize">{214, 146}</string>
+                                    <string key="NSFrameSize">{214, 166}</string>
                                     <reference key="NSSuperview" ref="685057119"/>
                                     <reference key="NSWindow"/>
                                     <bool key="NSEnabled">YES</bool>
@@ -660,7 +660,7 @@
                                     <int key="NSTableViewGroupRowStyle">1</int>
                                   </object>
                                 </object>
-                                <string key="NSFrameSize">{214, 146}</string>
+                                <string key="NSFrameSize">{214, 166}</string>
                                 <reference key="NSSuperview" ref="298226231"/>
                                 <reference key="NSWindow"/>
                                 <reference key="NSNextKeyView" ref="347093764"/>
@@ -691,7 +691,7 @@
                                 <double key="NSPercent">0.99047619104385376</double>
                               </object>
                             </object>
-                            <string key="NSFrameSize">{214, 146}</string>
+                            <string key="NSFrameSize">{214, 166}</string>
                             <reference key="NSSuperview" ref="192579410"/>
                             <reference key="NSWindow"/>
                             <reference key="NSNextKeyView" ref="685057119"/>
@@ -702,7 +702,7 @@
                             <bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
                           </object>
                         </object>
-                        <string key="NSFrame">{{0, 380}, {214, 146}}</string>
+                        <string key="NSFrame">{{0, 360}, {214, 166}}</string>
                         <reference key="NSSuperview" ref="298095498"/>
                         <reference key="NSWindow"/>
                       </object>
