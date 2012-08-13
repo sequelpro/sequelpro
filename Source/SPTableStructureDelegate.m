@@ -76,22 +76,29 @@
 		
 		if ([collations count] > 0) {
 			NSString *defaultCollation = [[tableDataInstance statusValues] objectForKey:@"collation"];
+			
 			if (!defaultCollation) {
 				defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
 			}
+			
 			[[tableColumn dataCell] addItemWithTitle:@""];
 			
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
 			{
 				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+				
 				[[tableColumn dataCell] addItemWithTitle:collationName];
 
 				// If this matches the table's collation, draw in gray
 				if ([collationName length] && [collationName isEqualToString:defaultCollation]) {
 					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
-					NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, nil];
+					NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+										
+					[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
+					
 					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
+					
 					[collationMenuItem setAttributedTitle:itemString];
 				}
 			}
@@ -128,27 +135,29 @@
 	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
-	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
+		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
 			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			[tableSourceView reloadData];
 		}
 	}
 	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
-	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
-		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			if([anObject integerValue] == 1) {
+	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+			if ([anObject integerValue] == 1) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			}
+			
 			[tableSourceView reloadData];
 		}
 	}
 	// Set null field to "do not allow NULL" for auto_increment Extra and reset Extra suggestion list
-	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
-		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"Extra"]) {
+		if (![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
 
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
-			if(isCurrentExtraAutoIncrement) {
+			
+			if (isCurrentExtraAutoIncrement) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
@@ -162,15 +171,18 @@
 						  contextInfo:@"autoincrementindex" ];
 #endif
 				}
-			} else {
+			} 
+			else {
 				autoIncrementIndex = nil;
 			}
 
 			id dataCell = [aTableColumn dataCell];
+			
 			[dataCell removeAllItems];
 			[dataCell addItemsWithObjectValues:extraFieldSuggestions];
 			[dataCell noteNumberOfItemsChanged];
 			[dataCell reloadData];
+			
 			[tableSourceView reloadData];
 
 		}
@@ -178,10 +190,12 @@
 	// Reset default to "" if field doesn't allow NULL and current default is set to NULL
 	else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
 		if ([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
-			if([anObject integerValue] == 0) {
-				if([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]])
+			if ([anObject integerValue] == 0) {
+				if ([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 					[currentRow setObject:@"" forKey:@"default"];
+				}
 			}
+			
 			[tableSourceView reloadData];
 		}
 	}
@@ -238,9 +252,8 @@
 		
 		return YES;
 	} 
-	else {
-		return NO;
-	}
+	
+	return NO;
 }
 
 /**
@@ -457,16 +470,17 @@
 	column = [tableSourceView editedColumn];
 	
 	// Trap the tab key, selecting the next item in the line
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
+	if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
 	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
-			if ( row < ([tableSourceView numberOfRows] - 1) ) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
-				[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
-			} else {
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)]) {
+			if (row < ([tableSourceView numberOfRows] - 1)) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row + 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:row + 1 withEvent:nil select:YES];
+			} 
+			else {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 				[tableSourceView editColumn:0 row:0 withEvent:nil select:YES];
 			}
@@ -474,18 +488,19 @@
 		
 		return YES;
 	}
-	
 	// Trap shift-tab key
-	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
+	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
 	{
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] ) {
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)]) {
 			[[control window] makeFirstResponder:control];
-			if ( row > 0) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:row-1 withEvent:nil select:YES];
-			} else {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
+			
+			if (row > 0) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row - 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count] - 1) row:row - 1 withEvent:nil select:YES];
+			}
+			else {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count] - 1)] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count] - 1) row:([tableSourceView numberOfRows] - 1) withEvent:nil select:YES];
 			}
 		}
 		
@@ -496,8 +511,9 @@
 	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)])
 	{
 		// Suppress enter for non-text fields to allow selecting of chosen items from comboboxes or popups
-		if (![[[[[[tableSourceView tableColumns] objectAtIndex:column] dataCell] class] description] isEqualToString:@"NSTextFieldCell"])
+		if (![[[[[[tableSourceView tableColumns] objectAtIndex:column] dataCell] class] description] isEqualToString:@"NSTextFieldCell"]) {
 			return YES;
+		}
 		
 		[[control window] makeFirstResponder:control];
 		[self addRowToDB];

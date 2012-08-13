@@ -138,9 +138,15 @@
 		if (defaultEncodingDescription) {
 			NSMenuItem *tableEncodingMenuItem = [[encodingPopupCell menu] itemWithTitle:defaultEncodingDescription];
 			NSMutableParagraphStyle *menuStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+			
 			[menuStyle setLineBreakMode:NSLineBreakByTruncatingTail];
-			NSDictionary *menuAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSColor lightGrayColor], NSForegroundColorAttributeName, [NSFont systemFontOfSize: [NSFont smallSystemFontSize]], NSFontAttributeName, menuStyle, NSParagraphStyleAttributeName, nil];
+			
+			NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+			
+			[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
+			
 			NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:defaultEncodingDescription attributes:menuAttributes] autorelease];
+			
 			[[tableEncodingMenuItem onMainThread] setAttributedTitle:itemString];
 		}
 
