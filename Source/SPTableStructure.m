@@ -241,7 +241,6 @@
  */
 - (IBAction)addField:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 

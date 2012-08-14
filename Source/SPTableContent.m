@@ -96,6 +96,8 @@
 @synthesize tablesListInstance;
 #endif
 
+#pragma mark -
+
 /**
  * Standard init method. Initialize various ivars.
  */
@@ -207,18 +209,22 @@
 #ifndef SP_REFACTOR /* ui manipulation */
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-
+	[filterTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableContentView setEmptyDoubleClickAction:@selector(addRow:)];
 
 	// Load the pagination view, keeping references to the top-level objects for later release
 	NSArray *paginationViewTopLevelObjects = nil;
 	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ContentPaginationView" bundle:[NSBundle mainBundle]];
+	
 	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&paginationViewTopLevelObjects]) {
 		NSLog(@"Content pagination nib could not be loaded; pagination will not function correctly.");
-	} else {
+	} 
+	else {
 		[nibObjectsToRelease addObjectsFromArray:paginationViewTopLevelObjects];
 	}
+	
 	[nibLoader release];
 
 	// Add the pagination view to the content area
@@ -3001,10 +3007,12 @@
 		[tableContentView selectRowIndexes:[NSIndexSet indexSetWithIndex:currentlyEditingRow] byExtendingSelection:NO];
 		[tableContentView performSelector:@selector(keyDown:) withObject:[NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableContentView window] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x24] afterDelay:0.0];
 
-	// Discard changes selected
-	} else {
+	} 
+	else {
+		// Discard changes selected
 		[self cancelRowEditing];
 	}
+	
 	[tableContentView reloadData];
 }
 
@@ -3023,9 +3031,11 @@
 
 	// Save any edits which have been made but not saved to the table yet;
 	// but not for any NSSearchFields which could cause a crash for undo, redo.
-	if([[[tableContentView window] firstResponder] respondsToSelector:@selector(delegate)] 
-			&& ![[(id)[[tableContentView window] firstResponder] delegate] isKindOfClass:[NSSearchField class]])
+	if ([[[tableContentView window] firstResponder] respondsToSelector:@selector(delegate)] && 
+		![[(id)[[tableContentView window] firstResponder] delegate] isKindOfClass:[NSSearchField class]]) {
+		
 		[[tableContentView window] endEditingFor:nil];
+	}
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
 	if (!isEditingRow || isSavingRow) return YES;
@@ -3051,7 +3061,6 @@
  */
 - (BOOL)cancelRowEditing
 {
-
 	[[tableContentView window] makeFirstResponder:tableContentView];
 
 	if (!isEditingRow) return NO;
@@ -4172,7 +4181,7 @@
 }
 
 #pragma mark -
-#pragma mark Other methods
+#pragma mark KVO methods
 
 /**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
@@ -4182,17 +4191,21 @@
 #ifndef SP_REFACTOR /* observe pref changes */
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
-        [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+		[tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+		[filterTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 	// Table font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[tableContentView setRowHeight:2.0f + NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 		[tableContentView setFont:tableFont];
 		[tableContentView reloadData];
 	}
 #endif
 }
+
+#pragma mark -
+#pragma mark Other methods
 
 /**
  * Menu validation
