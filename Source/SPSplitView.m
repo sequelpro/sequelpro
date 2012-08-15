@@ -38,6 +38,9 @@
 - (void)_initCustomProperties;
 - (void)_ensureDefaultSubviewSizesToIndex:(NSUInteger)anIndex;
 
+- (void)_saveAutoSaveSizes;
+- (void)_restoreAutoSaveSizes;
+
 - (NSArray *)_suggestedSizesForTargetSize:(CGFloat)targetSize respectingSpringsAndStruts:(BOOL)respectStruts respectingConstraints:(BOOL)respectConstraints;
 
 - (CGFloat)_startPositionOfView:(NSView *)aView;
@@ -95,6 +98,9 @@
 	if ([NSSplitView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
 	}
+
+	// Normal splitview autosave appears to have problems on Lion - handle it ourselves as well.
+	[self _restoreAutoSaveSizes];
 
 	[collapseToggleButton setState:(collapsibleSubviewCollapsed?NSOnState:NSOffState)];
 }
@@ -604,6 +610,8 @@
 		}
 	}
 
+	[self _saveAutoSaveSizes];
+
 	// Do the same for expansions
 	if (collapsibleSubviewIndex != NSNotFound && collapsibleSubviewCollapsed) {
 		if (!animationTimer && [self _lengthOfView:[[self subviews] objectAtIndex:collapsibleSubviewIndex]]) {
@@ -707,6 +715,47 @@
 	for (NSUInteger i = [viewMinimumSizes count]; i <= anIndex; i++) {
 		[viewMinimumSizes addObject:[NSNumber numberWithFloat:0]];
 		[viewMaximumSizes addObject:[NSNumber numberWithFloat:FLT_MAX]];
+	}
+}
+
+#pragma mark -
+
+/**
+ * Save the current dimensions of each subview if there is an autosaveName set on
+ * the splitview.  This seems to be required on Lion (or when certain versions of
+ * Xcode build?) where the normal autosave behaviour overwrites itself with the
+ * original startup position, possibly due to a race condition.
+ */
+- (void)_saveAutoSaveSizes
+{
+	if (![self autosaveName]) {
+		return;
+	}
+
+	NSMutableArray *viewDetails = [NSMutableArray arrayWithCapacity:[[self subviews] count]];
+	for (NSView *eachView in [self subviews]) {
+		[viewDetails addObject:[NSNumber numberWithFloat:[self _lengthOfView:eachView]]];
+	}
+	[[NSUserDefaults standardUserDefaults] setObject:viewDetails forKey:[NSString stringWithFormat:@"SPSplitView Lengths %@", [self autosaveName]]];
+}
+
+/**
+ * Restore the current dimensions of each subview if there is an autosaveName and
+ * if there is a saved position; see _saveAutoSaveSizes.
+ */
+- (void)_restoreAutoSaveSizes
+{
+	if (![self autosaveName]) {
+		return;
+	}
+
+	NSArray *viewDetails = [[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"SPSplitView Lengths %@", [self autosaveName]]];
+	if (!viewDetails) {
+		return;
+	}
+
+	for (NSUInteger i = 0; i < [[self subviews] count] - 1; i++) {
+		[self setPosition:[[viewDetails objectAtIndex:i] floatValue] ofDividerAtIndex:i];
 	}
 }
 
