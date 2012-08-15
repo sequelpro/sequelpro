@@ -274,6 +274,9 @@ extern NSString *SPThemesSupportFolder;
 extern NSString *SPBundleSupportFolder;
 extern NSString *SPDataSupportFolder;
 
+// Table filter
+extern NSString *SPTableContentFilterKey;
+
 // Preference key constants
 //
 // General Prefpane

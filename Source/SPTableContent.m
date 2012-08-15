@@ -32,6 +32,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContent.h"
+#import "SPTableContentFilter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableInfo.h"
@@ -65,6 +66,8 @@
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
+
+static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
 
 @interface SPTableContent ()
 
@@ -571,7 +574,7 @@
 		[filterTableData setObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
 				[columnDefinition objectForKey:@"name"], @"name",
 				[columnDefinition objectForKey:@"typegrouping"], @"typegrouping",
-				[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil], @"filter",
+				[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil], SPTableContentFilterKey,
 				nil] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
 #endif
 
@@ -2524,8 +2527,6 @@
 
 #pragma mark -
 
-// Additional methods
-
 /**
  * Sets the connection (received from SPDatabaseDocument) and makes things that have to be done only once
  */
@@ -3328,7 +3329,7 @@
 #ifndef SP_REFACTOR
 	[sheet orderOut:self];
 	
-	if([contextInfo isEqualToString:@"setdefaultoperator"]) {
+	if([contextInfo isEqualToString:SPTableFilterSetDefaultOperator]) {
 		if(returnCode) {
 			if(filterTableDefaultOperator) [filterTableDefaultOperator release];
 			NSString *newOperator = [filterTableSetDefaultOperatorValue stringValue];
@@ -3559,11 +3560,13 @@
 
 	[filterTableView abortEditing];
 
-	if(filterTableData && [filterTableData count]) {
+	if (filterTableData && [filterTableData count]) {
 
 		// Clear filter data
-		for(NSNumber *col in [filterTableData allKeys])
-			[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:@"filter"];
+		for (NSNumber *col in [filterTableData allKeys]) 
+		{
+			[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:SPTableContentFilterKey];
+		}
 
 		[filterTableView reloadData];
 		[filterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -3571,8 +3574,6 @@
 
 		// Reload table
 		[self filterTable:nil];
-
-	
 	}
 #endif
 }
@@ -3593,6 +3594,7 @@
 	[filterTableWhereClause setCompletionWasReinvokedAutomatically:NO];
 	[filterTableWhereClause insertText:@""];
 	[filterTableWhereClause didChangeText];
+	
 	[[filterTableView window] makeFirstResponder:filterTableView];
 #endif
 }
@@ -3607,13 +3609,15 @@
 
 	if (filterTableNegate) {
 		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE NOT query", @"Title of filter preview area when the query WHERE is negated")];
-	} else {
+	} 
+	else {
 		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE query", @"Title of filter preview area when the query WHERE is normal")];
 	}
 
 	// If live search is set perform filtering
-	if([filterTableLiveSearchCheckbox state] == NSOnState)
+	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
 		[self filterTable:filterTableFilterButton];
+	}
 #endif
 
 }
@@ -3629,8 +3633,9 @@
 	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
 
 	// If live search is set perform filtering
-	if([filterTableLiveSearchCheckbox state] == NSOnState)
+	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
 		[self filterTable:filterTableFilterButton];
+	}
 #endif
 
 }
@@ -3645,13 +3650,16 @@
 	[filterTableWindow makeFirstResponder:filterTableView];
 
 	// Load history
-	if([prefs objectForKey:SPFilterTableDefaultOperatorLastItems]) {
+	if ([prefs objectForKey:SPFilterTableDefaultOperatorLastItems]) {
 		NSMutableArray *lastItems = [NSMutableArray array];
-		NSString *defaultItem = @"LIKE '%@%'";
-		[lastItems addObject:defaultItem];
+		
+		[lastItems addObject:@"LIKE '%@%'"];
 
-		for(NSString* item in [prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
+		for (NSString* item in [prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
+		{
 			[lastItems addObject:item];
+		}
+
 		[filterTableSetDefaultOperatorValue removeAllItems];
 		[filterTableSetDefaultOperatorValue addItemsWithObjectValues:lastItems];
 	}
@@ -3662,7 +3670,7 @@
 	   modalForWindow:filterTableWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"setdefaultoperator"];
+		  contextInfo:SPTableFilterSetDefaultOperator];
 #endif
 
 }
@@ -3676,8 +3684,9 @@
 
 #ifndef SP_REFACTOR
 	// If live search is set perform filtering
-	if([filterTableLiveSearchCheckbox state] == NSOnState)
+	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
 		[self filterTable:filterTableFilterButton];
+	}
 #endif
 
 }
@@ -3705,7 +3714,7 @@
 /**
  * Provide a getter for the table's sort column name
  */
-- (NSString *) sortColumnName
+- (NSString *)sortColumnName
 {
 	if (!sortCol || !dataColumns) return nil;
 
@@ -3715,7 +3724,7 @@
 /**
  * Provide a getter for the table current sort order
  */
-- (BOOL) sortColumnIsAscending
+- (BOOL)sortColumnIsAscending
 {
 	return !isDesc;
 }
@@ -4232,194 +4241,6 @@
 	}
 
 	return YES;
-}
-
-/**
- * Escape passed operator for usage as filterTableDefaultOperator
- */
-- (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator
-{
-
-	if(anOperator == nil) return @"";
-
-	NSMutableString *newOp = [[[NSMutableString alloc] initWithCapacity:[anOperator length]] autorelease];
-	[newOp setString:anOperator];
-	[newOp replaceOccurrencesOfRegex:@"%" withString:@"%%"];
-	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%@"];
-	return newOp;
-}
-
-/**
- * Update WHERE clause in Filter Table Window
- *
- * @param currentValue If currentValue == nil take the data from filterTableData, if currentValue == filterTableSearchAllFields
- * generate a WHERE clause to search in all given fields, if currentValue == a string take this string as table cell data of the
- * currently edited table cell
- */
-- (void)updateFilterTableClause:(id)currentValue
-{
-#ifndef SP_REFACTOR
-	NSMutableString *clause  = [NSMutableString string];
-	NSInteger numberOfRows   = [self numberOfRowsInTableView:filterTableView];
-	NSInteger numberOfCols   = [[filterTableView tableColumns] count];
-	NSInteger numberOfValues = 0;
-	NSRange opRange, defopRange;
-
-	BOOL lookInAllFields = NO;
-
-	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
-	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
-	NSInteger editedRow = [filterTableView editedRow];
-	
-
-	if(currentValue == filterTableSearchAllFields) {
-		numberOfRows = 1;
-		lookInAllFields = YES;
-	}
-
-	[filterTableWhereClause setString:@""];
-
-	for(NSInteger i=0; i<numberOfRows; i++) {
-		numberOfValues = 0;
-		for(NSInteger anIndex=0; anIndex<numberOfCols; anIndex++) {
-			NSString *filterCell;
-			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSString stringWithFormat:@"%d",anIndex]]];
-
-			// Take filterTableData
-			if(currentValue == nil) {
-				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
-			// Take last edited value to create the OR clause
-			} else if(lookInAllFields) {
-				if(lastEditedFilterTableValue && [lastEditedFilterTableValue length]) {
-					filterCell = lastEditedFilterTableValue;
-				} else {
-					[filterTableWhereClause setString:@""];
-					[filterTableWhereClause insertText:@""];
-					[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
-
-					// If live search is set perform filtering
-					if([filterTableLiveSearchCheckbox state] == NSOnState)
-						[self filterTable:filterTableFilterButton];
-
-				}
-			// Take value from currently edited table cell
-			} else if([currentValue isKindOfClass:[NSString class]]){
-				if(i == editedRow && anIndex == [[NSArrayObjectAtIndex([filterTableView tableColumns], [filterTableView editedColumn]) identifier] integerValue])
-					filterCell = (NSString*)currentValue;
-				else
-					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:@"filter"], i);
-			}
-
-			if([filterCell length]) {
-
-				// Recode special operators
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
-
-				if(numberOfValues)
-					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];
-
-				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
-				NSString *filterTableDefaultOperatorWithFieldName = [filterTableDefaultOperator stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
-				opRange = [filterCell rangeOfString:@"`@`"];
-				defopRange = [filterTableDefaultOperator rangeOfString:@"`@`"];
-
-				// if cell data begins with ' or " treat it as it is
-				// by checking if default operator by itself contains a ' or " - if so
-				// remove first and if given the last ' or "
-				if([filterCell isMatchedByRegex:@"^\\s*['\"]"]) {
-					if([filterTableDefaultOperator isMatchedByRegex:@"['\"]"]) {
-						NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\1\\s*$"];
-						if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3) {
-							[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
-						} else {
-							matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\s*$"];
-							if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
-								[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
-						}
-					} else {
-						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
-					}
-				}
-
-				// if cell contains the field name placeholder
-				else if(opRange.length || defopRange.length) {
-					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
-					if(defopRange.length)
-						[clause appendFormat:filterTableDefaultOperatorWithFieldName, [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
-					else
-						[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
-				}
-
-				// if cell is equal to NULL
-				else if([filterCell isMatchedByRegex:@"(?i)^\\s*null\\s*$"]) {
-					[clause appendFormat:@"%@ IS NULL", fieldName];
-				}
-
-				// if cell starts with an operator
-				else if([filterCell isMatchedByRegex:re1]) {
-					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re1];
-					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
-						[clause appendFormat:@"%@ %@ %@", fieldName, NSArrayObjectAtIndex(matches, 1), NSArrayObjectAtIndex(matches, 2)];
-				}
-
-				// if cell consists of at least two words treat the first as operator and the rest as argument
-				else if([filterCell isMatchedByRegex:re2]) {
-					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re2];
-					if([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3)
-						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
-				}
-
-				// apply the default operator
-				else {
-					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
-				}
-
-				numberOfValues++;
-			}
-		}
-		if(numberOfValues)
-			[clause appendString:@"\nOR\n"];
-	}
-
-	// Remove last " OR " if any
-	if([clause length] > 3)
-		[filterTableWhereClause setString:[clause substringToIndex:([clause length]-4)]];
-	else
-		[filterTableWhereClause setString:@""];
-
-	// Update syntax highlighting and uppercasing
-	[filterTableWhereClause insertText:@""];
-	[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
-
-	// If live search is set perform filtering
-	if([filterTableLiveSearchCheckbox state] == NSOnState)
-		[self filterTable:filterTableFilterButton];
-#endif
-}
-
-/**
- * Makes the content filter field have focus by making it the first responder.
- */
-- (void)makeContentFilterHaveFocus
-{
-
-	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
-
-	if([filter objectForKey:@"NumberOfArguments"]) {
-		NSUInteger numOfArgs = [[filter objectForKey:@"NumberOfArguments"] integerValue];
-		switch(numOfArgs) {
-			case 2:
-			[[firstBetweenField window] makeFirstResponder:firstBetweenField];
-			break;
-			case 1:
-			[[argumentField window] makeFirstResponder:argumentField];
-			break;
-			default:
-			[[compareField window] makeFirstResponder:compareField];
-		}
-	}
 }
 
 - (void)setFieldEditorSelectedRange:(NSRange)aRange

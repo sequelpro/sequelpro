@@ -68,6 +68,9 @@ NSString *SPThemesSupportFolder                  = @"Themes";
 NSString *SPBundleSupportFolder                  = @"Bundles";
 NSString *SPDataSupportFolder                    = @"Data";
 
+// Table filter
+NSString *SPTableContentFilterKey                = @"filter";
+
 // Preference key constants
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";

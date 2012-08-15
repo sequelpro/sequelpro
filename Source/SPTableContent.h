@@ -299,11 +299,7 @@
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
-- (void)makeContentFilterHaveFocus;
 
 - (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
-
-- (void)updateFilterTableClause:(id)currentValue;
-- (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
 
 @end

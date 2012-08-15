@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContentDataSource.h"
+#import "SPTableContentFilter.h"
 #import "SPDataStorage.h"
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
@@ -47,7 +48,7 @@
 {
 #ifndef SP_REFACTOR
 	if (tableView == filterTableView) {
-		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:@"filter"] count];
+		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:SPTableContentFilterKey] count];
 	}
 	else 
 #endif
@@ -69,10 +70,10 @@
 				return [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
 			} 
 			else {
-				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"], [[tableColumn identifier] integerValue] - 1);
+				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey], [[tableColumn identifier] integerValue] - 1);
 			}
 			else {
-				return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:@"filter"], rowIndex);
+				return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey], rowIndex);
 			}
 	}
 	else 
@@ -124,10 +125,10 @@
 #ifndef SP_REFACTOR
 	if(tableView == filterTableView) {
 		if (filterTableIsSwapped) {
-			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];
+			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];
 		}
 		else {
-			[[[filterTableData objectForKey:[tableColumn identifier]] objectForKey:@"filter"] replaceObjectAtIndex:rowIndex withObject:(NSString *)object];
+			[[[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:rowIndex withObject:(NSString *)object];
 		}
 		
 		[self updateFilterTableClause:nil];

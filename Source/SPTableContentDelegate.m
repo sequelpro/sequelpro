@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableContentDelegate.h"
+#import "SPTableContentFilter.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #endif
