@@ -5724,8 +5724,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
 	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
 	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
-	
-	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	if (processListController) {
+		[processListController close];
+		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
 	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
 #endif
 	
