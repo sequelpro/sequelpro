@@ -685,6 +685,12 @@
 					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 			} else {
 				errorString = [mySQLConnection lastErrorMessage];
+
+				// If dealing with a "MySQL server has gone away" error, explain the situation.
+				// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
+				if ([mySQLConnection lastErrorID] == 2006) {
+					errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
+				}
 			}
 
 			// If the query errored, append error to the error log for display at the end

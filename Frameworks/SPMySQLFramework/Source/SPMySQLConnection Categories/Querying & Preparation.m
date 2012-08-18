@@ -217,6 +217,8 @@
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType
 {
 	double queryExecutionTime;
+	NSString *theErrorMessage;
+	NSUInteger theErrorID;
 	lastQueryWasCancelled = NO;
 	lastQueryWasCancelledUsingReconnect = NO;
 
@@ -282,10 +284,16 @@
 
 		// If the query succeeded, no need to re-attempt.
 		if (!queryStatus) {
+			theErrorMessage = nil;
+			theErrorID = 0;
 			break;
 
 		// If the query failed, determine whether to reattempt the query
 		} else {
+
+			// Store the error state
+			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
+			theErrorID = mysql_errno(mySQLConnection);
 
 			// Prevent retries if the query was cancelled or not a connection error
 			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
@@ -294,10 +302,11 @@
 		}
 
 		// Query has failed - check the connection
+		[self _unlockConnection];
 		if (![self checkConnection]) {
-			[self _unlockConnection];
-			return nil;
+			break;
 		}
+		[self _lockConnection];
 
 		queryAttemptsAllowed--;
 	}
@@ -330,11 +339,11 @@
 				theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
 				break;
 		}
-	}
 
-	// Record the error state now, as it may be affected by subsequent clean-up queries
-	NSString *theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
-	NSUInteger theErrorID = mysql_errno(mySQLConnection);
+		// Update the error message, if appropriate, to reflect result store errors or overall success
+		theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
+		theErrorID = mysql_errno(mySQLConnection);
+	}
 
 	// Update the connection's stored insert ID if available
 	if (mySQLConnection->insert_id) {
@@ -350,6 +359,7 @@
 		// after query kills.  This is also handled within the class for internal cancellations, but
 		// as other external classes may also cancel the query.
 		if (![self serverVersionIsGreaterThanOrEqualTo:5 minorVersion:0 releaseVersion:0]) {
+			[self _unlockConnection];
 			[self checkConnection];
 		}
 	}

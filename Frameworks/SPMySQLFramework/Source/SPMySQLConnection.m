@@ -108,7 +108,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		mySQLConnection = NULL;
 		state = SPMySQLDisconnected;
 		userTriggeredDisconnect = NO;
-		isReconnecting = NO;
+		reconnectingThread = NULL;
 		mysqlConnectionThreadId = 0;
 		initialConnectTime = 0;
 
@@ -618,11 +618,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	// Check whether a reconnection attempt is already being made - if so, wait
 	// and return the status of that reconnection attempt.  This improves threaded
 	// use of the connection by preventing reconnect races.
-	if (isReconnecting) {
+	if (reconnectingThread && !pthread_equal(reconnectingThread, pthread_self())) {
 
 		// Loop in a panel runloop mode until the reconnection has processed; if an iteration
 		// takes less than the requested 0.1s, sleep instead.
-		while (isReconnecting) {
+		while (reconnectingThread) {
 			uint64_t loopIterationStart_t = mach_absolute_time();
 
 			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
@@ -643,7 +643,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		return NO;
 	}
 
-	isReconnecting = YES;
+	reconnectingThread = pthread_self();
 
 	// Store certain details about the connection, so that if the reconnection is successful
 	// they can be restored.  This has to be treated separately from _restoreConnectionDetails
@@ -667,7 +667,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	[self _waitForNetworkConnectionWithTimeout:10];
 
 	if ([[NSThread currentThread] isCancelled]) {
-		isReconnecting = NO;
+		[self _unlockConnection];
+		reconnectingThread = NULL;
 		[reconnectionPool release];
 		return NO;
 	}
@@ -783,12 +784,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 			// By default attempt a reconnect
 			default:
-				isReconnecting = NO;
+				reconnectingThread = NULL;
 				reconnectSucceeded = [self _reconnectAllowingRetries:YES];
 		}
 	}
 
-	isReconnecting = NO;
+	reconnectingThread = NULL;
 	[reconnectionPool release];
 	return reconnectSucceeded;
 }
@@ -897,10 +898,13 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	encodingUsesLatin1Transport = NO;
 
 	// Check the interactive timeout - if it's below five minutes, increase it to ten
-	// to imprive timeout/keepalive behaviour
+	// to improve timeout/keepalive behaviour.  Note that wait_timeout also has be
+	// increased; current versions effectively populate the wait timeout from the
+	// interactive_timeout for interactive clients, but don't pick up changes.
 	if ([variables objectForKey:@"interactive_timeout"]) {
 		if ([[variables objectForKey:@"interactive_timeout"] integerValue] < 300) {
 			[self queryString:@"SET interactive_timeout=600"];
+			[self queryString:@"SET wait_timeout=600"];
 		}
 	}
 

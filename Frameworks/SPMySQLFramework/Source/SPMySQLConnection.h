@@ -59,7 +59,7 @@
 	SPMySQLConnectionState state;
 	BOOL connectedWithSSL;
 	BOOL userTriggeredDisconnect;
-	BOOL isReconnecting;
+	pthread_t reconnectingThread;
 	uint64_t initialConnectTime;
 	unsigned long mysqlConnectionThreadId;
 
