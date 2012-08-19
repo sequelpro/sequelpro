@@ -199,6 +199,23 @@
 /**
  * Returns the hex representation of the given data.
  */
+- (NSString *)dataToHexString
+{
+	NSUInteger i;
+	const unsigned char *bytes = (const unsigned char *)[self bytes];
+	NSUInteger dataLength = [self length];
+	NSMutableString *hexString = [NSMutableString string];
+
+	for (i = 0; i < dataLength; i++) {
+		[hexString appendFormat:@"%02X", bytes[i]];
+	}
+
+	return hexString;
+}
+
+/**
+ * Returns the hex representation of the given data.
+ */
 - (NSString *)dataToFormattedHexString
 {
 	NSUInteger i, j;

@@ -38,6 +38,7 @@
 #import "SPAlertSheets.h"
 
 #import <netinet/in.h>
+#import <CommonCrypto/CommonDigest.h>
 
 @implementation SPSSHTunnel
 
@@ -301,24 +302,49 @@
 	task = [[NSTask alloc] init];
 	[task setLaunchPath: @"/usr/bin/ssh"];
 
-	// Set up the arguments for the task
+	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
-	[taskArguments addObject:@"-N"]; // Tunnel only
-	[taskArguments addObject:@"-v"]; // Verbose mode for messages
-	[taskArguments addObject:@"-o ControlMaster=auto"]; // Support 'master' mode for connection sharing
-	[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SequelPro-%%r@%%h:%%p", [NSFileManager temporaryDirectory]]]; // Set a custom control path to avoid picking up existing masters without forwarding enabled
+
+	// Enable verbose mode for message parsing
+	[taskArguments addObject:@"-v"];
+
+	// Ensure that the muxed connection can be used for only tunnels, not interactive
+	[taskArguments addObject:@"-N"];
+
+	// Enable automatic connection muxing/sharing, for faster connections
+	[taskArguments addObject:@"-o ControlMaster=auto"];
+
+	// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+	// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
+	// hashed path to aid length limit issues.
+	unsigned char hashedPathResult[16];
+	NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, sshPort?sshPort:0];
+	CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
+	[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
+
+	// If the port forwarding fails, exit - as this is the primary use case for the instance
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
+
+	// Specify a connection timeout based on the preferences value
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
+
+	// Allow three password prompts
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
+
+	// Specify an identity file if available
 	if (identityFilePath) {
 		[taskArguments addObject:@"-i"];
 		[taskArguments addObject:identityFilePath];
 	}
+
+	// If keepalive is set in the preferences, use the same value for the SSH tunnel
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
 		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
+
+	// Specify the port, host, and authentication details
 	if (sshPort) {
 		[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
 	}
@@ -333,6 +359,7 @@
 	} else {
 		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPort, remoteHost, (long)remotePort]];
 	}
+
 	[task setArguments:taskArguments];
 
 	// Set up the environment for the task

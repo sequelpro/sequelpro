@@ -159,8 +159,10 @@ static NSString *DirectoryLocationDomain = @"DirectoryLocationDomain";
 	
 	if (!tempDir) {
 		tempDir = @"/tmp";
+	} else if ([tempDir characterAtIndex:([tempDir length] - 1)] == '/') {
+		tempDir = [tempDir substringToIndex:([tempDir length] - 1)];
 	}
-	
+
 	return tempDir;
 }
 

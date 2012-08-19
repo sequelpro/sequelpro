@@ -37,7 +37,9 @@
 - (NSData *)compress;
 - (NSData *)decompress;
 
+- (NSString *)dataToHexString;
 - (NSString *)dataToFormattedHexString;
+
 - (NSString *)stringRepresentationUsingEncoding:(NSStringEncoding)encoding;
 - (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
 
