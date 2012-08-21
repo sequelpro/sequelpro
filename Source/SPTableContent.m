@@ -1503,7 +1503,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSString *taskString;
 
 	if ([tableDocumentInstance isWorking]) return;
+
+	// Check whether a save of the current row is required
 	if (![self saveRowOnDeselect]) return;
+
 #ifndef SP_REFACTOR
 	[self setPaginationViewVisibility:FALSE];
 #endif
@@ -1523,10 +1526,18 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if ([self tableFilterString]) {
 		taskString = NSLocalizedString(@"Filtering table...", @"Filtering table task description");
-	} else if (contentPage == 1) {
-		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTable];
 	} else {
-		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading page %lu...", @"Loading table page task string"), (unsigned long)contentPage];
+
+		// If the table isn't currently filtered, no action required.
+		if (!isFiltered) {
+			return;
+		}
+
+		if (contentPage == 1) {
+			taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTable];
+		} else {
+			taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading page %lu...", @"Loading table page task string"), (unsigned long)contentPage];
+		}
 	}
 
 	[tableDocumentInstance startTaskWithDescription:taskString];
@@ -1540,9 +1551,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (void)filterTableTask
 {
 	NSAutoreleasePool *filterPool = [[NSAutoreleasePool alloc] init];
-
-	// Check whether a save of the current row is required.
-	if (![[self onMainThread] saveRowOnDeselect]) return;
 
 #ifndef SP_REFACTOR
 	// Update history
@@ -2953,7 +2961,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		if ( isEditingNewRow ) {
 #ifndef SP_REFACTOR
 			if ( [prefs boolForKey:SPReloadAfterAddingRow] ) {
-				[[tableDocumentInstance parentWindow] endEditingFor:nil];
+
+				// Save any edits which have been started but not saved to the underlying table/data structures
+				// yet - but not if currently undoing/redoing, as this can cause a processing loop
+				if (![[[[tableContentView window] firstResponder] undoManager] isUndoing] && ![[[[tableContentView window] firstResponder] undoManager] isRedoing]) {
+					[[tableDocumentInstance parentWindow] endEditingFor:nil];
+				}
+
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			} 
@@ -2976,7 +2990,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			// Reload table if set to - otherwise no action required.
 #ifndef SP_REFACTOR
 			if ([prefs boolForKey:SPReloadAfterEditingRow]) {
-				[[tableDocumentInstance parentWindow] endEditingFor:nil];
+
+				// Save any edits which have been started but not saved to the underlying table/data structures
+				// yet - but not if currently undoing/redoing, as this can cause a processing loop
+				if (![[[[tableContentView window] firstResponder] undoManager] isUndoing] && ![[[[tableContentView window] firstResponder] undoManager] isRedoing]) {
+					[[tableDocumentInstance parentWindow] endEditingFor:nil];
+				}
+
 				previousTableRowsCount = tableRowsCount;
 				[self loadTableValues];
 			}
@@ -3030,12 +3050,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		return YES;
 	}
 
-	// Save any edits which have been made but not saved to the table yet;
-	// but not for any NSSearchFields which could cause a crash for undo, redo.
-	if ([[[tableContentView window] firstResponder] respondsToSelector:@selector(delegate)] && 
-		![[(id)[[tableContentView window] firstResponder] delegate] isKindOfClass:[NSSearchField class]]) {
-		
-		[[tableContentView window] endEditingFor:nil];
+	// Save any edits which have been started but not saved to the underlying table/data structures
+	// yet - but not if currently undoing/redoing, as this can cause a processing loop
+	if (![[[[tableContentView window] firstResponder] undoManager] isUndoing] && ![[[[tableContentView window] firstResponder] undoManager] isRedoing]) {
+		[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	}
 
 	// If no rows are currently being edited, or a save is in progress, return success at once.
