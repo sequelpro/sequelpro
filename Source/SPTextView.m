@@ -98,6 +98,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 - (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
+- (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
 
 @end
 
@@ -914,17 +915,10 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	completionParseRangeLocation = parseRange.location;
 
-	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
-	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect:boundingRect toView:nil];
-	NSPoint pos = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-	pos.y -= [[self font] pointSize]*1.25f;
-	[completionPopup setCaretPos:pos];
+	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:completionRange.location];
 
 	[completionPopup orderFront:self];
 	[completionPopup insertAutocompletePlaceholder];
-
 }
 
 
@@ -1549,16 +1543,9 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 					alias:nil
 					withDBStructureRetriever:nil];
 
-	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
-	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect: boundingRect toView: NULL];
-	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-	// Adjust list location to be under the current word or insertion point
-	pos.y -= [[self font] pointSize]*1.25f;
-	[completionPopup setCaretPos:pos];
-	[completionPopup orderFront:self];
+	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:aRange.location];
 
+	[completionPopup orderFront:self];
 }
 
 /**
@@ -1706,14 +1693,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 											alias:nil
 											withDBStructureRetriever:nil];
 
-							//Get the NSPoint of the first character of the current word
-							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
-							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-							boundingRect = [self convertRect: boundingRect toView: NULL];
-							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-							// Adjust list location to be under the current word or insertion point
-							pos.y -= [[self font] pointSize]*1.25f;
-							[completionPopup setCaretPos:pos];
+							[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:r2.location];
+
 							[completionPopup orderFront:self];
 						}
 					}
@@ -3750,6 +3731,29 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Set the selection colour
 	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
+}
+
+/**
+ * Take a supplied autocompletion popup, and position it to the correct position
+ * for the text at the supplied text range location.
+ */
+- (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation
+{
+
+	// Get the range of glyphs generated from the character at the supplied location
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aLocation, 1) actualCharacterRange:NULL];
+
+	// Convert to a bounding rectangle in the window base coordinate system
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect:boundingRect toView:nil];
+
+	// Convert the window position to a screen position
+	NSPoint screenPosition = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x, boundingRect.origin.y)];
+
+	// Adjust the popup x location to compensate for horizontal padding and icon
+	screenPosition.x -= 26;
+
+	[aPopup setCaretPos:screenPosition];
 }
 
 @end
