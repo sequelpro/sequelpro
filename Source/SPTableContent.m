@@ -1507,6 +1507,12 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Check whether a save of the current row is required
 	if (![self saveRowOnDeselect]) return;
 
+	// If the filter field is being cleared by deleting the contents, and there's no current filter,
+	// don't trigger a reload.  keycode 51 is backspace, 117 is delete.
+	if ([sender isKindOfClass:[NSSearchField class]] && !isFiltered && ![self tableFilterString] && ([[[sender window] currentEvent] keyCode] == 51 || [[[sender window] currentEvent] keyCode] == 117)) {
+		return;
+	}
+
 #ifndef SP_REFACTOR
 	[self setPaginationViewVisibility:FALSE];
 #endif
@@ -1526,18 +1532,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if ([self tableFilterString]) {
 		taskString = NSLocalizedString(@"Filtering table...", @"Filtering table task description");
+	} else if (contentPage == 1) {
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTable];
 	} else {
-
-		// If the table isn't currently filtered, no action required.
-		if (!isFiltered) {
-			return;
-		}
-
-		if (contentPage == 1) {
-			taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), selectedTable];
-		} else {
-			taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading page %lu...", @"Loading table page task string"), (unsigned long)contentPage];
-		}
+		taskString = [NSString stringWithFormat:NSLocalizedString(@"Loading page %lu...", @"Loading table page task string"), (unsigned long)contentPage];
 	}
 
 	[tableDocumentInstance startTaskWithDescription:taskString];
