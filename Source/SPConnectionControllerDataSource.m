@@ -39,7 +39,6 @@
 @interface SPConnectionController ()
 
 - (void)_reloadFavoritesViewData;
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
 @end
 
@@ -83,11 +82,7 @@
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
 		if (![node isGroup]) {			
-			// Updating the name triggers a KVO update 
 			[self setName:newName];
-			
-			// Update associated Keychain items
-			[self _updateFavoritePasswordsFromField:nil];
 		}
 		else {
 			[[node representedObject] setNodeName:newName];

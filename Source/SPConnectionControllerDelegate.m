@@ -32,6 +32,7 @@
 
 #import "SPConnectionControllerDelegate.h"
 #ifndef SP_REFACTOR
+#import "SPConnectionControllerDataChangeHandler.h"
 #import "SPFavoritesController.h"
 #import "SPTableTextFieldCell.h"
 #import "SPPreferenceController.h"
@@ -50,9 +51,11 @@ static NSString *SPDatabaseImage = @"database-small";
 - (void)_sortFavorites;
 - (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+//- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+- (void)_selectNode:(SPTreeNode *)node;
 
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
+- (NSDictionary *)_determineFavoriteDataChanges;
 
 - (void)_setNodeIsExpanded:(BOOL)expanded fromNotification:(NSNotification *)notification;
 
@@ -97,15 +100,8 @@ static NSString *SPDatabaseImage = @"database-small";
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
 		[self updateFavoriteSelection:self];
-
-		if (![node isGroup]) {			
-			[addToFavoritesButton setEnabled:NO];
-
-			favoriteNameFieldWasTouched = YES;
-		}
-		else {	
-			[addToFavoritesButton setEnabled:YES];
-		}
+		
+		[addToFavoritesButton setEnabled:[node isGroup]];
 		
 		[connectionResizeContainer setHidden:NO];
 		[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
@@ -140,25 +136,30 @@ static NSString *SPDatabaseImage = @"database-small";
 		NSString *favoriteName = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteNameKey];
 		NSString *favoriteHostname = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteHostKey];
 		
-		toolTip = ([favoriteHostname length]) ? [NSString stringWithFormat:@"%@ (%@)", favoriteName, favoriteHostname] : favoriteName;	
+		toolTip = [favoriteHostname length] ? [NSString stringWithFormat:@"%@ (%@)", favoriteName, favoriteHostname] : favoriteName;	
 	}
 
 	// Only display a tooltip for group nodes that are a descendant of the root node
 	else if ([[node parentNode] parentNode]) {
 		NSUInteger favCount = 0;
 		NSUInteger groupCount = 0;
-		for (SPTreeNode *eachNode in [node childNodes]) {
+		
+		for (SPTreeNode *eachNode in [node childNodes]) 
+		{
 			if ([eachNode isGroup]) {
 				groupCount++;
-			} else {
+			} 
+			else {
 				favCount++;
 			}
 		}
 
 		NSMutableArray *tooltipParts = [NSMutableArray arrayWithCapacity:2];
+		
 		if (favCount || !groupCount) {
 			[tooltipParts addObject:[NSString stringWithFormat:((favCount == 1) ? NSLocalizedString(@"%d favorite", @"favorite singular label (%d == 1)") : NSLocalizedString(@"%d favorites", @"favorites plural label (%d != 1)")), favCount]];
 		}
+		
 		if (groupCount) {
 			[tooltipParts addObject:[NSString stringWithFormat:((groupCount == 1) ? NSLocalizedString(@"%d group", @"favorite group singular label (%d == 1)") : NSLocalizedString(@"%d groups", @"favorite groups plural label (%d != 1)")), groupCount]];
 		}
@@ -171,7 +172,17 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {	
-	return ([[item parentNode] parentNode] != nil);
+	if (![[item parentNode] parentNode]) return NO;
+	
+	NSDictionary *changes = [self determineFavoriteDataChanges];
+	
+	if (changes && [changes count] && [self selectedFavorite]) {			
+		[self promptToSaveFavoriteChanges:changes whenSelectingNode:item];
+		
+		return NO;
+	}
+
+	return YES;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
@@ -205,7 +216,8 @@ static NSString *SPDatabaseImage = @"database-small";
 {
 
 	// Prevent a drag which includes the outline title group from taking place
-	for (id item in items) {
+	for (id item in items) 
+	{
 		if (![[item parentNode] parentNode]) return NO;
 	}
 
@@ -332,9 +344,12 @@ static NSString *SPDatabaseImage = @"database-small";
 
 	// Update the selection to account for rearranged faourites
 	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];
-	for (SPTreeNode *eachNode in preDragSelection) {
+	
+	for (SPTreeNode *eachNode in preDragSelection) 
+	{
 		[restoredSelection addIndex:[favoritesOutlineView rowForItem:eachNode]];
 	}
+	
 	[favoritesOutlineView selectRowIndexes:restoredSelection byExtendingSelection:NO];
 
 	acceptedDrop = YES;
@@ -359,40 +374,30 @@ static NSString *SPDatabaseImage = @"database-small";
 	id field = [notification object];
 	
 	if (((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) && [self selectedFavoriteNode]) {
-						
-		favoriteNameFieldWasTouched = YES;
-		
-		NSString *favoriteName = [self _stripInvalidCharactersFromString:[field stringValue]];
-		
-		BOOL nameFieldIsEmpty = [favoriteName length] == 0;
-		
+								
+		BOOL nameFieldIsEmpty = [[self _stripInvalidCharactersFromString:[field stringValue]] length] == 0;
+				
 		switch (previousType) 
 		{
 			case SPTCPIPConnection:
-				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == standardUserField || field == standardSQLHostField))) {
+				if (nameFieldIsEmpty || (field == standardUserField || field == standardSQLHostField)) {
 					[standardNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [standardUserField stringValue], [standardSQLHostField stringValue]]];
 				}
 				
 				break;
 			case SPSocketConnection:
-				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && field == socketUserField)) {
+				if (nameFieldIsEmpty || field == socketUserField) {
 					[socketNameField setStringValue:[NSString stringWithFormat:@"%@@localhost", [socketUserField stringValue]]];
 				}
 				
 				break;
 			case SPSSHTunnelConnection:
-				if (nameFieldIsEmpty || (!favoriteNameFieldWasTouched && (field == sshUserField || field == sshSQLHostField))) {
+				if (nameFieldIsEmpty || (field == sshUserField || field == sshSQLHostField)) {
 					[sshNameField setStringValue:[NSString stringWithFormat:@"%@@%@", [sshUserField stringValue], [sshSQLHostField stringValue]]];
 				}
 				
 				break;
 		}
-		
-		// Trigger KVO update
-		[self setName:favoriteName];
-		
-		// If name field is empty enable user@host update
-		if (nameFieldIsEmpty) favoriteNameFieldWasTouched = NO;
 	}
 }
 
@@ -405,22 +410,6 @@ static NSString *SPDatabaseImage = @"database-small";
 	if ([notification object] == standardSQLHostField || [notification object] == sshSQLHostField) {
 		[self _checkHost];
 	}
-}
-
-/**
- * Trap editing end notifications and use them to update the keychain password
- * appropriately when name, host, user, password or database changes.
- */
-- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
-{
-	// Request a password refresh to keep keychain references in sync with favorites, but only if a favorite
-	// is selected, meaning we're editing an existing one, not a new one.
-	if (((id)control != (id)favoritesOutlineView) && ([self selectedFavoriteNode])) {
-		[self _updateFavoritePasswordsFromField:control];
-	}
-	
-	// Proceed with editing
-	return YES;
 }
 
 #endif
@@ -439,7 +428,7 @@ static NSString *SPDatabaseImage = @"database-small";
  */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	NSInteger selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
+	SPConnectionType selectedTabView = [tabView indexOfTabViewItem:tabViewItem];
 		
 	if (selectedTabView == previousType) return;
 	
@@ -455,7 +444,7 @@ static NSString *SPDatabaseImage = @"database-small";
 	// Enable the add to favorites button
 	[addToFavoritesButton setEnabled:YES];
 	
-	[self _favoriteTypeDidChange];
+	[favoritesOutlineView deselectAll:self];
 }
 
 #endif
@@ -582,8 +571,8 @@ static NSString *SPDatabaseImage = @"database-small";
 		
 		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
 						  modalDelegate:self
-						 didEndSelector:NULL
-							contextInfo:NULL];			
+						 didEndSelector:nil
+							contextInfo:nil];			
 	}
 }
 
@@ -619,8 +608,8 @@ static NSString *SPDatabaseImage = @"database-small";
 		
 		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
 						  modalDelegate:self
-						 didEndSelector:NULL
-							contextInfo:NULL];
+						 didEndSelector:nil
+							contextInfo:nil];
 	}
 }
 

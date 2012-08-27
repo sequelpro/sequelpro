@@ -46,8 +46,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 
 - (void)_restoreConnectionInterface;
 
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
-
 @end
 
 @implementation SPConnectionController (SPConnectionHandler)
@@ -483,7 +481,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		// Change connection details
 		[self setPort:tunnelPort];
 		[self setHost:SPLocalhostAddress];
-		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 		
 #ifndef SP_REFACTOR
 		// Change to standard TCP/IP connection view

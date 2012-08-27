@@ -59,7 +59,7 @@ static NSString *SPImportFavorites         = @"ImportFavorites";
 static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
-@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
+@interface NSSavePanel (NSSavePanel_UnpublishedUntilSnowLeopardAPI)
 
 - (void)setShowsHiddenFiles:(BOOL)flag;
 
@@ -71,7 +71,6 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #ifndef SP_REFACTOR
 - (void)_sortFavorites;
 - (void)_sortTreeNode:(SPTreeNode *)node usingKey:(NSString *)key;
-- (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
 - (void)_updateFavoriteFirstResponder;
 - (void)_restoreConnectionInterface;
@@ -82,8 +81,6 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (NSNumber *)_createNewFavoriteID;
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
-
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 #endif
@@ -519,14 +516,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
 	
 	SPTreeNode *node = [self selectedFavoriteNode];
+	
 	if ([node isGroup]) node = nil;
 	
 	// Update key-value properties from the selected favourite, using empty strings where not found
 	NSDictionary *fav = [[node representedObject] nodeFavorite];
-	
-	// Keep a copy of the favorite as it currently stands
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-	currentFavorite = [fav copy];
 	
 	[connectionResizeContainer setHidden:NO];
 
@@ -686,8 +680,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
     [self _selectNode:node];
 	
     [[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
-
-	favoriteNameFieldWasTouched = NO;
 		
 	[favoritesOutlineView editColumn:0 row:[favoritesOutlineView selectedRow] withEvent:nil select:YES];
 }
@@ -992,34 +984,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 }
 
 #pragma mark -
-#pragma mark Key Value Observing
-
-/**
- * This method is called as part of Key Value Observing.
- */
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-	NSMutableDictionary *selectedFavorite = [self selectedFavorite];
-	if (!selectedFavorite) return;
-
-	id oldObject = [change objectForKey:NSKeyValueChangeOldKey];
-	id newObject = [change objectForKey:NSKeyValueChangeNewKey];
-
-	if (oldObject != newObject) {
-		[selectedFavorite setObject:![newObject isNSNull] ? newObject : @"" forKey:keyPath];
-			
-		// Save the new data to disk
-		[favoritesController saveFavorites];
-		
-		[self _reloadFavoritesViewData];
-
-		if ([keyPath isEqualToString:SPFavoriteNameKey]) {
-			[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
-		}
-	}
-}
-
-#pragma mark -
 #pragma mark Sheet methods
 
 /**
@@ -1119,15 +1083,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (returnCode == NSAlertAlternateReturn) {
 		[self setType:SPSocketConnection];
 		[self setHost:@""];
-#ifndef SP_REFACTOR
-		[self _updateFavoritePasswordsFromField:standardSQLHostField];
-#endif
 	} 
 	else {
 		[self setHost:@"127.0.0.1"];
-#ifndef SP_REFACTOR
-		[self _updateFavoritePasswordsFromField:standardSQLHostField];
-#endif
 	}
 }
 
@@ -1265,33 +1223,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	return [value1 compare:value2];
 }
 
-/**
- * Updates the favorite's host when the type changes.
- */
-
 #ifndef SP_REFACTOR
-
-- (void)_favoriteTypeDidChange
-{	
-	NSDictionary *favorite = [self selectedFavorite];
-	
-	// If either socket or host is localhost, clear.
-	if ((previousType != SPSocketConnection) && [[favorite objectForKey:SPFavoriteHostKey] isEqualToString:@"localhost"]) {
-		[self setHost:@""];
-	}
-	
-	// Update the name for newly added favorites if not already touched by the user, by triggering a KVO update
-	if (![[self name] length]) {
-		[self setName:[NSString stringWithFormat:@"%@@%@", 
-					   ([favorite objectForKey:SPFavoriteUserKey]) ? [favorite objectForKey:SPFavoriteUserKey] : @"", 
-						((previousType == SPSocketConnection) ? @"localhost" :
-						(([favorite objectForKey:SPFavoriteHostKey]) ? [favorite valueForKeyPath:SPFavoriteHostKey] : @""))
-					   ]];
-	}
-
-	// Trigger a password change in response to host changes
-	[self _updateFavoritePasswordsFromField:nil];
-}
 
 /**
  * Convenience method for reloading the outline view, expanding the root item and scrolling to the selected item.
@@ -1382,6 +1314,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (void)_selectNode:(SPTreeNode *)node
 {
 	[favoritesOutlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[favoritesOutlineView rowForItem:node]] byExtendingSelection:NO];
+	
 	[self _scrollToSelectedNode];
 }
 
@@ -1486,107 +1419,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
 }
 
-#ifndef SP_REFACTOR
-/**
- * Check all fields used in the keychain names against the old values for that
- * favorite, and update the keychain names to match if necessary.
- * If an (optional) recognised password field is supplied, that field is assumed
- * to have changed and is used to supply the new value.
- */
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control
-{
-	if (!currentFavorite) return;
-	
-	NSDictionary *oldFavorite = currentFavorite;
-	NSDictionary *newFavorite = [[[self selectedFavoriteNode] representedObject] nodeFavorite];
-		
-	NSString *passwordValue;
-	NSString *oldKeychainName, *newKeychainName;
-	NSString *oldKeychainAccount, *newKeychainAccount;
-	NSString *oldHostnameForPassword = ([[oldFavorite objectForKey:SPFavoriteTypeKey] integerValue] == SPSocketConnection) ? @"localhost" : [oldFavorite objectForKey:SPFavoriteHostKey];
-	NSString *newHostnameForPassword = ([[newFavorite objectForKey:SPFavoriteTypeKey] integerValue] == SPSocketConnection) ? @"localhost" : [newFavorite objectForKey:SPFavoriteHostKey];
-	
-	// SQL passwords are indexed by name, host, user and database.  If any of these
-	// have changed, or a standard password field has, alter the keychain item to match.
-	if (![[oldFavorite objectForKey:SPFavoriteNameKey] isEqualToString:[newFavorite objectForKey:SPFavoriteNameKey]] ||
-		![oldHostnameForPassword isEqualToString:newHostnameForPassword] ||
-		![[oldFavorite objectForKey:SPFavoriteUserKey] isEqualToString:[newFavorite objectForKey:SPFavoriteUserKey]] ||
-		![[oldFavorite objectForKey:SPFavoriteDatabaseKey] isEqualToString:[newFavorite objectForKey:SPFavoriteDatabaseKey]] ||
-		control == standardPasswordField || control == socketPasswordField || control == sshPasswordField)
-	{
-		// Determine the correct password field to read the password from, defaulting to standard
-		if (control == socketPasswordField) {
-			passwordValue = [socketPasswordField stringValue];
-		} 
-		else if (control == sshPasswordField) {
-			passwordValue = [sshPasswordField stringValue];
-		} 
-		else {
-			passwordValue = [standardPasswordField stringValue];
-		}
-		
-		// Get the old keychain name and account strings
-		oldKeychainName = [keychain nameForFavoriteName:[oldFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-		oldKeychainAccount = [keychain accountForUser:[oldFavorite objectForKey:SPFavoriteUserKey] host:oldHostnameForPassword database:[oldFavorite objectForKey:SPFavoriteDatabaseKey]];
-		
-		// If there's no new password, remove the old item from the keychain
-		if (![passwordValue length]) {
-			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-
-		// Otherwise, set up the new keychain name and account strings and create or edit the item
-		} else {
-			newKeychainName = [keychain nameForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-			newKeychainAccount = [keychain accountForUser:[newFavorite objectForKey:SPFavoriteUserKey] host:newHostnameForPassword database:[newFavorite objectForKey:SPFavoriteDatabaseKey]];
-			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
-				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:passwordValue];
-			} else {
-				[keychain addPassword:passwordValue forName:newKeychainName account:newKeychainAccount];
-			}
-		}
-		
-		// Synch password changes
-		[standardPasswordField setStringValue:passwordValue?passwordValue:@""];
-		[socketPasswordField setStringValue:passwordValue?passwordValue:@""];
-		[sshPasswordField setStringValue:passwordValue?passwordValue:@""];
-		
-		passwordValue = @"";
-	}
-	
-	// If SSH account/password details have changed, update the keychain to match
-	if (![[oldFavorite objectForKey:SPFavoriteNameKey] isEqualToString:[newFavorite objectForKey:SPFavoriteNameKey]] ||
-		![[oldFavorite objectForKey:SPFavoriteSSHHostKey] isEqualToString:[newFavorite objectForKey:SPFavoriteSSHHostKey]] ||
-		![[oldFavorite objectForKey:SPFavoriteSSHUserKey] isEqualToString:[newFavorite objectForKey:SPFavoriteSSHUserKey]] ||
-		control == sshSSHPasswordField) 
-	{
-		// Get the old keychain name and account strings
-		oldKeychainName = [keychain nameForSSHForFavoriteName:[oldFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-		oldKeychainAccount = [keychain accountForSSHUser:[oldFavorite objectForKey:SPFavoriteSSHUserKey] sshHost:[oldFavorite objectForKey:SPFavoriteSSHHostKey]];
-
-		// If there's no new password, delete the keychain item
-		if (![[sshSSHPasswordField stringValue] length]) {
-			[keychain deletePasswordForName:oldKeychainName account:oldKeychainAccount];
-
-		// Otherwise, set up the new keychain name and account strings and create or update the keychain item
-		} else {
-			newKeychainName = [keychain nameForSSHForFavoriteName:[newFavorite objectForKey:SPFavoriteNameKey] id:[newFavorite objectForKey:SPFavoriteIDKey]];
-			newKeychainAccount = [keychain accountForSSHUser:[newFavorite objectForKey:SPFavoriteSSHUserKey] sshHost:[newFavorite objectForKey:SPFavoriteSSHHostKey]];
-			if ([keychain passwordExistsForName:oldKeychainName account:oldKeychainAccount]) {
-				[keychain updateItemWithName:oldKeychainName account:oldKeychainAccount toName:newKeychainName account:newKeychainAccount password:[sshSSHPasswordField stringValue]];
-			} else {
-				[keychain addPassword:[sshSSHPasswordField stringValue] forName:newKeychainName account:newKeychainAccount];
-			}
-		}
-	}
-	
-	// Update the current favorite
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-	
-	if ([[favoritesOutlineView selectedRowIndexes] count]) {
-		currentFavorite = [[[[self selectedFavoriteNode] representedObject] nodeFavorite] copy];
-	}
-}
-#endif
-
 #pragma mark -
 
 - (void)dealloc
@@ -1634,6 +1466,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[mySQLConnection setDelegate:nil];
 		[mySQLConnection release];
 	}
+	
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 
 	if (connectionKeychainID) [connectionKeychainID release];
@@ -1641,10 +1474,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
-
-#ifndef SP_REFACTOR
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
-#endif
     
 	[super dealloc];
 }

@@ -27,6 +27,7 @@
 		1198F5B31174EDD500670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
 		11B55BFE1189E3B2009EF465 /* SPDatabaseAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 11B55BFD1189E3B2009EF465 /* SPDatabaseAction.m */; };
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
+		170FD09415DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 170FD09315DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.m */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
 		1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */; };
 		1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */; };
@@ -605,6 +606,8 @@
 		11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseRenameTest.h; sourceTree = "<group>"; };
 		11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRenameTest.m; sourceTree = "<group>"; };
 		11D44DEF118F5887002AA43C /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Frameworks/OCMock.framework; sourceTree = "<group>"; };
+		170FD09215DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDataChangeHandler.h; sourceTree = "<group>"; };
+		170FD09315DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDataChangeHandler.m; sourceTree = "<group>"; };
 		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
@@ -1815,6 +1818,8 @@
 				1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */,
 				1798F1891550178E004B0AB8 /* SPConnectionControllerDataSource.h */,
 				1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */,
+				170FD09215DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.h */,
+				170FD09315DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.m */,
 				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
 				1798F1801550172A004B0AB8 /* Import & Export */,
 			);
@@ -3301,6 +3306,7 @@
 				58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */,
 				58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */,
 				171B374115DA654300EBC7AB /* SPTableContentFilter.m in Sources */,
+				170FD09415DBB7B1006EC065 /* SPConnectionControllerDataChangeHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

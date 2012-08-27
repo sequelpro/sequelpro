@@ -48,10 +48,10 @@
 
 @interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
 {
-	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
+	id <SPConnectionControllerDelegateProtocol> delegate;
 	
-	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;
+	SPDatabaseDocument *dbDocument;
 	SPMySQLConnection *mySQLConnection;
 	
 #ifndef SP_REFACTOR	/* ivars */
@@ -61,13 +61,12 @@
 #endif
 	NSOpenPanel *keySelectionPanel;
 	NSUserDefaults *prefs;
-
-	BOOL cancellingConnection;
-	BOOL isConnecting;
+	
+	// Common details
+	SPConnectionType type;
+	SPConnectionType previousType;
 	
 	// Standard details
-	NSInteger previousType;
-	NSInteger type;
 	NSString *name;
 	NSString *host;
 	NSString *user;
@@ -150,24 +149,24 @@
 	IBOutlet NSView *exportPanelAccessoryView;
 	
 	BOOL isEditing;
-    BOOL reverseFavoritesSort;
 	BOOL initComplete;
+	BOOL isConnecting;
+    BOOL reverseFavoritesSort;
+	BOOL cancellingConnection;
 	BOOL mySQLConnectionCancelled;
-	BOOL favoriteNameFieldWasTouched;
 	
 #ifndef SP_REFACTOR	/* ivars */
 	NSArray *draggedNodes;
 	NSImage *folderImage;
 	
 	SPTreeNode *favoritesRoot;
-	NSDictionary *currentFavorite;
 	SPFavoritesController *favoritesController;
 	SPFavoritesSortItem currentSortItem;
 #endif
 }
 
-@property (readwrite, assign) id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
-@property (readwrite, assign) NSInteger type;
+@property (readwrite, assign) id <SPConnectionControllerDelegateProtocol> delegate;
+@property (readwrite, assign) SPConnectionType type;
 @property (readwrite, retain) NSString *name;
 @property (readwrite, retain) NSString *host;
 @property (readwrite, retain) NSString *user;

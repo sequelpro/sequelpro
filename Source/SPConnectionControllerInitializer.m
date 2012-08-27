@@ -62,7 +62,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 {
 	if ((self = [super init])) {
 		
-		// Weak reference
 		dbDocument = document;
 		
 #ifndef SP_REFACTOR
@@ -84,7 +83,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		mySQLConnection = nil;
 		cancellingConnection = NO;
 		mySQLConnectionCancelled = NO;
-		favoriteNameFieldWasTouched = YES;
 		
 		[self loadNib];
 		[self registerForNotifications];
@@ -114,7 +112,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		
 		// Tree references
 		favoritesRoot = [favoritesController favoritesTree];
-		currentFavorite = nil;
 		
 		// Update the UI
 		[self _reloadFavoritesViewData];
@@ -123,6 +120,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 		// Set up the selected favourite, and scroll after a small delay to fix animation delay on Lion
 		[self setUpSelectedConnectionFavorite];
+		
 		if ([favoritesOutlineView selectedRow] != -1) {
 			[self performSelector:@selector(_scrollToSelectedNode) withObject:nil afterDelay:0.0];
 		}
@@ -168,102 +166,6 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 											 selector:@selector(_processFavoritesDataChange:) 
 												 name:SPConnectionFavoritesChangedNotification 
 											   object:nil];
-	
-	// Registered to be notified of changes to connection information
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteTypeKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteNameKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteHostKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteUserKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteDatabaseKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSocketKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoritePortKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteUseSSLKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSHHostKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSHUserKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSHPortKey
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSHKeyLocationEnabledKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSHKeyLocationKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLKeyFileLocationKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLCertificateFileLocationKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
-	
-	[self addObserver:self 
-		   forKeyPath:SPFavoriteSSLCACertFileLocationKey 
-			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
-			  context:NULL];
 #endif
 }
 
@@ -327,11 +229,16 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	[self _reloadFavoritesViewData];
 
 	NSMutableIndexSet *selectionIndexes = [NSMutableIndexSet indexSet];
-	for (SPTreeNode *eachNode in selectedFavoriteNodes) {
-		NSInteger anIndex = [favoritesOutlineView rowForItem:eachNode];
-		if (anIndex == -1) continue;
-		[selectionIndexes addIndex:anIndex];
+	
+	for (SPTreeNode *node in selectedFavoriteNodes) 
+	{
+		NSInteger index = [favoritesOutlineView rowForItem:node];
+		
+		if (index == -1) continue;
+		
+		[selectionIndexes addIndex:index];
 	}
+	
 	[favoritesOutlineView selectRowIndexes:selectionIndexes byExtendingSelection:NO];
 #endif
 }
