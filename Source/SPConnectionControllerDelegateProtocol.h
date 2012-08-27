@@ -37,19 +37,19 @@
  *
  * Connection controller delegate protocol.
  */
-@protocol SPConnectionControllerDelegateProtocol
+@protocol SPConnectionControllerDelegateProtocol <NSObject>
 
 /**
  * Called when the connection controller starts initiating the connection process.
  *
- * @param controller The calling connection controller
+ * @param controller The calling connection controller.
  */
 - (void)connectionControllerInitiatingConnection:(id)controller;
 
 /**
  * Called when the connection controller's connection attempt failed.
  *
- * @param controller The calling connection controller
+ * @param controller The calling connection controller.
  */
 - (void)connectionControllerConnectAttemptFailed:(id)controller;
 
