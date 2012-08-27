@@ -32,7 +32,7 @@
 
 @interface SPConnectionController (SPConnectionControllerDataChangeHandler)
 
-- (NSDictionary *)determineFavoriteDataChanges;
-- (void)promptToSaveFavoriteChanges:(NSDictionary *)changes whenSelectingNode:(SPFavoriteNode *)node;
+//- (NSDictionary *)determineFavoriteDataChanges;
+//- (void)promptToSaveFavoriteChanges:(NSDictionary *)changes whenSelectingNode:(SPFavoriteNode *)node;
 
 @end

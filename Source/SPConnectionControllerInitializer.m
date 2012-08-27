@@ -84,6 +84,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		cancellingConnection = NO;
 		mySQLConnectionCancelled = NO;
 		
+		fieldsBeingEdited = [[NSMutableDictionary alloc] init];
+		
 		[self loadNib];
 		[self registerForNotifications];
 		

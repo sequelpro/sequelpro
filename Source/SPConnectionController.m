@@ -77,6 +77,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_selectNode:(SPTreeNode *)node;
 - (void)_scrollToSelectedNode;
 - (void)_removeNode:(SPTreeNode *)node;
+- (void)_toggleInterfaceFields:(NSMutableDictionary *)fields toState:(BOOL)state;
 
 - (NSNumber *)_createNewFavoriteID;
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
@@ -933,6 +934,80 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[prefs setInteger:favoriteID forKey:SPDefaultFavorite];
 }
+
+/**
+ * Switches the connection interface to edit mode for the currently selected favorite.
+ */
+- (IBAction)editFavorite:(id)sender
+{		
+	[connectButton setEnabled:NO];
+	[favoritesOutlineView setEnabled:NO];
+	
+	[editButton setKeyEquivalent:@"\r"];
+	[editButton setTitle:NSLocalizedString(@"Save", @"save button")];
+	[editButton setAction:@selector(saveFavoriteChanges:)];
+	
+	id firstResponder = nil;
+	
+	if ([self type] == SPTCPIPConnection) {		
+		firstResponder = standardNameField;
+		
+		[fieldsBeingEdited setObject:standardNameField forKey:SPFavoriteNameKey];
+		[fieldsBeingEdited setObject:standardHostField forKey:SPFavoriteHostKey];
+		[fieldsBeingEdited setObject:standardUserField forKey:SPFavoriteUserKey];
+		[fieldsBeingEdited setObject:standardDatabaseField forKey:SPFavoriteDatabaseKey];
+		[fieldsBeingEdited setObject:standardPortField forKey:SPFavoritePortKey];
+		[fieldsBeingEdited setObject:standardSSLKeyFileButton forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
+		[fieldsBeingEdited setObject:standardSSLCertificateButton forKey:SPFavoriteSSLCACertFileLocationEnabledKey];
+		[fieldsBeingEdited setObject:standardSSLCACertButton forKey:SPFavoriteSSLCACertFileLocationEnabledKey];
+	}
+	else if ([self type] == SPSocketConnection) {
+		firstResponder = socketNameField;
+	}
+	else if ([self type] == SPSSHTunnelConnection) {
+		firstResponder = sshNameField;
+	}
+		
+	[self _toggleInterfaceFields:fieldsBeingEdited toState:YES];
+	
+	[[dbDocument parentWindow] makeFirstResponder:firstResponder];
+}
+	 
+/**
+ * Saves the change made to the currently selected favorite and re-enables the interface.
+ */
+- (IBAction)saveFavoriteChanges:(id)sender
+{	
+	for (NSString *key in [fieldsBeingEdited allKeys]) 
+	{
+		id objectValue = nil;
+		id object = [fieldsBeingEdited objectForKey:key];
+		
+		if ([object isKindOfClass:[NSTextField class]]) {
+			objectValue = [self _stripInvalidCharactersFromString:[object stringValue]];
+		}
+		else if ([object isKindOfClass:[NSButton class]]) {
+			objectValue = [NSNumber numberWithInteger:[object state]];
+		}
+		
+		if (objectValue) {
+			[[self selectedFavorite] setObject:objectValue forKey:key];
+		}
+	}
+	
+	[favoritesController saveFavorites];
+	
+	[self _toggleInterfaceFields:fieldsBeingEdited toState:NO];
+	
+	[editButton setKeyEquivalent:@""];
+	[editButton setTitle:NSLocalizedString(@"Edit", @"edit button")];
+	[editButton setAction:@selector(editFavorite:)];
+	
+	[connectButton setEnabled:YES];
+	[favoritesOutlineView setEnabled:YES];
+	
+	[fieldsBeingEdited removeAllObjects];
+}
 	
 #pragma mark -
 #pragma mark Import/export favorites
@@ -1419,35 +1494,23 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
 }
 
+/**
+ * Toggles the state of the supplied dictionary of interface controls.
+ */
+- (void)_toggleInterfaceFields:(NSMutableDictionary *)fields toState:(BOOL)state
+{
+	for (NSString *key in [fields allKeys])
+	{
+		[(NSControl *)[fields objectForKey:key] setEnabled:state];
+	}
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	
-	// Unregister observers
-#ifndef SP_REFACTOR
-	[self removeObserver:self forKeyPath:SPFavoriteTypeKey];
-	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
-	[self removeObserver:self forKeyPath:SPFavoriteHostKey];
-	[self removeObserver:self forKeyPath:SPFavoriteUserKey];
-	[self removeObserver:self forKeyPath:SPFavoriteDatabaseKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSocketKey];
-	[self removeObserver:self forKeyPath:SPFavoritePortKey];
-	[self removeObserver:self forKeyPath:SPFavoriteUseSSLKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSHHostKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSHUserKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSHPortKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSHKeyLocationEnabledKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSHKeyLocationKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationEnabledKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLKeyFileLocationKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationEnabledKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey];
-	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey];
-#endif
 
 #ifndef SP_REFACTOR
 	[keychain release];
@@ -1474,6 +1537,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
 	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+	if (fieldsBeingEdited) [fieldsBeingEdited release];
     
 	[super dealloc];
 }

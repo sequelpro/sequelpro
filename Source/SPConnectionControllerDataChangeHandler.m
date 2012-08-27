@@ -58,7 +58,7 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
  *
  * @return A dictionary of changes (key = favorite key, value = favorite value).
  */
-- (NSDictionary *)determineFavoriteDataChanges
+/*- (NSDictionary *)determineFavoriteDataChanges
 {
 	NSMutableDictionary *changes = [NSMutableDictionary dictionary];
 	NSMutableDictionary *fieldMapping = [[NSMutableDictionary alloc] init];
@@ -136,7 +136,7 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
 	[fieldMapping release];
 	
 	return changes;
-}
+}*/
 
 /**
  * Prompts the user about any usaved favorite changes they have made.
@@ -144,7 +144,7 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
  * @param changes A dictionary representing the changes that have been made
  * @param node    The node that the user selected to trigger the unsaved changes warning.
  */
-- (void)promptToSaveFavoriteChanges:(NSDictionary *)changes whenSelectingNode:(SPFavoriteNode *)node
+/*- (void)promptToSaveFavoriteChanges:(NSDictionary *)changes whenSelectingNode:(SPFavoriteNode *)node
 {
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Save changes to favorite?", @"save favorite changes message")
 									 defaultButton:NSLocalizedString(@"Save", @"save button")
@@ -159,13 +159,12 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
 	NSDictionary *data = [[NSDictionary alloc] initWithObjects:[NSArray arrayWithObjects:node, changes, nil] 
 													   forKeys:[NSArray arrayWithObjects:SPFavoritesNextNodeKey, SPFavoritesCurrentNodeChangesKey, nil]];
 	
-	NSLog(@"%@", changes);
 	
 	[alert beginSheetModalForWindow:[dbDocument parentWindow] 
 					  modalDelegate:self
 					 didEndSelector:@selector(_unsavedFavoriteChangesSheetDidEnd:returnCode:contextInfo:)
 						contextInfo:data];
-}
+}*/
 
 #pragma mark -
 #pragma mark Private API
@@ -173,12 +172,12 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
 /**
  * Unasaved favorites changes warning callback.
  */
-- (void)_unsavedFavoriteChangesSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSDictionary *)contextInfo
+/*- (void)_unsavedFavoriteChangesSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSDictionary *)contextInfo
 {
 	SPTreeNode *nextNode = [contextInfo objectForKey:SPFavoritesNextNodeKey];
 	
 	if (returnCode == NSAlertDefaultReturn) {				
-		[self _applyFavoriteChanges:[contextInfo objectForKey:SPFavoritesCurrentNodeChangesKey]];
+		[self _applyFavoriteChanges:[contextInfo objectForKey:SPFavoritesCurrentNodeChangesKey] toFavorite:[self selectedFavorite]];
 		
 		[self _selectNode:nextNode];
 	}
@@ -187,32 +186,8 @@ static NSString *SPFavoritesCurrentNodeChangesKey = @"SPFavoritesCurrentNodeChan
 		[self _selectNode:nextNode];
 	}
 	
-	// If the user hit cancel, then don't bother doing anything as we've 
-	// already cancelled the move to the next node.
-	
 	[contextInfo release];
-}
-
-/**
- * Applies the favorite data changes.
- *
- * @param changes The changes to be applied.
- */
-- (void)_applyFavoriteChanges:(NSDictionary *)changes
-{
-	// If the favorite typ key exists then the user is saving a new favorite
-	if ([[changes allKeys] containsObject:SPFavoriteTypeKey]) {
-		[self _createNewFavoriteWithDetails:changes];
-	}
-	else {
-		[self _applyFavoriteChanges:changes toFavorite:[self selectedFavorite]];
-	}	
-}
-
-- (void)_createNewFavoriteWithDetails:(NSDictionary *)details
-{
-	// TODO: implement me!
-}
+}*/
 
 - (void)_applyFavoriteChanges:(NSDictionary *)changes toFavorite:(NSMutableDictionary *)favorite
 {

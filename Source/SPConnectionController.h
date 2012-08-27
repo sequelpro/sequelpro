@@ -99,6 +99,7 @@
 	NSString *connectionSSHKeychainItemAccount;
 
 	NSMutableArray *nibObjectsToRelease;
+	NSMutableDictionary *fieldsBeingEdited;
 
 	IBOutlet NSView *connectionView;
 	IBOutlet SPSplitView *connectionSplitView;
@@ -128,6 +129,9 @@
 	IBOutlet NSTextField *standardUserField;
 	IBOutlet NSTextField *socketUserField;
 	IBOutlet NSTextField *sshUserField;
+	IBOutlet NSTextField *standardHostField;
+	IBOutlet NSTextField *standardDatabaseField;
+	IBOutlet NSTextField *standardPortField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -143,6 +147,7 @@
 	IBOutlet NSButton *addToFavoritesButton;
 	IBOutlet NSButton *connectButton;
 	IBOutlet NSButton *helpButton;
+	IBOutlet NSButton *editButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
@@ -229,6 +234,7 @@
 - (IBAction)duplicateFavorite:(id)sender;
 - (IBAction)renameNode:(id)sender;
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
+- (IBAction)editFavorite:(id)sender;
 
 // Import/export favorites
 - (IBAction)importFavorites:(id)sender;

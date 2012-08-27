@@ -173,14 +173,6 @@ static NSString *SPDatabaseImage = @"database-small";
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {	
 	if (![[item parentNode] parentNode]) return NO;
-	
-	NSDictionary *changes = [self determineFavoriteDataChanges];
-	
-	if (changes && [changes count] && [self selectedFavorite]) {			
-		[self promptToSaveFavoriteChanges:changes whenSelectingNode:item];
-		
-		return NO;
-	}
 
 	return YES;
 }
