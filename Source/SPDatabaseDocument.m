@@ -535,10 +535,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		queryEditorInitString = nil;
 	}
 
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	[self focusOnTableListFilter:self];
-
 	if (spfSession != nil) {
 
 		// Restore vertical split view divider for tables' list and right view (Structure, Content, etc.)
@@ -578,6 +574,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	if ([self database]) [self detectDatabaseEncoding];
+
+	// Set focus to table list filter field if visible
+	// otherwise set focus to Table List view
+	[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
 #endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
@@ -2295,14 +2295,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[self viewContent:self];
 	
 	[tableContentInstance performSelector:@selector(makeContentFilterHaveFocus) withObject:nil afterDelay:0.1];
-}
-
-/**
- * Makes the tables list filter field the first responder.
- */
-- (IBAction)focusOnTableListFilter:(id)sender
-{
-	[[tablesListInstance onMainThread] performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.25];
 }
 
 /**
@@ -6045,13 +6037,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
 #endif
 
-#ifndef SP_REFACTOR /* clear SPTablesList selection */
-		// If the item has changed, clear the item selection for cleaner loading
-		if (![targetItemName isEqualToString:[self table]]) {
-			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
-			[[tablesListInstance onMainThread] setTableListSelectability:NO];
-		}
+#ifndef SP_REFACTOR /* update database encoding */
 
 		// Update the stored database encoding, used for views, "default" table encodings, and to allow
 		// or disallow use of the "View using encoding" menu
@@ -6071,25 +6057,28 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[spHistoryControllerInstance setModifyingState:NO];
 			[spHistoryControllerInstance updateHistoryEntries];
 		}
-
-		// Set focus to table list filter field if visible
-		// otherwise set focus to Table List view
-		[self focusOnTableListFilter:self];
 #endif
 	}
 
 #ifndef SP_REFACTOR /* update selected table in SPTablesList */
+
+	BOOL focusOnFilter = YES;
+	if (targetItemName) focusOnFilter = NO;
+
 	// If a the table has changed, update the selection
-	if (![targetItemName isEqualToString:[self table]]) {
-		if (targetItemName) {
-			[tablesListInstance selectItemWithName:targetItemName];
-		} 
-		else {
-			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
-			[[tablesListInstance onMainThread] setTableListSelectability:NO];
-		}
+	if (![targetItemName isEqualToString:[self table]] && targetItemName) {
+		focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
+	} 
+
+	// Ensure the window focus is on the table list or the filter as appropriate
+	[[tablesListInstance onMainThread] setTableListSelectability:YES];
+	if (focusOnFilter) {
+		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	} else {
+		[[tablesListInstance onMainThread] makeTableListHaveFocus];
 	}
+	[[tablesListInstance onMainThread] setTableListSelectability:NO];
+
 #endif
 	[self endTask];
 #ifndef SP_REFACTOR /* triggered commands */

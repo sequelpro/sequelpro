@@ -1106,7 +1106,7 @@
 
 	// Restore the first responder if appropriate
 	if (firstResponderToRestore) {
-		[[self window] makeFirstResponder:firstResponderToRestore];
+		[[wrappedView window] makeFirstResponder:firstResponderToRestore];
 	}
 
 	[wrappedView release], wrappedView = nil;

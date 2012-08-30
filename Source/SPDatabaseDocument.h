@@ -377,7 +377,6 @@
 - (IBAction)saveCreateSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
 - (IBAction)focusOnTableContentFilter:(id)sender;
-- (IBAction)focusOnTableListFilter:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportSelectedTablesAs:(id)sender;
 

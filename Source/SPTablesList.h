@@ -162,6 +162,7 @@
 #ifndef SP_REFACTOR /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
+- (void)makeTableListHaveFocus;
 #endif
 
 // Getters

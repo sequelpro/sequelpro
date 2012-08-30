@@ -264,29 +264,18 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
-			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] ) {
+			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] && [theResult numberOfFields] > 3) {
 
 				// Add the header row
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 
-				if( [theResult numberOfFields] == 1 ) {
-					for (NSArray *eachRow in theResult) {
-						[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
-						if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
-						} else {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
-						}
-					}
-				} else {
-					for (NSArray *eachRow in theResult) {
-						[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
-						if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
-						} else {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
-						}
+				for (NSArray *eachRow in theResult) {
+					[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
+					if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
+						[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
+					} else {
+						[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
 					}
 				}
 			}
@@ -1830,19 +1819,25 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 }
 
 /**
- * Set focus to table list filter search field
+ * Set focus to table list filter search field, or the table list if the filter
+ * field is not visible.
  */
 - (void) makeTableListFilterHaveFocus
 {
 	if([tables count] > 20) {
 		[[tableDocumentInstance parentWindow] makeFirstResponder:listFilterField];
 	}
-	else if([tables count] > 2) {
+	else {
 		[[tableDocumentInstance parentWindow] makeFirstResponder:tablesListView];
-		if([tablesListView numberOfSelectedRows] < 1)
-			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
-
 	}
+}
+
+/**
+ * Set focus to the table list.
+ */
+- (void) makeTableListHaveFocus
+{
+	[[tableDocumentInstance parentWindow] makeFirstResponder:tablesListView];
 }
 #endif
 
