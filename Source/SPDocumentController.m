@@ -34,9 +34,35 @@
 
 @implementation SPDocumentController
 
+
 /**
  * This is an empty, dummy implementation; this allows Sequel Pro to behave
  * as if it were a document-based application.
  */
+
+
+/**
+ * Add a dummy implementation of readFromData:ofType:error:, which appears to
+ * be called by the OS in certain situations despite non-document use.
+ * (See http://code.google.com/p/sequel-pro/issues/detail?id=1411 )
+ */
+- (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
+{
+	if (outError) {
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
+	}
+	return YES;
+}
+
+/**
+ * Add a dummy implementation of data:ofType:error: in case of similar OS calls.
+ */
+- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
+{
+	if (outError) {
+		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
+	}
+	return nil;
+}
 
 @end
