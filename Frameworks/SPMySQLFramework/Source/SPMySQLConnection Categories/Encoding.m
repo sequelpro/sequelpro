@@ -265,7 +265,7 @@
 	} else if (!strcmp(mysqlCharset, "latin7")) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin7);
 	} else if (!strcmp(mysqlCharset, "utf8mb4")) {
-		return NSUnicodeStringEncoding;	// Is this correct?
+		return NSUTF8StringEncoding;
 	} else if (!strcmp(mysqlCharset, "cp1251")) {
 		return NSWindowsCP1251StringEncoding;
 	} else if (!strcmp(mysqlCharset, "utf16")) {
