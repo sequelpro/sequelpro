@@ -18,6 +18,7 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
+#import "FLXPostgresError.h"
 #import "FLXPostgresResult.h"
 #import "FLXPostgresStatement.h"
 #import "FLXPostgresException.h"

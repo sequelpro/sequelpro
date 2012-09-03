@@ -114,10 +114,8 @@
  * @return A string representing the error value. The caller is responsible for freeing the associated memory.
  */
 - (NSString *)_extractErrorField:(int)field fromResult:(PGresult *)result
-{
-	const char *errorData = PQresultErrorField(result, field);
-	
-	return [[NSString alloc] initWithBytes:errorData length:strlen(errorData) encoding:NSUTF8StringEncoding];
+{	
+	return [[NSString alloc] initWithUTF8String:PQresultErrorField(result, field)];
 }
 
 #pragma mark -

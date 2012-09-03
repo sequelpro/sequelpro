@@ -75,7 +75,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 @synthesize useKeepAlive = _useKeepAlive;
 @synthesize keepAliveInterval = _keepAliveInterval;
 @synthesize lastQueryWasCancelled = _lastQueryWasCancelled;
-@synthesize lastErrorMessage = _lastErrorMessage;
+@synthesize lastError = _lastError;
 @synthesize encoding = _encoding;
 @synthesize stringEncoding = _stringEncoding;
 @synthesize parameters = _parameters;
@@ -107,8 +107,8 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		_useKeepAlive = YES;
 		_keepAliveInterval = FLXPostgresConnectionDefaultKeepAlive;
 		
+		_lastError = nil;
 		_connection = nil;
-		_lastErrorMessage = nil;
 		_lastQueryWasCancelled = NO;
 		
 		_stringEncoding = FLXPostgresConnectionDefaultStringEncoding;
@@ -343,9 +343,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	BOOL success = [_parameters loadParameters];
 	
-	if (!success) {
-		NSLog(@"PostgresKit: Warning: Failed to load database parameters.");
-	}
+	if (!success) NSLog(@"PostgresKit: Warning: Failed to load database parameters.");
 }
 
 /**
@@ -451,8 +449,8 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	if (_connectionParamNames) free(_connectionParamNames);
 	if (_connectionParamValues) free(_connectionParamValues);
 	
+	if (_lastError) [_lastError release], _lastError = nil;
 	if (_parameters) [_parameters release], _parameters = nil;
-	if (_lastErrorMessage) [_lastErrorMessage release], _lastErrorMessage = nil;
 	
 	[super dealloc];
 }

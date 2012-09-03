@@ -24,11 +24,12 @@
 #import "FLXPostgresConnectionPrivateAPI.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 #import "FLXPostgresConnectionDelegate.h"
+#import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresException.h"
 #import "FLXPostgresResult.h"
-#import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresStatement.h"
+#import "FLXPostgresError.h"
 
 // Constants
 static int FLXPostgresResultsAsBinary = 1;
@@ -249,12 +250,10 @@ FLXQueryParamData;
 {
 	ExecStatusType status = PQresultStatus(result);
 	
-	if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {
-		NSString *error = [NSString stringWithUTF8String:PQresultErrorMessage(result)];
+	if (status == PGRES_BAD_RESPONSE || status == PGRES_FATAL_ERROR) {		
+		if (_lastError) [_lastError release], _lastError = nil;
 		
-		if (_lastErrorMessage) [_lastErrorMessage release], _lastErrorMessage = nil;
-		
-		_lastErrorMessage = [[NSString alloc] initWithString:error];
+		_lastError = [[FLXPostgresError alloc] initWithResult:result];
 		
 		PQclear(result);
 		

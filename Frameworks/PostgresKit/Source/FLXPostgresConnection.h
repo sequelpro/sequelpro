@@ -23,6 +23,7 @@
 #import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresConnectionDelegate.h"
 
+@class FLXPostgresError;
 @class FLXPostgresResult;
 @class FLXPostgresStatement;
 @class FLXPostgresConnectionParameters;
@@ -36,7 +37,6 @@
 	NSString *_database;
 	NSString *_password;
 	NSString *_socketPath;
-	NSString *_lastErrorMessage;
 	NSString *_encoding;
 	
 	const char **_connectionParamNames;
@@ -55,6 +55,7 @@
 	
 	NSMutableDictionary *_typeMap;
 	
+	FLXPostgresError *_lastError;
 	FLXPostgresConnectionParameters *_parameters;
 	
 	NSObject <FLXPostgresConnectionDelegate> *_delegate;
@@ -69,7 +70,7 @@
 @property (readwrite, retain) NSString *socketPath;
 
 @property (readonly) NSString *encoding;
-@property (readonly) NSString *lastErrorMessage;
+@property (readonly) FLXPostgresError *lastError;
 @property (readonly) NSStringEncoding stringEncoding;
 @property (readonly) FLXPostgresConnectionParameters *parameters;
 
