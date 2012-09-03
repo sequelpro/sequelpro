@@ -40,32 +40,32 @@
 }
 
 /**
- * @property errorSeverity 
+ * @property errorSeverity The severity of the error.
  */
 @property (readonly) NSString *errorSeverity;
 
 /**
- * @property errorStateCode
+ * @property errorStateCode The errors state code.
  */
 @property (readonly) NSString *errorStateCode;
 
 /**
- * @property errorPrimaryMessage
+ * @property errorPrimaryMessage The primary error message.
  */ 
 @property (readonly) NSString *errorPrimaryMessage;
 
 /**
- * @property errorDetailMessage
+ * @property errorDetailMessage The detailed error message.
  */
 @property (readonly) NSString *errorDetailMessage;
 
 /**
- * @property errorMessageHint
+ * @property errorMessageHint The error message hint.
  */ 
 @property (readonly) NSString *errorMessageHint;
 
 /**
- * @property errorStatementPosition 
+ * @property errorStatementPosition The position within the executed statement that caused the error.
  */ 
 @property (readonly) NSUInteger errorStatementPosition;
 
