@@ -320,6 +320,10 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	}
 	
 	if (connected) {
+		
+		// Increase error verbosity
+		PQsetErrorVerbosity(_connection, PQERRORS_VERBOSE);
+		
 		PQsetNoticeProcessor(_connection, _FLXPostgresConnectionNoticeProcessor, self);
 		
 		[self _loadDatabaseParameters];
