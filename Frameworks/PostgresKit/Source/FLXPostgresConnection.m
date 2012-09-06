@@ -77,6 +77,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 @synthesize lastQueryWasCancelled = _lastQueryWasCancelled;
 @synthesize lastError = _lastError;
 @synthesize encoding = _encoding;
+@synthesize connectionError = _connectionError;
 @synthesize stringEncoding = _stringEncoding;
 @synthesize parameters = _parameters;
 
@@ -109,6 +110,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		
 		_lastError = nil;
 		_connection = nil;
+		_connectionError = nil;
 		_lastQueryWasCancelled = NO;
 		
 		_stringEncoding = FLXPostgresConnectionDefaultStringEncoding;
@@ -188,6 +190,10 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	_connection = PQconnectStartParams(_connectionParamNames, _connectionParamValues, 0);
 	
 	if (!_connection || PQstatus(_connection) == CONNECTION_BAD) {
+		
+		if (_connectionError) [_connectionError release];
+		
+		_connectionError = [[NSString alloc] initWithUTF8String:PQerrorMessage(_connection)];
 		
 		// TODO: implement reconnection attempt
 		return NO;
@@ -303,7 +309,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	BOOL connected = NO;
 	
 	while (!connected && !failed)
-	{		
+	{				
 		switch (PQconnectPoll(_connection))
 		{
 			case PGRES_POLLING_READING:
@@ -455,6 +461,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	if (_lastError) [_lastError release], _lastError = nil;
 	if (_parameters) [_parameters release], _parameters = nil;
+	if (_connectionError) [_connectionError release], _connectionError = nil;
 	
 	[super dealloc];
 }

@@ -38,6 +38,7 @@
 	NSString *_password;
 	NSString *_socketPath;
 	NSString *_encoding;
+	NSString *_connectionError;
 	
 	const char **_connectionParamNames;
 	const char **_connectionParamValues;
@@ -70,6 +71,7 @@
 @property (readwrite, retain) NSString *socketPath;
 
 @property (readonly) NSString *encoding;
+@property (readonly) NSString *connectionError;
 @property (readonly) FLXPostgresError *lastError;
 @property (readonly) NSStringEncoding stringEncoding;
 @property (readonly) FLXPostgresConnectionParameters *parameters;
