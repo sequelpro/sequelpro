@@ -22,6 +22,7 @@
 #import "FLXPostgresConnectionTypeHandling.h"
 #import "FLXPostgresTypeStringHandler.h"
 #import "FLXPostgresTypeNumberHandler.h"
+#import "FLXPostgresTypeDateTimeHandler.h"
 #import "FLXPostgresException.h"
 
 @implementation FLXPostgresConnection (FLXPostgresConnectionTypeHandling)
@@ -38,7 +39,8 @@
 	}
 	
 	[self registerTypeHandler:[FLXPostgresTypeStringHandler class]];
-	[self registerTypeHandler:[FLXPostgresTypeNumberHandler class]];	
+	[self registerTypeHandler:[FLXPostgresTypeNumberHandler class]];
+	[self registerTypeHandler:[FLXPostgresTypeDateTimeHandler class]];
 }
 
 /**
