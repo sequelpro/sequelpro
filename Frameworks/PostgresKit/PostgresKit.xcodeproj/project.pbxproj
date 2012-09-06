@@ -13,7 +13,7 @@
 		1731F02C15EE09E000D973EB /* FLXPostgresConnectionParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 1731F02A15EE09E000D973EB /* FLXPostgresConnectionParameters.m */; };
 		1731F10815F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F10615F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h */; };
 		1731F10915F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1731F10715F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.m */; };
-		1731F52E15F48BA500D973EB /* FLXPostgresError.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F52C15F48BA500D973EB /* FLXPostgresError.h */; };
+		1731F52E15F48BA500D973EB /* FLXPostgresError.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F52C15F48BA500D973EB /* FLXPostgresError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1731F52F15F48BA500D973EB /* FLXPostgresError.m in Sources */ = {isa = PBXBuildFile; fileRef = 1731F52D15F48BA500D973EB /* FLXPostgresError.m */; };
 		173D4E5A15BAB1DD0007F267 /* FLXPostgresTypeNumberHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4E5615BAB1DD0007F267 /* FLXPostgresTypeNumberHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4E5B15BAB1DD0007F267 /* FLXPostgresTypeNumberHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D4E5715BAB1DD0007F267 /* FLXPostgresTypeNumberHandler.m */; };
