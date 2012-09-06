@@ -283,9 +283,9 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 		case 'd': // Double
 			(*type) = FLXPostgresOidFloat8;
 			return [self remoteDataFromFloat64:[(NSNumber *)object doubleValue]];
+		default:
+			return nil;
 	}
-	
-	return nil;
 }
 
 - (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 

@@ -24,5 +24,9 @@
 
 @interface FLXPostgresTypeNumberHandler : FLXPostgresTypeHandler <FLXPostgresTypeHandlerProtocol>
 
+- (Float64)float64FromBytes:(const void *)bytes;
+
+- (NSNumber *)integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
+
 @end
 
