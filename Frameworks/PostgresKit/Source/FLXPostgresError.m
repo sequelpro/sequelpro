@@ -57,7 +57,7 @@
 	return nil;
 }
 
-- (id)initWithResult:(PGresult *)result
+- (id)initWithResult:(const void *)result
 {
 	if ((self = [super init])) {
 		
@@ -68,7 +68,7 @@
 		_errorMessageHint = nil;
 		_errorStatementPosition = -1;
 		
-		if (result) [self _extractErrorDetailsFromResult:result];
+		if (result) [self _extractErrorDetailsFromResult:(PGresult *)result];
 	}
 	
 	return self;

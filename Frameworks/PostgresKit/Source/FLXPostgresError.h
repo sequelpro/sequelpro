@@ -69,6 +69,6 @@
  */ 
 @property (readonly) NSUInteger errorStatementPosition;
 
-- (id)initWithResult:(PGresult *)result;
+- (id)initWithResult:(const void *)result;
 
 @end
