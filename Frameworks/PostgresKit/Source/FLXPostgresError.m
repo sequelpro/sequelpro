@@ -33,8 +33,8 @@
 
 @interface FLXPostgresError ()
 
-- (void)_extractErrorDetailsFromResult:(PGresult *)result;
-- (NSString *)_extractErrorField:(int)field fromResult:(PGresult *)result;
+- (void)_extractErrorDetailsFromResult:(const PGresult *)result;
+- (NSString *)_extractErrorField:(int)field fromResult:(const PGresult *)result;
 
 @end
 
@@ -87,7 +87,7 @@
  *
  * @param result The Postgres result to extract the information from.
  */
-- (void)_extractErrorDetailsFromResult:(PGresult *)result
+- (void)_extractErrorDetailsFromResult:(const PGresult *)result
 {
 	// Note that we don't expose all the fields that are available.
 	// The ones we don't mostly include information internal to Postgres 
@@ -113,7 +113,7 @@
  *
  * @return A string representing the error value. The caller is responsible for freeing the associated memory.
  */
-- (NSString *)_extractErrorField:(int)field fromResult:(PGresult *)result
+- (NSString *)_extractErrorField:(int)field fromResult:(const PGresult *)result
 {	
 	return [[NSString alloc] initWithUTF8String:PQresultErrorField(result, field)];
 }
