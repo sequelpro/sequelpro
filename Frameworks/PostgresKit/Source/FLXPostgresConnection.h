@@ -20,7 +20,6 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresConnectionDelegate.h"
 
 @class FLXPostgresError;
@@ -30,7 +29,7 @@
 
 @interface FLXPostgresConnection : NSObject 
 {
-	PGconn *_connection;
+	void *_connection;
 	
 	NSString *_host;
 	NSString *_user;

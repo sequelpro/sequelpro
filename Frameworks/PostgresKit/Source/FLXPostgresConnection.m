@@ -24,6 +24,7 @@
 #import "FLXPostgresConnectionParameters.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 #import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresTypeNumberHandler.h"
 #import "FLXPostgresTypeStringHandler.h"
 #import "FLXPostgresException.h"
@@ -330,7 +331,13 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		// Increase error verbosity
 		PQsetErrorVerbosity(_connection, PQERRORS_VERBOSE);
 		
+		// Set notice processor
 		PQsetNoticeProcessor(_connection, _FLXPostgresConnectionNoticeProcessor, self);
+		
+		// Register type extensions
+		if (PQinitTypes(_connection)) {
+			_log(@"Failed initialise type extensions. Connection might return unexpected results!");
+		}
 		
 		[self _loadDatabaseParameters];
 		
