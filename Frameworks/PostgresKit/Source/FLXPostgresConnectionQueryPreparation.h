@@ -24,8 +24,6 @@
 
 @interface FLXPostgresConnection (FLXPostgresConnectionQueryPreparation)
 
-- (NSString *)quote:(NSObject *)object;
-
 - (FLXPostgresStatement *)prepare:(NSString *)query;
 - (FLXPostgresStatement *)prepareWithFormat:(NSString *)query, ...;
 

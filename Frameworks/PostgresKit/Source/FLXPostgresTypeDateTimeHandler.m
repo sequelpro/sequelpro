@@ -72,8 +72,6 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 - (NSData *)remoteDataFromObject:(id)object type:(FLXPostgresOid *)type 
 {
-	if (!object || !type || ![object isKindOfClass:[NSDate class]]) return nil;
-	
 	return nil;
 }
 
@@ -99,14 +97,6 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 		default:
 			return nil;
 	}
-}
-
-- (NSString *)quotedStringFromObject:(id)object 
-{
-	if (!object || ![object isKindOfClass:[NSString class]]) return nil;
-	
-	// TODO: Imeplement me!
-	return nil;
 }
 
 #pragma mark -

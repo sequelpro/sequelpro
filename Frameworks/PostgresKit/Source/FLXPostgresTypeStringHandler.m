@@ -28,6 +28,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 { 
 	FLXPostgresOidText,
 	FLXPostgresOidChar,
+	FLXPostgresOidName,
 	FLXPostgresOidVarchar,
 	FLXPostgresOidUnknown,
 	0 
@@ -65,13 +66,6 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	if (!bytes || !type) return nil;
 	
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:[_connection stringEncoding]] autorelease];
-}
-
-- (NSString *)quotedStringFromObject:(id)object 
-{
-	if (!object || ![object isKindOfClass:[NSString class]]) return nil;
-	
-	return [NSString stringWithFormat:@"'%@'", [[object description] stringByReplacingOccurrencesOfString:@"'" withString:@"''"]];
 }
 
 @end

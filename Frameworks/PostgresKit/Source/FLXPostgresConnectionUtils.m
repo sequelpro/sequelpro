@@ -49,7 +49,7 @@
  */
 - (NSArray *)schemas 
 {					
-	return [self isConnected] ? [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"schema_name\" FROM \"information_schema\".\"schemata\" WHERE \"catalog_name\" = %@", [self quote:[self database]]]] : nil;
+	return [self isConnected] ? [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"schema_name\" FROM \"information_schema\".\"schemata\" WHERE \"catalog_name\" = '%@'", [self database]]] : nil;
 }
 
 /**
@@ -63,7 +63,7 @@
 {	
 	if (![self isConnected] || !schema || ![schema length]) return nil;
 		
-	return [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"table_name\" FROM \"information_schema\".\"tables\" WHERE \"table_catalog\" = %@ AND \"table_schema\" = %@ AND \"table_type\" = 'BASE TABLE'", [self quote:[self database]], [self quote:schema]]];
+	return [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"table_name\" FROM \"information_schema\".\"tables\" WHERE \"table_catalog\" = '%@' AND \"table_schema\" = '%@' AND \"table_type\" = 'BASE TABLE'",[self database], schema]];
 }
 
 /**
@@ -79,7 +79,7 @@
 	if (![self isConnected] || !table || ![table length] || !schema || ![schema length]) return nil;
 	
 	NSString *join = @"\"information_schema\".\"table_constraints\" t INNER JOIN \"information_schema\".\"key_column_usage\" k ON t.\"constraint_name\" = k.\"constraint_name\"";
-	NSString *where = [NSString stringWithFormat:@"t.\"constraint_type\" = 'PRIMARY KEY' AND t.\"table_catalog\" = %@ AND t.\"table_schema\" = %@ AND t.\"table_name\" = %@", [self quote:[self database]], [self quote:schema], [self quote:table]];
+	NSString *where = [NSString stringWithFormat:@"t.\"constraint_type\" = 'PRIMARY KEY' AND t.\"table_catalog\" = '%@' AND t.\"table_schema\" = '%@' AND t.\"table_name\" = '%@'", [self database], schema, table];
 	
 	FLXPostgresResult *result = [self executeWithFormat:@"SELECT k.\"column_name\" FROM %@ WHERE %@", join, where];
 
@@ -98,7 +98,7 @@
 {
 	if (![self isConnected] || !table || ![table length] || !schema || ![schema length]) return nil;
 			
-	return [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"column_name\" FROM \"information_schema\".\"columns\" WHERE \"table_catalog\" = %@ AND \"table_schema\" = %@ AND \"table_name\" = %@", [self quote:[self database]], [self quote:schema], [self quote:table]]];
+	return [self _executeAndReturnResult:[NSString stringWithFormat:@"SELECT \"column_name\" FROM \"information_schema\".\"columns\" WHERE \"table_catalog\" = '%@' AND \"table_schema\" = '%@' AND \"table_name\" = '%@'", [self database], schema, table]];
 }
 
 #pragma mark -

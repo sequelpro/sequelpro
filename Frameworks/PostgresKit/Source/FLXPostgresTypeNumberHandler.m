@@ -305,20 +305,6 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 			return [self booleanObjectFromBytes:bytes length:length];
 		default:
 			return nil;
-	}	
-}
-
-- (NSString *)quotedStringFromObject:(id)object 
-{
-	if (!object || ![object isKindOfClass:[NSNumber class]]) return nil;
-	
-	const char *type = [object objCType];
-	
-	if (type[0] == 'c' || type[0] == 'C' || type[0] == 'B') {
-		return ([(NSNumber *)object boolValue] ? @"true" : @"false");
-	} 
-	else {
-		return [(NSNumber *)object stringValue];
 	}
 }
 

@@ -29,52 +29,87 @@ typedef Oid FLXPostgresOid;
 
 enum 
 {
-	FLXPostgresOidBool         = 16,
-	FLXPostgresOidData         = 17,
-	FLXPostgresOidName         = 19,
-	FLXPostgresOidInt8         = 20,
-	FLXPostgresOidInt2         = 21,
-	FLXPostgresOidInt4         = 23,
-	FLXPostgresOidText         = 25,
-	FLXPostgresOidOid          = 26,
-	FLXPostgresOidXML          = 142,
-	FLXPostgresOidPoint        = 600,
-	FLXPostgresOidLSeg         = 601,
-	FLXPostgresOidPath         = 602,
-	FLXPostgresOidBox          = 603,
-	FLXPostgresOidPolygon      = 604,
-	FLXPostgresOidFloat4       = 700,
-	FLXPostgresOidFloat8       = 701,
-	FLXPostgresOidAbsTime      = 702,
-	FLXPostgresOidUnknown      = 705,
-	FLXPostgresOidCircle       = 718,
-	FLXPostgresOidMoney        = 790,
-	FLXPostgresOidMacAddr      = 829,
-	FLXPostgresOidIPAddr       = 869,
-	FLXPostgresOidNetAddr      = 869,
-	FLXPostgresOidArrayBool    = 1000,
-	FLXPostgresOidArrayData    = 1001,
-	FLXPostgresOidArrayChar    = 1002,
-	FLXPostgresOidArrayName    = 1003,
-	FLXPostgresOidArrayInt2    = 1005,
-	FLXPostgresOidArrayInt4    = 1007,
-	FLXPostgresOidArrayText    = 1009,
-	FLXPostgresOidArrayVarchar = 1015,
-	FLXPostgresOidArrayInt8    = 1016,
-	FLXPostgresOidArrayFloat4  = 1021,
-	FLXPostgresOidArrayFloat8  = 1022,
-	FLXPostgresOidArrayMacAddr = 1040,
-	FLXPostgresOidArrayIPAddr  = 1041,
-	FLXPostgresOidChar         = 1042,
-	FLXPostgresOidVarchar      = 1043,
-	FLXPostgresOidDate         = 1082,
-	FLXPostgresOidTime         = 1083,
-	FLXPostgresOidTimestamp    = 1114,
-	FLXPostgresOidTimestampTZ  = 1184,
+	// BOOL
+	FLXPostgresOidBool         = 16, // NumberHandler
+	FLXPostgresOidData         = 17, // Currently not supported
+	
+	// Text
+	FLXPostgresOidName         = 19, // StringHandler
+	
+	// Integers
+	FLXPostgresOidInt8         = 20, // NumberHandler
+	FLXPostgresOidInt2         = 21, // NumberHandler
+	FLXPostgresOidInt4         = 23, // NumberHandler
+	
+	// Text
+	FLXPostgresOidText         = 25, // StringHandler
+	
+	// OID
+	FLXPostgresOidOid          = 26, // Currently not supported
+	
+	// XML
+	FLXPostgresOidXML          = 142, // Currently not supported
+	
+	// Geometric
+	FLXPostgresOidPoint        = 600, // Currently not supported
+	FLXPostgresOidLSeg         = 601, // Currently not supported
+	FLXPostgresOidPath         = 602, // Currently not supported
+	FLXPostgresOidBox          = 603, // Currently not supported
+	FLXPostgresOidPolygon      = 604, // Currently not supported
+	
+	// Float
+	FLXPostgresOidFloat4       = 700, // NumberHandler
+	FLXPostgresOidFloat8       = 701, // NumberHandler
+	
+	// ABS Time
+	FLXPostgresOidAbsTime      = 702, // DateHandler
+	
+	// What!
+	FLXPostgresOidUnknown      = 705, // StringHandler
+	
+	// Geometric
+	FLXPostgresOidCircle       = 718, // Currently not supported
+	
+	// Monetary
+	FLXPostgresOidMoney        = 790, // Currently not supported
+	
+	// Network
+	FLXPostgresOidMacAddr      = 829, // Currently not supported
+	FLXPostgresOidIPAddr       = 869, // Currently not supported
+	FLXPostgresOidNetAddr      = 869, // Currently not supported
+	
+	// Arrays
+	FLXPostgresOidArrayBool    = 1000, // Currently not supported
+	FLXPostgresOidArrayData    = 1001, // Currently not supported
+	FLXPostgresOidArrayChar    = 1002, // Currently not supported
+	FLXPostgresOidArrayName    = 1003, // Currently not supported
+	FLXPostgresOidArrayInt2    = 1005, // Currently not supported
+	FLXPostgresOidArrayInt4    = 1007, // Currently not supported
+	FLXPostgresOidArrayText    = 1009, // Currently not supported
+	FLXPostgresOidArrayVarchar = 1015, // Currently not supported
+	FLXPostgresOidArrayInt8    = 1016, // Currently not supported
+	FLXPostgresOidArrayFloat4  = 1021, // Currently not supported
+	FLXPostgresOidArrayFloat8  = 1022, // Currently not supported
+	FLXPostgresOidArrayMacAddr = 1040, // Currently not supported
+	FLXPostgresOidArrayIPAddr  = 1041, // Currently not supported
+	
+	// Text
+	FLXPostgresOidChar         = 1042, // StringHandler
+	FLXPostgresOidVarchar      = 1043, // StringHandler
+	
+	// Date/time
+	FLXPostgresOidDate         = 1082, // DateHandler
+	FLXPostgresOidTime         = 1083, // DateHandler
+	FLXPostgresOidTimestamp    = 1114, // DateHandler
+	FLXPostgresOidTimestampTZ  = 1184, // DateHandler
 	FLXPostgresOidInterval     = 1186,
-	FLXPostgresOidTimeTZ       = 1266,
-	FLXPostgresOidBit          = 1560,
-	FLXPostgresOidVarbit       = 1562,
-	FLXPostgresOidNumeric      = 1700,
-	FLXPostgresOidMax          = 1700
+	FLXPostgresOidTimeTZ       = 1266, // DateHandler
+	
+	// Binary
+	FLXPostgresOidBit          = 1560, // Currently not supported
+	FLXPostgresOidVarbit       = 1562, // Currently not supported
+	
+	// Numeric
+	FLXPostgresOidNumeric      = 1700, // Currently not supported
+	FLXPostgresOidMax          = 1700 // Currently not supported
 };

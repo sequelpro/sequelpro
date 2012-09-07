@@ -72,13 +72,4 @@
  */
 - (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type;
 
-/**
- * Return a quoted string from an object.
- *
- * @param object The object to quote.
- *
- * @return A string represenation of the object quoted.
- */
-- (NSString *)quotedStringFromObject:(id)object;
-
 @end

@@ -29,29 +29,6 @@
 @implementation FLXPostgresConnection (FLXPostgresConnectionQueryPreparation)
 
 /**
- * Quotes the supplied object in accordance with it's data type.
- *
- * @param object The object to quote.
- *
- * @return A string representation of the quoted object.
- */
-- (NSString *)quote:(NSObject *)object 
-{	
-	if (!object || [object isKindOfClass:[NSNull class]]) return @"NULL";
-	
-	id <FLXPostgresTypeHandlerProtocol> handler = [self typeHandlerForClass:[object class]];
-	
-	if (!handler) {
-		[FLXPostgresException raise:FLXPostgresConnectionErrorDomain 
-							 reason:[NSString stringWithFormat:@"Unsupported class '%@'", NSStringFromClass([object class])]];
-		
-		return nil;
-	}
-	
-	return [handler quotedStringFromObject:object];
-}
-
-/**
  * Creates a prepared statment from the supplied query.
  *
  * @param query The query to create the statement from.

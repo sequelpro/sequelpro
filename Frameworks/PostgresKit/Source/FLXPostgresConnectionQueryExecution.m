@@ -132,9 +132,7 @@ FLXQueryParamData;
 	for (int i = 0; i < paramData->paramNum; i++) 
 	{
 		id nativeObject = [values objectAtIndex:i];
-		
-		NSParameterAssert(nativeObject);
-		
+				
 		// Deterime if bound value is an NSNull
 		if ([nativeObject isKindOfClass:[NSNull class]]) {
 			paramData->paramValues[i] = NULL;
