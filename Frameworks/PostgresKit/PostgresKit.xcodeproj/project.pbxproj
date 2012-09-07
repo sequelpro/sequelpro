@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		170465CE15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 170465CC15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		170465CF15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 170465CD15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m */; };
+		1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1724C9B715F9ED8600AB2291 /* libpqtypes.a */; };
 		1731F02B15EE09E000D973EB /* FLXPostgresConnectionParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F02915EE09E000D973EB /* FLXPostgresConnectionParameters.h */; };
 		1731F02C15EE09E000D973EB /* FLXPostgresConnectionParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 1731F02A15EE09E000D973EB /* FLXPostgresConnectionParameters.m */; };
 		1731F10815F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F10615F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h */; };
@@ -31,8 +32,6 @@
 		173D4EAA15BAB2A80007F267 /* FLXPostgresStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D4E9E15BAB2A80007F267 /* FLXPostgresStatement.m */; };
 		173D4EAB15BAB2A80007F267 /* PostgresKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4E9F15BAB2A80007F267 /* PostgresKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4EE215BACA700007F267 /* libpq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D4EE115BACA700007F267 /* libpq.a */; };
-		173D4EE515BACA900007F267 /* libpq-fe.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EE315BACA900007F267 /* libpq-fe.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		173D4EE615BACA900007F267 /* postgres_ext.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EE415BACA900007F267 /* postgres_ext.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4F4515BAD22B0007F267 /* FLXPostgresTypeHandlerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EA015BAB2A80007F267 /* FLXPostgresTypeHandlerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4F5715BAD3030007F267 /* FLXPostgresTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4F5615BAD3030007F267 /* FLXPostgresTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D506A15BB93470007F267 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506915BB93470007F267 /* libssl.dylib */; };
@@ -55,6 +54,8 @@
 /* Begin PBXFileReference section */
 		170465CC15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresTypeHandler.h; sourceTree = "<group>"; };
 		170465CD15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresTypeHandler.m; sourceTree = "<group>"; };
+		1724C9B715F9ED8600AB2291 /* libpqtypes.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpqtypes.a; sourceTree = "<group>"; };
+		1724CA3B15F9EE7300AB2291 /* libpqtypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libpqtypes.h; sourceTree = "<group>"; };
 		1731F02915EE09E000D973EB /* FLXPostgresConnectionParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionParameters.h; sourceTree = "<group>"; };
 		1731F02A15EE09E000D973EB /* FLXPostgresConnectionParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionParameters.m; sourceTree = "<group>"; };
 		1731F10615F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresTypeDateTimeHandler.h; sourceTree = "<group>"; };
@@ -98,7 +99,7 @@
 		177C9BAA15CD37E000128642 /* FLXPostgresConnectionEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionEncoding.m; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		17F5B77C15C9D092006DA689 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
+		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* PostgresKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PostgresKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -109,6 +110,7 @@
 			files = (
 				17E595F214F3058F0054EE08 /* Foundation.framework in Frameworks */,
 				173D4EE215BACA700007F267 /* libpq.a in Frameworks */,
+				1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */,
 				173D506A15BB93470007F267 /* libssl.dylib in Frameworks */,
 				173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */,
 			);
@@ -151,10 +153,43 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				173D4EDE15BACA090007F267 /* PostgreSQL */,
-				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				173D4EDE15BACA090007F267 /* Libs */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		1724CA3715F9EDC900AB2291 /* libpq */ = {
+			isa = PBXGroup;
+			children = (
+				173D4EE015BACA3F0007F267 /* lib */,
+				173D4EDF15BACA280007F267 /* include */,
+			);
+			path = libpq;
+			sourceTree = "<group>";
+		};
+		1724CA3815F9EE1100AB2291 /* libpqtypes */ = {
+			isa = PBXGroup;
+			children = (
+				1724CA3A15F9EE3600AB2291 /* lib */,
+				1724CA3915F9EE2E00AB2291 /* include */,
+			);
+			path = libpqtypes;
+			sourceTree = "<group>";
+		};
+		1724CA3915F9EE2E00AB2291 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				1724CA3B15F9EE7300AB2291 /* libpqtypes.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		1724CA3A15F9EE3600AB2291 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				1724C9B715F9ED8600AB2291 /* libpqtypes.a */,
+			);
+			path = lib;
 			sourceTree = "<group>";
 		};
 		1731F50415F369E400D973EB /* Query */ = {
@@ -227,13 +262,14 @@
 			name = Types;
 			sourceTree = "<group>";
 		};
-		173D4EDE15BACA090007F267 /* PostgreSQL */ = {
+		173D4EDE15BACA090007F267 /* Libs */ = {
 			isa = PBXGroup;
 			children = (
-				173D4EDF15BACA280007F267 /* include */,
-				173D4EE015BACA3F0007F267 /* lib */,
+				8DC2EF5A0486A6940098B216 /* Info.plist */,
+				1724CA3715F9EDC900AB2291 /* libpq */,
+				1724CA3815F9EE1100AB2291 /* libpqtypes */,
 			);
-			name = PostgreSQL;
+			path = Libs;
 			sourceTree = "<group>";
 		};
 		173D4EDF15BACA280007F267 /* include */ = {
@@ -242,8 +278,7 @@
 				173D4EE315BACA900007F267 /* libpq-fe.h */,
 				173D4EE415BACA900007F267 /* postgres_ext.h */,
 			);
-			name = include;
-			path = PostgreSQL/include;
+			path = include;
 			sourceTree = "<group>";
 		};
 		173D4EE015BACA3F0007F267 /* lib */ = {
@@ -251,8 +286,7 @@
 			children = (
 				173D4EE115BACA700007F267 /* libpq.a */,
 			);
-			name = lib;
-			path = PostgreSQL/lib;
+			path = lib;
 			sourceTree = "<group>";
 		};
 		173D508D15BBD99B0007F267 /* Constants */ = {
@@ -308,8 +342,6 @@
 				173D4EA715BAB2A80007F267 /* FLXPostgresResult.h in Headers */,
 				173D4EA915BAB2A80007F267 /* FLXPostgresStatement.h in Headers */,
 				173D4EAB15BAB2A80007F267 /* PostgresKit.h in Headers */,
-				173D4EE515BACA900007F267 /* libpq-fe.h in Headers */,
-				173D4EE615BACA900007F267 /* postgres_ext.h in Headers */,
 				173D4F4515BAD22B0007F267 /* FLXPostgresTypeHandlerProtocol.h in Headers */,
 				173D4F5715BAD3030007F267 /* FLXPostgresTypes.h in Headers */,
 				173D508C15BBD98D0007F267 /* FLXConstants.h in Headers */,
@@ -458,7 +490,7 @@
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/PostgreSQL/lib\"",
+					"\"$(SRCROOT)/Libs\"/**",
 				);
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -509,7 +541,7 @@
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/PostgreSQL/lib\"",
+					"\"$(SRCROOT)/Libs\"/**",
 				);
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
@@ -554,7 +586,7 @@
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/PostgreSQL/lib\"",
+					"\"$(SRCROOT)/Libs\"/**",
 				);
 				PRODUCT_NAME = PostgresKit;
 				WARNING_CFLAGS = "-Wmost";
