@@ -29,6 +29,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	FLXPostgresOidText,
 	FLXPostgresOidChar,
 	FLXPostgresOidName,
+	FLXPostgresOidNumeric,
 	FLXPostgresOidVarchar,
 	FLXPostgresOidUnknown,
 	0 

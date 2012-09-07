@@ -110,6 +110,6 @@ enum
 	FLXPostgresOidVarbit       = 1562, // Currently not supported
 	
 	// Numeric
-	FLXPostgresOidNumeric      = 1700, // Currently not supported
+	FLXPostgresOidNumeric      = 1700, // StringHandler
 	FLXPostgresOidMax          = 1700 // Currently not supported
 };
