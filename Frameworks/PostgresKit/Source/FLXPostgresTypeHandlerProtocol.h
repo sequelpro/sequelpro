@@ -51,17 +51,6 @@
 - (NSArray *)classAliases;
 
 /**
- * Return a transmittable data representation from the supplied object,
- * and set the remote type for the data.
- *
- * @param object The object to produce the data for.
- * @param type   The type of object we're supplying.
- *
- * @return The data represenation as an NSData instance.
- */
-- (NSData *)remoteDataFromObject:(id)object type:(FLXPostgresOid *)type;
-
-/**
  * Convert the supplied remote data into an object.
  *
  * @param bytes  The remote data to convert.

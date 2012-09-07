@@ -54,13 +54,6 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	return [NSArray arrayWithObject:@"NSCFString"];
 }
 
-- (NSData *)remoteDataFromObject:(id)object type:(FLXPostgresOid *)type 
-{
-	if (!object || !type || ![object isKindOfClass:[NSString class]]) return nil;
-
-	return [(NSString *)object dataUsingEncoding:[_connection stringEncoding]];		
-}
-
 - (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 
 {
 	if (!bytes || !type) return nil;

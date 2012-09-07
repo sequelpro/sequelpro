@@ -70,11 +70,6 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	return nil;
 }
 
-- (NSData *)remoteDataFromObject:(id)object type:(FLXPostgresOid *)type 
-{
-	return nil;
-}
-
 - (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 
 {
 	if (!bytes || !type) return nil;
