@@ -20,7 +20,6 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "libpq-fe.h"
 #import "FLXConstants.h"
 
 @class FLXPostgresConnection;
@@ -56,7 +55,7 @@
  */
 @property (readonly) NSStringEncoding stringEncoding;
 
-- (id)initWithResult:(PGresult *)result connection:(FLXPostgresConnection *)connection;
+- (id)initWithResult:(void *)result connection:(FLXPostgresConnection *)connection;
 
 - (unsigned int)numberOfFields;
 
