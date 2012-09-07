@@ -23,9 +23,17 @@
 #ifdef __OBJC__
     #import <Foundation/Foundation.h>
 
-    // PostgreSQL interface
+    // libpq interface
     #import "libpq-fe.h"
+
+    // libpqtypes interface
+    #import "libpqtypes.h"
 
     // Framework constants
     #import "FLXConstants.h"
+
+    // Global types
+    #import "FLXPostgresTypes.h"
+
+    #define _log(x) NSLog(@"PostgresKit: Warning: %@", x);
 #endif
