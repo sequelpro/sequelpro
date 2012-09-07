@@ -12,7 +12,7 @@
 #ifndef LIBPQTYPES_H
 #define LIBPQTYPES_H
 
-#include <libpq-fe.h>
+#include "libpq-fe.h"
 #include <time.h>
 #include <stdarg.h>
 
