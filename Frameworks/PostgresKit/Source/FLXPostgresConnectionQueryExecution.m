@@ -223,11 +223,6 @@ FLXQueryParamData;
 								(const int *)paramData->paramLengths, 
 								(const int *)paramData->paramFormats, 
 								FLXPostgresResultsAsBinary);		
-	} 
-	else {
-		// TODO: get rid of exceptions
-		[FLXPostgresException raise:FLXPostgresConnectionErrorDomain reason:[NSString stringWithFormat:@"Trying to execute a query that is not of type NSString or FLXPostgresStatement"]];			
-		return nil;
 	}
 	
 	[self _destroyParamDataStructure:paramData];
