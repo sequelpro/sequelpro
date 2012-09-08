@@ -21,7 +21,6 @@
 //  the License.
 
 #import "FLXPostgresTypeNumberHandler.h"
-#import "FLXPostgresTypes.h"
 
 static FLXPostgresOid FLXPostgresTypeNumberTypes[] = 
 { 
@@ -34,56 +33,70 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	0 
 };
 
+@interface FLXPostgresTypeNumberHandler ()
+
+- (SInt16)_int16FromBytes:(const void *)bytes;
+- (SInt32)_int32FromBytes:(const void *)bytes;
+- (SInt64)_int64FromBytes:(const void *)bytes;
+
+- (Float32)_float32FromBytes:(const void *)bytes;
+- (Float64)_float64FromBytes:(const void *)bytes;
+
+@end
+
 @implementation FLXPostgresTypeNumberHandler
 
 #pragma mark -
 #pragma mark Integer & Unsigned Integer
 
-- (SInt16)int16FromBytes:(const void *)bytes 
-{
-	if (!bytes) return 0;
-	
-	return EndianS16_BtoN(*((SInt16 *)bytes));
-}
-
-- (SInt32)int32FromBytes:(const void *)bytes 
-{
-	if (!bytes) return 0;
-
-	return EndianS32_BtoN(*((SInt32 *)bytes));
-}
-
-- (SInt64)int64FromBytes:(const void *)bytes 
-{
-	if (!bytes) return 0;
-	
-	return EndianS64_BtoN(*((SInt64 *)bytes));		
-}
-
-- (NSNumber *)integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
-{
-	if (!bytes) return nil;
-	
+- (NSNumber *)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+{	
 	switch (length) 
 	{
 		case 2:
-			return [NSNumber numberWithShort:[self int16FromBytes:bytes]];
+			return [NSNumber numberWithShort:[self _int16FromBytes:bytes]];
 		case 4:
-			return [NSNumber numberWithInteger:[self int32FromBytes:bytes]];
+			return [NSNumber numberWithInteger:[self _int32FromBytes:bytes]];
 		case 8:
-			return [NSNumber numberWithLongLong:[self int64FromBytes:bytes]];
+			return [NSNumber numberWithLongLong:[self _int64FromBytes:bytes]];
 	}
 	
 	return nil;
 }
 
+- (SInt16)_int16FromBytes:(const void *)bytes 
+{	
+	return EndianS16_BtoN(*((SInt16 *)bytes));
+}
+
+- (SInt32)_int32FromBytes:(const void *)bytes 
+{
+	return EndianS32_BtoN(*((SInt32 *)bytes));
+}
+
+- (SInt64)_int64FromBytes:(const void *)bytes 
+{	
+	return EndianS64_BtoN(*((SInt64 *)bytes));		
+}
+
 #pragma mark -
 #pragma mark Floating Point
 
-- (Float32)float32FromBytes:(const void *)bytes 
-{
-	if (!bytes) return 0;
+- (NSNumber *)_floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+{	
+	switch (length) 
+	{
+		case 4:
+			return [NSNumber numberWithFloat:[self _float32FromBytes:bytes]];
+		case 8:
+			return [NSNumber numberWithDouble:[self _float64FromBytes:bytes]];
+	}
+	
+	return nil;
+}
 
+- (Float32)_float32FromBytes:(const void *)bytes 
+{
     union { Float32 r; UInt32 i; } u32;
 	
 	u32.r = *((Float32 *)bytes);		
@@ -92,10 +105,8 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	return u32.r;
 }
 
-- (Float64)float64FromBytes:(const void *)bytes 
-{
-	if (!bytes) return 0;
-	
+- (Float64)_float64FromBytes:(const void *)bytes 
+{	
     union { Float64 r; UInt64 i; } u64;
 	
 	u64.r = *((Float64 *)bytes);		
@@ -104,25 +115,12 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	return u64.r;		
 }
 
-- (NSNumber *)floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
-{	
-	switch (length) 
-	{
-		case 4:
-			return [NSNumber numberWithFloat:[self float32FromBytes:bytes]];
-		case 8:
-			return [NSNumber numberWithDouble:[self float64FromBytes:bytes]];
-	}
-	
-	return nil;
-}
-
 #pragma mark -
 #pragma mark Boolean
 
-- (NSNumber *)booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+- (NSNumber *)_booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
 {
-	if (!bytes || length != 1) return nil;
+	if (length != 1) return nil;
 	
 	return [NSNumber numberWithBool:*((const int8_t *)bytes) ? YES : NO];
 }
@@ -145,21 +143,25 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	return nil;
 }
 
-- (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 
+- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
 {	
-	if (!bytes || !length || !type) return nil;
+	FLXPostgresOid type = PQftype(result, column);
+	NSUInteger length = PQgetlength(result, row, column);
+	const void *bytes = PQgetvalue(result, row, column);
+	
+	if (!bytes || !length) return nil;
 	
 	switch (type) 
 	{
 		case FLXPostgresOidInt8:
 		case FLXPostgresOidInt2:
 		case FLXPostgresOidInt4:
-			return [self integerObjectFromBytes:bytes length:length];
+			return [self _integerObjectFromBytes:bytes length:length];
 		case FLXPostgresOidFloat4:
 		case FLXPostgresOidFloat8:
-			return [self floatObjectFromBytes:bytes length:length];
+			return [self _floatObjectFromBytes:bytes length:length];
 		case FLXPostgresOidBool:
-			return [self booleanObjectFromBytes:bytes length:length];
+			return [self _booleanObjectFromBytes:bytes length:length];
 		default:
 			return nil;
 	}

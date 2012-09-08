@@ -20,13 +20,8 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-@class FLXPostgresTypeNumberHandler;
-
 #import "FLXPostgresTypeHandler.h"
 
 @interface FLXPostgresTypeDateTimeHandler : FLXPostgresTypeHandler <FLXPostgresTypeHandlerProtocol>
-{
-	FLXPostgresTypeNumberHandler *_numberHandler;
-}
 
 @end

@@ -20,6 +20,7 @@
 //  the License.
 
 #import "FLXPostgresConnection.h"
+#import "FLXPostgresTypeHandlerProtocol.h"
 
 @interface FLXPostgresConnection (FLXPostgresConnectionTypeHandling)
 

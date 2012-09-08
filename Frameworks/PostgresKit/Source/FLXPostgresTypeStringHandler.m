@@ -22,7 +22,6 @@
 
 #import "FLXPostgresTypeStringHandler.h"
 #import "FLXPostgresConnection.h"
-#import "FLXPostgresTypes.h"
 
 static FLXPostgresOid FLXPostgresTypeStringTypes[] = 
 { 
@@ -55,9 +54,12 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	return [NSArray arrayWithObject:@"NSCFString"];
 }
 
-- (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 
+- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
 {
-	if (!bytes || !type) return nil;
+	const void *bytes = PQgetvalue(result, row, column);
+	NSUInteger length = PQgetlength(result, row, column);
+	
+	if (!bytes || !length) return @"";
 	
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:[_connection stringEncoding]] autorelease];
 }

@@ -26,9 +26,6 @@
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 
-// Microseconds per second
-#define USECS_PER_SEC 1000000
-
 static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] = 
 {
 	FLXPostgresOidDate,
@@ -42,11 +39,11 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 @interface FLXPostgresTypeDateTimeHandler ()
 
-- (NSDate *)_postgresEpochDate;
-- (NSDate *)_dateFromBytes:(const void *)bytes length:(NSUInteger)length;
-- (NSDate *)_timeFromBytes:(const void *)bytes length:(NSUInteger)length;
-- (NSDate *)_timestampFromBytes:(const void *)bytes length:(NSUInteger)length;
-- (NSDate *)_dateByAddingComponents:(NSDateComponents *)components toDate:(NSDate *)date;
+- (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (NSDate *)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (NSDate *)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+
+- (NSDate *)_dateFromComponents:(NSDateComponents *)components;
 
 @end
 
@@ -70,25 +67,21 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	return nil;
 }
 
-- (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type 
-{
-	if (!bytes || !type) return nil;
-	
-	if (!_numberHandler) {
-		_numberHandler = (FLXPostgresTypeNumberHandler *)[_connection typeHandlerForClass:[NSNumber class]];
-	}
+- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column 
+{		
+	FLXPostgresOid type = PQftype(result, column);
 	
 	switch (type) 
 	{
 		case FLXPostgresOidDate:
-			return [self _dateFromBytes:bytes length:length];
+			return [self _dateFromResult:result atRow:row column:column];
 		case FLXPostgresOidTime:
 		case FLXPostgresOidTimeTZ:
 		case FLXPostgresOidAbsTime:
-			return [self _timeFromBytes:bytes length:length];
+			return [self _timeFromResult:result atRow:row column:column];
 		case FLXPostgresOidTimestamp:
 		case FLXPostgresOidTimestampTZ:
-			return [self _timestampFromBytes:bytes length:length];
+			return [self _timestmpFromResult:result atRow:row column:column];
 		default:
 			return nil;
 	}
@@ -98,112 +91,98 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 #pragma mark Private API
 
 /**
- * Returns the internal expoch date used by Postgres.
+ * Returns an NSDate created from a date value.
  *
- * @return The epoch date as an NSDate.
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ * 
+ * @return The NSDate representation.
  */
-- (NSDate *)_postgresEpochDate
-{
+- (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+{	
+	PGdate date;
+	
+	PQgetf(result, row, "%date", column, &date);
+		
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
+	[components setDay:date.mday];
+	[components setMonth:date.mon + 1]; // Months are indexed from 0
+	[components setYear:date.year];
+	
+	return [self _dateFromComponents:components];
+}
+
+/**
+ * Returns an NSDate created from a time value.
+ *
+ * @note The date part should be ignored as it's set to a default value.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ *
+ * @return The NSDate representation.
+ */
+- (NSDate *)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+{
+	PGtime time;
+	
+	PQgetf(result, row, "%time", column, &time);
+	
+	NSDateComponents *components = [[NSDateComponents alloc] init];
+	
+	// Default date values; should be ignored
 	[components setDay:1];
 	[components setMonth:1];
 	[components setYear:2000];
 	
+	[components setHour:time.hour];
+	[components setMinute:time.min];
+	[components setSecond:time.sec];
+	
+	// TODO: handle timezone
+	
+	return [self _dateFromComponents:components];
+}
+
+/**
+ * Returns an NSDate created from a timestamp value.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ *
+ * @return The NSDate representation.
+ */
+- (NSDate *)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+{
+	PGtimestamp timestamp;
+	
+	PQgetf(result, row, "%timestamp", column, &timestamp);
+	
+	// TODO: handle timezone
+	
+	return [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
+}
+
+/**
+ * Returns an NSDate created from the supplied components.
+ *
+ * @param The components to create the date from.
+ *
+ * @return The NSDate created.
+ */
+- (NSDate *)_dateFromComponents:(NSDateComponents *)components
+{
 	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	
 	NSDate *date = [gregorian dateFromComponents:components];
 	
-	[components release];
 	[gregorian release];
 	
 	return date;
-}
-
-/**
- * Converts the supplied bytes representing a date to an NSDate instance.
- *
- * @param bytes  The bytes to convert.
- * @param length The number of bytes.
- *
- * @return The NSDate representation.
- */
-- (NSDate *)_dateFromBytes:(const void *)bytes length:(NSUInteger)length
-{	
-	NSDateComponents *components = [[NSDateComponents alloc] init];
-	
-	[components setDay:[[_numberHandler integerObjectFromBytes:bytes length:length] integerValue]];
-	
-	NSDate *date = [self _dateByAddingComponents:components toDate:[self _postgresEpochDate]];
-	
-	[components release];
-	
-	return date;
-}
-
-/**
- * Converts the supplied bytes representing the time to an NSDate instance.
- *
- * @param bytes  The bytes to convert.
- * @param length The number of bytes.
- *
- * @return The NSDate representation.
- */
-- (NSDate *)_timeFromBytes:(const void *)bytes length:(NSUInteger)length
-{
-	NSNumber *time = [_numberHandler integerObjectFromBytes:bytes length:length];
-	
-	return [NSDate dateWithTimeIntervalSince1970:(NSTimeInterval)[time doubleValue]];
-}
-
-/**
- * Converts the supplied bytes representing a timestamp to an NSDate instance.
- *
- * @param bytes  The bytes to convert.
- * @param length The number of bytes.
- *
- * @return The NSDate representation.
- */
-- (NSDate *)_timestampFromBytes:(const void *)bytes length:(NSUInteger)length
-{
-	NSDate *date = nil;
-	NSUInteger seconds = 0;
-	
-	if ([[[_connection parameters] valueForParameter:FLXPostgresParameterIntegerDateTimes] boolValue]) {		
-		seconds = ([[_numberHandler integerObjectFromBytes:bytes length:length] doubleValue] / (double)USECS_PER_SEC);
-	}
-	else {		
-		seconds = [_numberHandler float64FromBytes:bytes];
-	}
-	
-	NSDateComponents *components = [[NSDateComponents alloc] init];
-	
-	[components setSecond:seconds];
-	
-	date = [self _dateByAddingComponents:components toDate:[self _postgresEpochDate]];
-	
-	[components release];
-	
-	return date;
-}
-
-/**
- * Returns the result of adding the supplied components to the supplied date.
- *
- * @param components The date components to add.
- * @param date       The date to add the components to.
- *
- * @return The result of the addition to the date.
- */
-- (NSDate *)_dateByAddingComponents:(NSDateComponents *)components toDate:(NSDate *)date
-{
-	NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-	
-	NSDate *newDate = [gregorian dateByAddingComponents:components toDate:date options:0];
-	
-	[gregorian release];
-	
-	return newDate;
 }
 
 @end

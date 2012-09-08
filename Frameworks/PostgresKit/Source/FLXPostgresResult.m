@@ -30,8 +30,8 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 @interface FLXPostgresResult ()
 
 - (void)_populateFields;
-- (id)_objectForRow:(unsigned int)row column:(unsigned int)column; 
-- (id <FLXPostgresTypeHandlerProtocol>)_typeHandlerForColumn:(unsigned int)column withType:(FLXPostgresOid)type;
+- (id)_objectForRow:(NSUInteger)row column:(NSUInteger)column; 
+- (id <FLXPostgresTypeHandlerProtocol>)_typeHandlerForColumn:(NSUInteger)column withType:(FLXPostgresOid)type;
 
 @end
 
@@ -64,10 +64,8 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
  *
  * @return The result wrapper.
  */
-- (id)initWithResult:(PGresult *)result connection:(FLXPostgresConnection *)connection 
-{	
-	NSParameterAssert(result);
-	
+- (id)initWithResult:(void *)result connection:(FLXPostgresConnection *)connection 
+{		
 	if ((self = [super init])) {
 		
 		_row = 0;
@@ -196,17 +194,14 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
  *
  * @return The native object or nil if out of this result's range.
  */
-- (id)_objectForRow:(unsigned int)row column:(unsigned int)column 
+- (id)_objectForRow:(NSUInteger)row column:(NSUInteger)column 
 {	
 	if (row >= _numberOfRows || column >= _numberOfFields) return nil;
 	
 	// Check for null
 	if (PQgetisnull(_result, row, column)) return [NSNull null];
 	
-	// Get bytes and length
 	FLXPostgresOid type = PQftype(_result, column);
-	const void *bytes = PQgetvalue(_result, row, column);
-	NSUInteger length = PQgetlength(_result, row, column);
 	
 	// Get handler for this type
 	id <FLXPostgresTypeHandlerProtocol> handler = [self _typeHandlerForColumn:column withType:type];
@@ -214,10 +209,15 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	if (!handler) {
 		NSLog(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
 		
+		const void *bytes = PQgetvalue(_result, row, column);
+		NSUInteger length = PQgetlength(_result, row, column);
+	
+		if (!bytes || !length) return nil;
+		
 		return [NSData dataWithBytes:bytes length:length];
 	} 
 	
-	return [handler objectFromRemoteData:bytes length:length type:type];
+	return [handler objectFromResult:_result atRow:row column:column];
 }
 
 /**
@@ -227,7 +227,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
  *
  * @return The type handler or nil if out of this result's range.
  */
-- (id <FLXPostgresTypeHandlerProtocol>)_typeHandlerForColumn:(unsigned int)column withType:(FLXPostgresOid)type
+- (id <FLXPostgresTypeHandlerProtocol>)_typeHandlerForColumn:(NSUInteger)column withType:(FLXPostgresOid)type
 {
 	if (column >= _numberOfFields) return nil;
 	

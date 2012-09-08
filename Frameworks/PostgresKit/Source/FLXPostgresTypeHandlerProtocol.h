@@ -20,8 +20,6 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "FLXPostgresTypes.h"
-
 @class FLXPostgresConnection;
 
 /**
@@ -51,14 +49,14 @@
 - (NSArray *)classAliases;
 
 /**
- * Convert the supplied remote data into an object.
+ * Convert the value at the specified row and column in the supplied result to a native object.
  *
- * @param bytes  The remote data to convert.
- * @param length The length of the data.
- * @param type   The type of data.
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
  *
  * @return An object represenation of the data.
  */
-- (id)objectFromRemoteData:(const void *)bytes length:(NSUInteger)length type:(FLXPostgresOid)type;
+- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
 
 @end
