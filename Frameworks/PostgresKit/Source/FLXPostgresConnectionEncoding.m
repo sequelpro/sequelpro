@@ -147,7 +147,7 @@
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingDOSThai);
 	}
 	
-	NSLog(@"PostgresKit: Warning: Unable to process unknown PostgreSQL encoding '%s'; falling back to UTF8.", charset);
+	_log(@"PostgresKit: Warning: Unable to process unknown PostgreSQL encoding '%s'; falling back to UTF8.", charset);
 	
 	return FLXPostgresConnectionDefaultStringEncoding;
 }

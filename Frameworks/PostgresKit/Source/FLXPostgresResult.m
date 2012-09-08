@@ -207,7 +207,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	id <FLXPostgresTypeHandlerProtocol> handler = [self _typeHandlerForColumn:column withType:type];
 	
 	if (!handler) {
-		NSLog(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
+		_log(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
 		
 		const void *bytes = PQgetvalue(_result, row, column);
 		NSUInteger length = PQgetlength(_result, row, column);

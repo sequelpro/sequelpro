@@ -360,7 +360,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	BOOL success = [_parameters loadParameters];
 	
-	if (!success) NSLog(@"PostgresKit: Warning: Failed to load database parameters.");
+	if (!success) _log(@"PostgresKit: Warning: Failed to load database parameters.");
 }
 
 /**
