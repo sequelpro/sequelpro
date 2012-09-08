@@ -17,6 +17,28 @@ is to be developed as part of the Sequel Pro project:
 Any new code added during it's development is licensed under the MIT license
 and is copyrighted by the respective developer and the Sequel Pro team.
 
+The framework also includes libpq, the static C library interface to PostgreSQL
+and libpqtypes, a libpq extension designed to ease the use of parameterised 
+queries and enhanced support for handling native PostgreSQL data types.
+
+libpq is licensed under The PostgreSQL License and is copyrighted by:
+
+	Portions Copyright (c) 1996-2012, The PostgreSQL Global Development Group
+	Portions Copyright (c) 1994, The Regents of the University of California
+	
+Full license: 
+
+	http://www.postgresql.org/about/licence/
+	
+libpqtypes is licensed under the BSD license and is copyrighted by:
+
+	Copyright (c) 2008-2011 eSilo, LLC. All rights reserved
+	
+Full License:
+
+	http://opensource.org/licenses/bsd-license.php
+
+
 The entire framework is dual licensed under both version 2 of the Apache 
 license and the MIT license. Use of it must carry both of the following 
 licenses to indicate this:
