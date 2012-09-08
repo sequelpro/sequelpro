@@ -25,13 +25,12 @@
 @interface FLXPostgresConnection (FLXPostgresConnectionPrivateAPI)
 
 - (PGconn *)postgresConnection;
-- (void)_createConnectionParameters;
 
 @end
 
 @interface FLXPostgresConnection (FLXPostgresConnectionQueryPreparationPrivateAPI)
 
-- (BOOL)_prepare:(FLXPostgresStatement *)statement num:(int)paramNum types:(FLXPostgresOid *)paramTypes;
+- (BOOL)_prepare:(FLXPostgresStatement *)statement num:(NSInteger)paramNum types:(FLXPostgresOid *)paramTypes;
 
 @end
 

@@ -47,7 +47,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 @implementation FLXPostgresTypeNumberHandler
 
 #pragma mark -
-#pragma mark Integer & Unsigned Integer
+#pragma mark Integer
 
 - (NSNumber *)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
 {	

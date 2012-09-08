@@ -80,7 +80,7 @@
  *
  * @return A BOOL indicating succes. Returns NO if there's no statement, statement name or current connection.
  */
-- (BOOL)_prepare:(FLXPostgresStatement *)statement num:(int)paramNum types:(FLXPostgresOid *)paramTypes 
+- (BOOL)_prepare:(FLXPostgresStatement *)statement num:(NSInteger)paramNum types:(FLXPostgresOid *)paramTypes 
 {
 	if (!statement || ![statement name] || ![self isConnected]) return NO;
 	

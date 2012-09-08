@@ -25,6 +25,7 @@
 #import "FLXPostgresConnectionParameters.h"
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionTypeHandling.h"
+#import "FLXTimeTZ.h"
 
 static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] = 
 {
@@ -40,8 +41,8 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 @interface FLXPostgresTypeDateTimeHandler ()
 
 - (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
-- (NSDate *)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
-- (NSDate *)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
+- (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
 
 - (NSDate *)_dateFromComponents:(NSDateComponents *)components;
 
@@ -78,10 +79,10 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 		case FLXPostgresOidTime:
 		case FLXPostgresOidTimeTZ:
 		case FLXPostgresOidAbsTime:
-			return [self _timeFromResult:result atRow:row column:column];
+			return [self _timeFromResult:result atRow:row column:column type:type];
 		case FLXPostgresOidTimestamp:
 		case FLXPostgresOidTimestampTZ:
-			return [self _timestmpFromResult:result atRow:row column:column];
+			return [self _timestmpFromResult:result atRow:row column:column type:type];
 		default:
 			return nil;
 	}
@@ -115,21 +116,24 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 }
 
 /**
- * Returns an NSDate created from a time value.
+ * Returns a native object created from a time value.
  *
  * @note The date part should be ignored as it's set to a default value.
  *
  * @param result The result to extract the value from.
  * @param row    The row to extract the value from.
  * @param column The column to extract the value from.
+ * @type  type   The type to be converted from (handles times and times with a time zone).
  *
- * @return The NSDate representation.
+ * @return The object representation.
  */
-- (NSDate *)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type
 {
 	PGtime time;
 	
-	PQgetf(result, row, "%time", column, &time);
+	BOOL hasTimeZone = type == FLXPostgresOidTimeTZ;
+	
+	PQgetf(result, row, hasTimeZone ? "%timetz" : "%time", column, &time);
 	
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -142,29 +146,39 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	[components setMinute:time.min];
 	[components setSecond:time.sec];
 	
-	// TODO: handle timezone
-	
-	return [self _dateFromComponents:components];
+	NSDate *date = [self _dateFromComponents:components];
+
+	return hasTimeZone ? [FLXTimeTZ timeWithDate:date timeZoneGMTOffset:time.gmtoff] : date;
 }
 
 /**
- * Returns an NSDate created from a timestamp value.
+ * Returns a native object created from a timestamp value.
  *
  * @param result The result to extract the value from.
  * @param row    The row to extract the value from.
  * @param column The column to extract the value from.
+ * @type  type   The type to be converted from (handles timestamps and timestamps with a time zone).
  *
- * @return The NSDate representation.
+ * @return The object representation.
  */
-- (NSDate *)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type
 {
 	PGtimestamp timestamp;
 	
-	PQgetf(result, row, "%timestamp", column, &timestamp);
+	BOOL hasTimeZone = type == FLXPostgresOidTimestampTZ;
 	
-	// TODO: handle timezone
+	PQgetf(result, row, hasTimeZone ? "%timstamptz" : "%timestamp", column, &timestamp);
 	
-	return [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
+	FLXTimeTZ *timestampTZ = nil;
+	NSDate *date = [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
+	
+	if (hasTimeZone) {
+		timestampTZ = [FLXTimeTZ timeWithDate:date timeZoneGMTOffset:timestamp.time.gmtoff];
+		
+		[timestampTZ setHasDate:YES];
+	}
+	
+	return hasTimeZone ? timestampTZ : date;
 }
 
 /**

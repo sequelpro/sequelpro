@@ -248,7 +248,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 {
 	PQclear(_result);
 	
-	for (unsigned int i = 0; i < _numberOfFields; i++) [_fields[i] release];
+	for (NSUInteger i = 0; i < _numberOfFields; i++) [_fields[i] release];
 	
 	free(_fields);
 	free(_typeHandlers);

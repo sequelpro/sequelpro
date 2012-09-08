@@ -10,6 +10,8 @@
 		170465CE15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 170465CC15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		170465CF15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 170465CD15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m */; };
 		1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1724C9B715F9ED8600AB2291 /* libpqtypes.a */; };
+		1724CC9215FB4CC200AB2291 /* FLXTimeTZ.h in Headers */ = {isa = PBXBuildFile; fileRef = 1724CC9015FB4CC200AB2291 /* FLXTimeTZ.h */; };
+		1724CC9315FB4CC200AB2291 /* FLXTimeTZ.m in Sources */ = {isa = PBXBuildFile; fileRef = 1724CC9115FB4CC200AB2291 /* FLXTimeTZ.m */; };
 		1731F02B15EE09E000D973EB /* FLXPostgresConnectionParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F02915EE09E000D973EB /* FLXPostgresConnectionParameters.h */; };
 		1731F02C15EE09E000D973EB /* FLXPostgresConnectionParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 1731F02A15EE09E000D973EB /* FLXPostgresConnectionParameters.m */; };
 		1731F10815F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 1731F10615F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h */; };
@@ -56,6 +58,8 @@
 		170465CD15C2960F00DC5BE5 /* FLXPostgresTypeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresTypeHandler.m; sourceTree = "<group>"; };
 		1724C9B715F9ED8600AB2291 /* libpqtypes.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpqtypes.a; sourceTree = "<group>"; };
 		1724CA3B15F9EE7300AB2291 /* libpqtypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libpqtypes.h; sourceTree = "<group>"; };
+		1724CC9015FB4CC200AB2291 /* FLXTimeTZ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXTimeTZ.h; sourceTree = "<group>"; };
+		1724CC9115FB4CC200AB2291 /* FLXTimeTZ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXTimeTZ.m; sourceTree = "<group>"; };
 		1731F02915EE09E000D973EB /* FLXPostgresConnectionParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionParameters.h; sourceTree = "<group>"; };
 		1731F02A15EE09E000D973EB /* FLXPostgresConnectionParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionParameters.m; sourceTree = "<group>"; };
 		1731F10615F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresTypeDateTimeHandler.h; sourceTree = "<group>"; };
@@ -192,6 +196,15 @@
 			path = lib;
 			sourceTree = "<group>";
 		};
+		1724CC8715FB4BF400AB2291 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				1724CC9015FB4CC200AB2291 /* FLXTimeTZ.h */,
+				1724CC9115FB4CC200AB2291 /* FLXTimeTZ.m */,
+			);
+			name = Domain;
+			sourceTree = "<group>";
+		};
 		1731F50415F369E400D973EB /* Query */ = {
 			isa = PBXGroup;
 			children = (
@@ -257,6 +270,7 @@
 			children = (
 				173D4F5615BAD3030007F267 /* FLXPostgresTypes.h */,
 				173D4EA015BAB2A80007F267 /* FLXPostgresTypeHandlerProtocol.h */,
+				1724CC8715FB4BF400AB2291 /* Domain */,
 				17F5B62215C7D1DA006DA689 /* Handlers */,
 			);
 			name = Types;
@@ -355,6 +369,7 @@
 				1731F02B15EE09E000D973EB /* FLXPostgresConnectionParameters.h in Headers */,
 				1731F10815F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.h in Headers */,
 				1731F52E15F48BA500D973EB /* FLXPostgresError.h in Headers */,
+				1724CC9215FB4CC200AB2291 /* FLXTimeTZ.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,6 +440,7 @@
 				1731F02C15EE09E000D973EB /* FLXPostgresConnectionParameters.m in Sources */,
 				1731F10915F1A52B00D973EB /* FLXPostgresTypeDateTimeHandler.m in Sources */,
 				1731F52F15F48BA500D973EB /* FLXPostgresError.m in Sources */,
+				1724CC9315FB4CC200AB2291 /* FLXTimeTZ.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
