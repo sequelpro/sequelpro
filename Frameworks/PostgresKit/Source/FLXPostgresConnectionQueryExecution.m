@@ -153,9 +153,9 @@ FLXQueryParamData;
 			[FLXPostgresException raise:FLXPostgresConnectionErrorDomain reason:[NSString stringWithFormat:@"Parameter $%u unsupported class %@", (i + 1), NSStringFromClass([nativeObject class])]];
 			return nil;
 		}
-		
+
+		NSData *data = nil; // Sending parameters as binary is not implemented yet
 		FLXPostgresOid type = 0;
-		NSData *data = [typeHandler remoteDataFromObject:nativeObject type:&type];
 		
 		if (!data) {
 			[self _destroyParamDataStructure:paramData];
