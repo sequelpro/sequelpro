@@ -3,7 +3,7 @@
 #
 #  $Id$
 #
-#  build-
+#  build-libpq.sh
 #  sequel-pro
 #
 #  Created by Stuart Connolly (stuconnolly.com) on August 1, 2012.

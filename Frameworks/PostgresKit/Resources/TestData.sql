@@ -41,7 +41,7 @@ INSERT INTO data_types (
 	timetz_field, 
 	timstamp_field, 
 	timestamptz_field)
-VALUES (
+SELECT
 	12345, 
 	2, 
 	TRUE, 
@@ -52,7 +52,8 @@ VALUES (
 	'02:02:02',
 	'02:02:02 GMT',
 	'08-04-1987 02:02:02',
-	'08-04-1987 02:02:02 GMT');
+	'08-04-1987 02:02:02 GMT'
+WHERE NOT EXISTS (SELECT 1 FROM data_types WHERE int_field = 12345);
 
 COMMIT;
 
