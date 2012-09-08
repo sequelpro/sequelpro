@@ -336,7 +336,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		
 		// Register type extensions
 		if (PQinitTypes(_connection)) {
-			_log(@"Failed initialise type extensions. Connection might return unexpected results!");
+			NSLog(@"PostgresKit: Warning: Failed initialise type extensions. Connection might return unexpected results!");
 		}
 		
 		[self _loadDatabaseParameters];
@@ -360,7 +360,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	BOOL success = [_parameters loadParameters];
 	
-	if (!success) _log(@"PostgresKit: Warning: Failed to load database parameters.");
+	if (!success) NSLog(@"PostgresKit: Warning: Failed to load database parameters.");
 }
 
 /**

@@ -30,8 +30,9 @@
 	void **_typeHandlers;
 	
 	unsigned long long _row;
-	unsigned int _numberOfFields;
 	unsigned long long _numberOfRows;
+	
+	NSUInteger _numberOfFields;
 	
 	NSString **_fields;
 	
@@ -43,7 +44,7 @@
 /**
  * @property numberOfFields The number of fields this result has.
  */
-@property (readonly) unsigned int numberOfFields;
+@property (readonly) NSUInteger numberOfFields;
 
 /**
  * @property numberOfRows The number or rows this result has.
@@ -57,7 +58,7 @@
 
 - (id)initWithResult:(void *)result connection:(FLXPostgresConnection *)connection;
 
-- (unsigned int)numberOfFields;
+- (NSUInteger)numberOfFields;
 
 - (void)seekToRow:(unsigned long long)row;
 

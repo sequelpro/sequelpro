@@ -34,6 +34,4 @@
 
     // Global types
     #import "FLXPostgresTypes.h"
-
-    #define _log(x) NSLog(@"PostgresKit: Warning: %@", x);
 #endif

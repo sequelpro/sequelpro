@@ -176,7 +176,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 {	
 	_fields = malloc(sizeof(NSString *) * _numberOfFields);
 	
-	for (unsigned int i = 0; i < _numberOfFields; i++) 
+	for (NSUInteger i = 0; i < _numberOfFields; i++) 
 	{
 		const char *bytes = PQfname(_result, i);
 		
@@ -207,7 +207,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	id <FLXPostgresTypeHandlerProtocol> handler = [self _typeHandlerForColumn:column withType:type];
 	
 	if (!handler) {
-		_log(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
+		NSLog(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
 		
 		const void *bytes = PQgetvalue(_result, row, column);
 		NSUInteger length = PQgetlength(_result, row, column);

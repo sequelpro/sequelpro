@@ -68,7 +68,7 @@
 		_errorMessageHint = nil;
 		_errorStatementPosition = -1;
 		
-		if (result) [self _extractErrorDetailsFromResult:(PGresult *)result];
+		if (result) [self _extractErrorDetailsFromResult:(const PGresult *)result];
 	}
 	
 	return self;
