@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  FLXTimeTZ.h
+//  FLXPostgresTimeTZ.h
 //  PostgresKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 8, 2012.
@@ -29,13 +29,13 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 /**
- * @class FLXTimeTZ FLXTimeTZ.h
+ * @class FLXPostgresTimeTZ FLXPostgresTimeTZ.h
  *
  * @author Stuart Connolly http://stuconnolly.com
  *
  * Simple wrapper to represet a time or timestamp with an associated time zone.
  */
-@interface FLXTimeTZ : NSObject 
+@interface FLXPostgresTimeTZ : NSObject 
 {
 	BOOL _hasDate;
 	
@@ -55,7 +55,7 @@
  */
 @property (readonly) NSTimeZone *timeZone;
 
-+ (FLXTimeTZ *)timeWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset;
++ (FLXPostgresTimeTZ *)timeWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset;
 
 - (id)initWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset;
 

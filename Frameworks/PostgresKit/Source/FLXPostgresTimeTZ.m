@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  FLXTimeTZ.m
+//  FLXPostgresTimeTZ.m
 //  PostgresKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 8, 2012.
@@ -28,9 +28,9 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FLXTimeTZ.h"
+#import "FLXPostgresTimeTZ.h"
 
-@implementation FLXTimeTZ
+@implementation FLXPostgresTimeTZ
 
 @synthesize hasDate = _hasDate;
 @synthesize date = _date;
@@ -41,13 +41,13 @@
 	return [self initWithDate:[NSDate date] timeZoneGMTOffset:[[NSTimeZone systemTimeZone] secondsFromGMT]];
 }
 
-+ (FLXTimeTZ *)timeWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset
++ (FLXPostgresTimeTZ *)timeWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset
 {
-	return [[[FLXTimeTZ alloc] initWithDate:date timeZoneGMTOffset:offset] autorelease];
+	return [[[FLXPostgresTimeTZ alloc] initWithDate:date timeZoneGMTOffset:offset] autorelease];
 }
 
 /**
- * Initialise a FLXTimeTZ with the supplied date and GMT offset.
+ * Initialise a FLXPostgresTimeTZ with the supplied date and GMT offset.
  *
  * @param date   The date to use.
  * @param offset The GMT offset in seconds that the associated time zone is.

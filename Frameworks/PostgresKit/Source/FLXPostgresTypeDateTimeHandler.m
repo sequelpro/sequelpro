@@ -25,7 +25,7 @@
 #import "FLXPostgresConnectionParameters.h"
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionTypeHandling.h"
-#import "FLXTimeTZ.h"
+#import "FLXPostgresTimeTZ.h"
 
 static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] = 
 {
@@ -148,7 +148,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	
 	NSDate *date = [self _dateFromComponents:components];
 
-	return hasTimeZone ? [FLXTimeTZ timeWithDate:date timeZoneGMTOffset:time.gmtoff] : date;
+	return hasTimeZone ? [FLXPostgresTimeTZ timeWithDate:date timeZoneGMTOffset:time.gmtoff] : date;
 }
 
 /**
@@ -169,11 +169,11 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	
 	PQgetf(result, row, hasTimeZone ? "%timstamptz" : "%timestamp", column, &timestamp);
 	
-	FLXTimeTZ *timestampTZ = nil;
+	FLXPostgresTimeTZ *timestampTZ = nil;
 	NSDate *date = [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
 	
 	if (hasTimeZone) {
-		timestampTZ = [FLXTimeTZ timeWithDate:date timeZoneGMTOffset:timestamp.time.gmtoff];
+		timestampTZ = [FLXPostgresTimeTZ timeWithDate:date timeZoneGMTOffset:timestamp.time.gmtoff];
 		
 		[timestampTZ setHasDate:YES];
 	}

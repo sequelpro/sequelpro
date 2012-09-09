@@ -101,9 +101,9 @@ enum
 	FLXPostgresOidDate         = 1082, // DateHandler                => NSDate
 	FLXPostgresOidTime         = 1083, // DateHandler                => NSDate
 	FLXPostgresOidTimestamp    = 1114, // DateHandler                => NSDate
-	FLXPostgresOidTimestampTZ  = 1184, // DateHandler                => FLXTimeTZ
-	FLXPostgresOidInterval     = 1186, // DateHandler                => FLXTimeInterval
-	FLXPostgresOidTimeTZ       = 1266, // DateHandler                => FLXTimeTZ
+	FLXPostgresOidTimestampTZ  = 1184, // DateHandler                => FLXPostgresTimeTZ
+	FLXPostgresOidInterval     = 1186, // DateHandler                => FLXPostgresTimeInterval
+	FLXPostgresOidTimeTZ       = 1266, // DateHandler                => FLXPostgresTimeTZ
 	
 	// Binary
 	FLXPostgresOidBit          = 1560, // Currently not supported

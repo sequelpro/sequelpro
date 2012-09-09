@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  FLXTimeInterval.h
+//  FLXPostgresTimeInterval.h
 //  PostgresKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 9, 2012.
@@ -29,13 +29,13 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 /**
- * @class FLXTimeInterval FLXTimeInterval.h
+ * @class FLXPostgresTimeInterval FLXPostgresTimeInterval.h
  *
  * @author Stuart Connolly http://stuconnolly.com
  *
  * Simple wrapper around libpqtypes' PQinterval structure.
  */
-@interface FLXTimeInterval : NSObject 
+@interface FLXPostgresTimeInterval : NSObject 
 {
 	NSUInteger _microseconds;
 	NSUInteger _seconds;

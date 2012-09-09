@@ -1,7 +1,7 @@
 //
 //  $Id$
 //
-//  FLXTimeInterval.m
+//  FLXPostgresTimeInterval.m
 //  PostgresKit
 //
 //  Created by Stuart Connolly (stuconnolly.com) on September 9, 2012.
@@ -28,10 +28,10 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
-#import "FLXTimeInterval.h"
+#import "FLXPostgresTimeInterval.h"
 #import "FLXPostgresKitPrivateAPI.h"
 
-@implementation FLXTimeInterval
+@implementation FLXPostgresTimeInterval
 
 @synthesize microseconds = _microseconds;
 @synthesize seconds = _seconds;

@@ -21,7 +21,7 @@
 //  the License.
 
 #import "FLXPostgresConnection.h"
-#import "FLXTimeInterval.h"
+#import "FLXPostgresTimeInterval.h"
 
 @interface FLXPostgresConnection ()
 
@@ -35,7 +35,7 @@
 
 @end
 
-@interface FLXTimeInterval ()
+@interface FLXPostgresTimeInterval ()
 
 - (id)initWithInterval:(const PGinterval *)interval;
 
