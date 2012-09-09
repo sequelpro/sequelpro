@@ -14,7 +14,15 @@ BEGIN;
 SET datestyle = 'DMY';
 SET client_encoding = 'UNICODE';
 
-CREATE TABLE IF NOT EXISTS data_types
+IF EXISTS (
+	SELECT 1 FROM information_schema.tables 
+	WHERE table_name = 'data_types' 
+	AND table_type = 'BASE TABLE'
+)
+	DROP TABLE data_types;
+END
+
+CREATE TABLE data_types
 (
 	int_field INT PRIMARY KEY NOT NULL,
 	smallint_field SMALLINT NOT NULL,
@@ -29,9 +37,6 @@ CREATE TABLE IF NOT EXISTS data_types
 	timstamp_field TIMESTAMP NOT NULL,
 	timestamptz_field TIMESTAMP WITH TIME ZONE NOT NULL
 );
-
--- If the table existed, get rid of all it's data
-TRUNCATE TABLE data_types;
 
 INSERT INTO data_types (
 	int_field, 

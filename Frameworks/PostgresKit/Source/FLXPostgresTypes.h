@@ -111,5 +111,6 @@ enum
 	// Numeric
 	FLXPostgresOidNumeric      = 1700, // StringHandler              => NSString
 	
+	// UUID
 	FLXPostgresOidUUID         = 2950  // StringHandler              => NSString
 };
