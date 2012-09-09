@@ -30,22 +30,22 @@ typedef Oid FLXPostgresOid;
 enum 
 {
 	// BOOL
-	FLXPostgresOidBool         = 16, // NumberHandler
-	FLXPostgresOidData         = 17, // Currently not supported
+	FLXPostgresOidBool         = 16,  // NumberHandler              => NSNumber
+	FLXPostgresOidData         = 17,  // Currently not supported    
 	
 	// Text
-	FLXPostgresOidName         = 19, // StringHandler
+	FLXPostgresOidName         = 19,  // StringHandler              => NSString   
 	
 	// Integers
-	FLXPostgresOidInt8         = 20, // NumberHandler
-	FLXPostgresOidInt2         = 21, // NumberHandler
-	FLXPostgresOidInt4         = 23, // NumberHandler
+	FLXPostgresOidInt8         = 20,  // NumberHandler              => NSNumber
+	FLXPostgresOidInt2         = 21,  // NumberHandler              => NSNumber
+	FLXPostgresOidInt4         = 23,  // NumberHandler              => NSNumber
 	
 	// Text
-	FLXPostgresOidText         = 25, // StringHandler
+	FLXPostgresOidText         = 25,  // StringHandler              => NSString
 	
 	// OID
-	FLXPostgresOidOid          = 26, // Currently not supported
+	FLXPostgresOidOid          = 26,  // Currently not supported
 	
 	// XML
 	FLXPostgresOidXML          = 142, // Currently not supported
@@ -58,14 +58,14 @@ enum
 	FLXPostgresOidPolygon      = 604, // Currently not supported
 	
 	// Float
-	FLXPostgresOidFloat4       = 700, // NumberHandler
-	FLXPostgresOidFloat8       = 701, // NumberHandler
+	FLXPostgresOidFloat4       = 700, // NumberHandler              => NSNumber
+	FLXPostgresOidFloat8       = 701, // NumberHandler              => NSNumber 
 	
 	// ABS Time
-	FLXPostgresOidAbsTime      = 702, // DateHandler
+	FLXPostgresOidAbsTime      = 702, // DateHandler                => NSDate
 	
 	// What!
-	FLXPostgresOidUnknown      = 705, // StringHandler
+	FLXPostgresOidUnknown      = 705, // StringHandler              => NSString
 	
 	// Geometric
 	FLXPostgresOidCircle       = 718, // Currently not supported
@@ -80,7 +80,7 @@ enum
 	
 	// Arrays
 	FLXPostgresOidArrayBool    = 1000, // Currently not supported
-	FLXPostgresOidArrayData    = 1001, // Currently not supported
+	FLXPostgresOidArrayData    = 1001, // Currently not supported   
 	FLXPostgresOidArrayChar    = 1002, // Currently not supported
 	FLXPostgresOidArrayName    = 1003, // Currently not supported
 	FLXPostgresOidArrayInt2    = 1005, // Currently not supported
@@ -94,22 +94,22 @@ enum
 	FLXPostgresOidArrayIPAddr  = 1041, // Currently not supported
 	
 	// Text
-	FLXPostgresOidChar         = 1042, // StringHandler
-	FLXPostgresOidVarchar      = 1043, // StringHandler
+	FLXPostgresOidChar         = 1042, // StringHandler              => NSString 
+	FLXPostgresOidVarchar      = 1043, // StringHandler              => NSString
 	
 	// Date/time
-	FLXPostgresOidDate         = 1082, // DateHandler
-	FLXPostgresOidTime         = 1083, // DateHandler
-	FLXPostgresOidTimestamp    = 1114, // DateHandler
-	FLXPostgresOidTimestampTZ  = 1184, // DateHandler
-	FLXPostgresOidInterval     = 1186,
-	FLXPostgresOidTimeTZ       = 1266, // DateHandler
+	FLXPostgresOidDate         = 1082, // DateHandler                => NSDate
+	FLXPostgresOidTime         = 1083, // DateHandler                => NSDate
+	FLXPostgresOidTimestamp    = 1114, // DateHandler                => NSDate
+	FLXPostgresOidTimestampTZ  = 1184, // DateHandler                => FLXTimeTZ
+	FLXPostgresOidInterval     = 1186, // DateHandler                => FLXTimeInterval
+	FLXPostgresOidTimeTZ       = 1266, // DateHandler                => FLXTimeTZ
 	
 	// Binary
 	FLXPostgresOidBit          = 1560, // Currently not supported
 	FLXPostgresOidVarbit       = 1562, // Currently not supported
 	
 	// Numeric
-	FLXPostgresOidNumeric      = 1700, // StringHandler
-	FLXPostgresOidMax          = 1700 // Currently not supported
+	FLXPostgresOidNumeric      = 1700, // StringHandler              => NSString
+	FLXPostgresOidMax          = 1700  // Currently not supported
 };

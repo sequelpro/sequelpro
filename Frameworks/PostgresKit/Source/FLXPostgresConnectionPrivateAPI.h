@@ -21,8 +21,9 @@
 //  the License.
 
 #import "FLXPostgresConnection.h"
+#import "FLXTimeInterval.h"
 
-@interface FLXPostgresConnection (FLXPostgresConnectionPrivateAPI)
+@interface FLXPostgresConnection ()
 
 - (PGconn *)postgresConnection;
 
@@ -33,5 +34,12 @@
 - (BOOL)_prepare:(FLXPostgresStatement *)statement num:(NSInteger)paramNum types:(FLXPostgresOid *)paramTypes;
 
 @end
+
+@interface FLXTimeInterval ()
+
+- (id)initWithInterval:(const PGinterval *)interval;
+
+@end
+
 
 
