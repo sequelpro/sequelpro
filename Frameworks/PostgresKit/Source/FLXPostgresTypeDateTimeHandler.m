@@ -44,7 +44,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 @interface FLXPostgresTypeDateTimeHandler ()
 
 - (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
-- (FLXPostgresTimeInterval *)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
 
 - (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
 - (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
@@ -91,7 +91,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 		case FLXPostgresOidInterval:
 			return [self _timeIntervalFromResult:result atRow:row column:column];
 		default:
-			return nil;
+			return [NSNull null];
 	}
 }
 
@@ -131,11 +131,11 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
  * 
  * @return The FLXPostgresTimeInterval representation.
  */
-- (FLXPostgresTimeInterval *)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
 {
 	PGinterval interval;
 		
-	if (!PQgetf(result, row, "%interval", column, &interval)) return nil;
+	if (!PQgetf(result, row, "%interval", column, &interval)) return [NSNull null];
 	
 	return [FLXPostgresTimeInterval intervalWithPGInterval:&interval];
 }

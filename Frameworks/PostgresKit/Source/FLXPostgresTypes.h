@@ -57,6 +57,9 @@ enum
 	FLXPostgresOidBox          = 603, // Currently not supported
 	FLXPostgresOidPolygon      = 604, // Currently not supported
 	
+	// Network
+	FLXPostgresOidCidrAddr     = 650, // StringHandler              => NSString
+	
 	// Float
 	FLXPostgresOidFloat4       = 700, // NumberHandler              => NSNumber
 	FLXPostgresOidFloat8       = 701, // NumberHandler              => NSNumber 
@@ -74,8 +77,8 @@ enum
 	FLXPostgresOidMoney        = 790, // NumberHandler              => NSNumber
 	
 	// Network
-	FLXPostgresOidMacAddr      = 829, // StringHandler              => NSString  
-	FLXPostgresOidIPAddr       = 869, //
+	FLXPostgresOidMacAddr      = 829, // StringHandler              => NSString 
+	FLXPostgresOidInetAddr     = 869, // StringHandler              => NSString
 	
 	// Arrays
 	FLXPostgresOidArrayBool    = 1000, // Currently not supported

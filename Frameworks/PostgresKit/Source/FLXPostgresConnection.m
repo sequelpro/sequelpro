@@ -344,7 +344,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		PQsetNoticeProcessor(_connection, _FLXPostgresConnectionNoticeProcessor, self);
 		
 		// Register type extensions
-		if (PQinitTypes(_connection)) {
+		if (!PQinitTypes(_connection)) {
 			NSLog(@"PostgresKit: Error: Failed to initialise type extensions. Connection might return unexpected results!");
 		}
 		

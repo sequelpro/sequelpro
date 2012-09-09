@@ -23,6 +23,8 @@
 #import "FLXPostgresTypeStringHandler.h"
 #import "FLXPostgresConnection.h"
 
+#import <netdb.h>
+
 static FLXPostgresOid FLXPostgresTypeStringTypes[] = 
 { 
 	FLXPostgresOidText,
@@ -34,6 +36,8 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	FLXPostgresOidUUID,
 	FLXPostgresOidBit,
 	FLXPostgresOidVarBit,
+	FLXPostgresOidInetAddr,
+	FLXPostgresOidCidrAddr,
 	FLXPostgresOidMacAddr,
 	FLXPostgresOidUnknown,
 	0 
@@ -41,7 +45,9 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 
 @interface FLXPostgresTypeStringHandler ()
 
-- (NSString *)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
+- (id)_stringFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
+- (id)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
+- (id)_inetAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column type:(FLXPostgresOid)type;
 
 @end
 
@@ -68,20 +74,52 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 
 - (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
 {
-	if (PQftype(result, column) == FLXPostgresOidMacAddr) {
-		return [self _macAddressFromResult:result atRow:row column:column];
+	FLXPostgresOid type = PQftype(result, column);
+	
+	switch (type)
+	{
+		case FLXPostgresOidMacAddr:
+			return [self _macAddressFromResult:result atRow:row column:column];
+		case FLXPostgresOidInetAddr:
+		case FLXPostgresOidCidrAddr:
+			return [self _inetAddressFromResult:result atRow:row column:column  type:type];
+		case FLXPostgresOidText:
+		case FLXPostgresOidChar:
+		case FLXPostgresOidName:
+		case FLXPostgresOidNumeric:
+		case FLXPostgresOidVarChar:
+		case FLXPostgresOidXML:
+		case FLXPostgresOidUUID:
+		case FLXPostgresOidBit:
+		case FLXPostgresOidVarBit:
+		case FLXPostgresOidUnknown:
+			return [self _stringFromResult:result atRow:row column:column];
+		default:
+			return [NSNull null];
 	}
-	
-	const void *bytes = PQgetvalue(result, row, column);
-	NSUInteger length = PQgetlength(result, row, column);
-	
-	if (!bytes || !length) return nil;
-	
-	return [[[NSString alloc] initWithBytes:bytes length:length encoding:[_connection stringEncoding]] autorelease];
 }
 
 #pragma mark -
 #pragma mark Private API
+
+/**
+ * Converts a char value to a string.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ *
+ * @return A string representation of the value.
+ */
+- (id)_stringFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+{
+	const void *bytes = PQgetvalue(result, row, column);
+	NSUInteger length = PQgetlength(result, row, column);
+	
+	if (!bytes || !length) return [NSNull null];
+	
+	return [[[NSString alloc] initWithBytes:bytes length:length encoding:[_connection stringEncoding]] autorelease];
+}
 
 /**
  * Converts a MAC address value to a string.
@@ -92,13 +130,45 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
  *
  * @return A string representation of the MAC address.
  */
-- (NSString *)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+- (id)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
 {
 	PGmacaddr address;
 	
-	if (!PQgetf(result, row, "%macaddr", column, &address)) return nil;
+	if (!PQgetf(result, row, "%macaddr", column, &address)) return [NSNull null];
 	
 	return [NSString stringWithFormat:@"%02d:%02d:%02d:%02d:%02d:%02d", address.a, address.b, address.c, address.d, address.e, address.f];
+}
+
+/**
+ * Converts a network address value to a string.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ * @param type   The type of the value to extract.
+ *
+ * @return A string representation of the network address.
+ */
+- (id)_inetAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column type:(FLXPostgresOid)type
+{
+	PGinet inet;
+	
+	if (!PQgetf(result, row, type == FLXPostgresOidInetAddr ? "%inet" : "%cidr", column, &inet)) return [NSNull null];
+	
+	char ip[80];
+	struct sockaddr *sa = (struct sockaddr *)inet.sa_buf;
+	
+	NSUInteger success = getnameinfo(sa, inet.sa_buf_len, ip, sizeof(ip), NULL, 0, NI_NUMERICHOST);
+	
+	if (success != 0) {
+		const char *error = gai_strerror(success);
+		
+		NSLog(@"PostgresKit: Error: Failed to convert IP address to string representation (%s)", error);
+		
+		return [NSNull null];
+	}
+	
+	return [NSString stringWithUTF8String:ip];
 }
 
 @end

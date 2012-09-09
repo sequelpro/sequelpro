@@ -149,7 +149,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	
 	data = (type == FLXPostgresResultRowAsArray) ? [NSMutableArray arrayWithCapacity:_numberOfFields] : [NSMutableDictionary dictionaryWithCapacity:_numberOfFields];
 	
-	for (unsigned int i = 0; i < _numberOfFields; i++) 
+	for (NSUInteger i = 0; i < _numberOfFields; i++) 
 	{
 		id object = [self _objectForRow:(int)_row column:i];
 		

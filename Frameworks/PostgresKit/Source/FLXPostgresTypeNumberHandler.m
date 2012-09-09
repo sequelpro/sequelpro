@@ -51,7 +51,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Integer
 
-- (NSNumber *)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+- (id)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
 {	
 	switch (length) 
 	{
@@ -63,7 +63,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 			return [NSNumber numberWithLongLong:[self _int64FromBytes:bytes]];
 	}
 	
-	return nil;
+	return [NSNull null];
 }
 
 - (SInt16)_int16FromBytes:(const void *)bytes 
@@ -84,7 +84,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Floating Point
 
-- (NSNumber *)_floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+- (id)_floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
 {	
 	switch (length) 
 	{
@@ -94,7 +94,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 			return [NSNumber numberWithDouble:[self _float64FromBytes:bytes]];
 	}
 	
-	return nil;
+	return [NSNull null];
 }
 
 - (Float32)_float32FromBytes:(const void *)bytes 
@@ -120,9 +120,9 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Boolean
 
-- (NSNumber *)_booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
+- (id)_booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length 
 {
-	if (length != 1) return nil;
+	if (length != 1) return [NSNull null];
 	
 	return [NSNumber numberWithBool:*((const int8_t *)bytes) ? YES : NO];
 }
@@ -165,7 +165,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 		case FLXPostgresOidBool:
 			return [self _booleanObjectFromBytes:bytes length:length];
 		default:
-			return nil;
+			return [NSNull null];
 	}
 }
 
