@@ -26,6 +26,8 @@
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 #import "FLXPostgresTimeTZ.h"
+#import "FLXPostgresTimeInterval.h"
+#import "FLXPostgresKitPrivateAPI.h"
 
 static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] = 
 {
@@ -35,12 +37,15 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	FLXPostgresOidAbsTime,
 	FLXPostgresOidTimestamp,
 	FLXPostgresOidTimestampTZ,
+	FLXPostgresOidInterval,
 	0 
 };
 
 @interface FLXPostgresTypeDateTimeHandler ()
 
 - (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (FLXPostgresTimeInterval *)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+
 - (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
 - (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
 
@@ -83,6 +88,8 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 		case FLXPostgresOidTimestamp:
 		case FLXPostgresOidTimestampTZ:
 			return [self _timestmpFromResult:result atRow:row column:column type:type];
+		case FLXPostgresOidInterval:
+			return [self _timeIntervalFromResult:result atRow:row column:column];
 		default:
 			return nil;
 	}
@@ -113,6 +120,24 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	[components setYear:date.year];
 	
 	return [self _dateFromComponents:components];
+}
+
+/**
+ * Converts a time interval value to a FLXPostgresTimeInterval instance.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ * 
+ * @return The FLXPostgresTimeInterval representation.
+ */
+- (FLXPostgresTimeInterval *)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+{
+	PGinterval interval;
+		
+	if (!PQgetf(result, row, "%interval", column, &interval)) return nil;
+	
+	return [FLXPostgresTimeInterval intervalWithPGInterval:&interval];
 }
 
 /**

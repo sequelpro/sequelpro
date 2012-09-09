@@ -43,7 +43,12 @@
 
 #pragma mark -
 
-- (id)initWithInterval:(const PGinterval *)interval
++ (id)intervalWithPGInterval:(PGinterval *)interval
+{
+	return [[[FLXPostgresTimeInterval alloc] initWithInterval:interval] autorelease];
+}
+
+- (id)initWithInterval:(PGinterval *)interval
 {
 	if ((self = [super init])) {
 		if (interval) {

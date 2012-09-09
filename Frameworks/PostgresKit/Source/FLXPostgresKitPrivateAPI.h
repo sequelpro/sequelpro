@@ -37,7 +37,8 @@
 
 @interface FLXPostgresTimeInterval ()
 
-- (id)initWithInterval:(const PGinterval *)interval;
++ (id)intervalWithPGInterval:(PGinterval *)interval;
+- (id)initWithInterval:(PGinterval *)interval;
 
 @end
 
