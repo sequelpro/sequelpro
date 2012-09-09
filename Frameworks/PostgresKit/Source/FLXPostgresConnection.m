@@ -46,7 +46,6 @@ static const char *FLXPostgresHostParam = "host";
 static const char *FLXPostgresPasswordParam = "password";
 static const char *FLXPostgresPortParam = "port";
 static const char *FLXPostgresDatabaseParam = "dbname";
-static const char *FLXPostgresConnectionTimeoutParam = "connect_timeout";
 static const char *FLXPostgresClientEncodingParam = "client_encoding";
 static const char *FLXPostgresKeepAliveParam = "keepalives";
 static const char *FLXPostgresKeepAliveIntervalParam = "keepalives_interval";
@@ -196,6 +195,10 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		
 		_connectionError = [[NSString alloc] initWithUTF8String:PQerrorMessage(_connection)];
 		
+		PQfinish(_connection);
+		
+		_connection = nil;
+		
 		return NO;
 	}
 	
@@ -314,7 +317,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		{
 			case PGRES_POLLING_READING:
 			case PGRES_POLLING_WRITING:
-			case PGRES_POLLING_ACTIVE: // Obsolete so we don't really care about it
+			case PGRES_POLLING_ACTIVE:
 				break;
 			case PGRES_POLLING_OK:
 				connected = YES;
@@ -393,7 +396,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	if (_connectionParamNames) free(_connectionParamNames);
 	if (_connectionParamValues) free(_connectionParamValues);
 	
-	int paramCount = 6;
+	int paramCount = 5;
 	
 	if (_user && [_user length]) paramCount++, hasUser = YES;
 	if (_host && [_host length]) paramCount++, hasHost = YES;
@@ -409,19 +412,16 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	_connectionParamNames[1] = FLXPostgresPortParam;
 	_connectionParamValues[1] = [[[NSNumber numberWithUnsignedInteger:_port] stringValue] UTF8String];
 	
-	_connectionParamNames[2] = FLXPostgresConnectionTimeoutParam;
-	_connectionParamValues[2] = [[[NSNumber numberWithUnsignedInteger:_timeout] stringValue] UTF8String];
+	_connectionParamNames[2] = FLXPostgresClientEncodingParam;
+	_connectionParamValues[2] = [_encoding UTF8String];
 	
-	_connectionParamNames[3] = FLXPostgresClientEncodingParam;
-	_connectionParamValues[3] = [_encoding UTF8String];
-	
-	_connectionParamNames[4] = FLXPostgresKeepAliveParam;
+	_connectionParamNames[3] = FLXPostgresKeepAliveParam;
 	_connectionParamValues[4] = _useKeepAlive ? "1" : "0";
 	
-	_connectionParamNames[5] = FLXPostgresKeepAliveIntervalParam;
-	_connectionParamValues[5] = [[[NSNumber numberWithUnsignedInteger:_keepAliveInterval] stringValue] UTF8String];
+	_connectionParamNames[4] = FLXPostgresKeepAliveIntervalParam;
+	_connectionParamValues[4] = [[[NSNumber numberWithUnsignedInteger:_keepAliveInterval] stringValue] UTF8String];
 	
-	NSUInteger i = 6;
+	NSUInteger i = 5;
 	
 	if (hasUser) {
 		_connectionParamNames[i] = FLXPostgresUserParam;
