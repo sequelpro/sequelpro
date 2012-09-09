@@ -29,12 +29,22 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	FLXPostgresOidChar,
 	FLXPostgresOidName,
 	FLXPostgresOidNumeric,
-	FLXPostgresOidVarchar,
+	FLXPostgresOidVarChar,
 	FLXPostgresOidXML,
 	FLXPostgresOidUUID,
+	FLXPostgresOidBit,
+	FLXPostgresOidVarBit,
+	FLXPostgresOidMacAddr,
 	FLXPostgresOidUnknown,
 	0 
 };
+
+@interface FLXPostgresTypeStringHandler ()
+
+- (NSString *)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
+
+@end
+
 
 @implementation FLXPostgresTypeStringHandler
 
@@ -58,12 +68,37 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 
 - (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
 {
+	if (PQftype(result, column) == FLXPostgresOidMacAddr) {
+		return [self _macAddressFromResult:result atRow:row column:column];
+	}
+	
 	const void *bytes = PQgetvalue(result, row, column);
 	NSUInteger length = PQgetlength(result, row, column);
 	
-	if (!bytes || !length) return @"";
+	if (!bytes || !length) return nil;
 	
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:[_connection stringEncoding]] autorelease];
+}
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Converts a MAC address value to a string.
+ *
+ * @param result The result to extract the value from.
+ * @param row    The row to extract the value from.
+ * @param column The column to extract the value from.
+ *
+ * @return A string representation of the MAC address.
+ */
+- (NSString *)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+{
+	PGmacaddr address;
+	
+	if (!PQgetf(result, row, "%macaddr", column, &address)) return nil;
+	
+	return [NSString stringWithFormat:@"%02d:%02d:%02d:%02d:%02d:%02d", address.a, address.b, address.c, address.d, address.e, address.f];
 }
 
 @end

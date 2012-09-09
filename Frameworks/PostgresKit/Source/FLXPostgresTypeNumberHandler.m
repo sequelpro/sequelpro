@@ -31,6 +31,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	FLXPostgresOidFloat8,
 	FLXPostgresOidBool,
 	FLXPostgresOidOid,
+	FLXPostgresOidMoney,
 	0 
 };
 

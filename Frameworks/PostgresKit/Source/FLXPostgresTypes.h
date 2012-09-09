@@ -71,11 +71,11 @@ enum
 	FLXPostgresOidCircle       = 718, // Currently not supported
 	
 	// Monetary
-	FLXPostgresOidMoney        = 790, // Currently not supported
+	FLXPostgresOidMoney        = 790, // NumberHandler              => NSNumber
 	
 	// Network
-	FLXPostgresOidMacAddr      = 829, // Currently not supported
-	FLXPostgresOidIPAddr       = 869, // Currently not supported
+	FLXPostgresOidMacAddr      = 829, // StringHandler              => NSString  
+	FLXPostgresOidIPAddr       = 869, //
 	
 	// Arrays
 	FLXPostgresOidArrayBool    = 1000, // Currently not supported
@@ -94,7 +94,7 @@ enum
 	
 	// Text
 	FLXPostgresOidChar         = 1042, // StringHandler              => NSString 
-	FLXPostgresOidVarchar      = 1043, // StringHandler              => NSString
+	FLXPostgresOidVarChar      = 1043, // StringHandler              => NSString
 	
 	// Date/time
 	FLXPostgresOidDate         = 1082, // DateHandler                => NSDate
@@ -104,9 +104,9 @@ enum
 	FLXPostgresOidInterval     = 1186, // DateHandler                => FLXPostgresTimeInterval
 	FLXPostgresOidTimeTZ       = 1266, // DateHandler                => FLXPostgresTimeTZ
 	
-	// Binary
-	FLXPostgresOidBit          = 1560, // Currently not supported
-	FLXPostgresOidVarbit       = 1562, // Currently not supported
+	// Bit strings
+	FLXPostgresOidBit          = 1560, // StringHandler              => NSString
+	FLXPostgresOidVarBit       = 1562, // StringHandler              => NSString
 	
 	// Numeric
 	FLXPostgresOidNumeric      = 1700, // StringHandler              => NSString
