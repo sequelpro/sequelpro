@@ -714,7 +714,7 @@
 		}
 		if(category == nil) category = @"";
 
-		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Bundle", @"New Name", @"", scope, category, newUUID, nil] 
+		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Bundle",@"Bundle Editor : Default name for new bundle in the list on the left"), NSLocalizedString(@"New Name",@"Bundle Editor : Default name for a new bundle in the menu"), @"", scope, category, newUUID, nil] 
 						forKeys:[NSArray arrayWithObjects:kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey, nil]];
 	}
 
