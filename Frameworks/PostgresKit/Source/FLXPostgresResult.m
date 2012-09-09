@@ -234,9 +234,9 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	id handler = _typeHandlers[column];
 		
 	if (!handler) {		
-		_typeHandlers[column] = [_connection typeHandlerForRemoteType:type];
+		handler = [_connection typeHandlerForRemoteType:type];
 		
-		handler = _typeHandlers[column]; 
+		_typeHandlers[column] = handler;
 	}
 	
 	return handler;

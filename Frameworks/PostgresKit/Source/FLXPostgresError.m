@@ -97,12 +97,7 @@
 	_errorPrimaryMessage = [self _extractErrorField:PG_DIAG_MESSAGE_PRIMARY fromResult:result];
 	_errorDetailMessage = [self _extractErrorField:PG_DIAG_MESSAGE_DETAIL fromResult:result];
 	_errorMessageHint = [self _extractErrorField:PG_DIAG_MESSAGE_HINT fromResult:result];
-	
-	NSString *statementPosition = [self _extractErrorField:PG_DIAG_STATEMENT_POSITION fromResult:result];
-	
-	_errorStatementPosition = [statementPosition integerValue];
-	
-	[statementPosition release];
+	_errorStatementPosition = [[self _extractErrorField:PG_DIAG_STATEMENT_POSITION fromResult:result] integerValue];
 }
 
 /**
@@ -115,7 +110,7 @@
  */
 - (NSString *)_extractErrorField:(int)field fromResult:(const PGresult *)result
 {	
-	return [[NSString alloc] initWithUTF8String:PQresultErrorField(result, field)];
+	return [[[NSString alloc] initWithUTF8String:PQresultErrorField(result, field)] autorelease];
 }
 
 #pragma mark -

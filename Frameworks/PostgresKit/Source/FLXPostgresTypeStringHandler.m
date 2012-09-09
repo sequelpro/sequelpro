@@ -82,7 +82,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 			return [self _macAddressFromResult:result atRow:row column:column];
 		case FLXPostgresOidInetAddr:
 		case FLXPostgresOidCidrAddr:
-			return [self _inetAddressFromResult:result atRow:row column:column  type:type];
+			return [self _inetAddressFromResult:result atRow:row column:column type:type];
 		case FLXPostgresOidText:
 		case FLXPostgresOidChar:
 		case FLXPostgresOidName:
