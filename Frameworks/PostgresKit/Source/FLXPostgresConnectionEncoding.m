@@ -29,7 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "FLXPostgresConnectionEncoding.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 
 @implementation FLXPostgresConnection (FLXPostgresConnectionEncoding)
 

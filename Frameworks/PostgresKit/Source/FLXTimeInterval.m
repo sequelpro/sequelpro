@@ -29,7 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "FLXTimeInterval.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 
 @implementation FLXTimeInterval
 

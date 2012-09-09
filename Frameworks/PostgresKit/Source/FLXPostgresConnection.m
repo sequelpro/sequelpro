@@ -23,7 +23,7 @@
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionParameters.h"
 #import "FLXPostgresConnectionTypeHandling.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 #import "FLXPostgresTypeHandlerProtocol.h"
 #import "FLXPostgresTypeNumberHandler.h"
 #import "FLXPostgresTypeStringHandler.h"

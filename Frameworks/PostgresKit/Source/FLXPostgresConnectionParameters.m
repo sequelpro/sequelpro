@@ -29,7 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "FLXPostgresConnectionParameters.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 #import "FLXPostgresConnection.h"
 
 @interface FLXPostgresConnectionParameters ()

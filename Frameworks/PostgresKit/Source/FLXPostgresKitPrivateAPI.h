@@ -1,5 +1,7 @@
 //
-//  FLXPostgresConnectionPrivateAPI.m
+//  $Id$
+//
+//  FLXPostgresConnectionKitAPI.h
 //  PostgresKit
 //
 //  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
@@ -18,12 +20,26 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "FLXPostgresConnectionPrivateAPI.h"
-#import "FLXPostgresConnectionDelegateProtocol.h"
-#import "FLXPostgresResult.h"
+#import "FLXPostgresConnection.h"
+#import "FLXTimeInterval.h"
 
-@implementation FLXPostgresConnection (FLXPostgresConnectionPrivateAPI)
+@interface FLXPostgresConnection ()
 
-
+- (PGconn *)postgresConnection;
 
 @end
+
+@interface FLXPostgresConnection (FLXPostgresConnectionQueryPreparationPrivateAPI)
+
+- (BOOL)_prepare:(FLXPostgresStatement *)statement num:(NSInteger)paramNum types:(FLXPostgresOid *)paramTypes;
+
+@end
+
+@interface FLXTimeInterval ()
+
+- (id)initWithInterval:(const PGinterval *)interval;
+
+@end
+
+
+

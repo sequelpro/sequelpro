@@ -21,7 +21,7 @@
 //  the License.
 
 #import "FLXPostgresConnectionQueryExecution.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 #import "FLXPostgresConnectionDelegate.h"
 #import "FLXPostgresTypeHandlerProtocol.h"

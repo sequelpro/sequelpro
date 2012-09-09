@@ -22,7 +22,7 @@
 
 #import "FLXPostgresConnectionQueryPreparation.h"
 #import "FLXPostgresConnectionTypeHandling.h"
-#import "FLXPostgresConnectionPrivateAPI.h"
+#import "FLXPostgresKitPrivateAPI.h"
 #import "FLXPostgresStatement.h"
 #import "FLXPostgresException.h"
 
