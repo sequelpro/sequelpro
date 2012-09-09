@@ -49,7 +49,7 @@
 		177AC5F115C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.m in Sources */ = {isa = PBXBuildFile; fileRef = 177AC5EF15C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.m */; };
 		177AC66915C53CB000A3658D /* FLXPostgresConnectionQueryExecution.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AC66715C53CB000A3658D /* FLXPostgresConnectionQueryExecution.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177AC66A15C53CB000A3658D /* FLXPostgresConnectionQueryExecution.m in Sources */ = {isa = PBXBuildFile; fileRef = 177AC66815C53CB000A3658D /* FLXPostgresConnectionQueryExecution.m */; };
-		177AC67F15C53FA400A3658D /* FLXPostgresConnectionPrivateAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AC67D15C53FA400A3658D /* FLXPostgresConnectionPrivateAPI.h */; };
+		177AC67F15C53FA400A3658D /* FLXPostgresKitPrivateAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AC67D15C53FA400A3658D /* FLXPostgresKitPrivateAPI.h */; };
 		177AC6B015C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AC6AE15C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177AC6B115C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.m in Sources */ = {isa = PBXBuildFile; fileRef = 177AC6AF15C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.m */; };
 		177C9BAB15CD37E000128642 /* FLXPostgresConnectionEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 177C9BA915CD37E000128642 /* FLXPostgresConnectionEncoding.h */; };
@@ -114,7 +114,7 @@
 		177AC5EF15C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionTypeHandling.m; sourceTree = "<group>"; };
 		177AC66715C53CB000A3658D /* FLXPostgresConnectionQueryExecution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionQueryExecution.h; sourceTree = "<group>"; };
 		177AC66815C53CB000A3658D /* FLXPostgresConnectionQueryExecution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionQueryExecution.m; sourceTree = "<group>"; };
-		177AC67D15C53FA400A3658D /* FLXPostgresConnectionPrivateAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionPrivateAPI.h; sourceTree = "<group>"; };
+		177AC67D15C53FA400A3658D /* FLXPostgresKitPrivateAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresKitPrivateAPI.h; sourceTree = "<group>"; };
 		177AC6AE15C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionQueryPreparation.h; sourceTree = "<group>"; };
 		177AC6AF15C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FLXPostgresConnectionQueryPreparation.m; sourceTree = "<group>"; };
 		177C9BA915CD37E000128642 /* FLXPostgresConnectionEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FLXPostgresConnectionEncoding.h; sourceTree = "<group>"; };
@@ -289,6 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				173D4E9F15BAB2A80007F267 /* PostgresKit.h */,
+				177AC67D15C53FA400A3658D /* FLXPostgresKitPrivateAPI.h */,
 				1731F52B15F48B4400D973EB /* Domain */,
 				173D513315BBE4230007F267 /* Connection */,
 				173D508D15BBD99B0007F267 /* Constants */,
@@ -349,7 +350,6 @@
 				173D4E9515BAB2A80007F267 /* FLXPostgresConnection.h */,
 				173D4E9615BAB2A80007F267 /* FLXPostgresConnection.m */,
 				173D513415BBE50D0007F267 /* FLXPostgresConnectionDelegate.h */,
-				177AC67D15C53FA400A3658D /* FLXPostgresConnectionPrivateAPI.h */,
 				1731F50515F369FE00D973EB /* Encoding */,
 				1731F50415F369E400D973EB /* Query */,
 				1731F50615F36A3E00D973EB /* Other */,
@@ -394,7 +394,7 @@
 				170465CE15C2960F00DC5BE5 /* FLXPostgresTypeHandler.h in Headers */,
 				177AC5F015C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.h in Headers */,
 				177AC66915C53CB000A3658D /* FLXPostgresConnectionQueryExecution.h in Headers */,
-				177AC67F15C53FA400A3658D /* FLXPostgresConnectionPrivateAPI.h in Headers */,
+				177AC67F15C53FA400A3658D /* FLXPostgresKitPrivateAPI.h in Headers */,
 				177AC6B015C5460C00A3658D /* FLXPostgresConnectionQueryPreparation.h in Headers */,
 				177C9BAB15CD37E000128642 /* FLXPostgresConnectionEncoding.h in Headers */,
 				1731F02B15EE09E000D973EB /* FLXPostgresConnectionParameters.h in Headers */,
