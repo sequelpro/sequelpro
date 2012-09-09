@@ -31,7 +31,8 @@
 #import "FLXPostgresStatement.h"
 #import "FLXPostgresResult.h"
 
-#import "pthread.h"
+#import <pthread.h>
+#import <poll.h>
 
 // Connection default constants
 static NSUInteger FLXPostgresConnectionDefaultTimeout = 30;
@@ -307,28 +308,34 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 - (void)_pollConnection
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-	BOOL failed = NO;
-	BOOL connected = NO;
 	
-	while (!connected && !failed)
-	{				
-		switch (PQconnectPoll(_connection))
-		{
-			case PGRES_POLLING_READING:
-			case PGRES_POLLING_WRITING:
-			case PGRES_POLLING_ACTIVE:
-				break;
-			case PGRES_POLLING_OK:
-				connected = YES;
-				break;
-			case PGRES_POLLING_FAILED:
-				failed = YES;
-				break;
-		}
+	NSInteger sock = PQsocket(_connection);
+	
+	if (sock == -1) {
+		[pool release];
+		return;
 	}
 	
-	if (connected) {
+	struct pollfd fdinfo[1];
+	
+	fdinfo[0].fd = sock;
+	fdinfo[0].events = POLLIN|POLLOUT;
+	
+	PostgresPollingStatusType status;
+	
+	do
+	{
+		status = PQconnectPoll(_connection);
+		
+		if (status == PGRES_POLLING_READING || status == PGRES_POLLING_WRITING) {
+			NSInteger result = poll(fdinfo, 1, -1);
+			
+			if (result < 0) break;
+		}
+	}
+	while (status != PGRES_POLLING_OK && status != PGRES_POLLING_FAILED);
+	
+	if (status == PGRES_POLLING_OK && [self isConnected]) {
 		
 		// Increase error verbosity
 		PQsetErrorVerbosity(_connection, PQERRORS_VERBOSE);
@@ -416,7 +423,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	_connectionParamValues[2] = [_encoding UTF8String];
 	
 	_connectionParamNames[3] = FLXPostgresKeepAliveParam;
-	_connectionParamValues[4] = _useKeepAlive ? "1" : "0";
+	_connectionParamValues[3] = _useKeepAlive ? "1" : "0";
 	
 	_connectionParamNames[4] = FLXPostgresKeepAliveIntervalParam;
 	_connectionParamValues[4] = [[[NSNumber numberWithUnsignedInteger:_keepAliveInterval] stringValue] UTF8String];
