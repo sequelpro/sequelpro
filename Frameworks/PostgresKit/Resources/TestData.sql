@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS data_types
 	timestamptz_field TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+-- If the table existed, get rid of all it's data
+TRUNCATE TABLE data_types;
+
 INSERT INTO data_types (
 	int_field, 
 	smallint_field, 
@@ -41,7 +44,7 @@ INSERT INTO data_types (
 	timetz_field, 
 	timstamp_field, 
 	timestamptz_field)
-SELECT
+VALUES (
 	12345, 
 	2, 
 	TRUE, 
@@ -52,8 +55,7 @@ SELECT
 	'02:02:02',
 	'02:02:02 GMT',
 	'08-04-1987 02:02:02',
-	'08-04-1987 02:02:02 GMT'
-WHERE NOT EXISTS (SELECT 1 FROM data_types WHERE int_field = 12345);
+	'08-04-1987 02:02:02 GMT')
 
 COMMIT;
 
