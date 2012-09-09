@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS data_types
 (
 	int_field INT PRIMARY KEY NOT NULL,
 	smallint_field SMALLINT NOT NULL,
+	bigint_field BIGINT NOT NULL,
 	bool_field BOOL NOT NULL,
 	float_field REAL NOT NULL,
 	char_field CHAR(5) NOT NULL,
@@ -47,7 +48,8 @@ INSERT INTO data_types (
 VALUES (
 	12345, 
 	2, 
-	TRUE, 
+	TRUE,
+	123456789,
 	12345.678, 
 	'CHARV', 
 	'VARCHAR_VALUE', 

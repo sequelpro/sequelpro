@@ -29,7 +29,8 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	FLXPostgresOidInt4,
 	FLXPostgresOidFloat4,
 	FLXPostgresOidFloat8,
-	FLXPostgresOidBool,  
+	FLXPostgresOidBool,
+	FLXPostgresOidOid,
 	0 
 };
 

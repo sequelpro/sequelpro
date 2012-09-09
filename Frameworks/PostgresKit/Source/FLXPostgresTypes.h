@@ -31,7 +31,7 @@ enum
 {
 	// BOOL
 	FLXPostgresOidBool         = 16,  // NumberHandler              => NSNumber
-	FLXPostgresOidData         = 17,  // Currently not supported    
+	FLXPostgresOidByteData     = 17,  // Currently not supported    
 	
 	// Text
 	FLXPostgresOidName         = 19,  // StringHandler              => NSString   
@@ -45,10 +45,10 @@ enum
 	FLXPostgresOidText         = 25,  // StringHandler              => NSString
 	
 	// OID
-	FLXPostgresOidOid          = 26,  // Currently not supported
+	FLXPostgresOidOid          = 26,  // NumberHandler              => NSNumber
 	
 	// XML
-	FLXPostgresOidXML          = 142, // Currently not supported
+	FLXPostgresOidXML          = 142, // StringHandler              => NSString
 	
 	// Geometric
 	FLXPostgresOidPoint        = 600, // Currently not supported
@@ -76,7 +76,6 @@ enum
 	// Network
 	FLXPostgresOidMacAddr      = 829, // Currently not supported
 	FLXPostgresOidIPAddr       = 869, // Currently not supported
-	FLXPostgresOidNetAddr      = 869, // Currently not supported
 	
 	// Arrays
 	FLXPostgresOidArrayBool    = 1000, // Currently not supported
@@ -111,5 +110,6 @@ enum
 	
 	// Numeric
 	FLXPostgresOidNumeric      = 1700, // StringHandler              => NSString
-	FLXPostgresOidMax          = 1700  // Currently not supported
+	
+	FLXPostgresOidUUID         = 2950  // StringHandler              => NSString
 };

@@ -166,6 +166,7 @@
 				173D4E2F15BAB13C0007F267 /* PostgresKit-Prefix.pch */,
 				173D4E2115BAB0FE0007F267 /* Source */,
 				089C1665FE841158C02AAC07 /* Resources */,
+				173D4EDE15BACA090007F267 /* Libs */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
@@ -187,7 +188,6 @@
 			children = (
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 				1724CD0515FB68E800AB2291 /* Tests-Info.plist */,
-				173D4EDE15BACA090007F267 /* Libs */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
