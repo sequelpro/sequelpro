@@ -196,7 +196,6 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		
 		_connectionError = [[NSString alloc] initWithUTF8String:PQerrorMessage(_connection)];
 		
-		// TODO: implement reconnection attempt
 		return NO;
 	}
 	
@@ -336,7 +335,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		
 		// Register type extensions
 		if (PQinitTypes(_connection)) {
-			NSLog(@"PostgresKit: Warning: Failed initialise type extensions. Connection might return unexpected results!");
+			NSLog(@"PostgresKit: Error: Failed to initialise type extensions. Connection might return unexpected results!");
 		}
 		
 		[self _loadDatabaseParameters];
@@ -448,7 +447,12 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	if (hasDatabase) {
 		_connectionParamNames[i] = FLXPostgresDatabaseParam;
 		_connectionParamValues[i] = [_database UTF8String];
+		
+		i++;
 	}
+	
+	_connectionParamNames[i] = '\0';
+	_connectionParamValues[i] = '\0';
 }
 
 #pragma mark -
