@@ -215,9 +215,18 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 		if (!bytes || !length) return nil;
 		
 		return [NSData dataWithBytes:bytes length:length];
-	} 
+	}
 	
-	return [handler objectFromResult:_result atRow:row column:column];
+	[handler setRow:row];
+	[handler setType:type];
+	[handler setColumn:column];
+	[handler setResult:_result];
+	
+	id object = [handler objectFromResult];
+	
+	[handler setResult:nil];
+	
+	return object;
 }
 
 /**

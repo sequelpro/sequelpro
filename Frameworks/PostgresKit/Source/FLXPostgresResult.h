@@ -20,9 +20,15 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "FLXConstants.h"
-
 @class FLXPostgresConnection;
+
+// Result set row types
+typedef enum 
+{
+	FLXPostgresResultRowAsArray = 1,
+	FLXPostgresResultRowAsDictionary = 2
+} 
+FLXPostgresResultRowType;
 
 @interface FLXPostgresResult : NSObject 
 {

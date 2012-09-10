@@ -30,6 +30,7 @@
 - (id)initWithConnection:(FLXPostgresConnection *)connection 
 {	
 	if ((self = [super init])) {
+		_type = -1;
 		_result = nil;
 		_connection = [connection retain];
 	}
@@ -41,6 +42,8 @@
 
 - (void)dealloc 
 {
+	_result = nil;
+	
 	if (_connection) [_connection release], _connection = nil;
 	
 	[super dealloc];

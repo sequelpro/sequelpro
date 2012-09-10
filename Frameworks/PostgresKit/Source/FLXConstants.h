@@ -20,14 +20,6 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-// Result set row types
-typedef enum 
-{
-	FLXPostgresResultRowAsArray      = 1,
-	FLXPostgresResultRowAsDictionary = 2
-} 
-FLXPostgresResultRowType;
-
 // Defaults
 extern NSString *FLXPostgresConnectionDefaultEncoding;
 extern NSString *FLXPostgresConnectionErrorDomain;
@@ -39,3 +31,14 @@ extern NSString *FLXPostgresParameterClientEncoding;
 extern NSString *FLXPostgresParameterSuperUser;
 extern NSString *FLXPostgresParameterTimeZone;
 extern NSString *FLXPostgresParameterIntegerDateTimes;
+
+// Value specifiers
+extern const char *FLXPostgresResultValueMacAddr;
+extern const char *FLXPostgresResultValueInet;
+extern const char *FLXPostgresResultValueCidr;
+extern const char *FLXPostgresResultValueDate;
+extern const char *FLXPostgresResultValueTime;
+extern const char *FLXPostgresResultValueTimeTZ;
+extern const char *FLXPostgresResultValueTimestamp;
+extern const char *FLXPostgresResultValueTimestmpTZ;
+extern const char *FLXPostgresResultValueInterval;

@@ -48,6 +48,12 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 
 @implementation FLXPostgresTypeNumberHandler
 
+@synthesize row = _row;
+@synthesize type = _type;
+@synthesize column = _column;
+@synthesize result = _result;
+@synthesize connection = _connection;
+
 #pragma mark -
 #pragma mark Integer
 
@@ -145,15 +151,14 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	return nil;
 }
 
-- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
-{	
-	FLXPostgresOid type = PQftype(result, column);
-	NSUInteger length = PQgetlength(result, row, column);
-	const void *bytes = PQgetvalue(result, row, column);
+- (id)objectFromResult
+{		
+	NSUInteger length = PQgetlength(_result, _row, _column);
+	const void *bytes = PQgetvalue(_result, _row, _column);
 	
-	if (!bytes || !length) return nil;
+	if (!bytes || !length) return [NSNull null];
 	
-	switch (type) 
+	switch (_type) 
 	{
 		case FLXPostgresOidInt8:
 		case FLXPostgresOidInt2:

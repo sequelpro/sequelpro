@@ -27,6 +27,14 @@
  */
 @protocol FLXPostgresTypeHandlerProtocol
 
+@property (readwrite, assign) NSUInteger row;
+
+@property (readwrite, assign) NSUInteger column;
+
+@property (readwrite, assign) FLXPostgresOid type;
+
+@property (readwrite, assign) const PGresult *result;
+
 /**
  * The remote type values handled by this class (terminated by 0).
  *
@@ -51,12 +59,8 @@
 /**
  * Convert the value at the specified row and column in the supplied result to a native object.
  *
- * @param result The result to extract the value from.
- * @param row    The row to extract the value from.
- * @param column The column to extract the value from.
- *
  * @return An object represenation of the data.
  */
-- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)objectFromResult;
 
 @end

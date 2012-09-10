@@ -29,3 +29,13 @@ NSString *FLXPostgresParameterClientEncoding   = @"client_encoding";
 NSString *FLXPostgresParameterSuperUser        = @"is_superuser";
 NSString *FLXPostgresParameterTimeZone         = @"TimeZone";
 NSString *FLXPostgresParameterIntegerDateTimes = @"integer_datetimes";
+
+const char *FLXPostgresResultValueMacAddr    = "%macaddr"; 
+const char *FLXPostgresResultValueInet       = "%inet";
+const char *FLXPostgresResultValueCidr       = "%cidr";
+const char *FLXPostgresResultValueDate       = "%date";
+const char *FLXPostgresResultValueTime       = "%time";
+const char *FLXPostgresResultValueTimeTZ     = "%timetz";
+const char *FLXPostgresResultValueTimestamp  = "%timestamp";
+const char *FLXPostgresResultValueTimestmpTZ = "%timestamptz";
+const char *FLXPostgresResultValueInterval   = "%interval";

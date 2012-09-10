@@ -42,7 +42,7 @@
 		173D4F5715BAD3030007F267 /* FLXPostgresTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4F5615BAD3030007F267 /* FLXPostgresTypes.h */; settings = {ATTRIBUTES = (); }; };
 		173D506A15BB93470007F267 /* libssl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506915BB93470007F267 /* libssl.dylib */; };
 		173D507015BB93E40007F267 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D506F15BB93E40007F267 /* libcrypto.dylib */; };
-		173D508C15BBD98D0007F267 /* FLXConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D508B15BBD98D0007F267 /* FLXConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		173D508C15BBD98D0007F267 /* FLXConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D508B15BBD98D0007F267 /* FLXConstants.h */; settings = {ATTRIBUTES = (); }; };
 		173D508F15BBD9BF0007F267 /* FLXConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D508E15BBD9BF0007F267 /* FLXConstants.m */; };
 		173D513515BBE50D0007F267 /* FLXPostgresConnectionDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D513415BBE50D0007F267 /* FLXPostgresConnectionDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		177AC5F015C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.h in Headers */ = {isa = PBXBuildFile; fileRef = 177AC5EE15C50F6E00A3658D /* FLXPostgresConnectionTypeHandling.h */; };

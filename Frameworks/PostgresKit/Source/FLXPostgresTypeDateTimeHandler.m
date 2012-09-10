@@ -43,17 +43,22 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 @interface FLXPostgresTypeDateTimeHandler ()
 
-- (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
-- (id)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)_timeFromResult;
+- (id)_timestmpFromResult;
+- (id)_timeIntervalFromResult;
 
-- (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
-- (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
-
+- (NSDate *)_dateFromResult;
 - (NSDate *)_dateFromComponents:(NSDateComponents *)components;
 
 @end
 
 @implementation FLXPostgresTypeDateTimeHandler
+
+@synthesize row = _row;
+@synthesize type = _type;
+@synthesize column = _column;
+@synthesize result = _result;
+@synthesize connection = _connection;
 
 #pragma mark -
 #pragma mark Protocol Implementation
@@ -73,23 +78,21 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	return nil;
 }
 
-- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column 
-{		
-	FLXPostgresOid type = PQftype(result, column);
-	
-	switch (type) 
+- (id)objectFromResult
+{			
+	switch (_type) 
 	{
 		case FLXPostgresOidDate:
-			return [self _dateFromResult:result atRow:row column:column];
+			return [self _dateFromResult];
 		case FLXPostgresOidTime:
 		case FLXPostgresOidTimeTZ:
 		case FLXPostgresOidAbsTime:
-			return [self _timeFromResult:result atRow:row column:column type:type];
+			return [self _timeFromResult];
 		case FLXPostgresOidTimestamp:
 		case FLXPostgresOidTimestampTZ:
-			return [self _timestmpFromResult:result atRow:row column:column type:type];
+			return [self _timestmpFromResult];
 		case FLXPostgresOidInterval:
-			return [self _timeIntervalFromResult:result atRow:row column:column];
+			return [self _timeIntervalFromResult];
 		default:
 			return [NSNull null];
 	}
@@ -100,18 +103,14 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 /**
  * Returns an NSDate created from a date value.
- *
- * @param result The result to extract the value from.
- * @param row    The row to extract the value from.
- * @param column The column to extract the value from.
  * 
  * @return The NSDate representation.
  */
-- (id)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_dateFromResult
 {	
 	PGdate date;
 	
-	if (!PQgetf(result, row, "%date", column, &date)) return [NSNull null];
+	if (!PQgetf(_result, _row, FLXPostgresResultValueDate, _column, &date)) return [NSNull null];
 		
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -124,18 +123,14 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 /**
  * Converts a time interval value to a FLXPostgresTimeInterval instance.
- *
- * @param result The result to extract the value from.
- * @param row    The row to extract the value from.
- * @param column The column to extract the value from.
  * 
  * @return The FLXPostgresTimeInterval representation.
  */
-- (id)_timeIntervalFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_timeIntervalFromResult
 {
 	PGinterval interval;
 		
-	if (!PQgetf(result, row, "%interval", column, &interval)) return [NSNull null];
+	if (!PQgetf(_result, _row, FLXPostgresResultValueInterval, _column, &interval)) return [NSNull null];
 	
 	return [FLXPostgresTimeInterval intervalWithPGInterval:&interval];
 }
@@ -145,20 +140,15 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
  *
  * @note The date part should be ignored as it's set to a default value.
  *
- * @param result The result to extract the value from.
- * @param row    The row to extract the value from.
- * @param column The column to extract the value from.
- * @type  type   The type to be converted from (handles times and times with a time zone).
- *
  * @return The object representation.
  */
-- (id)_timeFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type
+- (id)_timeFromResult
 {
 	PGtime time;
 	
-	BOOL hasTimeZone = type == FLXPostgresOidTimeTZ;
+	BOOL hasTimeZone = _type == FLXPostgresOidTimeTZ;
 	
-	if (!PQgetf(result, row, hasTimeZone ? "%timetz" : "%time", column, &time)) return [NSNull null];
+	if (!PQgetf(_result, _row, hasTimeZone ? FLXPostgresResultValueTimeTZ : FLXPostgresResultValueTime, _column, &time)) return [NSNull null];
 	
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -179,20 +169,15 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 /**
  * Returns a native object created from a timestamp value.
  *
- * @param result The result to extract the value from.
- * @param row    The row to extract the value from.
- * @param column The column to extract the value from.
- * @type  type   The type to be converted from (handles timestamps and timestamps with a time zone).
- *
  * @return The object representation.
  */
-- (id)_timestmpFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type
+- (id)_timestmpFromResult
 {
 	PGtimestamp timestamp;
 	
-	BOOL hasTimeZone = type == FLXPostgresOidTimestampTZ;
+	BOOL hasTimeZone = _type == FLXPostgresOidTimestampTZ;
 	
-	if (!PQgetf(result, row, hasTimeZone ? "%timstamptz" : "%timestamp", column, &timestamp)) return [NSNull null];
+	if (!PQgetf(_result, _row, hasTimeZone ? FLXPostgresResultValueTimestmpTZ : FLXPostgresResultValueTimestamp, _column, &timestamp)) return [NSNull null];
 	
 	FLXPostgresTimeTZ *timestampTZ = nil;
 	NSDate *date = [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];

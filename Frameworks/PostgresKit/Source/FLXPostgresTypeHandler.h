@@ -30,6 +30,8 @@
 	
 	const PGresult *_result;
 	
+	FLXPostgresOid _type;
+	
 	FLXPostgresConnection *_connection;
 }
 
