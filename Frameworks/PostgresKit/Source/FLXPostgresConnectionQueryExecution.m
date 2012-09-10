@@ -121,7 +121,7 @@ FLXQueryParamData;
 	
 	// Notify the delegate
 	if (_delegate && _delegateSupportsWillExecute) {
-		[_delegate connection:self willExecute:query values:values];
+		[_delegate connection:self willExecute:query withValues:values];
 	}
 
 	FLXQueryParamData *paramData = [self _createParameterDataStructureWithCount:values ? (int)[values count] : 0];

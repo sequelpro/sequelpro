@@ -25,11 +25,18 @@
 @protocol FLXPostgresConnectionDelegate <NSObject>
 
 /**
- * Called whenever a connection is successfully established.
+ * Called whenever the supplied connection has been successfully established and is ready to use.
  *
  * @param connection The connection instance.
  */
 - (void)connectionEstablished:(FLXPostgresConnection *)connection;
+
+/**
+ * Called whenever the supplied connection has been successfully reset and is ready to use.
+ *
+ * @param connection The connection instance.
+ */
+- (void)connectionReset:(FLXPostgresConnection *)connection;
 
 /**
  * Called whenever a connection is disconnected.
@@ -53,6 +60,6 @@
  * @param query      The query about the be executed.
  * @param values     The values of the query.
  */
-- (void)connection:(FLXPostgresConnection *)connection willExecute:(NSObject *)query values:(NSArray *)values;
+- (void)connection:(FLXPostgresConnection *)connection willExecute:(NSObject *)query withValues:(NSArray *)values;
 
 @end

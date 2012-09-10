@@ -53,9 +53,9 @@ static const char *FLXPostgresKeepAliveIntervalParam = "keepalives_interval";
 
 @interface FLXPostgresConnection ()
 
-- (void)_pollConnection;
 - (void)_loadDatabaseParameters;
 - (void)_createConnectionParameters;
+- (void)_pollConnection:(NSNumber *)isReset;
 
 // libpq callback
 static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message);
@@ -203,7 +203,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		return NO;
 	}
 	
-	[self performSelectorInBackground:@selector(_pollConnection) withObject:nil];
+	[self performSelectorInBackground:@selector(_pollConnection:) withObject:nil];
 	
 	return YES;
 }
@@ -212,9 +212,9 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
  * Attempts the reset the underlying connection.
  *
  * @note A return value of NO means that the connection is not currently 
- *       connected to be reset and YES means the reset request was successful, 
- *       not that the connection re-establishment has succeeded. Use -isConnected
- *       to check this.
+ *       connected or the request to reset it failed. YES means the reset request was successful, 
+ *       not that the connection re-establishment has succeeded. Wait for the
+ *       delegate connection reset method to be called and check -isConnected.
  *
  * @return A BOOL indicating the success of the call.
  */
@@ -222,12 +222,9 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 {
 	if (![self isConnected]) return NO;
 	
-	PQreset(_connection);
+	if (!PQresetStart(_connection)) return NO;
 	
-	// Reset type extenstions
-	if (!PQclearTypes(_connection)) {
-		NSLog(@"PostgresKit: Error: Failed to clear type extensions during connection reset. Connection might return unexpected results!");
-	}
+	[self performSelectorInBackground:@selector(_pollConnection:) withObject:[NSNumber numberWithBool:YES]];
 	
 	return YES;
 }
@@ -310,9 +307,11 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
  *
  * @note This method should be called on a background thread as it will block waiting for the connection.
  */
-- (void)_pollConnection
+- (void)_pollConnection:(NSNumber *)isReset
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	BOOL reset = [isReset boolValue];
 	
 	NSInteger sock = PQsocket(_connection);
 	
@@ -330,12 +329,10 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	do
 	{
-		status = PQconnectPoll(_connection);
+		status = reset ? PQresetPoll(_connection) : PQconnectPoll(_connection);
 		
-		if (status == PGRES_POLLING_READING || status == PGRES_POLLING_WRITING) {
-			NSInteger result = poll(fdinfo, 1, -1);
-			
-			if (result < 0) break;
+		if (status == PGRES_POLLING_READING || status == PGRES_POLLING_WRITING) {			
+			if (poll(fdinfo, 1, -1) < 0) break;
 		}
 	}
 	while (status != PGRES_POLLING_OK && status != PGRES_POLLING_FAILED);
@@ -348,15 +345,24 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		// Set notice processor
 		PQsetNoticeProcessor(_connection, _FLXPostgresConnectionNoticeProcessor, self);
 		
+		NSInteger success = reset ? PQclearTypes(_connection) : PQinitTypes(_connection);
+		
 		// Register type extensions
-		if (!PQinitTypes(_connection)) {
-			NSLog(@"PostgresKit: Error: Failed to initialise type extensions. Connection might return unexpected results!");
+		if (!success) {
+			NSLog(@"PostgresKit: Error: Failed to initialise (or clear) type extensions. Connection might return unexpected results!");
 		}
 		
 		[self _loadDatabaseParameters];
 		
-		if (_delegate && [_delegate respondsToSelector:@selector(connectionEstablished:)]) {
-			[_delegate performSelectorOnMainThread:@selector(connectionEstablished:) withObject:self waitUntilDone:NO];
+		if (reset) {
+			if (_delegate && [_delegate respondsToSelector:@selector(connectionReset:)]) {
+				[_delegate performSelectorOnMainThread:@selector(connectionReset:) withObject:self waitUntilDone:NO];
+			}
+		}
+		else{
+			if (_delegate && [_delegate respondsToSelector:@selector(connectionEstablished:)]) {
+				[_delegate performSelectorOnMainThread:@selector(connectionEstablished:) withObject:self waitUntilDone:NO];
+			}
 		}
 	}
 		
