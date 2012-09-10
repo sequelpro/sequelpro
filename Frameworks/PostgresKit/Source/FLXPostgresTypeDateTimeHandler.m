@@ -73,7 +73,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	return nil;
 }
 
-- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column 
+- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column 
 {		
 	FLXPostgresOid type = PQftype(result, column);
 	

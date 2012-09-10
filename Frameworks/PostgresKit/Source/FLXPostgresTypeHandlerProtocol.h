@@ -57,6 +57,6 @@
  *
  * @return An object represenation of the data.
  */
-- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
+- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
 
 @end

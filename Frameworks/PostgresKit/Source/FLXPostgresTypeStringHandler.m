@@ -45,9 +45,9 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 
 @interface FLXPostgresTypeStringHandler ()
 
-- (id)_stringFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
-- (id)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column;
-- (id)_inetAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column type:(FLXPostgresOid)type;
+- (id)_stringFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)_macAddressFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column;
+- (id)_inetAddressFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type;
 
 @end
 
@@ -72,9 +72,13 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	return [NSArray arrayWithObject:@"NSCFString"];
 }
 
-- (id)objectFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+- (id)objectFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
 {
 	FLXPostgresOid type = PQftype(result, column);
+	
+	_row = row;
+	_column = column;
+	_result = result;
 	
 	switch (type)
 	{
@@ -111,7 +115,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
  *
  * @return A string representation of the value.
  */
-- (id)_stringFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+- (id)_stringFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
 {
 	const void *bytes = PQgetvalue(result, row, column);
 	NSUInteger length = PQgetlength(result, row, column);
@@ -130,7 +134,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
  *
  * @return A string representation of the MAC address.
  */
-- (id)_macAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column
+- (id)_macAddressFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
 {
 	PGmacaddr address;
 	
@@ -149,10 +153,10 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
  *
  * @return A string representation of the network address.
  */
-- (id)_inetAddressFromResult:(const PGresult *)result atRow:(unsigned int)row column:(unsigned int)column type:(FLXPostgresOid)type
+- (id)_inetAddressFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column type:(FLXPostgresOid)type
 {
 	PGinet inet;
-	
+		
 	if (!PQgetf(result, row, type == FLXPostgresOidInetAddr ? "%inet" : "%cidr", column, &inet)) return [NSNull null];
 	
 	char ip[80];

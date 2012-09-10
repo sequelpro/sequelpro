@@ -25,9 +25,12 @@
 
 @synthesize connection = _connection;
 
+#pragma mark -
+
 - (id)initWithConnection:(FLXPostgresConnection *)connection 
 {	
 	if ((self = [super init])) {
+		_result = nil;
 		_connection = [connection retain];
 	}
 	
