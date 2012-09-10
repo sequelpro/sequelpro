@@ -107,11 +107,11 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
  * 
  * @return The NSDate representation.
  */
-- (NSDate *)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
+- (id)_dateFromResult:(const PGresult *)result atRow:(NSUInteger)row column:(NSUInteger)column
 {	
 	PGdate date;
 	
-	PQgetf(result, row, "%date", column, &date);
+	if (!PQgetf(result, row, "%date", column, &date)) return [NSNull null];
 		
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -158,7 +158,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	
 	BOOL hasTimeZone = type == FLXPostgresOidTimeTZ;
 	
-	PQgetf(result, row, hasTimeZone ? "%timetz" : "%time", column, &time);
+	if (!PQgetf(result, row, hasTimeZone ? "%timetz" : "%time", column, &time)) return [NSNull null];
 	
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -192,7 +192,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	
 	BOOL hasTimeZone = type == FLXPostgresOidTimestampTZ;
 	
-	PQgetf(result, row, hasTimeZone ? "%timstamptz" : "%timestamp", column, &timestamp);
+	if (!PQgetf(result, row, hasTimeZone ? "%timstamptz" : "%timestamp", column, &timestamp)) return [NSNull null];
 	
 	FLXPostgresTimeTZ *timestampTZ = nil;
 	NSDate *date = [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
