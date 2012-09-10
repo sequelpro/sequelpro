@@ -224,6 +224,11 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	PQreset(_connection);
 	
+	// Reset type extenstions
+	if (!PQclearTypes(_connection)) {
+		NSLog(@"PostgresKit: Error: Failed to clear type extensions during connection reset. Connection might return unexpected results!");
+	}
+	
 	return YES;
 }
 
