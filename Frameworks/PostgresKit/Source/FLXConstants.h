@@ -20,7 +20,11 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-// Defaults
+// Connection defaults
+extern const NSUInteger FLXPostgresConnectionDefaultTimeout;
+extern const NSUInteger FLXPostgresConnectionDefaultServerPort;
+extern const NSUInteger FLXPostgresConnectionDefaultKeepAlive;
+
 extern NSString *FLXPostgresConnectionDefaultEncoding;
 extern NSString *FLXPostgresConnectionErrorDomain;
 extern NSStringEncoding FLXPostgresConnectionDefaultStringEncoding;
@@ -32,7 +36,7 @@ extern NSString *FLXPostgresParameterSuperUser;
 extern NSString *FLXPostgresParameterTimeZone;
 extern NSString *FLXPostgresParameterIntegerDateTimes;
 
-// Value specifiers
+// Result value specifiers
 extern const char *FLXPostgresResultValueMacAddr;
 extern const char *FLXPostgresResultValueInet;
 extern const char *FLXPostgresResultValueCidr;
@@ -42,3 +46,15 @@ extern const char *FLXPostgresResultValueTimeTZ;
 extern const char *FLXPostgresResultValueTimestamp;
 extern const char *FLXPostgresResultValueTimestmpTZ;
 extern const char *FLXPostgresResultValueInterval;
+
+// Connection parameters
+extern const char *FLXPostgresKitApplicationName;
+extern const char *FLXPostgresApplicationParam;
+extern const char *FLXPostgresUserParam;
+extern const char *FLXPostgresHostParam;
+extern const char *FLXPostgresPasswordParam;
+extern const char *FLXPostgresPortParam;
+extern const char *FLXPostgresDatabaseParam;
+extern const char *FLXPostgresClientEncodingParam;
+extern const char *FLXPostgresKeepAliveParam;
+extern const char *FLXPostgresKeepAliveIntervalParam;

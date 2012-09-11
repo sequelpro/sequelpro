@@ -34,23 +34,6 @@
 #import <pthread.h>
 #import <poll.h>
 
-// Connection default constants
-static NSUInteger FLXPostgresConnectionDefaultTimeout = 30;
-static NSUInteger FLXPostgresConnectionDefaultServerPort = 5432;
-static NSUInteger FLXPostgresConnectionDefaultKeepAlive = 60;
-
-// libpq connection parameters
-static const char *FLXPostgresApplicationName = "PostgresKit";
-static const char *FLXPostgresApplicationParam = "application_name";
-static const char *FLXPostgresUserParam = "user";
-static const char *FLXPostgresHostParam = "host";
-static const char *FLXPostgresPasswordParam = "password";
-static const char *FLXPostgresPortParam = "port";
-static const char *FLXPostgresDatabaseParam = "dbname";
-static const char *FLXPostgresClientEncodingParam = "client_encoding";
-static const char *FLXPostgresKeepAliveParam = "keepalives";
-static const char *FLXPostgresKeepAliveIntervalParam = "keepalives_interval";
-
 @interface FLXPostgresConnection ()
 
 - (void)_loadDatabaseParameters;
@@ -81,6 +64,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 @synthesize connectionError = _connectionError;
 @synthesize stringEncoding = _stringEncoding;
 @synthesize parameters = _parameters;
+@synthesize applicationName = _applicationName;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -425,7 +409,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	_connectionParamValues = malloc(paramCount * sizeof(*_connectionParamValues));
 	
 	_connectionParamNames[0] = FLXPostgresApplicationParam;
-	_connectionParamValues[0] = FLXPostgresApplicationName;
+	_connectionParamValues[0] = !_applicationName ? [_applicationName UTF8String] : FLXPostgresKitApplicationName;
 	
 	_connectionParamNames[1] = FLXPostgresPortParam;
 	_connectionParamValues[1] = [[[NSNumber numberWithUnsignedInteger:_port] stringValue] UTF8String];
@@ -491,6 +475,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	if (_lastError) [_lastError release], _lastError = nil;
 	if (_parameters) [_parameters release], _parameters = nil;
 	if (_connectionError) [_connectionError release], _connectionError = nil;
+	if (_applicationName) [_applicationName release], _applicationName = nil;
 	
 	[super dealloc];
 }

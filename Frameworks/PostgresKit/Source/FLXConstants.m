@@ -20,16 +20,23 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-NSString *FLXPostgresConnectionDefaultEncoding = @"UNICODE";
-NSString *FLXPostgresConnectionErrorDomain = @"FLXPostgresConnectionError";
+// Connection defaults
+const NSUInteger FLXPostgresConnectionDefaultTimeout    = 30;
+const NSUInteger FLXPostgresConnectionDefaultServerPort = 5432;
+const NSUInteger FLXPostgresConnectionDefaultKeepAlive  = 60;
+
+NSString *FLXPostgresConnectionDefaultEncoding              = @"UNICODE";
+NSString *FLXPostgresConnectionErrorDomain                  = @"FLXPostgresConnectionError";
 NSStringEncoding FLXPostgresConnectionDefaultStringEncoding = NSUTF8StringEncoding;
 
+// Server parameters
 NSString *FLXPostgresParameterServerEncoding   = @"server_encoding";
 NSString *FLXPostgresParameterClientEncoding   = @"client_encoding";
 NSString *FLXPostgresParameterSuperUser        = @"is_superuser";
 NSString *FLXPostgresParameterTimeZone         = @"TimeZone";
 NSString *FLXPostgresParameterIntegerDateTimes = @"integer_datetimes";
 
+// Result value specifiers
 const char *FLXPostgresResultValueMacAddr    = "%macaddr"; 
 const char *FLXPostgresResultValueInet       = "%inet";
 const char *FLXPostgresResultValueCidr       = "%cidr";
@@ -39,3 +46,15 @@ const char *FLXPostgresResultValueTimeTZ     = "%timetz";
 const char *FLXPostgresResultValueTimestamp  = "%timestamp";
 const char *FLXPostgresResultValueTimestmpTZ = "%timestamptz";
 const char *FLXPostgresResultValueInterval   = "%interval";
+
+// Connection parameters
+const char *FLXPostgresKitApplicationName     = "PostgresKit";
+const char *FLXPostgresApplicationParam       = "application_name";
+const char *FLXPostgresUserParam              = "user";
+const char *FLXPostgresHostParam              = "host";
+const char *FLXPostgresPasswordParam          = "password";
+const char *FLXPostgresPortParam              = "port";
+const char *FLXPostgresDatabaseParam          = "dbname";
+const char *FLXPostgresClientEncodingParam    = "client_encoding";
+const char *FLXPostgresKeepAliveParam         = "keepalives";
+const char *FLXPostgresKeepAliveIntervalParam = "keepalives_interval";

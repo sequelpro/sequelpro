@@ -38,6 +38,7 @@
 	NSString *_socketPath;
 	NSString *_encoding;
 	NSString *_connectionError;
+	NSString *_applicationName;
 	
 	const char **_connectionParamNames;
 	const char **_connectionParamValues;
@@ -68,6 +69,7 @@
 @property (readwrite, retain) NSString *database;
 @property (readwrite, retain) NSString *password;
 @property (readwrite, retain) NSString *socketPath;
+@property (readwrite, retain) NSString *applicationName;
 
 @property (readonly) NSString *encoding;
 @property (readonly) NSString *connectionError;
