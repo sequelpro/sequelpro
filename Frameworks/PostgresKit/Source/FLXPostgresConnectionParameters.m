@@ -156,7 +156,7 @@
 		
 		NSString *stringValue = [NSString stringWithUTF8String:value];
 
-		id paramObject = [self _isBooleanParameterValue:stringValue] ? [NSNumber numberWithBool:[self _booleanForParameterValue:stringValue]] : stringValue;
+		id paramObject = [self _isBooleanParameterValue:stringValue] ? (id)[NSNumber numberWithBool:[self _booleanForParameterValue:stringValue]] : stringValue;
 		
 		[_parameters setObject:paramObject forKey:parameter];
 	}

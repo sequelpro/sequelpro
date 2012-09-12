@@ -25,8 +25,6 @@
 #import "FLXPostgresConnection.h"
 #import "FLXPostgresConnectionTypeHandling.h"
 
-static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
-
 @interface FLXPostgresResult ()
 
 - (void)_populateFields;
@@ -178,7 +176,7 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	
 	for (NSUInteger i = 0; i < _numberOfFields; i++) 
 	{
-		const char *bytes = PQfname(_result, i);
+		const char *bytes = PQfname(_result, (int)i);
 		
 		if (!bytes) continue;
 		
@@ -199,9 +197,9 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	if (row >= _numberOfRows || column >= _numberOfFields) return nil;
 	
 	// Check for null
-	if (PQgetisnull(_result, row, column)) return [NSNull null];
+	if (PQgetisnull(_result, (int)row, (int)column)) return [NSNull null];
 	
-	FLXPostgresOid type = PQftype(_result, column);
+	FLXPostgresOid type = PQftype(_result, (int)column);
 	
 	// Get handler for this type
 	id <FLXPostgresTypeHandlerProtocol> handler = [self _typeHandlerForColumn:column withType:type];
@@ -209,8 +207,8 @@ static NSString *FLXPostgresResultError = @"FLXPostgresResultError";
 	if (!handler) {
 		NSLog(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
 		
-		const void *bytes = PQgetvalue(_result, row, column);
-		NSUInteger length = PQgetlength(_result, row, column);
+		const void *bytes = PQgetvalue(_result, (int)row, (int)column);
+		NSUInteger length = PQgetlength(_result, (int)row, (int)column);
 	
 		if (!bytes || !length) return nil;
 		

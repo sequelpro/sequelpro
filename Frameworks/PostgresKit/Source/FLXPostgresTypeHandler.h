@@ -23,15 +23,8 @@
 
 @class FLXPostgresConnection;
 
-@interface FLXPostgresTypeHandler : NSObject 
+@interface FLXPostgresTypeHandler : NSObject
 {
-	NSUInteger _row;
-	NSUInteger _column;
-	
-	const PGresult *_result;
-	
-	FLXPostgresOid _type;
-	
 	FLXPostgresConnection *_connection;
 }
 

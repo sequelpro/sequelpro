@@ -86,7 +86,7 @@
 	
 	NSString *name = [[NSProcessInfo processInfo] globallyUniqueString];
 	
-	PGresult *result = PQprepare(_connection, [name UTF8String], [statement UTF8Statement], paramNum, paramTypes);
+	PGresult *result = PQprepare(_connection, [name UTF8String], [statement UTF8Statement], (int)paramNum, paramTypes);
 	
 	if (!result) return NO;
 	

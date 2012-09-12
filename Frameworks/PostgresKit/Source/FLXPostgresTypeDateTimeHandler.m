@@ -58,7 +58,6 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 @synthesize type = _type;
 @synthesize column = _column;
 @synthesize result = _result;
-@synthesize connection = _connection;
 
 #pragma mark -
 #pragma mark Protocol Implementation
@@ -79,7 +78,9 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 }
 
 - (id)objectFromResult
-{			
+{	
+	if (!_result || !_type || !_row || !_column) return [NSNull null];
+	
 	switch (_type) 
 	{
 		case FLXPostgresOidDate:
@@ -110,7 +111,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 {	
 	PGdate date;
 	
-	if (!PQgetf(_result, _row, FLXPostgresResultValueDate, _column, &date)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, FLXPostgresResultValueDate, (int)_column, &date)) return [NSNull null];
 		
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -130,7 +131,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 {
 	PGinterval interval;
 		
-	if (!PQgetf(_result, _row, FLXPostgresResultValueInterval, _column, &interval)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, FLXPostgresResultValueInterval, (int)_column, &interval)) return [NSNull null];
 	
 	return [FLXPostgresTimeInterval intervalWithPGInterval:&interval];
 }
@@ -144,11 +145,11 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
  */
 - (id)_timeFromResult
 {
-	PGtime time;
+	PGtime pgTime;
 	
 	BOOL hasTimeZone = _type == FLXPostgresOidTimeTZ;
 	
-	if (!PQgetf(_result, _row, hasTimeZone ? FLXPostgresResultValueTimeTZ : FLXPostgresResultValueTime, _column, &time)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, hasTimeZone ? FLXPostgresResultValueTimeTZ : FLXPostgresResultValueTime, (int)_column, &pgTime)) return [NSNull null];
 	
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	
@@ -157,13 +158,13 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	[components setMonth:1];
 	[components setYear:2000];
 	
-	[components setHour:time.hour];
-	[components setMinute:time.min];
-	[components setSecond:time.sec];
+	[components setHour:pgTime.hour];
+	[components setMinute:pgTime.min];
+	[components setSecond:pgTime.sec];
 	
 	NSDate *date = [self _dateFromComponents:components];
 
-	return hasTimeZone ? [FLXPostgresTimeTZ timeWithDate:date timeZoneGMTOffset:time.gmtoff] : date;
+	return hasTimeZone ? (id)[FLXPostgresTimeTZ timeWithDate:date timeZoneGMTOffset:pgTime.gmtoff] : date;
 }
 
 /**
@@ -177,7 +178,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 	
 	BOOL hasTimeZone = _type == FLXPostgresOidTimestampTZ;
 	
-	if (!PQgetf(_result, _row, hasTimeZone ? FLXPostgresResultValueTimestmpTZ : FLXPostgresResultValueTimestamp, _column, &timestamp)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, hasTimeZone ? FLXPostgresResultValueTimestmpTZ : FLXPostgresResultValueTimestamp, (int)_column, &timestamp)) return [NSNull null];
 	
 	FLXPostgresTimeTZ *timestampTZ = nil;
 	NSDate *date = [NSDate dateWithTimeIntervalSince1970:timestamp.epoch];
@@ -188,7 +189,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 		[timestampTZ setHasDate:YES];
 	}
 	
-	return hasTimeZone ? timestampTZ : date;
+	return hasTimeZone ? (id)timestampTZ : date;
 }
 
 /**

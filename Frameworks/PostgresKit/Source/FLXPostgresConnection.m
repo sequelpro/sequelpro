@@ -297,7 +297,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 	
 	BOOL reset = [isReset boolValue];
 	
-	NSInteger sock = PQsocket(_connection);
+	int sock = PQsocket(_connection);
 	
 	if (sock == -1) {
 		[pool release];

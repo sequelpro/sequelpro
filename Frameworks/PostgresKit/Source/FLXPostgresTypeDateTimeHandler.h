@@ -23,5 +23,21 @@
 #import "FLXPostgresTypeHandler.h"
 
 @interface FLXPostgresTypeDateTimeHandler : FLXPostgresTypeHandler <FLXPostgresTypeHandlerProtocol>
+{
+	NSUInteger _row;
+	NSUInteger _column;
+	
+	const PGresult *_result;
+	
+	FLXPostgresOid _type;
+}
+
+@property (readwrite, assign) NSUInteger row;
+
+@property (readwrite, assign) NSUInteger column;
+
+@property (readwrite, assign) FLXPostgresOid type;
+
+@property (readwrite, assign) const PGresult *result;
 
 @end

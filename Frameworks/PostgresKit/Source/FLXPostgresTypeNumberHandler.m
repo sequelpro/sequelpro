@@ -44,6 +44,10 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 - (Float32)_float32FromBytes:(const void *)bytes;
 - (Float64)_float64FromBytes:(const void *)bytes;
 
+- (id)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
+- (id)_floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
+- (id)_booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
+
 @end
 
 @implementation FLXPostgresTypeNumberHandler
@@ -52,7 +56,49 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 @synthesize type = _type;
 @synthesize column = _column;
 @synthesize result = _result;
-@synthesize connection = _connection;
+
+#pragma mark -
+#pragma mark Protocol Implementation
+
+- (FLXPostgresOid *)remoteTypes 
+{
+	return FLXPostgresTypeNumberTypes;
+}
+
+- (Class)nativeClass 
+{
+	return [NSNumber class];
+}
+
+- (NSArray *)classAliases
+{
+	return nil;
+}
+
+- (id)objectFromResult
+{	
+	if (!_result || !_type || !_row || !_column) return [NSNull null];
+	
+	NSUInteger length = PQgetlength(_result, (int)_row, (int)_column);
+	const void *bytes = PQgetvalue(_result, (int)_row, (int)_column);
+	
+	if (!bytes || !length) return [NSNull null];
+	
+	switch (_type) 
+	{
+		case FLXPostgresOidInt8:
+		case FLXPostgresOidInt2:
+		case FLXPostgresOidInt4:
+			return [self _integerObjectFromBytes:bytes length:length];
+		case FLXPostgresOidFloat4:
+		case FLXPostgresOidFloat8:
+			return [self _floatObjectFromBytes:bytes length:length];
+		case FLXPostgresOidBool:
+			return [self _booleanObjectFromBytes:bytes length:length];
+		default:
+			return [NSNull null];
+	}
+}
 
 #pragma mark -
 #pragma mark Integer
@@ -131,47 +177,6 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	if (length != 1) return [NSNull null];
 	
 	return [NSNumber numberWithBool:*((const int8_t *)bytes) ? YES : NO];
-}
-
-#pragma mark -
-#pragma mark Protocol Implementation
-
-- (FLXPostgresOid *)remoteTypes 
-{
-	return FLXPostgresTypeNumberTypes;
-}
-
-- (Class)nativeClass 
-{
-	return [NSNumber class];
-}
-
-- (NSArray *)classAliases
-{
-	return nil;
-}
-
-- (id)objectFromResult
-{		
-	NSUInteger length = PQgetlength(_result, _row, _column);
-	const void *bytes = PQgetvalue(_result, _row, _column);
-	
-	if (!bytes || !length) return [NSNull null];
-	
-	switch (_type) 
-	{
-		case FLXPostgresOidInt8:
-		case FLXPostgresOidInt2:
-		case FLXPostgresOidInt4:
-			return [self _integerObjectFromBytes:bytes length:length];
-		case FLXPostgresOidFloat4:
-		case FLXPostgresOidFloat8:
-			return [self _floatObjectFromBytes:bytes length:length];
-		case FLXPostgresOidBool:
-			return [self _booleanObjectFromBytes:bytes length:length];
-		default:
-			return [NSNull null];
-	}
 }
 
 @end

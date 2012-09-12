@@ -57,7 +57,6 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 @synthesize type = _type;
 @synthesize column = _column;
 @synthesize result = _result;
-@synthesize connection = _connection;
 
 #pragma mark -
 #pragma mark Protocol Implementation
@@ -79,6 +78,8 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 
 - (id)objectFromResult
 {	
+	if (!_result || !_type || !_row || !_column) return [NSNull null];
+	
 	switch (_type)
 	{
 		case FLXPostgresOidText:
@@ -112,8 +113,8 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
  */
 - (id)_stringFromResult
 {
-	const void *bytes = PQgetvalue(_result, _row, _column);
-	NSUInteger length = PQgetlength(_result, _row, _column);
+	const void *bytes = PQgetvalue(_result, (int)_row, (int)_column);
+	NSUInteger length = PQgetlength(_result, (int)_row, (int)_column);
 	
 	if (!bytes || !length) return [NSNull null];
 	
@@ -129,7 +130,7 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 {
 	PGmacaddr address;
 	
-	if (!PQgetf(_result, _row, FLXPostgresResultValueMacAddr, _column, &address)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, FLXPostgresResultValueMacAddr, (int)_column, &address)) return [NSNull null];
 	
 	return [NSString stringWithFormat:@"%02d:%02d:%02d:%02d:%02d:%02d", address.a, address.b, address.c, address.d, address.e, address.f];
 }
@@ -143,12 +144,12 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 {
 	PGinet inet;
 		
-	if (!PQgetf(_result, _row, _type == FLXPostgresOidInetAddr ? FLXPostgresResultValueInet : FLXPostgresResultValueCidr, _column, &inet)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, _type == FLXPostgresOidInetAddr ? FLXPostgresResultValueInet : FLXPostgresResultValueCidr, (int)_column, &inet)) return [NSNull null];
 	
 	char ip[80];
 	struct sockaddr *sa = (struct sockaddr *)inet.sa_buf;
 	
-	NSUInteger success = getnameinfo(sa, inet.sa_buf_len, ip, sizeof(ip), NULL, 0, NI_NUMERICHOST);
+	int success = getnameinfo(sa, inet.sa_buf_len, ip, sizeof(ip), NULL, 0, NI_NUMERICHOST);
 	
 	if (success != 0) {
 		const char *error = gai_strerror(success);
