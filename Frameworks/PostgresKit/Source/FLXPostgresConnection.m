@@ -101,7 +101,7 @@ static void _FLXPostgresConnectionNoticeProcessor(void *arg, const char *message
 		_stringEncoding = FLXPostgresConnectionDefaultStringEncoding;
 		_encoding = [NSString stringWithString:FLXPostgresConnectionDefaultEncoding];
 		
-		_delegateSupportsWillExecute = [_delegate respondsToSelector:@selector(connection:willExecute:values:)];
+		_delegateSupportsWillExecute = [_delegate respondsToSelector:@selector(connection:willExecute:withValues:)];
 		
 		_typeMap = [[NSMutableDictionary alloc] init];
 		
