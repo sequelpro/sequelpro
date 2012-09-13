@@ -1,0 +1,9 @@
+{
+	Actions = {
+	};
+	Outlets = {
+		delegate = id;
+	};
+    ClassName = SRRecorderControl; 
+    SuperClass = NSControl; 
+}

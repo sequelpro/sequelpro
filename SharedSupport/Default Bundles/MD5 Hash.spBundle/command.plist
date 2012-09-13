@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Abhi Beckert</string>
+	<key>category</key>
+	<string>Hash</string>
+	<key>command</key>
+	<string>#!/usr/bin/ruby
+
+# fetch selected text from STDIN
+selectedText = gets
+
+# create sha1 hash
+require 'digest/md5'
+hash = Digest::MD5.hexdigest(selectedText)
+
+# output hash
+print hash
+</string>
+	<key>description</key>
+	<string>Convert the selected text to an MD5 hash.</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>entirecontent</string>
+	<key>keyEquivalent</key>
+	<string></string>
+	<key>name</key>
+	<string>MD5</string>
+	<key>output</key>
+	<string>replaceselection</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>uuid</key>
+	<string>8CAA33B3-D168-47FC-A9BE-EA5A8576E380</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

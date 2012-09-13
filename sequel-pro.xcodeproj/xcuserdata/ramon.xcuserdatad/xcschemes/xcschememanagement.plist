@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>Localize.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
+		<key>PSMTabBar.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
+		<key>Sequel Pro QLGenerator.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
+		</dict>
+		<key>Sequel Pro.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+		<key>SequelProTunnelAssistant.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>2</integer>
+		</dict>
+		<key>Unit Tests.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>xibLocalizationPostprocessor.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>1798AB1C12676EA0000D946A</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>380F4ED80FC0B50500B0BFD7</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>584754C1120A04560057631F</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>58B906E511BD989A000826E5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>58B9096011C3A42B000826E5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>58CDB3350FCE13C900F8ACA3</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>8D15AC270486D014006FF6A4</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Format</string>
+	<key>command</key>
+	<string>DATA=$(cat)
+
+FORMAT=$(echo "$DATA" | head -n 1 | perl -e '$l=&lt;&gt;;if($l=~m/^\s*\{\s*$/) {print "1";} else {print "2";}')
+
+# if FORMAT == 1 then serialize JSON data otherwise pretty print them
+if [ "$FORMAT" -eq "1" ]; then
+
+	DATA=$(echo "$DATA" | php -r '
+	$jsonData = "";
+	$inputStream = fopen("php://stdin", "r");
+	while($d = fgets($inputStream)) { $jsonData .= $d; }
+	print json_encode(json_decode($jsonData));
+	')
+  	if [ "$DATA" == "null" ]; then
+		echo "&lt;font&gt;An error occured while serializing JSON data!&lt;/font&gt;"
+		exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
+  	fi
+
+else
+
+	DATA=$(echo "$DATA" | python -mjson.tool)
+
+fi
+
+# if there's a need to preserve Unicode characters remove the first to characters of the following line 
+# DATA=$(echo "$DATA"  | perl -Xpe 'binmode STDIN,":utf8";binmode STDOUT,":utf8";s/\\u([0-9A-F]{4})/chr(hex($1))/ieg')
+
+printf "%b" "$DATA"</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>If the first line of the selection or the entire content of the current text input field only contains a "{" then serialize the JSON data otherwise the JSON data will be pretty printed. If there's a need to preserve the Unicode characters you can uncomment the line 22.
+
+Version 1.0</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>entirecontent</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>J</string>
+		<key>keyCode</key>
+		<integer>38</integer>
+		<key>modifierFlags</key>
+		<integer>1572864</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>~@j</string>
+	<key>name</key>
+	<string>Toggle JSON Format</string>
+	<key>output</key>
+	<string>replaceselection</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>tooltip</key>
+	<string>Serialize or pretty print JSON data</string>
+	<key>uuid</key>
+	<string>87FD8A4F-90AA-4020-9E0B-8CDD05764D08</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

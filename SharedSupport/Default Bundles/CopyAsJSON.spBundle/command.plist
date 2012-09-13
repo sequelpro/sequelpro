@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Copy</string>
+	<key>command</key>
+	<string>cat | perl -e '
+
+# read first line to get the column names (header)
+$firstLine = &lt;&gt;;
+
+# bail if nothing could read
+if(!defined($firstLine)) {
+	exit 0;
+}
+
+# store the column names
+chomp($firstLine);
+$firstLine =~ s/\"/\\\"/g;  # escape "
+@header = split(/\t/, $firstLine);
+
+$h_cnt = $#header;     # number of columns
+
+# get the column definitions
+open(META, $ENV{"SP_BUNDLE_INPUT_TABLE_METADATA"}) or die $!;
+@meta = ();
+while(&lt;META&gt;) {
+	chomp();
+	my @arr = split(/\t/);
+	push @meta, \@arr;
+}
+close(META);
+
+print "{\n\t\"data\":\n\t[\n";
+
+# read row data of each selected row
+$rowData=&lt;&gt;;
+while($rowData) {
+
+	print "\t\t{\n";
+
+	# remove line ending
+	chomp($rowData);
+
+	# escape "
+	$rowData=~s/\"/\\\"/g;
+
+	# split column data which are tab-delimited
+	@data = split(/\t/, $rowData);
+	for($i=0; $i&lt;=$h_cnt; $i++) {
+
+		# re-escape \t and \n
+		$cellData = $data[$i];
+		$cellData =~ s/↵/\n/g;
+		$cellData =~ s/⇥/\t/g;
+
+		print "\t\t\t\"$header[$i]\": ";
+
+		# check for data types
+		if($cellData eq "NULL") {
+			print "null";
+		}
+		elsif($meta[$i]-&gt;[1] eq "integer" || $meta[$i]-&gt;[1] eq "float") {
+			chomp($cellData);
+			$d = $cellData+0;
+			print "$d";
+		} else {
+			chomp($cellData);
+			print "\"$cellData\"";
+		}
+		
+		# suppress last ,
+		if($i&lt;$h_cnt) {
+			print ",";
+		}
+
+		print "\n";
+
+	}
+
+	print "\t\t}";
+
+	# get next row
+	$rowData=&lt;&gt;;
+
+	# suppress last ,
+	if($rowData) {
+		print ",";
+	}
+
+	print "\n";
+}
+
+print "\t]\n}";
+
+' | __CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 pbcopy</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Copies the selected rows excluding any BLOB data in a data table JSON formatted into the pasteboard.
+
+Version 1.0</string>
+	<key>input</key>
+	<string>selectedtablerowsastab</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>C</string>
+		<key>keyCode</key>
+		<integer>8</integer>
+		<key>modifierFlags</key>
+		<integer>262144</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>^c</string>
+	<key>name</key>
+	<string>Copy as JSON</string>
+	<key>output</key>
+	<string>none</string>
+	<key>scope</key>
+	<string>datatable</string>
+	<key>tooltip</key>
+	<string>Copies the selected rows excluding any BLOB data JSON formatted into the pasteboard</string>
+	<key>uuid</key>
+	<string>CBB8B7A7-5AB9-4F4C-A404-D99CA9521337</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

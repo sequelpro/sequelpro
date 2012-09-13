@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Query Editor</string>
+	<key>command</key>
+	<string># read STDIN which contains the string data coming from the Query Editor
+# and pipe it to the following perl script
+cat | perl -ne '
+
+# delete final line ending
+chomp;
+
+# substitute TABs by SPACEs
+s/\t/    /g;
+
+# escape "
+s/"/\\"/g;
+
+# output text and pipe it to sed
+print "\"".$_."\" . \"\\n\" .\n"' | 
+
+# delete last ‘"\n" .’ (the 9 last characters)
+sed '$ s/.........$//' |
+
+# append ; 
+sed '$ s/$/;/' | 
+
+# pipe the result to the UNIX command pbcopy which pastes
+# the result into the clipboard;
+# __CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 tells pbcopy
+# that the string is UTF-8 encoded
+__CF_USER_TEXT_ENCODING=$UID:0x8000100:0x8000100 pbcopy
+</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Takes the current query or the selection and copies it as a single line quoted multi-line string by appending a ; into the pasteboard for usage in other IDEs as e.g. PHP code snippet.
+
+Example:
+
+SELECT a
+	FROM b
+	ORDER BY c DESC
+
+will copy
+
+"SELECT a" . "\n" .
+"      FROM b" . "\n" .
+"      ORDER BY c DESC";
+
+Version 1.0
+</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>currentquery</string>
+	<key>keyEquivalent</key>
+	<string></string>
+	<key>name</key>
+	<string>Copy Single Line Quoted</string>
+	<key>output</key>
+	<string>none</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>tooltip</key>
+	<string>Takes the current query or the selection and copies it as a single line quoted multi-line string by appending a ; into the pasteboard</string>
+	<key>uuid</key>
+	<string>CDAC825A-AE80-4544-9DBB-8E68A5C540D0</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>

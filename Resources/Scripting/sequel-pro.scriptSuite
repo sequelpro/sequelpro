@@ -1,0 +1,30 @@
+{
+	"Name" = "Sequel Pro";
+	"AppleEventCode" = "cmec";
+
+	"Classes" = {
+		"SPAppController" = {
+			"AppleEventCode" = "capp";
+			"Superclass" = "NSCoreSuite.NSApplication";
+			"SupportedCommands" = {
+				"NSCoreSuite.Quit" = "handleQuitScriptCommand:";
+				"NSCoreSuite.Open" = "handleOpenScriptCommand:";
+				"NSCoreSuite.Print" = "handlePrintScriptCommand:";
+			};
+			"ToManyRelationships" = {
+				"orderedDocuments" = {
+					"Type" = "SPDatabaseDocument";
+					"AppleEventCode" = "docu";
+				};
+				"orderedWindows" = {
+					"Type" = "NSWindow";
+					"AppleEventCode" = "cwin";
+				};
+			};
+		};
+		"SPDatabaseDocument" = {
+			"Superclass" = "NSCoreSuite.NSDocument";
+			"AppleEventCode" = "docu";
+		};
+	};
+}

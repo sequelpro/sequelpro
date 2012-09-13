@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>author</key>
+	<string>Hans-Jörg Bibiko</string>
+	<key>category</key>
+	<string>Query Editor</string>
+	<key>command</key>
+	<string># write DELIMITER plus ;; as suggestion selected as snippet
+echo "DELIMITER \${0:;;}"
+
+# `cat` reads the STDIN which contains the selected
+# text from the Query Editor and write it as selected
+# snippet plus the mirrowed suggested delimiter	
+echo "\${1:`cat`}\${1:\$0}"
+
+# write DELIMITER plus ;
+echo "DELIMITER ;"</string>
+	<key>contact</key>
+	<string>znvy@ovovxb.qr</string>
+	<key>description</key>
+	<string>Wrap the current query or the selection in DELIMITER inserted as snippet to allow to modify the default delimiter ;;
+
+Version 1.0</string>
+	<key>input</key>
+	<string>selectedtext</string>
+	<key>input_fallback</key>
+	<string>currentquery</string>
+	<key>internalKeyEquivalent</key>
+	<dict>
+		<key>characters</key>
+		<string>W</string>
+		<key>keyCode</key>
+		<integer>13</integer>
+		<key>modifierFlags</key>
+		<integer>1835008</integer>
+	</dict>
+	<key>keyEquivalent</key>
+	<string>^~@w</string>
+	<key>name</key>
+	<string>Wrap query/selection in DELIMITER</string>
+	<key>output</key>
+	<string>insertassnippet</string>
+	<key>scope</key>
+	<string>inputfield</string>
+	<key>tooltip</key>
+	<string>Wrap the current query or selection in DELIMITER ;;</string>
+	<key>uuid</key>
+	<string>A67BDE10-0A76-45C2-98DB-B35AC731E8DA</string>
+	<key>isDefaultBundle</key>
+	<true/>
+</dict>
+</plist>
