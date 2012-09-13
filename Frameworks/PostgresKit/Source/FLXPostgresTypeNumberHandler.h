@@ -32,12 +32,24 @@
 	FLXPostgresOid _type;
 }
 
+/**
+ * @property The row within the result the handler is being queried about.
+ */
 @property (readwrite, assign) NSUInteger row;
 
+/**
+ * @property The column within the result the handler is being queried about.
+ */
 @property (readwrite, assign) NSUInteger column;
 
+/**
+ * @property The type of data within the result the handler is being queried about.
+ */
 @property (readwrite, assign) FLXPostgresOid type;
 
+/**
+ * @property The result the handler is being asked to operate on.
+ */
 @property (readwrite, assign) const PGresult *result;
 
 @end
