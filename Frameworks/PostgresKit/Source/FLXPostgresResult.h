@@ -30,7 +30,7 @@ typedef enum
 } 
 FLXPostgresResultRowType;
 
-@interface FLXPostgresResult : NSObject 
+@interface FLXPostgresResult : NSObject
 {
 	void *_result;
 	void **_typeHandlers;
@@ -43,6 +43,7 @@ FLXPostgresResultRowType;
 	NSString **_fields;
 	
 	NSStringEncoding _stringEncoding;
+	FLXPostgresResultRowType _defaultRowType;
 		
 	FLXPostgresConnection *_connection;
 }
@@ -62,6 +63,11 @@ FLXPostgresResultRowType;
  */
 @property (readonly) NSStringEncoding stringEncoding;
 
+/**
+ * @property defaultRowType The row type that should be used when calling -row.
+ */
+@property (readwrite, assign) FLXPostgresResultRowType defaultRowType;
+
 - (id)initWithResult:(void *)result connection:(FLXPostgresConnection *)connection;
 
 - (NSUInteger)numberOfFields;
@@ -70,6 +76,7 @@ FLXPostgresResultRowType;
 
 - (NSArray *)fields;
 
+- (id)row;
 - (NSArray *)rowAsArray;
 - (NSDictionary *)rowAsDictionary;
 - (id)rowAsType:(FLXPostgresResultRowType)type;

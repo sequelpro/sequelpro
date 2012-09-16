@@ -38,6 +38,7 @@
 @synthesize numberOfRows = _numberOfRows;
 @synthesize numberOfFields = _numberOfFields;
 @synthesize stringEncoding = _stringEncoding;
+@synthesize defaultRowType = _defaultRowType;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -73,6 +74,7 @@
 		_connection = [connection retain];
 		
 		_stringEncoding = [_connection stringEncoding];
+		_defaultRowType = FLXPostgresResultRowAsDictionary;
 		
 		_typeHandlers = (void **)calloc(sizeof(void *), _numberOfFields);
 		
@@ -115,6 +117,16 @@
 #pragma mark Data Retrieval
 
 /**
+ * Return the current row in the type of the currently set default (defaults to dictionary).
+ *
+ * @return The row of data.
+ */
+- (id)row
+{
+	return [self rowAsType:_defaultRowType];
+}
+
+/**
  * Return the current row as an array.
  *
  * @return The array of data.
@@ -143,9 +155,7 @@
 {
 	if (_row >= _numberOfRows) return nil;
 	
-	id data;
-	
-	data = (type == FLXPostgresResultRowAsArray) ? [NSMutableArray arrayWithCapacity:_numberOfFields] : [NSMutableDictionary dictionaryWithCapacity:_numberOfFields];
+	id data = (type == FLXPostgresResultRowAsArray) ? [NSMutableArray arrayWithCapacity:_numberOfFields] : [NSMutableDictionary dictionaryWithCapacity:_numberOfFields];
 	
 	for (NSUInteger i = 0; i < _numberOfFields; i++) 
 	{
