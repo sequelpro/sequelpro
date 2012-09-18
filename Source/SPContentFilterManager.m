@@ -469,8 +469,8 @@
 	[resultingClauseLabel setHidden:!enable];
 	[resultingClauseContentLabel setHidden:!enable];
 	[insertPlaceholderButton setEnabled:enable];
-
-	return ([[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
+    
+	return (rowIndex >= 0 && [[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
 }
 
 /**
