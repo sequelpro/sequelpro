@@ -80,7 +80,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 
 - (id)objectFromResult
 {	
-	if (!_result || !_type || !_row || !_column) return [NSNull null];
+	if (!_result || !_type) return [NSNull null];
 	
 	NSUInteger length = PQgetlength(_result, (int)_row, (int)_column);
 	const void *bytes = PQgetvalue(_result, (int)_row, (int)_column);

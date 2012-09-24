@@ -79,7 +79,7 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 
 - (id)objectFromResult
 {	
-	if (!_result || !_type || !_row || !_column) return [NSNull null];
+	if (!_result || !_type) return [NSNull null];
 	
 	switch (_type) 
 	{
