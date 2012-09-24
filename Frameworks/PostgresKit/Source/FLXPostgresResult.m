@@ -175,6 +175,36 @@
 }
 
 #pragma mark -
+#pragma mark Fast enumeration implementation
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
+{
+	if (state->state >= _numberOfRows) return 0;
+	
+	if (state->state != _row) [self seekToRow:state->state];
+	
+	// Determine how many objects to return - 128, len, or all items remaining
+	NSUInteger itemsToReturn = 128;
+	
+	if (len < 128) itemsToReturn = len;
+	
+	if (_numberOfRows - state->state < itemsToReturn) {
+		itemsToReturn = (unsigned long)_numberOfRows - state->state;
+	}
+	
+	for (NSUInteger i = 0; i < itemsToReturn; i++) 
+	{
+		stackbuf[i] = [self rowAsType:_defaultRowType];
+	}
+	
+	state->state += itemsToReturn;
+	state->itemsPtr = stackbuf;
+	state->mutationsPtr = (unsigned long *)self;
+	
+	return itemsToReturn;
+}
+
+#pragma mark -
 #pragma mark Private API
 
 /**

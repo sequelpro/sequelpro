@@ -30,7 +30,7 @@ typedef enum
 } 
 FLXPostgresResultRowType;
 
-@interface FLXPostgresResult : NSObject
+@interface FLXPostgresResult : NSObject <NSFastEnumeration>
 {
 	void *_result;
 	void **_typeHandlers;
