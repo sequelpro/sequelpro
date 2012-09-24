@@ -42,15 +42,13 @@
 QUIET='NO'
 CLEAN='NO'
 
+# Configuration
 MIN_OS_X_VERSION='10.5'
-
-# C/C++ compiler flags
-export CFLAGS="-isysroot /Developer3/SDKs/MacOSX${MIN_OS_X_VERSION}.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=${MIN_OS_X_VERSION}"
-export CXXFLAGS="-isysroot /Developer3/SDKs/MacOSX${MIN_OS_X_VERSION}.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti -mmacosx-version-min=${MIN_OS_X_VERSION}"
+ARCHITECTURES='-arch ppc -arch i386 -arch x86_64'
+CONFIGURE_OPTIONS='--enable-thread-safety --with-openssl'
+COMMON_COMPILE_OPTIONS="-fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=${MIN_OS_X_VERSION}"
 
 ESC=$(printf '\033')
-CONFIGURE_OPTIONS='--enable-thread-safety --with-openssl'
-
 set -A INCLUDE_HEADERS 'src/interfaces/libpq/libpq-fe.h' 'src/include/postgres_ext.h'
 
 usage() 
@@ -103,6 +101,20 @@ then
 else
 	OUTPUT_PATH="$POSTGRESQL_SOURCE_DIR"
 fi
+
+# Find the SDK path
+SDK_PATH=$(xcodebuild -version -sdk 2>/dev/null | grep "^Path: [a-zA-Z0-9\/\.]*$" | awk -F' ' '{ print $2 }' | grep "$MIN_OS_X_VERSION")
+
+if [ "x${SDK_PATH}" == 'x' ]
+then
+	echo "$ESC[1;31mNo SDK found matching OS X version ${MIN_OS_X_VERSION}.$ESC[0m"
+	echo "$ESC[1;31mExiting...$ESC[0m"
+	exit 1
+fi
+
+# C/C++ compiler flags
+export CFLAGS="-O3 -isysroot ${SDK_PATH} ${ARCHITECTURES} ${COMMON_COMPILE_OPTIONS}"
+export CXXFLAGS="-O3 -isysroot ${SDK_PATH} ${ARCHITECTURES} ${COMMON_COMPILE_OPTIONS} -felide-constructors -fno-rtti"
 
 OUTPUT_PATH="${OUTPUT_PATH}/SPPostgreSQLFiles.build"
 
