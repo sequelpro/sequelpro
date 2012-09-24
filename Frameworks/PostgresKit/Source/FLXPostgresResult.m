@@ -234,7 +234,7 @@
  */
 - (id)_objectForRow:(NSUInteger)row column:(NSUInteger)column 
 {	
-	if (row >= _numberOfRows || column >= _numberOfFields) return nil;
+	if (row >= _numberOfRows || column >= _numberOfFields) return [NSNull null];
 	
 	// Check for null
 	if (PQgetisnull(_result, (int)row, (int)column)) return [NSNull null];
