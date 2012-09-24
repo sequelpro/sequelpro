@@ -32,6 +32,7 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	FLXPostgresOidBool,
 	FLXPostgresOidOid,
 	FLXPostgresOidMoney,
+	FLXPostgresOidNumeric,
 	0 
 };
 
@@ -47,6 +48,8 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 - (id)_integerObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
 - (id)_floatObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
 - (id)_booleanObjectFromBytes:(const void *)bytes length:(NSUInteger)length;
+
+- (id)_numericFromResult;
 
 @end
 
@@ -95,6 +98,8 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 			return [self _floatObjectFromBytes:bytes length:length];
 		case FLXPostgresOidBool:
 			return [self _booleanObjectFromBytes:bytes length:length];
+		case FLXPostgresOidNumeric:
+			return [self _numericFromResult];
 		default:
 			return [NSNull null];
 	}
@@ -177,6 +182,31 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 	if (length != 1) return [NSNull null];
 	
 	return [NSNumber numberWithBool:*((const int8_t *)bytes) ? YES : NO];
+}
+
+#pragma mark -
+#pragma mark Numeric
+
+/**
+ * Converts a numeric value to a native NSNumber instance.
+ *
+ * @return An NSNumber representation of the the value.
+ */
+- (id)_numericFromResult
+{
+	PGnumeric numeric;
+	
+	if (!PQgetf(_result, (int)_row, FLXPostgresResultValueNumeric, (int)_column, &numeric)) return [NSNull null];
+	
+	NSString *stringValue = [[NSString alloc] initWithUTF8String:numeric];
+	
+	double value = [stringValue doubleValue];
+	
+	if (value == HUGE_VAL || value == -HUGE_VAL) return [NSNull null];
+	
+	[stringValue release];
+	
+	return [NSNumber numberWithDouble:value];
 }
 
 @end

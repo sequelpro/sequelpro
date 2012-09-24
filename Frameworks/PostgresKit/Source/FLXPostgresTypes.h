@@ -112,7 +112,7 @@ enum
 	FLXPostgresOidVarBit       = 1562, // StringHandler              => NSString
 	
 	// Numeric
-	FLXPostgresOidNumeric      = 1700, // StringHandler              => NSString
+	FLXPostgresOidNumeric      = 1700, // NumberHandler              => NSNumber
 	
 	// UUID
 	FLXPostgresOidUUID         = 2950  // StringHandler              => NSString

@@ -46,6 +46,7 @@ const char *FLXPostgresResultValueTimeTZ     = "%timetz";
 const char *FLXPostgresResultValueTimestamp  = "%timestamp";
 const char *FLXPostgresResultValueTimestmpTZ = "%timestamptz";
 const char *FLXPostgresResultValueInterval   = "%interval";
+const char *FLXPostgresResultValueNumeric    = "%numeric";
 
 // Connection parameters
 const char *FLXPostgresKitApplicationName     = "PostgresKit";

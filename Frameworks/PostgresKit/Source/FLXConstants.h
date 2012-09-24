@@ -46,6 +46,7 @@ extern const char *FLXPostgresResultValueTimeTZ;
 extern const char *FLXPostgresResultValueTimestamp;
 extern const char *FLXPostgresResultValueTimestmpTZ;
 extern const char *FLXPostgresResultValueInterval;
+extern const char *FLXPostgresResultValueNumeric;
 
 // Connection parameters
 extern const char *FLXPostgresKitApplicationName;

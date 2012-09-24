@@ -30,7 +30,6 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 	FLXPostgresOidText,
 	FLXPostgresOidChar,
 	FLXPostgresOidName,
-	FLXPostgresOidNumeric,
 	FLXPostgresOidVarChar,
 	FLXPostgresOidXML,
 	FLXPostgresOidUUID,
@@ -85,7 +84,6 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 		case FLXPostgresOidText:
 		case FLXPostgresOidChar:
 		case FLXPostgresOidName:
-		case FLXPostgresOidNumeric:
 		case FLXPostgresOidVarChar:
 		case FLXPostgresOidXML:
 		case FLXPostgresOidUUID:
