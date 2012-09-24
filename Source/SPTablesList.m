@@ -1760,6 +1760,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (NSDragOperation)tableView:(NSTableView *)aTableView validateDrop:(id < NSDraggingInfo >)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
 	[tablesListView setDropRow:row dropOperation:NSTableViewDropAbove];
+	
 	return NSDragOperationCopy;
 }
 
@@ -1772,14 +1773,19 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	SEL action = [menuItem action];
+	NSInteger selectedRows = [tablesListView numberOfSelectedRows];
 
 	if (action == @selector(copyTable:) || 
 		action == @selector(renameTable:) ||
-		action == @selector(removeTable:) ||
-		action == @selector(truncateTable:) ||
 		action == @selector(openTableInNewTab:))
 	{
-		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length];
+		return selectedRows == 1 && [[self tableName] length];
+	}
+	
+	if (action == @selector(removeTable:) ||
+		action == @selector(truncateTable:))
+	{
+		return selectedRows > 0;
 	}
 
 	return [super validateMenuItem:menuItem];
