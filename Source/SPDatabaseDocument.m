@@ -3383,15 +3383,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	if (!_isConnected || _isWorkingLevel) {
-		return ([menuItem action] == @selector(newWindow:) || [menuItem action] == @selector(terminate:) || [menuItem action] == @selector(closeTab:));
+		return ([menuItem action] == @selector(newWindow:) || 
+				[menuItem action] == @selector(terminate:) || 
+				[menuItem action] == @selector(closeTab:));
 	}
 
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
-		if([self isUntitled]) {
+		if ([self isUntitled]) {
 			[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
 			return NO;
-		} else {
+		} 
+		else {
 			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Open “%@” in New Window", @"menu item open “%@” in new window"), [self displayName]]];
 			return YES;
 		}
@@ -3442,7 +3445,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	if ([menuItem action] == @selector(importFromClipboard:))
 	{
-		return ([self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
+		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]];
 		
 	}
 	
@@ -3482,11 +3485,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[menuItem action] == @selector(showCreateTableSyntax:) ||
 		[menuItem action] == @selector(copyCreateTableSyntax:))
 	{
-		return ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]) ? YES:NO;
+		return [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 	}
 
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
-		return ([connectionController selectedFavorite] ? NO : YES);
+		return ![connectionController selectedFavorite];
 	}
 
 	// Backward in history menu item

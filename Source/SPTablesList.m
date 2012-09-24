@@ -803,33 +803,34 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			}
 
 			if (areTableTypeEqual) {
-				switch (lastType) {
+				switch (lastType) 
+				{
 					case SPTableTypeTable:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
-					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
-					[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[truncateTableButton setHidden:NO];
-					[truncateTableContextMenuItem setHidden:NO];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+						[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+						[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+						[truncateTableButton setHidden:NO];
+						[truncateTableContextMenuItem setHidden:NO];
+						break;
 					case SPTableTypeView:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 					case SPTableTypeProc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 					case SPTableTypeFunc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 				}
 
 			} else {
@@ -867,6 +868,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 		// Get main menu "Table"'s submenu
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTag:SPMainMenuTable] submenu];
+		
 		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Syntaxes", @"copy create syntaxes menu item")];
 		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
 
@@ -1585,7 +1587,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Ensure the state is cleared
 		if ([tableDocumentInstance table]) {
 			[tableDocumentInstance loadTable:nil ofType:SPTableTypeNone];
-		} else {
+		} 
+		else {
 			[self setSelectionState:nil];
 			[tableInfoInstance tableChanged:nil];
 		}
@@ -1599,9 +1602,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	NSInteger selectedRowIndex = [tablesListView selectedRow];
 
-	if (![[filteredTables objectAtIndex:selectedRowIndex] isKindOfClass:[NSString class]]) {
-		return;
-	}
+	if (![[filteredTables objectAtIndex:selectedRowIndex] isKindOfClass:[NSString class]]) return;
 
 	// Reset selectability after change if necessary
 	if ([tableDocumentInstance isWorking]) tableListIsSelectable = NO;
@@ -1610,14 +1611,13 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSString *newName = [filteredTables objectAtIndex:selectedRowIndex];
 	SPTableType newType = (SPTableType)[[filteredTableTypes objectAtIndex:selectedRowIndex] integerValue];
 	
-	if ([selectedTableName isEqualToString:newName] && selectedTableType == newType) {
-		return;
-	}
+	if ([selectedTableName isEqualToString:newName] && selectedTableType == newType) return;
 
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
 	if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+	
 	selectedTableName = [[NSString alloc] initWithString:newName];
 	selectedTableType = newType;
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
@@ -1625,12 +1625,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
 		[schemaPath setString:[tableDocumentInstance connectionID]];
+		
 		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:[tableDocumentInstance database]];
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:selectedTableName];
 		}
+		
 		[[SPNavigatorController sharedNavigatorController] selectPath:schemaPath];
 	}
 }
@@ -1769,17 +1771,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	// popup button below table list
-	if ([menuItem action] == @selector(copyTable:)) {
-		return (([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length] && [tablesListView numberOfSelectedRows] > 0);
-	}
+	SEL action = [menuItem action];
 
-	if ([menuItem action] == @selector(removeTable:) || [menuItem action] == @selector(truncateTable:)) {
-		return ([tablesListView numberOfSelectedRows] > 0);
-	}
-
-	if ([menuItem action] == @selector(renameTable:) || [menuItem action] == @selector(openTableInNewTab:)) {
-		return (([tablesListView numberOfSelectedRows] == 1) && [[self tableName] length]);
+	if (action == @selector(copyTable:) || 
+		action == @selector(renameTable:) ||
+		action == @selector(removeTable:) ||
+		action == @selector(truncateTable:) ||
+		action == @selector(openTableInNewTab:))
+	{
+		return [tablesListView numberOfSelectedRows] == 1 && [[self tableName] length];
 	}
 
 	return [super validateMenuItem:menuItem];
