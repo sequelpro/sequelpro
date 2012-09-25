@@ -24,17 +24,18 @@ END
 
 CREATE TABLE data_types
 (
-	int_field INT PRIMARY KEY NOT NULL,
-	smallint_field SMALLINT NOT NULL,
-	bigint_field BIGINT NOT NULL,
-	bool_field BOOL NOT NULL,
-	float_field REAL NOT NULL,
-	char_field CHAR(5) NOT NULL,
-	varchar_field VARCHAR(32) NOT NULL,
-	date_field DATE NOT NULL,
-	time_field TIME NOT NULL,
-	timetz_field TIME WITH TIME ZONE NOT NULL,
-	timstamp_field TIMESTAMP NOT NULL,
+	int_field         INT PRIMARY KEY NOT NULL,
+	smallint_field    SMALLINT NOT NULL,
+	bigint_field      BIGINT NOT NULL,
+	bool_field        BOOL NOT NULL,
+	float_field       REAL NOT NULL,
+	numeric_field     NUMERIC(5, 3) NOT NULL,
+	char_field        CHAR(4) NOT NULL,
+	varchar_field     VARCHAR(32) NOT NULL,
+	date_field        DATE NOT NULL,
+	time_field        TIME NOT NULL,
+	timetz_field      TIME WITH TIME ZONE NOT NULL,
+	timstamp_field    TIMESTAMP NOT NULL,
 	timestamptz_field TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
@@ -55,9 +56,10 @@ VALUES (
 	2, 
 	TRUE,
 	123456789,
+	12345.678,
 	12345.678, 
-	'CHARV', 
-	'VARCHAR_VALUE', 
+	'CHAR',
+	'VARCHAR', 
 	'08-04-1987',
 	'02:02:02',
 	'02:02:02 GMT',
