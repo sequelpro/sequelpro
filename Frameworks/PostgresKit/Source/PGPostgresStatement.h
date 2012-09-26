@@ -1,5 +1,7 @@
 //
-//  PostgresKit.h
+//  $Id: PGPostgresStatement.h 3793 2012-09-03 10:22:17Z stuart02 $
+//
+//  PGPostgresStatement.h
 //  PostgresKit
 //
 //  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
@@ -18,11 +20,25 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "PGPostgresError.h"
-#import "PGPostgresResult.h"
-#import "PGPostgresStatement.h"
-#import "PGPostgresException.h"
-#import "PGPostgresConnection.h"
-#import "PGPostgresConnectionUtils.h"
-#import "PGPostgresConnectionQueryExecution.h"
-#import "PGPostgresConnectionQueryPreparation.h"
+@interface PGPostgresStatement : NSObject 
+{
+	NSString *_statement;
+	NSString *_name;
+}
+
+/**
+ * @property statement The query statement.
+ */
+@property (readwrite, retain) NSString *statement;
+
+/**
+ * @property name The name of this statement.
+ */
+@property (readwrite, retain) NSString *name;
+
+- (id)initWithStatement:(NSString *)queryStatement;
+
+- (const char *)UTF8Name;
+- (const char *)UTF8Statement;
+
+@end

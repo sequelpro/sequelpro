@@ -1,5 +1,7 @@
 //
-//  PostgresKit.h
+//  $Id: PGPostgresKitPrivateAPI.h 3828 2012-09-09 01:10:06Z stuart02 $
+//
+//  PGPostgresConnectionKitAPI.h
 //  PostgresKit
 //
 //  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
@@ -18,11 +20,27 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "PGPostgresError.h"
-#import "PGPostgresResult.h"
-#import "PGPostgresStatement.h"
-#import "PGPostgresException.h"
 #import "PGPostgresConnection.h"
-#import "PGPostgresConnectionUtils.h"
-#import "PGPostgresConnectionQueryExecution.h"
-#import "PGPostgresConnectionQueryPreparation.h"
+#import "PGPostgresTimeInterval.h"
+
+@interface PGPostgresConnection ()
+
+- (PGconn *)postgresConnection;
+
+@end
+
+@interface PGPostgresConnection (PGPostgresConnectionQueryPreparationPrivateAPI)
+
+- (BOOL)_prepare:(PGPostgresStatement *)statement num:(NSInteger)paramNum types:(PGPostgresOid *)paramTypes;
+
+@end
+
+@interface PGPostgresTimeInterval ()
+
++ (id)intervalWithPGInterval:(PGinterval *)interval;
+- (id)initWithInterval:(PGinterval *)interval;
+
+@end
+
+
+

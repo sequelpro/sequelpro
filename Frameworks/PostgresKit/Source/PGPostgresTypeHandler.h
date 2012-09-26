@@ -1,12 +1,11 @@
 //
-//  $Id$
+//  $Id: PGPostgresTypeHandler.h 3848 2012-09-12 12:19:31Z stuart02 $
 //
-//  PostgresKit-Prefix.pch
+//  PGPostgresTypeHandler.h
 //  PostgresKit
 //
-//  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
-//
-//  Forked by the Sequel Pro Team on July 22, 2012.
+//  Created by Stuart Connolly (stuconnolly.com) on July 27, 2012.
+//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 // 
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not 
 //  use this file except in compliance with the License. You may obtain a copy of 
@@ -20,18 +19,20 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#ifdef __OBJC__
-    #import <Foundation/Foundation.h>
+#import "PGPostgresTypeHandlerProtocol.h"
 
-    // libpq interface
-    #import "libpq-fe.h"
+@class PGPostgresConnection;
 
-    // libpqtypes interface
-    #import "libpqtypes.h"
+@interface PGPostgresTypeHandler : NSObject
+{
+	PGPostgresConnection *_connection;
+}
 
-    // Framework constants
-    #import "PGConstants.h"
+/**
+ * @property connection The connection this type handler is associated with.
+ */
+@property (readonly) PGPostgresConnection *connection;
 
-    // Global types
-    #import "PGPostgresTypes.h"
-#endif
+- (id)initWithConnection:(PGPostgresConnection *)connection;
+
+@end

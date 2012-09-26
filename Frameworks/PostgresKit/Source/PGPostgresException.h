@@ -1,5 +1,7 @@
 //
-//  PostgresKit.h
+//  $Id: PGPostgresException.h 3793 2012-09-03 10:22:17Z stuart02 $
+//
+//  PGPostgresException.h
 //  PostgresKit
 //
 //  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
@@ -18,11 +20,9 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "PGPostgresError.h"
-#import "PGPostgresResult.h"
-#import "PGPostgresStatement.h"
-#import "PGPostgresException.h"
-#import "PGPostgresConnection.h"
-#import "PGPostgresConnectionUtils.h"
-#import "PGPostgresConnectionQueryExecution.h"
-#import "PGPostgresConnectionQueryPreparation.h"
+@interface PGPostgresException : NSException
+
++ (void)raise:(NSString *)name connection:(void *)connection;
++ (void)raise:(NSString *)name reason:(NSString *)reason, ...;
+
+@end

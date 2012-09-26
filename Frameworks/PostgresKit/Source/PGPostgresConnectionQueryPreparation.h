@@ -1,5 +1,7 @@
 //
-//  PostgresKit.h
+//  $Id: PGPostgresConnectionQueryPreparation.h 3806 2012-09-07 09:57:31Z stuart02 $
+//
+//  PGPostgresConnectionQueryPreparation.h
 //  PostgresKit
 //
 //  Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
@@ -18,11 +20,11 @@
 //  License for the specific language governing permissions and limitations under
 //  the License.
 
-#import "PGPostgresError.h"
-#import "PGPostgresResult.h"
-#import "PGPostgresStatement.h"
-#import "PGPostgresException.h"
 #import "PGPostgresConnection.h"
-#import "PGPostgresConnectionUtils.h"
-#import "PGPostgresConnectionQueryExecution.h"
-#import "PGPostgresConnectionQueryPreparation.h"
+
+@interface PGPostgresConnection (PGPostgresConnectionQueryPreparation)
+
+- (PGPostgresStatement *)prepare:(NSString *)query;
+- (PGPostgresStatement *)prepareWithFormat:(NSString *)query, ...;
+
+@end
