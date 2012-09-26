@@ -4,23 +4,17 @@
 --
 -- For the tests to execute successfully this file should 
 -- be run against a blank database called 'pgkit_test' and 
--- the user 'pgkit_test' with password 'pgkit' should exit:
+-- the user 'pgkit_test' with password 'pgkit' should exist:
 --
 -- CREATE DATABASE pgkit_test;
 -- CREATE USER pgkit_test WITH PASSWORD 'pgkit';
 
-BEGIN;
-
 SET datestyle = 'DMY';
 SET client_encoding = 'UNICODE';
 
-IF EXISTS (
-	SELECT 1 FROM information_schema.tables 
-	WHERE table_name = 'data_types' 
-	AND table_type = 'BASE TABLE'
-)
-	DROP TABLE data_types;
-END
+BEGIN;
+
+DROP TABLE IF EXISTS data_types;
 
 CREATE TABLE data_types
 (
@@ -29,7 +23,7 @@ CREATE TABLE data_types
 	bigint_field      BIGINT NOT NULL,
 	bool_field        BOOL NOT NULL,
 	float_field       REAL NOT NULL,
-	numeric_field     NUMERIC(5, 3) NOT NULL,
+	numeric_field     NUMERIC(8, 3) NOT NULL,
 	char_field        CHAR(4) NOT NULL,
 	varchar_field     VARCHAR(32) NOT NULL,
 	date_field        DATE NOT NULL,
@@ -42,8 +36,10 @@ CREATE TABLE data_types
 INSERT INTO data_types (
 	int_field, 
 	smallint_field, 
+	bigint_field,
 	bool_field, 
-	float_field, 
+	float_field,
+	numeric_field, 
 	char_field, 
  	varchar_field, 
 	date_field, 
@@ -53,9 +49,9 @@ INSERT INTO data_types (
 	timestamptz_field)
 VALUES (
 	12345, 
-	2, 
-	TRUE,
+	2,
 	123456789,
+	TRUE,
 	12345.678,
 	12345.678, 
 	'CHAR',
@@ -64,7 +60,7 @@ VALUES (
 	'02:02:02',
 	'02:02:02 GMT',
 	'08-04-1987 02:02:02',
-	'08-04-1987 02:02:02 GMT')
+	'08-04-1987 02:02:02 GMT');
 
 COMMIT;
 
