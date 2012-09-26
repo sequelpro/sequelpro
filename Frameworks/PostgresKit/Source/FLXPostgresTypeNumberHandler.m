@@ -95,6 +95,11 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Integer
 
+/**
+ * Converts an integer value to an NSNumber instance.
+ *
+ * @return An NSNumber representation of the the value.
+ */
 - (id)_integerObjectFromResult
 {	
 	NSUInteger length = PQgetlength(_result, (int)_row, (int)_column);
@@ -127,6 +132,11 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Floating Point
 
+/**
+ * Converts a float value to an NSNumber instance.
+ *
+ * @return An NSNumber representation of the the value.
+ */
 - (id)_floatObjectFromResult
 {	
 	NSUInteger length = PQgetlength(_result, (int)_row, (int)_column);
@@ -154,6 +164,11 @@ static FLXPostgresOid FLXPostgresTypeNumberTypes[] =
 #pragma mark -
 #pragma mark Boolean
 
+/**
+ * Converts a boolean value to an NSNumber instance.
+ *
+ * @return An NSNumber representation of the the value.
+ */
 - (id)_booleanObjectFromResult
 {
 	PGbool b;
