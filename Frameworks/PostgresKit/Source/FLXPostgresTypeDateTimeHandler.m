@@ -94,9 +94,9 @@ static FLXPostgresOid FLXPostgresTypeDateTimeTypes[] =
 			return [self _timestmpFromResult];
 		case FLXPostgresOidInterval:
 			return [self _timeIntervalFromResult];
-		default:
-			return [NSNull null];
 	}
+	
+	return [NSNull null];
 }
 
 #pragma mark -

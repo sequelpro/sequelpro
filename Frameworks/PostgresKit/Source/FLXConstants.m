@@ -47,6 +47,12 @@ const char *FLXPostgresResultValueTimestamp  = "%timestamp";
 const char *FLXPostgresResultValueTimestmpTZ = "%timestamptz";
 const char *FLXPostgresResultValueInterval   = "%interval";
 const char *FLXPostgresResultValueNumeric    = "%numeric";
+const char *FLXPostgresResultValueBool       = "%bool";
+const char *FLXPostgresResultValueInt2       = "%int2";
+const char *FLXPostgresResultValueInt4       = "%int4";
+const char *FLXPostgresResultValueInt8       = "%int8";
+const char *FLXPostgresResultValueFloat4     = "%float4";
+const char *FLXPostgresResultValueFloat8     = "%float8";
 
 // Connection parameters
 const char *FLXPostgresKitApplicationName     = "PostgresKit";

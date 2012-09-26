@@ -96,9 +96,9 @@ static FLXPostgresOid FLXPostgresTypeStringTypes[] =
 		case FLXPostgresOidInetAddr:
 		case FLXPostgresOidCidrAddr:
 			return [self _inetAddressFromResult];
-		default:
-			return [NSNull null];
 	}
+	
+	return [NSNull null];
 }
 
 #pragma mark -
