@@ -53,6 +53,7 @@ extern const char *PGPostgresResultValueInt4;
 extern const char *PGPostgresResultValueInt8;
 extern const char *PGPostgresResultValueFloat4;
 extern const char *PGPostgresResultValueFloat8;
+extern const char *PGPostgresResultValueByteA;
 
 // Connection parameters
 extern const char *PGPostgresKitApplicationName;

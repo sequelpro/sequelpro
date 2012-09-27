@@ -53,6 +53,7 @@ const char *PGPostgresResultValueInt4       = "%int4";
 const char *PGPostgresResultValueInt8       = "%int8";
 const char *PGPostgresResultValueFloat4     = "%float4";
 const char *PGPostgresResultValueFloat8     = "%float8";
+const char *PGPostgresResultValueByteA      = "%bytea";
 
 // Connection parameters
 const char *PGPostgresKitApplicationName     = "PostgresKit";

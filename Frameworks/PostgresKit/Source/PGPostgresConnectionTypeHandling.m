@@ -23,6 +23,7 @@
 #import "PGPostgresTypeStringHandler.h"
 #import "PGPostgresTypeNumberHandler.h"
 #import "PGPostgresTypeDateTimeHandler.h"
+#import "PGPostgresTypeBinaryHandler.h"
 #import "PGPostgresException.h"
 
 @implementation PGPostgresConnection (PGPostgresConnectionTypeHandling)
@@ -41,6 +42,7 @@
 	[self registerTypeHandler:[PGPostgresTypeStringHandler class]];
 	[self registerTypeHandler:[PGPostgresTypeNumberHandler class]];
 	[self registerTypeHandler:[PGPostgresTypeDateTimeHandler class]];
+	[self registerTypeHandler:[PGPostgresTypeBinaryHandler class]];
 }
 
 /**

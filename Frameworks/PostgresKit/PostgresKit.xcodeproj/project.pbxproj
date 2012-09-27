@@ -56,6 +56,8 @@
 		177C9BAB15CD37E000128642 /* PGPostgresConnectionEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 177C9BA915CD37E000128642 /* PGPostgresConnectionEncoding.h */; };
 		177C9BAC15CD37E000128642 /* PGPostgresConnectionEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 177C9BAA15CD37E000128642 /* PGPostgresConnectionEncoding.m */; };
 		17E595F214F3058F0054EE08 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E595F114F3058F0054EE08 /* Foundation.framework */; };
+		17F7963116150C0100E21D82 /* PGPostgresTypeBinaryHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F7962F16150C0100E21D82 /* PGPostgresTypeBinaryHandler.h */; };
+		17F7963216150C0100E21D82 /* PGPostgresTypeBinaryHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F7963016150C0100E21D82 /* PGPostgresTypeBinaryHandler.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,6 +126,8 @@
 		177C9BAA15CD37E000128642 /* PGPostgresConnectionEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresConnectionEncoding.m; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		17F5B77C15C9D092006DA689 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		17F7962F16150C0100E21D82 /* PGPostgresTypeBinaryHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypeBinaryHandler.h; sourceTree = "<group>"; };
+		17F7963016150C0100E21D82 /* PGPostgresTypeBinaryHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresTypeBinaryHandler.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* PostgresKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PostgresKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -304,6 +308,7 @@
 				173D4E9F15BAB2A80007F267 /* PostgresKit.h */,
 				177AC67D15C53FA400A3658D /* PGPostgresKitPrivateAPI.h */,
 				1731F52B15F48B4400D973EB /* Domain */,
+				17F7962A1615001D00E21D82 /* Protocols */,
 				173D513315BBE4230007F267 /* Connection */,
 				173D508D15BBD99B0007F267 /* Constants */,
 				173D4E5015BAB17A0007F267 /* Types */,
@@ -315,7 +320,6 @@
 			isa = PBXGroup;
 			children = (
 				173D4F5615BAD3030007F267 /* PGPostgresTypes.h */,
-				173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */,
 				1724CC8715FB4BF400AB2291 /* Domain */,
 				17F5B62215C7D1DA006DA689 /* Handlers */,
 			);
@@ -362,7 +366,6 @@
 			children = (
 				173D4E9515BAB2A80007F267 /* PGPostgresConnection.h */,
 				173D4E9615BAB2A80007F267 /* PGPostgresConnection.m */,
-				173D513415BBE50D0007F267 /* PGPostgresConnectionDelegate.h */,
 				1731F50515F369FE00D973EB /* Encoding */,
 				1731F50415F369E400D973EB /* Query */,
 				1731F50615F36A3E00D973EB /* Other */,
@@ -375,6 +378,8 @@
 			children = (
 				170465CC15C2960F00DC5BE5 /* PGPostgresTypeHandler.h */,
 				170465CD15C2960F00DC5BE5 /* PGPostgresTypeHandler.m */,
+				17F7962F16150C0100E21D82 /* PGPostgresTypeBinaryHandler.h */,
+				17F7963016150C0100E21D82 /* PGPostgresTypeBinaryHandler.m */,
 				173D4E5815BAB1DD0007F267 /* PGPostgresTypeStringHandler.h */,
 				173D4E5915BAB1DD0007F267 /* PGPostgresTypeStringHandler.m */,
 				173D4E5615BAB1DD0007F267 /* PGPostgresTypeNumberHandler.h */,
@@ -383,6 +388,15 @@
 				1731F10715F1A52B00D973EB /* PGPostgresTypeDateTimeHandler.m */,
 			);
 			name = Handlers;
+			sourceTree = "<group>";
+		};
+		17F7962A1615001D00E21D82 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				173D513415BBE50D0007F267 /* PGPostgresConnectionDelegate.h */,
+				173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */,
+			);
+			name = Protocols;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -415,6 +429,7 @@
 				1731F52E15F48BA500D973EB /* PGPostgresError.h in Headers */,
 				1724CC9215FB4CC200AB2291 /* PGPostgresTimeTZ.h in Headers */,
 				1724CD5915FB8A3300AB2291 /* PGPostgresTimeInterval.h in Headers */,
+				17F7963116150C0100E21D82 /* PGPostgresTypeBinaryHandler.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,6 +545,7 @@
 				1731F52F15F48BA500D973EB /* PGPostgresError.m in Sources */,
 				1724CC9315FB4CC200AB2291 /* PGPostgresTimeTZ.m in Sources */,
 				1724CD5A15FB8A3300AB2291 /* PGPostgresTimeInterval.m in Sources */,
+				17F7963216150C0100E21D82 /* PGPostgresTypeBinaryHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
