@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		170465CE15C2960F00DC5BE5 /* PGPostgresTypeHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 170465CC15C2960F00DC5BE5 /* PGPostgresTypeHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		170465CF15C2960F00DC5BE5 /* PGPostgresTypeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 170465CD15C2960F00DC5BE5 /* PGPostgresTypeHandler.m */; };
+		171D58701612E9B900F84472 /* PGDataTypeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D586F1612E9B900F84472 /* PGDataTypeTests.m */; };
 		1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1724C9B715F9ED8600AB2291 /* libpqtypes.a */; };
 		1724CC9215FB4CC200AB2291 /* PGPostgresTimeTZ.h in Headers */ = {isa = PBXBuildFile; fileRef = 1724CC9015FB4CC200AB2291 /* PGPostgresTimeTZ.h */; };
 		1724CC9315FB4CC200AB2291 /* PGPostgresTimeTZ.m in Sources */ = {isa = PBXBuildFile; fileRef = 1724CC9115FB4CC200AB2291 /* PGPostgresTimeTZ.m */; };
@@ -70,6 +71,8 @@
 /* Begin PBXFileReference section */
 		170465CC15C2960F00DC5BE5 /* PGPostgresTypeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypeHandler.h; sourceTree = "<group>"; };
 		170465CD15C2960F00DC5BE5 /* PGPostgresTypeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresTypeHandler.m; sourceTree = "<group>"; };
+		171D586E1612E9B900F84472 /* PGDataTypeTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGDataTypeTests.h; sourceTree = "<group>"; };
+		171D586F1612E9B900F84472 /* PGDataTypeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGDataTypeTests.m; sourceTree = "<group>"; };
 		1724C9B715F9ED8600AB2291 /* libpqtypes.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpqtypes.a; sourceTree = "<group>"; };
 		1724CA3B15F9EE7300AB2291 /* libpqtypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = libpqtypes.h; sourceTree = "<group>"; };
 		1724CC9015FB4CC200AB2291 /* PGPostgresTimeTZ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTimeTZ.h; sourceTree = "<group>"; };
@@ -196,8 +199,10 @@
 		171D582B1612E00D00F84472 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				171D586E1612E9B900F84472 /* PGDataTypeTests.h */,
+				171D586F1612E9B900F84472 /* PGDataTypeTests.m */,
 			);
-			name = Tests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		1724CA3715F9EDC900AB2291 /* libpq */ = {
@@ -499,6 +504,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				171D58701612E9B900F84472 /* PGDataTypeTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,6 +548,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -561,6 +568,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_HOST = "";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -569,6 +577,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
@@ -587,6 +596,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_HOST = "";
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -596,6 +606,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				BUNDLE_LOADER = "";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -612,6 +623,7 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_HOST = "";
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;
