@@ -36,7 +36,7 @@
 		173D4EA715BAB2A80007F267 /* PGPostgresResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4E9B15BAB2A80007F267 /* PGPostgresResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4EA815BAB2A80007F267 /* PGPostgresResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D4E9C15BAB2A80007F267 /* PGPostgresResult.m */; };
 		173D4EA915BAB2A80007F267 /* PGPostgresStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4E9D15BAB2A80007F267 /* PGPostgresStatement.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		173D4EAA15BAB2A80007F267 /* PGostgresStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D4E9E15BAB2A80007F267 /* PGostgresStatement.m */; };
+		173D4EAA15BAB2A80007F267 /* PGPostgresStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 173D4E9E15BAB2A80007F267 /* PGPostgresStatement.m */; };
 		173D4EAB15BAB2A80007F267 /* PostgresKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4E9F15BAB2A80007F267 /* PostgresKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		173D4EE215BACA700007F267 /* libpq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 173D4EE115BACA700007F267 /* libpq.a */; };
 		173D4F4515BAD22B0007F267 /* PGPostgresTypeHandlerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */; settings = {ATTRIBUTES = (); }; };
@@ -103,7 +103,7 @@
 		173D4E9B15BAB2A80007F267 /* PGPostgresResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresResult.h; sourceTree = "<group>"; };
 		173D4E9C15BAB2A80007F267 /* PGPostgresResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresResult.m; sourceTree = "<group>"; };
 		173D4E9D15BAB2A80007F267 /* PGPostgresStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresStatement.h; sourceTree = "<group>"; };
-		173D4E9E15BAB2A80007F267 /* PGostgresStatement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGostgresStatement.m; sourceTree = "<group>"; };
+		173D4E9E15BAB2A80007F267 /* PGPostgresStatement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PGPostgresStatement.m; sourceTree = "<group>"; };
 		173D4E9F15BAB2A80007F267 /* PostgresKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostgresKit.h; sourceTree = "<group>"; };
 		173D4EA015BAB2A80007F267 /* PGPostgresTypeHandlerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PGPostgresTypeHandlerProtocol.h; sourceTree = "<group>"; };
 		173D4EE115BACA700007F267 /* libpq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpq.a; sourceTree = "<group>"; };
@@ -295,7 +295,7 @@
 				173D4E9B15BAB2A80007F267 /* PGPostgresResult.h */,
 				173D4E9C15BAB2A80007F267 /* PGPostgresResult.m */,
 				173D4E9D15BAB2A80007F267 /* PGPostgresStatement.h */,
-				173D4E9E15BAB2A80007F267 /* PGostgresStatement.m */,
+				173D4E9E15BAB2A80007F267 /* PGPostgresStatement.m */,
 				173D4E9915BAB2A80007F267 /* PGPostgresException.h */,
 				173D4E9A15BAB2A80007F267 /* PGPostgresException.m */,
 			);
@@ -533,7 +533,7 @@
 				173D4EA415BAB2A80007F267 /* PGPostgresConnectionUtils.m in Sources */,
 				173D4EA615BAB2A80007F267 /* PGPostgresException.m in Sources */,
 				173D4EA815BAB2A80007F267 /* PGPostgresResult.m in Sources */,
-				173D4EAA15BAB2A80007F267 /* PGostgresStatement.m in Sources */,
+				173D4EAA15BAB2A80007F267 /* PGPostgresStatement.m in Sources */,
 				173D508F15BBD9BF0007F267 /* PGConstants.m in Sources */,
 				170465CF15C2960F00DC5BE5 /* PGPostgresTypeHandler.m in Sources */,
 				177AC5F115C50F6E00A3658D /* PGPostgresConnectionTypeHandling.m in Sources */,
