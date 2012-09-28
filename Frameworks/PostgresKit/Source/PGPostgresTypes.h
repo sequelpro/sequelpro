@@ -46,6 +46,9 @@ enum
 	// OID
 	PGPostgresOidOid          = 26,  // NumberHandler              => NSNumber
 	
+	// JSON
+	PGPostgresOidJSON        = 114,  // StringHandler              => NSString
+	
 	// XML
 	PGPostgresOidXML          = 142, // StringHandler              => NSString
 	

@@ -31,6 +31,7 @@ static PGPostgresOid PGPostgresTypeStringTypes[] =
 	PGPostgresOidChar,
 	PGPostgresOidName,
 	PGPostgresOidVarChar,
+	PGPostgresOidJSON,
 	PGPostgresOidXML,
 	PGPostgresOidUUID,
 	PGPostgresOidBit,
@@ -86,6 +87,7 @@ static PGPostgresOid PGPostgresTypeStringTypes[] =
 		case PGPostgresOidName:
 		case PGPostgresOidVarChar:
 		case PGPostgresOidXML:
+		case PGPostgresOidJSON:
 		case PGPostgresOidUUID:
 		case PGPostgresOidBit:
 		case PGPostgresOidVarBit:
