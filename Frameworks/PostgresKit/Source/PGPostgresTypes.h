@@ -26,12 +26,11 @@
 typedef Oid PGPostgresOid;
 
 // See PostgreSQL source: include/catalog/pg_type.h
-
 enum 
 {
 	// BOOL
 	PGPostgresOidBool         = 16,  // NumberHandler              => NSNumber
-	PGPostgresOidByteData     = 17,  // Currently not supported    
+	PGPostgresOidByteData     = 17,  // BinaryHandler              => NSData
 	
 	// Text
 	PGPostgresOidName         = 19,  // StringHandler              => NSString   

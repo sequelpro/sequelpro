@@ -36,13 +36,6 @@ static PGPostgresOid PGPostgresTypeBinaryTypes[] =
 	0 
 };
 
-@interface PGPostgresTypeBinaryHandler ()
-
-- (id)_binaryDataFromResult;
-
-@end
-
-
 @implementation PGPostgresTypeBinaryHandler
 
 @synthesize row = _row;
@@ -70,32 +63,13 @@ static PGPostgresOid PGPostgresTypeBinaryTypes[] =
 
 - (id)objectFromResult
 {	
-	if (!_result || !_type) return [NSNull null];
-	
-	switch (_type)
-	{
-		case PGPostgresOidByteData:
-			return [self _binaryDataFromResult];
-	}
-	
-	return [NSNull null];
-}
-
-#pragma mark -
-#pragma mark Private API
-
-/**
- * Converts a binary data value to an NSData instance.
- *
- * @return The NSData representation of the data.
- */
-- (id)_binaryDataFromResult
-{
 	PGbytea data;
+	
+	if (!_result || !_type) return [NSNull null];
 	
 	if (!PQgetf(_result, _row, PGPostgresResultValueByteA, _column)) return [NSNull null];
 	
-	if (!data.data || !data.len) return [NSNull null];
+	if (!data.data || !data.len) return [NSData data];
 	
 	return [NSData dataWithBytes:data.data length:data.len];
 }
