@@ -90,7 +90,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{95,  "cp932", "cp932_japanese_ci", 1, 2},
 	{97,  "eucjpms", "eucjpms_japanese_ci", 1, 3},
 	{2,   "latin2", "latin2_czech_cs", 1, 1},
-	{5,   "latin1", "latin1_german_ci", 1, 1},
+	{5,   "latin1", "latin1_german1_ci", 1, 1},
 	{14,  "cp1251", "cp1251_bulgarian_ci", 1, 1},
 	{15,  "latin1", "latin1_danish_ci", 1, 1},
 	{17,  "filename", "filename", 1, 5},
