@@ -262,7 +262,7 @@ const SPDatabaseCharSets charsets[] =
 	{
 		5,
 		"latin1",
-		"latin1_german_ci",
+		"latin1_german1_ci",
 		"cp1252 West European"
 	},
 	{

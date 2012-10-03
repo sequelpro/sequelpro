@@ -1714,6 +1714,7 @@
  */
 - (void)_importBackgroundProcess:(NSString *)filename
 {
+    [[NSThread currentThread] setName:@"Sequel Pro Background Importer"];
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
 	
