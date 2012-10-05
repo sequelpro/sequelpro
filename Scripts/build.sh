@@ -73,6 +73,14 @@ mkdir -p "${BUILD_PRODUCT}/Contents/SharedSupport/Default Bundles"
 
 cp -R "${SRCROOT}/SharedSupport/Default Bundles" "${BUILD_PRODUCT}/Contents/SharedSupport"
 
+# Copy all Default Themes to build product
+rm -rf "${BUILD_PRODUCT}/Contents/SharedSupport/Default Themes"
+
+mkdir -p "${BUILD_PRODUCT}/Contents/SharedSupport/Default Themes"
+
+cp -R "${SRCROOT}/SharedSupport/Default Themes" "${BUILD_PRODUCT}/Contents/SharedSupport"
+
+
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then
