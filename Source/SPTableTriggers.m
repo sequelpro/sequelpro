@@ -116,6 +116,9 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+    
+    // TODO: tick this in XIB. I don't want to bork the .XIBs again (Marius)
+    triggerStatementTextView.drawsBackground = YES;
 }
 
 /**
@@ -281,6 +284,9 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 	
+    [triggerNameTextField setStringValue:@""];
+    [triggerStatementTextView setString:@""];
+    
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
 		modalDelegate:self
