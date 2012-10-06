@@ -32,17 +32,6 @@
 
 #import "SPFavoriteTextFieldCell.h"
 
-#define FAVORITE_NAME_FONT_SIZE 12.0f
-
-@interface SPFavoriteTextFieldCell (PrivateAPI)
-
-- (NSAttributedString *)constructSubStringAttributedString;
-- (NSAttributedString *)attributedStringForFavoriteName;
-- (NSDictionary *)mainStringAttributedStringAttributes;
-- (NSDictionary *)subStringAttributedStringAttributes;
-
-@end
-
 @implementation SPFavoriteTextFieldCell
 
 /**
@@ -51,10 +40,7 @@
 - (id)init
 {
 	if ((self = [super init])) {
-		mainStringColor = [NSColor blackColor];
-		subStringColor = [NSColor grayColor];
-		favoriteName = nil;
-		favoriteHost = nil;
+		drawsDividerUnderCell = NO;
 	}
 	
 	return self;
@@ -63,186 +49,64 @@
 - (id)copyWithZone:(NSZone *)zone 
 {
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
-	
-	cell->favoriteName = nil;
-    if (favoriteName) cell->favoriteName = [favoriteName copyWithZone:zone];
 
-    cell->favoriteHost = nil;
-    if (favoriteHost) cell->favoriteHost = [favoriteHost copyWithZone:zone];
+	cell->drawsDividerUnderCell = drawsDividerUnderCell;
     
 	return cell;
 }
 
 /**
- * Get the cell's favorite name.
+ * Returns whether this cell is set to draw a divider in the space directly below
+ * the cell (whatever currently populates that space).
  */
-- (NSString *)favoriteName
+- (BOOL)drawsDividerUnderCell
 {
-	return favoriteName;
+	return drawsDividerUnderCell;
 }
 
 /**
- * Set the cell's favorite name to the supplied name.
+ * Set whether this cell should draw a divider in the space directly below
+ * the cell (whatever currently populates that space).
  */
-- (void)setFavoriteName:(NSString *)name
+- (void)setDrawsDividerUnderCell:(BOOL)drawsDivider
 {
-	if (favoriteName != name) {
-		[favoriteName release];
-		favoriteName = [name retain];
-	}
+	drawsDividerUnderCell = drawsDivider;
 }
 
-/**
- * Get the cell's favorite host.
- */
-- (NSString *)favoriteHost
-{
-	return favoriteHost;
-}
+#pragma mark -
 
 /**
- * Set the cell's favorite host to the supplied name.
- */
-- (void)setFavoriteHost:(NSString *)host
-{
-	if (favoriteHost != host) {
-		[favoriteHost release];
-		favoriteHost = [host retain];
-	}
-}
-
-/**
- * Draws the actual cell.
+ * Draws the actual cell, with a divider if appropriate.
  */
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {		
-	(([self isHighlighted]) && (![[self highlightColorWithFrame:cellFrame inView:controlView] isEqualTo:[NSColor secondarySelectedControlColor]])) ? [self invertFontColors] : [self restoreFontColors];
-	
-	// Construct and get the sub text attributed string
-	NSAttributedString *mainString = [self attributedStringForFavoriteName];
-	NSAttributedString *subString = [self constructSubStringAttributedString];
-	
-	NSRect subFrame = NSMakeRect(0.0f, 0.0f, [subString size].width, [subString size].height);
-	
-	// Total height of both strings with a 2 pixel separation space
-	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0f;
-	
-	cellFrame.origin.y += (cellFrame.size.height - totalHeight) / 2.0f;
-	cellFrame.origin.x += 10.0f; // Indent main string from image
-	
-	// Position the sub text's frame rect
-	subFrame.origin.y = [mainString size].height + cellFrame.origin.y + 1.0f;
-	subFrame.origin.x = cellFrame.origin.x;
-	
-	cellFrame.size.height = totalHeight;
-	
-	NSUInteger i;
-	CGFloat maxWidth = cellFrame.size.width;
-	CGFloat mainStringWidth = [mainString size].width;
-	CGFloat subStringWidth = [subString size].width;
+	[super drawInteriorWithFrame:cellFrame inView:controlView];
 
-	// Set a right-padding
-	maxWidth -= 10;
+	if (drawsDividerUnderCell) {
+		NSRect viewFrame = [controlView frame];
 
-	if (maxWidth < mainStringWidth) {
-		for (i = 0; i <= [mainString length]; i++) {
-			if ([[mainString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth && i >= 3) {
-				mainString = [[[NSMutableAttributedString alloc] initWithString:[[[mainString attributedSubstringFromRange:NSMakeRange(0, i - 3)] string] stringByAppendingString:@"..."] attributes:[self mainStringAttributedStringAttributes]] autorelease];
-			}
+		NSPoint startPoint = NSMakePoint(viewFrame.origin.x + 7.f, viewFrame.origin.y);
+		NSPoint endPoint = NSMakePoint(viewFrame.origin.x + viewFrame.size.width - 7.f, viewFrame.origin.y);
+
+		if ([controlView isFlipped]) {
+			startPoint.y += cellFrame.size.height + 8.5f;
+			endPoint.y += cellFrame.size.height + 8.5f;
+		} else {
+			startPoint.y -= cellFrame.size.height + 8.5f;
+			endPoint.y -= cellFrame.size.height + 8.5f;
 		}
+
+		[NSGraphicsContext saveGraphicsState];
+		[[NSColor gridColor] set];
+		NSShadow *lineGlow = [[NSShadow alloc] init];
+		[lineGlow setShadowBlurRadius:1];
+		[lineGlow setShadowColor:[[NSColor controlLightHighlightColor] colorWithAlphaComponent:0.75f]];
+		[lineGlow setShadowOffset:NSMakeSize(0, -1)];
+		[lineGlow set];
+		[NSBezierPath strokeLineFromPoint:startPoint toPoint:endPoint];
+		[lineGlow release];
+		[NSGraphicsContext restoreGraphicsState];
 	}
-	
-	if (maxWidth < subStringWidth) {
-		for (i = 0; i <= [subString length]; i++) {
-			if ([[subString attributedSubstringFromRange:NSMakeRange(0, i)] size].width >= maxWidth && i >= 3) {
-				subString = [[[NSMutableAttributedString alloc] initWithString:[[[subString attributedSubstringFromRange:NSMakeRange(0, i - 3)] string] stringByAppendingString:@"..."] attributes:[self subStringAttributedStringAttributes]] autorelease];
-			}
-		}
-	}
-	
-	[mainString drawInRect:cellFrame];
-	[subString drawInRect:subFrame];
-}
-
-- (NSSize)cellSize
-{
-	NSSize cellSize = [super cellSize];
-	NSAttributedString *mainString = [self attributedStringForFavoriteName];
-	NSAttributedString *subString = [self constructSubStringAttributedString];
-
-	// 15 := indention 10 from image to string plus 5 px padding
-	CGFloat theWidth = MAX([mainString size].width, [subString size].width) + (([self image] != nil) ? [[self image] size].width : 0) + 15;
-
-	CGFloat totalHeight = [mainString size].height + [subString size].height + 1.0f;
-
-	cellSize.width = theWidth;
-	cellSize.height = totalHeight + 13.0f;
-	return cellSize;
-}
-
-/**
- * Inverts the displayed font colors when the cell is selected.
- */
-- (void)invertFontColors
-{
-	mainStringColor = [NSColor whiteColor];
-	subStringColor = [NSColor whiteColor];
-}
-
-/**
- * Restores the displayed font colors once the cell is no longer selected.
- */
-- (void)restoreFontColors
-{
-	mainStringColor = [NSColor blackColor];
-	subStringColor = [NSColor grayColor];
-}
-
-/**
- * Dealloc.
- */
-- (void)dealloc 
-{	
-    [favoriteName release], favoriteName = nil;
-    [favoriteHost release], favoriteHost = nil;
-	
-    [super dealloc];
-}
-
-@end
-
-@implementation SPFavoriteTextFieldCell (PrivateAPI)
-
-/**
- * Constructs the attributed string to be used as the cell's substring.
- */
-- (NSAttributedString *)constructSubStringAttributedString
-{
-	return [[[NSAttributedString alloc] initWithString:favoriteHost attributes:[self subStringAttributedStringAttributes]] autorelease];
-}
-
-/**
- * Constructs the attributed string for the cell's favorite name.
- */
-- (NSAttributedString *)attributedStringForFavoriteName
-{	
-	return [[[NSAttributedString alloc] initWithString:favoriteName attributes:[self mainStringAttributedStringAttributes]] autorelease];
-}
-
-/**
- * Returns the attributes of the cell's main string.
- */
-- (NSDictionary *)mainStringAttributedStringAttributes
-{
-	return [NSDictionary dictionaryWithObjectsAndKeys:mainStringColor, NSForegroundColorAttributeName, [NSFont systemFontOfSize:FAVORITE_NAME_FONT_SIZE], NSFontAttributeName, nil];
-}
-
-/**
- * Returns the attributes of the cell's sub string.
- */
-- (NSDictionary *)subStringAttributedStringAttributes
-{
-	return [NSDictionary dictionaryWithObjectsAndKeys:subStringColor, NSForegroundColorAttributeName, [NSFont systemFontOfSize:[NSFont smallSystemFontSize]], NSFontAttributeName, nil];
 }
 
 @end

@@ -34,20 +34,10 @@
 
 @interface SPFavoriteTextFieldCell : ImageAndTextCell
 {
-	NSString *favoriteName;
-	NSString *favoriteHost;
-	
-	NSColor  *mainStringColor;
-	NSColor  *subStringColor;
+	BOOL drawsDividerUnderCell;
 }
 
-- (NSString *)favoriteName;
-- (void)setFavoriteName:(NSString *)name;
-
-- (NSString *)favoriteHost;
-- (void)setFavoriteHost:(NSString *)host;
-
-- (void)invertFontColors;
-- (void)restoreFontColors;
+- (BOOL)drawsDividerUnderCell;
+- (void)setDrawsDividerUnderCell:(BOOL)drawsDivider;
 
 @end

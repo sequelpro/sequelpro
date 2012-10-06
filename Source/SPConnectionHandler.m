@@ -45,8 +45,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 @interface SPConnectionController ()
 
 - (void)_restoreConnectionInterface;
-
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
+- (void)_showConnectionTestResult:(NSString *)resultString;
 
 @end
 
@@ -58,7 +57,17 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 - (void)initiateMySQLConnection
 {	
 #ifndef SP_REFACTOR
-	[progressIndicatorText setStringValue:(sshTunnel) ? NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message") : NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
+	if (isTestingConnection) {
+		if (sshTunnel) {
+			[progressIndicatorText setStringValue:NSLocalizedString(@"Testing MySQL...", @"MySQL connection test very short status message")];
+		} else {
+			[progressIndicatorText setStringValue:NSLocalizedString(@"Testing connection...", @"Connection test very short status message")];
+		}
+	} else if (sshTunnel) {
+		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
+	} else {
+		[progressIndicatorText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
+	}
 	[progressIndicatorText display];
 	
 	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
@@ -200,7 +209,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	if ([self database] && ![[self database] isEqualToString:@""]) {
 		if (![mySQLConnection selectDatabase:[self database]]) {
-			[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection lastErrorMessage]] detail:nil rawErrorText:[mySQLConnection lastErrorMessage]];
+			if (!isTestingConnection) {
+				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection lastErrorMessage]] detail:nil rawErrorText:[mySQLConnection lastErrorMessage]];
+			}
 			
 			// Tidy up
 			isConnecting = NO;
@@ -209,6 +220,10 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			
 			[mySQLConnection release], mySQLConnection = nil;
 			[self _restoreConnectionInterface];
+			if (isTestingConnection) {
+				[self _showConnectionTestResult:NSLocalizedString(@"Invalid database", @"Invalid database very short status message")];
+			}
+
 			[pool release];
 			
 			return;
@@ -228,7 +243,11 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)initiateSSHTunnelConnection
 {
-	[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
+	if (isTestingConnection) {
+		[progressIndicatorText setStringValue:NSLocalizedString(@"Testing SSH...", @"SSH testing very short status message")];
+	} else {
+		[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
+	}
 	[progressIndicatorText display];
 	
 	// Trim whitespace and newlines from the SSH host field before attempting to connect
@@ -266,9 +285,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 {	
 	isConnecting = NO;
 	
-	// If the user hit cancel during the connection attempt, kill the connection once 
-	// established and reset the UI.
-	if (mySQLConnectionCancelled) {		
+	// If the user hit cancel during the connection attempt, or a test connection is
+	// occurring, kill the connection once established and reset the UI.
+	if (mySQLConnectionCancelled || isTestingConnection) {		
 		if ([mySQLConnection isConnected]) {
 			[mySQLConnection disconnect];
 			[mySQLConnection release], mySQLConnection = nil;
@@ -278,7 +297,11 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[self cancelConnection];
 		
 		[self _restoreConnectionInterface];
-		
+
+		if (isTestingConnection) {
+			[self _showConnectionTestResult:NSLocalizedString(@"Connection succeeded", @"Connection success very short status message")];
+		}
+
 		return;
 	}
 	
@@ -296,7 +319,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[connectButton display];
 	[progressIndicator stopAnimation:self];
 	[progressIndicatorText setHidden:YES];
-	[addToFavoritesButton setHidden:NO];
 #endif
 	
 	// If SSL was enabled, check it was established correctly
@@ -418,9 +440,8 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[progressIndicator display];
 	[progressIndicatorText setHidden:YES];
 	[progressIndicatorText display];
-	[addToFavoritesButton setHidden:NO];
-	[addToFavoritesButton display];
 	[connectButton setEnabled:YES];
+	[testConnectButton setEnabled:YES];
 	[dbDocument clearStatusIcon];
 #endif
 	
@@ -483,7 +504,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		// Change connection details
 		[self setPort:tunnelPort];
 		[self setHost:SPLocalhostAddress];
-		[self _updateFavoritePasswordsFromField:standardSQLHostField];
 		
 #ifndef SP_REFACTOR
 		// Change to standard TCP/IP connection view
@@ -493,6 +513,21 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		// Initiate the connection after a half second delay to give the connection view a chance to resize
 		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
 	}
+}
+
+/**
+ * Display a connection test error or success message
+ */
+- (void)_showConnectionTestResult:(NSString *)resultString
+{
+	if (![NSThread isMainThread]) {
+		[[self onMainThread] _showConnectionTestResult:resultString];
+	}
+
+	[helpButton setHidden:NO];
+	[progressIndicator stopAnimation:self];
+	[progressIndicatorText setStringValue:resultString];
+	[progressIndicatorText setHidden:NO];
 }
 
 @end

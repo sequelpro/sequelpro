@@ -31,6 +31,9 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFavoritesOutlineView.h"
+#import "SPConnectionControllerDelegate.h"
+
+static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 
 @implementation SPFavoritesOutlineView
 
@@ -86,6 +89,66 @@
 	else {
 		[super rightMouseDown:event];
 	}
+}
+
+/**
+ * Don't reserve a gap for the disclosure triangles for top-level items.  This involves reducing the
+ * padding - and increasing the width - of all rows to compensate.
+ */
+- (NSRect)frameOfCellAtColumn:(NSInteger)columnIndex row:(NSInteger)rowIndex
+{
+	NSRect superFrame = [super frameOfCellAtColumn:columnIndex row:rowIndex];
+
+	return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width + SPFavoritesOutlineViewUnindent, superFrame.size.height);
+}
+
+/**
+ * As no gap is reserved for the disclosure triangles at the top level, the frames for other
+ * disclosure items need to be similarly moved.
+ */
+- (NSRect)frameOfOutlineCellAtRow:(NSInteger)rowIndex
+{
+	NSRect superFrame = [super frameOfOutlineCellAtRow:rowIndex];
+
+	if (superFrame.origin.x > SPFavoritesOutlineViewUnindent) {
+		return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);
+	}
+
+	return superFrame;
+}
+
+
+/**
+ * If the delegate is a SPConnectionControllerDelegate, and editing is currently in
+ * progress, draw a custom highlight.
+ */
+- (void)highlightSelectionInClipRect:(NSRect)clipRect
+{
+
+	// Only proceed if a the delegate is a SPConnectionControllerDelegate and a favoruite being edited
+	if ([[self delegate] isKindOfClass:[SPConnectionController class]]
+		&& [(SPConnectionController *)[self delegate] isEditingConnection]
+		&& [(SPConnectionController *)[self delegate] selectedFavorite])
+	{
+
+		// Draw an editing dot instead of highlighting the whole row
+		NSRect rowRect = [self rectOfRow:[self selectedRow]];
+		float dotSize = rowRect.size.height / 1.9;
+		NSRect dotRect = NSMakeRect(9.f, rowRect.origin.y + ((rowRect.size.height - dotSize) / 2), dotSize, dotSize);
+		[NSGraphicsContext saveGraphicsState];
+
+		NSBezierPath *clipPath = [NSBezierPath bezierPath];
+		[clipPath appendBezierPathWithOvalInRect:dotRect];
+		[clipPath addClip];
+
+		NSGradient *dotGradient = [[[NSGradient alloc] initWithStartingColor:[NSColor colorWithDeviceRed:0.44f green:0.72f blue:0.92f alpha:1.f] endingColor:[NSColor colorWithDeviceRed:0.21f green:0.53f blue:0.82f alpha:1.f]] autorelease];
+		[dotGradient drawInRect:dotRect angle:90.f];
+
+		[NSGraphicsContext restoreGraphicsState];
+		return;
+	}
+
+	[super highlightSelectionInClipRect:clipRect];
 }
 
 @end

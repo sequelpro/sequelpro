@@ -39,7 +39,6 @@
 @interface SPConnectionController ()
 
 - (void)_reloadFavoritesViewData;
-- (void)_updateFavoritePasswordsFromField:(NSControl *)control;
 
 @end
 
@@ -47,16 +46,42 @@
 
 #ifndef SP_REFACTOR
 
+/**
+ * Return the number of children for the specified item in the favourites tree.
+ * Note that to support the "Quick Connect" entry, the returned count is amended
+ * for the top level.
+ */
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {	
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
-	
+
+	// If at the root, return the count plus one for the "Quick Connect" entry
+	if (!item) {
+		return [[node childNodes] count] + 1;
+	}
+
 	return [[node childNodes] count];
 }
 
+/**
+ * Return the branch at the specified index of a supplied tree level.
+ * Note that to support the "Quick Connect" entry, children of the top level
+ * have their offsets amended.
+ */
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)childIndex ofItem:(id)item
 {
+
+	// For the top level of the tree, return the "Quick Connect" child for position zero;
+	// amend all other positions to compensate for the faked position.
+	if (!item) {
+		if (childIndex == 0) {
+			return quickConnectItem;
+		}
+		childIndex--;
+	}
+
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
+
 	
 	return NSArrayObjectAtIndex([node childNodes], childIndex);
 }
@@ -83,11 +108,10 @@
 		SPTreeNode *node = [self selectedFavoriteNode];
 		
 		if (![node isGroup]) {			
+
 			// Updating the name triggers a KVO update 
-			[self setName:newName];
-			
-			// Update associated Keychain items
-			[self _updateFavoritePasswordsFromField:nil];
+			[self setName:newName];		
+			[self saveFavorite:self];	
 		}
 		else {
 			[[node representedObject] setNodeName:newName];
