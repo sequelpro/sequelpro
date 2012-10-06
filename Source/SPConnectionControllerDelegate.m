@@ -84,6 +84,11 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	}
 }
 
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
+{
+	return 120.0;
+}
+
 #endif
 
 #pragma mark -
