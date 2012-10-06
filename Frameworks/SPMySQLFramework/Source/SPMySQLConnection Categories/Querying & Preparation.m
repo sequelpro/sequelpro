@@ -304,7 +304,9 @@
 		// Query has failed - check the connection
 		[self _unlockConnection];
 		if (![self checkConnection]) {
-			break;
+			[self _updateLastErrorMessage:theErrorMessage];
+			[self _updateLastErrorID:theErrorID];
+			return nil;
 		}
 		[self _lockConnection];
 
