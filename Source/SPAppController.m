@@ -55,7 +55,7 @@
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
 
-#pragma mark lex init
+#pragma mark Lex init
 
 /*
 * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
@@ -65,6 +65,12 @@ extern NSUInteger yyuoffset, yyuleng;
 typedef struct yy_buffer_state *YY_BUFFER_STATE;
 void yy_switch_to_buffer(YY_BUFFER_STATE);
 YY_BUFFER_STATE yy_scan_string (const char *);
+
+@interface SPAppController ()
+
+- (void)_copyDefaultThemes;
+
+@end
 
 @implementation SPAppController
 
@@ -146,7 +152,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
-    [self copyDefaultThemes];
+    [self _copyDefaultThemes];
 
 	// If no documents are open, open one
 	if (![self frontDocument]) {
@@ -182,58 +188,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	}
 
 	return YES;
-}
-
-/**
- * Copy default themes, when we start the app.
- */
-
-- (void)copyDefaultThemes
-{
-	NSFileManager *fm = [NSFileManager defaultManager];
-	NSError *appPathError = nil;
-    
-    NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
-    NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
-        
-	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
-	if(appPathError != nil) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
-										 defaultButton:NSLocalizedString(@"OK", @"OK button")
-									   alternateButton:nil
-                                           otherButton:nil
-                             informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Couldn't create Application Support Theme folder!\nError: %@", @"Couldn't create Application Support Theme folder!\nError: %@"), [appPathError localizedDescription]]];
-        
-		[alert runModal];
-		return;
-	}
-    
-    NSError *error = nil;
-    NSError *copyError = nil;
-    NSArray *defaultThemes = [fm contentsOfDirectoryAtPath:defaultThemesPath error:&error];
-    if (defaultThemes && [defaultThemes count] && error == nil) {
-        for(NSString* defaultTheme in defaultThemes) {
-            if(![[[defaultTheme pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) continue;
-            
-            NSString *defaultThemeFullPath = [NSString stringWithFormat:@"%@/%@", defaultThemesPath, defaultTheme];
-            NSString *appSupportThemeFullPath = [NSString stringWithFormat:@"%@/%@", appSupportThemesPath, defaultTheme];
-            
-            if([fm fileExistsAtPath:appSupportThemeFullPath]) continue;
-            [fm copyItemAtPath:defaultThemeFullPath toPath:appSupportThemeFullPath error:&copyError];
-        }
-    }
-    
-    // If Themes could not be copied, show error message
-	if(copyError != nil) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
-										 defaultButton:NSLocalizedString(@"OK", @"OK button")
-									   alternateButton:nil
-                                           otherButton:nil
-                             informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Couldn't copy default themes to Application Support Theme folder!\nError: %@", @"Couldn't copy default themes to Application Support Theme folder!\nError: %@"), [copyError localizedDescription]]];
-        
-		[alert runModal];
-		return;
-	}
 }
 
 #pragma mark -
@@ -2241,7 +2195,64 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	}
 
 	return YES;
+}
 
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Copy default themes, when we start the app.
+ */
+- (void)_copyDefaultThemes
+{
+	NSError *appPathError = nil;
+	NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
+    NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
+	
+	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
+	if (appPathError != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button")
+									   alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Couldn't create Application Support Theme folder!\nError: %@", @"Couldn't create Application Support Theme folder!\nError: %@"), [appPathError localizedDescription]]];
+        
+		[alert runModal];
+		return;
+	}
+    
+    NSError *error = nil;
+    NSError *copyError = nil;
+    NSArray *defaultThemes = [fm contentsOfDirectoryAtPath:defaultThemesPath error:&error];
+	
+    if (defaultThemes && [defaultThemes count] && error == nil) {
+        for (NSString *defaultTheme in defaultThemes) 
+		{
+            if (![[[defaultTheme pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) continue;
+            
+            NSString *defaultThemeFullPath = [NSString stringWithFormat:@"%@/%@", defaultThemesPath, defaultTheme];
+            NSString *appSupportThemeFullPath = [NSString stringWithFormat:@"%@/%@", appSupportThemesPath, defaultTheme];
+            
+            if ([fm fileExistsAtPath:appSupportThemeFullPath]) continue;
+            
+			[fm copyItemAtPath:defaultThemeFullPath toPath:appSupportThemeFullPath error:&copyError];
+        }
+    }
+    
+    // If Themes could not be copied, show error message
+	if (copyError != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button")
+									   alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Couldn't copy default themes to Application Support Theme folder!\nError: %@", @"Couldn't copy default themes to Application Support Theme folder!\nError: %@"), [copyError localizedDescription]]];
+        
+		[alert runModal];
+		
+		return;
+	}
 }
 
 #pragma mark -
