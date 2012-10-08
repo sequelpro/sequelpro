@@ -720,6 +720,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
 	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
+
+	// Ensure the parent is expanded
+	[favoritesOutlineView expandItem:parent];
 	
 	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
 	
@@ -750,7 +753,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
 	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
-	
+
+	// Ensure the parent is expanded
+	[favoritesOutlineView expandItem:parent];
+
 	SPTreeNode *node = [favoritesController addGroupNodeWithName:NSLocalizedString(@"New Folder", @"new folder placeholder name") asChildOfNode:parent];
 	
 	[self _reloadFavoritesViewData];
@@ -1273,6 +1279,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		} else if ([selectedNode parentNode] && [selectedNode parentNode] != favoritesRoot) {
 			parentNode = (SPTreeNode *)[selectedNode parentNode];
 		}
+
+		// Ensure the parent is expanded
+		[favoritesOutlineView expandItem:parentNode];
 
 		// Add the new node and select it
 		SPTreeNode *newNode = [favoritesController addFavoriteNodeWithData:theFavorite asChildOfNode:parentNode];
