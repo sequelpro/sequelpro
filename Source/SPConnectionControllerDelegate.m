@@ -430,6 +430,11 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 {
 	id field = [notification object];
 
+	// Ignore changes in the outline view edit fields
+	if ([field isKindOfClass:[NSOutlineView class]]) {
+		return;
+	}
+
 	// If a 'name' field was edited, and is now of zero length, trigger a replacement
 	// with a standard suggestion
 	if (((field == standardNameField) || (field == socketNameField) || (field == sshNameField)) && [self selectedFavoriteNode]) {
