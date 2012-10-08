@@ -34,13 +34,6 @@
 
 @implementation SPOutlineView
 
-- (id)init
-{
-	self = [super init];
-	
-	return self;
-}
-
 /**
  * Right-click at row will select that row before ordering out the contextual menu
  * if not more than one row is selected.

@@ -1720,7 +1720,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	
+
 	// Unregister observers
 #ifndef SP_REFACTOR
 	[self removeObserver:self forKeyPath:SPFavoriteTypeKey];

@@ -37,6 +37,12 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 
 @implementation SPFavoritesOutlineView
 
+- (void) awakeFromNib
+{
+	systemVersion = 0;
+	Gestalt(gestaltSystemVersion, &systemVersion);
+}
+
 - (BOOL)acceptsFirstResponder
 {
 	return YES;
@@ -99,6 +105,11 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 {
 	NSRect superFrame = [super frameOfCellAtColumn:columnIndex row:rowIndex];
 
+	// On system versions lower than Lion, don't alter padding
+	if (systemVersion < 0x1070) {
+		return superFrame;
+	}
+
 	return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width + SPFavoritesOutlineViewUnindent, superFrame.size.height);
 }
 
@@ -110,7 +121,8 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 {
 	NSRect superFrame = [super frameOfOutlineCellAtRow:rowIndex];
 
-	if (superFrame.origin.x > SPFavoritesOutlineViewUnindent) {
+	// On versions of Lion or above, amend the padding appropriately
+	if (systemVersion >= 0x1070 && superFrame.origin.x > SPFavoritesOutlineViewUnindent) {
 		return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);
 	}
 

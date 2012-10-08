@@ -67,7 +67,7 @@
 	BOOL isConnecting;
 	BOOL isEditingConnection;
 	BOOL isTestingConnection;
-	
+
 	// Standard details
 	NSInteger previousType;
 	NSInteger type;

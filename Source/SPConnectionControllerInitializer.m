@@ -62,7 +62,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 - (id)initWithDocument:(SPDatabaseDocument *)document
 {
 	if ((self = [super init])) {
-		
+
 		// Weak reference
 		dbDocument = document;
 		

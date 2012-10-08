@@ -303,7 +303,10 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)childIndex
 {
 	NSDragOperation result = NSDragOperationNone;
-	
+
+	// Prevent the top level or the quick connect item from being a target
+	if (!item || item == quickConnectItem) return result;
+
 	// Prevent dropping favorites on other favorites (non-groups)
 	if ((childIndex == NSOutlineViewDropOnItemIndex) && (![item isGroup])) return result;
 

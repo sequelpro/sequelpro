@@ -31,5 +31,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 @interface SPFavoritesOutlineView : NSOutlineView
+{
+	SInt32 systemVersion;
+}
 
 @end
