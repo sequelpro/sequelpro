@@ -71,7 +71,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 // Privately redeclare as read/write to get the synthesized setter
 @property (readwrite, assign) BOOL isEditingConnection;
 
-- (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite;
+- (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite validateDetails:(BOOL)validateDetails;
 - (BOOL)_checkHost;
 #ifndef SP_REFACTOR
 - (void)_sortFavorites;
@@ -83,6 +83,7 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 - (void)_selectNode:(SPTreeNode *)node;
 - (void)_scrollToSelectedNode;
 - (void)_removeNode:(SPTreeNode *)node;
+- (void)_removeAllPasswordsForNode:(SPTreeNode *)node;
 
 - (NSNumber *)_createNewFavoriteID;
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
@@ -676,7 +677,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)saveFavorite:(id)sender
 {
-	[self _saveCurrentDetailsCreatingNewFavorite:NO];
+	[self _saveCurrentDetailsCreatingNewFavorite:NO validateDetails:YES];
 }
 
 /**
@@ -742,7 +743,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)addFavoriteUsingCurrentDetails:(id)sender
 {
-	[self _saveCurrentDetailsCreatingNewFavorite:YES];
+	[self _saveCurrentDetailsCreatingNewFavorite:YES validateDetails:YES];
 }
 
 /**
@@ -1073,7 +1074,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  * If creating a new favourite, also select it and ensure the selected
  * favourite is visible.
  */
-- (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite
+- (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite validateDetails:(BOOL)validateDetails
 {
 
 	// Complete any active editing
@@ -1083,7 +1084,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
-	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
+	if (validateDetails && ([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil,
 						  NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"));		
@@ -1091,7 +1092,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
-	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
+	if (validateDetails && [self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), 
 						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil,
 						  NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete"));		
@@ -1574,35 +1575,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)_removeNode:(SPTreeNode *)node
 {
-	if (![node isGroup]) {
-		NSDictionary *favorite = [[node representedObject] nodeFavorite];
-		
-		// Get selected favorite's details
-		NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
-		NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
-		NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
-		NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
-		NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
-		NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
-		NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
-		
-		// Remove passwords from the Keychain
-		[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
-								account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
-		[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
-								account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
-		
-		// Reset last used favorite
-		if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
-			[prefs setInteger:0	forKey:SPLastFavoriteID];
-		}
-		
-		// If required, reset the default favorite
-		if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
-			[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
-		}
-	}
-	
+	[self _removeAllPasswordsForNode:node];
+
 	[favoritesController removeFavoriteNode:node];
 	
 	[self _reloadFavoritesViewData];
@@ -1615,6 +1589,52 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
 	
 	[[(SPPreferenceController *)[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
+}
+
+/**
+ * Removes all passwords for the supplied tree node and any child nodes.
+ *
+ * @param node The node to remove all passwords within and for.
+ */
+- (void)_removeAllPasswordsForNode:(SPTreeNode *)node
+{
+
+	// If the supplied node is a group node, remove all passwords for any children
+	if ([node isGroup]) {
+		for (SPTreeNode *childNode in [node childNodes]) {
+			[self _removeAllPasswordsForNode:childNode];
+		}
+		return;
+	}
+
+	// Otherwise, remove details for the supplied node.
+
+	NSDictionary *favorite = [[node representedObject] nodeFavorite];
+	
+	// Get selected favorite's details
+	NSString *favoriteName     = [favorite objectForKey:SPFavoriteNameKey];
+	NSString *favoriteUser     = [favorite objectForKey:SPFavoriteUserKey];
+	NSString *favoriteHost     = [favorite objectForKey:SPFavoriteHostKey];
+	NSString *favoriteDatabase = [favorite objectForKey:SPFavoriteDatabaseKey];
+	NSString *favoriteSSHUser  = [favorite objectForKey:SPFavoriteSSHUserKey];
+	NSString *favoriteSSHHost  = [favorite objectForKey:SPFavoriteSSHHostKey];
+	NSString *favoriteID       = [favorite objectForKey:SPFavoriteIDKey];
+	
+	// Remove passwords from the Keychain
+	[keychain deletePasswordForName:[keychain nameForFavoriteName:favoriteName id:favoriteID]
+							account:[keychain accountForUser:favoriteUser host:((type == SPSocketConnection) ? @"localhost" : favoriteHost) database:favoriteDatabase]];
+	[keychain deletePasswordForName:[keychain nameForSSHForFavoriteName:favoriteName id:favoriteID]
+							account:[keychain accountForSSHUser:favoriteSSHUser sshHost:favoriteSSHHost]];
+	
+	// Reset last used favorite
+	if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPLastFavoriteID]) {
+		[prefs setInteger:0	forKey:SPLastFavoriteID];
+	}
+	
+	// If required, reset the default favorite
+	if ([[favorite objectForKey:SPFavoriteIDKey] integerValue] == [prefs integerForKey:SPDefaultFavorite]) {
+		[prefs setInteger:[prefs integerForKey:SPLastFavoriteID] forKey:SPDefaultFavorite];
+	}
 }
 
 /**
@@ -1698,8 +1718,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Fade and move the edit button area in
 	[editButtonsView setAlphaValue:0.0];
 	[editButtonsView setHidden:NO];
-	[editButtonsView setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y - 40)];
-	[[editButtonsView animator] setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y + 40)];
+	[editButtonsView setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y - 30)];
+	[[editButtonsView animator] setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y + 30)];
 	[[editButtonsView animator] setAlphaValue:1.0];
 
 	// Update the "Save" button state as appropriate

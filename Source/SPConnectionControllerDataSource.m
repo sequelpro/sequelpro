@@ -111,7 +111,7 @@
 
 			// Updating the name triggers a KVO update 
 			[self setName:newName];		
-			[self saveFavorite:self];	
+			[self _saveCurrentDetailsCreatingNewFavorite:NO validateDetails:NO];
 		}
 		else {
 			[[node representedObject] setNodeName:newName];
