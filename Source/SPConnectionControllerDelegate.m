@@ -360,6 +360,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		if (childIndex == NSOutlineViewDropOnItemIndex) {
 			childIndex = 0;
 		}
+		[outlineView expandItem:node];
 	}
 	else {
 		if (childIndex == NSOutlineViewDropOnItemIndex) {
