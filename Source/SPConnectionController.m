@@ -1402,16 +1402,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 	
 	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init]; 
-	NSMutableArray *groupNodes = [[NSMutableArray alloc] init];
-	
-	for (SPTreeNode *innerNode in nodes)
-	{
-		if ([innerNode isGroup]) {
-			[groupNodes addObject:innerNode];
-			[indexes addIndex:[nodes indexOfObject:innerNode]];
-		}
-	}
-	
+		
 	NSUInteger i = [indexes lastIndex];
 	
 	while (i != NSNotFound)
@@ -1424,15 +1415,12 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[indexes release];
 	
 	[nodes sortUsingFunction:_compareFavoritesUsingKey context:key];
-	
-	[nodes addObjectsFromArray:groupNodes];
-	
+		
 	if (reverseFavoritesSort) [nodes reverse];
 	
 	[[node mutableChildNodes] setArray:nodes];
 	
 	[nodes release];
-	[groupNodes release];
 }
 
 /**
@@ -1447,10 +1435,31 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key)
 {
 	NSString *dictKey = (NSString *)key;
-	
-	id value1 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite1 representedObject] nodeFavorite] objectForKey:dictKey];
-	id value2 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite2 representedObject] nodeFavorite] objectForKey:dictKey];
-	
+	id value1, value2;
+
+	if ([favorite1 isGroup]) {
+		if ([dictKey isEqualToString:SPFavoriteNameKey] || [favorite2 isGroup]) {
+			value1 = [[favorite1 representedObject] nodeName];
+		} else {
+			value1 = nil;
+		}
+	} else {
+		value1 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite1 representedObject] nodeFavorite] objectForKey:dictKey];
+	}
+
+	if ([favorite2 isGroup]) {
+		if ([dictKey isEqualToString:SPFavoriteNameKey] || [favorite1 isGroup]) {
+			value2 = [[favorite2 representedObject] nodeName];
+		} else {
+			value2 = nil;
+		}
+	} else {
+		value2 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite2 representedObject] nodeFavorite] objectForKey:dictKey];
+	}
+
+	if ([value1 isKindOfClass:[NSString class]]) {
+		return [value1 caseInsensitiveCompare:value2];
+	}
 	return [value1 compare:value2];
 }
 
@@ -1729,11 +1738,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (isEditingConnection) return;
 
 	// Fade and move the edit button area in
-	[editButtonsView setAlphaValue:0.0];
+	[editButtonsView setAlphaValue:0.0f];
 	[editButtonsView setHidden:NO];
 	[editButtonsView setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y - 30)];
 	[[editButtonsView animator] setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y + 30)];
-	[[editButtonsView animator] setAlphaValue:1.0];
+	[[editButtonsView animator] setAlphaValue:1.0f];
 
 	// Update the "Save" button state as appropriate
 	[saveFavoriteButton setEnabled:([self selectedFavorite] != nil)];
