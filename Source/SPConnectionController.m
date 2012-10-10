@@ -727,7 +727,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
 	
-	[self _reloadFavoritesViewData];
+	[self _sortFavorites];
     [self _selectNode:node];
 	
     [[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
@@ -1286,7 +1286,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 		// Add the new node and select it
 		SPTreeNode *newNode = [favoritesController addFavoriteNodeWithData:theFavorite asChildOfNode:parentNode];
-		[self _reloadFavoritesViewData];
+
+		[self _sortFavorites];
+
 		[self _selectNode:newNode];
 
 		// Update the favorites popup button in the preferences
@@ -1304,7 +1306,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		if (currentFavorite) [currentFavorite release], currentFavorite = nil;
 		currentFavorite = [theFavorite copy];
 
-		[self _reloadFavoritesViewData];
+		[self _sortFavorites];
+		[self _scrollToSelectedNode];
 	}
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
@@ -1352,14 +1355,24 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			sortKey = SPFavoriteTypeKey;
 			break;
 		case SPFavoritesSortUnsorted:
-			break;
+			return;
 	}
-	
+
+	// Store a copy of the selected nodes for re-selection
+	NSArray *preSortSelection = [self selectedFavoriteNodes];
+
 	[self _sortTreeNode:[[favoritesRoot childNodes] objectAtIndex:0] usingKey:sortKey];
 			
 	[favoritesController saveFavorites];
 	 
 	[self _reloadFavoritesViewData];
+
+	// Update the selection to account for sorted favourites
+	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];
+	for (SPTreeNode *eachNode in preSortSelection) {
+		[restoredSelection addIndex:[favoritesOutlineView rowForItem:eachNode]];
+	}
+	[favoritesOutlineView selectRowIndexes:restoredSelection byExtendingSelection:NO];
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 }
