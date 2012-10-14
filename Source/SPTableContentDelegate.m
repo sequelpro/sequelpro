@@ -47,6 +47,7 @@
 #import "SPAlertSheets.h"
 #import "SPTableData.h"
 #import "SPFieldEditorController.h"
+#import "SPThreadAdditions.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -77,7 +78,7 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Sorting table...", @"Sorting table task description")];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(sortTableTaskWithColumn:) toTarget:self withObject:tableColumn];
+		[NSThread detachNewThreadWithName:@"SPTableContent table sort task" target:self selector:@selector(sortTableTaskWithColumn:) object:tableColumn];
 	} 
 	else {
 		[self sortTableTaskWithColumn:tableColumn];

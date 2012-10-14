@@ -32,6 +32,7 @@
 
 #import "SPFavoritesExporter.h"
 #import "SPTreeNode.h"
+#import "SPThreadAdditions.h"
 
 @interface SPFavoritesExporter ()
 
@@ -57,7 +58,7 @@
 	[self setExportFavorites:favorites];
 	[self setExportPath:path];
 	
-	[NSThread detachNewThreadSelector:@selector(_writeFavoritesInBackground) toTarget:self withObject:nil];
+	[NSThread detachNewThreadWithName:@"SPFavoritesExporter background writing thread" target:self selector:@selector(_writeFavoritesInBackground) object:nil];
 }
 
 /**

@@ -35,6 +35,7 @@
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
 #import "SPDataCellFormatter.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -226,7 +227,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	processListThreadRunning = YES;
 		
 	// Get the processes list on a background thread
-	[NSThread detachNewThreadSelector:@selector(_getDatabaseProcessListInBackground:) toTarget:self withObject:nil];
+	[NSThread detachNewThreadWithName:@"SPProcessListController retrieving process list" target:self selector:@selector(_getDatabaseProcessListInBackground:) object:nil];
 }
 
 /**

@@ -145,6 +145,7 @@
 		else if (fileMode == O_WRONLY) {
 			useCompression = NO;
 			processingThread = [[NSThread alloc] initWithTarget:self selector:@selector(_writeBufferToData) object:nil];
+			[processingThread setName:@"SPFileHandle data writing thread"];
 			[processingThread start];
 		}
 	}

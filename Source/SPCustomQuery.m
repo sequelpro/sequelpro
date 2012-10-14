@@ -57,6 +57,7 @@
 #import "SPSplitView.h"
 #import "SPTextView.h"
 #import "RegexKitLite.h"
+#import "SPThreadAdditions.h"
 #ifndef SP_REFACTOR /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
@@ -548,7 +549,7 @@
 
 	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
+		[NSThread detachNewThreadWithName:@"SPCustomQuery query perform task" target:self selector:@selector(performQueriesTask:) object:taskArguments];
 	} 
 	else {
 		[self performQueriesTask:taskArguments];

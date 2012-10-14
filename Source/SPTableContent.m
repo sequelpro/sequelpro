@@ -63,6 +63,7 @@
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPCustomQuery.h"
+#import "SPThreadAdditions.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -1451,7 +1452,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
 
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(reloadTableTask) toTarget:self withObject:nil];
+		[NSThread detachNewThreadWithName:@"SPTableContent table reload task" target:self selector:@selector(reloadTableTask) object:nil];
 	} else {
 		[self reloadTableTask];
 	}
@@ -1541,7 +1542,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[tableDocumentInstance startTaskWithDescription:taskString];
 
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(filterTableTask) toTarget:self withObject:nil];
+		[NSThread detachNewThreadWithName:@"SPTableContent filter table task" target:self selector:@selector(filterTableTask) object:nil];
 	} else {
 		[self filterTableTask];
 	}
@@ -2560,7 +2561,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// If on the main thread, fire up a thread to perform the load while keeping the modification flag
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Loading reference...", @"Loading referece task string")];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(clickLinkArrowTask:) toTarget:self withObject:theArrowCell];
+		[NSThread detachNewThreadWithName:@"SPTableContent linked data load task" target:self selector:@selector(clickLinkArrowTask:) object:theArrowCell];
 	} else {
 		[self clickLinkArrowTask:theArrowCell];
 	}

@@ -45,6 +45,7 @@
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
 #import "SPTableStructureLoading.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -516,7 +517,7 @@
 		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
+			[NSThread detachNewThreadWithName:@"SPTableStructure field and key removal task" target:self selector:@selector(_removeFieldAndForeignKey:) object:removeKey];
 
 			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
@@ -944,7 +945,7 @@
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}

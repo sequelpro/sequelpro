@@ -36,6 +36,7 @@
 #import "SPDatabaseViewController.h"
 #import "SPIndexesController.h"
 #import "SPTablesList.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -285,10 +286,11 @@
 	[tableDocumentInstance setStatusRequiresReload:YES];
 	
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) 
-							 toTarget:[tableDocumentInstance databaseStructureRetrieval] 
-						   withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
-	
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
+	                           target:[tableDocumentInstance databaseStructureRetrieval]
+							 selector:@selector(queryDbStructureWithUserInfo:)
+							   object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+
 	[self loadTable:selectedTable];
 }
 

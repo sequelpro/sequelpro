@@ -41,6 +41,7 @@
 #import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
 #import "SPTableStructureLoading.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -656,7 +657,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #endif
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_addIndexUsingDetails:) toTarget:self withObject:indexDetails];
+			[NSThread detachNewThreadWithName:@"SPIndexesController index creation thread" target:self selector:@selector(_addIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
@@ -684,7 +685,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[indexDetails setObject:[NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDetails:) toTarget:self withObject:indexDetails];
+			[NSThread detachNewThreadWithName:@"SPIndexesController index removal thread" target:self selector:@selector(_removeIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}

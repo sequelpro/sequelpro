@@ -225,6 +225,7 @@
         // Why animate if not visible?  viewDidMoveToWindow will re-call this method when needed.
         if (_usesThreadedAnimation) {
             _animationThread = [[NSThread alloc] initWithTarget:self selector:@selector(animateInBackgroundThread) object:nil];
+            [_animationThread setName:@"YRKSpinningProgressIndicator animator"];
             [_animationThread start];
         }
         else {

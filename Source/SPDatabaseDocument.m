@@ -96,6 +96,7 @@ enum {
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
 #endif
+#import "SPThreadAdditions.h"
 
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
@@ -549,7 +550,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
 		
 		if ([NSThread isMainThread])
-			[NSThread detachNewThreadSelector:@selector(restoreSession) toTarget:self withObject:nil];
+			[NSThread detachNewThreadWithName:@"SPDatabaseDocument session load task" target:self selector:@selector(restoreSession) object:nil];
 		else
 			[self restoreSession];
 	} 
@@ -731,7 +732,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:database, @"database", item, @"item", nil];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
+		[NSThread detachNewThreadWithName:@"SPDatabaseDocument database and table load task" target:self selector:@selector(_selectDatabaseAndItem:) object:selectionDetails];
 	} 
 	else {
 		[self _selectDatabaseAndItem:selectionDetails];
@@ -966,8 +967,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:databaseStructureRetrieval withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
-
+			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 		} 
 		else {
 			// Reset chooseDatabaseButton

@@ -36,6 +36,7 @@
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
+#import "SPThreadAdditions.h"
 
 #import <netinet/in.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -218,7 +219,7 @@
 	[debugMessagesLock lock];
 	[debugMessages removeAllObjects];
 	[debugMessagesLock unlock];
-	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
+	[NSThread detachNewThreadWithName:@"SPSSHTunnel SSH binary communication task" target:self selector:@selector(launchTask:) object:nil];
 }
 
 /*

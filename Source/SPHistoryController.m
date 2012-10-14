@@ -35,6 +35,7 @@
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
 #import "SPDatabaseViewController.h"
+#import "SPThreadAdditions.h"
 
 @implementation SPHistoryController
 
@@ -386,7 +387,7 @@
 	// Start the task and perform the load
 	[theDocument startTaskWithDescription:NSLocalizedString(@"Loading history entry...", @"Loading history entry task desc")];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(loadEntryTaskWithPosition:) toTarget:self withObject:[NSNumber numberWithUnsignedInteger:position]];
+		[NSThread detachNewThreadWithName:@"SPHistoryController load of history entry" target:self selector:@selector(loadEntryTaskWithPosition:) object:[NSNumber numberWithUnsignedInteger:position]];
 	} else {
 		[self loadEntryTaskWithPosition:[NSNumber numberWithUnsignedInteger:position]];
 	}

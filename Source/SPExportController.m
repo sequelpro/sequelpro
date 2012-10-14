@@ -41,6 +41,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPDatabaseDocument.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -1046,8 +1047,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeStructureCheck state]] forKey:SPSQLExportStructureEnabled];
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:SPSQLExportContentEnabled];
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:SPSQLExportDropEnabled];
-	
-	[NSThread detachNewThreadSelector:@selector(_toggleExportButton:) toTarget:self withObject:uiStateDict];
+
+	[NSThread detachNewThreadWithName:@"SPExportController export button updater" target:self selector:@selector(_toggleExportButton:) object:uiStateDict];
 	
 	[uiStateDict release];
 }

@@ -51,6 +51,7 @@
 #import "SPTreeNode.h"
 #import "SPFavoritesExporter.h"
 #import "SPFavoritesImporter.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -309,7 +310,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Cancel the MySQL connection - handing it off to a background thread - if one is present
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];
-		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadWithName:@"SPConnectionController cancellation background disconnect" target:mySQLConnection selector:@selector(disconnect) object:nil];
 		[mySQLConnection autorelease];
 		mySQLConnection = nil;
 	}
@@ -1789,7 +1790,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	dbDocument = nil;
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];
-		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
+		[NSThread detachNewThreadWithName:@"SPConnectionController close background disconnect" target:mySQLConnection selector:@selector(disconnect) object:nil];
 		[mySQLConnection autorelease];
 		mySQLConnection = nil;
 	}

@@ -35,6 +35,7 @@
 #import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
+#import "SPThreadAdditions.h"
 
 #import <pthread.h>
 
@@ -104,7 +105,7 @@
 {
 
 	// Perform the task in a background thread to avoid blocking the UI
-	[NSThread detachNewThreadSelector:@selector(_cloneConnectionFromConnection:) toTarget:self withObject:aConnection];
+	[NSThread detachNewThreadWithName:@"SPDatabaseStructure clone connection task" target:self selector:@selector(_cloneConnectionFromConnection:) object:aConnection];
 }
 
 /**

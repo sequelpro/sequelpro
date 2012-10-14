@@ -43,6 +43,7 @@
 #import "SPAppController.h"
 #import "SPDatabaseViewController.h"
 #import "SPDatabaseStructure.h"
+#import "SPThreadAdditions.h"
 
 #import <objc/message.h>
 #import <SPMySQL/SPMySQL.h>
@@ -611,8 +612,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	isFiltered = NO;
 
 	if (![[doc getConnection] isConnected]) return;
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
 - (IBAction)outlineViewAction:(id)sender
@@ -710,8 +711,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		[schemaDataFiltered setDictionary:structure];
 
-		[NSThread detachNewThreadSelector:@selector(reloadAfterFiltering) toTarget:self withObject:nil];
-
+		[NSThread detachNewThreadWithName:@"SPNavigatorController update after filtering" target:self selector:@selector(reloadAfterFiltering) object:nil];
 	}
 	@catch(id ae)
 	{

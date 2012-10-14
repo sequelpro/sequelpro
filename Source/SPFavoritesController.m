@@ -34,6 +34,7 @@
 #import "SPFavoriteNode.h"
 #import "SPTreeNode.h"
 #import "SPGroupNode.h"
+#import "SPThreadAdditions.h"
 #import "pthread.h"
 
 static SPFavoritesController *sharedFavoritesController = nil;
@@ -113,11 +114,12 @@ static SPFavoritesController *sharedFavoritesController = nil;
 - (void)saveFavorites
 {
 	pthread_mutex_lock(&favoritesLock);
-	
-	[NSThread detachNewThreadSelector:@selector(_saveFavoritesData:) 
-							 toTarget:self 
-						   withObject:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
-	
+
+	[NSThread detachNewThreadWithName:@"SPFavoritesController background favorite save task"
+	                           target:self
+                             selector:@selector(_saveFavoritesData:) 
+                               object:[[[favoritesTree childNodes] objectAtIndex:0] dictionaryRepresentation]];
+
 	pthread_mutex_unlock(&favoritesLock);
 }
 

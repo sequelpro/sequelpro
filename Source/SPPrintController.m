@@ -166,6 +166,7 @@
 
 	if ([NSThread isMainThread]) {
 		printThread = [[NSThread alloc] initWithTarget:self selector:(isTableInformation) ? @selector(generateTableInfoHTMLForPrinting) : @selector(generateHTMLForPrinting) object:nil];
+		[printThread setName:@"SPPrintController document generator"];
 
 		[self enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:@selector(generateHTMLForPrintingCallback)];
 

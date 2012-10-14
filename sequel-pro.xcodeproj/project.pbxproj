@@ -212,6 +212,7 @@
 		5843DA6D161FA35600EAA6D1 /* key-icon-alternate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5843DA69161FA35600EAA6D1 /* key-icon-alternate@2x.png */; };
 		5843DA6E161FA35600EAA6D1 /* key-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 5843DA6A161FA35600EAA6D1 /* key-icon.png */; };
 		5843DA6F161FA35600EAA6D1 /* key-icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5843DA6B161FA35600EAA6D1 /* key-icon@2x.png */; };
+		5843E247162B555B00EAA6D1 /* SPThreadAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5843E246162B555B00EAA6D1 /* SPThreadAdditions.m */; };
 		584754D3120A05910057631F /* GeneratePreviewForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 584754D0120A05910057631F /* GeneratePreviewForURL.m */; };
 		584754D4120A05910057631F /* GenerateThumbnailForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 584754D1120A05910057631F /* GenerateThumbnailForURL.m */; };
 		584754D5120A05910057631F /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 584754D2120A05910057631F /* main.c */; };
@@ -933,6 +934,8 @@
 		5843DA69161FA35600EAA6D1 /* key-icon-alternate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "key-icon-alternate@2x.png"; sourceTree = "<group>"; };
 		5843DA6A161FA35600EAA6D1 /* key-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "key-icon.png"; sourceTree = "<group>"; };
 		5843DA6B161FA35600EAA6D1 /* key-icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "key-icon@2x.png"; sourceTree = "<group>"; };
+		5843E245162B555B00EAA6D1 /* SPThreadAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPThreadAdditions.h; sourceTree = "<group>"; };
+		5843E246162B555B00EAA6D1 /* SPThreadAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPThreadAdditions.m; sourceTree = "<group>"; };
 		584754C2120A04560057631F /* Sequel Pro.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Sequel Pro.qlgenerator"; sourceTree = BUILT_PRODUCTS_DIR; };
 		584754D0120A05910057631F /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratePreviewForURL.m; sourceTree = "<group>"; };
 		584754D1120A05910057631F /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GenerateThumbnailForURL.m; sourceTree = "<group>"; };
@@ -2588,6 +2591,8 @@
 				584D878A15140FEB00F24774 /* SPObjectAdditions.m */,
 				B52460D50F8EF92300171639 /* SPTextViewAdditions.h */,
 				B52460D60F8EF92300171639 /* SPTextViewAdditions.m */,
+				5843E245162B555B00EAA6D1 /* SPThreadAdditions.h */,
+				5843E246162B555B00EAA6D1 /* SPThreadAdditions.m */,
 				B57747D70F7A8990003B34F9 /* SPWindowAdditions.h */,
 				B57747D80F7A8990003B34F9 /* SPWindowAdditions.m */,
 				BC2C16D20FEBEDF10003993B /* SPDataAdditions.h */,
@@ -3328,6 +3333,7 @@
 				58DF9F7315AB8509003B4330 /* SPSplitView.m in Sources */,
 				58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */,
 				171B374115DA654300EBC7AB /* SPTableContentFilter.m in Sources */,
+				5843E247162B555B00EAA6D1 /* SPThreadAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

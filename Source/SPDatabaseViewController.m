@@ -41,6 +41,7 @@
 #import "SPTableData.h"
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
+#import "SPThreadAdditions.h"
 #ifdef SP_REFACTOR /* headers */
 #import "SPTableStructure.h"
 #import "SPTableStructureLoading.h"
@@ -283,7 +284,7 @@
 {
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), [self table]]];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(_loadTabTask:) toTarget:self withObject:tabViewItem];
+		[NSThread detachNewThreadWithName:@"SPDatabaseViewController view load task" target:self selector:@selector(_loadTabTask:) object:tabViewItem];
 	} else {
 		[self _loadTabTask:tabViewItem];
 	}
@@ -359,7 +360,7 @@
 	// If on the main thread, fire up a thread to deal with view changes and data loading;
 	// if already on a background thread, make the changes on the existing thread.
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(_loadTableTask) toTarget:self withObject:nil];
+		[NSThread detachNewThreadWithName:@"SPDatabaseViewController table load task" target:self selector:@selector(_loadTableTask) object:nil];
 	} else {
 		[self _loadTableTask];
 	}

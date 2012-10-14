@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFavoritesImporter.h"
+#import "SPThreadAdditions.h"
 
 @interface SPFavoritesImporter ()
 
@@ -54,8 +55,8 @@
 - (void)importFavoritesFromFileAtPath:(NSString *)path
 {
 	[self setImportPath:path];
-	
-	[NSThread detachNewThreadSelector:@selector(_importFavoritesInBackground) toTarget:self withObject:nil];
+
+	[NSThread detachNewThreadWithName:@"SPFavoritesImporter background favorite importer" target:self selector:@selector(_importFavoritesInBackground) object:nil];
 }
 
 #pragma mark -
