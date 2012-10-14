@@ -250,66 +250,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)connect
 {
-
-	// If a connection is already active in some form, throw an exception
-	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
-		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (%d).", state];
-		return NO;
-	}
-	state = SPMySQLConnecting;
-
-	// Lock the connection for safety
-	[self _lockConnection];
-
-	// Attempt the connection
-	mySQLConnection = [self _makeRawMySQLConnectionWithEncoding:encoding isMasterConnection:YES];
-
-	// If the connection failed, reset state and return
-	if (!mySQLConnection) {
-		[self _unlockConnection];
-		state = SPMySQLDisconnected;
-		return NO;
-	}
-
-	// Successfully connected - record connected state and reset tracking variables
-	state = SPMySQLConnected;
 	userTriggeredDisconnect = NO;
-	initialConnectTime = mach_absolute_time();
-	mysqlConnectionThreadId = mySQLConnection->thread_id;
-	lastConnectionUsedTime = 0;
-
-	// Update SSL state
-	connectedWithSSL = NO;
-	if (useSSL) connectedWithSSL = (mysql_get_ssl_cipher(mySQLConnection))?YES:NO;
-	if (useSSL && !connectedWithSSL) {
-		if ([delegate respondsToSelector:@selector(connectionFellBackToNonSSL:)]) {
-			[delegate connectionFellBackToNonSSL:self];
-		}
-	}
-
-	// Reset keepalive variables
-	lastKeepAliveTime = 0;
-	keepAlivePingFailures = 0;
-
-	// Clear the connection error record
-	[self _updateLastErrorID:NSNotFound];
-	[self _updateLastErrorMessage:nil];
-
-	// Unlock the connection
-	[self _unlockConnection];
-
-	// Update connection variables to be in sync with the server state.  As this performs
-	// a query, ensure the connection is still up afterwards (!)
-	[self _updateConnectionVariables];
-	if (state != SPMySQLConnected) return NO;
-
-	// Now connection is established and verified, reset the counter
-	reconnectionRetryAttempts = 0;
-
-	// Update the maximum query size
-	[self _updateMaxQuerySize];
-
-	return YES;
+	return [self _connect];
 }
 
 /**
@@ -321,6 +263,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)reconnect
 {
+	userTriggeredDisconnect = NO;
 	return [self _reconnectAllowingRetries:YES];
 }
 
@@ -329,49 +272,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (void)disconnect
 {
-
-	// If state is connection lost, set state directly to disconnected.
-	if (state == SPMySQLConnectionLostInBackground) {
-		state = SPMySQLDisconnected;
-	}
-
-	// Only continue if a connection is active
-	if (state != SPMySQLConnected && state != SPMySQLConnecting) {
-		return;
-	}
-
-	state = SPMySQLDisconnecting;
-
-	// If a query is active, cancel it
-	[self cancelCurrentQuery];
-
-	// Allow any pings or cancelled queries  to complete, inside a time limit of ten seconds
-	uint64_t disconnectStartTime_t = mach_absolute_time();
-	while (![self _tryLockConnection]) {
-		usleep(100000);
-		if (_elapsedSecondsSinceAbsoluteTime(disconnectStartTime_t) > 10) break;
-	}
-	[self _unlockConnection];
-	[self _cancelKeepAlives];
-
-	// Close the underlying MySQL connection if it still appears to be active, and not reading
-	// or writing.  While this may result in a leak of the MySQL object, it prevents crashes
-	// due to attempts to close a blocked/stuck connection.
-	if (!mySQLConnection->net.reading_or_writing && mySQLConnection->net.vio && mySQLConnection->net.buff) {
-		mysql_close(mySQLConnection);
-	}
-	mySQLConnection = NULL;
-
-	// If using a connection proxy, disconnect that too
-	if (proxy) {
-		[proxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
-	}
-
-	// Clear host-specific information
-	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
-	if (database) [database release], database = nil;
-
-	state = SPMySQLDisconnected;
+	userTriggeredDisconnect = YES;
+	[self _disconnect];
 }
 
 #pragma mark -
@@ -433,7 +335,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	// attempt to reconnect once, and if that fails will ask the user how to proceed - whether
 	// to keep reconnecting, or whether to disconnect.
 	if (!connectionVerified) {
-		connectionVerified = [self reconnect];
+		connectionVerified = [self _reconnectAllowingRetries:YES];
 	}
 
 	// Update the connection tracking use variable if the connection was confirmed,
@@ -504,6 +406,84 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 #pragma mark Private API
 
 @implementation SPMySQLConnection (PrivateAPI)
+
+/**
+ * Handle a connection using previously set parameters, returning success or failure.
+ */
+- (BOOL)_connect
+{
+
+	// If a connection is already active in some form, throw an exception
+	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
+		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (%d).", state];
+		return NO;
+	}
+	state = SPMySQLConnecting;
+
+	if (userTriggeredDisconnect) {
+		return NO;
+	}
+
+	// Lock the connection for safety
+	[self _lockConnection];
+
+	// Attempt the connection
+	mySQLConnection = [self _makeRawMySQLConnectionWithEncoding:encoding isMasterConnection:YES];
+
+	// If the connection failed, reset state and return
+	if (!mySQLConnection) {
+		[self _unlockConnection];
+		state = SPMySQLDisconnected;
+		return NO;
+	}
+
+	// If the connection was cancelled, clean up and don't continue
+	if (userTriggeredDisconnect) {
+		mysql_close(mySQLConnection);
+		[self _unlockConnection];
+		mySQLConnection = NULL;
+		return NO;
+	}
+
+	// Successfully connected - record connected state and reset tracking variables
+	state = SPMySQLConnected;
+	initialConnectTime = mach_absolute_time();
+	mysqlConnectionThreadId = mySQLConnection->thread_id;
+	lastConnectionUsedTime = 0;
+
+	// Update SSL state
+	connectedWithSSL = NO;
+	if (useSSL) connectedWithSSL = (mysql_get_ssl_cipher(mySQLConnection))?YES:NO;
+	if (useSSL && !connectedWithSSL) {
+		if ([delegate respondsToSelector:@selector(connectionFellBackToNonSSL:)]) {
+			[delegate connectionFellBackToNonSSL:self];
+		}
+	}
+
+	// Reset keepalive variables
+	lastKeepAliveTime = 0;
+	keepAlivePingFailures = 0;
+
+	// Clear the connection error record
+	[self _updateLastErrorID:NSNotFound];
+	[self _updateLastErrorMessage:nil];
+
+	// Unlock the connection
+	[self _unlockConnection];
+
+	// Update connection variables to be in sync with the server state.  As this performs
+	// a query, ensure the connection is still up afterwards (!)
+	[self _updateConnectionVariables];
+	if (state != SPMySQLConnected) return NO;
+
+	// Now connection is established and verified, reset the counter
+	reconnectionRetryAttempts = 0;
+
+	// Update the maximum query size
+	[self _updateMaxQuerySize];
+
+	return YES;
+}
 
 /**
  * Make a connection using the class connection settings, returning a MySQL
@@ -740,7 +720,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If not using a proxy, or if the proxy successfully connected, trigger a connection
 	if (!proxy || [proxy state] == SPMySQLProxyConnected) {
-		[self connect];
+		[self _connect];
 	}
 
 	// If the reconnection succeeded, restore the connection state as appropriate
@@ -853,6 +833,56 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// All checks failed - return failure
 	return NO;
+}
+
+/**
+ * Perform a disconnect of any active connections, cleaning up state to match.
+ */
+- (void)_disconnect
+{
+
+	// If state is connection lost, set state directly to disconnected.
+	if (state == SPMySQLConnectionLostInBackground) {
+		state = SPMySQLDisconnected;
+	}
+
+	// Only continue if a connection is active
+	if (state != SPMySQLConnected && state != SPMySQLConnecting) {
+		return;
+	}
+
+	state = SPMySQLDisconnecting;
+
+	// If a query is active, cancel it
+	[self cancelCurrentQuery];
+
+	// Allow any pings or cancelled queries  to complete, inside a time limit of ten seconds
+	uint64_t disconnectStartTime_t = mach_absolute_time();
+	while (![self _tryLockConnection]) {
+		usleep(100000);
+		if (_elapsedSecondsSinceAbsoluteTime(disconnectStartTime_t) > 10) break;
+	}
+	[self _unlockConnection];
+	[self _cancelKeepAlives];
+
+	// Close the underlying MySQL connection if it still appears to be active, and not reading
+	// or writing.  While this may result in a leak of the MySQL object, it prevents crashes
+	// due to attempts to close a blocked/stuck connection.
+	if (mySQLConnection && !mySQLConnection->net.reading_or_writing && mySQLConnection->net.vio && mySQLConnection->net.buff) {
+		mysql_close(mySQLConnection);
+	}
+	mySQLConnection = NULL;
+
+	// If using a connection proxy, disconnect that too
+	if (proxy) {
+		[proxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
+	}
+
+	// Clear host-specific information
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (database) [database release], database = nil;
+
+	state = SPMySQLDisconnected;
 }
 
 /**

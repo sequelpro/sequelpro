@@ -394,6 +394,7 @@ extern NSString *SPExportFilenameFormat;
 extern NSString *SPContentFilters;
 extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
+extern NSString *SPDocumentWillCloseNotification;
 extern NSString *SPActivitiesUpdateNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;

@@ -93,6 +93,8 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 
 - (void)_startEditingConnection;
 
+- (void)_documentWillClose:(NSNotification *)notification;
+
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 #endif
 
@@ -291,21 +293,41 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 }
 
 /**
- * Cancels (or rather marks) the current connection is to be cancelled once established.
- *
- * Note, that once called this method does not mark the connection attempt to be immediately cancelled as
- * there is no reliable way to actually cancel connection attempts via the MySQL client libs. Once the
- * connection is established it will be immediately killed.
+ * Cancels the current connection - both SSH and MySQL.
  */
-- (IBAction)cancelMySQLConnection:(id)sender
+- (IBAction)cancelConnection:(id)sender
 {
 #ifndef SP_REFACTOR
 	[connectButton setEnabled:NO];
 	
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
-	
-	mySQLConnectionCancelled = YES;
+
+	if (mySQLConnection) {
+		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
+	}
+#endif
+
+	cancellingConnection = YES;
+
+	// Cancel the MySQL connection - handing it off to a background thread - if one is present
+	if (mySQLConnection) {
+		[mySQLConnection setDelegate:nil];
+		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
+		[mySQLConnection autorelease];
+		mySQLConnection = nil;
+	}
+
+	// Cancel the SSH tunnel if present
+	if (sshTunnel) {
+		[sshTunnel disconnect];
+		[sshTunnel release];
+		sshTunnel = nil;
+	}
+
+#ifndef SP_REFACTOR
+	// Restore the connection interface
+	[self _restoreConnectionInterface];
 #endif
 }
 
@@ -1558,9 +1580,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Re-enable favorites table view
 	[favoritesOutlineView setEnabled:YES];
 	[(NSView *)favoritesOutlineView display];
-	
-	mySQLConnectionCancelled = NO;
-	
+
 	// Revert the connect button back to its original selector
 	[connectButton setAction:@selector(initiateConnection:)];
 }
@@ -1767,6 +1787,18 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 #pragma mark -
 
+- (void)_documentWillClose:(NSNotification *)notification
+{
+	dbDocument = nil;
+	if (mySQLConnection) {
+		[mySQLConnection setDelegate:nil];
+		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
+		[mySQLConnection autorelease];
+		mySQLConnection = nil;
+	}
+	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
+}
+
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -1809,12 +1841,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	[nibObjectsToRelease release];
-	
-	if (mySQLConnection) {
-		[mySQLConnection setDelegate:nil];
-		[mySQLConnection release];
-	}
-	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 
 	if (connectionKeychainID) [connectionKeychainID release];
 	if (connectionKeychainItemName) [connectionKeychainItemName release];

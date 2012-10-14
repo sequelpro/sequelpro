@@ -39,6 +39,7 @@
 @interface SPConnectionController ()
 
 - (void)_reloadFavoritesViewData;
+- (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite validateDetails:(BOOL)validateDetails;
 
 @end
 

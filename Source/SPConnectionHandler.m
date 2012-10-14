@@ -69,9 +69,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[progressIndicatorText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
 	}
 	[progressIndicatorText display];
-	
+
 	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
-	[connectButton setAction:@selector(cancelMySQLConnection:)];
+	[connectButton setAction:@selector(cancelConnection:)];
 	[connectButton setEnabled:YES];
 	[connectButton display];
 #endif
@@ -250,6 +250,11 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	}
 	[progressIndicatorText display];
 	
+	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
+	[connectButton setAction:@selector(cancelConnection:)];
+	[connectButton setEnabled:YES];
+	[connectButton display];
+
 	// Trim whitespace and newlines from the SSH host field before attempting to connect
 	[self setSshHost:[[self sshHost] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 	
@@ -285,18 +290,10 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 {	
 	isConnecting = NO;
 	
-	// If the user hit cancel during the connection attempt, or a test connection is
-	// occurring, kill the connection once established and reset the UI.
-	if (mySQLConnectionCancelled || isTestingConnection) {		
-		if ([mySQLConnection isConnected]) {
-			[mySQLConnection disconnect];
-			[mySQLConnection release], mySQLConnection = nil;
-		}
-		
-		// Kill the SSH connection if present
-		[self cancelConnection];
-		
-		[self _restoreConnectionInterface];
+	// If the user is only testing the connection, kill the connection
+	// once established and reset the UI.
+	if (isTestingConnection) {
+		[self cancelConnection:self];
 
 		if (isTestingConnection) {
 			[self _showConnectionTestResult:NSLocalizedString(@"Connection succeeded", @"Connection success very short status message")];
@@ -387,21 +384,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	}
 }
 
-/*
- * Cancel connection.
- */
-- (void)cancelConnection
-{
-	cancellingConnection = YES;
-
-	if (!sshTunnel) return;
-
-	[sshTunnel disconnect];
-	[sshTunnel release];
-	
-	sshTunnel = nil;
-}
-
 /**
  * Add the connection to the parent document and restore the
  * interface, allowing the application to run as normal.
@@ -463,9 +445,8 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[[(NSObject *)delegate onMainThread] connectionControllerConnectAttemptFailed:self];
 	}
 	
-	// Only display the connection error message if there is a window visible and the connection attempt
-	// wasn't cancelled even though it failed.
-	if ([[dbDocument parentWindow] isVisible] && (!mySQLConnectionCancelled)) {
+	// Only display the connection error message if there is a window visible
+	if ([[dbDocument parentWindow] isVisible]) {
 		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), (errorDetail) ? NSLocalizedString(@"Show Detail", @"Show detail button") : nil, (isSSHTunnelBindError) ? NSLocalizedString(@"Use Standard Connection", @"use standard connection button") : nil, [dbDocument parentWindow], self, @selector(connectionFailureSheetDidEnd:returnCode:contextInfo:), @"connect", theErrorMessage);
 	}
 }

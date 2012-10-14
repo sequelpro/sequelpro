@@ -4065,8 +4065,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 
 	[mySQLConnection setDelegate:nil];
-	if (_isConnected) [self closeConnection];
-	else [connectionController cancelConnection];
+	if (_isConnected) {
+		[self closeConnection];
+	} else {
+		[connectionController cancelConnection:self];
+	}
 #ifndef SP_REFACTOR
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
 	[createTableSyntaxWindow orderOut:nil];
@@ -5737,7 +5740,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 #endif
 
-	[databaseStructureRetrieval destroy];
+	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
+
 	[databaseStructureRetrieval release];
 
 	[allDatabases release];

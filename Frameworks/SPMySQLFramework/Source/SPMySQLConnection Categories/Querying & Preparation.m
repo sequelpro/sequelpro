@@ -222,6 +222,11 @@
 	lastQueryWasCancelled = NO;
 	lastQueryWasCancelledUsingReconnect = NO;
 
+	// If a disconnect was requested, cancel the action
+	if (userTriggeredDisconnect) {
+		return nil;
+	}
+
 	// Check the connection state - if no connection is available, log an
 	// error and return.
 	if (state == SPMySQLDisconnected || state == SPMySQLConnecting) {
@@ -368,6 +373,7 @@
 
 	// Unlock the connection if appropriate - if not a streaming result type.
 	if (![theResult isKindOfClass:[SPMySQLStreamingResult class]]) {
+		[self _tryLockConnection];
 		[self _unlockConnection];
 
 		// Also perform restore if appropriate
@@ -514,7 +520,6 @@
 	// so set up a new connection to run the KILL command.
 	MYSQL *killerConnection = [self _makeRawMySQLConnectionWithEncoding:@"utf8" isMasterConnection:NO];
 
-
 	// If the new connection was successfully set up, use it to run a KILL command.
 	if (killerConnection) {
 		NSStringEncoding aStringEncoding = [SPMySQLConnection stringEncodingForMySQLCharset:mysql_character_set_name(killerConnection)];
@@ -553,7 +558,7 @@
 		} else {
 			NSLog(@"SPMySQL Framework: query cancellation failed due to cancellation query error (status %d)", killQueryStatus);
 		}
-	} else {
+	} else if (!userTriggeredDisconnect) {
 		NSLog(@"SPMySQL Framework: query cancellation failed because connection failed");
 	}
 
@@ -565,13 +570,13 @@
 		return;
 	}
 
-	if (state == SPMySQLDisconnecting) return;
+	if (state == SPMySQLDisconnecting || state == SPMySQLDisconnected) return;
 
 	// Reset the connection with a reconnect.  Unlock the connection beforehand,
 	// to allow the reconnect, but lock it again afterwards to restore the expected
 	// state (query execution process should unlock as appropriate).
 	[self _unlockConnection];
-	[self reconnect];
+	[self _reconnectAllowingRetries:YES];
 	[self _lockConnection];
 
 	// Reset tracking bools to cover encompassed queries

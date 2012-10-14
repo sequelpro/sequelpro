@@ -199,6 +199,7 @@ NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
 NSString *SPContentFilters                       = @"ContentFilters";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
+NSString *SPDocumentWillCloseNotification        = @"DocumentWillClose";
 NSString *SPActivitiesUpdateNotification         = @"ActivitiesUpdateNotification";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";

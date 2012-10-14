@@ -150,7 +150,7 @@
 		if (newSize != NSNotFound) {
 
 			// Successfully increased the global size - reconnect to use it, and return success
-			[self reconnect];
+			[self _reconnectAllowingRetries:YES];
 			return YES;
 		}
 	}

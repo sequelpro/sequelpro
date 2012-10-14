@@ -81,6 +81,11 @@
 		structure = [[NSMutableDictionary alloc] initWithCapacity:1];
 		allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:20];
 
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(destroy:) 
+													 name:SPDocumentWillCloseNotification 
+												   object:theDelegate];
+
 		// Set up the connection, thread management and data locks
 		pthread_mutex_init(&threadManagementLock, NULL);
 		pthread_mutex_init(&dataLock, NULL);
@@ -105,7 +110,7 @@
 /**
  * Ensure that processing is completed.
  */
-- (void)destroy
+- (void)destroy:(NSNotification *)notification
 {
 	delegate = nil;
 
@@ -127,7 +132,9 @@
 
 - (void)dealloc
 {
-	[self destroy];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	[self destroy:nil];
 	[structureRetrievalThreads release];
 
 	pthread_mutex_destroy(&threadManagementLock);
