@@ -32,6 +32,12 @@
 #
 #  More info at <http://code.google.com/p/sequel-pro/>
 
+if [ "${BUILT_PRODUCTS_DIR}x" == 'x' ]
+then
+	echo 'This script should only be run by Xcode. Exiting...'
+	exit 1
+fi
+
 export PGPASSWORD=pgkit
 
 if [ ! -f /Library/PostgreSQL/bin/psql ]
