@@ -302,10 +302,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Cancelling...", @"cancelling task status message")];
 	[progressIndicatorText display];
-
-	if (mySQLConnection) {
-		[NSThread detachNewThreadSelector:@selector(disconnect) toTarget:mySQLConnection withObject:nil];
-	}
 #endif
 
 	cancellingConnection = YES;
@@ -1789,6 +1785,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 - (void)_documentWillClose:(NSNotification *)notification
 {
+	cancellingConnection = YES;
 	dbDocument = nil;
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];

@@ -336,6 +336,8 @@ typedef struct st_spmysqlstreamingrowdata {
 	NSUInteger i, dataCopiedLength, rowDataLength;
 	SPMySQLStreamingRowData *newRowStore;
 
+	[[NSThread currentThread] setName:@"SPMySQLFastStreamingResult data download thread"];
+
 	size_t sizeOfStreamingRowData = sizeof(SPMySQLStreamingRowData);
 	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * numberOfFields);
 	size_t sizeOfChar = sizeof(char);

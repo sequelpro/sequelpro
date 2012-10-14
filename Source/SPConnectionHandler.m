@@ -291,8 +291,10 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	isConnecting = NO;
 	
 	// If the user is only testing the connection, kill the connection
-	// once established and reset the UI.
-	if (isTestingConnection) {
+	// once established and reset the UI.  Also catch connection cancels.
+	if (isTestingConnection || cancellingConnection) {
+
+		// Clean up any connections remaining, and reset the UI
 		[self cancelConnection:self];
 
 		if (isTestingConnection) {

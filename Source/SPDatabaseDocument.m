@@ -415,6 +415,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 - (void)setConnection:(SPMySQLConnection *)theConnection
 {
+	if ([theConnection userTriggeredDisconnect]) {
+		return;
+	}
+
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
 	
@@ -5762,7 +5766,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (processListController) [processListController release];
 	if (serverVariablesController) [serverVariablesController release];
 #endif
-	if (mySQLConnection) [mySQLConnection release];
+	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
 	if (selectedDatabase) [selectedDatabase release];
 	if (mySQLVersion) [mySQLVersion release];
 #ifndef SP_REFACTOR

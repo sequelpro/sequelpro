@@ -211,7 +211,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	[self _cancelKeepAlives];
 
 	// Disconnect if appropriate (which should also disconnect any proxy)
-	[self disconnect];
+	[self _disconnect];
 
 	// Clean up the connection proxy, if any
 	if (proxy) {
@@ -638,7 +638,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	if (proxy) proxyStateChangeNotificationsIgnored = YES;
 
 	// Close the connection if it's active
-	[self disconnect];
+	[self _disconnect];
 
 	// Lock the connection while waiting for network and proxy
 	[self _lockConnection];
