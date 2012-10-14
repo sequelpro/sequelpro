@@ -124,6 +124,8 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[colorCell setAction:@selector(colorClick:)];
 	
 	[column setDataCell:colorCell];
+
+	[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 }
 
 #pragma mark -
@@ -297,7 +299,8 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
-	
+
+	[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[colorSettingTableView reloadData];
 	
 	[self updateDisplayColorThemeName];
@@ -467,8 +470,13 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	if (![[NSColorPanel sharedColorPanel] isVisible]) return;
 	
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
+
+	if ([[editorColors objectAtIndex:colorRow] isEqualTo:SPCustomQueryEditorBackgroundColor]) {
+		[colorSettingTableView setBackgroundColor:[sender color]];
+	}
+
 	[colorSettingTableView reloadData];
-	
+
 	[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 	
 	[self updateDisplayColorThemeName];
@@ -1004,6 +1012,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 		}
 		
 		[theme release];
+		[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 		[colorSettingTableView reloadData];
 	} 
 	else {
