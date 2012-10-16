@@ -2257,9 +2257,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 
-/**
- * Deallocate
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
