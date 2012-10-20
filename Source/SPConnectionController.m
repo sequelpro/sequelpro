@@ -739,7 +739,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 				
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
-	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
+	SPTreeNode *parent = ([selectedNode isGroup] && selectedNode != quickConnectItem) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 
 	// Ensure the parent is expanded
 	[favoritesOutlineView expandItem:parent];
@@ -1292,7 +1292,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		SPTreeNode *parentNode = nil;
 
 		// If the current node is a group node, create the favorite as a child of it
-		if ([selectedNode isGroup]) {
+		if ([selectedNode isGroup] && selectedNode != quickConnectItem) {
 			parentNode = selectedNode;
 
 		// Otherwise, create the new node as a sibling of the selected node if possible

@@ -37,6 +37,7 @@
 #import "SPKeychain.h"
 #import "RegexKitLite.h"
 #import "SPCategoryAdditions.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -75,8 +76,8 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[connectButton setEnabled:YES];
 	[connectButton display];
 #endif
-	
-	[NSThread detachNewThreadSelector:@selector(initiateMySQLConnectionInBackground) toTarget:self withObject:nil];
+
+	[NSThread detachNewThreadWithName:@"SPConnectionHandler MySQL connection task" target:self selector:@selector(initiateMySQLConnectionInBackground) object:nil];
 }
 
 /**
