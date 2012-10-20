@@ -119,7 +119,7 @@
 
 		// If used within the last fifteen minutes, trigger a background/single reconnection attempt
 		} else if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
-			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAfterBackgroundConnectionLoss:) object:nil] autorelease];
+			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAfterBackgroundConnectionLoss) object:nil] autorelease];
 			[reconnectionThread setName:@"SPMySQL reconnection thread (limited)"];
 			[reconnectionThread start];
 
