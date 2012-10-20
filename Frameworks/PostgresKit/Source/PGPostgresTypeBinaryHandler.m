@@ -67,7 +67,7 @@ static PGPostgresOid PGPostgresTypeBinaryTypes[] =
 	
 	if (!_result || !_type) return [NSNull null];
 	
-	if (!PQgetf(_result, _row, PGPostgresResultValueByteA, _column)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, PGPostgresResultValueByteA, (int)_column, &data)) return [NSNull null];
 	
 	if (!data.data || !data.len) return [NSData data];
 	

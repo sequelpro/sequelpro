@@ -113,15 +113,15 @@ static PGPostgresOid PGPostgresTypeNumberTypes[] =
 	switch (length) 
 	{
 		case 2:
-			if (!PQgetf(_result, _row, PGPostgresResultValueInt2, &int2)) return [NSNull null];
+			if (!PQgetf(_result, (int)_row, PGPostgresResultValueInt2, (int)_column, &int2)) return [NSNull null];
 			
 			return [NSNumber numberWithShort:int2];
 		case 4:			
-			if (!PQgetf(_result, _row, PGPostgresResultValueInt4, &int4)) return [NSNull null];
+			if (!PQgetf(_result, (int)_row, PGPostgresResultValueInt4, (int)_column, &int4)) return [NSNull null];
 			
 			return [NSNumber numberWithInteger:int4];
 		case 8:			
-			if (!PQgetf(_result, _row, PGPostgresResultValueInt8, &int8)) return [NSNull null];
+			if (!PQgetf(_result, (int)_row, PGPostgresResultValueInt8, (int)_column, &int8)) return [NSNull null];
 			
 			return [NSNumber numberWithLongLong:int8];
 	}
@@ -149,11 +149,11 @@ static PGPostgresOid PGPostgresTypeNumberTypes[] =
 	switch (length) 
 	{
 		case 4:
-			if (!PQgetf(_result, _row, PGPostgresResultValueFloat4, &float4)) return [NSNull null];
+			if (!PQgetf(_result, (int)_row, PGPostgresResultValueFloat4, (int)_column, &float4)) return [NSNull null];
 			
 			return [NSNumber numberWithFloat:float4];
 		case 8:
-			if (!PQgetf(_result, _row, PGPostgresResultValueFloat8, &float8)) return [NSNull null];
+			if (!PQgetf(_result, (int)_row, PGPostgresResultValueFloat8, (int)_column, &float8)) return [NSNull null];
 			
 			return [NSNumber numberWithDouble:float8];
 	}
@@ -173,7 +173,7 @@ static PGPostgresOid PGPostgresTypeNumberTypes[] =
 {
 	PGbool b;
 	
-	if (!PQgetf(_result, _row, PGPostgresResultValueBool, &b)) return [NSNull null];
+	if (!PQgetf(_result, (int)_row, PGPostgresResultValueBool, (int)_column, &b)) return [NSNull null];
 	
 	return [NSNumber numberWithInt:b];
 }
@@ -196,7 +196,11 @@ static PGPostgresOid PGPostgresTypeNumberTypes[] =
 	
 	double value = [stringValue doubleValue];
 	
-	if (value == HUGE_VAL || value == -HUGE_VAL) return [NSNull null];
+	if (value == HUGE_VAL || value == -HUGE_VAL) {
+		[stringValue release];
+		
+		return [NSNull null];
+	}
 	
 	[stringValue release];
 	

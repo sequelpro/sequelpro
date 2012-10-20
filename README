@@ -7,6 +7,7 @@ fairly straightforward.
 However, we are currently targeting 10.5 as a minimum version (not for much longer!),
 so the Base SDK is set to 10.5 to correctly report warnings.  Xcode 4 does not ship
 with the 10.5 SDK; to install them:
+
  1) Find a copy of Xcode 3.  If you do not have this installed, it is still available
 	from http://adcdownload.apple.com/Developer_Tools/xcode_3.2.6_and_ios_sdk_4.3__final/xcode_3.2.6_and_ios_sdk_4.3.dmg .
  2) Install or extract the 10.5 SDK (and the 10.6 SDK for use soon...).  These would normally
@@ -15,7 +16,6 @@ with the 10.5 SDK; to install them:
 
 After performing these steps 10.5- and 10.6-base SDKs should compile correctly (although
 without PPC support). You may need to quit and reopen Xcode to get it to recognise the new SDKs.
-
 
 For assistance please jump onto IRC and join #sequel-pro on irc.freenode.net and any of the 
 developers will be more than happy to help you out.
