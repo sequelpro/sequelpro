@@ -357,7 +357,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	NSInteger newState = [theTunnel state];
 	
-	// If the user cancelled the password prompt dialog
+	// If the user cancelled the password prompt dialog, continue with no further action.
 	if ([theTunnel passwordPromptCancelled]) {
 		[self _restoreConnectionInterface];
 		
@@ -365,6 +365,14 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	}
 	
 	if (newState == SPMySQLProxyIdle) {
+
+		// If the connection closed unexpectedly, and muxing was enabled, disable muxing an re-try.
+		if ([theTunnel taskExitedUnexpectedly] && [theTunnel connectionMuxingEnabled]) {
+			[theTunnel setConnectionMuxingEnabled:NO];
+			[theTunnel connect];
+			return;
+		}
+
 #ifndef SP_REFACTOR
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 #endif

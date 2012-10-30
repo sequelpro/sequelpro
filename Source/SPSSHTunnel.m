@@ -44,6 +44,8 @@
 @implementation SPSSHTunnel
 
 @synthesize passwordPromptCancelled;
+@synthesize connectionMuxingEnabled;
+@synthesize taskExitedUnexpectedly;
 
 /*
  * Initialise with the supplied connection details.  Host, login and port should all be provided.
@@ -67,6 +69,7 @@
 		delegate = nil;
 		stateChangeSelector = nil;
 		lastError = nil;
+		connectionMuxingEnabled = YES;
 		debugMessages = [[NSMutableArray alloc] init];
 		debugMessagesLock = [[NSLock alloc] init];
 		answerAvailableLock = [[NSLock alloc] init];
@@ -216,9 +219,12 @@
 	localPort = 0;
 
 	if (connectionState != SPMySQLProxyIdle) return;
+
 	[debugMessagesLock lock];
 	[debugMessages removeAllObjects];
 	[debugMessagesLock unlock];
+	taskExitedUnexpectedly = NO;
+
 	[NSThread detachNewThreadWithName:@"SPSSHTunnel SSH binary communication task" target:self selector:@selector(launchTask:) object:nil];
 }
 
@@ -309,19 +315,26 @@
 	// Enable verbose mode for message parsing
 	[taskArguments addObject:@"-v"];
 
-	// Ensure that the muxed connection can be used for only tunnels, not interactive
+	// Ensure that the connection can be used for only tunnels, not interactive
 	[taskArguments addObject:@"-N"];
 
-	// Enable automatic connection muxing/sharing, for faster connections
-	[taskArguments addObject:@"-o ControlMaster=auto"];
+	if (connectionMuxingEnabled) {
 
-	// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
-	// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
-	// hashed path to aid length limit issues.
-	unsigned char hashedPathResult[16];
-	NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, sshPort?sshPort:0];
-	CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
-	[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
+		// Enable automatic connection muxing/sharing, for faster connections
+		[taskArguments addObject:@"-o ControlMaster=auto"];
+
+		// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+		// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
+		// hashed path to aid length limit issues.
+		unsigned char hashedPathResult[16];
+		NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, sshPort?sshPort:0];
+		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
+		[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
+	} else {
+
+		// Disable muxing if requested
+		[taskArguments addObject:@"-o ControlMaster=no"];
+	}
 
 	// If the port forwarding fails, exit - as this is the primary use case for the instance
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
@@ -381,6 +394,11 @@
 	}
 	[task setEnvironment:taskEnvironment];
 
+	// Add the connection details to the debug messages
+	[debugMessagesLock lock];
+	[debugMessages addObject:[NSString stringWithFormat:@"Used command:  %@ %@\n", [task launchPath], [[task arguments] componentsJoinedByString:@" "]]];
+	[debugMessagesLock unlock];
+
 	// Set up the standard error pipe
 	standardError = [[NSPipe alloc] init];
     [task setStandardError:standardError];
@@ -406,6 +424,7 @@
 	// If the task closed unexpectedly, alert appropriately
 	if (connectionState != SPMySQLProxyIdle) {
 		connectionState = SPMySQLProxyIdle;
+		taskExitedUnexpectedly = YES;
 		if (lastError) [lastError release];
 		lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];

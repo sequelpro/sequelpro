@@ -67,9 +67,11 @@
 	SEL stateChangeSelector;
 
 	BOOL useHostFallback;
+	BOOL connectionMuxingEnabled;
 	BOOL requestedResponse;
 	BOOL passwordInKeychain;
 	BOOL passwordPromptCancelled;
+	BOOL taskExitedUnexpectedly;
 	
 	IBOutlet NSWindow *sshQuestionDialog;
 	IBOutlet NSTextField *sshQuestionText;
@@ -80,6 +82,8 @@
 }
 
 @property (readonly) BOOL passwordPromptCancelled;
+@property (readwrite) BOOL connectionMuxingEnabled;
+@property (readonly) BOOL taskExitedUnexpectedly;
 
 - (id)initToHost:(NSString *)theHost port:(NSInteger)thePort login:(NSString *)theLogin tunnellingToPort:(NSInteger)targetPort onHost:(NSString *)targetHost;
 - (BOOL)setConnectionStateChangeSelector:(SEL)theStateChangeSelector delegate:(id)theDelegate;
