@@ -1776,10 +1776,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	if (!isEditingConnection) return;
 
+	[self setIsEditingConnection:NO];
+
 	[editButtonsView setHidden:YES];
 	[progressIndicatorText setHidden:YES];
-
-	[self setIsEditingConnection:NO];
+	[(NSView *)favoritesOutlineView display];
 }
 
 #pragma mark -
