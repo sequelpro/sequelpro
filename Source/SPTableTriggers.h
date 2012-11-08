@@ -62,12 +62,8 @@
 	
 	BOOL isEdit;
 	
-	// Cache vars
-	NSString *editTriggerName;
-	NSString *editTriggerEvent;
-	NSString *editTriggerTableName;
-	NSString *editTriggerStatement;
-	NSString *editTriggerActionTime;
+	// Store a previously edited trigger for backup/cache
+	NSDictionary *editedTrigger;
 }
 
 @property (readwrite, assign) SPMySQLConnection *connection;

@@ -55,6 +55,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 - (void)_editTriggerAtIndex:(NSInteger)index;
 - (void)_toggleConfirmAddTriggerButtonEnabled;
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
+- (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -72,6 +73,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	if ((self = [super init])) {
 		triggerData = [[NSMutableArray alloc] init];
+		editedTrigger = nil;
 		isEdit = NO;
 	}
 
@@ -190,18 +192,18 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 	// MySQL doesn't have ALTER TRIGGER, so we delete the old one and add a new one.
 	// In case of error, all the old trigger info is kept in buffer
-	if (isEdit && [editTriggerName length] > 0)
+	if (isEdit && [(NSString *)[editedTrigger objectForKey:SPTriggerName] length] > 0)
 	{
 		NSString *queryDelete = [NSString stringWithFormat:@"DROP TRIGGER %@.%@",
 								 [[tableDocumentInstance database] backtickQuotedString],
-								 [editTriggerName backtickQuotedString]];
+								 [[editedTrigger objectForKey:SPTriggerName] backtickQuotedString]];
 		
 		[connection queryString:queryDelete];
 		
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], nil, nil, nil,
+							  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"),
 							   [connection lastErrorMessage]]);
 			
@@ -239,28 +241,28 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[connection queryString:query];
 
 	if (([connection queryErrored])) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
-						   [connection lastErrorMessage]]);
+		NSString *createTriggerError = [connection lastErrorMessage];
 		
 		// In case of error, re-create the original trigger statement
 		if (isEdit) {
-			[triggerStatementTextView setString:editTriggerStatement];
-			
 			query = [NSString stringWithFormat:createTriggerStatementTemplate,
-					 [editTriggerName backtickQuotedString],
-					 editTriggerActionTime,
-					 editTriggerEvent,
-					 [editTriggerTableName backtickQuotedString],
-					 editTriggerStatement];
+					 [[editedTrigger objectForKey:SPTriggerName] backtickQuotedString],
+					 [editedTrigger objectForKey:SPTriggerActionTime],
+					 [editedTrigger objectForKey:SPTriggerEvent],
+					 [[editedTrigger objectForKey:SPTriggerTableName] backtickQuotedString],
+					 [editedTrigger objectForKey:SPTriggerStatement]];
 		
 			// If this attempt to re-create the trigger failed, then we're screwed as we've just lost the user's 
 			// data, but they had a backup and everything's cool, right? Should we be displaying an error here
 			// or will it interfere with the one above?
 			[connection queryString:query];
 		}
+
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
+						   createTriggerError]);
 	}
 	else {
 		[triggerNameTextField setStringValue:@""];
@@ -283,9 +285,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
-	
-    [triggerNameTextField setStringValue:@""];
-    [triggerStatementTextView setString:@""];
+
+	// If being opened via an interface component, reset the interface name and statement
+	if (sender != self) {
+		[triggerNameTextField setStringValue:@""];
+		[triggerStatementTextView setString:@""];
+	}
     
 	[NSApp beginSheet:addTriggerPanel
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -575,16 +580,11 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	NSDictionary *trigger = [triggerData objectAtIndex:index];
 	
-	// Cache the original trigger's name and statement in the event that the editing process fails and
-	// we need to recreate it.
-	editTriggerName       = [trigger objectForKey:SPTriggerName];
-	editTriggerStatement  = [trigger objectForKey:SPTriggerStatement];
-	editTriggerTableName  = [trigger objectForKey:SPTriggerTableName];
-	editTriggerEvent      = [trigger objectForKey:SPTriggerEvent];
-	editTriggerActionTime = [trigger objectForKey:SPTriggerActionTime];
+	// Cache the original trigger in the event that the editing process fails and we need to recreate it.
+	editedTrigger = [trigger copy];
 	
-	[triggerNameTextField setStringValue:editTriggerName];
-	[triggerStatementTextView setString:editTriggerStatement];
+	[triggerNameTextField setStringValue:[trigger objectForKey:SPTriggerName]];
+	[triggerStatementTextView setString:[trigger objectForKey:SPTriggerStatement]];
 	
 	// Timin title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
@@ -642,15 +642,21 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 		}
 		
 		NSArray *triggers = ([[tableDocumentInstance serverSupport] supportsTriggers]) ? [tableDataInstance triggers] : nil;
+		NSCharacterSet *nulSet = [NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"%C", '\0']];
 		
 		for (NSDictionary *trigger in triggers)
 		{
+
+			// Trim nul bytes off the Statement, as some versions of MySQL can add these, preventing easy editing
+			NSString *statementString = [[trigger objectForKey:@"Statement"] stringByTrimmingCharactersInSet:nulSet];
+
+			// Copy across all the trigger data needed, trimming nul bytes off the Statement
 			[triggerData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									[trigger objectForKey:@"Table"],     SPTriggerTableName,
 									[trigger objectForKey:@"Trigger"],   SPTriggerName,
 									[trigger objectForKey:@"Event"],     SPTriggerEvent,
 									[trigger objectForKey:@"Timing"],    SPTriggerActionTime,
-									[trigger objectForKey:@"Statement"], SPTriggerStatement,
+									statementString,                     SPTriggerStatement,
 									[trigger objectForKey:@"Definer"],   SPTriggerDefiner,
 									[trigger objectForKey:@"Created"],   SPTriggerCreated,
 									[trigger objectForKey:@"sql_mode"],  SPTriggerSQLMode,
@@ -662,6 +668,14 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[triggersTableView reloadData];
 }
 
+/**
+ * Reopen the add trigger sheet, usually after an error message, with the previous content.
+ */
+- (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self performSelector:@selector(addTrigger:) withObject:self afterDelay:0.0];
+}
+
 #pragma mark -
 
 /**
@@ -670,6 +684,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 - (void)dealloc
 {
 	[triggerData release], triggerData = nil;
+	[editedTrigger release], editedTrigger = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
