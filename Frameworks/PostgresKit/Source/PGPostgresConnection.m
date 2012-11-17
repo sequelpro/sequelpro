@@ -114,6 +114,11 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 #pragma mark -
 #pragma mark Accessors
 
+/**
+ * Get the underlying connection associated with this wrapper.
+ *
+ * @return The PGConn instance.
+ */
 - (PGconn *)postgresConnection
 {
 	return _connection;
@@ -295,7 +300,7 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	BOOL reset = [isReset boolValue];
+	BOOL reset = isReset && [isReset boolValue];
 	
 	int sock = PQsocket(_connection);
 	
