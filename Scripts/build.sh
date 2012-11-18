@@ -86,8 +86,8 @@ if [ "$CONFIGURATION" == 'Distribution' ]
 then
 	echo 'Performing distribution build code signing...'
 
-	codesign -s 'Sequel Pro Distribution' "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant" 2> /dev/null
-	codesign -s 'Sequel Pro Distribution' "${BUILD_PRODUCT}" 2> /dev/null
+	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
+	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "${BUILD_PRODUCT}"
 	
 	# Verify that code signing has worked - all distribution builds must be signed with the same key.
 	VERIFYERRORS=`codesign --verify "$BUILD_PRODUCT" 2>&1`

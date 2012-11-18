@@ -21,12 +21,12 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>NSDocumentClass</key>
-			<string>SPDocumentController</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.google.code.sequel-pro.spf</string>
+				<string>com.sequelpro.SequelPro.spf</string>
 			</array>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -44,12 +44,12 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>NSDocumentClass</key>
-			<string>SPDocumentController</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.google.code.sequel-pro.spTheme</string>
+				<string>com.sequelpro.SequelPro.spTheme</string>
 			</array>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -66,14 +66,14 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>NSDocumentClass</key>
-			<string>SPDocumentController</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.google.code.sequel-pro.spfs</string>
+				<string>com.sequelpro.SequelPro.spfs</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -91,14 +91,14 @@
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
-			<key>NSDocumentClass</key>
-			<string>SPDocumentController</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.google.code.sequel-pro.spbundle</string>
+				<string>com.sequelpro.SequelPro.spbundle</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -128,7 +128,7 @@
 	<key>CFBundleIconFile</key>
 	<string>appicon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.code.sequel-pro</string>
+	<string>com.sequelpro.SequelPro</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -137,6 +137,17 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.9.9.1</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Sequel Pro URL scheme</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sequelpro</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
@@ -197,16 +208,16 @@
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
 			<key>UTTypeDescription</key>
 			<string>Sequel Pro Connection</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.google.code.sequel-pro.spf</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.plain-text</string>
-			</array>
+			<string>com.sequelpro.SequelPro.spf</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -218,16 +229,16 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
 			<key>UTTypeDescription</key>
 			<string>Sequel Pro Session</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.google.code.sequel-pro.spfs</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>com.apple.package</string>
-			</array>
+			<string>com.sequelpro.SequelPro.spfs</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -239,16 +250,16 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
 			<key>UTTypeDescription</key>
 			<string>Sequel Pro Bundle</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.google.code.sequel-pro.spbundle</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>com.apple.package</string>
-			</array>
+			<string>com.sequelpro.SequelPro.spbundle</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -261,16 +272,16 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
 			<key>UTTypeDescription</key>
 			<string>SQL File</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.google.code.sequel-pro.sql</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.plain-text</string>
-			</array>
+			<string>com.sequelpro.SequelPro.sql</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -282,16 +293,16 @@
 			</dict>
 		</dict>
 		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
 			<key>UTTypeDescription</key>
 			<string>Sequel Pro Color Theme</string>
 			<key>UTTypeIconFile</key>
 			<string></string>
 			<key>UTTypeIdentifier</key>
-			<string>com.google.code.sequel-pro.spTheme</string>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.plain-text</string>
-			</array>
+			<string>com.sequelpro.SequelPro.spTheme</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>com.apple.ostype</key>
@@ -302,17 +313,6 @@
 					<string>sptheme</string>
 				</array>
 			</dict>
-		</dict>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>Sequel Pro URL scheme</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>sequelpro</string>
-			</array>
 		</dict>
 	</array>
 </dict>

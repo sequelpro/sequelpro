@@ -97,7 +97,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		// Dispatch different spf formats
 		if([[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -154,7 +154,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"content filters"]) {
 
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -170,7 +170,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"query favorites"]) {
 
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -190,7 +190,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	else if([urlExtension isEqualToString:@"spfs"]) {
 
-		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
+		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
@@ -198,7 +198,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			return noErr;
 		}
 
-		NSString *windowTemplate = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleWindowTemplate" ofType:@"html"] 
+		NSString *windowTemplate = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleWindowTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
@@ -331,7 +331,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	else if([urlExtension isEqualToString:@"sql"]) {
 
-		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
+		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {

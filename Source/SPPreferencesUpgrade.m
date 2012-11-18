@@ -48,7 +48,14 @@ void SPApplyRevisionChanges(void)
 	NSUInteger currentVersionNumber, recordedVersionNumber = 0;
 	
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-	
+
+	// If this is the first run, check for a preferences with the old bundle identifier and
+	// migrate them before running any preference upgrade routines
+	if ([prefs boolForKey:SPFirstRun]) {
+		SPMigratePreferencesFromPreviousIdentifer();
+		[prefs setBool:NO forKey:SPFirstRun];
+	}
+
 	// Get the current bundle version number (the SVN build number) for per-version upgrades
 	currentVersionNumber = [[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] integerValue];
 	
@@ -384,6 +391,25 @@ void SPMigrateConnectionFavoritesData(void)
 	}
 		
 	[favorites release];
+}
+
+/**
+ * Migrates across all preferences for an old bundle identifier to the current preferences file.
+ */
+void SPMigratePreferencesFromPreviousIdentifer(void)
+{
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+
+	CFStringRef oldIdentifier = CFSTR("com.google.code.sequel-pro");
+	CFArrayRef oldPrefKeys = CFPreferencesCopyKeyList(oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+	NSDictionary *oldPrefs = (NSDictionary *)CFPreferencesCopyMultiple(oldPrefKeys, oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+
+	for (id eachKey in oldPrefs) {
+		[prefs setObject:[oldPrefs objectForKey:eachKey] forKey:eachKey];
+	}
+
+	[oldPrefs release];
+	CFRelease(oldPrefKeys);
 }
 
 @end

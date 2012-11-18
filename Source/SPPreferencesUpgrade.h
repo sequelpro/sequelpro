@@ -41,5 +41,6 @@
 
 void SPApplyRevisionChanges(void);
 void SPMigrateConnectionFavoritesData(void);
+void SPMigratePreferencesFromPreviousIdentifer(void);
 
 @end

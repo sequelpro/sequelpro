@@ -31,7 +31,6 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPPreferenceController.h"
-#import "SPPreferencesUpgrade.h"
 #import "SPTablesPreferencePane.h"
 #import "SPEditorPreferencePane.h"
 #import "SPGeneralPreferencePane.h"
@@ -60,11 +59,7 @@
  */
 - (id)init
 {
-	if ((self = [super initWithWindowNibName:@"Preferences"])) {
-						
-		// Upgrade prefs
-		SPApplyRevisionChanges();
-		
+	if ((self = [super initWithWindowNibName:@"Preferences"])) {		
 		fontChangeTarget = 0;
 	}
 

@@ -207,6 +207,7 @@
 
 // Table loading methods and information
 - (void)loadTable:(NSString *)aTable;
+- (void)setTableDetails:(NSDictionary *)tableDetails;
 - (void)clearTableValues;
 - (void)loadTableValues;
 - (NSString *)tableFilterString;

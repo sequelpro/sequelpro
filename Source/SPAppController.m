@@ -112,6 +112,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	// Register application defaults
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
+						
+	// Upgrade prefs before any other parts of the app pick up on the values
+	SPApplyRevisionChanges();
 }
 
 /**
