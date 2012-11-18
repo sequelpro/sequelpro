@@ -107,7 +107,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 @end
 
-
 @implementation SPConnectionController
 
 @synthesize delegate;
@@ -740,11 +739,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
 	SPTreeNode *parent = ([selectedNode isGroup] && selectedNode != quickConnectItem) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
-
-	// Ensure the parent is expanded
-	[favoritesOutlineView expandItem:parent];
 	
 	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
+	
+	//[self _reloadFavoritesViewData];
+	
+	// Ensure the parent is expanded
+	[favoritesOutlineView expandItem:parent];
 	
 	[self _sortFavorites];
     [self _selectNode:node];
@@ -1513,6 +1514,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {	
 	[favoritesOutlineView reloadData];
 	[favoritesOutlineView expandItem:[[favoritesRoot childNodes] objectAtIndex:0] expandChildren:NO];
+	
 	[self _scrollToSelectedNode];
 }
 
@@ -1600,7 +1602,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)_scrollToSelectedNode
 {
-
 	// Don't scroll if no node is currently selected
 	if ([favoritesOutlineView selectedRow] == -1) return;
 
