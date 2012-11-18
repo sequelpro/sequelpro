@@ -121,6 +121,13 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 {
 	NSRect superFrame = [super frameOfOutlineCellAtRow:rowIndex];
 
+	// Return NSZeroRect if the row is a group row
+	if ([[self delegate] respondsToSelector:@selector(outlineView:isGroupItem:)]) {
+		if ([[self delegate] outlineView:self isGroupItem:[self itemAtRow:rowIndex]]) {
+			return NSZeroRect;
+		}
+	}
+
 	// On versions of Lion or above, amend the padding appropriately
 	if (systemVersion >= 0x1070 && superFrame.origin.x > SPFavoritesOutlineViewUnindent) {
 		return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);

@@ -240,6 +240,11 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	return YES;
 }
 
+- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
+{
+	return (item != quickConnectItem && ![item isLeaf]);
+}
+
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowOutlineCellForItem:(id)item
 {
 	return ([[item parentNode] parentNode] != nil);
