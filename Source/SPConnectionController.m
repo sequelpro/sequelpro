@@ -389,7 +389,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
 		}
 
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"", nil];
+		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
 		
 		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 	}
