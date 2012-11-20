@@ -1638,13 +1638,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn
 {
 	NSAutoreleasePool *sortPool = [[NSAutoreleasePool alloc] init];
-	
+
 	// Check whether a save of the current row is required.
 	if (![[self onMainThread] saveRowOnDeselect]) {
+
+		// If the save failed, cancel the sort task and return
+		[tableDocumentInstance endTask];
 		[sortPool drain];
 		return;
 	}
-	
+
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
 	if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
