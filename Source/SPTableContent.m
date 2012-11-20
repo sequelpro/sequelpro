@@ -1488,6 +1488,12 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (IBAction)filterTable:(id)sender
 {
+
+	// Record whether the filter is being triggered by using delete/backspace in the filter field, which
+	// can trigger the effect of clicking the "clear filter" button in the field.
+	// (Keycode 51 is backspace, 117 is delete.)
+	BOOL deleteTriggeringFilter = ([sender isKindOfClass:[NSSearchField class]] && ([[[sender window] currentEvent] keyCode] == 51 || [[[sender window] currentEvent] keyCode] == 117));
+
 #ifndef SP_REFACTOR
 
 	if(sender == filterTableFilterButton)
@@ -1505,13 +1511,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if ([tableDocumentInstance isWorking]) return;
 
-	// Check whether a save of the current row is required
-	if (![self saveRowOnDeselect]) return;
-
 	// If the filter field is being cleared by deleting the contents, and there's no current filter,
-	// don't trigger a reload.  keycode 51 is backspace, 117 is delete.
-	if ([sender isKindOfClass:[NSSearchField class]] && !isFiltered && ![self tableFilterString] && ([[[sender window] currentEvent] keyCode] == 51 || [[[sender window] currentEvent] keyCode] == 117)) {
+	// don't trigger a reload.
+	if (deleteTriggeringFilter && !isFiltered && ![self tableFilterString]) {
 		return;
+	}
+
+	// Check whether a save of the current row is required, restoring focus afterwards if appropriate
+	if (![self saveRowOnDeselect]) return;
+	if (deleteTriggeringFilter) {
+		[sender becomeFirstResponder];
 	}
 
 #ifndef SP_REFACTOR
