@@ -89,6 +89,7 @@
 	IBOutlet NSButton *paginationPreviousButton;
 #ifndef SP_REFACTOR
 	IBOutlet NSButton *paginationButton;
+	IBOutlet NSButton *paginationGoButton;
 #endif
 	IBOutlet NSButton *paginationNextButton;
 #ifndef SP_REFACTOR

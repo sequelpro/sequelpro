@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
   <data>
     <int key="IBDocument.SystemTarget">1050</int>
-    <string key="IBDocument.SystemVersion">11E53</string>
+    <string key="IBDocument.SystemVersion">11G63b</string>
     <string key="IBDocument.InterfaceBuilderVersion">851</string>
-    <string key="IBDocument.AppKitVersion">1138.47</string>
+    <string key="IBDocument.AppKitVersion">1138.51</string>
     <string key="IBDocument.HIToolboxVersion">569.00</string>
     <object class="NSMutableDictionary" key="IBDocument.PluginVersions">
       <string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -692,6 +692,14 @@
           </object>
           <int key="connectionID">57</int>
         </object>
+        <object class="IBConnectionRecord">
+          <object class="IBOutletConnection" key="connection">
+            <string key="label">paginationGoButton</string>
+            <reference key="source" ref="1001"/>
+            <reference key="destination" ref="247243534"/>
+          </object>
+          <int key="connectionID">58</int>
+        </object>
       </object>
       <object class="IBMutableOrderedSet" key="objectRecords">
         <object class="NSArray" key="orderedObjects">
@@ -1045,7 +1053,7 @@
         </object>
       </object>
       <nil key="sourceID"/>
-      <int key="maxID">57</int>
+      <int key="maxID">58</int>
     </object>
     <object class="IBClassDescriber" key="IBDocument.Classes">
       <object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1096,13 +1104,6 @@
           <string key="className">NSObject</string>
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
             <string key="majorKey">IBProjectSource</string>
-            <string key="minorKey">Source/SPConnectionController.h</string>
-          </object>
-        </object>
-        <object class="IBPartialClassDescription">
-          <string key="className">NSObject</string>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier">
-            <string key="majorKey">IBProjectSource</string>
             <string key="minorKey">Source/SPContentFilterManager.h</string>
           </object>
         </object>
@@ -1139,24 +1140,6 @@
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
             <string key="majorKey">IBProjectSource</string>
             <string key="minorKey">Source/SPQueryFavoriteManager.h</string>
-          </object>
-        </object>
-        <object class="IBPartialClassDescription">
-          <string key="className">NSObject</string>
-          <object class="NSMutableDictionary" key="actions">
-            <string key="NS.key.0">toggleCollapse:</string>
-            <string key="NS.object.0">id</string>
-          </object>
-          <object class="NSMutableDictionary" key="actionInfosByName">
-            <string key="NS.key.0">toggleCollapse:</string>
-            <object class="IBActionInfo" key="NS.object.0">
-              <string key="name">toggleCollapse:</string>
-              <string key="candidateClassName">id</string>
-            </object>
-          </object>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier" id="260415642">
-            <string key="majorKey">IBProjectSource</string>
-            <string key="minorKey">Source/SPTablesList.h</string>
           </object>
         </object>
         <object class="IBPartialClassDescription">
@@ -1402,7 +1385,6 @@
               <string>showCompletionList:</string>
               <string>showHelpForCurrentWord:</string>
               <string>showHelpForSearchString:</string>
-              <string>toggleQueryInfoPaneCollapse:</string>
             </object>
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
@@ -1428,7 +1410,6 @@
               <string>id</string>
               <string>id</string>
               <string>id</string>
-              <string>NSButton</string>
             </object>
           </object>
           <object class="NSMutableDictionary" key="actionInfosByName">
@@ -1457,7 +1438,6 @@
               <string>showCompletionList:</string>
               <string>showHelpForCurrentWord:</string>
               <string>showHelpForSearchString:</string>
-              <string>toggleQueryInfoPaneCollapse:</string>
             </object>
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
@@ -1549,10 +1529,6 @@
                 <string key="name">showHelpForSearchString:</string>
                 <string key="candidateClassName">id</string>
               </object>
-              <object class="IBActionInfo">
-                <string key="name">toggleQueryInfoPaneCollapse:</string>
-                <string key="candidateClassName">NSButton</string>
-              </object>
             </object>
           </object>
           <object class="NSMutableDictionary" key="outlets">
@@ -1581,9 +1557,9 @@
               <string>helpTargetSelector</string>
               <string>helpWebView</string>
               <string>helpWebViewWindow</string>
-              <string>multipleLineEditingButton</string>
               <string>nextHistoryMenuItem</string>
               <string>previousHistoryMenuItem</string>
+              <string>queryEditorSplitView</string>
               <string>queryFavoriteNameTextField</string>
               <string>queryFavoritesButton</string>
               <string>queryFavoritesSaveAllMenuItem</string>
@@ -1637,9 +1613,9 @@
               <string>NSSegmentedControl</string>
               <string>WebView</string>
               <string>NSWindow</string>
-              <string>id</string>
               <string>NSMenuItem</string>
               <string>NSMenuItem</string>
+              <string>SPSplitView</string>
               <string>NSTextField</string>
               <string>id</string>
               <string>NSMenuItem</string>
@@ -1653,7 +1629,7 @@
               <string>id</string>
               <string>NSMenuItem</string>
               <string>NSButton</string>
-              <string>NSSplitView</string>
+              <string>SPSplitView</string>
               <string>id</string>
               <string>NSMenuItem</string>
               <string>id</string>
@@ -1696,9 +1672,9 @@
               <string>helpTargetSelector</string>
               <string>helpWebView</string>
               <string>helpWebViewWindow</string>
-              <string>multipleLineEditingButton</string>
               <string>nextHistoryMenuItem</string>
               <string>previousHistoryMenuItem</string>
+              <string>queryEditorSplitView</string>
               <string>queryFavoriteNameTextField</string>
               <string>queryFavoritesButton</string>
               <string>queryFavoritesSaveAllMenuItem</string>
@@ -1819,16 +1795,16 @@
                 <string key="candidateClassName">NSWindow</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">multipleLineEditingButton</string>
-                <string key="candidateClassName">id</string>
-              </object>
-              <object class="IBToOneOutletInfo">
                 <string key="name">nextHistoryMenuItem</string>
                 <string key="candidateClassName">NSMenuItem</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">previousHistoryMenuItem</string>
                 <string key="candidateClassName">NSMenuItem</string>
+              </object>
+              <object class="IBToOneOutletInfo">
+                <string key="name">queryEditorSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">queryFavoriteNameTextField</string>
@@ -1884,7 +1860,7 @@
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">queryInfoPaneSplitView</string>
-                <string key="candidateClassName">NSSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">runAllButton</string>
@@ -1992,7 +1968,6 @@
               <string>flushPrivileges:</string>
               <string>flushTable:</string>
               <string>focusOnTableContentFilter:</string>
-              <string>focusOnTableListFilter:</string>
               <string>import:</string>
               <string>importFromClipboard:</string>
               <string>openCurrentConnectionInNewWindow:</string>
@@ -2018,7 +1993,6 @@
             </object>
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
-              <string>id</string>
               <string>id</string>
               <string>id</string>
               <string>id</string>
@@ -2089,7 +2063,6 @@
               <string>flushPrivileges:</string>
               <string>flushTable:</string>
               <string>focusOnTableContentFilter:</string>
-              <string>focusOnTableListFilter:</string>
               <string>import:</string>
               <string>importFromClipboard:</string>
               <string>openCurrentConnectionInNewWindow:</string>
@@ -2197,10 +2170,6 @@
               </object>
               <object class="IBActionInfo">
                 <string key="name">focusOnTableContentFilter:</string>
-                <string key="candidateClassName">id</string>
-              </object>
-              <object class="IBActionInfo">
-                <string key="name">focusOnTableListFilter:</string>
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBActionInfo">
@@ -2342,7 +2311,6 @@
               <string>saveConnectionIncludeQuery</string>
               <string>saveConnectionSavePassword</string>
               <string>saveConnectionSavePasswordAlert</string>
-              <string>sidebarGrabber</string>
               <string>spHistoryControllerInstance</string>
               <string>statusTableAccessoryView</string>
               <string>statusTableCopyChecksum</string>
@@ -2350,10 +2318,8 @@
               <string>tableContentInstance</string>
               <string>tableDataInstance</string>
               <string>tableDumpInstance</string>
-              <string>tableInfoCollapseButton</string>
               <string>tableInfoScrollView</string>
               <string>tableInfoTable</string>
-              <string>tableListSplitter</string>
               <string>tableRelationsInstance</string>
               <string>tableSourceInstance</string>
               <string>tableTabView</string>
@@ -2373,7 +2339,7 @@
               <string>id</string>
               <string>id</string>
               <string>NSWindow</string>
-              <string>NSSplitView</string>
+              <string>SPSplitView</string>
               <string>id</string>
               <string>NSButton</string>
               <string>id</string>
@@ -2419,14 +2385,11 @@
               <string>id</string>
               <string>id</string>
               <string>id</string>
-              <string>id</string>
               <string>SPTableContent</string>
               <string>SPTableData</string>
               <string>id</string>
-              <string>NSButton</string>
               <string>NSScrollView</string>
               <string>NSTableView</string>
-              <string>NSSplitView</string>
               <string>id</string>
               <string>SPTableStructure</string>
               <string>NSTabView</string>
@@ -2491,7 +2454,6 @@
               <string>saveConnectionIncludeQuery</string>
               <string>saveConnectionSavePassword</string>
               <string>saveConnectionSavePasswordAlert</string>
-              <string>sidebarGrabber</string>
               <string>spHistoryControllerInstance</string>
               <string>statusTableAccessoryView</string>
               <string>statusTableCopyChecksum</string>
@@ -2499,10 +2461,8 @@
               <string>tableContentInstance</string>
               <string>tableDataInstance</string>
               <string>tableDumpInstance</string>
-              <string>tableInfoCollapseButton</string>
               <string>tableInfoScrollView</string>
               <string>tableInfoTable</string>
-              <string>tableListSplitter</string>
               <string>tableRelationsInstance</string>
               <string>tableSourceInstance</string>
               <string>tableTabView</string>
@@ -2533,7 +2493,7 @@
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">contentViewSplitter</string>
-                <string key="candidateClassName">NSSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">copyDatabaseButton</string>
@@ -2700,10 +2660,6 @@
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">sidebarGrabber</string>
-                <string key="candidateClassName">id</string>
-              </object>
-              <object class="IBToOneOutletInfo">
                 <string key="name">spHistoryControllerInstance</string>
                 <string key="candidateClassName">id</string>
               </object>
@@ -2732,20 +2688,12 @@
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">tableInfoCollapseButton</string>
-                <string key="candidateClassName">NSButton</string>
-              </object>
-              <object class="IBToOneOutletInfo">
                 <string key="name">tableInfoScrollView</string>
                 <string key="candidateClassName">NSScrollView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tableInfoTable</string>
                 <string key="candidateClassName">NSTableView</string>
-              </object>
-              <object class="IBToOneOutletInfo">
-                <string key="name">tableListSplitter</string>
-                <string key="candidateClassName">NSSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tableRelationsInstance</string>
@@ -3112,7 +3060,7 @@
               <bool key="EncodedWithXMLCoder">YES</bool>
               <string>NSButton</string>
               <string>NSButton</string>
-              <string>BWAnchoredButtonBar</string>
+              <string>NSBox</string>
               <string>NSButton</string>
               <string>SPDatabaseDocument</string>
               <string>NSView</string>
@@ -3175,7 +3123,7 @@
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">anchoredButtonBar</string>
-                <string key="candidateClassName">BWAnchoredButtonBar</string>
+                <string key="candidateClassName">NSBox</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">confirmAddIndexButton</string>
@@ -3265,6 +3213,57 @@
           </object>
         </object>
         <object class="IBPartialClassDescription">
+          <string key="className">SPSplitView</string>
+          <string key="superclassName">NSSplitView</string>
+          <object class="NSMutableDictionary" key="actions">
+            <string key="NS.key.0">toggleCollapse:</string>
+            <string key="NS.object.0">id</string>
+          </object>
+          <object class="NSMutableDictionary" key="actionInfosByName">
+            <string key="NS.key.0">toggleCollapse:</string>
+            <object class="IBActionInfo" key="NS.object.0">
+              <string key="name">toggleCollapse:</string>
+              <string key="candidateClassName">id</string>
+            </object>
+          </object>
+          <object class="NSMutableDictionary" key="outlets">
+            <bool key="EncodedWithXMLCoder">YES</bool>
+            <object class="NSArray" key="dict.sortedKeys">
+              <bool key="EncodedWithXMLCoder">YES</bool>
+              <string>additionalDragHandleView</string>
+              <string>collapseToggleButton</string>
+            </object>
+            <object class="NSMutableArray" key="dict.values">
+              <bool key="EncodedWithXMLCoder">YES</bool>
+              <string>NSView</string>
+              <string>NSButton</string>
+            </object>
+          </object>
+          <object class="NSMutableDictionary" key="toOneOutletInfosByName">
+            <bool key="EncodedWithXMLCoder">YES</bool>
+            <object class="NSArray" key="dict.sortedKeys">
+              <bool key="EncodedWithXMLCoder">YES</bool>
+              <string>additionalDragHandleView</string>
+              <string>collapseToggleButton</string>
+            </object>
+            <object class="NSMutableArray" key="dict.values">
+              <bool key="EncodedWithXMLCoder">YES</bool>
+              <object class="IBToOneOutletInfo">
+                <string key="name">additionalDragHandleView</string>
+                <string key="candidateClassName">NSView</string>
+              </object>
+              <object class="IBToOneOutletInfo">
+                <string key="name">collapseToggleButton</string>
+                <string key="candidateClassName">NSButton</string>
+              </object>
+            </object>
+          </object>
+          <object class="IBClassDescriptionSource" key="sourceIdentifier">
+            <string key="majorKey">IBProjectSource</string>
+            <string key="minorKey">Source/SPSplitView.h</string>
+          </object>
+        </object>
+        <object class="IBPartialClassDescription">
           <string key="className">SPTableContent</string>
           <string key="superclassName">NSObject</string>
           <object class="NSMutableDictionary" key="actions">
@@ -3282,7 +3281,6 @@
               <string>setDefaultOperator:</string>
               <string>showDefaultOperaterHelp:</string>
               <string>showFilterTable:</string>
-              <string>swapFilterTable:</string>
               <string>tableFilterClear:</string>
               <string>toggleDistinctSelect:</string>
               <string>toggleFilterField:</string>
@@ -3292,7 +3290,6 @@
             </object>
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
-              <string>id</string>
               <string>id</string>
               <string>id</string>
               <string>id</string>
@@ -3327,7 +3324,6 @@
               <string>setDefaultOperator:</string>
               <string>showDefaultOperaterHelp:</string>
               <string>showFilterTable:</string>
-              <string>swapFilterTable:</string>
               <string>tableFilterClear:</string>
               <string>toggleDistinctSelect:</string>
               <string>toggleFilterField:</string>
@@ -3382,10 +3378,6 @@
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBActionInfo">
-                <string key="name">swapFilterTable:</string>
-                <string key="candidateClassName">id</string>
-              </object>
-              <object class="IBActionInfo">
                 <string key="name">tableFilterClear:</string>
                 <string key="candidateClassName">id</string>
               </object>
@@ -3425,13 +3417,15 @@
               <string>fieldField</string>
               <string>filterButton</string>
               <string>filterTableClearButton</string>
-              <string>filterTableDistinctMenuItem</string>
+              <string>filterTableDistinctCheckbox</string>
               <string>filterTableFilterButton</string>
-              <string>filterTableGearLookAllFields</string>
               <string>filterTableLiveSearchCheckbox</string>
               <string>filterTableNegateCheckbox</string>
+              <string>filterTableQueryTitle</string>
+              <string>filterTableSearchAllFields</string>
               <string>filterTableSetDefaultOperatorSheet</string>
               <string>filterTableSetDefaultOperatorValue</string>
+              <string>filterTableSplitView</string>
               <string>filterTableView</string>
               <string>filterTableWhereClause</string>
               <string>filterTableWindow</string>
@@ -3441,6 +3435,7 @@
               <string>limitRowsStepper</string>
               <string>multipleLineEditingButton</string>
               <string>paginationButton</string>
+              <string>paginationGoButton</string>
               <string>paginationNextButton</string>
               <string>paginationPageField</string>
               <string>paginationPageStepper</string>
@@ -3469,13 +3464,15 @@
               <string>NSPopUpButton</string>
               <string>id</string>
               <string>NSButton</string>
-              <string>NSMenuItem</string>
               <string>NSButton</string>
-              <string>NSMenuItem</string>
               <string>NSButton</string>
+              <string>NSButton</string>
+              <string>NSButton</string>
+              <string>NSTextField</string>
               <string>NSButton</string>
               <string>NSPanel</string>
               <string>NSComboBox</string>
+              <string>SPSplitView</string>
               <string>SPCopyTable</string>
               <string>SPTextView</string>
               <string>NSPanel</string>
@@ -3483,6 +3480,7 @@
               <string>id</string>
               <string>id</string>
               <string>id</string>
+              <string>NSButton</string>
               <string>NSButton</string>
               <string>NSButton</string>
               <string>NSButton</string>
@@ -3516,13 +3514,15 @@
               <string>fieldField</string>
               <string>filterButton</string>
               <string>filterTableClearButton</string>
-              <string>filterTableDistinctMenuItem</string>
+              <string>filterTableDistinctCheckbox</string>
               <string>filterTableFilterButton</string>
-              <string>filterTableGearLookAllFields</string>
               <string>filterTableLiveSearchCheckbox</string>
               <string>filterTableNegateCheckbox</string>
+              <string>filterTableQueryTitle</string>
+              <string>filterTableSearchAllFields</string>
               <string>filterTableSetDefaultOperatorSheet</string>
               <string>filterTableSetDefaultOperatorValue</string>
+              <string>filterTableSplitView</string>
               <string>filterTableView</string>
               <string>filterTableWhereClause</string>
               <string>filterTableWindow</string>
@@ -3532,6 +3532,7 @@
               <string>limitRowsStepper</string>
               <string>multipleLineEditingButton</string>
               <string>paginationButton</string>
+              <string>paginationGoButton</string>
               <string>paginationNextButton</string>
               <string>paginationPageField</string>
               <string>paginationPageStepper</string>
@@ -3591,16 +3592,12 @@
                 <string key="candidateClassName">NSButton</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">filterTableDistinctMenuItem</string>
-                <string key="candidateClassName">NSMenuItem</string>
+                <string key="name">filterTableDistinctCheckbox</string>
+                <string key="candidateClassName">NSButton</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">filterTableFilterButton</string>
                 <string key="candidateClassName">NSButton</string>
-              </object>
-              <object class="IBToOneOutletInfo">
-                <string key="name">filterTableGearLookAllFields</string>
-                <string key="candidateClassName">NSMenuItem</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">filterTableLiveSearchCheckbox</string>
@@ -3611,12 +3608,24 @@
                 <string key="candidateClassName">NSButton</string>
               </object>
               <object class="IBToOneOutletInfo">
+                <string key="name">filterTableQueryTitle</string>
+                <string key="candidateClassName">NSTextField</string>
+              </object>
+              <object class="IBToOneOutletInfo">
+                <string key="name">filterTableSearchAllFields</string>
+                <string key="candidateClassName">NSButton</string>
+              </object>
+              <object class="IBToOneOutletInfo">
                 <string key="name">filterTableSetDefaultOperatorSheet</string>
                 <string key="candidateClassName">NSPanel</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">filterTableSetDefaultOperatorValue</string>
                 <string key="candidateClassName">NSComboBox</string>
+              </object>
+              <object class="IBToOneOutletInfo">
+                <string key="name">filterTableSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">filterTableView</string>
@@ -3652,6 +3661,10 @@
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">paginationButton</string>
+                <string key="candidateClassName">NSButton</string>
+              </object>
+              <object class="IBToOneOutletInfo">
+                <string key="name">paginationGoButton</string>
                 <string key="candidateClassName">NSButton</string>
               </object>
               <object class="IBToOneOutletInfo">
@@ -3737,6 +3750,13 @@
         </object>
         <object class="IBPartialClassDescription">
           <string key="className">SPTableContent</string>
+          <object class="IBClassDescriptionSource" key="sourceIdentifier">
+            <string key="majorKey">IBProjectSource</string>
+            <string key="minorKey">Source/SPTableContentFilter.h</string>
+          </object>
+        </object>
+        <object class="IBPartialClassDescription">
+          <string key="className">SPTableContent</string>
           <string key="superclassName">NSObject</string>
           <object class="NSMutableDictionary" key="outlets">
             <string key="NS.key.0">tableWindow</string>
@@ -3802,7 +3822,6 @@
             <object class="NSArray" key="dict.sortedKeys">
               <bool key="EncodedWithXMLCoder">YES</bool>
               <string>activitiesTable</string>
-              <string>containerView</string>
               <string>infoTable</string>
               <string>tableDataInstance</string>
               <string>tableDocumentInstance</string>
@@ -3813,7 +3832,6 @@
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
               <string>NSTableView</string>
-              <string>NSView</string>
               <string>id</string>
               <string>id</string>
               <string>id</string>
@@ -3827,7 +3845,6 @@
             <object class="NSArray" key="dict.sortedKeys">
               <bool key="EncodedWithXMLCoder">YES</bool>
               <string>activitiesTable</string>
-              <string>containerView</string>
               <string>infoTable</string>
               <string>tableDataInstance</string>
               <string>tableDocumentInstance</string>
@@ -3840,10 +3857,6 @@
               <object class="IBToOneOutletInfo">
                 <string key="name">activitiesTable</string>
                 <string key="candidateClassName">NSTableView</string>
-              </object>
-              <object class="IBToOneOutletInfo">
-                <string key="name">containerView</string>
-                <string key="candidateClassName">NSView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">infoTable</string>
@@ -3886,7 +3899,6 @@
               <string>addField:</string>
               <string>closeSheet:</string>
               <string>duplicateField:</string>
-              <string>reloadTable:</string>
               <string>removeField:</string>
               <string>resetAutoIncrement:</string>
               <string>showOptimizedFieldType:</string>
@@ -3895,7 +3907,6 @@
             </object>
             <object class="NSMutableArray" key="dict.values">
               <bool key="EncodedWithXMLCoder">YES</bool>
-              <string>id</string>
               <string>id</string>
               <string>id</string>
               <string>id</string>
@@ -3913,7 +3924,6 @@
               <string>addField:</string>
               <string>closeSheet:</string>
               <string>duplicateField:</string>
-              <string>reloadTable:</string>
               <string>removeField:</string>
               <string>resetAutoIncrement:</string>
               <string>showOptimizedFieldType:</string>
@@ -3932,10 +3942,6 @@
               </object>
               <object class="IBActionInfo">
                 <string key="name">duplicateField:</string>
-                <string key="candidateClassName">id</string>
-              </object>
-              <object class="IBActionInfo">
-                <string key="name">reloadTable:</string>
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBActionInfo">
@@ -4180,6 +4186,24 @@
           </object>
         </object>
         <object class="IBPartialClassDescription">
+          <string key="className">SPTableStructure</string>
+          <object class="NSMutableDictionary" key="actions">
+            <string key="NS.key.0">reloadTable:</string>
+            <string key="NS.object.0">id</string>
+          </object>
+          <object class="NSMutableDictionary" key="actionInfosByName">
+            <string key="NS.key.0">reloadTable:</string>
+            <object class="IBActionInfo" key="NS.object.0">
+              <string key="name">reloadTable:</string>
+              <string key="candidateClassName">id</string>
+            </object>
+          </object>
+          <object class="IBClassDescriptionSource" key="sourceIdentifier">
+            <string key="majorKey">IBProjectSource</string>
+            <string key="minorKey">Source/SPTableStructureLoading.h</string>
+          </object>
+        </object>
+        <object class="IBPartialClassDescription">
           <string key="className">SPTableView</string>
           <string key="superclassName">NSTableView</string>
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -4316,7 +4340,6 @@
               <string>tableDocumentInstance</string>
               <string>tableDumpInstance</string>
               <string>tableEncodingButton</string>
-              <string>tableInfoCollapseButton</string>
               <string>tableInfoInstance</string>
               <string>tableListFilterSplitView</string>
               <string>tableListSplitView</string>
@@ -4369,10 +4392,9 @@
               <string>SPDatabaseDocument</string>
               <string>id</string>
               <string>id</string>
-              <string>NSButton</string>
               <string>id</string>
-              <string>NSSplitView</string>
-              <string>NSSplitView</string>
+              <string>SPSplitView</string>
+              <string>SPSplitView</string>
               <string>id</string>
               <string>id</string>
               <string>SPTableStructure</string>
@@ -4425,7 +4447,6 @@
               <string>tableDocumentInstance</string>
               <string>tableDumpInstance</string>
               <string>tableEncodingButton</string>
-              <string>tableInfoCollapseButton</string>
               <string>tableInfoInstance</string>
               <string>tableListFilterSplitView</string>
               <string>tableListSplitView</string>
@@ -4581,20 +4602,16 @@
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">tableInfoCollapseButton</string>
-                <string key="candidateClassName">NSButton</string>
-              </object>
-              <object class="IBToOneOutletInfo">
                 <string key="name">tableInfoInstance</string>
                 <string key="candidateClassName">id</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tableListFilterSplitView</string>
-                <string key="candidateClassName">NSSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tableListSplitView</string>
-                <string key="candidateClassName">NSSplitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tableNameField</string>
@@ -4646,7 +4663,10 @@
               </object>
             </object>
           </object>
-          <reference key="sourceIdentifier" ref="260415642"/>
+          <object class="IBClassDescriptionSource" key="sourceIdentifier">
+            <string key="majorKey">IBProjectSource</string>
+            <string key="minorKey">Source/SPTablesList.h</string>
+          </object>
         </object>
         <object class="IBPartialClassDescription">
           <string key="className">SPTextView</string>
@@ -4844,7 +4864,7 @@
               <string>removeSchemaPrivButton</string>
               <string>schemaController</string>
               <string>schemasTableView</string>
-              <string>splitViewButtonBar</string>
+              <string>splitView</string>
               <string>tabView</string>
               <string>treeController</string>
               <string>userNameTextField</string>
@@ -4866,7 +4886,7 @@
               <string>NSButton</string>
               <string>NSArrayController</string>
               <string>NSTableView</string>
-              <string>BWAnchoredButtonBar</string>
+              <string>SPSplitView</string>
               <string>NSTabView</string>
               <string>NSTreeController</string>
               <string>NSTextField</string>
@@ -4891,7 +4911,7 @@
               <string>removeSchemaPrivButton</string>
               <string>schemaController</string>
               <string>schemasTableView</string>
-              <string>splitViewButtonBar</string>
+              <string>splitView</string>
               <string>tabView</string>
               <string>treeController</string>
               <string>userNameTextField</string>
@@ -4959,8 +4979,8 @@
                 <string key="candidateClassName">NSTableView</string>
               </object>
               <object class="IBToOneOutletInfo">
-                <string key="name">splitViewButtonBar</string>
-                <string key="candidateClassName">BWAnchoredButtonBar</string>
+                <string key="name">splitView</string>
+                <string key="candidateClassName">SPSplitView</string>
               </object>
               <object class="IBToOneOutletInfo">
                 <string key="name">tabView</string>
@@ -4991,14 +5011,6 @@
       </object>
       <object class="NSMutableArray" key="referencedPartialClassDescriptionsV3.2+">
         <bool key="EncodedWithXMLCoder">YES</bool>
-        <object class="IBPartialClassDescription">
-          <string key="className">BWAnchoredButtonBar</string>
-          <string key="superclassName">NSView</string>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier">
-            <string key="majorKey">IBFrameworkSource</string>
-            <string key="minorKey">BWToolkitFramework.framework/Headers/BWAnchoredButtonBar.h</string>
-          </object>
-        </object>
         <object class="IBPartialClassDescription">
           <string key="className">NSActionCell</string>
           <string key="superclassName">NSCell</string>
@@ -5048,13 +5060,6 @@
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
             <string key="majorKey">IBFrameworkSource</string>
             <string key="minorKey">AppKit.framework/Headers/NSUserInterfaceItemSearching.h</string>
-          </object>
-        </object>
-        <object class="IBPartialClassDescription">
-          <string key="className">NSApplication</string>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier">
-            <string key="majorKey">IBFrameworkSource</string>
-            <string key="minorKey">BWToolkitFramework.framework/Headers/NSApplication+BWAdditions.h</string>
           </object>
         </object>
         <object class="IBPartialClassDescription">
@@ -5773,13 +5778,6 @@
           <reference key="sourceIdentifier" ref="431977310"/>
         </object>
         <object class="IBPartialClassDescription">
-          <string key="className">NSView</string>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier">
-            <string key="majorKey">IBFrameworkSource</string>
-            <string key="minorKey">BWToolkitFramework.framework/Headers/NSView+BWAdditions.h</string>
-          </object>
-        </object>
-        <object class="IBPartialClassDescription">
           <string key="className">NSWindow</string>
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
             <string key="majorKey">IBFrameworkSource</string>
@@ -5799,13 +5797,6 @@
           <object class="IBClassDescriptionSource" key="sourceIdentifier">
             <string key="majorKey">IBFrameworkSource</string>
             <string key="minorKey">AppKit.framework/Headers/NSWindowScripting.h</string>
-          </object>
-        </object>
-        <object class="IBPartialClassDescription">
-          <string key="className">NSWindow</string>
-          <object class="IBClassDescriptionSource" key="sourceIdentifier">
-            <string key="majorKey">IBFrameworkSource</string>
-            <string key="minorKey">BWToolkitFramework.framework/Headers/NSWindow+BWAdditions.h</string>
           </object>
         </object>
         <object class="IBPartialClassDescription">

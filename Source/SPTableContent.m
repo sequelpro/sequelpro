@@ -1488,6 +1488,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (IBAction)filterTable:(id)sender
 {
+	BOOL senderIsPaginationButton = (sender == paginationPreviousButton || sender == paginationNextButton || sender == paginationGoButton);
 
 	// Record whether the filter is being triggered by using delete/backspace in the filter field, which
 	// can trigger the effect of clicking the "clear filter" button in the field.
@@ -1496,15 +1497,23 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 #ifndef SP_REFACTOR
 
-	if(sender == filterTableFilterButton)
+	// If the filter table is being used - the advanced filter - switch type
+	if(sender == filterTableFilterButton) {
 		activeFilter = 1;
-	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
+	}
+
+	// If a string was supplied, use a custom query from that URL scheme
+	else if ([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
 		if(schemeFilter) [schemeFilter release], schemeFilter = nil;
 		schemeFilter = [sender retain];
 		activeFilter = 2;
 	}
-	else
+
+	// If a button other than the pagination buttons was used, set the active filter type to
+	// the standard filter field.
+	else if (!senderIsPaginationButton) {
 		activeFilter = 0;
+	}
 #endif
 
 	NSString *taskString;
@@ -1529,7 +1538,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Select the correct pagination value.
 	// If the filter button was used, or if pagination is disabled, reset to page one
-	if ([sender isKindOfClass:[NSButton class]] || [sender isKindOfClass:[NSTextField class]] || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0)
+	if (!senderIsPaginationButton && ([sender isKindOfClass:[NSButton class]] || [sender isKindOfClass:[NSTextField class]] || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0))
 		contentPage = 1;
 
 	// If the current page is out of bounds, move it within bounds
@@ -1738,7 +1747,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[paginationPageField setIntegerValue:(contentPage + 1)];
 	}
 
-	[self filterTable:self];
+	[self filterTable:sender];
 }
 
 /**
