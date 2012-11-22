@@ -496,10 +496,8 @@
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
-					nil, nil, [NSApp mainWindow], self, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
-					   tableName, [mySQLConnection lastErrorMessage]]);
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+					   tableName, [mySQLConnection lastErrorMessage]];
 
 			// If the current table doesn't exist anymore reload table list
 			if([mySQLConnection lastErrorID] == 1146) {
@@ -510,6 +508,10 @@
 				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
 				[tableListInstance updateTables:self];
 			}
+
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
+					nil, nil, [NSApp mainWindow], self, nil, nil, errorMessage);
+
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
