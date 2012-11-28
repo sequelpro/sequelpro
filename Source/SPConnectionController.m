@@ -1576,12 +1576,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[progressIndicatorText setHidden:YES];
 	[progressIndicatorText display];
 
-	// Update the password fields, restoring passwords that may have been bulletted out during connection
-	if (connectionKeychainItemName) {
-		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
-	}
-	if (connectionSSHKeychainItemName) {
-		[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
+	// If not testing a connection,uUpdate the password fields, restoring passwords that may have
+	// been bulleted out during connection
+	if (!isTestingConnection) {
+		if (connectionKeychainItemName) {
+			[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
+		}
+		if (connectionSSHKeychainItemName) {
+			[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
+		}
 	}
 
 	// Re-enable favorites table view

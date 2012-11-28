@@ -115,8 +115,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		}
 	}
 	
-	// Only set the password if there is no Keychain item set. The connection will ask the delegate for passwords in the Keychain.	
-	if (!connectionKeychainItemName && [self password]) {
+	// Only set the password if there is no Keychain item set and the connection is not being tested.
+	// The connection will otherwise ask the delegate for passwords in the Keychain.	
+	if ((!connectionKeychainItemName || isTestingConnection) && [self password]) {
 		[mySQLConnection setPassword:[self password]];
 	}
 	
@@ -264,7 +265,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[sshTunnel setParentWindow:[dbDocument parentWindow]];
 	
 	// Add keychain or plaintext password as appropriate - note the checks in initiateConnection.
-	if (connectionSSHKeychainItemName) {
+	if (connectionSSHKeychainItemName && !isTestingConnection) {
 		[sshTunnel setPasswordKeychainName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 	} else if (sshPassword) {
 		[sshTunnel setPassword:[self sshPassword]];
@@ -377,9 +378,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 #endif
 		
-		[self failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages] rawErrorText:[theTunnel lastError]];
-	
-		[self _restoreConnectionInterface];
+		[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages] rawErrorText:[theTunnel lastError]];
 	}
 	else if (newState == SPMySQLProxyConnected) {
 #ifndef SP_REFACTOR
@@ -428,14 +427,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	BOOL isSSHTunnelBindError = NO;
 	
 #ifndef SP_REFACTOR
-	// Clean up the interface
-	[progressIndicator stopAnimation:self];
-	[progressIndicator display];
-	[progressIndicatorText setHidden:YES];
-	[progressIndicatorText display];
-	[connectButton setEnabled:YES];
-	[testConnectButton setEnabled:YES];
-	[dbDocument clearStatusIcon];
+	[self _restoreConnectionInterface];
 #endif
 	
 	// Release as appropriate
@@ -466,23 +458,13 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  * Alert sheet callback method - invoked when an error sheet is closed.
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-#ifndef SP_REFACTOR
-	// Restore the passwords from keychain for editing if appropriate
-	if (connectionKeychainItemName) {
-		[self setPassword:[keychain getPasswordForName:connectionKeychainItemName account:connectionKeychainItemAccount]];
-	}
-	
-	if (connectionSSHKeychainItemName) {
-		[self setSshPassword:[keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount]];
-	}
-#endif
-	
+{	
 	if (returnCode == NSAlertAlternateReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
 		[errorDetailText setAlignment:NSLeftTextAlignment];
 		[errorDetailWindow makeKeyAndOrderFront:self];
 	}
+
 	// Currently only SSH port bind errors offer a 3rd option in the error dialog, but if this ever changes
 	// this will definitely need to be updated.
 	else if (returnCode == NSAlertOtherReturn) {
