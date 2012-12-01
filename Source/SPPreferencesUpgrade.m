@@ -46,6 +46,7 @@ void SPApplyRevisionChanges(void)
 {
 	NSUInteger i;
 	NSUInteger currentVersionNumber, recordedVersionNumber = 0;
+	NSMutableArray *importantUpdateNotes = [NSMutableArray new];
 	
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 
@@ -318,6 +319,16 @@ void SPApplyRevisionChanges(void)
 		SPMigrateConnectionFavoritesData();
 	}
 
+	// For versions prior to 3922 (<1.0), show notes for swapping the custom query buttons and signing changes
+	if (recordedVersionNumber < 3922) {
+		[importantUpdateNotes addObject:NSLocalizedString(@"The Custom Query \"Run\" and \"Run All\" button positions and their shortcuts have been swapped.", @"Short important release note for swap of custom query buttons")];
+		[importantUpdateNotes addObject:NSLocalizedString(@"We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.", @"Short important release note for why password prompts may occur")];
+	}
+
+	// Display any important release notes, if any
+	SPShowPostMigrationReleaseNotes(importantUpdateNotes);
+	[importantUpdateNotes release];
+
 	// Update the prefs revision
 	[prefs setObject:[NSNumber numberWithInteger:currentVersionNumber] forKey:SPLastUsedVersion];
 }
@@ -402,6 +413,10 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 
 	CFStringRef oldIdentifier = CFSTR("com.google.code.sequel-pro");
 	CFArrayRef oldPrefKeys = CFPreferencesCopyKeyList(oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+	if (!oldPrefKeys) {
+		return;
+	}
+
 	NSDictionary *oldPrefs = (NSDictionary *)CFPreferencesCopyMultiple(oldPrefKeys, oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 
 	for (id eachKey in oldPrefs) {
@@ -410,6 +425,48 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 
 	[oldPrefs release];
 	CFRelease(oldPrefKeys);
+}
+
+/**
+ * Displays important release notes for a new revision.
+ */
+void SPShowPostMigrationReleaseNotes(NSArray *releaseNotes)
+{
+	if (![releaseNotes count]) {
+		return;
+	}
+
+	NSString *introText;
+	if ([releaseNotes count] == 1) {
+		introText = NSLocalizedString(@"We've made a few changes but we thought you should know about one particularly important one:", "Important release notes informational text, single change");	
+	} else {
+		introText = NSLocalizedString(@"We've made a few changes but we thought you should know about some particularly important ones:", "Important release notes informational text, multiple changes");
+	}
+
+	// Create a *modal* alert to show the release notes
+	NSAlert *noteAlert = [[NSAlert alloc] init];
+	[noteAlert setAlertStyle:NSInformationalAlertStyle];
+	[noteAlert setAccessoryView:[[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 450, 1)] autorelease]];
+	[noteAlert setMessageText:NSLocalizedString(@"Thanks for updating Sequel Pro!", @"Release notes dialog title thanking user for upgrade")];
+	[noteAlert addButtonWithTitle:NSLocalizedString(@"Continue", @"Continue button title")];
+	[noteAlert addButtonWithTitle:NSLocalizedString(@"View full release notes", @"Release notes button title")];
+	[noteAlert setInformativeText:[NSString stringWithFormat:@"%@\n\n • %@", introText, [releaseNotes componentsJoinedByString:@"\n\n • "]]];
+
+	// Show the dialog
+	NSInteger returnCode = [noteAlert runModal];
+	[noteAlert release];
+
+	// Show releae notes if desired
+	if (returnCode == NSAlertSecondButtonReturn) {
+
+		// Work out whether to link to the normal site or the nightly list
+		NSString *releaseNotesLink = @"http://www.sequelpro.com/release-notes";
+		if ([[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] rangeOfString:@"nightly"].location != NSNotFound) {
+			releaseNotesLink = @"http://nightly.sequelpro.com/release-notes";
+		}
+
+		[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:releaseNotesLink]];
+	}
 }
 
 @end
