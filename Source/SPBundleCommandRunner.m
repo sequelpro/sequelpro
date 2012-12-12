@@ -146,7 +146,7 @@
 	NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
 	[theEnv setDictionary:shellEnvironment];
 	
-	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appicon" ofType:@"icns"] forKey:SPBundleShellVariableIconFile];
+	[theEnv setObject:[[NSBundle mainBundle] pathForResource:@"appIcon" ofType:@"icns"] forKey:SPBundleShellVariableIconFile];
 	[theEnv setObject:[NSString stringWithFormat:@"%@/Contents/Resources", [[NSBundle mainBundle] bundlePath]] forKey:SPBundleShellVariableAppResourcesDirectory];
 	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionNone] forKey:SPBundleShellVariableExitNone];
 	[theEnv setObject:[NSNumber numberWithInteger:SPBundleRedirectActionReplaceSection] forKey:SPBundleShellVariableExitReplaceSelection];

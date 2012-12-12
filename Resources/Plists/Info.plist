@@ -12,41 +12,19 @@
 				<string>spf</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>spficon.icns</string>
+			<string>SPF.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Sequel Pro Connection</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>connection</string>
+				<string>spf </string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.sequelpro.SequelPro.spf</string>
-			</array>
-			<key>NSDocumentClass</key>
-			<string>SPDocumentController</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>spTheme</string>
-				<string>sptheme</string>
-			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>appicon.icns</string>
-			<key>CFBundleTypeName</key>
-			<string>Sequel Pro Color Theme</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>theme</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.sequelpro.SequelPro.spTheme</string>
+				<string>com.google.code.sequel-pro.spf</string>
 			</array>
 			<key>NSDocumentClass</key>
 			<string>SPDocumentController</string>
@@ -57,18 +35,19 @@
 				<string>spfs</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>spficon.icns</string>
+			<string>SPF.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Sequel Pro Session</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>connections</string>
+				<string>spfs</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.sequelpro.SequelPro.spfs</string>
+				<string>com.google.code.sequel-pro.spfs</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
@@ -82,18 +61,19 @@
 				<string>spbundle</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>spficon.icns</string>
+			<string>Generic.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>Sequel Pro Bundle</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>sequel pro bundle</string>
+				<string>spbn</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.sequelpro.SequelPro.spbundle</string>
+				<string>com.google.code.sequel-pro.spbundle</string>
 			</array>
 			<key>LSTypeIsPackage</key>
 			<true/>
@@ -103,20 +83,66 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>spTheme</string>
+				<string>sptheme</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Generic.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Sequel Pro Color Theme</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>spct</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.sequelpro.SequelPro.spTheme</string>
+				<string>com.google.code.sequel-pro.spTheme</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>sql</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>sqlicon.icns</string>
+			<string>SQL.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>SQL File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>sql text</string>
+				<string>sqlt</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>NSDocumentClass</key>
 			<string>SPDocumentController</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mysql</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>SQL.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>MySQL File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>msql</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSDocumentClass</key>
+			<string>SPDocumentController</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>Binary</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
@@ -126,7 +152,7 @@
 	<key>CFBundleHelpBookName</key>
 	<string>Sequel Pro Help</string>
 	<key>CFBundleIconFile</key>
-	<string>appicon.icns</string>
+	<string>appIcon.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.sequelpro.SequelPro</string>
 	<key>CFBundleInfoDictionaryVersion</key>

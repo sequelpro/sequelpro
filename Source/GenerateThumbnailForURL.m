@@ -57,7 +57,7 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 
 	// NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 	// 
-	// NSData *thumbnailData = [NSData dataWithContentsOfFile:@"appicon.icns"];
+	// NSData *thumbnailData = [NSData dataWithContentsOfFile:@"appIcon.icns"];
 	// if ( thumbnailData == nil || [thumbnailData length] == 0 ) {
 	// 	// Nothing Found. Don't care.
 	// 	[pool release];
