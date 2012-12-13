@@ -244,8 +244,8 @@
 - (void)viewWillMoveToWindow:(NSWindow *)aWindow {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 	
-	[center removeObserver:self name:NSWindowDidBecomeKeyNotification object:nil];
-	[center removeObserver:self name:NSWindowDidResignKeyNotification object:nil];
+	[center removeObserver:self name:NSWindowDidBecomeMainNotification object:nil];
+	[center removeObserver:self name:NSWindowDidResignMainNotification object:nil];
 	[center removeObserver:self name:NSWindowDidUpdateNotification object:nil];
 	[center removeObserver:self name:NSWindowDidMoveNotification object:nil];
 	
@@ -262,6 +262,9 @@
     }
 }
 
+/**
+ * Allow a window to be redrawn in response to changes in position or focus level.
+ */
 - (void)windowStatusDidChange:(NSNotification *)notification
 {
 	[self setNeedsDisplay:YES];
@@ -1747,7 +1750,8 @@
 {
     // hide? must readjust things if I'm not supposed to be showing
     // this block of code only runs when the app launches
-    if ([self hideForSingleTab] && ([_cells count] <= 1) && !_awakenedFromNib) {
+    if (!_awakenedFromNib && [self hideForSingleTab] && ([_cells count] <= 1)) {
+
         // must adjust frames now before display
         NSRect myFrame = [self frame];
 		if ([self orientation] == PSMTabBarHorizontalOrientation) {
@@ -1801,12 +1805,12 @@
 			[[self delegate] tabView:[self tabView] tabBarDidHide:self];
 		}
     }
-	
+
+	// The above tasks only needs to be run once, so set a flag to ensure that
 	_awakenedFromNib = YES;
+
+	// Allow the tab bar to redraw itself in result to window ordering/sheet/etc changes
 	[self setNeedsDisplay:YES];
-	
-	//we only need to do this once
-	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidUpdateNotification object:nil];
 }
 
 #pragma mark -

@@ -414,7 +414,7 @@
 	float shadowAlpha = 0.4f;
 
 	// When the window is in the background, tone down the colours
-	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
+	if ((![[tabBar window] isMainWindow] && ![[[tabBar window] attachedSheet] isMainWindow]) || ![NSApp isActive]) {
 		backgroundCalibratedWhite = 0.73f;
 		if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.79f;
 		lineCalibratedWhite = 0.49f;
@@ -505,7 +505,7 @@
 	}
 
 	// Set up colours
-	if ([[tabBar window] isMainWindow] && [NSApp isActive]) {
+	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) {
 			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.63f:0.59f alpha:1.0f];
@@ -609,7 +609,7 @@
 		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(context);
 		NSPoint topLeft, topRight;
-		CGFloat drawAlpha = ([[tabBar window] isMainWindow] && [NSApp isActive])? 1.0f : 0.7f;
+		CGFloat drawAlpha = (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive])? 1.0f : 0.7f;
 		outlineBezier = [NSBezierPath bezierPath];
 
 		// Calculate the endpoints of the line
