@@ -1150,50 +1150,72 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[theFavorite setObject:[NSNumber numberWithInteger:[self type]] forKey:SPFavoriteTypeKey];
 	if ([self host]) {
 		[theFavorite setObject:[self host] forKey:SPFavoriteHostKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteHostKey];
 	}
 	if ([self socket]) {
 		[theFavorite setObject:[self socket] forKey:SPFavoriteSocketKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSocketKey];
 	}
 	if ([self user]) {
 		[theFavorite setObject:[self user] forKey:SPFavoriteUserKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteUserKey];
 	}
 	if ([self port]) {
 		[theFavorite setObject:[self port] forKey:SPFavoritePortKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoritePortKey];
 	}
 	if ([self database]) {
 		[theFavorite setObject:[self database] forKey:SPFavoriteDatabaseKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteDatabaseKey];
 	}
 	
 	// SSL details
-	if ([self useSSL]) {
-		[theFavorite setObject:[NSNumber numberWithInteger:[self useSSL]] forKey:SPFavoriteUseSSLKey];
-	}
+	[theFavorite setObject:[NSNumber numberWithInteger:[self useSSL]] forKey:SPFavoriteUseSSLKey];
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sslKeyFileLocationEnabled]] forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
 	if ([self sslKeyFileLocation]) {
 		[theFavorite setObject:[self sslKeyFileLocation] forKey:SPFavoriteSSLKeyFileLocationKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSLKeyFileLocationKey];
 	}
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sslCertificateFileLocationEnabled]] forKey:SPFavoriteSSLCertificateFileLocationEnabledKey];
 	if ([self sslCertificateFileLocation]) {
 		[theFavorite setObject:[self sslCertificateFileLocation] forKey:SPFavoriteSSLCertificateFileLocationKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSLCertificateFileLocationKey];
 	}
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sslCACertFileLocationEnabled]] forKey:SPFavoriteSSLCACertFileLocationEnabledKey];
 	if ([self sslCACertFileLocation]) {
 		[theFavorite setObject:[self sslCACertFileLocation] forKey:SPFavoriteSSLCACertFileLocationKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSLCACertFileLocationKey];
 	}
 	
 	// SSH details
 	if ([self sshHost]) {
 		[theFavorite setObject:[self sshHost] forKey:SPFavoriteSSHHostKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSHHostKey];
 	}
 	if ([self sshUser]) {
 		[theFavorite setObject:[self sshUser] forKey:SPFavoriteSSHUserKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSHUserKey];
 	}
 	if ([self sshPort]) {
 		[theFavorite setObject:[self sshPort] forKey:SPFavoriteSSHPortKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSHPortKey];
 	}
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sshKeyLocationEnabled]] forKey:SPFavoriteSSHKeyLocationEnabledKey];
 	if ([self sshKeyLocation]) {
 		[theFavorite setObject:[self sshKeyLocation] forKey:SPFavoriteSSHKeyLocationKey];
+	} else {
+		[theFavorite removeObjectForKey:SPFavoriteSSHKeyLocationKey];
 	}
 	
 
