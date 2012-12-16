@@ -325,8 +325,9 @@ void SPApplyRevisionChanges(void)
 		[importantUpdateNotes addObject:NSLocalizedString(@"We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.", @"Short important release note for why password prompts may occur")];
 	}
 
-	// Display any important release notes, if any
-	SPShowPostMigrationReleaseNotes(importantUpdateNotes);
+	// Display any important release notes, if any.  Call this after a slight delay to prevent double help
+	// menus - see http://www.cocoabuilder.com/archive/cocoa/6200-two-help-menus-why.html .
+	[SPPreferencesUpgrade performSelector:@selector(showPostMigrationReleaseNotes:) withObject:importantUpdateNotes afterDelay:0.1];
 	[importantUpdateNotes release];
 
 	// Update the prefs revision
@@ -430,7 +431,7 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 /**
  * Displays important release notes for a new revision.
  */
-void SPShowPostMigrationReleaseNotes(NSArray *releaseNotes)
++ (void)showPostMigrationReleaseNotes:(NSArray *)releaseNotes
 {
 	if (![releaseNotes count]) {
 		return;
