@@ -33,6 +33,10 @@
 #import "SPWindow.h"
 #import "SPWindowController.h"
 
+@interface NSWindow (LionPlusMethods)
+- (void)toggleFullScreen:(id)sender;
+@end
+
 @implementation SPWindow
 
 @synthesize isSheetWhichCanBecomeMain;
@@ -163,6 +167,25 @@
 	}
 
 	return [super canBecomeMainWindow];
+}
+
+/**
+ * On 10.7+, allow the window to go fullscreen; do nothing on <10.7.
+ */
+- (void)toggleFullScreen:(id)sender
+{
+	if ([super respondsToSelector:@selector(toggleFullScreen:)]) {
+		[super toggleFullScreen:sender];
+	}
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	
+	if ([menuItem action] == @selector(toggleFullScreen:)) {
+		return ([super respondsToSelector:@selector(toggleFullScreen:)]);
+	}
+	return YES;
 }
 
 @end

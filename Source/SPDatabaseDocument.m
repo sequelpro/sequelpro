@@ -2302,6 +2302,26 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 }
 
 /**
+ * Switches to the content view and makes the advanced filter view the first responder
+ */
+- (IBAction)showFilterTable:(id)sender
+{
+	[self viewContent:self];
+	
+	[tableContentInstance performSelector:@selector(showFilterTable:) withObject:sender afterDelay:0.1];
+}
+
+/**
+ * Allow Command-F to set the focus to the content view filter if that view is active
+ */
+- (void)performFindPanelAction:(id)sender
+{
+	if ([sender tag] == 1 && [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
+		[tableContentInstance makeContentFilterHaveFocus];
+	}
+}
+
+/**
  * Exports the selected tables in the chosen file format.
  */
 - (IBAction)exportSelectedTablesAs:(id)sender
@@ -3378,6 +3398,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 }
 
 /**
+ * Forwards a responder request to set the focus to the table list filter area or table list
+ */
+- (IBAction) makeTableListFilterHaveFocus:(id)sender
+{
+	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
+}
+
+/**
  * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
@@ -3522,12 +3550,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 	
 	// Focus on table content filter
-	if ([menuItem action] == @selector(focusOnTableContentFilter:)) {
+	if ([menuItem action] == @selector(focusOnTableContentFilter:) || [menuItem action] == @selector(showFilterTable:)) {
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
 	// Focus on table list or filter resp.
-	if ([menuItem action] == @selector(focusOnTableListFilter:)) {
+	if ([menuItem action] == @selector(makeTableListFilterHaveFocus:)) {
 		
 		if([[tablesListInstance valueForKeyPath:@"tables"] count] > 20)
 			[menuItem setTitle:NSLocalizedString(@"Filter Tables", @"filter tables menu item")];

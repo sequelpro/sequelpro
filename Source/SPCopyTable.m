@@ -1175,13 +1175,6 @@ static const NSInteger kBlobAsImageFile = 4;
 	[super keyDown:theEvent];
 }
 
-- (void)performFindPanelAction:(id)sender
-{
-	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
-		[(SPTableContent*)[self delegate] showFilterTable:self];
-	}
-}
-
 #pragma mark -
 #pragma mark Field editing checks
 

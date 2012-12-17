@@ -37,4 +37,6 @@
 
 @property (assign) BOOL isSheetWhichCanBecomeMain;
 
+- (void)toggleFullScreen:(id)sender;
+
 @end

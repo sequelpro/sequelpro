@@ -330,6 +330,7 @@
 - (IBAction)renameDatabase:(id)sender;
 #ifndef SP_REFACTOR /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
+- (IBAction) makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
@@ -377,6 +378,7 @@
 - (IBAction)saveCreateSyntax:(id)sender;
 - (IBAction)copyCreateTableSyntaxFromSheet:(id)sender;
 - (IBAction)focusOnTableContentFilter:(id)sender;
+- (IBAction)showFilterTable:(id)sender;
 - (IBAction)export:(id)sender;
 - (IBAction)exportSelectedTablesAs:(id)sender;
 

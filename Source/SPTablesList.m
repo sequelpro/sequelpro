@@ -870,19 +870,18 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Get main menu "Table"'s submenu
 		NSMenu *tableSubMenu = [[[NSApp mainMenu] itemWithTag:SPMainMenuTable] submenu];
 		
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Syntaxes", @"copy create syntaxes menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Copy Create Syntaxes", @"copy create syntaxes menu item")];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Show Create Syntaxes...", @"show create syntaxes menu item")];
 
-		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
-		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Check Selected Items", @"check selected items menu item")];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Repair Selected Items", @"repair selected items menu item")];
 
-		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Analyze Selected Items", @"analyze selected items menu item")];
-		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Optimize Selected Items", @"optimize selected items menu item")];
+		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Analyze Selected Items", @"analyze selected items menu item")];
+		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Optimize Selected Items", @"optimize selected items menu item")];
 
-		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Flush Selected Items", @"flush selected items menu item")];
-		[[tableSubMenu itemAtIndex:12] setTitle:NSLocalizedString(@"Checksum Selected Items", @"checksum selected items menu item")];
+		[[tableSubMenu itemAtIndex:12] setTitle:NSLocalizedString(@"Flush Selected Items", @"flush selected items menu item")];
+		[[tableSubMenu itemAtIndex:13] setTitle:NSLocalizedString(@"Checksum Selected Items", @"checksum selected items menu item")];
 
-		[[tableSubMenu itemAtIndex:3] setHidden:NO];
 		[[tableSubMenu itemAtIndex:4] setHidden:NO];
 		[[tableSubMenu itemAtIndex:5] setHidden:NO];
 		[[tableSubMenu itemAtIndex:6] setHidden:NO];
@@ -890,6 +889,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[[tableSubMenu itemAtIndex:8] setHidden:NO];
 		[[tableSubMenu itemAtIndex:9] setHidden:NO];
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
+		[[tableSubMenu itemAtIndex:11] setHidden:NO];
 #endif
 
 		return;
@@ -930,18 +930,18 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if (selectedTableType == SPTableTypeView)
 	{
 		// Change mainMenu > Table > ... according to table type
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
-		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // Divider
-		[[tableSubMenu itemAtIndex:6] setHidden:NO];
-		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // Repair
-		[[tableSubMenu itemAtIndex:8] setHidden:YES]; // Divider
-		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // Analyse
-		[[tableSubMenu itemAtIndex:10] setHidden:YES]; // Optimize
-		[[tableSubMenu itemAtIndex:11] setHidden:NO];
-		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
-		[[tableSubMenu itemAtIndex:12] setHidden:YES]; // Checksum
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Copy Create View Syntax", @"copy create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
+		[[tableSubMenu itemAtIndex:6] setHidden:NO]; // Divider
+		[[tableSubMenu itemAtIndex:7] setHidden:NO];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Check View", @"check view menu item")];
+		[[tableSubMenu itemAtIndex:8] setHidden:YES]; // Repair
+		[[tableSubMenu itemAtIndex:9] setHidden:YES]; // Divider
+		[[tableSubMenu itemAtIndex:10] setHidden:YES]; // Analyse
+		[[tableSubMenu itemAtIndex:11] setHidden:YES]; // Optimize
+		[[tableSubMenu itemAtIndex:12] setHidden:NO];
+		[[tableSubMenu itemAtIndex:12] setTitle:NSLocalizedString(@"Flush View", @"flush view menu item")];
+		[[tableSubMenu itemAtIndex:13] setHidden:YES]; // Checksum
 
 		[renameTableMenuItem setHidden:NO]; // we don't have to check the mysql version
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename View...", @"rename view menu title")];
@@ -972,22 +972,22 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[copyCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Copy Create View Syntax",@"Table List : Context Menu : Copy CREATE view statement")];
 	}
 	else if (selectedTableType == SPTableTypeTable) {
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
-		[[tableSubMenu itemAtIndex:5] setHidden:NO]; // divider
-		[[tableSubMenu itemAtIndex:6] setHidden:NO];
-		[[tableSubMenu itemAtIndex:6] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Copy Create Table Syntax", @"copy create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
+		[[tableSubMenu itemAtIndex:6] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:7] setHidden:NO];
-		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Repair Table", @"repair table menu item")];
-		[[tableSubMenu itemAtIndex:8] setHidden:NO]; // divider
-		[[tableSubMenu itemAtIndex:9] setHidden:NO];
-		[[tableSubMenu itemAtIndex:9] setTitle:NSLocalizedString(@"Analyze Table", @"analyze table menu item")];
+		[[tableSubMenu itemAtIndex:7] setTitle:NSLocalizedString(@"Check Table", @"check table menu item")];
+		[[tableSubMenu itemAtIndex:8] setHidden:NO];
+		[[tableSubMenu itemAtIndex:8] setTitle:NSLocalizedString(@"Repair Table", @"repair table menu item")];
+		[[tableSubMenu itemAtIndex:9] setHidden:NO]; // divider
 		[[tableSubMenu itemAtIndex:10] setHidden:NO];
-		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Optimize Table", @"optimize table menu item")];
+		[[tableSubMenu itemAtIndex:10] setTitle:NSLocalizedString(@"Analyze Table", @"analyze table menu item")];
 		[[tableSubMenu itemAtIndex:11] setHidden:NO];
-		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+		[[tableSubMenu itemAtIndex:11] setTitle:NSLocalizedString(@"Optimize Table", @"optimize table menu item")];
 		[[tableSubMenu itemAtIndex:12] setHidden:NO];
-		[[tableSubMenu itemAtIndex:12] setTitle:NSLocalizedString(@"Checksum Table", @"checksum table menu item")];
+		[[tableSubMenu itemAtIndex:12] setTitle:NSLocalizedString(@"Flush Table", @"flush table menu item")];
+		[[tableSubMenu itemAtIndex:13] setHidden:NO];
+		[[tableSubMenu itemAtIndex:13] setTitle:NSLocalizedString(@"Checksum Table", @"checksum table menu item")];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Table...", @"rename table menu title")];
@@ -1020,16 +1020,16 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[copyCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Copy Create Table Syntax",@"Table List : Gear Menu : Copy CREATE syntax (single table)")];
 	}
 	else if (selectedTableType == SPTableTypeProc) {
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
-		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // copy columns
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:8] setHidden:YES];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Copy Create Procedure Syntax", @"copy create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:8] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:9] setHidden:YES];
-		[[tableSubMenu itemAtIndex:10] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:11] setHidden:YES];
+		[[tableSubMenu itemAtIndex:10] setHidden:YES];
+		[[tableSubMenu itemAtIndex:11] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:12] setHidden:YES];
+		[[tableSubMenu itemAtIndex:13] setHidden:YES];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Procedure...", @"rename proc menu title")];
@@ -1060,16 +1060,16 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[copyCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Copy Create Procedure Syntax",@"Table List : Context Menu : Copy CREATE PROCEDURE syntax")];
 	}
 	else if (selectedTableType == SPTableTypeFunc) {
-		[[tableSubMenu itemAtIndex:3] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
-		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
-		[[tableSubMenu itemAtIndex:5] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // copy columns
-		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:8] setHidden:YES];
+		[[tableSubMenu itemAtIndex:4] setTitle:NSLocalizedString(@"Copy Create Function Syntax", @"copy create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:5] setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
+		[[tableSubMenu itemAtIndex:6] setHidden:YES]; // divider
+		[[tableSubMenu itemAtIndex:7] setHidden:YES]; // copy columns
+		[[tableSubMenu itemAtIndex:8] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:9] setHidden:YES];
-		[[tableSubMenu itemAtIndex:10] setHidden:YES]; // divider
-		[[tableSubMenu itemAtIndex:11] setHidden:YES];
+		[[tableSubMenu itemAtIndex:10] setHidden:YES];
+		[[tableSubMenu itemAtIndex:11] setHidden:YES]; // divider
 		[[tableSubMenu itemAtIndex:12] setHidden:YES];
+		[[tableSubMenu itemAtIndex:13] setHidden:YES];
 
 		[renameTableMenuItem setHidden:NO];
 		[renameTableMenuItem setTitle:NSLocalizedString(@"Rename Function...", @"rename func menu title")];
