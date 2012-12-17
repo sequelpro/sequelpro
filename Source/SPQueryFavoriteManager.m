@@ -35,6 +35,7 @@
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
+#import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
@@ -68,7 +69,7 @@
 		
 		if(managerDelegate == nil) {
 			NSBeep();
-			NSLog(@"Query Favorite Manger was called without a delegate.");
+			NSLog(@"Query Favorite Manager was called without a delegate.");
 			return nil;
 		}
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
@@ -208,14 +209,26 @@
 	// Add a new favorite
 	else
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
-	
+
+	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex]+1;
 		[favorites insertObject:favorite atIndex:insertIndex];
-	} 
-	else {
-		[favorites addObject:favorite];
+	}
+
+	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of it
+	else if (![tableDocumentInstance isUntitled]) {
 		insertIndex = [favorites count] - 1;
+		[favorites addObject:favorite];
+	}
+
+	// Otherwise, add to the bottom of the Global array by default
+	else {
+		insertIndex = 1;
+		while (![[favorites objectAtIndex:insertIndex] objectForKey:@"headerOfFileURL"]) {
+			insertIndex++;
+		}
+		[favorites insertObject:favorite atIndex:insertIndex];
 	}
 
 	[favoritesArrayController rearrangeObjects];
