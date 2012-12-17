@@ -421,7 +421,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 			[tableDict setObject:[NSArray arrayWithObjects:
 								  [item objectAtIndex:1], 
 								  [item objectAtIndex:2], 
-								  [item objectAtIndex:3], 
+								  [item objectAtIndex:3],
+								  [item objectAtIndex:4],
 								  nil] 
 						  forKey:[item objectAtIndex:0]];
 		}
