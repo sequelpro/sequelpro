@@ -53,7 +53,7 @@
 
 @interface SPTableContent : NSObject
 #ifdef SP_REFACTOR
-<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate, NSResponder>
+<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 #endif
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;

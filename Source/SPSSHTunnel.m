@@ -58,6 +58,8 @@
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
+		SInt32 systemVersion = 0;
+		Gestalt(gestaltSystemVersion, &systemVersion);
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -69,11 +71,13 @@
 		delegate = nil;
 		stateChangeSelector = nil;
 		lastError = nil;
-		connectionMuxingEnabled = YES;
 		debugMessages = [[NSMutableArray alloc] init];
 		debugMessagesLock = [[NSLock alloc] init];
 		answerAvailableLock = [[NSLock alloc] init];
-		
+
+		// Enable connection muxing on 10.7+, as 10.6 has problems with muxing (see Issue #1457)
+		connectionMuxingEnabled = (systemVersion >= 0x1070);
+
 		// Set up a connection for use by the tunnel process
 		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];

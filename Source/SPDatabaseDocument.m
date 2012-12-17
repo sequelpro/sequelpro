@@ -49,6 +49,7 @@ enum {
 #import "SPFileHandle.h"
 #import "SPKeychain.h"
 #import "SPTableContent.h"
+#import "SPTableContentFilter.h"
 #import "SPCustomQuery.h"
 #import "SPDataImport.h"
 #import "ImageAndTextCell.h"
