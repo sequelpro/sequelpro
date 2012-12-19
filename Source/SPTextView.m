@@ -2958,8 +2958,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[paragraphStyle release];
 }
 
-- (void)drawRect:(NSRect)rect {
-
+- (void)drawViewBackgroundInRect:(NSRect)rect {
+	[super drawViewBackgroundInRect:rect];
 
 	// Draw background only for screen display but not while printing, and only if view
 	// background drawing is enabled.
@@ -3010,8 +3010,6 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 		}
 	}
-
-	[super drawRect:rect];
 }
 
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange
