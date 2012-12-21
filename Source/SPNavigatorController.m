@@ -161,13 +161,13 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
-	connectionIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"network-small" ofType:@"tif"]];
-	databaseIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"database-small" ofType:@"png"]];
-	tableIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"table-small-square" ofType:@"png"]];
-	viewIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"table-view-small-square" ofType:@"tiff"]];
-	procedureIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"proc-small" ofType:@"png"]];
-	functionIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"func-small" ofType:@"png"]];
-	fieldIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"field-small-square" ofType:@"tiff"]];
+	connectionIcon = [[NSImage imageNamed:@"network-small"] retain];
+	databaseIcon = [[NSImage imageNamed:@"database-small"] retain];
+	tableIcon = [[NSImage imageNamed:@"table-small-square"] retain];
+	viewIcon = [[NSImage imageNamed:@"table-view-small-square"] retain];
+	procedureIcon = [[NSImage imageNamed:@"proc-small"] retain];
+	functionIcon = [[NSImage imageNamed:@"func-small"] retain];
+	fieldIcon = [[NSImage imageNamed:@"field-small-square"] retain];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
 												 name:@"SPDBStructureWasUpdated" object:nil];

@@ -726,7 +726,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 
 - (NSImage *)preferencePaneIcon
 {
-	return [NSImage imageNamed:@"toolbar-preferences-queryeditor"];
+	return [NSImage imageNamed:@"toolbar-switch-to-sql"];
 }
 
 - (NSString *)preferencePaneName

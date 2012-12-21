@@ -144,12 +144,12 @@
 		[self setupInterface];
 
 		syncArrowImages = [[NSArray alloc] initWithObjects:
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_01" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_02" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_03" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_04" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_05" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_06" ofType:@"tiff"]] autorelease],
+			[NSImage imageNamed:@"sync_arrows_01"],
+			[NSImage imageNamed:@"sync_arrows_02"],
+			[NSImage imageNamed:@"sync_arrows_03"],
+			[NSImage imageNamed:@"sync_arrows_04"],
+			[NSImage imageNamed:@"sync_arrows_05"],
+			[NSImage imageNamed:@"sync_arrows_06"],
 			nil];
 		
 	}
