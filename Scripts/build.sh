@@ -84,6 +84,15 @@ cp -R "${SRCROOT}/SharedSupport/Default Themes" "${BUILD_PRODUCT}/Contents/Share
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then
+	
+	echo 'Checking for localizations to copy in, using the "ResourcesToCopy" directory...'
+	if [ -e "${SRCROOT}/ResourcesToCopy" ]
+	then
+		find "${SRCROOT}/ResourcesToCopy" \( -name "*.lproj" \) | while read FILE; do; printf "\tCopying localization: ${FILE}\n"; cp -R "$FILE" "${BUILD_PRODUCT}/Contents/Resources/"; done;
+	else
+		echo 'No localizations to copy.'
+	fi
+
 	echo 'Performing distribution build code signing...'
 
 	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
