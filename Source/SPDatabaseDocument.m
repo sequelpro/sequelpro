@@ -3955,6 +3955,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			SPMainToolbarTableStructure,
 			SPMainToolbarTableContent,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			SPMainToolbarTableInfo,
 			SPMainToolbarCustomQuery,
 			NSToolbarFlexibleSpaceItemIdentifier,
