@@ -3242,6 +3242,29 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	return YES;
 }
 
+/**
+ * Selection range changes
+ * Listen to selection range change events and use changes of state between selection and no
+ * selection to redraw the hilight state
+ */
+- (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange granularity:(NSSelectionGranularity)granularity
+{
+	NSUInteger currentSelectionLength = [self selectedRange].length;
+
+	// If selection started/ended, redraw the background in the current query area
+	if ([self shouldHiliteQuery] && (currentSelectionLength && !proposedSelRange.length) || (!currentSelectionLength && proposedSelRange.length)) {
+		NSUInteger i = 0, rectCount = 0;
+		NSRect* rectsToUpdate = [[self layoutManager] rectArrayForCharacterRange:[self queryRange]
+		                                                withinSelectedCharacterRange:[self queryRange]
+		                                                             inTextContainer:[self textContainer]
+		                                                                   rectCount:&rectCount];
+		for (i = 0; i < rectCount; i++) {
+			[self setNeedsDisplayInRect:rectsToUpdate[i]];
+		}
+	}
+
+	return [super selectionRangeForProposedRange:proposedSelRange granularity:granularity];
+}
 
 #pragma mark -
 #pragma mark delegates
