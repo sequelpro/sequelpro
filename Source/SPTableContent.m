@@ -444,7 +444,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[fieldField addItemWithTitle:NSLocalizedString(@"field", @"popup menuitem for field (showing only if disabled)")];
 		[compareField setEnabled:NO];
 		[compareField removeAllItems];
-		[compareField addItemWithTitle:NSLocalizedString(@"is", @"popup menuitem for field IS value")];
+		[compareField addItemWithTitle:@"="];
 		[argumentField setHidden:NO];
 		[argumentField setEnabled:NO];
 		[firstBetweenField setEnabled:NO];

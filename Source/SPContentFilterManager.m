@@ -35,6 +35,7 @@
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
+#import "SPDatabaseDocument.h"
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
@@ -246,12 +247,25 @@
 	else
 		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
 
-	if([contentFilterTableView numberOfSelectedRows] > 0) {
+	// If a favourite is currently selected, add the new favourite next to it
+	if ([contentFilterTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex]+1;
 		[contentFilters insertObject:filter atIndex:insertIndex];
-	} else {
-		[contentFilters addObject:filter];
+	}
+
+	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of that document's favourites
+	else if (![tableDocumentInstance isUntitled]) {
 		insertIndex = [contentFilters count] - 1;
+		[contentFilters addObject:filter];
+	}
+
+	// Otherwise, add to the bottom of the Global list by default
+	else {
+		insertIndex = 1;
+		while (![[contentFilters objectAtIndex:insertIndex] objectForKey:@"headerOfFileURL"]) {
+			insertIndex++;
+		}
+		[contentFilters insertObject:filter atIndex:insertIndex];
 	}
 
 	[contentFilterArrayController rearrangeObjects];
