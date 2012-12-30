@@ -741,9 +741,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	SPTreeNode *parent = ([selectedNode isGroup] && selectedNode != quickConnectItem) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 	
 	SPTreeNode *node = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:parent];
-	
-	//[self _reloadFavoritesViewData];
-	
+
 	// Ensure the parent is expanded
 	[favoritesOutlineView expandItem:parent];
 	
@@ -773,7 +771,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	SPTreeNode *selectedNode = [self selectedFavoriteNode];
 	
-	SPTreeNode *parent = ([selectedNode isGroup]) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
+	SPTreeNode *parent = ([selectedNode isGroup] && selectedNode != quickConnectItem) ? selectedNode : (SPTreeNode *)[selectedNode parentNode];
 
 	// Ensure the parent is expanded
 	[favoritesOutlineView expandItem:parent];
