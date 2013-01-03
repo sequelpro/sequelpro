@@ -48,7 +48,7 @@
 
 usage() 
 {
-	echo "Usage: `basename $0` -p application_path [-d -n -s -t -f -r]"	
+	echo "Usage: $(basename $0) -p application_path [-d -n -s -t -f -r]"	
 	exit 1
 }
 
@@ -96,7 +96,7 @@ then
 	usage
 fi
 
-printf "Trimming application bundle '`basename \"$APP_PATH\"`' at '${APP_PATH}'...\n\n"
+printf "Trimming application bundle '$(basename \"$APP_PATH\")' at '${APP_PATH}'...\n\n"
 
 # Remove unnecessary files
 if [ $REMOVE_FILES ]
@@ -151,6 +151,6 @@ then
     find "$APP_PATH" -type f | while read FILE; do if [ -s "${FILE}/rsrc" ]; then; printf "\tRemoving reource: ${FILE}/rsrc\n"; cp /dev/null "${FILE}/rsrc"; fi; done;
 fi
 
-printf "\nTrimming application bundle '`basename \"$APP_PATH\"`' complete\n"
+printf "\nTrimming application bundle '$(basename \"$APP_PATH\")' complete\n\n"
 
 exit 0

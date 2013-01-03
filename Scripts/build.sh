@@ -52,40 +52,37 @@ echo 'Updating build version...'
 # Remove the .ibplugin from within frameworks
 rm -rf "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework/Versions/A/Resources/ShortcutRecorder.ibplugin"
 
-# Perform localisation updates for 'Release' or 'Distribution' builds
+# Perform 'Release' or 'Distribution' build specific actions
 if [[ "$CONFIGURATION" == 'Release' || "$CONFIGURATION" == 'Distribution' ]]
 then
 	"${SRCROOT}/Scripts/localize.sh"
-fi
 
-# Trim the application if this is a 'Release' or 'Distribution' build
-if [[ "$CONFIGURATION" == 'Release' || "$CONFIGURATION" == 'Distribution' ]]
-then
-	echo 'Running trim-application.sh to strip application resources for distribution...'
+	printf "Running trim-application.sh to strip application resources for distribution...\n\n"
 
 	"${SRCROOT}/Scripts/trim-application.sh" -p "$BUILD_PRODUCT" -a
 fi
 
+SHARED_SUPPORT_DIR="${BUILD_PRODUCT}/Contents/SharedSupport"
+
 # Copy all Default Bundles to build product
-rm -rf "${BUILD_PRODUCT}/Contents/SharedSupport/Default Bundles"
+rm -rf "${SHARED_SUPPORT_DIR}/Default Bundles"
 
-mkdir -p "${BUILD_PRODUCT}/Contents/SharedSupport/Default Bundles"
+mkdir -p "${SHARED_SUPPORT_DIR}/Default Bundles"
 
-cp -R "${SRCROOT}/SharedSupport/Default Bundles" "${BUILD_PRODUCT}/Contents/SharedSupport"
+cp -R "${SRCROOT}/SharedSupport/Default Bundles" "${SHARED_SUPPORT_DIR}"
 
 # Copy all Default Themes to build product
-rm -rf "${BUILD_PRODUCT}/Contents/SharedSupport/Default Themes"
+rm -rf "${SHARED_SUPPORT_DIR}/Default Themes"
 
-mkdir -p "${BUILD_PRODUCT}/Contents/SharedSupport/Default Themes"
+mkdir -p "${SHARED_SUPPORT_DIR}/Default Themes"
 
-cp -R "${SRCROOT}/SharedSupport/Default Themes" "${BUILD_PRODUCT}/Contents/SharedSupport"
-
+cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then
-	
 	echo 'Checking for localizations to copy in, using the "ResourcesToCopy" directory...'
+
 	if [ -e "${SRCROOT}/ResourcesToCopy" ]
 	then
 		find "${SRCROOT}/ResourcesToCopy" \( -name "*.lproj" \) | while read FILE; do; printf "\tCopying localization: ${FILE}\n"; cp -R "$FILE" "${BUILD_PRODUCT}/Contents/Resources/"; done;
