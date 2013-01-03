@@ -371,8 +371,7 @@ void SPMigrateConnectionFavoritesData(void)
 			[prefs setInteger:[[[favorites objectAtIndex:defaultFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPDefaultFavorite];
 		}
 		
-		// TOOD: Favorites migration - only uncomment when we want to remove backwards compatibility
-		//[prefs removeObjectForKey:@"LastFavoriteIndex"];
+		[prefs removeObjectForKey:@"LastFavoriteIndex"];
 	}
 
 	NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
@@ -390,8 +389,7 @@ void SPMigrateConnectionFavoritesData(void)
 			NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
 		}
 		else {
-			// TOOD: Favorites migration - only uncomment when we want to remove backwards compatibility
-			//[prefs removeObjectForKey:SPOldFavoritesKey];
+			[prefs removeObjectForKey:SPOldFavoritesKey];
 		}
 	}
 	else if (errorString) {
