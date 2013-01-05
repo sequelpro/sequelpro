@@ -37,7 +37,10 @@
 {
 	IBOutlet PSMTabBarControl *tabBar;
 	IBOutlet NSTabView *tabView;
-	
+
+	NSClipView *titleBarLineHidingView;
+	SInt32 systemVersion;
+
 	NSMenuItem *closeWindowMenuItem;
 	NSMenuItem *closeTabMenuItem;
 

@@ -203,6 +203,7 @@ NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
 NSString *SPDocumentWillCloseNotification        = @"DocumentWillClose";
 NSString *SPActivitiesUpdateNotification         = @"ActivitiesUpdateNotification";
+NSString *SPWindowToolbarDidToggleNotification   = @"WindowToolbarWasToggledNotification";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
 NSString *SPPrintBackground                      = @"PrintBackground";

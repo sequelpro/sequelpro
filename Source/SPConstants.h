@@ -397,6 +397,7 @@ extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
 extern NSString *SPDocumentWillCloseNotification;
 extern NSString *SPActivitiesUpdateNotification;
+extern NSString *SPWindowToolbarDidToggleNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;
 extern NSString *SPPrintBackground;

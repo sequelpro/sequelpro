@@ -170,6 +170,17 @@
 }
 
 /**
+ * Override the standard toolbar show/hide, adding a notification that can be
+ * used to update state.
+ */
+- (void)toggleToolbarShown:(id)sender
+{
+	[super toggleToolbarShown:sender];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPWindowToolbarDidToggleNotification object:nil];
+}
+
+/**
  * On 10.7+, allow the window to go fullscreen; do nothing on <10.7.
  */
 - (void)toggleFullScreen:(id)sender
@@ -184,6 +195,9 @@
 	
 	if ([menuItem action] == @selector(toggleFullScreen:)) {
 		return ([super respondsToSelector:@selector(toggleFullScreen:)]);
+	}
+	if ([super respondsToSelector:@selector(validateMenuItem:)]) {
+		return [super validateMenuItem:menuItem];
 	}
 	return YES;
 }

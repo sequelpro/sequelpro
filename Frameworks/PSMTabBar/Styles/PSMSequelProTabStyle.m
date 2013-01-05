@@ -508,7 +508,10 @@
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.63f:0.59f alpha:1.0f];
+			float tabWhiteComponent = (systemVersion >= 0x1070)?0.63f:0.59f;
+			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.02f;
+
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		} else {
 			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];		
@@ -517,7 +520,10 @@
 	} else {
 		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
 		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.85f:0.81f alpha:1.0f];
+			float tabWhiteComponent = (systemVersion >= 0x1070)?0.85f:0.81f;
+			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.01f;
+
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
 		} else {
 			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.79f:0.73f alpha:1.0f];

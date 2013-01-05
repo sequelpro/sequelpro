@@ -34,7 +34,8 @@
 #if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 enum {
 	NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-	NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
+	NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8,
+	NSFullScreenWindowMask = 1 << 14
 };
 #endif
 
@@ -50,6 +51,8 @@ enum {
 @interface SPWindowController ()
 
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
+- (void)_createTitleBarLineHidingView;
+- (void)_updateLineHidingViewState;
 
 @end
 
@@ -61,8 +64,13 @@ enum {
 - (void)awakeFromNib
 {
 	selectedTableDocument = nil;
+	systemVersion = 0;
+	Gestalt(gestaltSystemVersion, &systemVersion);
 
 	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
+
+	// Add a line to the window to hide the line below the title bar when the toolbar is collapsed
+	[self _createTitleBarLineHidingView];
 
 	// Disable automatic cascading - this occurs before the size is set, so let the app
 	// controller apply cascading after frame autosaving.
@@ -100,6 +108,7 @@ enum {
 	// Register for drag start and stop notifications - used to show/hide tab bars
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:PSMTabDragDidEndNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateLineHidingViewState) name:SPWindowToolbarDidToggleNotification object:nil];
 }
 
 /**
@@ -108,6 +117,7 @@ enum {
 - (void) dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	// Tear down the animations on the tab bar to stop redraws
 	[tabBar destroyAnimations];
@@ -448,6 +458,48 @@ enum {
 	[[theCell indicator] bind:@"animate" toObject:theDocument withKeyPath:@"isProcessing" options:nil];
 	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
 	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
+}
+
+/**
+ * Create a view which is used to hide the line underneath the window title bar when the
+ * toolbar is hidden, improving appearance when tabs are visible (or collapsed!)
+ */
+- (void)_createTitleBarLineHidingView
+{
+	float titleBarHeight = 21.f;
+	NSSize windowSize = [self window].frame.size;
+
+	titleBarLineHidingView = [[[NSClipView alloc] init] autorelease];
+
+	// Set the original size and the autosizing mask to preserve it
+	[titleBarLineHidingView setFrame:NSMakeRect(0, windowSize.height - titleBarHeight - 1, windowSize.width, 1)];
+	[titleBarLineHidingView setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+
+	[self _updateLineHidingViewState];
+
+	// Add the view to the window
+	[[[[self window] contentView] superview] addSubview:titleBarLineHidingView];
+}
+
+/**
+ * Update the visibility and colour of the title bar line hiding view
+ */
+- (void)_updateLineHidingViewState
+{
+
+	// Set the background colour to match the titlebar window state
+	if ((([[self window] isMainWindow] || [[[self window] attachedSheet] isMainWindow]) && [NSApp isActive])) {
+		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.66f:0.63f alpha:1.0]];	
+	} else {
+		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.87f:0.84f alpha:1.0]];
+	}
+
+	// If the window is fullscreen or the toolbar is showing, hide the view; otherwise show it
+	if (([[self window] styleMask] & NSFullScreenWindowMask) || [[[self window] toolbar] isVisible] || ![[self window] toolbar]) {
+		[titleBarLineHidingView setHidden:YES];
+	} else {
+		[titleBarLineHidingView setHidden:NO];
+	}
 }
 
 @end

@@ -42,6 +42,7 @@
 @interface SPWindowController (SPDeclaredAPI)
 
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
+- (void)_updateLineHidingViewState;
 
 @end
 
@@ -113,6 +114,7 @@
  */
 - (void)windowDidResignKey:(NSNotification *)notification
 {
+
 	// Disable the "Close tab" menu item
 	[closeTabMenuItem setEnabled:NO];
 	[closeTabMenuItem setKeyEquivalent:@""];
@@ -120,6 +122,21 @@
 	// Update the "Close window" item to show only "Close"
 	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close", @"Close menu item")];
 	[closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+}
+
+/**
+ * Observe changes in main window status to update drawing state to match
+ */
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+	[self _updateLineHidingViewState];
+}
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+	[self _updateLineHidingViewState];
+
+	// Update the state again after a short delay to catch attached sheets being main
+	[self performSelector:@selector(_updateLineHidingViewState) withObject:nil afterDelay:0.1];
 }
 
 /**
@@ -141,6 +158,7 @@
 - (void)windowWillEnterFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:YES];
+	[self _updateLineHidingViewState];
 }
 
 /**
@@ -149,6 +167,7 @@
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:NO];
+	[self _updateLineHidingViewState];
 }
 
 #pragma mark -
@@ -171,9 +190,9 @@
 	
 	selectedTableDocument = [tabViewItem identifier];
 	[selectedTableDocument didBecomeActiveTabInWindow];
-	
+
 	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];
-	
+
 	[self updateAllTabTitles:self];
 }
 
