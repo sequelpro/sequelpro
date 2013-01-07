@@ -86,7 +86,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
 {
-	return 135.f;
+	return 145.f;
 }
 
 #endif
