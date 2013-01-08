@@ -192,13 +192,30 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	
-	if ([menuItem action] == @selector(toggleFullScreen:)) {
-		return ([super respondsToSelector:@selector(toggleFullScreen:)]);
+
+	// If the item is the Show/Hide Toolbar menu item, override the text to allow correct translation
+	if ([menuItem action] == @selector(toggleToolbarShown:)) {
+		BOOL theResponse = [super validateMenuItem:menuItem];
+		if ([[self toolbar] isVisible] || [menuItem state] == NSOnState) {
+			[menuItem setTitle:NSLocalizedString(@"Hide Toolbar", @"Hide Toolbar menu item")];
+		} else {
+			[menuItem setTitle:NSLocalizedString(@"Show Toolbar", @"Show Toolbar menu item")];
+		}
+		return theResponse;
 	}
+
+	// On systems which don't support fullscreen windows, disable the fullscreen menu item
+	if ([menuItem action] == @selector(toggleFullScreen:)) {
+		if (![super respondsToSelector:@selector(toggleFullScreen:)]) {
+			return NO;
+		}
+	}
+
+	// Allow the superclass to perform validation otherwise (if possible)
 	if ([super respondsToSelector:@selector(validateMenuItem:)]) {
 		return [super validateMenuItem:menuItem];
 	}
+
 	return YES;
 }
 
