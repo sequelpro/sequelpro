@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>PostgresKit</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.code.sequel-pro.postgreskit.tests</string>
+	<string>com.sequelpro.postgreskit.tests</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
