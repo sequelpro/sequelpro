@@ -185,7 +185,7 @@
  */
 - (void)toggleFullScreen:(id)sender
 {
-	if ([super respondsToSelector:@selector(toggleFullScreen:)]) {
+	if ([NSWindow instancesRespondToSelector:@selector(toggleFullScreen:)]) {
 		[super toggleFullScreen:sender];
 	}
 }
@@ -206,7 +206,7 @@
 
 	// On systems which don't support fullscreen windows, disable the fullscreen menu item
 	if ([menuItem action] == @selector(toggleFullScreen:)) {
-		if (![super respondsToSelector:@selector(toggleFullScreen:)]) {
+		if (![NSWindow instancesRespondToSelector:@selector(toggleFullScreen:)]) {
 			return NO;
 		}
 	}
