@@ -3711,14 +3711,12 @@
  */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	NSInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
-	NSString *searchPattern = [queryFavoritesSearchField stringValue];
 
-	for (i = 7; i < [menu numberOfItems]; i++)
+	for (NSInteger i = 7; i < [menu numberOfItems]; i++)
 	{
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG
-										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryFavoritesSearchField stringValue]]])];
 	}
 }
 
@@ -3727,14 +3725,13 @@
  */
 - (IBAction)filterQueryHistory:(id)sender
 {
-	NSMenu *menu = [queryHistoryButton menu];
-	NSUInteger numberOfItems = [menu numberOfItems];
-	NSUInteger i;
-	NSString *searchPattern = [queryHistorySearchField stringValue];
 	NSArray *history = [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]];
-	for (i = 7; i < numberOfItems; i++)
+	
+	NSMenu *menu = [queryHistoryButton menu];
+	
+	for (NSInteger i = 7; i < [menu numberOfItems]; i++)
 	{
-		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i-7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i - 7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryHistorySearchField stringValue]]])];
 	}
 }
 
