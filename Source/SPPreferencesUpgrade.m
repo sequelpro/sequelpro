@@ -412,18 +412,21 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
 
 	CFStringRef oldIdentifier = CFSTR("com.google.code.sequel-pro");
 	CFArrayRef oldPrefKeys = CFPreferencesCopyKeyList(oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-	if (!oldPrefKeys) {
-		return;
-	}
+	
+	if (!oldPrefKeys) return;
 
 	NSDictionary *oldPrefs = (NSDictionary *)CFPreferencesCopyMultiple(oldPrefKeys, oldIdentifier, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 
-	for (id eachKey in oldPrefs) {
+	for (id eachKey in oldPrefs) 
+	{
 		[prefs setObject:[oldPrefs objectForKey:eachKey] forKey:eachKey];
 	}
 
 	[oldPrefs release];
-	CFRelease(oldPrefKeys);
+	
+	if (oldPrefKeys) {
+		CFRelease(oldPrefKeys);
+	}
 }
 
 /**
@@ -431,19 +434,20 @@ void SPMigratePreferencesFromPreviousIdentifer(void)
  */
 + (void)showPostMigrationReleaseNotes:(NSArray *)releaseNotes
 {
-	if (![releaseNotes count]) {
-		return;
-	}
+	if (![releaseNotes count]) return;
 
 	NSString *introText;
+	
 	if ([releaseNotes count] == 1) {
 		introText = NSLocalizedString(@"We've made a few changes but we thought you should know about one particularly important one:", "Important release notes informational text, single change");	
-	} else {
+	} 
+	else {
 		introText = NSLocalizedString(@"We've made a few changes but we thought you should know about some particularly important ones:", "Important release notes informational text, multiple changes");
 	}
 
 	// Create a *modal* alert to show the release notes
 	NSAlert *noteAlert = [[NSAlert alloc] init];
+	
 	[noteAlert setAlertStyle:NSInformationalAlertStyle];
 	[noteAlert setAccessoryView:[[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 450, 1)] autorelease]];
 	[noteAlert setMessageText:NSLocalizedString(@"Thanks for updating Sequel Pro!", @"Release notes dialog title thanking user for upgrade")];
