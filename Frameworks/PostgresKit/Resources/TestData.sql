@@ -29,7 +29,7 @@ CREATE TABLE data_types
 	date_field        DATE NOT NULL,
 	time_field        TIME NOT NULL,
 	timetz_field      TIME WITH TIME ZONE NOT NULL,
-	timstamp_field    TIMESTAMP NOT NULL,
+	timestamp_field   TIMESTAMP NOT NULL,
 	timestamptz_field TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
@@ -45,7 +45,7 @@ INSERT INTO data_types (
 	date_field, 
 	time_field, 
 	timetz_field, 
-	timstamp_field, 
+	timestamp_field, 
 	timestamptz_field)
 VALUES (
 	12345, 
