@@ -104,7 +104,9 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 - (void)setUp
 {
+	PGPostgresResult *queryResult = [_connection executeWithFormat:@"SELECT \"%@\" FROM \"data_types\"", _field];
 	
+	_result = [[queryResult row] objectForKey:_field];
 }
 
 - (void)tearDown

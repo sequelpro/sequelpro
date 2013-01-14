@@ -245,7 +245,7 @@
 	id <PGPostgresTypeHandlerProtocol> handler = [self _typeHandlerForColumn:column withType:type];
 	
 	if (!handler) {
-		NSLog(@"PostgresKit: Warning: No type handler found for type %d, return NSData.", type);
+		NSLog(@"PostgresKit: Warning: No type handler found for type %d, returning NSData.", type);
 		
 		const void *bytes = PQgetvalue(_result, (int)row, (int)column);
 		NSUInteger length = PQgetlength(_result, (int)row, (int)column);
