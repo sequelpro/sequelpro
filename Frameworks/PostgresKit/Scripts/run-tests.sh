@@ -68,4 +68,4 @@ fi
 
 "${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests"
 
-exit 0
+exit $?
