@@ -688,6 +688,7 @@
 				);
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/QueryKit-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
