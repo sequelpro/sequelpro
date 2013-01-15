@@ -117,7 +117,13 @@ PGQueryParamData;
 {
 	_lastQueryWasCancelled = NO;
 	
-	if (![self isConnected] || !query || ![query isKindOfClass:[NSString class]] || [query isKindOfClass:[PGPostgresStatement class]]) return nil;
+	if (!query || 
+		![query isKindOfClass:[NSString class]] || 
+		![query isKindOfClass:[PGPostgresStatement class]] ||
+		![self isConnected]) 
+	{
+		return nil;
+	}
 	
 	// Notify the delegate
 	if (_delegate && _delegateSupportsWillExecute) {

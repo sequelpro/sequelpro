@@ -231,11 +231,11 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 /**
  * Returns the version of the server we're connected to.
  *
- * @return The server version (e.g. version 9.1 is 90100). Zero is returned if there's no connection.
+ * @return The server version (e.g. version 9.1 is 90100). -1 is returned if there's no connection.
  */
 - (NSUInteger)serverVersion
 {
-	if (![self isConnected]) return 0;
+	if (![self isConnected]) return -1;
 	
 	return PQserverVersion(_connection);
 }
