@@ -334,11 +334,11 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 		// Set notice processor
 		PQsetNoticeProcessor(_connection, _PGPostgresConnectionNoticeProcessor, self);
 		
+		// Register or clear type extensions
 		NSInteger success = reset ? PQclearTypes(_connection) : PQinitTypes(_connection);
 		
-		// Register type extensions
 		if (!success) {
-			NSLog(@"PostgresKit: Error: Failed to initialise (or clear) type extensions. Connection might return unexpected results!");
+			NSLog(@"PostgresKit: Error: Failed to initialise or clear type extensions. Connection might return unexpected results!");
 		}
 		
 		[self _loadDatabaseParameters];
@@ -348,7 +348,7 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 				[_delegate performSelectorOnMainThread:@selector(connectionReset:) withObject:self waitUntilDone:NO];
 			}
 		}
-		else{
+		else {
 			if (_delegate && [_delegate respondsToSelector:@selector(connectionEstablished:)]) {
 				[_delegate performSelectorOnMainThread:@selector(connectionEstablished:) withObject:self waitUntilDone:NO];
 			}
