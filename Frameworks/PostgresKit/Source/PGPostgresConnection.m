@@ -168,11 +168,7 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
  */
 - (BOOL)connect 
 {
-	if ([self isConnected]) {
-		[PGPostgresException raise:PGPostgresConnectionErrorDomain reason:@"Attempt to initiate a connection that is already active"];
-		
-		return NO;
-	}
+	if ([self isConnected]) return YES;
 	
 	[self _createConnectionParameters];
 	

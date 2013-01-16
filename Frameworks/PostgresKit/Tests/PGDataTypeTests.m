@@ -67,7 +67,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[self _addTestForField:@"int" withExpectedResult:[NSNumber numberWithInt:12345] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"smallint" withExpectedResult:[NSNumber numberWithInt:2] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"bigint" withExpectedResult:[NSNumber numberWithInt:123456789] connection:connection toTestSuite:testSuite];
-	[self _addTestForField:@"bool" withExpectedResult:[NSNumber numberWithBool:YES] connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"bool" withExpectedResult:[NSNumber numberWithInteger:1] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"float" withExpectedResult:[NSNumber numberWithFloat:12345.678] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"numeric" withExpectedResult:[NSNumber numberWithDouble:12345.678] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"char" withExpectedResult:@"CHAR" connection:connection toTestSuite:testSuite];
@@ -103,17 +103,10 @@ static NSUInteger PGTestDatabasePort = 5432;
 #pragma mark Setup & Teardown
 
 - (void)setUp
-{
-	PGPostgresResult *queryResult = [_connection executeWithFormat:@"SELECT \"%@\" FROM \"data_types\"", _field];
+{	
+	PGPostgresResult *queryResult = [_connection executeWithFormat:@"SELECT \"%@_field\" FROM \"data_types\"", _field];
 	
-	_result = [[queryResult row] objectForKey:_field];
-}
-
-- (void)tearDown
-{
-	if (_connection && [_connection isConnected]) {
-		[_connection disconnect];
-	}
+	[self setResult:[[queryResult row] objectForKey:[NSString stringWithFormat:@"%@_field", _field]]];
 }
 
 #pragma mark -
@@ -125,32 +118,31 @@ static NSUInteger PGTestDatabasePort = 5432;
 }
 
 - (void)testResultIsOfCorrectType
-{
+{	
 	STAssertTrue([_result isKindOfClass:[_expectedResult class]], @"");
 }
 
 - (void)testResultHasCorrectValue
-{
-	STAssertEquals(_result, _expectedResult, @"");
+{	
+	STAssertEqualObjects(_result, _expectedResult, @"");
 }
 
-#pragma mark -
+#pragma mark -r
 #pragma mark Private API
 
 - (void)_establishConnection
 {	
+	[_connection setDelegate:self];
+	
 	[_connection setHost:PGTestDatabaseHost];
 	[_connection setUser:PGTestDatabaseUser];
 	[_connection setPort:PGTestDatabasePort];
 	[_connection setDatabase:PGTestDatabaseName];
 	[_connection setPassword:PGTestDatabasePassword];
 	
-	do {
-		sleep(0.1);
-	}
-	while (![_connection isConnected]);
-	
-	if (![_connection isConnected]) STFail(@"Unable to establish connection to local database. All tests will fail.");	
+	if (![_connection connect] || ![_connection isConnected]) {
+		STFail(@"Unable to establish connection to local database. All tests will fail.");
+	}	
 }
 
 + (void)_addTestForField:(NSString *)field 
@@ -172,6 +164,10 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 - (void)dealloc
 {
+	if (_connection && [_connection isConnected]) {
+		[_connection disconnect];
+	}
+	
 	if (_result) [_result release], _result = nil;
 	if (_field) [_field release], _field = nil;
 	if (_connection) [_connection release], _connection = nil;
