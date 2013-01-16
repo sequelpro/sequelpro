@@ -110,7 +110,9 @@
  */
 - (NSString *)_extractErrorField:(int)field fromResult:(const PGresult *)result
 {	
-	return [[[NSString alloc] initWithUTF8String:PQresultErrorField(result, field)] autorelease];
+	const char *error = PQresultErrorField(result, field);
+	
+	return error ? [[[NSString alloc] initWithUTF8String:error] autorelease] : nil;
 }
 
 #pragma mark -
