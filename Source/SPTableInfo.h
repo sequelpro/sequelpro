@@ -39,7 +39,6 @@
 	IBOutlet id tableDocumentInstance;
 
 	IBOutlet NSTableView *activitiesTable;
-
 	IBOutlet NSScrollView *tableInfoScrollView;
 
 	NSMutableArray *info;
