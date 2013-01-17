@@ -482,26 +482,33 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doApply:(id)sender
 {
-	NSError *error = nil;
 	errorsString = [[NSMutableString alloc] init];
     
 	// Change the first responder to end editing in any field
 	[[self window] makeFirstResponder:self];
 
 	isSaving = YES;
+
+	NSError *error = nil;
 	
 	[[self managedObjectContext] save:&error];
 	
 	isSaving = NO;
 	
-	if (error != nil) [errorsString appendString:[error localizedDescription]];
+	if (error) [errorsString appendString:[error localizedDescription]];
 
 	[[self connection] queryString:@"FLUSH PRIVILEGES"];
 
 	// Display any errors
 	if ([errorsString length]) {
 		[errorsTextView setString:errorsString];
-		[NSApp beginSheet:errorsSheet modalForWindow:[NSApp keyWindow] modalDelegate:nil didEndSelector:NULL contextInfo:nil];
+		
+		[NSApp beginSheet:errorsSheet 
+		   modalForWindow:[NSApp keyWindow] 
+			modalDelegate:nil 
+		   didEndSelector:NULL 
+			  contextInfo:nil];
+		
 		[errorsString release];
 		
 		return;
