@@ -214,6 +214,7 @@ NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
+NSString *SPTableInfoChangedNotification         = @"SPTableInformationChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
 NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncoding";

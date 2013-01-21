@@ -67,6 +67,10 @@
 		selector:@selector(tableChanged:)
 		name:SPTableChangedNotification
 		object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+		selector:@selector(tableChanged:)
+		name:SPTableInfoChangedNotification
+		object:tableDocumentInstance];
 
 	// Register activities update notifications for add/remove BASH commands etc.
 	[[NSNotificationCenter defaultCenter] addObserver:self 

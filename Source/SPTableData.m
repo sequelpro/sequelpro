@@ -1093,6 +1093,64 @@
 }
 
 /**
+ * Retrieve the number of rows in the current table if necessary; if a value has already been
+ * set for the current table/view, no update will occur.  However, if the row count value
+ * is an estimate but the preferences are set to retrieve accurate row counts, this will
+ * run a COUNT query to retrieve an accurate value.
+ * Returns YES if the update was successful or not needed, or NO if the update failed
+ */
+- (BOOL) updateAccurateNumberOfRowsForCurrentTableForcingUpdate:(BOOL)alwaysUpdate
+{
+
+	// If no table is currently selected, return failure
+	if (![tableListInstance tableName]) {
+		return NO;
+	}
+
+	// No action needed for non-tables
+	if ([tableListInstance tableType] != SPTableTypeTable) {
+		return YES;
+	}
+
+	// Unless the force option was used, try to work out whether the update is needed
+	if (!alwaysUpdate) {
+
+		// If the row count is already accurate, no further work is required
+		if ([[self statusValueForKey:@"RowsCountAccurate"] boolValue]) {
+			return YES;
+		}
+
+		SPRowCountQueryUsageLevels rowCountLevel = SPRowCountFetchAlways;
+		NSInteger rowCountCheapBoundary = 5242880;
+#ifndef SP_REFACTOR
+		rowCountLevel = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountQueryLevel] integerValue];
+		rowCountCheapBoundary = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountCheapSizeBoundary] integerValue];
+#endif
+
+		if (rowCountLevel == SPRowCountFetchNever
+			|| (rowCountLevel == SPRowCountFetchIfCheap && [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary))
+		{
+			return YES;
+		}
+	}
+
+	// Fetch the number of rows
+	SPMySQLResult *rowResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[tableListInstance tableName] backtickQuotedString]]];
+	if ([mySQLConnection queryErrored]) {
+		return NO;
+	}
+
+	// Store the number of rows
+	[status setObject:[[rowResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+	[status setObject:@"y" forKey:@"RowsCountAccurate"];
+
+	// Trigger an update to the table info pane and view
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableInfoChangedNotification object:tableDocumentInstance];
+
+	return YES;
+}
+
+/**
  * Parse an array of field definition parts - not including name but including type and optionally unsigned/zerofill/null
  * and so forth - into a dictionary of parsed details.  Intended for use both with CREATE TABLE syntax - with fuller
  * details - and with the "type" column from SHOW COLUMNS.

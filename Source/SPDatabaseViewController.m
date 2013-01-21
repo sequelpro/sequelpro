@@ -180,9 +180,7 @@
 	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableInfo];
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	// Refresh data
-	if([self table] && [[self table] length]) {
-		[tableDataInstance resetAllData];
+	if ([[self table] length]) {
 		[extendedTableInfoInstance loadTable:[self table]];
 	}
 	
@@ -230,11 +228,15 @@
  */
 - (void)setStructureRequiresReload:(BOOL)reload
 {
+	BOOL reloadRequired = reload;
+
 #ifndef SP_REFACTOR
-	if (reload && selectedTableName && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStructure) {
-#else
-	if (reload && selectedTableName ) {
+	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStructure) {
+		reloadRequired = NO;
+	}
 #endif
+
+	if (reloadRequired && selectedTableName) {
 		[tableSourceInstance loadTable:selectedTableName];
 	} else {
 		structureLoaded = !reload;
@@ -524,6 +526,10 @@
 	if (!contentLoaded) [tableContentInstance loadTable:nil];
 	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
 	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
+
+	// If the table row counts an inaccurate and require updating, trigger an update - no
+	// action will be performed if not necessary
+	[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
 
 #ifndef SP_REFACTOR /* show Create Table syntax */
 	// Update the "Show Create Syntax" window if it's already opened

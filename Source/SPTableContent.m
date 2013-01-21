@@ -4063,45 +4063,24 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
 #endif
 
-	// Otherwise, if the table status value is accurate, use it
-	} else if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = NO;
-		checkStatusCount = YES;
-
-	// Choose whether to display an estimate, or to fetch the correct row count, based on prefs
-	} else if (
-#ifndef SP_REFACTOR
-			[[prefs objectForKey:SPTableRowCountQueryLevel] integerValue] == SPRowCountFetchAlways
-				|| ([[prefs objectForKey:SPTableRowCountQueryLevel] integerValue] == SPRowCountFetchIfCheap
-					&& 
-#endif
-					[tableDataInstance statusValueForKey:@"Data_length"]
-					&& 
-#ifndef SP_REFACTOR
-					[[prefs objectForKey:SPTableRowCountCheapSizeBoundary] integerValue] 
-#else
-					5242880
-#endif
-					> [[tableDataInstance statusValueForKey:@"Data_length"] integerValue])
-#ifndef SP_REFACTOR
-					)
-#endif
-	{
-		maxNumRows = [self fetchNumberOfRows];
-		maxNumRowsIsEstimate = NO;
-		[tableDataInstance setStatusValue:[NSString stringWithFormat:@"%ld", (long)maxNumRows] forKey:@"Rows"];
-		[tableDataInstance setStatusValue:@"y" forKey:@"RowsCountAccurate"];
-#ifndef SP_REFACTOR
-		[[tableInfoInstance onMainThread] tableChanged:nil];
-#endif
-		[[[tableDocumentInstance valueForKey:@"extendedTableInfoInstance"] onMainThread] loadTable:selectedTable];
-
-	// Use the estimate count
 	} else {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = YES;
-		checkStatusCount = YES;
+
+		// Trigger an update via the SPTableData instance if preferences require it, and if
+		// the state is not already accurate
+		[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
+
+		// If the state is now accurate, use it
+		if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
+			maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+			maxNumRowsIsEstimate = NO;
+			checkStatusCount = YES;
+
+		// Otherwise, use the estimate count
+		} else {
+			maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+			maxNumRowsIsEstimate = YES;
+			checkStatusCount = YES;
+		}
 	}
 
 	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
@@ -4133,14 +4112,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[[tableInfoInstance onMainThread] tableChanged:nil];
 #endif
 	}
-}
-
-/**
- * Fetches the number of rows in the selected table using a "SELECT COUNT(1)" query and return it
- */
-- (NSInteger)fetchNumberOfRows
-{
-	return [[mySQLConnection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [selectedTable backtickQuotedString]]] integerValue];
 }
 
 /**

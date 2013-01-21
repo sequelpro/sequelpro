@@ -272,7 +272,6 @@
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)updateNumberOfRows;
-- (NSInteger)fetchNumberOfRows;
 - (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;

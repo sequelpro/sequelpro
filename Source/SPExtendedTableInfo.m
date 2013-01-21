@@ -49,6 +49,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
 @interface SPExtendedTableInfo ()
 
+- (void)_updateDisplayedInfo:(NSNotification *)aNotification;
 - (void)_changeCurrentTableTypeFrom:(NSString *)currentType to:(NSString *)newType;
 - (NSString *)_formatValueWithKey:(NSString *)key inDictionary:(NSDictionary *)statusDict;
 
@@ -71,6 +72,10 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
+											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(_updateDisplayedInfo:)
+												 name:SPTableInfoChangedNotification
 											   object:tableDocumentInstance];
 }
 
@@ -615,6 +620,14 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
 #pragma mark -
 #pragma mark Private API
+
+/**
+ * Trigger an update to a display in reaction to changes in external data
+ */
+- (void)_updateDisplayedInfo:(NSNotification *)aNotification
+{
+	[self loadTable:selectedTable];
+}
 
 /**
  * Changes the current table's storage engine to the supplied type.
