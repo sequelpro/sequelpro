@@ -42,7 +42,6 @@
 
 // Constants
 static const NSString *SPTriggerName       = @"TriggerName";
-static const NSString *SPTriggerTableName  = @"TriggerTableName";
 static const NSString *SPTriggerEvent      = @"TriggerEvent";
 static const NSString *SPTriggerActionTime = @"TriggerActionTime";
 static const NSString *SPTriggerStatement  = @"TriggerStatement";
@@ -55,6 +54,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 - (void)_editTriggerAtIndex:(NSInteger)index;
 - (void)_toggleConfirmAddTriggerButtonEnabled;
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
+- (void)_openTriggerSheet;
 - (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
@@ -118,9 +118,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
-    
-    // TODO: tick this in XIB. I don't want to bork the .XIBs again (Marius)
-    triggerStatementTextView.drawsBackground = YES;
 }
 
 /**
@@ -249,7 +246,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 					 [[editedTrigger objectForKey:SPTriggerName] backtickQuotedString],
 					 [editedTrigger objectForKey:SPTriggerActionTime],
 					 [editedTrigger objectForKey:SPTriggerEvent],
-					 [[editedTrigger objectForKey:SPTriggerTableName] backtickQuotedString],
+					 [[tablesListInstance tableName] backtickQuotedString],
 					 [editedTrigger objectForKey:SPTriggerStatement]];
 		
 			// If this attempt to re-create the trigger failed, then we're screwed as we've just lost the user's 
@@ -264,16 +261,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
 						   createTriggerError]);
 	}
-	else {
-		[triggerNameTextField setStringValue:@""];
-		[triggerStatementTextView setString:@""];
-	}
-
-	// After Edit, rename button to Add
-	if (isEdit) {
-		isEdit = NO;
-		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Add", @"Add trigger button label")];
-	}
 
 	[self _refreshTriggerDataForcingCacheRefresh:YES];
 }
@@ -286,17 +273,13 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
-	// If being opened via an interface component, reset the interface name and statement
-	if (sender != self) {
-		[triggerNameTextField setStringValue:@""];
-		[triggerStatementTextView setString:@""];
-	}
-    
-	[NSApp beginSheet:addTriggerPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil
-		  contextInfo:nil];
+	// Reset the interface name and statement
+	[triggerNameTextField setStringValue:@""];
+	[triggerStatementTextView setString:@""];
+	isEdit = NO;
+	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Add", @"Add trigger button label")];
+
+	[self _openTriggerSheet];
 }
 
 /**
@@ -351,7 +334,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	id value = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+
+	if ([value isNSNull])
+		return [[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue];
+
+	return value;
 }
 
 #pragma mark -
@@ -363,6 +351,24 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 - (void)tableViewSelectionDidChange:(NSNotification *)notification
 {
 	[removeTriggerButton setEnabled:([triggersTableView numberOfSelectedRows] > 0)];
+}
+
+/**
+ * Alter the colour of cells displaying NULL values
+ */
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if (![cell respondsToSelector:@selector(setTextColor:)]) {
+		return;
+	}
+
+	id theValue = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+
+	if ([theValue isNSNull]) {
+		[cell setTextColor:[NSColor lightGrayColor]];
+	} else {
+		[cell setTextColor:[NSColor blackColor]];
+	}
 }
 
 /**
@@ -581,6 +587,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	NSDictionary *trigger = [triggerData objectAtIndex:index];
 	
 	// Cache the original trigger in the event that the editing process fails and we need to recreate it.
+	if (editedTrigger) [editedTrigger release];
 	editedTrigger = [trigger copy];
 	
 	[triggerNameTextField setStringValue:[trigger objectForKey:SPTriggerName]];
@@ -608,12 +615,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
 	
 	isEdit = YES;
-	
-	[NSApp beginSheet:addTriggerPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil
-		  contextInfo:nil];
+	[self _openTriggerSheet];
 }
 
 /**
@@ -652,7 +654,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 			// Copy across all the trigger data needed, trimming nul bytes off the Statement
 			[triggerData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[trigger objectForKey:@"Table"],     SPTriggerTableName,
 									[trigger objectForKey:@"Trigger"],   SPTriggerName,
 									[trigger objectForKey:@"Event"],     SPTriggerEvent,
 									[trigger objectForKey:@"Timing"],    SPTriggerActionTime,
@@ -669,11 +670,23 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 }
 
 /**
+ * Open the add or edit trigger sheet.
+ */
+- (void)_openTriggerSheet
+{
+	[NSApp beginSheet:addTriggerPanel
+	   modalForWindow:[tableDocumentInstance parentWindow]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+}
+
+/**
  * Reopen the add trigger sheet, usually after an error message, with the previous content.
  */
 - (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	[self performSelector:@selector(addTrigger:) withObject:self afterDelay:0.0];
+	[self performSelector:@selector(_openTriggerSheet) withObject:nil afterDelay:0.0];
 }
 
 #pragma mark -
