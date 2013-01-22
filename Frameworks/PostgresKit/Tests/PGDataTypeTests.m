@@ -70,8 +70,8 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[self _addTestForField:@"bool" withExpectedResult:[NSNumber numberWithInteger:1] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"float" withExpectedResult:[NSNumber numberWithFloat:12345.678] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"numeric" withExpectedResult:[NSNumber numberWithDouble:12345.678] connection:connection toTestSuite:testSuite];
-	[self _addTestForField:@"char" withExpectedResult:[NSString stringWithString:@"CHAR"] connection:connection toTestSuite:testSuite];
-	[self _addTestForField:@"varchar" withExpectedResult:[NSString stringWithString:@"VARCHAR"] connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"char" withExpectedResult:@"CHAR" connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"varchar" withExpectedResult:@"VARCHAR" connection:connection toTestSuite:testSuite];
 	//[self _addTestForField:@"date" withExpectedResult: connection:connection toTestSuite:testSuite];
 	//[self _addTestForField:@"time" withExpectedResult: connection:connection toTestSuite:testSuite];
 	//[self _addTestForField:@"timetz" withExpectedResult: connection:connection toTestSuite:testSuite];
@@ -118,7 +118,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 }
 
 - (void)testResultIsOfCorrectType
-{	
+{		
 	STAssertEquals([_result class], [_expectedResult class], @"Expected _result to be of type %@, but is actually %@", [_expectedResult className], [_result className]);
 }
 
