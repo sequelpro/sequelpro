@@ -92,8 +92,6 @@ static NSUInteger PGTestDatabasePort = 5432;
 		[self setConnection:connection];
 		[self setExpectedResult:result];
 		[self setField:field];
-		
-		[self _establishConnection];
     }
 	
     return self;
@@ -104,6 +102,8 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 - (void)setUp
 {	
+	[self _establishConnection];
+	
 	PGPostgresResult *queryResult = [_connection executeWithFormat:@"SELECT \"%@_field\" FROM \"data_types\"", _field];
 	
 	[self setResult:[[queryResult row] objectForKey:[NSString stringWithFormat:@"%@_field", _field]]];
@@ -138,9 +138,14 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[_connection setDatabase:PGTestDatabaseName];
 	[_connection setPassword:PGTestDatabasePassword];
 	
-	if (![_connection connect] || ![_connection isConnected]) {
-		STFail(@"Unable to establish connection to local database. All tests will fail.");
+	if (![_connection connect]) {
+		STFail(@"Request to establish connection to local database failed.");
 	}	
+		
+	do {
+		sleep(0.1);
+	}
+	while (![_connection isConnected]);
 }
 
 + (void)_addTestForField:(NSString *)field 
