@@ -131,9 +131,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 #pragma mark Private API
 
 - (void)_establishConnection
-{	
-	[_connection setDelegate:self];
-	
+{		
 	[_connection setHost:PGTestDatabaseHost];
 	[_connection setUser:PGTestDatabaseUser];
 	[_connection setPort:PGTestDatabasePort];
