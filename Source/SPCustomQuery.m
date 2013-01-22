@@ -588,7 +588,7 @@
 
 	// Reset the current table view as necessary to avoid redraw and reload issues.
 	// Restore the view position to the top left to be within the results for all datasets.
-	if(editedRow == -1) {
+	if(editedRow == -1 && !reloadingExistingResult) {
 		[[customQueryView onMainThread] scrollRowToVisible:0];
 		[[customQueryView onMainThread] scrollColumnToVisible:0];
 	}
@@ -884,7 +884,7 @@
 
 		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [customQueryView visibleRect].size;
-		[customQueryView scrollRectToVisible:selectionViewportToRestore];
+		[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 	}
 
 	//query finished
