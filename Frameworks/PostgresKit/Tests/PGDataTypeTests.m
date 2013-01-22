@@ -119,7 +119,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 - (void)testResultIsOfCorrectType
 {	
-	STAssertTrue([_result isKindOfClass:[_expectedResult class]], @"Expected _result to be of type %@, but is actually %@", [_expectedResult className], [_result className]);
+	STAssertEquals([_result class], [_expectedResult class], @"Expected _result to be of type %@, but is actually %@", [_expectedResult className], [_result className]);
 }
 
 - (void)testResultHasCorrectValue
