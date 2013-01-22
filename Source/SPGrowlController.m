@@ -95,6 +95,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	}
 
 	NSMutableDictionary *notificationDictionary = [NSMutableDictionary dictionary];
+	
 	[notificationDictionary setObject:title forKey:@"title"];
 	[notificationDictionary setObject:description forKey:@"description"];
 	[notificationDictionary setObject:document forKey:@"document"];
@@ -192,7 +193,10 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)setVisibilityForNotificationName:(NSString *)name
 {
-	if (timingNotificationName) [timingNotificationName release], timingNotificationName = nil;
+	if (timingNotificationName) {
+		[timingNotificationName release], timingNotificationName = nil;
+	}
+	
 	timingNotificationName = [[NSString alloc] initWithString:name];
 	timingNotificationStart = [NSDate monotonicTimeInterval];
 }
