@@ -70,9 +70,6 @@
 
 @implementation SPBundleEditorController
 
-/**
- * Initialisation
- */
 - (id)init
 {
 
@@ -85,44 +82,6 @@
 	}
 	
 	return self;
-}
-
-- (void)dealloc
-{
-	[inputGeneralScopePopUpMenu release];
-	[inputInputFieldScopePopUpMenu release];
-	[inputDataTableScopePopUpMenu release];
-	[outputGeneralScopePopUpMenu release];
-	[outputInputFieldScopePopUpMenu release];
-	[outputDataTableScopePopUpMenu release];
-	[inputFallbackInputFieldScopePopUpMenu release];
-	[triggerInputFieldPopUpMenu release];
-	[triggerDataTablePopUpMenu release];
-	[triggerGeneralPopUpMenu release];
-	[inputNonePopUpMenu release];
-
-	[inputGeneralScopeArray release];
-	[inputInputFieldScopeArray release];
-	[inputDataTableScopeArray release];
-	[outputGeneralScopeArray release];
-	[outputInputFieldScopeArray release];
-	[outputDataTableScopeArray release];
-	[inputFallbackInputFieldScopeArray release];
-	[triggerInputFieldArray release];
-	[triggerDataTableArray release];
-	[triggerGeneralArray release];
-	[withBlobDataTableArray release];
-
-	[shellVariableSuggestions release];
-	[deletedDefaultBundles release];
-
-	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if (bundlePath) [bundlePath release], bundlePath = nil;
-	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
-
-	[super dealloc];
 }
 
 - (void)awakeFromNib
@@ -2138,6 +2097,46 @@
 	[sheet makeFirstResponder:nil];
 	
 	[self _updateBundleMetaSummary];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[inputGeneralScopePopUpMenu release];
+	[inputInputFieldScopePopUpMenu release];
+	[inputDataTableScopePopUpMenu release];
+	[outputGeneralScopePopUpMenu release];
+	[outputInputFieldScopePopUpMenu release];
+	[outputDataTableScopePopUpMenu release];
+	[inputFallbackInputFieldScopePopUpMenu release];
+	[triggerInputFieldPopUpMenu release];
+	[triggerDataTablePopUpMenu release];
+	[triggerGeneralPopUpMenu release];
+	[inputNonePopUpMenu release];
+	
+	[inputGeneralScopeArray release];
+	[inputInputFieldScopeArray release];
+	[inputDataTableScopeArray release];
+	[outputGeneralScopeArray release];
+	[outputInputFieldScopeArray release];
+	[outputDataTableScopeArray release];
+	[inputFallbackInputFieldScopeArray release];
+	[triggerInputFieldArray release];
+	[triggerDataTableArray release];
+	[triggerGeneralArray release];
+	[withBlobDataTableArray release];
+	
+	[shellVariableSuggestions release];
+	[deletedDefaultBundles release];
+	
+	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
+	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
+	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
+	if (bundlePath) [bundlePath release], bundlePath = nil;
+	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
+	
+	[super dealloc];
 }
 
 @end

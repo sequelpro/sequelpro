@@ -46,7 +46,7 @@
 
 #define SP_Int(x) [NSNumber numberWithInteger:x]
 
-@interface SPQueryFavoriteManager (Private)
+@interface SPQueryFavoriteManager ()
 
 - (void)_initWithNoSelection;
 
@@ -55,7 +55,7 @@
 @implementation SPQueryFavoriteManager
 
 /**
- * Initialize the manager with the supplied delegate
+ * Initialize the manager with the supplied delegate.
  */
 - (id)initWithDelegate:(id)managerDelegate
 {
@@ -77,12 +77,6 @@
 	}
 	
 	return self;
-}
-
-- (void)dealloc
-{
-	[favorites release];
-	[super dealloc];
 }
 
 /**
@@ -937,12 +931,24 @@
 #endif
 }
 
+#pragma mark -
+#pragma mark Private API
+
 - (void)_initWithNoSelection
 {
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	[[favoriteNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
 	[favoriteNameTextField setStringValue:@""];
 	[favoriteQueryTextView setString:@""];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[favorites release];
+	
+	[super dealloc];
 }
 
 @end

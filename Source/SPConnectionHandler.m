@@ -52,7 +52,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 
 @implementation SPConnectionController (SPConnectionHandler)
 
-/*
+/**
  * Set up the MySQL connection, either through a successful tunnel or directly in the background.
  */
 - (void)initiateMySQLConnection
@@ -61,14 +61,18 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if (isTestingConnection) {
 		if (sshTunnel) {
 			[progressIndicatorText setStringValue:NSLocalizedString(@"Testing MySQL...", @"MySQL connection test very short status message")];
-		} else {
+		} 
+		else {
 			[progressIndicatorText setStringValue:NSLocalizedString(@"Testing connection...", @"Connection test very short status message")];
 		}
-	} else if (sshTunnel) {
+	} 
+	else if (sshTunnel) {
 		[progressIndicatorText setStringValue:NSLocalizedString(@"MySQL connecting...", @"MySQL connecting very short status message")];
-	} else {
+	} 
+	else {
 		[progressIndicatorText setStringValue:NSLocalizedString(@"Connecting...", @"Generic connecting very short status message")];
 	}
+	
 	[progressIndicatorText display];
 
 	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
@@ -238,7 +242,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[pool release];
 }
 
-/*
+/**
  * Initiate the SSH connection process.
  * This should only be called as part of initiateConnection:, and will indirectly
  * call initiateMySQLConnection if it's successful.
@@ -347,7 +351,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[self addConnectionToDocument];
 }
 
-/*
+/**
  * A callback function for the SSH Tunnel setup process - will be called on a connection
  * state change, allowing connection to fail or proceed as appropriate.  If successful,
  * will call initiateMySQLConnection.
@@ -418,7 +422,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[dbDocument setConnection:mySQLConnection];
 }
 
-/*
+/**
  * Ends a connection attempt by stopping the connection animation and
  * displaying a specified error message.
  */

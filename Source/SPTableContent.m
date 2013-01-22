@@ -102,24 +102,22 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 #pragma mark -
 
-/**
- * Standard init method. Initialize various ivars.
- */
 - (id)init
 {
 	if ((self = [super init])) {
 		_mainNibLoaded = NO;
 		isWorking = NO;
+		
 		pthread_mutex_init(&tableValuesLock, NULL);
 #ifndef SP_REFACTOR
 		nibObjectsToRelease = [[NSMutableArray alloc] init];
 #endif
 
-		tableValues       = [[SPDataStorage alloc] init];
-		dataColumns       = [[NSMutableArray alloc] init];
-		oldRow            = [[NSMutableArray alloc] init];
+		tableValues = [[SPDataStorage alloc] init];
+		dataColumns = [[NSMutableArray alloc] init];
+		oldRow = [[NSMutableArray alloc] init];
 #ifndef SP_REFACTOR
-		filterTableData   = [[NSMutableDictionary alloc] initWithCapacity:1];
+		filterTableData = [[NSMutableDictionary alloc] initWithCapacity:1];
 #endif
 
 		tableRowsCount         = 0;
@@ -202,9 +200,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	return self;
 }
 
-/**
- * Initialise various interface controls
- */
 - (void)awakeFromNib
 {
 	if (_mainNibLoaded) return;
@@ -4265,9 +4260,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 #pragma mark -
 
-/**
- * dealloc
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

@@ -67,11 +67,8 @@
 #endif
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -96,9 +93,6 @@
 	return self;
 }
 
-/**
- * Nib awakening.
- */
 - (void)awakeFromNib
 {
 #ifndef SP_REFACTOR /* ui manipulation */
@@ -1439,9 +1433,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

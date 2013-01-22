@@ -41,14 +41,18 @@
 #pragma mark -
 
 @interface WebView (WebViewPrivate)
+
 - (void) setScriptDebugDelegate:(id) delegate;
+
 @end
 
 @interface WebScriptCallFrame : NSObject
+
 - (id)userInfo;
 - (WebScriptCallFrame *)caller;
 - (NSString *)functionName;
 - (id)exception;
+
 @end
 
 #pragma mark -
@@ -61,12 +65,8 @@
 @synthesize docUUID;
 @synthesize suppressExceptionAlerting;
 
-/**
- * Initialisation
- */
 - (id)init
 {
-
 	if ((self = [super initWithWindowNibName:@"BundleHTMLOutput"])) {
 		[webView setContinuousSpellCheckingEnabled:NO];
 		[webView setGroupName:@"SequelProBundleHTMLOutput"];
@@ -77,7 +77,6 @@
 		[webView setShouldUpdateWhileOffscreen:NO];
 #endif
 		suppressExceptionAlerting = NO;
-
 	}
 	
 	return self;
@@ -91,19 +90,15 @@
 
 - (void)displayHTMLContent:(NSString *)content withOptions:(NSDictionary *)displayOptions
 {
-
 	[[self window] orderFront:nil];
 	[self setInitHTMLSourceString:content];
 	[[webView mainFrame] loadHTMLString:content baseURL:nil];
-
 }
 
 - (void)displayURLString:(NSString *)url withOptions:(NSDictionary *)displayOptions
 {
-
 	[[self window] makeKeyAndOrderFront:nil];
 	[[webView mainFrame] loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
-
 }
 
 - (id)webView
@@ -719,12 +714,10 @@
  */
 - (void)magnifyWithEvent:(NSEvent *)anEvent
 {
-
 	if([anEvent deltaZ]>2.0)
 		[webView makeTextLarger:nil];
 	else if([anEvent deltaZ]<-2.0)
 		[webView makeTextSmaller:nil];
-
 }
 
 @end

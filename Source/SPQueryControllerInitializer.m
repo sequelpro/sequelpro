@@ -47,7 +47,7 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
 @implementation SPQueryController (SPQueryControllerInitializer)
 
 /**
- * Set the window's auto save name and initialise display
+ * Set the window's auto save name and initialise display.
  */
 - (void)awakeFromNib
 {

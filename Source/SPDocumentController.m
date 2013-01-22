@@ -34,12 +34,10 @@
 
 @implementation SPDocumentController
 
-
 /**
  * This is an empty, dummy implementation; this allows Sequel Pro to behave
  * as if it were a document-based application.
  */
-
 
 /**
  * Add a dummy implementation of readFromData:ofType:error:, which appears to
@@ -51,6 +49,7 @@
 	if (outError) {
 		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
 	}
+	
 	return YES;
 }
 
@@ -62,6 +61,7 @@
 	if (outError) {
 		*outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:unimpErr userInfo:NULL];
 	}
+	
 	return nil;
 }
 

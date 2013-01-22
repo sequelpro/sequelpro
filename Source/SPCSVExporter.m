@@ -413,9 +413,8 @@
 	[pool release];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	if (csvDataArray) [csvDataArray release], csvDataArray = nil;

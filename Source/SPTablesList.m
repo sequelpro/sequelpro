@@ -111,9 +111,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Standard init method. Performs various ivar initialisations.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -136,9 +133,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	return self;
 }
 
-/**
- * Standard awakeFromNib method for interface loading.
- */
 - (void)awakeFromNib
 {
 #ifndef SP_REFACTOR
@@ -2046,26 +2040,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 #pragma mark -
-
-/**
- * Standard dealloc method.
- */
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[tables release];
-	[tableTypes release];
-#ifndef SP_REFACTOR
-	if (isTableListFiltered && filteredTables) [filteredTables release];
-	if (isTableListFiltered && filteredTableTypes) [filteredTableTypes release];
-#endif
-	if (selectedTableName) [selectedTableName release];
-
-	[super dealloc];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -2611,6 +2585,23 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[tables release];
+	[tableTypes release];
+#ifndef SP_REFACTOR
+	if (isTableListFiltered && filteredTables) [filteredTables release];
+	if (isTableListFiltered && filteredTableTypes) [filteredTableTypes release];
+#endif
+	if (selectedTableName) [selectedTableName release];
+	
+	[super dealloc];
 }
 
 @end

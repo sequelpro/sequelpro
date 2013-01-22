@@ -62,9 +62,6 @@ enum {
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * awakeFromNib
- */
 - (void)awakeFromNib
 {
 	systemVersion = 0;

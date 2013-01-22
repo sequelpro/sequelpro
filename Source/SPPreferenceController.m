@@ -54,9 +54,6 @@
 @synthesize networkPreferencePane;
 @synthesize fontChangeTarget;
 
-/**
- * init.
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"Preferences"])) {		
@@ -266,9 +263,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[preferencePanes release], preferencePanes = nil;

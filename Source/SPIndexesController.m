@@ -78,9 +78,6 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 #pragma mark -
 
-/**
- * Init.
- */
 - (id)init
 {
 #ifndef SP_REFACTOR
@@ -121,9 +118,6 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	return self;
 }
 
-/**
- * Nib awakening.
- */
 - (void)awakeFromNib
 {
 	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
@@ -159,7 +153,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 }
 
 #pragma mark -
-#pragma mark IBAction methods
+#pragma mark IB action methods
 
 /**
  * Opens the add new index sheet.
@@ -585,6 +579,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	[indexes setArray:tableIndexes];
 }
+
+#ifdef SP_REFACTOR
+- (void)setDatabaseDocument:(SPDatabaseDocument*)db
+{
+	dbDocument = db;
+}
+#endif
 
 #pragma mark -
 #pragma mark Other methods
@@ -1076,9 +1077,6 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[table release], table = nil;
@@ -1096,12 +1094,5 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	[super dealloc];
 }
-
-#ifdef SP_REFACTOR
-- (void)setDatabaseDocument:(SPDatabaseDocument*)db
-{
-	dbDocument = db;
-}
-#endif
 
 @end

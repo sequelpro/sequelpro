@@ -36,18 +36,21 @@
 {
 	IBOutlet WebView *webView;
 
-	NSString       *docTitle;
-	NSString       *initHTMLSourceString;
-	NSString       *windowUUID;
-	NSString       *docUUID;
-	BOOL           suppressExceptionAlerting;
+	NSString *docTitle;
+	NSString *initHTMLSourceString;
+	NSString *windowUUID;
+	NSString *docUUID;
+	
 	WebPreferences *webPreferences;
+	
+	BOOL suppressExceptionAlerting;
 }
 
 @property(readwrite,retain) NSString *docTitle;
 @property(readwrite,retain) NSString *initHTMLSourceString;
 @property(readwrite,retain) NSString *windowUUID;
 @property(readwrite,retain) NSString *docUUID;
+
 @property(assign) BOOL suppressExceptionAlerting;
 
 - (IBAction)printDocument:(id)sender;

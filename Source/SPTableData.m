@@ -51,10 +51,7 @@
 
 @synthesize tableHasAutoIncrementField;
 
-/**
- * Init class.
- */
-- (id) init
+- (id)init
 {
 	if ((self = [super init])) {
 		columns = [[NSMutableArray alloc] init];
@@ -81,7 +78,7 @@
  *
  * @param theConnection The used connection for the SPDatabaseDocument
  */
-- (void) setConnection:(SPMySQLConnection *)theConnection
+- (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -90,9 +87,8 @@
 /**
  * Retrieve the encoding for the current table, using or refreshing the cache as appropriate.
  */
-- (NSString *) tableEncoding
+- (NSString *)tableEncoding
 {
-
 	// If processing is already in action, wait for it to complete
 	[self _loopWhileWorking];
 

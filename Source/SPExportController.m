@@ -81,7 +81,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 @synthesize exportCancelled;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
 /**
  * Initializes an instance of SPExportController.
@@ -721,24 +721,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 }
 
 #pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{	
-    [tables release], tables = nil;
-	[exporters release], exporters = nil;
-	[exportFiles release], exportFiles = nil;
-	[operationQueue release], operationQueue = nil;
-	[exportFilename release], exportFilename = nil;
-	
-	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
-	
-	[super dealloc];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -1062,6 +1044,21 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable
 {
 	[exportButton setEnabled:[enable boolValue]];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{	
+    [tables release], tables = nil;
+	[exporters release], exporters = nil;
+	[exportFiles release], exportFiles = nil;
+	[operationQueue release], operationQueue = nil;
+	[exportFilename release], exportFilename = nil;
+	
+	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	
+	[super dealloc];
 }
 
 @end

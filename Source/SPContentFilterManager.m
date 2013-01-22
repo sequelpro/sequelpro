@@ -75,13 +75,6 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[contentFilters release];
-	
-	[super dealloc];
-}
-
 /**
  * Upon awakening bind the query text view's background colour.
  */
@@ -949,6 +942,15 @@
 		}
 	}
 #endif
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[contentFilters release];
+	
+	[super dealloc];
 }
 
 @end

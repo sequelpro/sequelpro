@@ -71,18 +71,17 @@
  */
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)childIndex ofItem:(id)item
 {
-
 	// For the top level of the tree, return the "Quick Connect" child for position zero;
 	// amend all other positions to compensate for the faked position.
 	if (!item) {
 		if (childIndex == 0) {
 			return quickConnectItem;
 		}
+		
 		childIndex--;
 	}
 
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
-
 	
 	return NSArrayObjectAtIndex([node childNodes], childIndex);
 }

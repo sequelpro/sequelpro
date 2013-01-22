@@ -466,9 +466,6 @@ static SPFavoritesController *sharedFavoritesController = nil;
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	if (favoritesTree) [favoritesTree release], favoritesTree = nil;

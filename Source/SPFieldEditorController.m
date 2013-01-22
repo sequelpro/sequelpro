@@ -171,8 +171,9 @@
 #ifndef SP_REFACTOR
 	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
 	// if still visible
-	if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
+	if ([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
 		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+	}
 #endif
 
 	if ( sheetEditData ) [sheetEditData release];
@@ -183,6 +184,7 @@
 	if ( tmpDirPath ) [tmpDirPath release];
 	if ( esUndoManager ) [esUndoManager release];
 	if ( contextInfo ) [contextInfo release];
+	
 	[super dealloc];
 }
 
@@ -1168,7 +1170,6 @@
  */
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
 {
-
 	NSUInteger i = 0;
 	NSUInteger aBit;
 	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);

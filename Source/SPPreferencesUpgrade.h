@@ -42,6 +42,7 @@
 void SPApplyRevisionChanges(void);
 void SPMigrateConnectionFavoritesData(void);
 void SPMigratePreferencesFromPreviousIdentifer(void);
+
 + (void)showPostMigrationReleaseNotes:(NSArray *)releaseNotes;
 
 @end

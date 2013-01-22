@@ -95,7 +95,7 @@
  */
 - (void)removeActivity:(NSInteger)pid
 {
-	for(id cmd in activities) 
+	for (id cmd in activities) 
 	{
 		if ([[cmd objectForKey:@"pid"] integerValue] == pid) {
 			[activities removeObject:cmd];

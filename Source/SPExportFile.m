@@ -48,7 +48,7 @@
 @synthesize exportFileHandleStatus;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
 /**
  * Initialise an autoreleased instance of SPExport using the supplied path.
@@ -225,11 +225,7 @@
 }
 
 #pragma mark -
-#pragma mark Other
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	if (exportFileHandle) [exportFileHandle release], exportFileHandle = nil;

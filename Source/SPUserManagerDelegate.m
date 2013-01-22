@@ -40,7 +40,7 @@ static NSString *SPGlobalPrivilegesTabIdentifier = @"Global Privileges";
 static NSString *SPResourcesTabIdentifier = @"Resources";
 static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 
-@interface SPUserManager (SPDeclaredAPI)
+@interface SPUserManager (DeclaredAPI)
 
 - (void)_initializeSchemaPrivs;
 - (void)_initializeAvailablePrivs;
@@ -51,7 +51,6 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host;
 
 @end
-
 
 @implementation SPUserManager (SPUserManagerDelegate)
 

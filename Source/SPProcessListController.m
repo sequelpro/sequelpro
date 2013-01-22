@@ -66,9 +66,6 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Initialisation
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
@@ -88,9 +85,6 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	return self;
 }
 
-/**
- * Interface initialisation
- */
 - (void)awakeFromNib
 {	
 	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
@@ -133,7 +127,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 }
 
 #pragma mark -
-#pragma mark IBAction methods
+#pragma mark IB action methods
 
 /**
  * Copies the currently selected process(es) to the pasteboard.
@@ -583,24 +577,6 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 }
 
 #pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	processListThreadRunning = NO;
-	
-	[processes release], processes = nil;
-	
-	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
-	
-	[super dealloc];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -846,6 +822,21 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[saveProcessesButton setEnabled:YES];
 	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	
+	processListThreadRunning = NO;
+	
+	[processes release], processes = nil;
+	
+	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
+	
+	[super dealloc];
 }
 
 @end

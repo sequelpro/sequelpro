@@ -62,9 +62,9 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 @synthesize connection;
 @synthesize relationData;
 
-/**
- * init
- */
+#pragma mark -
+#pragma mark Initialisation
+
 - (id)init
 {
 	if ((self = [super init])) {
@@ -659,9 +659,6 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 
 #pragma mark -
 
-/*
- * Dealloc.
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

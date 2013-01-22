@@ -75,14 +75,16 @@
 	IBOutlet NSTableView *undeleteTableView;
 
 	IBOutlet NSTreeController *commandBundleTreeController;
+	
 	NSMutableArray *touchedBundleArray;
+	NSMutableArray *deletedDefaultBundles;
 	NSMutableDictionary *commandBundleTree;
 	NSSortDescriptor *sortDescriptor;
+	NSUndoManager *esUndoManager;
 
 	NSString *bundlePath;
 	NSString *draggedFilePath;
 	NSString *oldBundleName;
-	BOOL isTableCellEditing;
 
 	NSMenu *inputGeneralScopePopUpMenu;
 	NSMenu *inputInputFieldScopePopUpMenu;
@@ -108,16 +110,13 @@
 	NSArray *triggerDataTableArray;
 	NSArray *triggerGeneralArray;
 	NSArray *withBlobDataTableArray;
-
+	NSArray *shellVariableSuggestions;
+	
 	BOOL doGroupDueToChars;
 	BOOL allowUndo;
 	BOOL wasCutPaste;
 	BOOL selectionChanged;
-	NSUndoManager *esUndoManager;
-
-	NSArray *shellVariableSuggestions;
-
-	NSMutableArray *deletedDefaultBundles;
+	BOOL isTableCellEditing;
 }
 
 - (IBAction)inputPopupButtonChanged:(id)sender;

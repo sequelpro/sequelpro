@@ -5737,100 +5737,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 
 #pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-#ifndef SP_REFACTOR /* Unregister observers */
-	// Unregister observers
-	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
-	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
-
-	if (processListController) {
-		[processListController close];
-		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	}
-	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
-#endif
-	
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-#ifndef SP_REFACTOR /* release nib objects */
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	
-	[nibObjectsToRelease release];
-
-#endif
-
-	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
-
-	[databaseStructureRetrieval release];
-
-	[allDatabases release];
-	[allSystemDatabases release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	[undoManager release];
-	[printWebView release];
-#endif
-	[selectedDatabaseEncoding release];
-#ifndef SP_REFACTOR
-	[taskProgressWindow close];
-#endif
-	
-	if (selectedTableName) [selectedTableName release];
-	if (connectionController) [connectionController release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	if (processListController) [processListController release];
-	if (serverVariablesController) [serverVariablesController release];
-#endif
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (selectedDatabase) [selectedDatabase release];
-	if (mySQLVersion) [mySQLVersion release];
-#ifndef SP_REFACTOR
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
-	if (taskFadeInStartDate) [taskFadeInStartDate release];
-#endif
-	if (queryEditorInitString) [queryEditorInitString release];
-	if (spfFileURL) [spfFileURL release];
-	if (spfPreferences) [spfPreferences release];
-	if (spfSession) [spfSession release];
-	if (spfDocData) [spfDocData release];
-	if (keyChainID) [keyChainID release];
-#ifndef SP_REFACTOR
-	if (mainToolbar) [mainToolbar release];
-#endif
-	if (titleAccessoryView) [titleAccessoryView release];
-#ifndef SP_REFACTOR
-	if (taskProgressWindow) [taskProgressWindow release];
-#endif
-	if (serverSupport) [serverSupport release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	if (processID) [processID release];
-#endif
-	if (runningActivitiesArray) [runningActivitiesArray release];
-	
-#ifdef SP_REFACTOR 
-	if ( tablesListInstance ) [tablesListInstance release];
-	if ( customQueryInstance ) [customQueryInstance release];
-#endif
-	
-	[super dealloc];
-}
-
-#pragma mark -
+#pragma mark Private API
 
 #ifndef SP_REFACTOR /* whole database operations */
 
@@ -6186,5 +6093,98 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 }
 #endif
+
+#pragma mark -
+
+- (void)dealloc
+{
+#ifndef SP_REFACTOR /* Unregister observers */
+	// Unregister observers
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	
+	if (processListController) {
+		[processListController close];
+		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
+	
+	if (serverVariablesController) {
+		[prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
+#endif
+	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	
+#ifndef SP_REFACTOR /* release nib objects */
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	
+	[nibObjectsToRelease release];
+#endif
+	
+	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
+	
+	[databaseStructureRetrieval release];
+	
+	[allDatabases release];
+	[allSystemDatabases release];
+#ifndef SP_REFACTOR /* dealloc ivars */
+	[undoManager release];
+	[printWebView release];
+#endif
+	[selectedDatabaseEncoding release];
+#ifndef SP_REFACTOR
+	[taskProgressWindow close];
+#endif
+	
+	if (selectedTableName) [selectedTableName release];
+	if (connectionController) [connectionController release];
+#ifndef SP_REFACTOR /* dealloc ivars */
+	if (processListController) [processListController release];
+	if (serverVariablesController) [serverVariablesController release];
+#endif
+	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
+	if (selectedDatabase) [selectedDatabase release];
+	if (mySQLVersion) [mySQLVersion release];
+#ifndef SP_REFACTOR
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
+	if (taskFadeInStartDate) [taskFadeInStartDate release];
+#endif
+	if (queryEditorInitString) [queryEditorInitString release];
+	if (spfFileURL) [spfFileURL release];
+	if (spfPreferences) [spfPreferences release];
+	if (spfSession) [spfSession release];
+	if (spfDocData) [spfDocData release];
+	if (keyChainID) [keyChainID release];
+#ifndef SP_REFACTOR
+	if (mainToolbar) [mainToolbar release];
+#endif
+	if (titleAccessoryView) [titleAccessoryView release];
+#ifndef SP_REFACTOR
+	if (taskProgressWindow) [taskProgressWindow release];
+#endif
+	if (serverSupport) [serverSupport release];
+#ifndef SP_REFACTOR /* dealloc ivars */
+	if (processID) [processID release];
+#endif
+	if (runningActivitiesArray) [runningActivitiesArray release];
+	
+#ifdef SP_REFACTOR 
+	if (tablesListInstance) [tablesListInstance release];
+	if (customQueryInstance) [customQueryInstance release];
+#endif
+	
+	[super dealloc];
+}
 
 @end

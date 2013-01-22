@@ -37,17 +37,13 @@ static NSString *SPLicenseFilename = @"License";
 
 @implementation SPAboutController
 
-/**
- * Initialisation
- */
+#pragma mark -
+
 - (id)init
 {
 	return [super initWithWindowNibName:@"AboutPanel"];
 }
 
-/**
- * Initialize interface controls.
- */
 - (void)awakeFromNib
 {
 	NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
@@ -73,6 +69,9 @@ static NSString *SPLicenseFilename = @"License";
 	// Set the license
 	[[appLicenseTextView textStorage] appendAttributedString:license];
 }
+
+#pragma mark -
+#pragma mark IB action methods
 
 /**
  * Display the license sheet.

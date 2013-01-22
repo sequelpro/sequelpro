@@ -605,20 +605,6 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 }
 
 #pragma mark -
-
-/**
- * Release connection.
- */
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[connection release], connection = nil;
-
-	[super dealloc];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -704,6 +690,17 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	}
 
 	return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[connection release], connection = nil;
+	
+	[super dealloc];
 }
 
 @end

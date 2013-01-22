@@ -53,17 +53,13 @@ static NSString *SPTableViewValueIndexColumnID  = @"value_index";
 static NSString *SPTableViewGlobalValueColumnID = @"global_value";
 static NSString *SPTableViewSqlColumnID         = @"sql";
 
-
 @implementation SPFieldMapperController
 
 @synthesize sourcePath;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Initialize the field mapper
- */
 - (id)initWithDelegate:(id)managerDelegate
 {
 	if ((self = [super initWithWindowNibName:@"DataMigrationDialog"])) {
@@ -117,7 +113,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)awakeFromNib
 {
-
 	// Set Context Menu
 	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:YES];
 	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:YES];
@@ -235,6 +230,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	if (primaryKeyFields) [primaryKeyFields release];
 	if (toBeEditedRowIndexes) [toBeEditedRowIndexes release];
+	
 	[super dealloc];
 }
 

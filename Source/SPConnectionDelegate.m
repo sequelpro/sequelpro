@@ -181,19 +181,23 @@
 /**
  * Close the connection - should be performed on the main thread.
  */
-- (void) closeAndDisconnect
+- (void)closeAndDisconnect
 {
 #ifndef SP_REFACTOR
 	NSWindow *theParentWindow = [self parentWindow];
+	
 	_isConnected = NO;
+	
 	if ([[[self parentTabViewItem] tabView] numberOfTabViewItems] == 1) {
 		[theParentWindow orderOut:self];
 		[theParentWindow setAlphaValue:0.0f];
 		[theParentWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
-	} else {
+	} 
+	else {
 		[[[self parentTabViewItem] tabView] performSelector:@selector(removeTabViewItem:) withObject:[self parentTabViewItem] afterDelay:0.5];
 		[theParentWindow performSelector:@selector(makeKeyAndOrderFront:) withObject:nil afterDelay:0.6];
 	}
+	
 	[self parentTabDidClose];	
 #endif
 }

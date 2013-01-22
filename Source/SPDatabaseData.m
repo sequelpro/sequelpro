@@ -51,11 +51,8 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 @synthesize serverSupport;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Initialize cache arrays.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -405,9 +402,6 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 #pragma mark -
 #pragma mark Other
 
-/**
- * Deallocate ivars.
- */
 - (void)dealloc
 {
 	if (characterSetEncoding) [characterSetEncoding release], characterSetEncoding = nil;

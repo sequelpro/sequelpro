@@ -46,7 +46,7 @@
 #pragma mark Setup and teardown
 
 /**
- * Initialise by creating a blank history array
+ * Initialise by creating a blank history array.
  */
 - (id) init
 {

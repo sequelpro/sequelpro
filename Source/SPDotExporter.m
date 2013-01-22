@@ -227,9 +227,8 @@
 	[pool release];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	delegate = nil;

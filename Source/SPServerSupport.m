@@ -77,7 +77,7 @@
 @synthesize serverReleaseVersion;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
 /**
  * Creates and returns an instance of SPServerSupport with the supplied version numbers. The caller is
@@ -320,9 +320,6 @@
 #pragma mark -
 #pragma mark Other
 
-/**
- * Dealloc. Invalidate all ivars.
- */
 - (void)dealloc
 {
 	// Reset version integers

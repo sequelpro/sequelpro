@@ -356,9 +356,8 @@
 	[pool release];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	if (xmlDataArray) [xmlDataArray release], xmlDataArray = nil;

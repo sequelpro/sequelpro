@@ -51,9 +51,6 @@
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Initialisation
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseServerVariables"])) {
@@ -63,9 +60,6 @@
 	return self;
 }
 
-/**
- * Interface initialisation
- */
 - (void)awakeFromNib
 {
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
@@ -388,9 +382,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc
- */
 - (void)dealloc
 {
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];

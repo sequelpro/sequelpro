@@ -66,9 +66,6 @@
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -105,9 +102,6 @@
 	return self;
 }
 
-/**
- * UI setup.
- */
 - (void)awakeFromNib
 {
 	if (_mainNibLoaded) return;
@@ -1744,9 +1738,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {	
 	if (fieldMappingImportArray) [fieldMappingImportArray release];

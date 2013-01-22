@@ -307,7 +307,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 
 		if (favorite == quickConnectItem) {
 			[self _selectNode:favorite];
-		} else {
+		} 
+		else {
 			NSNumber *typeNumber = [[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey];
 			previousType = typeNumber ? [typeNumber integerValue] : SPTCPIPConnection;
 		
@@ -344,11 +345,16 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	[self _reloadFavoritesViewData];
 
 	NSMutableIndexSet *selectionIndexes = [NSMutableIndexSet indexSet];
-	for (SPTreeNode *eachNode in selectedFavoriteNodes) {
+	
+	for (SPTreeNode *eachNode in selectedFavoriteNodes) 
+	{
 		NSInteger anIndex = [favoritesOutlineView rowForItem:eachNode];
+		
 		if (anIndex == -1) continue;
+		
 		[selectionIndexes addIndex:anIndex];
 	}
+	
 	[favoritesOutlineView selectRowIndexes:selectionIndexes byExtendingSelection:NO];
 #endif
 }

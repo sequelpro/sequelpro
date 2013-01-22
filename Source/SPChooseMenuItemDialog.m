@@ -41,6 +41,7 @@
 @implementation SPChooseMenuItemDialogTextView
 {
 }
+
 - (id)init;
 {
 	if ((self = [super initWithFrame:NSMakeRect(1, 1, 2, 2)]))

@@ -1815,20 +1815,22 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[(NSView *)favoritesOutlineView display];
 }
 
-#pragma mark -
-
 - (void)_documentWillClose:(NSNotification *)notification
 {
 	cancellingConnection = YES;
 	dbDocument = nil;
+	
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];
 		[NSThread detachNewThreadWithName:@"SPConnectionController close background disconnect" target:mySQLConnection selector:@selector(disconnect) object:nil];
 		[mySQLConnection autorelease];
 		mySQLConnection = nil;
 	}
+	
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
 }
+
+#pragma mark -
 
 - (void)dealloc
 {

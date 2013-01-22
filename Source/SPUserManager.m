@@ -79,11 +79,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 @synthesize serverSupport;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Initialization.
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
@@ -1392,9 +1389,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 #pragma mark -
 
-/**
- * Dealloc. Get rid of everything.
- */
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];

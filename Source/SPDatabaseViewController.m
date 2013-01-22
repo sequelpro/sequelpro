@@ -134,7 +134,6 @@
 
 - (IBAction)viewContent:(id)sender
 {
-
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
@@ -150,7 +149,6 @@
 
 - (IBAction)viewQuery:(id)sender
 {
-
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
@@ -169,7 +167,6 @@
 
 - (IBAction)viewStatus:(id)sender
 {
-
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
@@ -191,7 +188,6 @@
 
 - (IBAction)viewRelations:(id)sender
 {
-
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
@@ -207,7 +203,6 @@
 
 - (IBAction)viewTriggers:(id)sender
 {
-
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
 		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
@@ -238,7 +233,8 @@
 
 	if (reloadRequired && selectedTableName) {
 		[tableSourceInstance loadTable:selectedTableName];
-	} else {
+	} 
+	else {
 		structureLoaded = !reload;
 	}
 }
@@ -255,7 +251,8 @@
 #endif
 	 ) {
 		[tableContentInstance loadTable:selectedTableName];
-	} else {
+	} 
+	else {
 		contentLoaded = !reload;
 	}
 }
@@ -272,7 +269,8 @@
 #endif
 		) {
 		[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
-	} else {
+	} 
+	else {
 		statusLoaded = !reload;
 	}
 }
@@ -285,9 +283,11 @@
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), [self table]]];
+	
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadWithName:@"SPDatabaseViewController view load task" target:self selector:@selector(_loadTabTask:) object:tabViewItem];
-	} else {
+	} 
+	else {
 		[self _loadTabTask:tabViewItem];
 	}
 }
@@ -352,7 +352,8 @@
 	// Start a task
 	if (isReloading) {
 		[self startTaskWithDescription:NSLocalizedString(@"Reloading...", @"Reloading table task string")];
-	} else {
+	} 
+	else {
 		[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), aTable]];	
 	}
 
@@ -363,7 +364,8 @@
 	// if already on a background thread, make the changes on the existing thread.
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadWithName:@"SPDatabaseViewController table load task" target:self selector:@selector(_loadTableTask) object:nil];
-	} else {
+	} 
+	else {
 		[self _loadTableTask];
 	}
 }
@@ -534,8 +536,9 @@
 #ifndef SP_REFACTOR /* show Create Table syntax */
 	// Update the "Show Create Syntax" window if it's already opened
 	// according to the selected table/view/proc/func
-	if([[[self onMainThread] getCreateTableSyntaxWindow] isVisible])
+	if ([[[self onMainThread] getCreateTableSyntaxWindow] isVisible]) {
 		[[self onMainThread] showCreateTableSyntax:self];
+	}
 
 	// Add a history entry
 	[spHistoryControllerInstance updateHistoryEntries];
@@ -545,7 +548,9 @@
 
 #ifndef SP_REFACTOR /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
-	for(NSString* cmdPath in triggeredCommands) {
+	
+	for(NSString* cmdPath in triggeredCommands) 
+	{
 		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
 		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 		[aMenuItem setTag:0];
@@ -581,7 +586,6 @@
 		}
 	}
 #endif
-
 
 	[loadPool drain];
 }

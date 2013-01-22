@@ -64,11 +64,8 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 @synthesize connection;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Init
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -691,9 +688,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[triggerData release], triggerData = nil;

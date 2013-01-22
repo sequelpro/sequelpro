@@ -60,7 +60,6 @@
  * @param shellEnvironment A dictionary of environment variable values whose keys are the variable names.
  * @param path The current directory for the bash command. If path is nil, the current directory is inherited from the process that created the receiver (normally /).
  * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
- * 
  */
 + (NSString *)runBashCommand:(NSString *)command withEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError
 {
@@ -77,7 +76,6 @@
  * @param caller The SPDatabaseDocument which invoked that command to register the command for cancelling; if nil the command won't be registered.
  * @param name The menu title of the command.
  * @param theError If not nil and the bash command failed it contains the returned error message as NSLocalizedDescriptionKey
- * 
  */
 + (NSString *)runBashCommand:(NSString *)command withEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError
 {	

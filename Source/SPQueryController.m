@@ -426,6 +426,9 @@ static SPQueryController *sharedQueryController = nil;
 }
 #endif
 
+#pragma mark -
+#pragma mark Privat API
+
 /**
  * Updates the filtered result set based on any filter string and whether or not
  * all SELECT nd SHOW statements should be shown within the console.
@@ -609,9 +612,6 @@ static SPQueryController *sharedQueryController = nil;
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 #ifndef SP_REFACTOR

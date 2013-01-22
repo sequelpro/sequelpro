@@ -61,9 +61,8 @@
 	return self;
 }
 
-/**
- * Dealloc.
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	[message release], message = nil;

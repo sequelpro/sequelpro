@@ -916,9 +916,8 @@
 	return [placeholderSyntax autorelease];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	[sqlExportTables release], sqlExportTables = nil;
