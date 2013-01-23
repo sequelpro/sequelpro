@@ -42,12 +42,12 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
-#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
-#define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
-#define SP_HISTORY_COPY_MENUITEM_TAG                  300000
-#define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
-#define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
+#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG       100001
+#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG 100000
+#define SP_FAVORITE_HEADER_MENUITEM_TAG          200000
+#define SP_HISTORY_COPY_MENUITEM_TAG             300000
+#define SP_HISTORY_SAVE_MENUITEM_TAG             300001
+#define SP_HISTORY_CLEAR_MENUITEM_TAG            300002
 
 @class SPCopyTable;
 @class SPQueryFavoriteManager;
@@ -228,12 +228,12 @@
 - (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
-- (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
+- (void)updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
 
 // Query load actions
-- (void) initQueryLoadTimer;
-- (void) clearQueryLoadTimer;
-- (void) queryLoadUpdate:(NSTimer *)theTimer;
+- (void)initQueryLoadTimer;
+- (void)clearQueryLoadTimer;
+- (void)queryLoadUpdate:(NSTimer *)theTimer;
 
 // Accessors
 - (NSArray *)currentResult;
@@ -241,15 +241,15 @@
 - (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
 
 // Retrieving and setting table state
-- (void) updateTableView;
-- (NSIndexSet *) resultSelectedRowIndexes;
-- (NSRect) resultViewport;
+- (void)updateTableView;
+- (NSIndexSet *)resultSelectedRowIndexes;
+- (NSRect)resultViewport;
 - (NSArray *)dataColumnDefinitions;
-- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
-- (void) setResultViewportToRestore:(NSRect)theViewport;
-- (void) storeCurrentResultViewForRestoration;
-- (void) clearResultViewDetailsToRestore;
-- (void) autosizeColumns;
+- (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void)setResultViewportToRestore:(NSRect)theViewport;
+- (void)storeCurrentResultViewForRestoration;
+- (void)clearResultViewDetailsToRestore;
+- (void)autosizeColumns;
 
 #ifndef SP_REFACTOR
 // MySQL Help
@@ -263,8 +263,8 @@
 - (void)setMySQLversion:(NSString *)theVersion;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Tableview interaction
 - (void)tableSortCallback;
@@ -284,10 +284,7 @@
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo;
-
 - (void)historyItemsHaveBeenUpdated:(id)manager;
-
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end
