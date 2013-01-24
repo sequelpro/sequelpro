@@ -51,10 +51,7 @@
 @class SPSplitView;
 #endif
 
-@interface SPTableContent : NSObject
-#ifdef SP_REFACTOR
-<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
-#endif
+@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;

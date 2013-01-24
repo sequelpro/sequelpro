@@ -34,11 +34,7 @@
 
 @class SPDatabaseStructure;
 
-#ifndef SP_REFACTOR
-@interface SPNarrowDownCompletion : NSWindow
-#else
 @interface SPNarrowDownCompletion : NSWindow <NSTableViewDelegate, NSTableViewDataSource, NSTokenFieldCellDelegate>
-#endif
 {
 	NSArray* suggestions;
 	NSMutableString* mutablePrefix;

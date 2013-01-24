@@ -41,7 +41,7 @@ typedef enum {
 
 @class SPFieldMapperController, SPFileHandle;
 
-@interface SPDataImport : NSObject 
+@interface SPDataImport : NSObject <NSOpenSavePanelDelegate>
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

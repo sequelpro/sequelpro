@@ -58,10 +58,7 @@
 @class SPMySQLFastStreamingResult;
 @class SPTextView;
 
-@interface SPCustomQuery : NSObject 
-#ifdef SP_REFACTOR
-<NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
-#endif
+@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

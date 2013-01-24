@@ -222,6 +222,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	}
 	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	
 	[panel setDelegate:self];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanChooseDirectories:NO];

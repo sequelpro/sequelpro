@@ -35,10 +35,7 @@
 @class SPTablesList;
 @class SPMySQLConnection;
 
-@interface SPFieldMapperController : NSWindowController
-#ifdef SP_REFACTOR
-<NSTokenFieldCellDelegate>
-#endif
+@interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate>
 {
 	IBOutlet SPTableView *fieldMapperTableView;
 	IBOutlet id fieldMapperTableScrollView;

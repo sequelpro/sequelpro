@@ -57,18 +57,12 @@
 
 #import "SPConnectionControllerDelegateProtocol.h"
 
-#ifdef SP_REFACTOR /* patch */
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
-#endif
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol
-#ifdef SP_REFACTOR /* patch */
-	, SPMySQLConnectionDelegate, NSTextFieldDelegate
-#endif
->
+@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol, SPMySQLConnectionDelegate, NSTextFieldDelegate, NSToolbarDelegate>
 {
 #ifdef SP_REFACTOR /* patch */
 	id delegate;

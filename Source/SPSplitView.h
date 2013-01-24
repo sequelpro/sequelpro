@@ -32,7 +32,7 @@
 
 @class SPSplitViewAnimationRetainCycleBypass;
 
-@interface SPSplitView : NSSplitView
+@interface SPSplitView : NSSplitView <NSSplitViewDelegate>
 {
 	NSObject *delegate;
 

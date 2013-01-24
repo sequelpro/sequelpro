@@ -32,7 +32,7 @@
 
 @class SPChooseMenuItemDialogTextView;
 
-@interface SPChooseMenuItemDialog : NSWindow
+@interface SPChooseMenuItemDialog : NSWindow <NSTextViewDelegate>
 {
 	NSMenu *contextMenu;
 	NSInteger selectedItemIndex;

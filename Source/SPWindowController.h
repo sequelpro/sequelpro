@@ -33,7 +33,7 @@
 @class PSMTabBarControl;
 @class SPDatabaseDocument;
 
-@interface SPWindowController : NSWindowController
+@interface SPWindowController : NSWindowController <NSWindowDelegate>
 {
 	IBOutlet PSMTabBarControl *tabBar;
 	IBOutlet NSTabView *tabView;

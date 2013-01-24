@@ -39,7 +39,7 @@
  *
  * Editor preference pane controller.
  */
-@interface SPEditorPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
+@interface SPEditorPreferencePane : SPPreferencePane <SPPreferencePaneProtocol, NSOpenSavePanelDelegate> 
 {
 	IBOutlet NSWindow *enterNameWindow;
 	IBOutlet NSWindow *editThemeListWindow;

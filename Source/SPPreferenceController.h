@@ -46,7 +46,7 @@
  *
  * Main preferences window controller.
  */
-@interface SPPreferenceController : NSWindowController
+@interface SPPreferenceController : NSWindowController <NSToolbarDelegate>
 {	
 	// Preference pane controllers
 	IBOutlet SPGeneralPreferencePane <SPPreferencePaneProtocol>       *generalPreferencePane;

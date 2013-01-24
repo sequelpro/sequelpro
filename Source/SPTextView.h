@@ -40,10 +40,7 @@
 @class SPCopyTable;
 @class NoodleLineNumberView;
 
-@interface SPTextView : NSTextView
-#ifdef SP_REFACTOR
-<NSTextStorageDelegate>
-#endif
+@interface SPTextView : NSTextView <NSTextStorageDelegate>
 {
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTablesList *tablesListInstance;

@@ -96,6 +96,7 @@
 	[self setAlphaValue:0.0f];
 
 	dummyTextView = [[SPChooseMenuItemDialogTextView alloc] init];
+	
 	[dummyTextView setDelegate:self];
 
 	[self setContentView:dummyTextView];

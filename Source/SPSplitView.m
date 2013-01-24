@@ -699,6 +699,7 @@
 	[self _ensureDefaultSubviewSizesToIndex:l-1];
 
 	delegate = [super delegate];
+	
 	[super setDelegate:self];
 }
 
@@ -1089,7 +1090,8 @@
 	}
 
 	// Check for a first responder to restore, using the "true" first responder for field editors
-	NSResponder *firstResponderToRestore = [[self window] firstResponder];
+	NSResponder<NSTextDelegate> *firstResponderToRestore = [[self window] firstResponder];
+	
 	if ([firstResponderToRestore respondsToSelector:@selector(isFieldEditor)] && [(NSText *)firstResponderToRestore isFieldEditor]) {
 		firstResponderToRestore = [(NSText *)firstResponderToRestore delegate];
 	}
