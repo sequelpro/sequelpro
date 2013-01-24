@@ -3460,11 +3460,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 
 		// Check size and NSFileType
-#ifndef SP_REFACTOR
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
-#else
 		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
-#endif
+
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];

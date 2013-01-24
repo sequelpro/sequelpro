@@ -34,7 +34,7 @@
 
 @interface SPSplitView : NSSplitView <NSSplitViewDelegate>
 {
-	NSObject *delegate;
+	id<NSSplitViewDelegate> delegate;
 
 	IBOutlet NSButton *collapseToggleButton;
 	IBOutlet NSView *additionalDragHandleView;

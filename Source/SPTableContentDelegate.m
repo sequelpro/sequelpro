@@ -756,13 +756,13 @@
  * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+- (BOOL)control:(NSControl<NSControlTextEditingDelegate> *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
 #ifndef SP_REFACTOR
 	// Check firstly if SPCopyTable can handle command
 	if ([control control:control textView:textView doCommandBySelector:(SEL)command])
 #else
-		if ([(id<NSControlTextEditingDelegate>)control control:control textView:textView doCommandBySelector:(SEL)command])
+		if ([control control:control textView:textView doCommandBySelector:(SEL)command])
 #endif
 			return YES;
 	

@@ -39,16 +39,10 @@
 @end
 
 @implementation SPChooseMenuItemDialogTextView
-{
-}
 
 - (id)init;
 {
-	if ((self = [super initWithFrame:NSMakeRect(1, 1, 2, 2)]))
-	{
-	}
-	
-	return self;
+	return [super initWithFrame:NSMakeRect(1, 1, 2, 2)];
 }
 
 - (IBAction)menuItemHandler:(id)sender
@@ -72,19 +66,16 @@
 
 - (id)init;
 {
-	if((self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
-					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
+	if ((self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
+								styleMask:NSBorderlessWindowMask 
+								  backing:NSBackingStoreBuffered 
+									defer:NO]))
 	{
 		waitForChoice = YES;
 		selectedItemIndex = -1;
 	}
+	
 	return self;
-}
-
-- (void)dealloc
-{
-	[dummyTextView release];
-	[super dealloc];
 }
 
 - (void)initDialog
@@ -100,7 +91,6 @@
 	[dummyTextView setDelegate:self];
 
 	[self setContentView:dummyTextView];
-
 }
 
 + (NSInteger)withItems:(NSArray*)theList atPosition:(NSPoint)location
@@ -168,6 +158,15 @@
 	[dialog performSelector:@selector(close) withObject:nil afterDelay:0.01];
 
 	return [dialog selectedItemIndex];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[dummyTextView release];
+	
+	[super dealloc];
 }
 
 @end

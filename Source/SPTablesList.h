@@ -44,10 +44,7 @@
 @class SQLSidebarViewController;
 #endif
 
-@interface SPTablesList : NSObject 
-#ifdef SP_REFACTOR
-<NSTextFieldDelegate>
-#endif
+@interface SPTablesList : NSObject <NSTextFieldDelegate, NSTableViewDelegate>
 {
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTableStructure *tableSourceInstance;

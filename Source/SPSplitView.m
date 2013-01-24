@@ -120,7 +120,7 @@
 #pragma mark -
 #pragma mark Delegate management
 
-- (void)setDelegate:(NSObject *)aDelegate
+- (void)setDelegate:(id<NSSplitViewDelegate>)aDelegate
 {
 	delegate = aDelegate;
 }
