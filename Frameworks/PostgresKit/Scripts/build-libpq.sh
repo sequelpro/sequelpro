@@ -43,8 +43,8 @@ QUIET='NO'
 CLEAN='NO'
 
 # Configuration
-MIN_OS_X_VERSION='10.5'
-ARCHITECTURES='-arch ppc -arch i386 -arch x86_64'
+MIN_OS_X_VERSION='10.6'
+ARCHITECTURES='-arch i386 -arch x86_64'
 CONFIGURE_OPTIONS='--enable-thread-safety --with-openssl'
 COMMON_COMPILE_OPTIONS="-fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=${MIN_OS_X_VERSION}"
 
