@@ -44,8 +44,8 @@ DEBUG='NO'
 CLEAN='NO'
 
 # Configuration
-MIN_OS_X_VERSION='10.5'
-ARCHITECTURES='-arch ppc -arch i386 -arch x86_64'
+MIN_OS_X_VERSION='10.6'
+ARCHITECTURES='-arch i386 -arch x86_64'
 
 CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared"'
 OUTPUT_DIR='SPMySQLFiles.build'

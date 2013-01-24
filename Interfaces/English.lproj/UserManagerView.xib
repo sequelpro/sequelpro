@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
-		<int key="IBDocument.SystemTarget">1050</int>
+		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10K549</string>
 		<string key="IBDocument.InterfaceBuilderVersion">851</string>
 		<string key="IBDocument.AppKitVersion">1038.36</string>
@@ -2616,6 +2616,7 @@ IGVycm9ycyBiZWxvdyBiZWZvcmUgcHJvY2VlZGluZy4</string>
 									</object>
 									<string key="NSFrame">{{1, 1}, {405, 115}}</string>
 									<reference key="NSSuperview" ref="798811064"/>
+									<reference key="NSNextKeyView" ref="234756526"/>
 									<reference key="NSDocView" ref="234756526"/>
 									<reference key="NSBGColor" ref="888720323"/>
 									<object class="NSCursor" key="NSCursor">
@@ -2648,6 +2649,7 @@ IGVycm9ycyBiZWxvdyBiZWZvcmUgcHJvY2VlZGluZy4</string>
 							</object>
 							<string key="NSFrame">{{20, 61}, {407, 117}}</string>
 							<reference key="NSSuperview" ref="340939829"/>
+							<reference key="NSNextKeyView" ref="306241942"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="403581926"/>
 							<reference key="NSHScroller" ref="584287791"/>
@@ -7671,13 +7673,9 @@ IGVycm9ycyBiZWxvdyBiZWZvcmUgcHJvY2VlZGluZy4</string>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<integer value="1050" key="NS.object.0"/>
-		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<integer value="1050" key="NS.object.0"/>
+			<integer value="1060" key="NS.object.0"/>
 		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
