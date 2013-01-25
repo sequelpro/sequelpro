@@ -40,7 +40,7 @@
 @class SPDatabaseDocument;
 @class SPBundleEditorController;
 
-@interface SPAppController : NSObject <FRFeedbackReporterDelegate, NSOpenSavePanelDelegate>
+@interface SPAppController : NSObject <FRFeedbackReporterDelegate, NSApplicationDelegate, NSOpenSavePanelDelegate>
 {
 	IBOutlet NSWindow* bundleEditorWindow;
 

@@ -267,6 +267,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	if (returnCode) {
 		[panel orderOut:self];
+		
 		[self application:nil openFiles:[panel filenames]];
 	}
 

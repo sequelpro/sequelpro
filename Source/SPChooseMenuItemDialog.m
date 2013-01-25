@@ -47,13 +47,13 @@
 
 - (IBAction)menuItemHandler:(id)sender
 {
-	[[self delegate] setSelectedItemIndex:[sender tag]];
-	[[self delegate] setWaitForChoice:NO];
+	[(SPChooseMenuItemDialog *)[self delegate] setSelectedItemIndex:[sender tag]];
+	[(SPChooseMenuItemDialog *)[self delegate] setWaitForChoice:NO];
 }
 
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {
-	return [[self delegate] contextMenu];
+	return [(SPChooseMenuItemDialog *)[self delegate] contextMenu];
 }
 
 @end
@@ -66,7 +66,7 @@
 
 - (id)init;
 {
-	if ((self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
+	if ((self = [super initWithContentRect:NSMakeRect(1, 1, 2, 2) 
 								styleMask:NSBorderlessWindowMask 
 								  backing:NSBackingStoreBuffered 
 									defer:NO]))
@@ -95,31 +95,41 @@
 
 + (NSInteger)withItems:(NSArray*)theList atPosition:(NSPoint)location
 {
-
-	if(!theList || ![theList count]) return -1;
+	if (!theList || ![theList count]) return -1;
 
 	SPChooseMenuItemDialog *dialog = [SPChooseMenuItemDialog new];
 
 	[dialog initDialog];
 	
-	NSMenu *theMenu = [[[NSMenu alloc] init] autorelease];
 	NSInteger cnt = 0;
-	for(id item in theList) {
+	NSMenu *theMenu = [[[NSMenu alloc] init] autorelease];
+	
+	for (id item in theList) 
+	{
 		NSMenuItem *aMenuItem;
-		if([item isKindOfClass:[NSString class]])
+		
+		if ([item isKindOfClass:[NSString class]]) {
 			aMenuItem = [[NSMenuItem alloc] initWithTitle:item action:@selector(menuItemHandler:) keyEquivalent:@""];
+		}
 		else if([item isKindOfClass:[NSDictionary class]]) {
 			NSString *title = ([item objectForKey:@"title"]) ?: @"";
+			
 			SEL action = ([item objectForKey:@"action"]) ? NSSelectorFromString([item objectForKey:@"action"]) : @selector(menuItemHandler:);
+			
 			NSString *keyEquivalent = ([item objectForKey:@"key"]) ?: @"";
+			
 			aMenuItem = [[NSMenuItem alloc] initWithTitle:title action:action keyEquivalent:keyEquivalent];
-			if([item objectForKey:@"tooltip"])
+			
+			if ([item objectForKey:@"tooltip"]) {
 				[aMenuItem setToolTip:[item objectForKey:@"tooltip"]];
+			}
 		}
+		
 		[aMenuItem setTag:cnt++];
 		[theMenu addItem:aMenuItem];
 		[aMenuItem release];
 	}
+	
 	[dialog setContextMenu:theMenu];
 
 	[dialog setFrameTopLeftPoint:location];
@@ -140,8 +150,8 @@
 
 	[[NSApplication sharedApplication] sendEvent:theEvent];
 
-	while([dialog waitForChoice] && [[[NSApp keyWindow] firstResponder] isKindOfClass:[SPChooseMenuItemDialogTextView class]]) {
-
+	while ([dialog waitForChoice] && [[[NSApp keyWindow] firstResponder] isKindOfClass:[SPChooseMenuItemDialogTextView class]]) 
+	{
 		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                           untilDate:[NSDate distantFuture]
                                              inMode:NSDefaultRunLoopMode
