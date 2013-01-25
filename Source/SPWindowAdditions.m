@@ -82,9 +82,9 @@
  */
 - (void)swipeWithEvent:(NSEvent *)event
 {
-	if (![[self delegate] isKindOfClass:[SPWindowController class]] || ![[[self delegate] documents] count]) return;
+	if (![[self delegate] isKindOfClass:[SPWindowController class]] || ![[(SPWindowController *)[self delegate] documents] count]) return;
 
-	id frontDoc = [[self delegate] selectedTableDocument];
+	id frontDoc = [(SPWindowController *)[self delegate] selectedTableDocument];
 
 	if (frontDoc && [frontDoc isKindOfClass:[SPDatabaseDocument class]] && [frontDoc valueForKeyPath:@"spHistoryControllerInstance"] && ![frontDoc isWorking])
 	{

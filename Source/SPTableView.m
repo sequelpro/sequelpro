@@ -42,7 +42,7 @@
 
 @end
 
-@interface SPTableView (PrivateAPI)
+@interface SPTableView ()
 
 - (void)_doubleClickAction;
 - (void)_disableDoubleClickAction:(NSNotification *)notification;
@@ -50,32 +50,37 @@
 
 @end
 
-
 @implementation SPTableView
 
 @synthesize tabEditingDisabled;
 
-- (id) init
+- (id)init
 {
 	if ((self = [super init])) {
 		emptyDoubleClickAction = NULL;
 	}
+	
 	return self;
 }
 
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 	[super setDoubleAction:@selector(_doubleClickAction)];
-	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
+	
+	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
+	}
 }
+
+#pragma mark -
 
 /**
  * Track window changes, in order to add listeners for when sheets are shown
  * or hidden; this allows the double-click action to be disabled while sheets
  * are open, preventing beeps when using the field editor on double-click.
  */
-- (void) viewWillMoveToWindow:(NSWindow *)aWindow {
+- (void)viewWillMoveToWindow:(NSWindow *)aWindow 
+{
 	NSNotificationCenter *notifier = [NSNotificationCenter defaultCenter];
 
 	[notifier removeObserver:self name:NSWindowWillBeginSheetNotification object:nil];
@@ -86,8 +91,6 @@
 		[notifier addObserver:self selector:@selector(_enableDoubleClickAction:) name:NSWindowDidEndSheetNotification object:aWindow];
 	}
 }
-
-#pragma mark -
 
 /**
  * Right-click at row will select that row before ordering out the contextual menu
@@ -100,7 +103,7 @@
 	SPDatabaseDocument *parentTableDocument = nil;
 	
 	if ([[[[[self window] delegate] class] description] isEqualToString:@"SPWindowController"]) {
-		parentTableDocument = [[[self window] delegate] selectedTableDocument];
+		parentTableDocument = [(SPWindowController *)[[self window] delegate] selectedTableDocument];
 	}
 
 	// If SPDatabaseDocument is performing a task suppress any context menu
@@ -150,11 +153,14 @@
  * display instead; this prevents the selected cell from automatically editing
  * if the table is backtabbed to.
  */
-- (BOOL)becomeFirstResponder {
+- (BOOL)becomeFirstResponder 
+{
 	if (tabEditingDisabled) {
 		[self display];
+		
 		return YES;
 	}
+	
 	return [super becomeFirstResponder];
 }
 
@@ -208,9 +214,11 @@
 	else if (tabEditingDisabled && [[theEvent characters] length] && [[theEvent characters] characterAtIndex:0] == NSTabCharacter) {
 		if (([theEvent modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
 			[[self window] selectKeyViewFollowingView:self];
-		} else {
+		} 
+		else {
 			[[self window] selectKeyViewPrecedingView:self];
 		}
+		
 		return;
 	}
 	
@@ -276,11 +284,6 @@
 }
 
 #endif
-
-@end
-
-
-@implementation SPTableView (PrivateAPI)
 
 /**
  * On a double click, determine whether the action was in the empty area
