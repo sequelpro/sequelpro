@@ -33,7 +33,7 @@
 #import "SPFavoritesOutlineView.h"
 #import "SPConnectionControllerDelegate.h"
 
-static NSUInteger SPFavoritesOutlineViewUnindent = 14;
+static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 @implementation SPFavoritesOutlineView
 
@@ -98,8 +98,9 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 }
 
 /**
- * Don't reserve a gap for the disclosure triangles for top-level items.  This involves reducing the
- * padding - and increasing the width - of all rows to compensate.
+ * Disclosure triangles for the top-level items hae been removed, and similarly other
+ * paddings need altering.  This involves increasing the padding - and reducing the width -
+ * of all rows to compensate.
  */
 - (NSRect)frameOfCellAtColumn:(NSInteger)columnIndex row:(NSInteger)rowIndex
 {
@@ -110,11 +111,18 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 		return superFrame;
 	}
 
-	return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width + SPFavoritesOutlineViewUnindent, superFrame.size.height);
+	// Don't alter padding for the top-level items
+	if ([[self delegate] respondsToSelector:@selector(outlineView:isGroupItem:)]) {
+		if ([[self delegate] outlineView:self isGroupItem:[self itemAtRow:rowIndex]]) {
+			return superFrame;
+		}
+	}
+
+	return NSMakeRect(superFrame.origin.x + SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width - SPFavoritesOutlineViewUnindent, superFrame.size.height);
 }
 
 /**
- * As no gap is reserved for the disclosure triangles at the top level, the frames for other
+ * Disclosure triangles for the top-level items have been removed, the frames for other
  * disclosure items need to be similarly moved.
  */
 - (NSRect)frameOfOutlineCellAtRow:(NSInteger)rowIndex
@@ -129,8 +137,8 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 14;
 	}
 
 	// On versions of Lion or above, amend the padding appropriately
-	if (systemVersion >= 0x1070 && superFrame.origin.x > SPFavoritesOutlineViewUnindent) {
-		return NSMakeRect(superFrame.origin.x - SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);
+	if (systemVersion >= 0x1070) {
+		return NSMakeRect(superFrame.origin.x + SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);
 	}
 
 	return superFrame;
