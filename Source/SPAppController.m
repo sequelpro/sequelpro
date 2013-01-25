@@ -51,20 +51,10 @@
 #import "SPBundleCommandRunner.h"
 #import "SPWindowManagement.h"
 #import "SPCopyTable.h"
+#import "SPSyntaxParser.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
-
-#pragma mark Lex init
-
-/*
-* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
 
 @interface SPAppController ()
 

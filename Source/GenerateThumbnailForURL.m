@@ -37,19 +37,17 @@
 void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbnail);
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maximumSize);
 
-/* -----------------------------------------------------------------------------
-Generate a thumbnail for file
-
-This function's job is to create thumbnail for designated file as fast as possible
------------------------------------------------------------------------------ */
-
+/**
+ * Generate a thumbnail for file.
+ *
+ * This function's job is to create thumbnail for designated file as fast as possible.
+ */
 void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbnail)
 {
-	// implement only if supported
+	// Implement only if supported
 }
 
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maximumSize)
-
 {
 	return noErr;
 

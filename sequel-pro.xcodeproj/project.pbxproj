@@ -663,6 +663,7 @@
 		174CE11D10AB80B5008F892B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/DatabaseProcessList.xib; sourceTree = "<group>"; };
 		174CE14010AB9281008F892B /* SPProcessListController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListController.h; sourceTree = "<group>"; };
 		174CE14110AB9281008F892B /* SPProcessListController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessListController.m; sourceTree = "<group>"; };
+		1755A25C16B33BEA00B35787 /* SPSyntaxParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSyntaxParser.h; sourceTree = "<group>"; };
 		175EC63312733B36009A7C0F /* SPExportControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportControllerDelegate.h; sourceTree = "<group>"; };
 		175EC63412733B36009A7C0F /* SPExportControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportControllerDelegate.m; sourceTree = "<group>"; };
 		175EC64C12733CDF009A7C0F /* SPCategoryAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCategoryAdditions.h; sourceTree = "<group>"; };
@@ -2479,6 +2480,7 @@
 				179F15050F7C433C00579954 /* SPEditorTokens.l */,
 				BCD0AD4A0FBBFC480066EA5C /* SPSQLTokenizer.h */,
 				BCD0AD480FBBFC340066EA5C /* SPSQLTokenizer.l */,
+				1755A25C16B33BEA00B35787 /* SPSyntaxParser.h */,
 			);
 			name = Parsing;
 			sourceTree = "<group>";

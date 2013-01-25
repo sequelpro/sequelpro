@@ -37,6 +37,7 @@
 
 #import "SPDataAdditions.h"
 #import "SPEditorTokens.h"
+#import "SPSyntaxParser.h"
 
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize);
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options);
@@ -47,17 +48,6 @@ void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview);
 
   This function's job is to create preview for designated file
   ----------------------------------------------------------------------------- */
-
-#pragma mark lex init
-
-/*
-* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
 
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
 {
@@ -528,6 +518,5 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview)
 {
-   // implement only if supported
+   // Implement only if supported
 }
-

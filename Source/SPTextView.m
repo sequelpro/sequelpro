@@ -52,21 +52,10 @@
 #import "SPBundleCommandRunner.h"
 #import "NoodleLineNumberView.h"
 #import "SPCopyTable.h"
+#import "SPEditorTokens.h"
+#import "SPSyntaxParser.h"
 
 #import <SPMySQL/SPMySQL.h>
-
-#pragma mark -
-#pragma mark lex init
-
-/**
- * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
- */
-#import "SPEditorTokens.h"
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 #pragma mark attribute definition 
@@ -83,7 +72,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kBTQuoteValue  @"isBTQuoted"
 
 #pragma mark -
-#pragma mark constant definitions
+#pragma mark Constant definitions
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
 #define SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG          1001
@@ -101,7 +90,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 - (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
 
 @end
-
 
 // some helper functions for handling rectangles and points
 // needed in roundedBezierPathAroundRange:
