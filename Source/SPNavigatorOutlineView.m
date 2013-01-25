@@ -44,7 +44,7 @@
 {
 	// Enter or Return selects in active document the chosen item
 	if ([self numberOfSelectedRows] == 1 && ([theEvent keyCode] == 36 || [theEvent keyCode] == 76)) {
-		[[self delegate] selectInActiveDocumentItem:[self itemAtRow:[self selectedRow]] fromView:self];
+		[(SPNavigatorController *)[self delegate] selectInActiveDocumentItem:[self itemAtRow:[self selectedRow]] fromView:self];
 		
 		return;
 	}

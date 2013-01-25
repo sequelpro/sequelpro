@@ -954,17 +954,19 @@ static const NSInteger kBlobAsImageFile = 4;
 	if (!rowIndices || ![rowIndices count]) return;
 
 	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
-#ifndef SP_REFACTOR
-	NSInteger rows = [[self delegate] numberOfRowsInTableView:self];
-#else
+
 	NSInteger rows = [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self];
-#endif
+
 	NSInteger i;
+	
 	if(rows > 0) {
-		for(NSString* idx in rowIndices) {
+		for (NSString* idx in rowIndices) 
+		{
 			i = [idx integerValue];
-			if(i >= 0 && i < rows)
+			
+			if (i >= 0 && i < rows) {
 				[selection addIndex:i];
+			}
 		}
 
 		[self selectRowIndexes:selection byExtendingSelection:NO];
@@ -1075,14 +1077,13 @@ static const NSInteger kBlobAsImageFile = 4;
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
 			[(SPTableContent*)[self delegate] saveRowToTable];
+		
 		return YES;
-
 	}
 
 	// Trap down arrow key
 	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
 	{
-
 		// If enum field is edited ARROW key navigates through the popup list
 		if([self isCellComplex])
 			return NO;
@@ -1092,58 +1093,58 @@ static const NSInteger kBlobAsImageFile = 4;
 		if (NSMaxRange([[textView string] lineRangeForRange:[textView selectedRange]]) < [[textView string] length])
 			return NO;
 
-		NSInteger newRow = row+1;
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
-#endif
+		NSInteger newRow = row + 1;
+
+		// Check if we're already at the end of the list
+		if (newRow >= [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
+		
+		if ([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)]) {
 			[(SPTableContent*)([self delegate]) saveRowToTable];
+		}
 
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-#endif		
-		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		// Check again. saveRowToTable could reload the table and change the number of rows
+		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
+
+		// The column count could change too
+		if (tableStorage && (NSUInteger)column >= [tableStorage columnCount]) return YES;
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
+		
 		return YES;
 	}
-
 	// Trap up arrow key
 	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
 	{
-
 		// If enum field is edited ARROW key navigates through the popup list
-		if ([self isCellComplex])
-			return NO;
+		if ([self isCellComplex]) return NO;
 
 		// Check whether the editor is multiline - if so, allow the arrow up to change selection if it's not
 		// on the first line
-		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0)
-			return NO;
+		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0) return NO;
 
-		if (row==0) return YES; //already at the beginning of the list
-		NSInteger newRow = row-1;
+		// Already at the beginning of the list
+		if (row == 0) return YES;
+		
+		NSInteger newRow = row - 1;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
-			[(SPTableContent*)([self delegate]) saveRowToTable];
+		
+		if ([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)]) {
+			[(SPTableContent *)[self delegate] saveRowToTable];
+		}
 
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-#endif
-		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		// saveRowToTable could reload the table and change the number of rows
+		if (newRow >= [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
+		
+		// The column count could change too
+		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
+		
 		return YES;
 	}
 

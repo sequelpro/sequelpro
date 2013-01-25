@@ -216,7 +216,7 @@
 	exportFileHandle = [[SPFileHandle fileHandleForWritingAtPath:[self exportFilePath]] retain];
 	
 	if (!exportFileHandle) {
-		[[NSFileManager defaultManager] removeFileAtPath:[self exportFilePath] handler:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:[self exportFilePath] error:nil];
 		
 		return SPExportFileHandleFailed;
 	}

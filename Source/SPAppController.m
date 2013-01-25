@@ -279,15 +279,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
 {
-
 	for (NSString *filename in filenames) 
 	{
 		// Opens a sql file and insert its content into the Custom Query editor
-		if([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
+		if ([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
 
 			// Check size and NSFileType
-			NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES];
-			if(attr)
+			NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filename error:nil];
+			
+			if (attr)
 			{
 				NSNumber *filesize = [attr objectForKey:NSFileSize];
 				NSString *filetype = [attr objectForKey:NSFileType];

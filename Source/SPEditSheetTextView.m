@@ -197,12 +197,14 @@
 		}
 
 		// Check size and NSFileType
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
-		if(attr)
+		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+		
+		if (attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];
 			NSString *filetype = [attr objectForKey:NSFileType];
-			if(filetype == NSFileTypeRegular && filesize)
+			
+			if (filetype == NSFileTypeRegular && filesize)
 			{
 				// Ask for confirmation if file content is larger than 1MB
 				if([filesize unsignedLongValue] > 1000000)

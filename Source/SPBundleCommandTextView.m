@@ -621,14 +621,14 @@
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
 		// Check if user pressed  ⌘ while dragging for inserting only the file path
-		if([sender draggingSourceOperationMask] == 4)
-		{
+		if ([sender draggingSourceOperationMask] == 4) {
 			[self insertText:filepath];
 			return YES;
 		}
 
 		// Check size and NSFileType
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+		
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];
