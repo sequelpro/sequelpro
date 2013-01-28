@@ -117,17 +117,12 @@ static NSUInteger PGTestDatabasePort = 5432;
 	STAssertNotNil(_result, nil);
 }
 
-- (void)testResultIsOfCorrectType
+- (void)testResultIsOfCorrectTypeAndValue
 {		
-	STAssertEquals([_result class], [_expectedResult class], @"Expected _result to be of type %@, but is actually %@", [_expectedResult className], [_result className]);
-}
-
-- (void)testResultHasCorrectValue
-{	
 	STAssertEqualObjects(_result, _expectedResult, nil);
 }
 
-#pragma mark -r
+#pragma mark -
 #pragma mark Private API
 
 - (void)_establishConnection
