@@ -363,7 +363,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
-	NSArray *permittedFileTypes = nil;
 	keySelectionPanel = [NSOpenPanel openPanel];
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 
@@ -388,8 +387,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
 		}
 
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		
 		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 	}
 	// SSL key file location:
@@ -399,8 +396,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			return;
 		}
 		
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"key", @"", nil];
-		
 		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 	}
 	// SSL certificate file location:
@@ -409,9 +404,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslCertificateFileLocation:nil];
 			return;
 		}
-		
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		
+
 		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 	}
 	// SSL CA certificate file location:
@@ -421,14 +414,12 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			return;
 		}
 		
-		permittedFileTypes = [NSArray arrayWithObjects:@"pem", @"cert", @"crt", @"", nil];
-		
 		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 
 	[keySelectionPanel beginSheetForDirectory:directoryPath
 								 file:filePath
-								types:permittedFileTypes
+								types:nil
 					   modalForWindow:[dbDocument parentWindow]
 						modalDelegate:self
 					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
