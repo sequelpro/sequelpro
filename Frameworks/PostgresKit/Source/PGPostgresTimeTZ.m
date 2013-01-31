@@ -57,15 +57,30 @@
 - (id)initWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset
 {
 	if ((self = [super init])) {
-		_date = date;
 		_hasDate = NO;
-		_timeZone = [NSTimeZone timeZoneForSecondsFromGMT:offset];
+		
+		[self setDate:date];
+		[self setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:offset]];
 	}
 	
 	return self;
 }
 
 #pragma mark -
+
+- (NSUInteger)hash
+{
+	return [_date hash] ^ [_timeZone hash];
+}
+
+- (BOOL)isEqual:(id)object
+{
+	if (object == self) return YES;
+	
+	if (!object || ![object isKindOfClass:[self class]]) return NO;
+	
+	return [_date isEqualToDate:[(PGPostgresTimeTZ *)object date]] && [_timeZone isEqualToTimeZone:[(PGPostgresTimeTZ *)object timeZone]];
+}
 
 - (NSString *)description
 {
@@ -79,6 +94,16 @@
 	[formatter release];
 	
 	return [NSString stringWithFormat:@"%@ %@", output, [_timeZone abbreviation]];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	if (_date) [_date release], _date = nil;
+	if (_timeZone) [_timeZone release], _timeZone = nil;
+	
+	[super dealloc];
 }
 
 @end

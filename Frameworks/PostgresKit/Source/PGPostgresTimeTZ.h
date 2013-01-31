@@ -48,12 +48,12 @@
 /**
  * @property date The date instance that holds the time.
  */
-@property (readonly) NSDate *date;
+@property (readwrite, retain) NSDate *date;
 
 /**
  * @property timeZone The time zone of the associated time.
  */
-@property (readonly) NSTimeZone *timeZone;
+@property (readwrite, retain) NSTimeZone *timeZone;
 
 + (PGPostgresTimeTZ *)timeWithDate:(NSDate *)date timeZoneGMTOffset:(NSUInteger)offset;
 

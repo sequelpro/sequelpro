@@ -20,6 +20,7 @@
 
 #import "PGPostgresError.h"
 #import "PGPostgresResult.h"
+#import "PGPostgresTimeTZ.h"
 #import "PGPostgresStatement.h"
 #import "PGPostgresException.h"
 #import "PGPostgresConnection.h"
