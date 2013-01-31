@@ -11,7 +11,7 @@
 		170465CF15C2960F00DC5BE5 /* PGPostgresTypeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 170465CD15C2960F00DC5BE5 /* PGPostgresTypeHandler.m */; };
 		171D58701612E9B900F84472 /* PGDataTypeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 171D586F1612E9B900F84472 /* PGDataTypeTests.m */; };
 		1724C9B815F9ED8600AB2291 /* libpqtypes.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1724C9B715F9ED8600AB2291 /* libpqtypes.a */; };
-		1724CC9215FB4CC200AB2291 /* PGPostgresTimeTZ.h in Headers */ = {isa = PBXBuildFile; fileRef = 1724CC9015FB4CC200AB2291 /* PGPostgresTimeTZ.h */; };
+		1724CC9215FB4CC200AB2291 /* PGPostgresTimeTZ.h in Headers */ = {isa = PBXBuildFile; fileRef = 1724CC9015FB4CC200AB2291 /* PGPostgresTimeTZ.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1724CC9315FB4CC200AB2291 /* PGPostgresTimeTZ.m in Sources */ = {isa = PBXBuildFile; fileRef = 1724CC9115FB4CC200AB2291 /* PGPostgresTimeTZ.m */; };
 		1724CD1515FB69EC00AB2291 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E595F114F3058F0054EE08 /* Foundation.framework */; };
 		1724CD1815FB6A0500AB2291 /* PostgresKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* PostgresKit.framework */; };

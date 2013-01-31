@@ -30,6 +30,8 @@
 
 #import "PGDataTypeTests.h"
 
+#import <PostgresKit/PostgresKit.h>
+
 static NSString *PGTestDatabaseHost     = @"localhost";
 static NSString *PGTestDatabaseUser     = @"pgkit_test";
 static NSString *PGTestDatabaseName     = @"pgkit_test";
@@ -72,11 +74,18 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[self _addTestForField:@"numeric" withExpectedResult:[NSNumber numberWithDouble:12345.678] connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"char" withExpectedResult:@"CHAR" connection:connection toTestSuite:testSuite];
 	[self _addTestForField:@"varchar" withExpectedResult:@"VARCHAR" connection:connection toTestSuite:testSuite];
-	//[self _addTestForField:@"date" withExpectedResult: connection:connection toTestSuite:testSuite];
-	//[self _addTestForField:@"time" withExpectedResult: connection:connection toTestSuite:testSuite];
-	//[self _addTestForField:@"timetz" withExpectedResult: connection:connection toTestSuite:testSuite];
-	//[self _addTestForField:@"timestamp" withExpectedResult: connection:connection toTestSuite:testSuite];
-	//[self _addTestForField:@"timestamptz" withExpectedResult: connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"date" withExpectedResult:[NSDate dateWithTimeIntervalSince1970:544834800] connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"time" withExpectedResult:[NSDate dateWithTimeIntervalSince1970:946692122] connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"timestamp" withExpectedResult:[NSDate dateWithTimeIntervalSince1970:544845722] connection:connection toTestSuite:testSuite];
+	
+	PGPostgresTimeTZ *timeTz = [PGPostgresTimeTZ timeWithDate:[NSDate dateWithTimeIntervalSince1970:946692122] timeZoneGMTOffset:36000];
+	PGPostgresTimeTZ *timestampTz = [PGPostgresTimeTZ timeWithDate:[NSDate dateWithTimeIntervalSince1970:544845722] timeZoneGMTOffset:3600];
+	
+	[timeTz setHasDate:YES];
+	[timestampTz setHasDate:YES];
+	
+	[self _addTestForField:@"timetz" withExpectedResult:timeTz connection:connection toTestSuite:testSuite];
+	[self _addTestForField:@"timestamptz" withExpectedResult:timestampTz connection:connection toTestSuite:testSuite];
 	
 	[connection release];
 	
@@ -112,7 +121,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 #pragma mark -
 #pragma mark Tests
 
-- (void)testResultValueIsNotNull
+- (void)testResultValueIsNotNil
 {
 	STAssertNotNil(_result, nil);
 }
