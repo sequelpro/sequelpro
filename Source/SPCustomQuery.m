@@ -2594,7 +2594,7 @@
 	if (aTextView == textView) {
 		if ([aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 			[[[NSApp currentEvent] characters] isEqualToString:@"\003"]) {
-			[self runAllQueries:self];
+			[self runSelectedQueries:self];
 			
 			return YES;
 		} 
