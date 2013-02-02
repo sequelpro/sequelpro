@@ -802,7 +802,7 @@
 		[menu removeItem:bItem];
 	}
 
-	if([[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
+	if ([[[(SPWindowController *)[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
 
 	[[NSApp delegate] reloadBundles:self];
 

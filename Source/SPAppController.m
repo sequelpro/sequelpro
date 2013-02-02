@@ -764,7 +764,7 @@
 		return;
 	}
 
-	NSString *activeProcessID = [[[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
+	NSString *activeProcessID = [[(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
 
 	SPDatabaseDocument *processDocument = nil;
 
@@ -772,7 +772,7 @@
 	// For speed check the front most first otherwise iterate through all
 	if(passedProcessID && [passedProcessID length]) {
 		if([activeProcessID isEqualToString:passedProcessID]) {
-			processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+			processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
 		} else {
 			for (NSWindow *aWindow in [NSApp orderedWindows]) {
 				if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
@@ -791,7 +791,7 @@
 	// if no processDoc found and no passedProcessID was passed execute
 	// command at front most doc
 	if(!processDocument && !passedProcessID)
-		processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+		processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
 
 	if(processDocument && command) {
 		if([command isEqualToString:@"passToDoc"]) {

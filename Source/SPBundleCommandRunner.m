@@ -160,7 +160,7 @@
 	// Furthermore this id is used to communicate with the called command as file name.
 	id doc = nil;
 	if([[[NSApp mainWindow] delegate] respondsToSelector:@selector(selectedTableDocument)])
-		doc = [[[NSApp mainWindow] delegate] selectedTableDocument];
+		doc = [(SPWindowController *)[[NSApp mainWindow] delegate] selectedTableDocument];
 	// Check if connected
 	if([doc getConnection] == nil)
 		doc = nil;
