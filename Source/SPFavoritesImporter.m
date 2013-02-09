@@ -100,8 +100,8 @@
  */
 - (void)_informDelegateOfImportCompletion:(NSError *)error
 {
-	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesExportCompletedWithError:)]) {
-		[[self delegate] performSelectorOnMainThread:@selector(favoritesExportCompletedWithError:) withObject:error waitUntilDone:NO];
+	if ([self delegate] && [[self delegate] respondsToSelector:@selector(favoritesImportCompletedWithError:)]) {
+		[[self delegate] performSelectorOnMainThread:@selector(favoritesImportCompletedWithError:) withObject:error waitUntilDone:NO];
 	}
 }
 

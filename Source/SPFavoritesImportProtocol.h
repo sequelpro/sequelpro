@@ -31,7 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 /**
- * @protocol SPFavoritesExportProtocol SPFavoritesExportProtocol.h
+ * @protocol SPFavoritesImportProtocol SPFavoritesImportProtocol.h
  *
  * @author Stuart Connolly http://stuconnolly.com/ 
  *

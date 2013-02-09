@@ -42,7 +42,7 @@
 @property (readwrite, assign) NSObject <SPFavoritesImportProtocol> *delegate;
 
 /**
- * @property exportPath The file path to import from
+ * @property importPath The file path to import from
  */
 @property (readwrite, retain) NSString *importPath;
 
