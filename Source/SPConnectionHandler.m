@@ -46,9 +46,16 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 @interface SPConnectionController ()
 
 - (void)_restoreConnectionInterface;
+
+@end
+
+@interface SPConnectionController (SPConnectionHandlerPrivateAPI)
+
 - (void)_showConnectionTestResult:(NSString *)resultString;
 
 @end
+
+#pragma mark -
 
 @implementation SPConnectionController (SPConnectionHandler)
 
@@ -492,6 +499,12 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[self performSelector:@selector(initiateConnection:) withObject:self afterDelay:0.5];				
 	}
 }
+
+@end
+
+#pragma mark -
+
+@implementation SPConnectionController (SPConnectionHandlerPrivateAPI)
 
 /**
  * Display a connection test error or success message

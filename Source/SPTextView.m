@@ -1476,7 +1476,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@@%%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							[NSString stringWithFormat:@"%@%@%@", currentTable, SPUniqueSchemaDelimiter, currentDb], @"path",
 							t, @"type", 
 							lst, @"list", 
 							@"", @"isRef", 
@@ -1485,7 +1485,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@%@%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							[NSString stringWithFormat:@"%@%@%@", currentTable, SPUniqueSchemaDelimiter, currentDb], @"path",
 							typ, @"type", 
 							@"", @"isRef", 
 							nil]];
@@ -3240,7 +3240,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	NSUInteger currentSelectionLength = [self selectedRange].length;
 
 	// If selection started/ended, redraw the background in the current query area
-	if ([self shouldHiliteQuery] && (currentSelectionLength && !proposedSelRange.length) || (!currentSelectionLength && proposedSelRange.length)) {
+	if ([self shouldHiliteQuery] && ((currentSelectionLength && !proposedSelRange.length) || (!currentSelectionLength && proposedSelRange.length))) {
 		NSUInteger i = 0, rectCount = 0;
 		NSRect* rectsToUpdate = [[self layoutManager] rectArrayForCharacterRange:[self queryRange]
 		                                                withinSelectedCharacterRange:[self queryRange]

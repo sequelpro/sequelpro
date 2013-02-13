@@ -375,11 +375,11 @@ void SPMigrateConnectionFavoritesData(void)
 		NSInteger lastFavoriteIndex    = [prefs integerForKey:@"LastFavoriteIndex"];
 		NSInteger defaultFavoriteIndex = [prefs integerForKey:SPDefaultFavorite];
 		
-		if ((lastFavoriteIndex >= (NSInteger)0) && ((NSUInteger)lastFavoriteIndex <= [favorites count])) {
+		if ((lastFavoriteIndex >= (NSInteger)0) && ((NSUInteger)lastFavoriteIndex < [favorites count])) {
 			[prefs setInteger:[[[favorites objectAtIndex:lastFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
 		}
 		
-		if ((defaultFavoriteIndex >= (NSInteger)0) && ((NSUInteger)defaultFavoriteIndex <= [favorites count])) {
+		if ((defaultFavoriteIndex >= (NSInteger)0) && ((NSUInteger)defaultFavoriteIndex < [favorites count])) {
 			[prefs setInteger:[[[favorites objectAtIndex:defaultFavoriteIndex] objectForKey:SPFavoriteIDKey] integerValue] forKey:SPDefaultFavorite];
 		}
 		
