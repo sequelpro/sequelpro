@@ -68,7 +68,9 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
+#ifndef SP_REFACTOR
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
+#endif
 
 @interface SPTableContent ()
 
@@ -529,10 +531,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSString *nullValue = [prefs objectForKey:SPNullValue];
 #ifndef SP_REFACTOR /* get font from prefs */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #endif
-	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// Add the new columns to the table and filterTable
 	for ( i = 0 ; i < (NSInteger)[dataColumns count] ; i++ ) {
@@ -1483,7 +1486,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (IBAction)filterTable:(id)sender
 {
-	BOOL senderIsPaginationButton = (sender == paginationPreviousButton || sender == paginationNextButton || sender == paginationGoButton);
+	BOOL senderIsPaginationButton = (sender == paginationPreviousButton || sender == paginationNextButton
+#ifndef SP_REFACTOR
+		|| sender == paginationGoButton
+#endif
+		);
 
 	// Record whether the filter is being triggered by using delete/backspace in the filter field, which
 	// can trigger the effect of clicking the "clear filter" button in the field.

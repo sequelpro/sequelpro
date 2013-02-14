@@ -56,10 +56,12 @@
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
+#ifndef SP_REFACTOR
 static NSString *SPRemoveNode              = @"RemoveNode";
 static NSString *SPImportFavorites         = @"ImportFavorites";
 static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
+#endif
 
 @interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
 
@@ -327,6 +329,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #endif
 }
 
+#ifdef SP_REFACTOR
+- (BOOL)cancellingConnection
+{
+	return cancellingConnection;
+}
+#endif
+
+
 #pragma mark -
 #pragma mark Interface interaction
 
@@ -361,6 +371,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)chooseKeyLocation:(NSButton *)sender
 {
+#ifndef SP_REFACTOR
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
 	keySelectionPanel = [NSOpenPanel openPanel];
@@ -424,6 +435,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 						modalDelegate:self
 					   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
 						  contextInfo:sender];
+#endif
 }
 
 /**
@@ -439,8 +451,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)updateSSLInterface:(id)sender
 {
+#ifndef SP_REFACTOR
 	[self resizeTabViewToConnectionType:[self type] animating:YES];
 	[self _startEditingConnection];
+#endif
 }
 
 /**
@@ -456,6 +470,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)updateSplitViewSize
 {
+#ifndef SP_REFACTOR
 	if ([dbDocument getConnection]) {
 		return;
 	}
@@ -463,6 +478,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[connectionSplitView setDelegate:nil];
 	[connectionSplitView setPosition:[[[databaseConnectionView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
 	[connectionSplitView setDelegate:self];
+#endif
 }
 
 #pragma mark -
@@ -981,7 +997,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 	}	
 }
-#endif
 
 /**
  * Called after closing the SSH/SSL key selection sheet.
@@ -1036,7 +1051,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Called when the user dismisses either the import of export favorites panels.
  */
-#ifndef SP_REFACTOR
 
 - (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {	
@@ -1085,7 +1099,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)_saveCurrentDetailsCreatingNewFavorite:(BOOL)createNewFavorite validateDetails:(BOOL)validateDetails
 {
-
+#ifndef SP_REFACTOR
 	// Complete any active editing
 	if ([[connectionView window] firstResponder]) {
 		[[connectionView window] endEditingFor:[[connectionView window] firstResponder]];
@@ -1342,6 +1356,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+#endif
 }
 
 /**
@@ -1407,7 +1422,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 }
-#endif
 
 /**
  * Sorts the supplied tree node using the supplied sort key.
@@ -1498,8 +1512,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  * Updates the favorite's host when the type changes.
  */
 
-#ifndef SP_REFACTOR
-
 - (void)_favoriteTypeDidChange
 {	
 	NSDictionary *favorite = [self selectedFavorite];
@@ -1559,8 +1571,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 }
 
-#endif
-
 /**
  * Restores the connection interface to its original state.
  */
@@ -1605,8 +1615,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Revert the connect button back to its original selector
 	[connectButton setAction:@selector(initiateConnection:)];
 }
-
-#ifndef SP_REFACTOR
 
 /**
  * Selected the supplied node in the favorites outline view.
@@ -1740,6 +1748,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Generate a name for the current connection based on any other populated details.
  * Currently uses the host and database fields.
@@ -1805,6 +1814,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[progressIndicatorText setHidden:YES];
 	[(NSView *)favoritesOutlineView display];
 }
+#endif
 
 - (void)_documentWillClose:(NSNotification *)notification
 {

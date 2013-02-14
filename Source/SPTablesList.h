@@ -164,10 +164,8 @@
 
 // Getters
 - (NSArray *)selectedTableNames;
-#ifndef SP_REFACTOR /* method decls */
 - (NSArray *)selectedTableItems;
 - (NSArray *)selectedTableTypes;
-#endif
 - (NSString *)tableName;
 - (SPTableType)tableType;
 - (NSArray *)tables;

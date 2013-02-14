@@ -46,7 +46,9 @@
 #endif
 	
 	SPDatabaseDocument *tableDocumentInstance;
+#ifndef SP_REFACTOR /* ivars */
 	NSURL *delegatesFileURL;
+#endif
 	
 	IBOutlet id encodingPopUp;
 	IBOutlet id contentFilterTableView;

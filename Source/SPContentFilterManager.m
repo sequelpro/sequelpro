@@ -67,7 +67,9 @@
 		}
 		
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+#ifndef SP_REFACTOR
 		delegatesFileURL = [tableDocumentInstance fileURL];
+#endif
 
 		filterType = [NSString stringWithString:compareType];
 	}
@@ -104,7 +106,6 @@
 			[contentFilters addObject:f];
 		}
 	}
-#endif
 
 	// Build doc-based filters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -119,6 +120,7 @@
 			for(id fav in [filters objectForKey:filterType])
 				[contentFilters addObject:[[fav mutableCopy] autorelease]];
 	}
+#endif
 
 
 	// Select the first query if any
@@ -246,11 +248,13 @@
 		[contentFilters insertObject:filter atIndex:insertIndex];
 	}
 
+#ifndef SP_REFACTOR
 	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of that document's favourites
 	else if (![tableDocumentInstance isUntitled]) {
 		insertIndex = [contentFilters count] - 1;
 		[contentFilters addObject:filter];
 	}
+#endif
 
 	// Otherwise, add to the bottom of the Global list by default
 	else {
@@ -381,11 +385,11 @@
 		if ([contentFilterTableView numberOfSelectedRows] == 1)
 			[[self window] makeFirstResponder:contentFilterTableView];
 
+#ifndef SP_REFACTOR
 		// Update current document's content filters in the SPQueryController
 		[[SPQueryController sharedQueryController] replaceContentFilterByArray:
 			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
 
-#ifndef SP_REFACTOR
 		// Update global preferences' list
 		id cf = [[prefs objectForKey:SPContentFilters] mutableCopy];
 		[cf setObject:[self contentFilterForFileURL:nil] forKey:filterType];

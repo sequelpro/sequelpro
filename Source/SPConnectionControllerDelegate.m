@@ -42,9 +42,11 @@
 #import "SPTreeNode.h"
 #endif
 
+#ifndef SP_REFACTOR
 static NSString *SPDatabaseImage = @"database-small";
 static NSString *SPQuickConnectImage = @"quick-connect-icon.pdf";
 static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
+#endif
 
 @interface SPConnectionController ()
 

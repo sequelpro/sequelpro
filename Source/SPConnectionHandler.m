@@ -213,7 +213,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 			
 			[mySQLConnection release], mySQLConnection = nil;
+#ifndef SP_REFACTOR
 			if (!cancellingConnection) [self _restoreConnectionInterface];
+#endif
 			[pool release];
 			
 			return;

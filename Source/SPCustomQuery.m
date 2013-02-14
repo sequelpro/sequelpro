@@ -206,6 +206,7 @@
  */
 - (IBAction)chooseQueryFavorite:(id)sender
 {
+#ifndef SP_REFACTOR /* ui manip for query favorites */
 	if ([queryFavoritesButton indexOfSelectedItem] == 1) {
 
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
@@ -216,9 +217,7 @@
 			return;
 		}
 
-#ifndef SP_REFACTOR /* ui manip for query favorites */
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-#endif
 		[NSApp beginSheet:queryFavoritesSheet
 		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:self
@@ -236,9 +235,7 @@
 			return;
 		}
 
-#ifndef SP_REFACTOR /* ui manip for query favorites */
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-#endif
 		[NSApp beginSheet:queryFavoritesSheet
 		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:self
@@ -248,7 +245,6 @@
 	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
 
 		// init query favorites controller
-#ifndef SP_REFACTOR
 		[prefs synchronize];
 
 		if(favoritesManager) [favoritesManager release];
@@ -260,15 +256,10 @@
 			modalDelegate:favoritesManager
 		   didEndSelector:nil
 			  contextInfo:nil];
-#endif
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
-#ifndef SP_REFACTOR
 		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
-#else
-		BOOL replaceContent = YES;
-#endif
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
@@ -281,6 +272,7 @@
 		// The actual query strings have been already stored as tooltip
 		[textView insertAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
+#endif
 }
 
 /*
@@ -288,19 +280,13 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
-
 #ifndef SP_REFACTOR
 	[prefs synchronize];
-#endif
 
 	// Choose history item
 	if ([queryHistoryButton indexOfSelectedItem] > 6) {
 
-#ifndef SP_REFACTOR
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
-#else
-		BOOL replaceContent = YES;
-#endif
 		[textView breakUndoCoalescing];
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
@@ -309,6 +295,7 @@
 
 		[textView insertText:[[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:[queryHistoryButton indexOfSelectedItem]-7]];
 	}
+#endif
 }
 
 /**
@@ -326,7 +313,7 @@
  */
 - (IBAction)gearMenuItemSelected:(id)sender
 {
-
+#ifndef SP_REFACTOR
 	if ( sender == previousHistoryMenuItem ) {
 		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
 		currentHistoryOffsetIndex++;
@@ -360,6 +347,7 @@
 		}
 		historyItemWasJustInserted = NO;
 	}
+#endif
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
 	if (sender == shiftRightMenuItem) {
@@ -479,16 +467,13 @@
  */
 - (IBAction)clearQueryHistory:(id)sender
 {
+#ifndef SP_REFACTOR
 	NSString *infoString;
 
-#ifndef SP_REFACTOR /* if ([tableDocumentInstance isUntitled]) */
 	if ([tableDocumentInstance isUntitled])
-#endif
 		infoString = NSLocalizedString(@"Are you sure you want to clear the global history list? This action cannot be undone.", @"clear global history list informative message");
-#ifndef SP_REFACTOR /* if ([tableDocumentInstance isUntitled]) */
 	else
 		infoString = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to clear the history list for “%@”? This action cannot be undone.", @"clear history list for “%@” informative message"), [tableDocumentInstance displayName]];
-#endif
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Clear History?", @"clear history message")
 									 defaultButton:NSLocalizedString(@"Clear", @"clear button")
@@ -509,7 +494,7 @@
 					  modalDelegate:self
 					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						contextInfo:@"clearHistory"];
-
+#endif
 }
 
 /* *
@@ -783,9 +768,11 @@
 		[errors setString:[mySQLConnection lastErrorMessage]];
 	}
 
+#ifndef SP_REFACTOR
 	// add query to history
 	if(!reloadingExistingResult && [usedQuery length])
 		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+#endif
 
 	// Update status/errors text
 	NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -839,9 +826,8 @@
 							];
 		}
 	}
-#ifndef SP_REFACTOR
+
 	[[affectedRowsText onMainThread] setStringValue:statusString];
-#endif
 
 	// Restore automatic query retries
 	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
@@ -884,7 +870,7 @@
 
 		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [customQueryView visibleRect].size;
-		[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
+		[(SPCopyTable*)[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 	}
 
 	//query finished
@@ -1571,10 +1557,11 @@
 	// Update font size on the table
 #ifndef SP_REFACTOR
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #endif
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// If there are no table columns to add, return
 	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
@@ -2711,6 +2698,7 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
+#ifndef SP_REFACTOR
 	if ([notification object] == queryFavoriteNameTextField)
 		[saveQueryFavoriteButton setEnabled:[[queryFavoriteNameTextField stringValue] length]];
 	else if ([notification object] == queryFavoritesSearchField){
@@ -2719,6 +2707,7 @@
 	else if ([notification object] == queryHistorySearchField) {
 		[self filterQueryHistory:nil];
 	}
+#endif
 }
 
 #ifndef SP_REFACTOR
@@ -3284,6 +3273,8 @@
 #pragma mark -
 #pragma mark Query favorites manager delegate methods
 
+#ifndef SP_REFACTOR
+
 /**
  * Rebuild history popup menu.
  */
@@ -3352,7 +3343,6 @@
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
-#ifndef SP_REFACTOR
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
@@ -3371,8 +3361,8 @@
 		[menu addItem:item];
 		[item release];
 	}
-#endif
 }
+#endif
 
 #pragma mark -
 #pragma mark Task interaction
@@ -3464,7 +3454,11 @@
 	// Result Table Font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
+#ifndef SP_REFACTOR
 		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+#else
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+#endif
 		[customQueryView setFont:tableFont];
 		[customQueryView reloadData];
 	}
@@ -3480,6 +3474,7 @@
 		return;
 	}
 
+#ifndef SP_REFACTOR
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
 		if (returnCode == NSOKButton) {
 			// Remove items in the query controller
@@ -3490,7 +3485,6 @@
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
 		if (returnCode == NSOKButton) {
-#ifndef SP_REFACTOR
 
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
@@ -3528,24 +3522,22 @@
 			[saveQueryFavoriteGlobal setState:NSOffState];
 
 			[self queryFavoritesHaveBeenUpdated:nil];
-#endif
-
 		}
 	}
 
 	[queryFavoriteNameTextField setStringValue:@""];
+#endif
 }
 
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo
 {
+#ifndef SP_REFACTOR
 	if([contextInfo isEqualToString:@"saveHistory"]) {
 		if (returnCode == NSOKButton) {
 			NSError *error = nil;
 
-#ifndef SP_REFACTOR
 			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
-#endif
 
 			[[self buildHistoryString] writeToURL:[panel URL]
 									   atomically:YES
@@ -3555,6 +3547,7 @@
 			if (error) [[NSAlert alertWithError:error] runModal];
 		}
 	}
+#endif
 }
 
 /**
@@ -3562,6 +3555,7 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+#ifndef SP_REFACTOR
 	// Control "Save ... to Favorites"
 	if ( [menuItem tag] == SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
@@ -3583,17 +3577,13 @@
 	}
 	// Control Clear History menu item title according to isUntitled
 	else if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
-#ifndef SP_REFACTOR /* if ( [tableDocumentInstance isUntitled] ) */
 		if ( [tableDocumentInstance isUntitled] ) {
-#endif
 			[menuItem setTitle:NSLocalizedString(@"Clear Global History", @"clear global history menu item title")];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
-#ifndef SP_REFACTOR /* if ( [tableDocumentInstance isUntitled] ) */
 		} else {
 			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for “%@”", @"clear history for “%@” menu title"), [tableDocumentInstance displayName]]];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the document-based history list", @"clear the document-based history list tooltip message")];
 		}
-#endif
 	}
 	// Check for History items
 	else if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
@@ -3601,6 +3591,9 @@
 	}
 
 	return YES;
+#else
+	return NO;
+#endif
 }
 
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
@@ -3650,7 +3643,11 @@
 {
 	if ((self = [super init])) {
 
+#ifndef SP_REFACTOR
 		usedQuery = [[NSString stringWithString:@""] retain];
+#else
+		usedQuery = [@"" retain];
+#endif
 		lastExecutedQuery = nil;
 		fieldIDQueryString = nil;
 		sortField = nil;
@@ -3706,6 +3703,7 @@
 	return self;
 }
 
+#ifndef SP_REFACTOR
 /**
  * Filters the query favorites menu.
  */
@@ -3734,6 +3732,7 @@
 		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i - 7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryHistorySearchField stringValue]]])];
 	}
 }
+#endif
 
 /**
  * If user selected a table cell which is a blob field and tried to edit it
@@ -3819,6 +3818,7 @@
  */
 - (BOOL)control:(NSControl*)control textView:(NSTextView*)aTextView doCommandBySelector:(SEL)command
 {
+#ifndef SP_REFACTOR
 	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
 		if(command == @selector(moveDown:) || command == @selector(moveUp:)) {
 			[queryHistorySearchField abortEditing];
@@ -3836,10 +3836,16 @@
 		}
 	}
 
-	else if([control isKindOfClass:[SPCopyTable class]]) {
+	else
+#endif
+		if([control isKindOfClass:[SPCopyTable class]]) {
 
 		// Check firstly if SPCopyTable can handle command
+#ifndef SP_REFACTOR
 		if([customQueryView control:control textView:aTextView doCommandBySelector:(SEL)command])
+#else
+		if([customQueryView control:control textView:aTextView doCommandBySelector:command])
+#endif
 			return YES;
 
 		// Trap the escape key
@@ -3867,9 +3873,11 @@
 
 	[customQueryView setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
+#ifndef SP_REFACTOR
 	// Set pre-defined menu tags
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
+#endif
 
 	// Set up the split views
 	[queryEditorSplitView setMinSize:100 ofSubviewAtIndex:0];

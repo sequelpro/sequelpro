@@ -40,7 +40,9 @@
 #import "SPDatabaseViewController.h"
 #import "SPSplitView.h"
 
+#ifndef SP_REFACTOR
 static NSString *SPConnectionViewNibName = @"ConnectionView";
+#endif
 
 @interface SPConnectionController ()
 
@@ -152,6 +154,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)loadNib
 {
+#ifndef SP_REFACTOR
+
 	// Load the connection nib, keeping references to the top-level objects for later release
 	nibObjectsToRelease = [[NSMutableArray alloc] init];
 	
@@ -161,6 +165,8 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	[nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionViewTopLevelObjects];
 	[nibObjectsToRelease addObjectsFromArray:connectionViewTopLevelObjects];
 	[nibLoader release];
+    
+#endif
 }
 
 /**

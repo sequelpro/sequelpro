@@ -61,7 +61,6 @@
  */
 - (void)updateFilterTableClause:(id)currentValue
 {
-#ifndef SP_REFACTOR
 	NSMutableString *clause  = [NSMutableString string];
 	NSInteger numberOfRows   = [self numberOfRowsInTableView:filterTableView];
 	NSInteger numberOfCols   = [[filterTableView tableColumns] count];
@@ -216,7 +215,6 @@
 	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
 		[self filterTable:filterTableFilterButton];
 	}
-#endif
 }
 
 /**

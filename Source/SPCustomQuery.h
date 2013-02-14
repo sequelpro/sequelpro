@@ -58,11 +58,18 @@
 @class SPMySQLFastStreamingResult;
 @class SPTextView;
 
+#ifdef SP_REFACTOR
+@class SPDatabaseDocument;
+@class SPTablesList;
+#endif
+
+
 @interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 
+#ifndef SP_REFACTOR
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
 	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
@@ -83,6 +90,7 @@
 	IBOutlet NSMenuItem *saveHistoryMenuItem;
 	IBOutlet NSMenuItem *copyHistoryMenuItem;
 	IBOutlet NSPopUpButton *encodingPopUp;
+#endif
 
 	IBOutlet SPTextView *textView;
 	IBOutlet SPCopyTable *customQueryView;
@@ -107,8 +115,10 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
+#ifndef SP_REFACTOR
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
+#endif
 
 #ifndef SP_REFACTOR
 	IBOutlet NSWindow *helpWebViewWindow;

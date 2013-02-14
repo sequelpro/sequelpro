@@ -37,7 +37,9 @@
 
 @class SPConnectionController;
 
-#ifndef SP_REFACTOR /* class forward decls */
+#ifdef SP_REFACTOR 
+@class BottomBarSegmentedControl;
+#else
 @class SPProcessListController;
 @class SPServerVariablesController;
 @class SPUserManager;
@@ -79,8 +81,10 @@
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
+#ifndef SP_REFACTOR
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
+#endif
 	
 	IBOutlet id statusTableAccessoryView;
 	IBOutlet id statusTableView;
@@ -232,12 +236,14 @@
 	
 	NSString *queryEditorInitString;
 	
+#ifndef SP_REFACTOR /* ivars */
 	NSURL *spfFileURL;
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
 	NSMutableDictionary *spfDocData;
 
 	NSMutableArray *runningActivitiesArray;
+#endif
 
 	NSString *keyChainID;
 	
@@ -267,6 +273,8 @@
 @property (assign) SPDatabaseData* databaseDataInstance;
 @property (assign) SPTableData* tableDataInstance;
 @property (assign) SPCustomQuery* customQueryInstance;
+@property (assign) BottomBarSegmentedControl* structureContentSwitcher;
+
 @property (assign) id databaseNameField;
 @property (assign) id databaseEncodingButton;
 @property (assign) id addDatabaseButton;
@@ -413,11 +421,11 @@
 - (NSString *)user;
 - (NSString *)keyChainID;
 - (NSString *)connectionID;
+#ifndef SP_REFACTOR /* method decls */
 - (NSString *)tabTitleForTooltip;
 - (BOOL)isSaveInBundle;
 - (NSURL *)fileURL;
 - (NSString *)displayName;
-#ifndef SP_REFACTOR /* method decls */
 - (NSUndoManager *)undoManager;
 #endif
 - (NSArray *)allTableNames;
@@ -453,8 +461,8 @@
 
 // Tab methods
 - (void)makeKeyDocument;
-- (BOOL)parentTabShouldClose;
 #endif
+- (BOOL)parentTabShouldClose;
 - (void)parentTabDidClose;
 #ifndef SP_REFACTOR
 - (void)willResignActiveTabInWindow;
@@ -486,6 +494,7 @@
 
 #ifdef SP_REFACTOR /* method decls */
 - (SPConnectionController*)createConnectionController;
+- (SPConnectionController*)connectionController;
 - (void)connect;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;

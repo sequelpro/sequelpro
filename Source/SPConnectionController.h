@@ -212,6 +212,9 @@
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
 - (IBAction)cancelConnection:(id)sender;
+#ifdef SP_REFACTOR
+- (BOOL)cancellingConnection;
+#endif
 
 #ifndef SP_REFACTOR
 // Interface interaction

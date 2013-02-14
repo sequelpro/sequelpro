@@ -1187,8 +1187,8 @@ static const NSInteger kBlobAsImageFile = 4;
 {
 
 	// Retrieve the column definition
-#if SP_REFACTOR
-	NSDictionary *columnDefinition;
+#ifdef SP_REFACTOR
+	NSDictionary *columnDefinition = nil;
 	
 	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
 		columnDefinition = [[(SPTableContent*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];

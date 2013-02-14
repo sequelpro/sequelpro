@@ -1114,7 +1114,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	return selTables;
 }
 
-#ifndef SP_REFACTOR /* getters */
 - (NSArray *)selectedTableItems
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
@@ -1142,7 +1141,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	return selTables;
 }
-#endif
 
 /**
  * Returns the currently selected table or nil if no table or mulitple tables are selected

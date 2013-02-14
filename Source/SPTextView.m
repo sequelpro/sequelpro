@@ -86,7 +86,9 @@
 @interface SPTextView (Private_API)
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
+#ifndef SP_REFACTOR
 - (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
+#endif
 - (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
 
 @end
@@ -318,7 +320,11 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
+#ifndef SP_REFACTOR
 	if(currentWord == nil) currentWord = [NSString stringWithString:@""];
+#else
+	if(currentWord == nil) currentWord = @"";
+#endif
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
@@ -2911,7 +2917,11 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
+#ifndef SP_REFACTOR
 	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+#else
+	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+#endif
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;
@@ -3715,6 +3725,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	return [string1 localizedCaseInsensitiveCompare:string2];
 }
 
+#ifndef SP_REFACTOR
 /**
  * Take a supplied text selection colour, and if it contains an alpha component,
  * pre-multiply it by the background colour before setting it to avoid drawing problems.
@@ -3738,6 +3749,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Set the selection colour
 	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
 }
+#endif
 
 /**
  * Take a supplied autocompletion popup, and position it to the correct position

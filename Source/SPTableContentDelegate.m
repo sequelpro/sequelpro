@@ -762,7 +762,7 @@
 	// Check firstly if SPCopyTable can handle command
 	if ([control control:control textView:textView doCommandBySelector:(SEL)command])
 #else
-		if ([control control:control textView:textView doCommandBySelector:(SEL)command])
+	if ([control control:control textView:textView doCommandBySelector:command])
 #endif
 			return YES;
 	
@@ -771,7 +771,7 @@
 		// Abort editing
 		[control abortEditing];
 		
-		if (control == tableContentView) {
+		if ((SPCopyTable*)control == tableContentView) {
 			[self cancelRowEditing];
 		}
 		

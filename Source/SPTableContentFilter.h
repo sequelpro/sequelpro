@@ -32,12 +32,8 @@
 
 @interface SPTableContent (SPTableContentFilter)
 
-#ifndef SP_REFACTOR
-
 - (void)makeContentFilterHaveFocus;
 - (void)updateFilterTableClause:(id)currentValue;
 - (NSString*)escapeFilterTableDefaultOperator:(NSString*)operator;
-
-#endif
 
 @end

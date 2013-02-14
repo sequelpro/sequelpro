@@ -207,11 +207,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 		queryEditorInitString = nil;
 
+#ifndef SP_REFACTOR
 		spfFileURL = nil;
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
+#endif
 
 		titleAccessoryView = nil;
 #ifndef SP_REFACTOR /* init ivars */
@@ -496,7 +498,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[tableTriggersInstance setConnection:mySQLConnection];
 	[customQueryInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
+#ifndef SP_REFACTOR
 	[exportControllerInstance setConnection:mySQLConnection];
+#endif
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	
@@ -2492,7 +2496,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 	}
 }
-#endif
 
 /**
  * Is current document Untitled?
@@ -2501,6 +2504,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 {
 	return (!_isSavedInBundle && [self fileURL] && [[self fileURL] isFileURL]) ? NO : YES;
 }
+#endif
 
 /**
  * Asks any currently editing views to commit their changes;
@@ -2600,6 +2604,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 /**
  * Returns the full window title which is mainly used for tab tooltips
  */
+#ifndef SP_REFACTOR
+
 - (NSString *)tabTitleForTooltip
 {
 	NSMutableString *tabTitle;
@@ -2634,6 +2640,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 	return tabTitle;
 }
+
+#endif
+
 /**
  * Returns the currently selected database
  */
@@ -3397,6 +3406,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
 	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
 }
+#endif
 
 /**
  * Forwards a responder request to set the focus to the table list filter area or table list
@@ -3421,6 +3431,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 				[menuItem action] == @selector(closeTab:));
 	}
 
+#ifndef SP_REFACTOR
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
 		if ([self isUntitled]) {
@@ -3432,6 +3443,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			return YES;
 		}
 	}
+#endif
 	
 	// Data export
 	if ([menuItem action] == @selector(export:)) {
@@ -3497,6 +3509,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		return YES;
 	}
 
+#ifndef SP_REFACTOR
 	if ([menuItem action] == @selector(printDocument:)) {
 		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1) ||
 			// If Custom Query Tab is active the textView will handle printDocument by itself
@@ -3504,6 +3517,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			// if no db/table is selected
 			[tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2);
 	}
+#endif
 
 	if ([menuItem action] == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
@@ -3521,6 +3535,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		return [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 	}
 
+#ifndef SP_REFACTOR
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
 		return ![connectionController selectedFavorite];
 	}
@@ -3534,6 +3549,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
 	}
+#endif
 	
 	// Show/hide console
 	if ([menuItem action] == @selector(toggleConsole:)) {
@@ -3581,6 +3597,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)addConnectionToFavorites:(id)sender
 {
+#ifndef SP_REFACTOR
 	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
 	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
 	// as we don't know what's calling this method.
@@ -3588,6 +3605,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Request the connection controller to add its details to favorites
 	[connectionController addFavorite:self];
+#endif
 }
 
 /**
@@ -3595,7 +3613,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (BOOL)isCustomQuerySelected
 {
+#ifndef SP_REFACTOR
 	return [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery];
+#else
+	return ([_structureContentSwitcher selectedSegment] == 2);
+#endif
 }
 
 /**
@@ -3603,6 +3625,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
+#ifndef SP_REFACTOR
 	if (returnCode == NSOKButton) {
 		if ([contextInfo isEqualToString:SPCreateSyntx]) {
 
@@ -3615,6 +3638,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 		}
 	}
+#endif
 }
 
 /**
@@ -3633,6 +3657,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) updateWindowTitle:(id)sender
 {
+#ifndef SP_REFACTOR
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] updateWindowTitle:sender];
 
@@ -3703,6 +3728,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If the sender wasn't the window controller, update other tabs in this window
 	// for shared pathname updates
 	if ([sender class] != [SPWindowController class]) [parentWindowController updateAllTabTitles:self];
+#endif
 }
 
 /**
@@ -3710,17 +3736,21 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)setStatusIconToImageWithName:(NSString *)imageName
 {
+#ifndef SP_REFACTOR
 	NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"png"];
 	if (!imagePath) return;
 
 	NSImage *image = [[[NSImage alloc] initByReferencingFile:imagePath] autorelease];
 	[titleImageView setImage:image];
+#endif
 }
 
 - (void)setTitlebarStatus:(NSString *)status
 {
+#ifndef SP_REFACTOR
 	[self clearStatusIcon];
 	[titleStringView setStringValue:status];
+#endif
 }
 
 /**
@@ -3728,7 +3758,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)clearStatusIcon
 {
+#ifndef SP_REFACTOR
 	[titleImageView setImage:nil];
+#endif
 }
 
 /**
@@ -3737,6 +3769,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide
 {
+#ifndef SP_REFACTOR
 	BOOL newIsVisible = !forceHide;
 	if (newIsVisible && [parentWindow styleMask] & NSFullScreenWindowMask) newIsVisible = NO;
 	if (newIsVisible && [parentWindowController selectedTableDocument] != self) newIsVisible = NO;
@@ -3757,10 +3790,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	windowTitleStatusViewIsVisible = newIsVisible;
+#endif
 }
 
 #pragma mark -
 #pragma mark Toolbar Methods
+
+#ifndef SP_REFACTOR
 
 /**
  * set up the standard toolbar
@@ -4017,6 +4053,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return YES;
 }
 
+#endif
+
+
 #pragma mark -
 #pragma mark Tab methods
 
@@ -4027,7 +4066,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (void)makeKeyDocument
 {
 	[[[self parentWindow] onMainThread] makeKeyAndOrderFront:self];
+#ifndef SP_REFACTOR
 	[[[[self parentTabViewItem] onMainThread] tabView] selectTabViewItemWithIdentifier:self];
+#endif
 }
 
 /**
@@ -4046,6 +4087,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// edits in progress in various views.
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
 
+#ifndef SP_REFACTOR
 	// Auto-save spf file based connection and return if the save was not successful
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled]) {
 		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil];
@@ -4072,11 +4114,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Note that this call does not need to be removed in release builds as leaks analysis output is only
 	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
 	[[SPLogger logger] dumpLeaks];
-
+#endif
 	// Return YES by default
 	return YES;
 }
-#endif
+
 
 /**
  * Invoked when the parent tab is about to close
@@ -4236,10 +4278,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 /**
  * Retrieve the NSURL for the .spf file for this connection instance (if any)
  */
+#ifndef SP_REFACTOR
 - (NSURL *)fileURL
 {
 	return [[spfFileURL copy] autorelease];
 }
+#endif
 
 #ifndef SP_REFACTOR /* writeSafelyToURL: */
 /**
@@ -4268,7 +4312,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
 		);
 }
-#endif
 
 /**
  * The window title for this document.
@@ -4283,15 +4326,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return [[[self fileURL] path] lastPathComponent];
 }
 
-#ifndef SP_REFACTOR
 - (NSUndoManager *)undoManager
 {
 	return undoManager;
 }
-#endif
 
-
-#ifndef SP_REFACTOR /* state saving and setting */
 #pragma mark -
 #pragma mark State saving and setting
 
@@ -4924,6 +4963,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 
 #ifdef SP_REFACTOR
+
+- (SPConnectionController*)connectionController
+{
+	return connectionController;
+}
+
 - (void)databaseDocumentConnectionFailed:(id)sender
 {
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )
@@ -6161,10 +6206,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (taskFadeInStartDate) [taskFadeInStartDate release];
 #endif
 	if (queryEditorInitString) [queryEditorInitString release];
+#ifndef SP_REFACTOR
 	if (spfFileURL) [spfFileURL release];
 	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];
 	if (spfDocData) [spfDocData release];
+#endif
 	if (keyChainID) [keyChainID release];
 #ifndef SP_REFACTOR
 	if (mainToolbar) [mainToolbar release];
@@ -6176,8 +6223,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (serverSupport) [serverSupport release];
 #ifndef SP_REFACTOR /* dealloc ivars */
 	if (processID) [processID release];
-#endif
 	if (runningActivitiesArray) [runningActivitiesArray release];
+#endif
 	
 #ifdef SP_REFACTOR 
 	if (tablesListInstance) [tablesListInstance release];

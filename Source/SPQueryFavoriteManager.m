@@ -73,7 +73,9 @@
 			return nil;
 		}
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+#ifndef SP_REFACTOR
 		delegatesFileURL = [tableDocumentInstance fileURL];
+#endif
 	}
 	
 	return self;
@@ -84,6 +86,7 @@
  */
 - (void)awakeFromNib
 {
+#ifndef SP_REFACTOR
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			@"Global", @"name", 
 			@"", @"headerOfFileURL",
@@ -94,14 +97,12 @@
 	[favoritesSplitView setMinSize:152.f ofSubviewAtIndex:0];
 	[favoritesSplitView setMinSize:385.f ofSubviewAtIndex:1];
 
-#ifndef SP_REFACTOR
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites])
 			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
-#endif
 
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name", 
@@ -131,6 +132,7 @@
 
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
+#endif
 }
 
 #pragma mark -
@@ -140,6 +142,7 @@
  * Returns the query favorites array for fileURL.
  * fileURL == nil → global favorites
  */
+#ifndef SP_REFACTOR
 - (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL
 {
 	NSMutableArray *favs = [NSMutableArray array];
@@ -174,6 +177,7 @@
 
 	return favs;
 }
+#endif
 
 /**
  * This method is only implemented to be compatible with SPTextView.
@@ -191,6 +195,7 @@
  */
 - (IBAction)addQueryFavorite:(id)sender
 {
+#ifndef SP_REFACTOR 
 	NSMutableDictionary *favorite;
 	NSUInteger insertIndex;
 
@@ -234,6 +239,7 @@
 
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:favoriteNameTextField];
+#endif
 }
 
 /**
@@ -434,6 +440,7 @@
  */
 - (IBAction)closeQueryManagerSheet:(id)sender
 {
+#ifndef SP_REFACTOR
 
 	// First check for ESC if pressed while inline editing
 	if(![sender tag] && isTableCellEditing) {
@@ -458,10 +465,8 @@
 		[[SPQueryController sharedQueryController] replaceFavoritesByArray:
 			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
 
-#ifndef SP_REFACTOR
 		// Update global preferences' list
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
-#endif
 
 		// Inform all opened documents to update the query favorites list
 		for(id doc in [[NSApp delegate] orderedDocuments])
@@ -470,13 +475,16 @@
 
 
 	}
+#endif
 
 }
 
+#ifndef SP_REFACTOR
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
 }
+#endif
 
 #pragma mark -
 #pragma mark TableView datasource methods
