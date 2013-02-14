@@ -30,7 +30,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
 #endif
@@ -42,7 +42,7 @@
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
 #import "SPThreadAdditions.h"
-#ifdef SP_REFACTOR /* headers */
+#ifdef SP_CODA /* headers */
 #import "SPTableStructure.h"
 #import "SPTableStructureLoading.h"
 #endif
@@ -61,7 +61,7 @@
 #pragma mark -
 #pragma mark Getters
 
-#ifndef SP_REFACTOR /* getters */
+#ifndef SP_CODA /* getters */
 /**
  * Returns the master database view, containing the tables list and views for
  * table setup and contents.
@@ -112,7 +112,7 @@
 	return statusLoaded;
 }
 
-#ifndef SP_REFACTOR /* toolbar ibactions */
+#ifndef SP_CODA /* toolbar ibactions */
 
 #pragma mark -
 #pragma mark Tab view control and delegate methods
@@ -225,7 +225,7 @@
 {
 	BOOL reloadRequired = reload;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStructure) {
 		reloadRequired = NO;
 	}
@@ -246,7 +246,7 @@
 - (void)setContentRequiresReload:(BOOL)reload
 {
 	if (reload && selectedTableName
-#ifndef SP_REFACTOR /* check which tab is selected */
+#ifndef SP_CODA /* check which tab is selected */
 	 && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewContent
 #endif
 	 ) {
@@ -264,7 +264,7 @@
 - (void)setStatusRequiresReload:(BOOL)reload
 {
 	if (reload && selectedTableName 
-#ifndef SP_REFACTOR /* check which tab is selected */
+#ifndef SP_CODA /* check which tab is selected */
 		&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStatus
 #endif
 		) {
@@ -275,7 +275,7 @@
 	}
 }
 
-#ifndef SP_REFACTOR /* !!! respond to tab change */
+#ifndef SP_CODA /* !!! respond to tab change */
 /**
  * Triggers a task to update the newly selected tab view, ensuring
  * the data is fully loaded and up-to-date.
@@ -319,7 +319,7 @@
 		[[tablesListInstance onMainThread] setSelectionState:nil];
 		[tableSourceInstance loadTable:nil];
 		[tableContentInstance loadTable:nil];
-#ifndef SP_REFACTOR /* [extendedTableInfoInstance loadTable:] */
+#ifndef SP_CODA /* [extendedTableInfoInstance loadTable:] */
 		[[extendedTableInfoInstance onMainThread] loadTable:nil];
 		[[tableTriggersInstance onMainThread] resetInterface];
 #endif
@@ -328,7 +328,7 @@
 		statusLoaded = NO;
 		triggersLoaded = NO;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Update the window title
 		[self updateWindowTitle:self];
 
@@ -409,7 +409,7 @@
 				contentLoaded = YES;
 			}
 			break;
-#ifndef SP_REFACTOR /* case SPTableViewStatus: case SPTableViewTriggers: */
+#ifndef SP_CODA /* case SPTableViewStatus: case SPTableViewTriggers: */
 		case SPTableViewStatus:
 			if (!statusLoaded) {
 				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -438,7 +438,7 @@
 	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
 	NSString *tableEncoding = nil;
 
-#ifndef SP_REFACTOR /* Update the window title */
+#ifndef SP_CODA /* Update the window title */
 	// Update the window title
 	[self updateWindowTitle:self];
 #endif
@@ -482,9 +482,9 @@
 	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
 
-#ifndef SP_REFACTOR /* [spHistoryControllerInstance restoreViewStates] */
+#ifndef SP_CODA /* [spHistoryControllerInstance restoreViewStates] */
 
 	// Restore view states as appropriate
 	[spHistoryControllerInstance restoreViewStates];
@@ -493,7 +493,7 @@
 	// Load the currently selected view if looking at a table or view
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
 	{
-#ifndef SP_REFACTOR /* load everything */
+#ifndef SP_CODA /* load everything */
 		NSInteger selectedTabViewIndex = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
 
 		switch (selectedTabViewIndex) {
@@ -501,13 +501,13 @@
 #endif
 				[tableSourceInstance loadTable:selectedTableName];
 				structureLoaded = YES;
-#ifndef SP_REFACTOR /* load everything */
+#ifndef SP_CODA /* load everything */
 				break;
 			case SPTableViewContent:
 #endif
 				[tableContentInstance loadTable:selectedTableName];
 				contentLoaded = YES;
-#ifndef SP_REFACTOR /* load everything */
+#ifndef SP_CODA /* load everything */
 				break;
 			case SPTableViewStatus:
 				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -533,7 +533,7 @@
 	// action will be performed if not necessary
 	[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
 
-#ifndef SP_REFACTOR /* show Create Table syntax */
+#ifndef SP_CODA /* show Create Table syntax */
 	// Update the "Show Create Syntax" window if it's already opened
 	// according to the selected table/view/proc/func
 	if ([[[self onMainThread] getCreateTableSyntaxWindow] isVisible]) {
@@ -546,7 +546,7 @@
 	// Empty the loading pool and exit the thread
 	[self endTask];
 
-#ifndef SP_REFACTOR /* triggered commands */
+#ifndef SP_CODA /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
 	
 	for(NSString* cmdPath in triggeredCommands) 

@@ -41,7 +41,7 @@
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 // Tab view control
 - (IBAction)viewStructure:(id)sender;
 - (IBAction)viewContent:(id)sender;
@@ -57,7 +57,7 @@
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (NSView *)databaseView;
 #endif
 

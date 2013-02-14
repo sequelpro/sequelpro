@@ -34,7 +34,7 @@
 
 @implementation SPTableContent (SPTableContentFilter)
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 /**
  * Escape passed operator for usage as filterTableDefaultOperator.

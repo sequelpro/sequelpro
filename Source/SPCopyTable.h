@@ -98,7 +98,7 @@ extern NSInteger SPEditCopyAsSQL;
 */
 - (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 /*!
 	@method	 rowsAsTabStringWithHeaders:onlySelectedRows:
 	@abstract   getter of the selected rows or all of the table for copy

@@ -30,7 +30,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR /* constants */
+#ifndef SP_CODA /* constants */
 extern NSString *SPQueryConsoleWindowAutoSaveName;
 extern NSString *SPTableViewDateColumnID;
 extern NSString *SPTableViewConnectionColumnID;
@@ -38,7 +38,7 @@ extern NSString *SPTableViewConnectionColumnID;
 
 @interface SPQueryController : NSWindowController 
 {
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet NSView *saveLogView;
 	IBOutlet NSTableView *consoleTableView;
 	IBOutlet NSSearchField *consoleSearchField;
@@ -67,7 +67,7 @@ extern NSString *SPTableViewConnectionColumnID;
 	NSArray *completionFunctionList;
 	NSDictionary *functionArgumentSnippets;
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
 	NSDateFormatter *dateFormatter;
 	
@@ -75,7 +75,7 @@ extern NSString *SPTableViewConnectionColumnID;
 #endif
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 @property (readwrite, retain) NSFont *consoleFont;
 #endif
 

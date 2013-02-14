@@ -42,12 +42,12 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG       100001
-#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG 100000
-#define SP_FAVORITE_HEADER_MENUITEM_TAG          200000
-#define SP_HISTORY_COPY_MENUITEM_TAG             300000
-#define SP_HISTORY_SAVE_MENUITEM_TAG             300001
-#define SP_HISTORY_CLEAR_MENUITEM_TAG            300002
+#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
+#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
+#define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
+#define SP_HISTORY_COPY_MENUITEM_TAG                  300000
+#define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
+#define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
 
 @class SPCopyTable;
 @class SPQueryFavoriteManager;
@@ -58,7 +58,7 @@
 @class SPMySQLFastStreamingResult;
 @class SPTextView;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @class SPDatabaseDocument;
 @class SPTablesList;
 #endif
@@ -69,7 +69,7 @@
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
 	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
@@ -115,12 +115,12 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
@@ -150,7 +150,7 @@
 
 	NSUInteger queryStartPosition;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
@@ -193,7 +193,7 @@
 	NSString *kCellEditorErrorTooManyMatches;
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPDatabaseDocument* tableDocumentInstance;
 @property (assign) SPTablesList* tablesListInstance;
 @property (assign) SPTextView *textView;
@@ -211,7 +211,7 @@
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)showHelpForCurrentWord:(id)sender;
 - (IBAction)showHelpForSearchString:(id)sender;
 - (IBAction)helpSegmentDispatcher:(id)sender;
@@ -235,12 +235,12 @@
 - (NSString *)queryAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
-- (void)updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
+- (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
 
 // Query load actions
-- (void)initQueryLoadTimer;
-- (void)clearQueryLoadTimer;
-- (void)queryLoadUpdate:(NSTimer *)theTimer;
+- (void) initQueryLoadTimer;
+- (void) clearQueryLoadTimer;
+- (void) queryLoadUpdate:(NSTimer *)theTimer;
 
 // Accessors
 - (NSArray *)currentResult;
@@ -248,17 +248,17 @@
 - (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
 
 // Retrieving and setting table state
-- (void)updateTableView;
-- (NSIndexSet *)resultSelectedRowIndexes;
-- (NSRect)resultViewport;
+- (void) updateTableView;
+- (NSIndexSet *) resultSelectedRowIndexes;
+- (NSRect) resultViewport;
 - (NSArray *)dataColumnDefinitions;
-- (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
-- (void)setResultViewportToRestore:(NSRect)theViewport;
-- (void)storeCurrentResultViewForRestoration;
-- (void)clearResultViewDetailsToRestore;
-- (void)autosizeColumns;
+- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void) setResultViewportToRestore:(NSRect)theViewport;
+- (void) storeCurrentResultViewForRestoration;
+- (void) clearResultViewDetailsToRestore;
+- (void) autosizeColumns;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp;
@@ -270,8 +270,8 @@
 - (void)setMySQLversion:(NSString *)theVersion;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Tableview interaction
 - (void)tableSortCallback;

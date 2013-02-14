@@ -42,21 +42,21 @@
 @class SPMySQLResult;
 
 @interface SPTableStructure : NSObject 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
 #endif
 {
 	IBOutlet SPTablesList* tablesListInstance;
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet SPDatabaseDocument* tableDocumentInstance;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id tableInfoInstance;
 	IBOutlet id extendedTableInfoInstance;
 #endif
 	IBOutlet SPIndexesController* indexesController;
 	IBOutlet SPDatabaseData* databaseDataInstance;
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
 	IBOutlet id resetAutoIncrementValue;
@@ -67,7 +67,7 @@
 	IBOutlet id duplicateFieldButton;
 	IBOutlet id removeFieldButton;
 	IBOutlet id reloadFieldsButton;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id chooseKeyButton;
 	IBOutlet id structureGrabber;
 	IBOutlet id editTableButton;
@@ -76,7 +76,7 @@
 	IBOutlet id refreshIndexesButton;
 #endif
 	IBOutlet SPTableView* indexesTableView;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet NSSplitView *tablesIndexesSplitView;
 	IBOutlet NSButton *indexesShowButton;
 
@@ -103,7 +103,7 @@
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, alertSheetOpened;
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPIndexesController* indexesController;
 @property (assign) id indexesTableView;
 @property (assign) id addFieldButton;
@@ -112,7 +112,7 @@
 @property (assign) id reloadFieldsButton;
 #endif
 
-#ifdef SP_REFACTOR /* method decls */
+#ifdef SP_CODA /* method decls */
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc;
 - (void)setTableListInstance:(SPTablesList*)list;
 - (void)setTableDataInstance:(SPTableData*)data;

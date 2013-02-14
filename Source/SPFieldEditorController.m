@@ -31,7 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFieldEditorController.h"
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #import "QLPreviewPanel.h"
 #endif
 #import "RegexKitLite.h"
@@ -51,7 +51,7 @@
 
 @end
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 /* Suppress deprecation warning for beginSheetForDirectory: until Sequel Pro team can migrate */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
@@ -66,7 +66,7 @@
  */
 - (id)init
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"]))
 #else
 	if ((self = [super initWithWindowNibName:@"SQLFieldEditorSheet"]))
@@ -110,7 +110,7 @@
 		[menuItem setEnabled:NO];
 		[menu addItem:menuItem];
 		[menuItem release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		NSUInteger tag = 2;
 
 		// Load default QL types
@@ -168,7 +168,7 @@
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
 	// if still visible
 	if ([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
@@ -177,7 +177,7 @@
 #endif
 
 	if ( sheetEditData ) [sheetEditData release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ( qlTypes ) [qlTypes release];
 #endif
 	if ( tmpFileName ) [tmpFileName release];
@@ -268,15 +268,15 @@
 		usedSheet = editSheet;
 
 		// If required, use monospaced fonts
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if (![prefs objectForKey:SPFieldEditorSheetFont]) {
 #endif
 			[editTextView setFont:
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : 
 #endif			
 			[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		}
 		else {
 			[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
@@ -284,7 +284,7 @@
 #endif
 
 		[editTextView setContinuousSpellCheckingEnabled:
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]
 #else
 		NO
@@ -449,7 +449,7 @@
 
 		}
 		
-		if (stringValue) [stringValue release], stringValue = nil;
+		if(stringValue) [stringValue release], stringValue = nil;
 
 		editSheetWillBeInitialized = NO;
 
@@ -510,7 +510,7 @@
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[[NSApp mainWindow] makeFirstResponder:editTextView];
 #endif
 			break;
@@ -582,7 +582,7 @@
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
 #endif
@@ -641,7 +641,7 @@
 	if(callerInstance) {
 		id returnData = ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
 		
-#ifdef SP_REFACTOR /* patch */
+#ifdef SP_CODA /* patch */
 		if ( [callerInstance isKindOfClass:[SPCustomQuery class]] )
 			[(SPCustomQuery*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 		else if ( [callerInstance isKindOfClass:[SPTableContent class]] )
@@ -737,9 +737,9 @@
 			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
 
 				[[editTextView string] writeToURL:fileURL
-									   atomically:YES
-										 encoding:encoding
-											error:NULL];
+										atomically:YES
+										  encoding:encoding
+											 error:NULL];
 
 			} else if (editImage != nil){
 
@@ -753,9 +753,9 @@
 		// Write other field types' representations to the file via the current encoding
 		else {
 			[[sheetEditData description] writeToURL:fileURL
-										 atomically:YES
-										   encoding:encoding
-											  error:NULL];
+										  atomically:YES
+											encoding:encoding
+											   error:NULL];
 		}
 
 		[editSheetProgressBar stopAnimation:self];
@@ -788,7 +788,7 @@
  */
 - (IBAction)quickLookFormatButton:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > (NSUInteger)[sender tag] - 2) {
 		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
 		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] integerValue])];
@@ -854,7 +854,7 @@
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Load QL via private framework (SDK 10.5)
 	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
 
@@ -940,7 +940,7 @@
  */
 - (void)beginPreviewPanelControl:(id)panel
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// This document is now responsible of the preview panel
 	[panel setDelegate:self];
@@ -1347,7 +1347,7 @@
 
 		// Length checking while using the Input Manager (eg for Japanese)
 		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength)) {
-			
+
 			// User tries to insert a new char but max text length was already reached - return NO
 			if (!r.length && ([[textView textStorage] length] >= maxTextLength)) {
 				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
@@ -1385,7 +1385,7 @@
 				textLength--;
 			}
 		}
-		
+
 		// If it's too long, disallow the change but try
 		// to insert a text chunk partially to maxTextLength.
 		if ((NSUInteger)newLength > maxTextLength) {
@@ -1409,7 +1409,7 @@
 			
 			return NO;
 		}
-		
+
 		maxTextLength = originalMaxTextLength;
 
 		// Otherwise, allow it

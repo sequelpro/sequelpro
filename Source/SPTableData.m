@@ -51,7 +51,7 @@
 
 @synthesize tableHasAutoIncrementField;
 
-- (id)init
+- (id) init
 {
 	if ((self = [super init])) {
 		columns = [[NSMutableArray alloc] init];
@@ -78,7 +78,7 @@
  *
  * @param theConnection The used connection for the SPDatabaseDocument
  */
-- (void)setConnection:(SPMySQLConnection *)theConnection
+- (void) setConnection:(SPMySQLConnection *)theConnection
 {
 	mySQLConnection = theConnection;
 	[mySQLConnection retain];
@@ -87,7 +87,7 @@
 /**
  * Retrieve the encoding for the current table, using or refreshing the cache as appropriate.
  */
-- (NSString *)tableEncoding
+- (NSString *) tableEncoding
 {
 	// If processing is already in action, wait for it to complete
 	[self _loopWhileWorking];
@@ -479,7 +479,7 @@
 		[mySQLConnection storeEncodingForRestoration];
 		[mySQLConnection setEncoding:@"utf8"];
 	}
-	
+
 	// In cases where this method is called directly instead of via -updateInformationForCurrentTable
 	// (for example, from the exporters) clear the list of constraints to prevent the previous call's table
 	// constraints being included in the table information (issue 1206).
@@ -727,11 +727,11 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
-								break;
-							}
+							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							break;
 						}
-					}
+				}
+			}
 					[tableData setObject:primaryKeyFields forKey:@"primarykeyfield"];
 				}
 			}
@@ -745,9 +745,9 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
-							break;
-						}
+								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								break;
+							}
 					}
 				}
 			}
@@ -1118,7 +1118,7 @@
 
 		SPRowCountQueryUsageLevels rowCountLevel = SPRowCountFetchAlways;
 		NSInteger rowCountCheapBoundary = 5242880;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		rowCountLevel = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountQueryLevel] integerValue];
 		rowCountCheapBoundary = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountCheapSizeBoundary] integerValue];
 #endif
@@ -1407,7 +1407,7 @@
 	pthread_mutex_unlock(&dataProcessingLock);
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 
 - (void)setTableDocumentInstance:(SPDatabaseDocument *)doc
 {

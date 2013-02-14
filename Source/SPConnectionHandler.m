@@ -64,7 +64,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)initiateMySQLConnection
 {	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (isTestingConnection) {
 		if (sshTunnel) {
 			[progressIndicatorText setStringValue:NSLocalizedString(@"Testing MySQL...", @"MySQL connection test very short status message")];
@@ -81,13 +81,13 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	}
 	
 	[progressIndicatorText display];
-
+	
 	[connectButton setTitle:NSLocalizedString(@"Cancel", @"cancel button")];
 	[connectButton setAction:@selector(cancelConnection:)];
 	[connectButton setEnabled:YES];
 	[connectButton display];
 #endif
-
+	
 	[NSThread detachNewThreadWithName:@"SPConnectionHandler MySQL connection task" target:self selector:@selector(initiateMySQLConnectionInBackground) object:nil];
 }
 
@@ -99,7 +99,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	mySQLConnection = [[SPMySQLConnection alloc] init];
-
+	
 	// Set up shared details
 	[mySQLConnection setUsername:[self user]];
 	
@@ -213,7 +213,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
 			
 			[mySQLConnection release], mySQLConnection = nil;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if (!cancellingConnection) [self _restoreConnectionInterface];
 #endif
 			[pool release];
@@ -225,7 +225,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if ([self database] && ![[self database] isEqualToString:@""]) {
 		if (![mySQLConnection selectDatabase:[self database]]) {
 			if (!isTestingConnection) {
-				[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection lastErrorMessage]] detail:nil rawErrorText:[mySQLConnection lastErrorMessage]];
+			[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"Could not select database", @"message when database selection failed") errorMessage:[NSString stringWithFormat:NSLocalizedString(@"Connected to host, but unable to connect to database %@.\n\nBe sure that the database exists and that you have the necessary privileges.\n\nMySQL said: %@", @"message of panel when connection to db failed"), [self database], [mySQLConnection lastErrorMessage]] detail:nil rawErrorText:[mySQLConnection lastErrorMessage]];
 			}
 			
 			// Tidy up
@@ -261,7 +261,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if (isTestingConnection) {
 		[progressIndicatorText setStringValue:NSLocalizedString(@"Testing SSH...", @"SSH testing very short status message")];
 	} else {
-		[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
+	[progressIndicatorText setStringValue:NSLocalizedString(@"SSH connecting...", @"SSH connecting very short status message")];
 	}
 	[progressIndicatorText display];
 	
@@ -308,18 +308,18 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	// If the user is only testing the connection, kill the connection
 	// once established and reset the UI.  Also catch connection cancels.
 	if (isTestingConnection || cancellingConnection) {
-
+		
 		// Clean up any connections remaining, and reset the UI
 		[self cancelConnection:self];
-
+		
 		if (isTestingConnection) {
 			[self _showConnectionTestResult:NSLocalizedString(@"Connection succeeded", @"Connection success very short status message")];
 		}
-
+		
 		return;
 	}
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[progressIndicatorText setStringValue:NSLocalizedString(@"Connected", @"connection established message")];
 	[progressIndicatorText display];
 #endif
@@ -328,7 +328,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[dbDocument setIsProcessing:NO];
 	
 	// Successful connection!
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[connectButton setEnabled:NO];
 	[connectButton display];
 	[progressIndicator stopAnimation:self];
@@ -341,13 +341,13 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			SPBeginAlertSheet(NSLocalizedString(@"SSL connection not established", @"SSL requested but not used title"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil, NSLocalizedString(@"You requested that the connection should be established using SSL, but MySQL made the connection without SSL.\n\nThis may be because the server does not support SSL connections, or has SSL disabled; or insufficient details were supplied to establish an SSL connection.\n\nThis connection is not encrypted.", @"SSL connection requested but not established error detail"));
 		} 
 		else {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[dbDocument setStatusIconToImageWithName:@"titlebarlock"]; 
 #endif
 		}
 	}
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Re-enable favorites table view
 	[favoritesOutlineView setEnabled:YES];
 	[(NSView *)favoritesOutlineView display];
@@ -387,21 +387,21 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			return;
 		}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 #endif
 		
 		[[self onMainThread] failConnectionWithTitle:NSLocalizedString(@"SSH connection failed!", @"SSH connection failed title") errorMessage:[theTunnel lastError] detail:[sshTunnel debugMessages] rawErrorText:[theTunnel lastError]];
 	}
 	else if (newState == SPMySQLProxyConnected) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Connected", @"SSH connected titlebar marker")];
 #endif
 		
 		[self initiateMySQLConnection];
 	} 
 	else {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Connecting…", @"SSH connecting titlebar marker")];
 #endif
 	}
@@ -413,7 +413,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  */
 - (void)addConnectionToDocument
 {					
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Hide the connection view and restore the main view
 	[connectionView removeFromSuperviewWithoutNeedingDisplay];
 	[databaseConnectionView setHidden:NO];
@@ -439,7 +439,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 {
 	BOOL isSSHTunnelBindError = NO;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self _restoreConnectionInterface];
 #endif
 	
@@ -471,7 +471,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
  * Alert sheet callback method - invoked when an error sheet is closed.
  */
 - (void)connectionFailureSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{	
+{
 	if (returnCode == NSAlertAlternateReturn) {
 		[errorDetailText setFont:[NSFont userFontOfSize:12]];
 		[errorDetailText setAlignment:NSLeftTextAlignment];
@@ -492,7 +492,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		[self setPort:tunnelPort];
 		[self setHost:SPLocalhostAddress];
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Change to standard TCP/IP connection view
 		[self resizeTabViewToConnectionType:SPTCPIPConnection animating:YES];
 #endif

@@ -42,7 +42,7 @@
  * Connection controller delegate category.
  */
 @interface SPConnectionController (SPConnectionControllerDelegate) 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	<SPFavoritesImportProtocol, SPFavoritesExportProtocol>
 #endif
 

@@ -32,11 +32,11 @@
 
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPCustomQuery.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPWindowManagement.h"
 #endif
@@ -507,7 +507,7 @@
 	[self setEditable:editableStatus];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)executeBundleItemForInputField:(id)sender
 {
 
@@ -662,13 +662,13 @@
 			}
 
 			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
-											  atCurrentDirectoryPath:nil 
-													  callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
-														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-																	  NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
+											atCurrentDirectoryPath:nil 
+											callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
+											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
 																	  uuid, SPBundleFileInternalexecutionUUID, nil]
-															   error:&err];
+											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 

@@ -51,7 +51,7 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
  */
 - (void)awakeFromNib
 {
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 	prefs = [NSUserDefaults standardUserDefaults];
 	
 	[self setWindowFrameAutosaveName:SPQueryConsoleWindowAutoSaveName];

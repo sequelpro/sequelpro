@@ -290,7 +290,7 @@
 	                           target:[tableDocumentInstance databaseStructureRetrieval]
 							 selector:@selector(queryDbStructureWithUserInfo:)
 							   object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
-
+	
 	[self loadTable:selectedTable];
 }
 
@@ -305,7 +305,7 @@
 	NSMutableDictionary *newDefaultValues;
 	
 	BOOL enableInteraction = 
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] ||
 #endif
 	![tableDocumentInstance isWorking];
@@ -324,7 +324,7 @@
 	[addFieldButton setEnabled:NO];
 	[duplicateFieldButton setEnabled:NO];
 	[removeFieldButton setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
 	[editTableButton setEnabled:NO];
@@ -358,7 +358,7 @@
 	
 	defaultValues = [[NSDictionary dictionaryWithDictionary:newDefaultValues] retain];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Enable the edit table button
 	[editTableButton setEnabled:enableInteraction];
 #endif
@@ -367,7 +367,7 @@
 	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
 	
 	[addFieldButton setEnabled:editingEnabled];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[addIndexButton setEnabled:editingEnabled];
 #endif
 	

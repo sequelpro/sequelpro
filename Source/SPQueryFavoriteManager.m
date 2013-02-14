@@ -61,7 +61,7 @@
 {
 	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
@@ -73,7 +73,7 @@
 			return nil;
 		}
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		delegatesFileURL = [tableDocumentInstance fileURL];
 #endif
 	}
@@ -86,7 +86,7 @@
  */
 - (void)awakeFromNib
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			@"Global", @"name", 
 			@"", @"headerOfFileURL",
@@ -142,7 +142,7 @@
  * Returns the query favorites array for fileURL.
  * fileURL == nil → global favorites
  */
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL
 {
 	NSMutableArray *favs = [NSMutableArray array];
@@ -195,7 +195,7 @@
  */
 - (IBAction)addQueryFavorite:(id)sender
 {
-#ifndef SP_REFACTOR 
+#ifndef SP_CODA 
 	NSMutableDictionary *favorite;
 	NSUInteger insertIndex;
 
@@ -208,12 +208,12 @@
 	// Add a new favorite
 	else
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
-
+	
 	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex]+1;
 		[favorites insertObject:favorite atIndex:insertIndex];
-	}
+	} 
 
 	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of it
 	else if (![tableDocumentInstance isUntitled]) {
@@ -304,7 +304,7 @@
  */
 - (IBAction)saveFavoriteToFile:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
@@ -324,7 +324,7 @@
 
 - (IBAction)exportFavorites:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
@@ -340,7 +340,7 @@
 
 - (IBAction)importFavoritesByAdding:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
@@ -440,7 +440,7 @@
  */
 - (IBAction)closeQueryManagerSheet:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// First check for ESC if pressed while inline editing
 	if(![sender tag] && isTableCellEditing) {
@@ -479,7 +479,7 @@
 
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
@@ -809,7 +809,7 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if (returnCode == NSOKButton) {
 
@@ -877,7 +877,7 @@
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
 		if (returnCode == NSOKButton) {

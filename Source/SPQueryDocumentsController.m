@@ -36,7 +36,7 @@
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Register a new untiled document and return its URL
 	if (fileURL == nil) {
 		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:NSLocalizedString(@"Untitled %ld",@"Title of a new Sequel Pro Document"), (unsigned long)untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -120,7 +120,7 @@
 
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Check for multiple instance of the same document.
 	// Remove it if only one instance was registerd.
 	NSArray *allDocs = [[NSApp delegate] orderedDocuments];
@@ -154,7 +154,7 @@
 
 - (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableDictionary *c = [[NSMutableDictionary alloc] init];
 		[c setDictionary:[contentFilterContainer objectForKey:[fileURL absoluteString]]];
@@ -167,7 +167,7 @@
 
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		[favoritesContainer setObject:favoritesArray forKey:[fileURL absoluteString]];
 	}
@@ -183,21 +183,21 @@
  */
 - (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] removeObjectAtIndex:index];
 #endif
 }
 
 - (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] insertObject:favorite atIndex:index];
 #endif
 }
 
 - (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
 	}
@@ -219,7 +219,7 @@
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		[[favoritesContainer objectForKey:[fileURL absoluteString]] addObject:favorite];
 	}
@@ -228,7 +228,7 @@
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
 	
 	// Save each history item due to its document source
@@ -271,7 +271,7 @@
 
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		return [favoritesContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -282,7 +282,7 @@
 
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		return [historyContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -293,7 +293,7 @@
 
 - (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableArray *returnArray = [NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]];
 		NSMenuItem *historyMenuItem;
@@ -323,7 +323,7 @@
  */
 - (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 				return [[historyContainer objectForKey:[fileURL absoluteString]] count];
 	}
@@ -344,7 +344,7 @@
  */
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		return [contentFilterContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -366,7 +366,7 @@
 		}
 	}
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
 		
 		for (id fav in [prefs objectForKey:SPQueryFavorites]) 

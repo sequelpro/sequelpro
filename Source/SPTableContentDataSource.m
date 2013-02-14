@@ -46,7 +46,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)tableView
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:SPTableContentFilterKey] count];
 	}
@@ -61,7 +61,7 @@
 
 - (id)tableView:(SPCopyTable *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		if (filterTableIsSwapped)
 			
@@ -122,7 +122,7 @@
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(tableView == filterTableView) {
 		if (filterTableIsSwapped) {
 			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];

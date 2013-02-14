@@ -7,7 +7,7 @@
 //  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
 //  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
-//
+//  
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
 //  files (the "Software"), to deal in the Software without
@@ -31,13 +31,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import <WebKit/WebKit.h>
 #endif
 
 @class SPConnectionController;
 
-#ifdef SP_REFACTOR 
+#ifdef SP_CODA 
 @class BottomBarSegmentedControl;
 #else
 @class SPProcessListController;
@@ -66,8 +66,9 @@
  */
 @interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol, SPMySQLConnectionDelegate, NSTextFieldDelegate, NSToolbarDelegate>
 {
-#ifdef SP_REFACTOR /* patch */
+#ifdef SP_CODA /* patch */
 	id delegate;
+	BottomBarSegmentedControl* _structureContentSwitcher;
 #endif
 
 	// IBOutlets
@@ -81,16 +82,16 @@
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
 #endif
-	
+
 	IBOutlet id statusTableAccessoryView;
 	IBOutlet id statusTableView;
 	IBOutlet id statusTableCopyChecksum;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
     SPUserManager *userManagerInstance;
 #endif
 	SPServerSupport *serverSupport;
@@ -111,32 +112,32 @@
 	IBOutlet id databaseRenameSheet;
 
 	IBOutlet NSProgressIndicator* queryProgressBar;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSBox *taskProgressLayer;
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
 	IBOutlet NSButton *taskCancelButton;
-
+	
 	IBOutlet id favoritesButton;
 #endif
-
+	
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id addDatabaseButton;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id databaseCopyNameField;
 	IBOutlet NSButton *copyDatabaseDataButton;
 	IBOutlet id copyDatabaseMessageField;
 	IBOutlet id copyDatabaseButton;
 #endif
-
+	
 	IBOutlet id databaseRenameNameField;
 	IBOutlet id renameDatabaseMessageField;
 	IBOutlet id renameDatabaseButton;
 
 	IBOutlet id chooseDatabaseButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id historyControl;
 	IBOutlet NSTabView *tableTabView;
 	
@@ -155,7 +156,7 @@
 	IBOutlet NSWindow *createTableSyntaxWindow;
 	IBOutlet NSWindow *connectionErrorDialog;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id saveConnectionAccessory;
 	IBOutlet NSButton *saveConnectionIncludeData;
 	IBOutlet NSButton *saveConnectionIncludeQuery;
@@ -177,7 +178,7 @@
 
 	// Controllers
 	SPConnectionController *connectionController;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	SPProcessListController *processListController;
 	SPServerVariablesController *serverVariablesController;
 
@@ -194,7 +195,7 @@
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;
 	NSString *selectedDatabaseEncoding;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
 	NSMutableArray *nibObjectsToRelease;
 	NSUndoManager *undoManager;
@@ -204,7 +205,7 @@
 	BOOL _supportsEncoding;
 	BOOL _isConnected;
 	NSInteger _isWorkingLevel;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	BOOL _mainNibLoaded;
 #endif
 	BOOL databaseListIsSelectable;
@@ -213,7 +214,7 @@
 
 	BOOL _workingTimeout;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSWindow *taskProgressWindow;
 	BOOL taskDisplayIsIndeterminate;
 	CGFloat taskProgressValue;
@@ -224,7 +225,7 @@
 	BOOL taskCanBeCancelled;
 	id taskCancellationCallbackObject;
 	SEL taskCancellationCallbackSelector;
-
+	
 	NSToolbar *mainToolbar;
 	NSToolbarItem *chooseDatabaseToolbarItem;
 	
@@ -236,7 +237,7 @@
 	
 	NSString *queryEditorInitString;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSURL *spfFileURL;
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
@@ -247,7 +248,7 @@
 
 	NSString *keyChainID;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSThread *printThread;
 	
 	NSArray *statusValues;
@@ -258,18 +259,18 @@
 	SPWindowController *parentWindowController;
 #endif
 	NSWindow *parentWindow;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSTabViewItem *parentTabViewItem;
 #endif
 	BOOL isProcessing;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSString *processID;
 	BOOL windowTitleStatusViewIsVisible;
 #endif
 	SPDatabaseStructure *databaseStructureRetrieval;
 }
 
-#ifdef SP_REFACTOR /* ivars */
+#ifdef SP_CODA /* ivars */
 @property (assign) SPDatabaseData* databaseDataInstance;
 @property (assign) SPTableData* tableDataInstance;
 @property (assign) SPCustomQuery* customQueryInstance;
@@ -285,30 +286,30 @@
 @property (assign) id databaseRenameSheet;
 #endif
 
-#ifdef SP_REFACTOR /* ivars */
+#ifdef SP_CODA /* ivars */
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
 @property (assign) NSWindow* databaseSheet;
 #endif
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
 #endif
 @property (readwrite, assign) BOOL isProcessing;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 @property (readwrite, retain) NSString *processID;
 #endif
 @property (readonly) SPServerSupport *serverSupport;
 @property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (BOOL)isUntitled;
 #endif
 - (BOOL)couldCommitCurrentViewActions;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (void)initQueryEditorWithString:(NSString *)query;
 
 // Connection callback and methods
@@ -319,18 +320,18 @@
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)chooseDatabase:(id)sender;
 #endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)refreshTables:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)copyDatabase:(id)sender;
 #endif
 - (IBAction)renameDatabase:(id)sender;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
 - (IBAction) makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
@@ -366,7 +367,7 @@
 - (void)updateEncodingMenuWithSelectedEncoding:(NSNumber *)encodingTag;
 - (NSNumber *)encodingTagFromMySQLEncoding:(NSString *)mysqlEncoding;
 - (NSString *)mysqlEncodingFromEncodingTag:(NSNumber *)encodingTag;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 
 // Table methods
 - (IBAction)showCreateTableSyntax:(id)sender;
@@ -385,7 +386,7 @@
 - (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
-- (void)setQueryMode:(NSInteger)theQueryMode;
+- (void) setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
 - (void)doPerformQueryService:(NSString *)query;
@@ -395,7 +396,7 @@
 - (NSWindow *)getCreateTableSyntaxWindow;
 #endif
 - (void)refreshCurrentDatabase;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
 - (IBAction)validateSaveConnectionAccessory:(id)sender;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo;
@@ -421,7 +422,7 @@
 - (NSString *)user;
 - (NSString *)keyChainID;
 - (NSString *)connectionID;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (NSString *)tabTitleForTooltip;
 - (BOOL)isSaveInBundle;
 - (NSURL *)fileURL;
@@ -431,7 +432,7 @@
 - (NSArray *)allTableNames;
 - (SPTablesList *)tablesListInstance;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 // Notification center methods
 - (void)willPerformQuery:(NSNotification *)notification;
 - (void)hasPerformedQuery:(NSNotification *)notification;
@@ -464,7 +465,7 @@
 #endif
 - (BOOL)parentTabShouldClose;
 - (void)parentTabDidClose;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void)willResignActiveTabInWindow;
 - (void)didBecomeActiveTabInWindow;
 - (void)tabDidBecomeKey;
@@ -476,7 +477,7 @@
 - (void)setParentWindow:(NSWindow *)aWindow;
 - (NSWindow *)parentWindow;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 // Scripting
 - (void)handleSchemeCommand:(NSDictionary*)commandDict;
 - (void)registerActivity:(NSDictionary*)commandDict;
@@ -486,13 +487,13 @@
 - (NSDictionary*)shellVariables;
 
 // State saving and setting
-- (NSDictionary *)stateIncludingDetails:(NSDictionary *)detailsToReturn;
+- (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
 - (BOOL)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
 #endif
 
-#ifdef SP_REFACTOR /* method decls */
+#ifdef SP_CODA /* method decls */
 - (SPConnectionController*)createConnectionController;
 - (SPConnectionController*)connectionController;
 - (void)connect;

@@ -40,7 +40,7 @@
 #import "SPDatabaseViewController.h"
 #import "SPSplitView.h"
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 static NSString *SPConnectionViewNibName = @"ConnectionView";
 #endif
 
@@ -64,11 +64,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 - (id)initWithDocument:(SPDatabaseDocument *)document
 {
 	if ((self = [super init])) {
-
+		
 		// Weak reference
 		dbDocument = document;
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		databaseConnectionSuperview = [dbDocument databaseView];
 		databaseConnectionView = [dbDocument valueForKey:@"contentViewSplitter"];
 #endif
@@ -92,7 +92,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		[self loadNib];
 		[self registerForNotifications];
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Hide the main view and position and display the connection view
 		[databaseConnectionView setHidden:YES];
 		[connectionView setFrame:[databaseConnectionView frame]];
@@ -101,11 +101,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Set up the splitview
 		[connectionSplitView setMinSize:80.f ofSubviewAtIndex:0];
 		[connectionSplitView setMinSize:445.f ofSubviewAtIndex:1];
-
+		
 		// Generic folder image for use in the outline view's groups
 		folderImage = [[[NSWorkspace sharedWorkspace] iconForFileType:NSFileTypeForHFSTypeCode(kGenericFolderIcon)] retain];
 		[folderImage setSize:NSMakeSize(16, 16)];
-
+		
 		// Set up a keychain instance and preferences reference, and create the initial favorites list
 		keychain = [[SPKeychain alloc] init];
 		prefs = [[NSUserDefaults standardUserDefaults] retain];
@@ -113,11 +113,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		// Create a reference to the favorites controller, forcing the data to be loaded from disk 
 		// and the tree to be constructed.
 		favoritesController = [SPFavoritesController sharedFavoritesController];
-
+		
 		// Tree references
 		favoritesRoot = [favoritesController favoritesTree];
 		currentFavorite = nil;
-
+		
 		// Create the "Quick Connect" placeholder group
 		quickConnectItem = [[SPTreeNode treeNodeWithRepresentedObject:[SPGroupNode groupNodeWithName:[NSLocalizedString(@"Quick Connect", @"Quick connect item label") uppercaseString]]] retain];
 		[quickConnectItem setIsGroup:YES];
@@ -154,7 +154,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)loadNib
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// Load the connection nib, keeping references to the top-level objects for later release
 	nibObjectsToRelease = [[NSMutableArray alloc] init];
@@ -179,7 +179,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 												 name:SPDocumentWillCloseNotification 
 											   object:dbDocument];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[NSNotificationCenter defaultCenter] addObserver:self 
 											 selector:@selector(scrollViewFrameChanged:) 
 												 name:NSViewFrameDidChangeNotification 
@@ -306,20 +306,20 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)setUpSelectedConnectionFavorite 
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	SPTreeNode *favorite = [self _favoriteNodeForFavoriteID:[prefs integerForKey:[prefs boolForKey:SPSelectLastFavoriteUsed] ? SPLastFavoriteID : SPDefaultFavorite]];
 	
 	if (favorite) {
-
+		
 		if (favorite == quickConnectItem) {
 			[self _selectNode:favorite];
 		} 
 		else {
-			NSNumber *typeNumber = [[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey];
-			previousType = typeNumber ? [typeNumber integerValue] : SPTCPIPConnection;
+		NSNumber *typeNumber = [[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey];
+		previousType = typeNumber ? [typeNumber integerValue] : SPTCPIPConnection;
 		
-			[self _selectNode:favorite];
-			[self resizeTabViewToConnectionType:[[[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey] integerValue] animating:NO];
+		[self _selectNode:favorite];
+		[self resizeTabViewToConnectionType:[[[[favorite representedObject] nodeFavorite] objectForKey:SPFavoriteTypeKey] integerValue] animating:NO];
 		}
 
 		[self _scrollToSelectedNode];
@@ -341,7 +341,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  */
 - (void)_processFavoritesDataChange:(NSNotification *)aNotification
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Check the supplied notification for the sender; if the sender
 	// was this object, ignore it
 	if ([aNotification object] == self) return;
@@ -370,7 +370,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
  *
  * @param node The node to traverse
  */
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void)_restoreOutlineViewStateNode:(SPTreeNode *)node
 {
 	if ([node isGroup]) {

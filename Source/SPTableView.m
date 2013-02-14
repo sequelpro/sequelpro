@@ -54,7 +54,7 @@
 
 @synthesize tabEditingDisabled;
 
-- (id)init
+- (id) init
 {
 	if ((self = [super init])) {
 		emptyDoubleClickAction = NULL;
@@ -63,13 +63,13 @@
 	return self;
 }
 
-- (void)awakeFromNib
+- (void) awakeFromNib
 {
 	[super setDoubleAction:@selector(_doubleClickAction)];
 	
 	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
-	}
+}
 }
 
 #pragma mark -
@@ -98,7 +98,7 @@
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
-#ifndef SP_REFACTOR /* menuForEvent: */
+#ifndef SP_CODA /* menuForEvent: */
 	// Try to retrieve a reference to the table document (assuming this is frontmost tab)
 	SPDatabaseDocument *parentTableDocument = nil;
 	
@@ -257,7 +257,7 @@
 	emptyDoubleClickAction = aSelector;
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 
 - (void)delete:(id)sender
 {

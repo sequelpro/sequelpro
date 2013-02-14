@@ -31,7 +31,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #import <FeedbackReporter/FRFeedbackReporter.h>
 #endif
 

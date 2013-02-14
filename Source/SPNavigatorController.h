@@ -34,7 +34,7 @@
 
 @interface SPNavigatorController : NSWindowController 
 {
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet SPNavigatorOutlineView *outlineSchema2;
 	IBOutlet id navigatorWindow;
 	IBOutlet id infoTable;
@@ -53,7 +53,7 @@
 	NSMutableArray *updatingConnections;
 	NSMutableDictionary *expandStatus2;
 	NSMutableDictionary *cachedSortedKeys;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSString *selectedKey2;
 	NSRect selectionViewPort2;
 	BOOL ignoreUpdate;
@@ -74,7 +74,7 @@
 
 + (SPNavigatorController *)sharedNavigatorController;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)outlineViewAction:(id)sender;
 - (IBAction)reloadAllStructures:(id)sender;
 - (IBAction)filterTree:(id)sender;
@@ -91,7 +91,7 @@
 - (NSArray *)allSchemaKeysForConnection:(NSString*)connectionID;
 - (NSArray *)getUniqueDbIdentifierFor:(NSString*)term andConnection:(NSString*)connectionID ignoreFields:(BOOL)ignoreFields;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (BOOL)isUpdatingConnection:(NSString*)connectionID;
 - (BOOL)isUpdating;
 

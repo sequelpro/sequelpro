@@ -7,7 +7,7 @@
 //  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
 //  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
-//
+//  
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
 //  files (the "Software"), to deal in the Software without
@@ -47,7 +47,7 @@
 @class SPTableStructure;
 @class SPTableList;
 @class SPContentFilterManager;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 @class SPSplitView;
 #endif
 
@@ -58,7 +58,7 @@
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id tableSourceInstance;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 #endif
@@ -72,7 +72,7 @@
 	IBOutlet id duplicateButton;
 	IBOutlet id removeButton;
 	IBOutlet id reloadButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSButton *multipleLineEditingButton;
 	IBOutlet id countText;
 	IBOutlet id limitRowsField;
@@ -84,17 +84,17 @@
 	IBOutlet id betweenTextField;
 
 	IBOutlet NSButton *paginationPreviousButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSButton *paginationButton;
 	IBOutlet NSButton *paginationGoButton;
 #endif
 	IBOutlet NSButton *paginationNextButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSView *contentViewPane;
 	IBOutlet NSView *paginationView;
 #endif
 	IBOutlet NSTextField *paginationPageField;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPCopyTable *filterTableView;
@@ -109,14 +109,14 @@
 	IBOutlet NSButton *filterTableLiveSearchCheckbox;
 	IBOutlet NSButton *filterTableSearchAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
-	IBOutlet NSComboBox *filterTableSetDefaultOperatorValue;
+	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
 #endif
 	SPMySQLConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSMutableArray *nibObjectsToRelease;
 #endif
 
@@ -137,7 +137,7 @@
 	SPContentFilterManager *contentFilterManager;
 	NSUInteger contentPage;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSMutableDictionary *filterTableData;
 	BOOL filterTableNegate;
 	BOOL filterTableDistinct;
@@ -156,7 +156,7 @@
 	NSRect selectionViewportToRestore;
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSInteger paginationViewHeight;
 #endif
 
@@ -178,7 +178,7 @@
 	NSRange fieldEditorSelectedRange;
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 @property (assign) id filterButton;
 @property (assign) id fieldField;
 @property (assign) id compareField;
@@ -204,32 +204,32 @@
 - (NSRange)fieldEditorSelectedRange;
 
 // Table loading methods and information
-- (void)loadTable:(NSString *)aTable;
+- (void) loadTable:(NSString *)aTable;
 - (void)setTableDetails:(NSDictionary *)tableDetails;
-- (void)clearTableValues;
-- (void)loadTableValues;
-- (NSString *)tableFilterString;
-- (void)updateCountText;
-- (void)initTableLoadTimer;
-- (void)clearTableLoadTimer;
-- (void)tableLoadUpdate:(NSTimer *)theTimer;
+- (void) clearTableValues;
+- (void) loadTableValues;
+- (NSString *) tableFilterString;
+- (void) updateCountText;
+- (void) initTableLoadTimer;
+- (void) clearTableLoadTimer;
+- (void) tableLoadUpdate:(NSTimer *)theTimer;
 
 // Table interface actions
-- (IBAction)reloadTable:(id)sender;
-- (void)reloadTableTask;
-- (IBAction)filterTable:(id)sender;
+- (IBAction) reloadTable:(id)sender;
+- (void) reloadTableTask;
+- (IBAction) filterTable:(id)sender;
 - (void)filterTableTask;
-- (IBAction)toggleFilterField:(id)sender;
-- (NSString *)usedQuery;
-- (void)setUsedQuery:(NSString *)query;
+- (IBAction) toggleFilterField:(id)sender;
+- (NSString *) usedQuery;
+- (void) setUsedQuery:(NSString *)query;
 
 // Pagination
-- (IBAction)navigatePaginationFromButton:(id)sender;
-#ifndef SP_REFACTOR
+- (IBAction) navigatePaginationFromButton:(id)sender;
+#ifndef SP_CODA
 - (IBAction)togglePagination:(NSButton *)sender;
 #endif
-- (void)setPaginationViewVisibility:(BOOL)makeVisible;
-- (void)updatePaginationState;
+- (void) setPaginationViewVisibility:(BOOL)makeVisible;
+- (void) updatePaginationState;
 
 // Edit methods
 - (IBAction)addRow:(id)sender;
@@ -252,8 +252,8 @@
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Additional methods
 - (void)setConnection:(SPMySQLConnection *)theConnection;
@@ -277,23 +277,23 @@
 - (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 
 // Retrieving and setting table state
-- (NSString *)sortColumnName;
-- (BOOL)sortColumnIsAscending;
-- (NSUInteger)pageNumber;
+- (NSString *) sortColumnName;
+- (BOOL) sortColumnIsAscending;
+- (NSUInteger) pageNumber;
 - (NSDictionary *)selectionDetailsAllowingIndexSelection:(BOOL)allowIndexFallback;
-- (NSRect)viewport;
-- (CGFloat)tablesListWidth;
-- (NSDictionary *)filterSettings;
+- (NSRect) viewport;
+- (CGFloat) tablesListWidth;
+- (NSDictionary *) filterSettings;
 - (NSArray *)dataColumnDefinitions;
-- (void)setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
-- (void)setPageToRestore:(NSUInteger)thePage;
+- (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
+- (void) setPageToRestore:(NSUInteger)thePage;
 - (void)setSelectionToRestore:(NSDictionary *)theSelection;
-- (void)setViewportToRestore:(NSRect)theViewport;
-- (void)setFiltersToRestore:(NSDictionary *)filterSettings;
-- (void)storeCurrentDetailsForRestoration;
-- (void)clearDetailsToRestore;
-- (void)setFilterTableData:(NSData*)arcData;
-- (NSData*)filterTableData;
+- (void) setViewportToRestore:(NSRect)theViewport;
+- (void) setFiltersToRestore:(NSDictionary *)filterSettings;
+- (void) storeCurrentDetailsForRestoration;
+- (void) clearDetailsToRestore;
+- (void) setFilterTableData:(NSData*)arcData;
+- (NSData*) filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;

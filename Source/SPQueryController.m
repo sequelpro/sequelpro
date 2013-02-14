@@ -37,7 +37,7 @@
 
 #import "pthread.h"
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 NSString *SPQueryConsoleWindowAutoSaveName = @"QueryConsole";
 NSString *SPTableViewDateColumnID          = @"messageDate";
 NSString *SPTableViewConnectionColumnID    = @"messageConnection";
@@ -56,7 +56,7 @@ static SPQueryController *sharedQueryController = nil;
 
 @implementation SPQueryController
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 @synthesize consoleFont;
 #endif
 
@@ -86,7 +86,7 @@ static SPQueryController *sharedQueryController = nil;
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"Console"])) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		messagesFullSet		= [[NSMutableArray alloc] init];
 		messagesFilteredSet	= [[NSMutableArray alloc] init];
 
@@ -110,12 +110,12 @@ static SPQueryController *sharedQueryController = nil;
 		completionFunctionList = nil;
 		functionArgumentSnippets = nil;
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		pthread_mutex_init(&consoleLock, NULL);
 #endif
 
 		NSError *error = [self loadCompletionLists];
-		
+
 		if (error) {
 			NSLog(@"Error loading completion tokens data: %@", [error localizedDescription]); 
 		}
@@ -146,7 +146,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)copy:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSResponder *firstResponder = [[self window] firstResponder];
 
 	if ((firstResponder == consoleTableView) && ([consoleTableView numberOfSelectedRows] > 0)) {
@@ -155,7 +155,7 @@ static SPQueryController *sharedQueryController = nil;
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
 
 		NSUInteger i = [rows firstIndex];
-		
+
 		BOOL includeTimestamps = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
 		BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
 
@@ -165,19 +165,19 @@ static SPQueryController *sharedQueryController = nil;
 		{
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-				
+
 				if (includeTimestamps || includeConnections) [string appendString:@"/* "];
 				
 				if (includeTimestamps) {
 					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
 					[string appendString:@" "];
 				}
-				
+
 				if (includeConnections) {
 					[string appendString:[message messageConnection]];
 					[string appendString:@" "];
 				}
-				
+
 				if (includeTimestamps || includeConnections) [string appendString:@"*/ "];
 
 				[string appendFormat:@"%@\n", [message message]];
@@ -200,7 +200,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)clearConsole:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[messagesFullSet removeAllObjects];
 	[messagesFilteredSet removeAllObjects];
 
@@ -213,7 +213,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)saveConsoleAs:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
@@ -233,7 +233,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:([sender state])];
 #endif
 }
@@ -243,7 +243,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowConnections:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:([sender state])];
 #endif
 }
@@ -253,7 +253,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowSelectShowStatements:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Store the state of the toggle for later quick reference
 	showSelectStatementsAreDisabled = [sender state];
 
@@ -266,7 +266,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (IBAction)toggleShowHelpStatements:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Store the state of the toggle for later quick reference
 	showHelpStatementsAreDisabled = [sender state];
 
@@ -279,7 +279,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)showMessageInConsole:(NSString *)message connection:(NSString *)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self _addMessageToConsole:message connection:connection isError:NO];
 #endif
 }
@@ -289,7 +289,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self _addMessageToConsole:error connection:connection isError:YES];
 #endif
 }
@@ -299,7 +299,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (NSUInteger)consoleMessageCount
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	return [messagesFullSet count];
 #else
 	return 0;
@@ -311,7 +311,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (returnCode == NSOKButton) {
 		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state] connections:[includeConnectionButton state]] writeToFile:[[sheet URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 	}
@@ -326,7 +326,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([[notification object] isEqualTo:consoleSearchField]) {
 
 		// Store the state of the text filter and the current filter string for later quick reference
@@ -344,7 +344,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Show/hide logging disabled label
 	if ([keyPath isEqualToString:SPConsoleEnableLogging]) {
 		[loggingDisabledTextField setStringValue:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? @"" : NSLocalizedString(@"Query logging is currently disabled", @"query logging currently disabled label")];
@@ -373,7 +373,7 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([menuItem action] == @selector(copy:)) {
 		return ([consoleTableView numberOfSelectedRows] > 0);
 	}
@@ -389,7 +389,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (BOOL)allowConsoleUpdate
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	return allowConsoleUpdate;
 #else
 	return NO;
@@ -398,7 +398,7 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)setAllowConsoleUpdate:(BOOL)allowUpdate
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	allowConsoleUpdate = allowUpdate;
 	
 	if (allowUpdate && [[self window] isVisible]) [self updateEntries];
@@ -410,13 +410,13 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)updateEntries
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[consoleTableView reloadData];
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 #endif
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Return the AutoSaveName of the Query Console.
  */
@@ -435,64 +435,64 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)_updateFilterState
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Display start progress spinner
 	[progressIndicator setHidden:NO];
 	[progressIndicator startAnimation:self];
-	
+
 	// Don't allow clearing the console while filtering its content
 	[saveConsoleButton setEnabled:NO];
 	[clearConsoleButton setEnabled:NO];
-	
+
 	[messagesFilteredSet removeAllObjects];
-	
+
 	// If filtering is disabled and all show/selects are shown, empty the filtered
 	// result set and set the full set to visible.
 	if (!filterIsActive && !showSelectStatementsAreDisabled && !showHelpStatementsAreDisabled) {
 		messagesVisibleSet = messagesFullSet;
-		
+
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-		
+
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
-		
+
 		[saveConsoleButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
-		
+
 		// Hide progress spinner
 		[progressIndicator setHidden:YES];
 		[progressIndicator stopAnimation:self];
 		
 		return;
 	}
-	
+
 	// Cache frequently used selector, avoiding dynamic binding overhead
 	IMP messageMatchesFilters = [self methodForSelector:@selector(_messageMatchesCurrentFilters:)];
-	
+
 	// Loop through all the messages in the full set to determine which should be
 	// added to the filtered set.
 	for (SPConsoleMessage *message in messagesFullSet) {
-		
+
 		// Add a reference to the message to the filtered set if filters are active and the
 		// current message matches them
 		if ((messageMatchesFilters)(self, @selector(_messageMatchesCurrentFilters:), [message message])) {
 			[messagesFilteredSet addObject:message];
 		}
 	}
-	
+
 	// Ensure that the filtered set is marked as the currently visible set.
 	messagesVisibleSet = messagesFilteredSet;
-	
+
 	[consoleTableView reloadData];
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-	
+
 	if ([messagesVisibleSet count] > 0) {
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
 	}
-	
+
 	[saveConsoleButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
-	
+
 	// Hide progress spinner
 	[progressIndicator setHidden:YES];
 	[progressIndicator stopAnimation:self];
@@ -506,13 +506,13 @@ static SPQueryController *sharedQueryController = nil;
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message
 {
 	BOOL messageMatchesCurrentFilters = YES;
-	
-#ifndef SP_REFACTOR
+
+#ifndef SP_CODA
 	// Check whether to hide the message based on the current filter text, if any
 	if (filterIsActive && [message rangeOfString:activeFilterString options:NSCaseInsensitiveSearch].location == NSNotFound) {
 		messageMatchesCurrentFilters = NO;
 	}
-	
+
 	// If hiding SELECTs and SHOWs is toggled to on, check whether the message is a SELECT or SHOW
 	if (messageMatchesCurrentFilters && 
 		showSelectStatementsAreDisabled && 
@@ -520,13 +520,13 @@ static SPQueryController *sharedQueryController = nil;
 	{
 		messageMatchesCurrentFilters = NO;
 	}
-	
+
 	// If hiding HELP is toggled to on, check whether the message is a HELP
 	if (messageMatchesCurrentFilters && showHelpStatementsAreDisabled && ([[message uppercaseString] hasPrefix:@"HELP"])) {
 		messageMatchesCurrentFilters = NO;
 	}
 #endif
-	
+
 	return messageMatchesCurrentFilters;
 }
 
@@ -537,8 +537,8 @@ static SPQueryController *sharedQueryController = nil;
 - (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections
 {
 	NSMutableString *consoleString = [NSMutableString string];
-	
-#ifndef SP_REFACTOR
+
+#ifndef SP_CODA
 	NSArray *messageCopy = [messagesVisibleSet copy];
 	
 	for (SPConsoleMessage *message in messagesVisibleSet)
@@ -546,28 +546,28 @@ static SPQueryController *sharedQueryController = nil;
 		// As we are going to save the messages as an SQL file we need to comment
 		// the timestamps and connections if included.
 		if (timeStamps || connections) [consoleString appendString:@"/* "];
-		
+
 		// If the timestamp column is not hidden we need to include them in the copy
 		if (timeStamps) {
 			[consoleString appendString:[dateFormatter stringFromDate:[message messageDate]]];
 			[consoleString appendString:@" "];
 		}
-		
+
 		// If the connection column is not hidden we need to include them in the copy
 		if (connections) {
 			[consoleString appendString:[message messageConnection]];
 			[consoleString appendString:@" "];
 		}
-		
+
 		// Close the comment
 		if (timeStamps || connections) [consoleString appendString:@"*/ "];
-		
+
 		[consoleString appendFormat:@"%@\n", [message message]];
 	}
 	
 	[messageCopy release];
 #endif
-	
+
 	return consoleString;
 }
 
@@ -576,20 +576,20 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSString *messageTemp = [[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-	
+
 	// Only append a semi-colon (;) if the supplied message is not an error
 	if (!error) messageTemp = [messageTemp stringByAppendingString:@";"];
-	
+
 	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:messageTemp date:[NSDate date] connection:connection];
-	
+
 	[consoleMessage setIsError:error];
-	
+
 	pthread_mutex_lock(&consoleLock);
 	
 	[messagesFullSet addObject:consoleMessage];
-	
+
 	// If filtering is active, determine whether to add a reference to the filtered set
 	if ((showSelectStatementsAreDisabled || showHelpStatementsAreDisabled || filterIsActive)
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
@@ -598,7 +598,7 @@ static SPQueryController *sharedQueryController = nil;
 		[saveConsoleButton setEnabled:YES];
 		[clearConsoleButton setEnabled:YES];
 	}
-	
+
 	// Reload the table and scroll to the new message if it's visible (for speed)
 	if (allowConsoleUpdate && [[self window] isVisible]) {
 		[consoleTableView noteNumberOfRowsChanged];
@@ -614,12 +614,12 @@ static SPQueryController *sharedQueryController = nil;
 
 - (void)dealloc
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	messagesVisibleSet = nil;
 #endif
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[dateFormatter release], dateFormatter = nil;
 
 	[messagesFullSet release], messagesFullSet = nil;
@@ -635,7 +635,7 @@ static SPQueryController *sharedQueryController = nil;
 	if (completionFunctionList) [completionFunctionList release], completionFunctionList = nil; 
 	if (functionArgumentSnippets) [functionArgumentSnippets release], functionArgumentSnippets = nil;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	pthread_mutex_destroy(&consoleLock);
 #endif
 	

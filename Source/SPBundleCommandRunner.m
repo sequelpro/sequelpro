@@ -50,7 +50,7 @@
 
 @implementation SPBundleCommandRunner
 
-#ifndef SP_REFACTOR /* run commands */
+#ifndef SP_CODA /* run commands */
 
 /**
  * Run the supplied string as a BASH command(s) and return the result.

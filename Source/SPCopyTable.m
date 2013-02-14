@@ -41,11 +41,11 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPGeometryDataView.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
 #endif
@@ -99,7 +99,7 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (void)copy:(id)sender
 {
-#ifndef SP_REFACTOR /* copy table rows */
+#ifndef SP_CODA /* copy table rows */
 	NSString *tmp = nil;
 
 	if ([sender tag] == SPEditCopyAsSQL) {
@@ -128,11 +128,11 @@ static const NSInteger kBlobAsImageFile = 4;
 #endif
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 
 - (void)delete:(id)sender
 {
-	[tableInstance removeRow:self];
+        [tableInstance removeRow:self];
 }
 
 #endif
@@ -141,7 +141,7 @@ static const NSInteger kBlobAsImageFile = 4;
  * Get selected rows a string of newline separated lines of tab separated fields
  * the value in each field is from the objects description method
  */
-#ifndef SP_REFACTOR /* get rows as string */
+#ifndef SP_CODA /* get rows as string */
 - (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
@@ -487,7 +487,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		cellData = nil;
 		rowCounter++;
 		NSMutableArray *rowValues = [[NSMutableArray alloc] initWithCapacity:numColumns];
-
+		
 		for (c = 0; c < numColumns; c++)
 		{
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -775,7 +775,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSRange linebreakRange;
 	double rowStep;
 	unichar breakChar;
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -877,7 +877,7 @@ static const NSInteger kBlobAsImageFile = 4;
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {
 	NSMenu *menu = [self menu];
-#ifndef SP_REFACTOR /* menuForEvent: */
+#ifndef SP_CODA /* menuForEvent: */
 
 	if(![[self delegate] isKindOfClass:[SPCustomQuery class]] && ![[self delegate] isKindOfClass:[SPTableContent class]]) return menu;
 
@@ -966,7 +966,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			
 			if (i >= 0 && i < rows) {
 				[selection addIndex:i];
-			}
+		}
 		}
 
 		[self selectRowIndexes:selection byExtendingSelection:NO];
@@ -979,7 +979,7 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem
 {
-#ifndef SP_REFACTOR /* validateMenuItem: */
+#ifndef SP_CODA /* validateMenuItem: */
 	NSInteger menuItemTag = [anItem tag];
 
 	if ([anItem action] == @selector(performFindPanelAction:)) {
@@ -1006,7 +1006,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	if ( [anItem action] == @selector(selectAll:) )
 		return YES;
 		
@@ -1093,7 +1093,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		if (NSMaxRange([[textView string] lineRangeForRange:[textView selectedRange]]) < [[textView string] length])
 			return NO;
 
-		NSInteger newRow = row + 1;
+		NSInteger newRow = row+1;
 
 		// Check if we're already at the end of the list
 		if (newRow >= [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
@@ -1127,11 +1127,11 @@ static const NSInteger kBlobAsImageFile = 4;
 
 		// Already at the beginning of the list
 		if (row == 0) return YES;
-		
-		NSInteger newRow = row - 1;
+
+		NSInteger newRow = row-1;
 
 		[[control window] makeFirstResponder:control];
-		
+
 		if ([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)]) {
 			[(SPTableContent *)[self delegate] saveRowToTable];
 		}
@@ -1187,7 +1187,7 @@ static const NSInteger kBlobAsImageFile = 4;
 {
 
 	// Retrieve the column definition
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	NSDictionary *columnDefinition = nil;
 	
 	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
@@ -1202,7 +1202,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
 #endif
 
@@ -1231,7 +1231,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 - (IBAction)executeBundleItemForDataTable:(id)sender
 {
-#ifndef SP_REFACTOR /* executeBundleItemForDataTable: */
+#ifndef SP_CODA /* executeBundleItemForDataTable: */
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
@@ -1414,13 +1414,13 @@ static const NSInteger kBlobAsImageFile = 4;
 
 
 			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
-											  atCurrentDirectoryPath:nil 
-													  callerInstance:[[NSApp delegate] frontDocument] 
-														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-																	  NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
+											atCurrentDirectoryPath:nil 
+											callerInstance:[[NSApp delegate] frontDocument] 
+											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
 																	  uuid, SPBundleFileInternalexecutionUUID, nil]
-															   error:&err];
+											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1523,7 +1523,7 @@ static const NSInteger kBlobAsImageFile = 4;
 - (void)dealloc
 {
 	if (columnDefinitions) [columnDefinitions release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs release];
 #endif
 

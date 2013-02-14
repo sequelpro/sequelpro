@@ -41,11 +41,11 @@
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPDatabaseViewController.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
 #import "SPDatabaseStructure.h"
@@ -86,7 +86,7 @@
 @interface SPTextView (Private_API)
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
 #endif
 - (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
@@ -118,7 +118,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize completionIsOpen;
 @synthesize completionWasReinvokedAutomatically;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
 @synthesize customQueryInstance;
@@ -127,7 +127,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 - (void) awakeFromNib
 {
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 #endif
@@ -140,7 +140,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	autohelpEnabled = NO;
 #endif
 	delBackwardsWasPressed = NO;
@@ -160,18 +160,18 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[scrollView setRulersVisible:YES];
 	[self setAllowsDocumentBackgroundColorChange:YES];
 	[self setContinuousSpellCheckingEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
 #else
 	[self setAutoindent:YES];
 #endif
 	[self setAutoindentIgnoresEnter:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 #else
-	[self setAutopair:YES];
+	[self setAutopair:YES]; 
 	//[self setAutouppercaseKeywords:YES]; // #18925
 #endif
 	[self setCompletionWasReinvokedAutomatically:NO];
@@ -186,7 +186,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[scrollView setPostsBoundsChangedNotifications:YES];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
 	[self setQueryEditorBackgroundColor:backgroundColor];
@@ -249,7 +249,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 		[self setQueryEditorBackgroundColor:backgroundColor];
@@ -320,7 +320,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(currentWord == nil) currentWord = [NSString stringWithString:@""];
 #else
 	if(currentWord == nil) currentWord = @"";
@@ -591,7 +591,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	if(completionIsOpen || !self || ![self delegate]) return;
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -635,7 +635,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -830,7 +830,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 
 	// Cancel autocompletion trigger again if user typed something in while parsing
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -1075,7 +1075,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.01];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Search for the current selection or current word in the MySQL Help 
  */
@@ -1108,7 +1108,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[self setSelectedRange:innerSelectionRange];
 
 	// If autopair is enabled mark last autopair character as autopair-linked
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoPairCharacters])
 #endif
 		[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange(NSMaxRange(innerSelectionRange), 1)];
@@ -1192,7 +1192,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	if (selectedRange.location == NSNotFound || ![self isEditable]) return NO;
 
 	NSString *indentString = @"\t";
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 		NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 		if(numberOfSpaces < 1) numberOfSpaces = 1;
@@ -1283,7 +1283,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 		// Check for soft indention
 		NSUInteger indentStringLength = 1;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 			NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 			if(numberOfSpaces < 1) numberOfSpaces = 1;
@@ -1298,7 +1298,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		} else {
 #endif
 			replaceRange = NSMakeRange(currentLineRange.location, indentStringLength);
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		}
 #endif
 
@@ -1323,7 +1323,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	// Check for soft or hard indention
 	NSString *indentString = @"\t";
 	NSUInteger indentStringLength = 1;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 		indentStringLength = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 		if(indentStringLength < 1) indentStringLength = 1;
@@ -1388,7 +1388,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -1789,7 +1789,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				if (tablesListInstance && [tablesListInstance selectedDatabase])
 					currentDb = [tablesListInstance selectedDatabase];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
 					if(r.length) {
@@ -1830,7 +1830,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			[theHintString replaceOccurrencesOfRegex:@"\\\\(\\$\\(|\\}|\\$SP_)" withString:@"$1"];
 			[theHintString flushCachedRegexData];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			// If inside the snippet hint $(…) is defined run … as BASH command
 			// and replace $(…) by the return string of that command. Please note
 			// only one $(…) statement is allowed within one ${…} snippet environment.
@@ -1960,7 +1960,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
 		if (
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 				[prefs boolForKey:SPCustomQueryAutoPairCharacters] &&
 #else
 #endif
@@ -2083,7 +2083,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	// Cancel autoHelp timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
@@ -2091,7 +2091,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2100,7 +2100,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	[super mouseDown:theEvent];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Start autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
@@ -2112,7 +2112,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp]) {// restart autoHelp timer
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2124,7 +2124,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2154,7 +2154,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		[self setCompletionWasReinvokedAutomatically:NO];
 		completionWasRefreshed = NO;
 		// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 			[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2176,7 +2176,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
 	// and TAB as soft indention
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 #endif
@@ -2222,7 +2222,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 		}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
 		if(snippetControlCounter < 0 && [tabTrigger length] && [tableDocumentInstance fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
@@ -2240,7 +2240,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
 	if([charactersIgnMod isEqualToString:@"h"]) // ^H show MySQL Help
 		if(curFlags==(NSControlKeyMask))
@@ -2269,7 +2269,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
 			BOOL editableStatus = [self isEditable];
 			[self setEditable:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 #endif
 			[self setEditable:editableStatus];
@@ -2278,7 +2278,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] && characters && [characters length] == 1) {
 #else
 	if (characters && [characters length] == 1) {
@@ -2417,7 +2417,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 
 // Let Xcode 3 match braces correctly...
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #else
 	}
@@ -2493,7 +2493,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 
 		// Remove soft indent if active and left from caret are only white spaces
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		else if ([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:NO])
 #else
 		else if ([self isCaretAtIndentPositionIgnoreLineStart:NO])
@@ -2519,7 +2519,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		&& [prefs boolForKey:SPCustomQueryAutoIndent]
 #endif
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
@@ -2559,7 +2559,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 
 	// Remove soft indent if active and left from caret are only white spaces
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (aSelector == @selector(deleteForward:)
 		&& ![self selectedRange].length
 		&& [prefs boolForKey:SPCustomQuerySoftIndent]
@@ -2623,7 +2623,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	return autopairEnabled;
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Set whether MySQL Help should be automatically invoked while typing.
  */
@@ -2665,7 +2665,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 - (void)autoHelp
 {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(![prefs boolForKey:SPCustomQueryUpdateAutoHelp] || ![[self string] length]) return;
 #else
 	if(![[self string] length]) return;
@@ -2897,7 +2897,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 - (void) setTabStops
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSFont *tvFont = [self font];
 #else
 	NSFont* tvFont = [NSFont userFixedPitchFontOfSize:10.0];
@@ -2910,14 +2910,14 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	BOOL oldEditableStatus = [self isEditable];
 	[self setEditable:YES];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
 #else
 	NSInteger tabStopWidth = 4;
 #endif
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
 #else
 	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
@@ -3084,7 +3084,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Set title of the menu item
 	if([self selectedRange].length)
 		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
@@ -3099,7 +3099,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	// if it doesn't yet exist
 	NSMenu *menu = [[self class] defaultMenu];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
 	{
 		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
@@ -3138,7 +3138,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		[[menu itemAtIndex:6] setHidden:YES];
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[NSApp delegate] reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
@@ -3300,7 +3300,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	if (textStore!=[self textStorage]) return;
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -3316,14 +3316,14 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	NSInteger editedMask = [textStore editedMask];
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 #endif
 
 	// Start autocompletion if enabled
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore changeInLength] == 1)
 		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] doubleValue]];
 #else
@@ -3651,7 +3651,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 - (void)changeFont:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (prefs && [self font] != nil) {
 		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:SPCustomQueryEditorFont];
 		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
@@ -3675,7 +3675,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorSelectionColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorCaretColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorFont];
@@ -3694,7 +3694,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs release];
 #endif
 	[lineNumberView release];
@@ -3725,7 +3725,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	return [string1 localizedCaseInsensitiveCompare:string2];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Take a supplied text selection colour, and if it contains an alpha component,
  * pre-multiply it by the background colour before setting it to avoid drawing problems.

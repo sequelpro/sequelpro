@@ -165,7 +165,7 @@
 
 	NSUserDefaults *prefs;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSDictionary *qlTypes;
 #endif
 

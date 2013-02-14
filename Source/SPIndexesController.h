@@ -38,7 +38,7 @@
 @class SPTableView;
 
 @interface SPIndexesController : NSWindowController 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 <NSTableViewDelegate, NSTableViewDataSource>
 #endif
 {
@@ -64,7 +64,7 @@
 	IBOutlet NSButton *addIndexedColumnButton;
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSBox *anchoredButtonBar;
 	
 	// Advanced options view
@@ -82,13 +82,13 @@
 	NSMutableArray *fields, *indexes, *indexedFields;
 	NSArray *supportsLength, *requiresLength;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
 #endif
 	
 	SPMySQLConnection *connection;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
@@ -97,7 +97,7 @@
 #endif
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPTableView* indexesTableView;
 @property (assign) SPTableStructure* tableStructure;
 @property (assign) NSButton* addIndexButton;

@@ -6,7 +6,7 @@
 //
 //  This class is based on TextMate's TMDIncrementalPopUp implementation
 //  (Dialog plugin) written by Joachim Mårtensson, Allan Odgaard, and Hans-Jörg Bibiko.
-//  
+//
 //  See license: http://svn.textmate.org/trunk/LICENSE
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -132,11 +132,11 @@
 		staticPrefix = nil;
 		suggestions = nil;
 		autocompletePlaceholderWasInserted = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 #else
 		tableFont = [NSFont userFixedPitchFontOfSize:10.0];
@@ -159,7 +159,7 @@
 - (void)dealloc
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	if (stateTimer != nil) {
+	if(stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];
 		stateTimer = nil;
@@ -1083,7 +1083,7 @@
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
 	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
 		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
 		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];

@@ -45,7 +45,7 @@
 
 @implementation SPConnectionController (SPConnectionControllerDataSource)
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 /**
  * Return the number of children for the specified item in the favourites tree.
@@ -55,7 +55,7 @@
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {	
 	SPTreeNode *node = (item == nil ? favoritesRoot : (SPTreeNode *)item);
-
+	
 	// If at the root, return the count plus one for the "Quick Connect" entry
 	if (!item) {
 		return [[node childNodes] count] + 1;
@@ -110,7 +110,7 @@
 		if (![node isGroup]) {			
 
 			// Updating the name triggers a KVO update 
-			[self setName:newName];		
+			[self setName:newName];
 			[self _saveCurrentDetailsCreatingNewFavorite:NO validateDetails:NO];
 		}
 		else {

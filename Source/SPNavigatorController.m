@@ -32,7 +32,7 @@
 
 #import "SPNavigatorController.h"
 #import "SPSplitView.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "RegexKitLite.h"
 #import "SPNavigatorOutlineView.h"
 #import "ImageAndTextCell.h"
@@ -53,7 +53,7 @@ static SPNavigatorController *sharedNavigatorController = nil;
 
 @implementation SPNavigatorController
 
-#ifndef SP_REFACTOR /* unused sort func */
+#ifndef SP_CODA /* unused sort func */
 static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* context)
 {
 	return (NSComparisonResult)objc_msgSend(s1, @selector(localizedCompare:), s2);
@@ -94,7 +94,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		cachedSortedKeys    = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
 		updatingConnections = [[NSMutableArray alloc] init];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
@@ -118,7 +118,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(updatingConnections)  [updatingConnections release];
 	if(expandStatus2) [expandStatus2 release];
 	if(cachedSortedKeys) [cachedSortedKeys release];
-#ifndef SP_REFACTOR /* dealloc ivars */
+#ifndef SP_CODA /* dealloc ivars */
 	[connectionIcon release];
 	[databaseIcon release];
 	[tableIcon release];
@@ -144,7 +144,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (oneway void)release { }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Set the window's auto save name and initialise display
  */
@@ -436,7 +436,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if (doc && [doc isKindOfClass:[SPDatabaseDocument class]]) {
 
 		SPMySQLConnection *theConnection = [doc getConnection];
-		if (!theConnection || ![theConnection isConnected]) return;
+		if(!theConnection || ![theConnection isConnected]) return;
 
 		NSString *connectionID = [doc connectionID];
 		NSString *connectionName = [doc connectionID];
@@ -572,7 +572,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 - (BOOL)isUpdatingConnection:(NSString*)connectionID
 {
@@ -593,9 +593,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	// Reset everything for current active doc connection
 	SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
-	if (!doc) return;
+	if(!doc) return;
 	NSString *connectionID = [doc connectionID];
-	if (!connectionID || [connectionID length] < 2) return;
+	if(!connectionID || [connectionID length] < 2) return;
 
 	[searchField setStringValue:@""];
 	[schemaDataFiltered removeAllObjects];

@@ -42,9 +42,9 @@
 
 @interface SPQueryFavoriteManager : NSWindowController <NSOpenSavePanelDelegate>
 {
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
-	
+
 	NSURL *delegatesFileURL;
 #endif
 	SPDatabaseDocument *tableDocumentInstance;
@@ -65,7 +65,7 @@
 
 - (id)initWithDelegate:(id)managerDelegate;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 // Accessors
 - (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL;

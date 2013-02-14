@@ -48,7 +48,7 @@
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging]) {
 		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
 			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
@@ -65,7 +65,7 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
 		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name]];
 	}
@@ -139,7 +139,7 @@
 		// Ensure the window isn't miniaturized
 		if ([[self parentWindow] isMiniaturized]) [[self parentWindow] deminiaturize:self];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Ensure the window and tab are frontmost
 		[self makeKeyDocument];
 #endif
@@ -181,9 +181,9 @@
 /**
  * Close the connection - should be performed on the main thread.
  */
-- (void)closeAndDisconnect
+- (void) closeAndDisconnect
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSWindow *theParentWindow = [self parentWindow];
 	
 	_isConnected = NO;

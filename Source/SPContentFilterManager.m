@@ -54,7 +54,7 @@
 {
 	if ((self = [super initWithWindowNibName:@"ContentFilterManager"])) {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
@@ -67,7 +67,7 @@
 		}
 		
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		delegatesFileURL = [tableDocumentInstance fileURL];
 #endif
 
@@ -95,7 +95,7 @@
 			@"", @"ConjunctionLabel",
 			nil]];
 
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 	// Build data source for global content filter (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([[prefs objectForKey:SPContentFilters] objectForKey:filterType]) {
@@ -243,12 +243,12 @@
 		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
 
 	// If a favourite is currently selected, add the new favourite next to it
-	if ([contentFilterTableView numberOfSelectedRows] > 0) {
+	if([contentFilterTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex]+1;
 		[contentFilters insertObject:filter atIndex:insertIndex];
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of that document's favourites
 	else if (![tableDocumentInstance isUntitled]) {
 		insertIndex = [contentFilters count] - 1;
@@ -323,7 +323,7 @@
  */
 - (IBAction)exportContentFilter:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
@@ -342,7 +342,7 @@
  */
 - (IBAction)importContentFilterByAdding:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
@@ -385,7 +385,7 @@
 		if ([contentFilterTableView numberOfSelectedRows] == 1)
 			[[self window] makeFirstResponder:contentFilterTableView];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Update current document's content filters in the SPQueryController
 		[[SPQueryController sharedQueryController] replaceContentFilterByArray:
 			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
@@ -446,7 +446,7 @@
  * Returns the value for the requested table column and row index.
  */
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
-{	
+{
 	if (![[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]]) return @"";
 
 	return [[contentFilters objectAtIndex:rowIndex] objectForKey:[aTableColumn identifier]];
@@ -480,7 +480,7 @@
 	[resultingClauseLabel setHidden:!enable];
 	[resultingClauseContentLabel setHidden:!enable];
 	[insertPlaceholderButton setEnabled:enable];
-    
+
 	return (rowIndex >= 0 && [[contentFilters objectAtIndex:rowIndex] objectForKey:@"headerOfFileURL"]) ? NO : YES;
 }
 
@@ -808,14 +808,14 @@
 				// Get next index (beginning from the end)
 				currentIndex = [indexes indexLessThanIndex:currentIndex];
 			}
-			
+
 			if ([contentFilters count] == 2) {
 				[contentFilterNameTextField setStringValue:@""];
 			}
 		
 			[contentFilterArrayController rearrangeObjects];
 			[contentFilterTableView reloadData];
-			
+
 			// Set focus to filter list to avoid an unstable state
 			[[self window] makeFirstResponder:contentFilterTableView];
 
@@ -829,7 +829,7 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (returnCode == NSOKButton) {
 
 		NSString *filename = [[panel filenames] objectAtIndex:0];
@@ -897,7 +897,7 @@
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([contextInfo isEqualToString:@"exportFilter"]) {
 		if (returnCode == NSOKButton) {
 

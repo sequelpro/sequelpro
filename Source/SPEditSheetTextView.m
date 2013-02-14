@@ -68,7 +68,7 @@
 
 - (IBAction)paste:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Try to create an undo group
 	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
 		[[self delegate] setWasCutPaste];
@@ -78,7 +78,7 @@
 
 - (IBAction)cut:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Try to create an undo group
 	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
 		[[self delegate] setWasCutPaste];
@@ -145,7 +145,7 @@
 		}
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
 	if([charactersIgnMod isEqualToString:@" "]
@@ -155,7 +155,7 @@
 		[[self delegate] setDoGroupDueToChars];
 	}
 #endif
-
+	
 	[super keyDown: theEvent];
 
 }
@@ -199,12 +199,12 @@
 		// Check size and NSFileType
 		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
 		
-		if (attr)
+		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];
 			NSString *filetype = [attr objectForKey:NSFileType];
 			
-			if (filetype == NSFileTypeRegular && filesize)
+			if(filetype == NSFileTypeRegular && filesize)
 			{
 				// Ask for confirmation if file content is larger than 1MB
 				if([filesize unsignedLongValue] > 1000000)

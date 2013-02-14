@@ -94,7 +94,7 @@ NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
 NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
 NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
@@ -120,7 +120,7 @@ NSString *SPConsoleEnableImportExportLogging     = @"ConsoleEnableImportExportLo
 NSString *SPConsoleEnableErrorLogging            = @"ConsoleEnableErrorLogging";
 
 // Network Prefpane
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
 NSString *SPUseKeepAlive                         = @"UseKeepAlive";
 NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";

@@ -50,7 +50,7 @@
 - (IBAction)moveSelectionLineUp:(id)sender;
 - (IBAction)moveSelectionLineDown:(id)sender;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)executeBundleItemForInputField:(id)sender;
 #endif
 

@@ -51,7 +51,7 @@
 	BOOL autoindentIgnoresEnter;
 	BOOL autouppercaseKeywordsEnabled;
 	BOOL delBackwardsWasPressed;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	BOOL autohelpEnabled;
 #endif
 	NoodleLineNumberView *lineNumberView;
@@ -59,14 +59,14 @@
 	BOOL startListeningToBoundChanges;
 	BOOL textBufferSizeIncreased;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSString *showMySQLHelpFor;
 #endif
 	
 	IBOutlet NSScrollView *scrollView;
 	SPNarrowDownCompletion *completionPopup;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUserDefaults *prefs;
 #endif
 
@@ -116,14 +116,14 @@
 @property(assign) BOOL completionIsOpen;
 @property(assign) BOOL completionWasReinvokedAutomatically;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPDatabaseDocument *tableDocumentInstance;
 @property (assign) SPTablesList *tablesListInstance;
 @property (assign) SPCustomQuery *customQueryInstance;
 @property (assign) SPMySQLConnection *mySQLConnection;
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)showMySQLHelpForCurrentWord:(id)sender;
 #endif
 
@@ -142,14 +142,14 @@
 - (BOOL) autopair;
 - (void) setAutouppercaseKeywords:(BOOL)enableAutouppercaseKeywords;
 - (BOOL) autouppercaseKeywords;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void) setAutohelp:(BOOL)enableAutohelp;
 - (BOOL) autohelp;
 #endif
 - (void) setTabStops;
 - (void) selectLineNumber:(NSUInteger)lineNumber ignoreLeadingNewLines:(BOOL)ignLeadingNewLines;
 - (NSUInteger) getLineNumberForCharacterIndex:(NSUInteger)anIndex;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void) autoHelp;
 #endif
 - (void) doSyntaxHighlighting;

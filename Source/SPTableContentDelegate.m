@@ -32,7 +32,7 @@
 
 #import "SPTableContentDelegate.h"
 #import "SPTableContentFilter.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
 #import "SPDatabaseDocument.h"
@@ -40,7 +40,7 @@
 #import "SPGeometryDataView.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPCopyTable.h"
@@ -118,7 +118,7 @@
 	
 	[self updateCountText];
 	
-#ifndef SP_REFACTOR /* triggered commands */
+#ifndef SP_CODA /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
 	
 	for (NSString *cmdPath in triggeredCommands) 
@@ -184,14 +184,14 @@
 	NSString *table = [tablesListInstance tableName];
 	
 	// Get tableColumnWidths object
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs objectForKey:SPTableColumnWidths] != nil ) {
 		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
 	} 
 	else {
 #endif
 		tableColumnWidths = [NSMutableDictionary dictionary];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #endif
 	
@@ -215,7 +215,7 @@
 	[[[tableColumnWidths objectForKey:database] objectForKey:table] 
 	 setObject:[NSNumber numberWithDouble:[(NSTableColumn *)[[notification userInfo] objectForKey:@"NSTableColumn"] width]] 
 	 forKey:[[[[notification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 #endif
 }
@@ -228,7 +228,7 @@
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		return (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) ? NO : YES;
 	}
@@ -385,7 +385,7 @@
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		return YES;
 	}
@@ -405,7 +405,7 @@
 	// Get the column width
 	NSUInteger targetWidth = [tableContentView autodetectWidthForColumnDefinition:columnDefinition maxRows:500];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Clear any saved widths for the column
 	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
 	NSString *tableKey = [tablesListInstance tableName];
@@ -446,7 +446,7 @@
  */
 - (void)tableView:(SPCopyTable *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		if (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) {
 			[cell setDrawsBackground:YES];
@@ -509,7 +509,7 @@
 		}
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Show the table cell content as tooltip
  * 
@@ -599,7 +599,7 @@
 }
 #endif
 
-#ifndef SP_REFACTOR /* SplitView delegate methods */
+#ifndef SP_CODA /* SplitView delegate methods */
 
 #pragma mark -
 #pragma mark SplitView delegate methods
@@ -662,7 +662,7 @@
 
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([notification object] == filterTableView) {
 		
 		NSString *string = [[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string];
@@ -758,13 +758,13 @@
  */
 - (BOOL)control:(NSControl<NSControlTextEditingDelegate> *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Check firstly if SPCopyTable can handle command
 	if ([control control:control textView:textView doCommandBySelector:(SEL)command])
 #else
 	if ([control control:control textView:textView doCommandBySelector:command])
 #endif
-			return YES;
+		return YES;
 	
 	// Trap the escape key
 	if ([[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)]) {

@@ -37,7 +37,7 @@
 #import "SPMySQLConstants.h"
 
 // Required category additions
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #import "SPMySQLStringAdditions.h"
 #else
 #import <SPMySQL/SPMySQL.h>

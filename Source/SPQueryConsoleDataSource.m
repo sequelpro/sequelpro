@@ -42,7 +42,7 @@ static NSUInteger SPMessageTruncateCharacterLength = 256;
  */
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	return [messagesVisibleSet count];
 #else
 	return 0;
@@ -54,7 +54,7 @@ static NSUInteger SPMessageTruncateCharacterLength = 256;
  */
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSString *returnValue = nil;
 	
 	id object = [[messagesVisibleSet objectAtIndex:row] valueForKey:[tableColumn identifier]];

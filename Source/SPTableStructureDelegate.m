@@ -135,16 +135,16 @@
 	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
-	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
+		if([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
 			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			[tableSourceView reloadData];
 		}
 	}
 	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
-	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
-		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			if ([anObject integerValue] == 1) {
+	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+			if([anObject integerValue] == 1) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			}
 			
@@ -152,17 +152,17 @@
 		}
 	}
 	// Set null field to "do not allow NULL" for auto_increment Extra and reset Extra suggestion list
-	else if ([[aTableColumn identifier] isEqualToString:@"Extra"]) {
-		if (![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
+	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
+		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
 
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
 			
-			if (isCurrentExtraAutoIncrement) {
+			if(isCurrentExtraAutoIncrement) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
 				if ((![currentRow objectForKey:@"Key"] || [[currentRow objectForKey:@"Key"] isEqualToString:@""])) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 					[chooseKeyButton selectItemWithTag:SPPrimaryKeyMenuTag];
 
 					[NSApp beginSheet:keySheet
@@ -190,10 +190,10 @@
 	// Reset default to "" if field doesn't allow NULL and current default is set to NULL
 	else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
 		if ([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
-			if ([anObject integerValue] == 0) {
+			if([anObject integerValue] == 0) {
 				if ([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 					[currentRow setObject:@"" forKey:@"default"];
-				}
+			}
 			}
 			
 			[tableSourceView reloadData];
@@ -253,8 +253,8 @@
 		return YES;
 	} 
 	
-	return NO;
-}
+		return NO;
+	}
 
 /**
  * Determine whether to allow a drag and drop operation on this table - for the purposes of drag reordering,
@@ -470,15 +470,15 @@
 	column = [tableSourceView editedColumn];
 	
 	// Trap the tab key, selecting the next item in the line
-	if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
+	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
 	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		
-		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)]) {
-			if (row < ([tableSourceView numberOfRows] - 1)) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row + 1] byExtendingSelection:NO];
-				[tableSourceView editColumn:0 row:row + 1 withEvent:nil select:YES];
+		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
+			if ( row < ([tableSourceView numberOfRows] - 1) ) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
 			} 
 			else {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -489,18 +489,18 @@
 		return YES;
 	}
 	// Trap shift-tab key
-	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
+	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
 	{
-		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)]) {
+		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] ) {
 			[[control window] makeFirstResponder:control];
 			
-			if (row > 0) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row - 1] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count] - 1) row:row - 1 withEvent:nil select:YES];
+			if ( row > 0) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count]-1) row:row-1 withEvent:nil select:YES];
 			}
 			else {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count] - 1)] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count] - 1) row:([tableSourceView numberOfRows] - 1) withEvent:nil select:YES];
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableFields count]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
 			}
 		}
 		
@@ -599,7 +599,7 @@
 
 #pragma mark -
 #pragma mark Split view delegate methods
-#ifndef SP_REFACTOR /* Split view delegate methods */
+#ifndef SP_CODA /* Split view delegate methods */
 
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {

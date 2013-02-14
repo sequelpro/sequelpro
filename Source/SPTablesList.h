@@ -40,23 +40,23 @@
 @class SPTableContent;
 @class SPSplitView;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @class SQLSidebarViewController;
 #endif
 
 @interface SPTablesList : NSObject <NSTextFieldDelegate, NSTableViewDelegate>
 {
-	IBOutlet SPDatabaseDocument *tableDocumentInstance;
-	IBOutlet SPTableStructure *tableSourceInstance;
-	IBOutlet SPTableContent *tableContentInstance;
-#ifndef SP_REFACTOR /* ivars */
+	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
+	IBOutlet SPTableStructure* tableSourceInstance;
+	IBOutlet SPTableContent* tableContentInstance;
+#ifndef SP_CODA /* ivars */
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 #endif
 	IBOutlet SPDatabaseData* databaseDataInstance;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id tableInfoInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
@@ -64,7 +64,7 @@
 	IBOutlet id copyTableSheet;
 #endif
 	IBOutlet SPTableView *tablesListView;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
@@ -75,15 +75,15 @@
 	IBOutlet id tableEncodingButton;
 	IBOutlet id tableTypeButton;
 	IBOutlet id toolbarAddButton;
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	id toolbarDeleteButton;
 #endif
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id toolbarActionsButton;
 #endif
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id truncateTableButton;
 	IBOutlet SPSplitView *tableListSplitView;
 	IBOutlet SPSplitView *tableListFilterSplitView;
@@ -104,7 +104,7 @@
 	
 	SPMySQLConnection *mySQLConnection;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	// Table list context menu items
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
@@ -129,11 +129,11 @@
 	BOOL tableListContainsViews;
 	BOOL alertSheetOpened;
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSFont *smallSystemFont;
 #endif
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	SQLSidebarViewController* sidebarViewController;
 #endif
 }
@@ -144,7 +144,7 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
@@ -156,7 +156,7 @@
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
 - (void)makeTableListHaveFocus;
@@ -181,13 +181,13 @@
 
 // Setters
 - (BOOL)selectItemWithName:(NSString *)theName;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
-- (void)showFilter;
-- (void)hideFilter;
-- (void)clearFilter;
+- (void) showFilter;
+- (void) hideFilter;
+- (void) clearFilter;
 #endif
 - (IBAction) updateFilter:(id)sender;
 
@@ -198,7 +198,7 @@
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
-#ifdef SP_REFACTOR /* method decls */
+#ifdef SP_CODA /* method decls */
 @property (assign) SPTableStructure* tableSourceInstance;
 @property (assign) SPTableContent* tableContentInstance;
 @property (assign) id toolbarAddButton;

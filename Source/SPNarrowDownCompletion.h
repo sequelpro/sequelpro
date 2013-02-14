@@ -6,7 +6,7 @@
 //
 //  This class is based on TextMate's TMDIncrementalPopUp implementation
 //  (Dialog plugin) written by Joachim Mårtensson, Allan Odgaard, and Hans-Jörg Bibiko.
-//  
+//
 //  See license: http://svn.textmate.org/trunk/LICENSE
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -79,7 +79,7 @@
 	NSMutableCharacterSet* textualInputCharacters;
 
 	SPDatabaseStructure *databaseStructureRetrieval;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUserDefaults *prefs;
 #endif
 }

@@ -57,7 +57,7 @@
 
 @implementation SPTableStructure
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize indexesController;
 @synthesize indexesTableView;
 @synthesize addFieldButton;
@@ -95,7 +95,7 @@
 
 - (void)awakeFromNib
 {
-#ifndef SP_REFACTOR /* ui manipulation */
+#ifndef SP_CODA /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
 	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -104,7 +104,7 @@
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
 
-#ifndef SP_REFACTOR /* set font from prefs */
+#ifndef SP_CODA /* set font from prefs */
 	// Set the strutcture and index view's font
 	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
@@ -183,17 +183,17 @@
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR /* add prefs observer */
+#ifndef SP_CODA /* add prefs observer */
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 #endif	
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
 #endif
 
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -244,7 +244,7 @@
 
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 	[tableFields insertObject:[NSMutableDictionary
 							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
@@ -319,26 +319,26 @@
 
 	NSString *columnIdentifierName = nil;
 
-	switch ([sender tag]) {
+	switch([sender tag]) {
 		case 7:
-			columnIdentifierName = @"Key";
+		columnIdentifierName = @"Key";
 		break;
 		case 10:
-			columnIdentifierName = @"encoding";
+		columnIdentifierName = @"encoding";
 		break;
 		case 11:
-			columnIdentifierName = @"collation";
+		columnIdentifierName = @"collation";
 		break;
 		case 12:
-			columnIdentifierName = @"comment";
+		columnIdentifierName = @"comment";
 		break;
 		default:
 		return;
 	}
 
-	for (NSTableColumn *col in [tableSourceView tableColumns]) {
+	for(NSTableColumn *col in [tableSourceView tableColumns]) {
 
-		if ([[col identifier] isEqualToString:columnIdentifierName]) {
+		if([[col identifier] isEqualToString:columnIdentifierName]) {
 			[col setHidden:([sender state] == NSOffState) ? NO : YES];
 			[(NSMenuItem *)sender setState:![sender state]];
 			break;
@@ -440,7 +440,7 @@
 
 	NSArray *buttons = [alert buttons];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
@@ -458,7 +458,7 @@
  */
 - (IBAction)resetAutoIncrement:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([sender tag] == 1) {
 
 		[resetAutoIncrementLine setHidden:YES];
@@ -486,7 +486,7 @@
  */
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Order out current sheet to suppress overlapping of sheets
 	[theSheet orderOut:nil];
 
@@ -549,7 +549,7 @@
 
 - (IBAction)unhideIndexesView:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
 #endif
 }
@@ -584,7 +584,7 @@
 	if (valueAsString == nil || ![valueAsString length]) {
 		// reload data and bail
 		[tableDataInstance resetAllData];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[extendedTableInfoInstance loadTable:selTable];
 		[tableInfoInstance tableChanged:nil];
 #endif
@@ -610,12 +610,12 @@
 	[tableDataInstance resetStatusData];
 	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
 		[tableDataInstance resetAllData];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[extendedTableInfoInstance loadTable:selTable];
 #endif
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[tableInfoInstance tableChanged:nil];
 #endif
 }
@@ -682,7 +682,7 @@
 	isSavingRow = YES;
 
 	// Save any edits which have been made but not saved to the table yet.
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 #else
 	[[tableSourceView window] endEditingFor:nil];
@@ -961,7 +961,7 @@
 			[addFieldButton setEnabled:NO];
 			[duplicateFieldButton setEnabled:NO];
 			[removeFieldButton setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[addIndexButton setEnabled:NO];
 			[removeIndexButton setEnabled:NO];
 			[editTableButton setEnabled:NO];
@@ -989,7 +989,7 @@
 	}
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc
 {
@@ -1076,7 +1076,7 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
@@ -1144,7 +1144,7 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-#ifndef SP_REFACTOR /* observe prefs change */
+#ifndef SP_CODA /* observe prefs change */
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
@@ -1304,7 +1304,7 @@
  */
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
-#ifndef SP_REFACTOR /* check toolbar mode */
+#ifndef SP_CODA /* check toolbar mode */
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 #endif
@@ -1314,12 +1314,12 @@
 	[removeFieldButton setEnabled:NO];
 	[duplicateFieldButton setEnabled:NO];
 	[reloadFieldsButton setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[editTableButton setEnabled:NO];
 #endif
 
 	[indexesTableView setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
 	[refreshIndexesButton setEnabled:NO];
@@ -1331,7 +1331,7 @@
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-#ifndef SP_REFACTOR /* check toolbar mode */
+#ifndef SP_CODA /* check toolbar mode */
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 #endif
@@ -1348,14 +1348,14 @@
 	}
 
 	[reloadFieldsButton setEnabled:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[editTableButton setEnabled:YES];
 #endif
 
 	[indexesTableView setEnabled:YES];
 	[indexesTableView displayIfNeeded];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[addIndexButton setEnabled:editingEnabled];
 	[removeIndexButton setEnabled:(editingEnabled && ([indexesTableView numberOfSelectedRows] > 0))];
 	[refreshIndexesButton setEnabled:YES];
@@ -1436,7 +1436,7 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
 #endif
 

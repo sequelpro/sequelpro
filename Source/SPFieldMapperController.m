@@ -100,7 +100,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
 		databaseDataInstance = [tablesListInstance valueForKeyPath:@"databaseDataInstance"];
 
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 		if(![prefs objectForKey:SPLastImportIntoNewTableType])
 			[prefs setObject:@"Default" forKey:SPLastImportIntoNewTableType];
 		if(![prefs objectForKey:SPLastImportIntoNewTableEncoding])
@@ -393,7 +393,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 {
 	// Only save selection if the user selected 'OK'
 	if ([sender tag]) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[prefs setObject:[newTableInfoEnginePopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableType];
 		[prefs setObject:[newTableInfoEncodingPopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableEncoding];
 #endif
@@ -453,7 +453,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		NSInteger columnIndex = 0;
 		NSInteger numberOfColumns = [fieldMappingTableColumnNames count];
 		NSMutableArray *columnDetails = [NSMutableArray array];
-		for (columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
+		for(columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
 
 			// Skip fields which aren't marked as imported
 			if ([fieldMappingOperatorArray objectAtIndex:columnIndex] != doImport) {
@@ -465,7 +465,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[createString appendString:[columnDetails componentsJoinedByString:@", \n"]];
 		[createString appendString:@")"];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if(![[prefs objectForKey:SPLastImportIntoNewTableType] isEqualToString:@"Default"])
 			[createString appendFormat:@" ENGINE=%@", [prefs objectForKey:SPLastImportIntoNewTableType]];
 		if(![[prefs objectForKey:SPLastImportIntoNewTableEncoding] isEqualToString:@"Default"]) {
@@ -741,7 +741,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	}
 	[fieldMapperTableView reloadData];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Remember last field alignment if not "custom order"
 	if([[alignByPopup selectedItem] tag] != 3)
 		[prefs setInteger:[[alignByPopup selectedItem] tag] forKey:SPCSVFieldImportMappingAlignment];
@@ -1049,7 +1049,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[newTableInfoEnginePopup addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[newTableInfoEnginePopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableType]];
 #endif
 
@@ -1082,7 +1082,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[newTableInfoEncodingPopup insertItemWithTitle:utf8MenuItemTitle atIndex:2];
 		}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[newTableInfoEncodingPopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableEncoding]];
 #endif
 	}
@@ -1111,7 +1111,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	while([insertPullDownButton numberOfItems] > (([[self selectedImportMethod] isEqualToString:@"UPDATE"]) ? 6 : 5))
 		[insertPullDownButton removeItemAtIndex:[insertPullDownButton numberOfItems]-1];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Add recent global value menu
 	if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
 		for(id item in [prefs objectForKey:SPGlobalValueHistory])
@@ -1199,7 +1199,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 		// Replace the current map pair with the last selected global value
-		if ([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+		if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
 
 			[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
@@ -1334,7 +1334,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)resizeWindowByHeightDelta:(NSInteger)delta
 {
-#ifndef SP_REFACTOR /* resizeWindowByHeightDelta: */
+#ifndef SP_CODA /* resizeWindowByHeightDelta: */
 	NSUInteger tableMask = [fieldMapperTableScrollView autoresizingMask];
 	NSUInteger headerSwitchMask = [importFieldNamesHeaderSwitch autoresizingMask];
 	NSUInteger alignPopupMask = [alignByPopup autoresizingMask];
@@ -1561,7 +1561,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	NSInteger alignment = 0;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs integerForKey:SPCSVFieldImportMappingAlignment]
 			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] >= 0
 			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] < 4) {
@@ -1670,7 +1670,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[aCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 }
@@ -1970,7 +1970,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 			// Store anObject as recent global value if it's new
 			NSMutableArray *recents = [NSMutableArray array];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
 				[recents setArray:[prefs objectForKey:SPGlobalValueHistory]];
 #endif
@@ -1979,7 +1979,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[recents insertObject:anObject atIndex:0];
 			while([recents count] > 20)
 				[recents removeObjectAtIndex:[recents count]-1];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if([recents count])
 				[prefs setObject:recents forKey:SPGlobalValueHistory];
 #endif
