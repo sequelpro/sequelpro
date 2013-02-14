@@ -3617,7 +3617,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #ifndef SP_CODA
 	return [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery];
 #else
-	return ([_structureContentSwitcher selectedSegment] == 2);
+	return ([structureContentSwitcher selectedSegment] == 2);
 #endif
 }
 

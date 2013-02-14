@@ -68,7 +68,7 @@
 {
 #ifdef SP_CODA /* patch */
 	id delegate;
-	BottomBarSegmentedControl* _structureContentSwitcher;
+	BottomBarSegmentedControl* structureContentSwitcher;
 #endif
 
 	// IBOutlets
