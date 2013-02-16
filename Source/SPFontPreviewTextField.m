@@ -50,10 +50,12 @@
 	// Take the supplied font and apply all its traits except for a standardised
 	// font size to the text field
 	NSFont *displayFont = [[NSFontManager sharedFontManager] convertFont:theFont toSize:11.0f];
+	
 	[super setFont:displayFont];
 
 	// Set up a paragraph style for display, setting bounds and display settings
 	NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle new] autorelease];
+	
 	[paragraphStyle setAlignment:NSNaturalTextAlignment];
 	[paragraphStyle setLineBreakMode:NSLineBreakByTruncatingMiddle];
 	[paragraphStyle setMaximumLineHeight:NSHeight([self bounds]) + [displayFont descender]];

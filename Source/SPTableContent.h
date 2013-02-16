@@ -51,6 +51,8 @@
 @class SPSplitView;
 #endif
 
+#import "SPDatabaseContentViewDelegate.h"
+
 @interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
@@ -284,7 +286,6 @@
 - (NSRect) viewport;
 - (CGFloat) tablesListWidth;
 - (NSDictionary *) filterSettings;
-- (NSArray *)dataColumnDefinitions;
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
 - (void) setPageToRestore:(NSUInteger)thePage;
 - (void)setSelectionToRestore:(NSDictionary *)theSelection;

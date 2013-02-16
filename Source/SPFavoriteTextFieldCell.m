@@ -34,9 +34,6 @@
 
 @implementation SPFavoriteTextFieldCell
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -91,20 +88,26 @@
 		if ([controlView isFlipped]) {
 			startPoint.y += cellFrame.size.height + 8.5f;
 			endPoint.y += cellFrame.size.height + 8.5f;
-		} else {
+		} 
+		else {
 			startPoint.y -= cellFrame.size.height + 8.5f;
 			endPoint.y -= cellFrame.size.height + 8.5f;
 		}
 
 		[NSGraphicsContext saveGraphicsState];
 		[[NSColor gridColor] set];
+		
 		NSShadow *lineGlow = [[NSShadow alloc] init];
+		
 		[lineGlow setShadowBlurRadius:1];
 		[lineGlow setShadowColor:[[NSColor controlLightHighlightColor] colorWithAlphaComponent:0.75f]];
 		[lineGlow setShadowOffset:NSMakeSize(0, -1)];
 		[lineGlow set];
+		
 		[NSBezierPath strokeLineFromPoint:startPoint toPoint:endPoint];
+		
 		[lineGlow release];
+		
 		[NSGraphicsContext restoreGraphicsState];
 	}
 }

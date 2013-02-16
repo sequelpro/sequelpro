@@ -781,4 +781,15 @@
 	return NO;
 }
 
+#pragma mark -
+#pragma mark Database content view delegate methods
+
+/**
+ * Retrieve the data column definitions
+ */
+- (NSArray *)dataColumnDefinitions
+{
+	return dataColumns;
+}
+
 @end

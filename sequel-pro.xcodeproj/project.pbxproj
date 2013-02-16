@@ -608,6 +608,7 @@
 		17148564125F5FF500321285 /* SPDatabaseCharacterSets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseCharacterSets.m; sourceTree = "<group>"; };
 		171B373F15DA654300EBC7AB /* SPTableContentFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentFilter.h; sourceTree = "<group>"; };
 		171B374015DA654300EBC7AB /* SPTableContentFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContentFilter.m; sourceTree = "<group>"; };
+		171C398D16BD634600209EC6 /* SPDatabaseContentViewDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseContentViewDelegate.h; sourceTree = "<group>"; };
 		17292441107AC41000B21980 /* SPXMLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporter.h; sourceTree = "<group>"; };
 		17292442107AC41000B21980 /* SPXMLExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExporter.m; sourceTree = "<group>"; };
 		172A650F0F7BED7A001E861A /* SPConsoleMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConsoleMessage.h; sourceTree = "<group>"; };
@@ -1839,6 +1840,7 @@
 				BC8C8531100E0A8000D7A129 /* SPTableView.m */,
 				BC398A2B121D526200BE3EF4 /* SPCopyTable.h */,
 				BC398A2C121D526200BE3EF4 /* SPCopyTable.m */,
+				171C398D16BD634600209EC6 /* SPDatabaseContentViewDelegate.h */,
 			);
 			name = "Table Views";
 			sourceTree = "<group>";

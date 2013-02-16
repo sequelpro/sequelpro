@@ -45,6 +45,7 @@
 - (void)awakeFromNib
 {
 	[self setView:printAccessoryView];
+	
 	[defaultsController addObserver:self forKeyPath:@"values.PrintBackground" options:NSKeyValueObservingOptionNew context:@"PrinterSettingsChanged"];
 }	
 
@@ -63,7 +64,8 @@
 	if ([(NSString *)context isEqualToString:@"PrinterSettingsChanged"]) {
 		if (printWebView) 
 			[[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];
-	} else {
+	} 
+	else {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 	}
 }
@@ -74,12 +76,14 @@
 - (void)setPrintView:(WebView *)theWebView
 {
 	printWebView = theWebView;
+	
 	[[printWebView preferences] setShouldPrintBackgrounds:[[defaultsController valueForKeyPath:@"values.PrintBackground"] boolValue]];
 }
 
 - (void)dealloc
 {
 	[defaultsController removeObserver:self forKeyPath:@"values.PrintBackground"];
+	
 	[super dealloc];
 }
 

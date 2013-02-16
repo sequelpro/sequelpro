@@ -1630,14 +1630,6 @@
 }
 
 /**
- * Provide a getter for the custom query result table's current viewport
- */
-- (NSArray *)dataColumnDefinitions
-{
-	return cqColumnDefinition;
-}
-
-/**
  * Set the selected row indexes to restore on next custom query result table load
  */
 - (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
@@ -3280,7 +3272,6 @@
  */
 - (void)historyItemsHaveBeenUpdated:(id)manager
 {
-
 	// Abort if the connection has been closed already - sign of a closed window
 	if (![mySQLConnection isConnected]) return;
 
@@ -3363,6 +3354,17 @@
 	}
 }
 #endif
+
+#pragma mark -
+#pragma mark Database content view delegate methods
+
+/**
+ * Provide a getter for the custom query result table's current viewport
+ */
+- (NSArray *)dataColumnDefinitions
+{
+	return cqColumnDefinition;
+}
 
 #pragma mark -
 #pragma mark Task interaction

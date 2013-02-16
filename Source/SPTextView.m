@@ -1790,15 +1790,16 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 					currentDb = [tablesListInstance selectedDatabase];
 
 #ifndef SP_CODA
-				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
+				while ([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) 
+				{
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
-					if(r.length) {
-						NSArray *selTables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
-						if([selTables count])
-							[theHintString replaceCharactersInRange:r withString:[selTables componentsJoinedAndBacktickQuoted]];
-						else
-							[theHintString replaceCharactersInRange:r withString:@"$SP_SELECTED_TABLE"];
+					
+					if (r.length) {
+						NSArray *selTables = [[(NSObject *)[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
+						
+						[theHintString replaceCharactersInRange:r withString:[selTables count] ? [selTables componentsJoinedAndBacktickQuoted] : @"$SP_SELECTED_TABLE"];	
 					}
+					
 					[theHintString flushCachedRegexData];
 				}
 #endif

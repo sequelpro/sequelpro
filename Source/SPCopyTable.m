@@ -51,6 +51,7 @@
 #endif
 #import "SPTablesList.h"
 #import "SPBundleCommandRunner.h"
+#import "SPDatabaseContentViewDelegate.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -1185,19 +1186,8 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex
 {
-
 	// Retrieve the column definition
-#ifdef SP_CODA
-	NSDictionary *columnDefinition = nil;
-	
-	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
-		columnDefinition = [[(SPTableContent*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-	
-	else if ( [[self delegate] isKindOfClass:[SPCustomQuery class]] )
-		columnDefinition = [[(SPCustomQuery*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-#else
-	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-#endif
+	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
 
 	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
@@ -1368,7 +1358,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
-				NSArray *defs = [[self delegate] dataColumnDefinitions];
+				
+				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
+				
 				if(defs && [defs count] == numColumns)
 					for( c = 0; c < numColumns; c++ ) {
 						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
@@ -1383,7 +1375,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			}
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
 				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
-				NSArray *defs = [[self delegate] dataColumnDefinitions];
+				
+				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
+				
 				if(defs && [defs count] == numColumns)
 					for( c = 0; c < numColumns; c++ ) {
 						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);

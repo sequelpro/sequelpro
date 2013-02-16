@@ -31,6 +31,8 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import "SPDatabaseContentViewDelegate.h"
+
 #import <WebKit/WebKit.h>
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
@@ -63,8 +65,7 @@
 @class SPTablesList;
 #endif
 
-
-@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
+@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate, SPDatabaseContentViewDelegate>
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;

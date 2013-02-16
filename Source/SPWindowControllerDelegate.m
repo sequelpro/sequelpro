@@ -407,10 +407,13 @@
 	
 	// Draw the background flipped, which is actually the right way up
 	NSAffineTransform *transform = [NSAffineTransform transform];
+	
 	[transform translateXBy:0.0f yBy:[[[self window] contentView] frame].size.height];
 	[transform scaleXBy:1.0f yBy:-1.0f];
+	
 	[transform concat];
-	[(id <PSMTabStyle>)[[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+	[(id <PSMTabStyle>)[(PSMTabBarControl *)[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+	
 	[viewImage unlockFocus];
 	
 	return [viewImage autorelease];

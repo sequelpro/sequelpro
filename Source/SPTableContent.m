@@ -3900,14 +3900,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 
 /**
- * Retrieve the data column definitions
- */
-- (NSArray *)dataColumnDefinitions
-{
-	return dataColumns;
-}
-
-/**
  * Set the sort column and sort order to restore on next table load
  */
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending
