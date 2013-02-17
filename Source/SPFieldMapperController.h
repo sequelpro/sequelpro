@@ -38,22 +38,22 @@
 @interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate>
 {
 	IBOutlet SPTableView *fieldMapperTableView;
-	IBOutlet id fieldMapperTableScrollView;
+	IBOutlet NSScrollView *fieldMapperTableScrollView;
 	IBOutlet NSTableView *globalValuesTableView;
 	IBOutlet NSPopUpButton *tableTargetPopup;
 	IBOutlet NSPathControl *fileSourcePath;
 	IBOutlet NSPopUpButton *importMethodPopup;
-	IBOutlet id rowUpButton;
-	IBOutlet id rowDownButton;
-	IBOutlet id recordCountLabel;
+	IBOutlet NSButton *rowUpButton;
+	IBOutlet NSButton *rowDownButton;
+	IBOutlet NSTextField *recordCountLabel;
 	IBOutlet NSButton *importFieldNamesHeaderSwitch;
 	IBOutlet NSButton *addRemainingDataSwitch;
-	IBOutlet id importButton;
-	IBOutlet id advancedBox;
+	IBOutlet NSButton *importButton;
+	IBOutlet NSBox *advancedBox;
 	IBOutlet NSPopUpButton *alignByPopup;
-	IBOutlet id alignByPopupLabel;
-	IBOutlet id importMethodLabel;
-	IBOutlet id advancedLabel;
+	IBOutlet NSTextField *alignByPopupLabel;
+	IBOutlet NSTextField *importMethodLabel;
+	IBOutlet NSTextField *advancedLabel;
 	IBOutlet NSMenuItem *matchingNameMenuItem;
 	IBOutlet NSMenuItem *addNewColumnMenuItem;
 	IBOutlet NSMenuItem *setAllTypesToMenuItem;
@@ -62,11 +62,11 @@
 	IBOutlet NSTextField *newTableNameLabel;
 	IBOutlet NSButton *newTableNameInfoButton;
 	IBOutlet NSButton *newTableButton;
-	IBOutlet id newTableInfoWindow;
-	IBOutlet id newTableInfoEncodingPopup;
-	IBOutlet id newTableInfoEnginePopup;
+	IBOutlet NSWindow *newTableInfoWindow;
+	IBOutlet NSPopUpButton *newTableInfoEncodingPopup;
+	IBOutlet NSPopUpButton *newTableInfoEnginePopup;
 
-	IBOutlet id globalValuesSheet;
+	IBOutlet NSWindow *globalValuesSheet;
 	IBOutlet NSButton *addGlobalValueButton;
 	IBOutlet NSButton *removeGlobalValueButton;
 	IBOutlet NSButton *insertNULLValueButton;
@@ -85,23 +85,22 @@
 	IBOutlet NSButton *highPriorityCheckBox;
 	IBOutlet NSButton *skipexistingRowsCheckBox;
 	IBOutlet SPTextView *onupdateTextView;
-	IBOutlet id gobackButton;
+	IBOutlet NSButton *gobackButton;
 
-	IBOutlet id advancedButton;
+	IBOutlet NSButton *advancedButton;
 
-	IBOutlet id advancedInsertView;
-	IBOutlet id advancedReplaceView;
-	IBOutlet id advancedUpdateView;
+	IBOutlet NSView *advancedInsertView;
+	IBOutlet NSView *advancedReplaceView;
+	IBOutlet NSView *advancedUpdateView;
 
 	IBOutlet NSComboBoxCell *typeComboxBox;
 
 	id theDelegate;
 	id customQueryInstance;
 	id fieldMappingImportArray;
-	SPTablesList *tablesListInstance;
 	id databaseDataInstance;
+	SPTablesList *tablesListInstance;
 
-	NSInteger fieldMappingCurrentRow;
 	NSMutableArray *fieldMappingArray;
 	NSMutableArray *fieldMappingTableColumnNames;
 	NSMutableArray *fieldMappingTableTypes;
@@ -113,25 +112,16 @@
 	NSMutableArray *fieldMappingTableDefaultValues;
 	NSMutableArray *defaultFieldTypesForComboBox;
 
-	NSString *newTableEncoding;
-	NSString *newTableEngine;
-
 	NSNumber *doImport;
 	NSNumber *doNotImport;
 	NSNumber *isEqual;
 	NSString *doImportString;
 	NSString *doNotImportString;
 	NSString *isEqualString;
+	NSString *newTableEncoding;
+	NSString *newTableEngine;
 
-	NSInteger numberOfImportColumns;
 	NSMutableIndexSet *toBeEditedRowIndexes;
-
-	BOOL fieldMappingImportArrayIsPreview;
-	BOOL importFieldNamesHeader;
-	BOOL showAdvancedView;
-	BOOL targetTableHasPrimaryKey;
-	BOOL newTableMode;
-	BOOL addGlobalSheetIsOpen;
 
 	NSArray *primaryKeyFields;
 	NSNumber *lastDisabledCSVFieldcolumn;
@@ -145,6 +135,15 @@
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
+	NSInteger numberOfImportColumns;
+	NSInteger fieldMappingCurrentRow;
+	
+	BOOL fieldMappingImportArrayIsPreview;
+	BOOL importFieldNamesHeader;
+	BOOL showAdvancedView;
+	BOOL targetTableHasPrimaryKey;
+	BOOL newTableMode;
+	BOOL addGlobalSheetIsOpen;
 }
 
 @property(retain) NSString* sourcePath;

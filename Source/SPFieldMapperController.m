@@ -1310,23 +1310,22 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (IBAction)insertPulldownValue:(id)sender
 {
-
-	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
+	if ([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
 
 	NSInteger selectedIndex = [sender indexOfItem:[sender selectedItem]] - 4;
-	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
+	
+	if ([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)]) {
 		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", selectedIndex]];
-
+	}
 }
 
 - (IBAction)insertRecentGlobalValue:(id)sender
 {
+	if ([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
 
-	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
-
-	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
+	if ([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)]) {
 		[[[NSApp keyWindow] firstResponder] insertText:[sender title]];
-
+	}
 }
 
 #pragma mark -
