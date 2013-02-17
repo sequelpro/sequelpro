@@ -57,6 +57,7 @@
 @class SPDatabaseStructure;
 @class SPMySQLConnection;
 
+#import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
@@ -72,14 +73,14 @@
 #endif
 
 	// IBOutlets
-	IBOutlet SPTablesList* tablesListInstance;
-	IBOutlet SPTableStructure* tableSourceInstance;				
-	IBOutlet SPTableContent* tableContentInstance;
+	IBOutlet SPTablesList *tablesListInstance;
+	IBOutlet SPTableStructure *tableSourceInstance;				
+	IBOutlet SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
 	IBOutlet id tableRelationsInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
-	IBOutlet SPTableData* tableDataInstance;
+	IBOutlet SPTableData *tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 #ifndef SP_CODA

@@ -1274,8 +1274,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 
-			if ([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
-				[env setObject:[[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+			if ([[self delegate] respondsToSelector:@selector(usedQuery)] && [(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery]) {
+				[env setObject:[(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+			}
 
 			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
 			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];

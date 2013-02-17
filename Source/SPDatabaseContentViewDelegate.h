@@ -30,6 +30,8 @@
 
 @protocol SPDatabaseContentViewDelegate <NSObject>
 
+- (NSString *)usedQuery;
+
 - (NSArray *)dataColumnDefinitions;
 
 @end

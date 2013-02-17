@@ -206,32 +206,31 @@
 - (NSRange)fieldEditorSelectedRange;
 
 // Table loading methods and information
-- (void) loadTable:(NSString *)aTable;
+- (void)loadTable:(NSString *)aTable;
 - (void)setTableDetails:(NSDictionary *)tableDetails;
-- (void) clearTableValues;
-- (void) loadTableValues;
-- (NSString *) tableFilterString;
-- (void) updateCountText;
-- (void) initTableLoadTimer;
-- (void) clearTableLoadTimer;
-- (void) tableLoadUpdate:(NSTimer *)theTimer;
+- (void)clearTableValues;
+- (void)loadTableValues;
+- (NSString *)tableFilterString;
+- (void)updateCountText;
+- (void)initTableLoadTimer;
+- (void)clearTableLoadTimer;
+- (void)tableLoadUpdate:(NSTimer *)theTimer;
 
 // Table interface actions
-- (IBAction) reloadTable:(id)sender;
-- (void) reloadTableTask;
-- (IBAction) filterTable:(id)sender;
+- (IBAction)reloadTable:(id)sender;
+- (void)reloadTableTask;
+- (IBAction)filterTable:(id)sender;
 - (void)filterTableTask;
-- (IBAction) toggleFilterField:(id)sender;
-- (NSString *) usedQuery;
-- (void) setUsedQuery:(NSString *)query;
+- (IBAction)toggleFilterField:(id)sender;
+- (void)setUsedQuery:(NSString *)query;
 
 // Pagination
-- (IBAction) navigatePaginationFromButton:(id)sender;
+- (IBAction)navigatePaginationFromButton:(id)sender;
 #ifndef SP_CODA
 - (IBAction)togglePagination:(NSButton *)sender;
 #endif
-- (void) setPaginationViewVisibility:(BOOL)makeVisible;
-- (void) updatePaginationState;
+- (void)setPaginationViewVisibility:(BOOL)makeVisible;
+- (void)updatePaginationState;
 
 // Edit methods
 - (IBAction)addRow:(id)sender;
@@ -254,8 +253,8 @@
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Additional methods
 - (void)setConnection:(SPMySQLConnection *)theConnection;
@@ -279,26 +278,26 @@
 - (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 
 // Retrieving and setting table state
-- (NSString *) sortColumnName;
-- (BOOL) sortColumnIsAscending;
-- (NSUInteger) pageNumber;
+- (NSString *)sortColumnName;
+- (BOOL)sortColumnIsAscending;
+- (NSUInteger)pageNumber;
 - (NSDictionary *)selectionDetailsAllowingIndexSelection:(BOOL)allowIndexFallback;
-- (NSRect) viewport;
-- (CGFloat) tablesListWidth;
-- (NSDictionary *) filterSettings;
-- (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
-- (void) setPageToRestore:(NSUInteger)thePage;
+- (NSRect)viewport;
+- (CGFloat)tablesListWidth;
+- (NSDictionary *)filterSettings;
+- (void)setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
+- (void)setPageToRestore:(NSUInteger)thePage;
 - (void)setSelectionToRestore:(NSDictionary *)theSelection;
-- (void) setViewportToRestore:(NSRect)theViewport;
-- (void) setFiltersToRestore:(NSDictionary *)filterSettings;
-- (void) storeCurrentDetailsForRestoration;
-- (void) clearDetailsToRestore;
-- (void) setFilterTableData:(NSData*)arcData;
-- (NSData*) filterTableData;
+- (void)setViewportToRestore:(NSRect)theViewport;
+- (void)setFiltersToRestore:(NSDictionary *)filterSettings;
+- (void)storeCurrentDetailsForRestoration;
+- (void)clearDetailsToRestore;
+- (void)setFilterTableData:(NSData *)arcData;
+- (NSData *)filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
 
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+- (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
 @end

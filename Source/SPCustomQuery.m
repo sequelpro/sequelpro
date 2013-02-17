@@ -1531,11 +1531,6 @@
 	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
 }
 
-- (NSString *)usedQuery
-{
-	return usedQuery;
-}
-
 #pragma mark -
 #pragma mark Retrieving and setting table state
 
@@ -3357,6 +3352,11 @@
 
 #pragma mark -
 #pragma mark Database content view delegate methods
+
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
 
 /**
  * Provide a getter for the custom query result table's current viewport

@@ -784,6 +784,11 @@
 #pragma mark -
 #pragma mark Database content view delegate methods
 
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
+
 /**
  * Retrieve the data column definitions
  */

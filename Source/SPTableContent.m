@@ -1644,11 +1644,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 }
 
-- (NSString *)usedQuery
-{
-	return usedQuery;
-}
-
 - (void)setUsedQuery:(NSString *)query
 {
 	if (usedQuery) [usedQuery release];
