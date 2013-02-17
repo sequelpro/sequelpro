@@ -301,46 +301,54 @@
 	[self insertText:n];
 
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
-
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
 }
 
 - (IBAction)undo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] undo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat undo.
-	if(!textWasChanged) [[self undoManager] undo];
-	if(!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
 }
 
 - (IBAction)redo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] redo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat redo.
-	if(!textWasChanged) [[self undoManager] redo];
-	if(!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
 }
 
 - (IBAction)paste:(id)sender
 {
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]){
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
+	
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
+
 	[super cut:sender];
 }
 
@@ -522,20 +530,18 @@
 
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
-	if([charactersIgnMod isEqualToString:@" "]
-		|| [theEvent keyCode] == 36
-		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-		) {
-		[[self delegate] setDoGroupDueToChars];
+	if ([charactersIgnMod isEqualToString:@" "] ||
+	    [theEvent keyCode] == 36 || 
+	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	{
+		[(SPBundleEditorController *)[self delegate] setDoGroupDueToChars];
 	}
 
 	// Check to see whether several characters are selected, and if so, wrap them with
 	// the auto-paired characters.  This returns false if the selection has zero length.
-	if ([self wrapSelectionWithPrefix:insertedCharacter])
-		return;
+	if ([self wrapSelectionWithPrefix:insertedCharacter]) return;
 
 	[super keyDown: theEvent];
-
 }
 
 /**
@@ -580,8 +586,9 @@
 		}
 
 		// Try to create an undo group
-		if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-			[[self delegate] setWasCutPaste];
+		if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+			[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+		}
 
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;

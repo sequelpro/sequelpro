@@ -47,32 +47,38 @@
 - (IBAction)undo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] undo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat undo.
-	if(!textWasChanged) [[self undoManager] undo];
-	if(!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
 }
 
 - (IBAction)redo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] redo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat redo.
-	if(!textWasChanged) [[self undoManager] redo];
-	if(!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
 }
 
 - (IBAction)paste:(id)sender
 {
 #ifndef SP_CODA
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPFieldEditorController *)[self delegate] setWasCutPaste];
+	}
 #endif
+	
 	[super paste:sender];
 }
 
@@ -80,9 +86,11 @@
 {
 #ifndef SP_CODA
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPFieldEditorController *)[self delegate] setWasCutPaste];
+	}
 #endif
+	
 	[super cut:sender];
 }
 
@@ -108,15 +116,13 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
-	{
+	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0) {
 		[super keyDown: theEvent];
 		return;
 	}
@@ -124,20 +130,22 @@
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
+	if (curFlags & NSCommandKeyMask) {
+		if ([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		
+		if ([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size; ⌘0
+		
+		if ([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size; ⌘0
 		{
 			[self makeTextStandardSize];
 			[self saveChangedFontInUserDefaults];
@@ -148,16 +156,15 @@
 #ifndef SP_CODA
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
-	if([charactersIgnMod isEqualToString:@" "]
-		|| [theEvent keyCode] == 36
-		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-		) {
-		[[self delegate] setDoGroupDueToChars];
+	if ([charactersIgnMod isEqualToString:@" "] ||
+	    [theEvent keyCode] == 36 ||
+	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	{
+		[(SPFieldEditorController *)[self delegate] setDoGroupDueToChars];
 	}
 #endif
 	
 	[super keyDown: theEvent];
-
 }
 
 /*
