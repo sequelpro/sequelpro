@@ -206,7 +206,7 @@
 - (IBAction)openConnectionSheet:(id)sender
 {
 	// Avoid opening more than NSOpenPanel
-	if(encodingPopUp){
+	if (encodingPopUp) {
 		NSBeep();
 		return;
 	}

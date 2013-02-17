@@ -102,23 +102,23 @@
 - (void)setSpfSessionDocData:(NSDictionary *)data;
 
 // Feedback controller delegate methods
-- (NSMutableDictionary*) anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
+- (NSMutableDictionary *)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
 
 // Others
 - (NSString *)contentOfFile:(NSString *)aPath;
-- (NSArray *)bundleCategoriesForScope:(NSString*)scope;
-- (NSArray *)bundleItemsForScope:(NSString*)scope;
-- (NSArray *)bundleCommandsForTrigger:(NSString*)trigger;
-- (NSDictionary *)bundleKeyEquivalentsForScope:(NSString*)scope;
-- (void)registerActivity:(NSDictionary*)commandDict;
+- (NSArray *)bundleCategoriesForScope:(NSString *)scope;
+- (NSArray *)bundleItemsForScope:(NSString *)scope;
+- (NSArray *)bundleCommandsForTrigger:(NSString *)trigger;
+- (NSDictionary *)bundleKeyEquivalentsForScope:(NSString *)scope;
+- (void)registerActivity:(NSDictionary *)commandDict;
 - (void)removeRegisteredActivity:(NSInteger)pid;
-- (NSArray*)runningActivities;
+- (NSArray *)runningActivities;
 
-- (void)handleEventWithURL:(NSURL*)url;
-- (NSString*)doSQLSyntaxHighlightForString:(NSString*)sqlText cssLike:(BOOL)cssLike;
+- (void)handleEventWithURL:(NSURL *)url;
+- (NSString*)doSQLSyntaxHighlightForString:(NSString *)sqlText cssLike:(BOOL)cssLike;
 
 - (IBAction)executeBundleItemForApp:(id)sender;
-- (NSDictionary*)shellEnvironmentForDocument:(NSString*)docUUID;
+- (NSDictionary *)shellEnvironmentForDocument:(NSString *)docUUID;
 
 - (void)addHTMLOutputController:(id)controller;
 - (void)removeHTMLOutputController:(id)controller;
