@@ -282,7 +282,7 @@
 			}
 			
 			[[self exportOutputFile] writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
-			[[self exportOutputFile] writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+			[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 					
 		// Add the table content if required
@@ -326,9 +326,11 @@
 
 				// Set up the column query string parts
 				[rawColumnNames addObject:[theColumnDetail objectForKey:@"name"]];
+				
 				if (useRawHexDataForColumnAtIndex[j]) {
 					[queryColumnDetails addObject:[NSString stringWithFormat:@"HEX(%@)", [[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]]];
-				} else {
+				} 
+				else {
 					[queryColumnDetails addObject:[[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]];
 				}
 				
@@ -519,7 +521,7 @@
 				}
 				
 				// Complete the command
-				[[self exportOutputFile] writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Unlock the table and re-enable keys if supported
 				[metaString setString:@""];
@@ -603,7 +605,7 @@
 		}
 		
 		// Add an additional separator between tables
-		[[self exportOutputFile] writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+		[[self exportOutputFile] writeData:[@"\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
