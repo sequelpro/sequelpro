@@ -848,7 +848,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 		columnCounter = 0;
 		for(id col in row) {
-			if(col && ![col isNSNull]) {
+			if(col && ![col isNSNull] && ![col isSPNotLoaded]) {
 				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < (NSInteger)[(NSString*)col length]) {
 					maxLengthOfSourceColumns[columnCounter] = [(NSString*)col length];
 				}
