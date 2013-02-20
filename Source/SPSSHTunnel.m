@@ -44,7 +44,6 @@
 @implementation SPSSHTunnel
 
 @synthesize passwordPromptCancelled;
-@synthesize connectionMuxingEnabled;
 @synthesize taskExitedUnexpectedly;
 
 /*
@@ -75,8 +74,9 @@
 		debugMessagesLock = [[NSLock alloc] init];
 		answerAvailableLock = [[NSLock alloc] init];
 
-		// Enable connection muxing on 10.7+, as 10.6 has problems with muxing (see Issue #1457)
-		connectionMuxingEnabled = (systemVersion >= 0x1070);
+		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
+		// muxing causes connection instability for a large number of users (see Issue #1457)
+		connectionMuxingEnabled = (systemVersion >= 0x1070) && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
 		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -322,6 +322,8 @@
 	// Ensure that the connection can be used for only tunnels, not interactive
 	[taskArguments addObject:@"-N"];
 
+	// If explicitly enabled, activate connection multiplexing - note that this can cause connection
+	// instability on some setups, so is currently disabled by default.
 	if (connectionMuxingEnabled) {
 
 		// Enable automatic connection muxing/sharing, for faster connections

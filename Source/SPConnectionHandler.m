@@ -380,13 +380,6 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	if (newState == SPMySQLProxyIdle) {
 
-		// If the connection closed unexpectedly, and muxing was enabled, disable muxing an re-try.
-		if ([theTunnel taskExitedUnexpectedly] && [theTunnel connectionMuxingEnabled]) {
-			[theTunnel setConnectionMuxingEnabled:NO];
-			[theTunnel connect];
-			return;
-		}
-
 #ifndef SP_CODA
 		[dbDocument setTitlebarStatus:NSLocalizedString(@"SSH Disconnected", @"SSH disconnected titlebar marker")];
 #endif

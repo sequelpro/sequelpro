@@ -175,6 +175,8 @@
 	<true/>
 	<key>SQLExportUseCompression</key>
 	<false/>
+	<key>SSHMultiplexingEnabled</key>
+	<false/>
 	<key>TableInformationPanelCollapsed</key>
 	<false/>
 	<key>TableRowCountCheapLookupSizeBoundary</key>

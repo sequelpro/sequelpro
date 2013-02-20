@@ -224,6 +224,7 @@ NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
 NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexSet";
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
+NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";
