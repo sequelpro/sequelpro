@@ -4195,6 +4195,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Add the progress window to this window
 	[self centerTaskWindow];	
 	[parentWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
+
+#ifndef SP_CODA
+	// If not connected, update the favorite selection
+	if (!_isConnected) {
+		[connectionController updateFavoriteSelection:self];
+	}
+#endif
 }
 
 /**
@@ -4239,7 +4246,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
 		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
-		[connectionController updateFavoriteSelection:self];
 	}
 #endif
 

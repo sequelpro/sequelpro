@@ -651,8 +651,33 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[prefs setInteger:[[fav objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
 	
-	// Set first responder to password field if it is empty
-	[self performSelector:@selector(_updateFavoriteFirstResponder) withObject:nil afterDelay:0.0];
+	// Set the next KeyView to password field if the password is empty
+	switch ([self type])
+	{
+		case SPTCPIPConnection:
+			if (![[standardPasswordField stringValue] length]) {
+				[favoritesOutlineView setNextKeyView:standardPasswordField];
+			} else {
+				[favoritesOutlineView setNextKeyView:standardNameField];
+			}
+			break;
+		case SPSocketConnection:
+			if (![[socketPasswordField stringValue] length]) {
+				[favoritesOutlineView setNextKeyView:socketPasswordField];
+			} else {
+				[favoritesOutlineView setNextKeyView:socketNameField];
+			}
+			break;
+		case SPSSHTunnelConnection:
+			if (![[sshPasswordField stringValue] length]) {
+				[favoritesOutlineView setNextKeyView:sshPasswordField];
+			} else if (![[sshSSHPasswordField stringValue] length]) {
+				[favoritesOutlineView setNextKeyView:sshSSHPasswordField];
+			} else {
+				[favoritesOutlineView setNextKeyView:sshNameField];
+			}
+			break;
+	}
 #endif
 }
 

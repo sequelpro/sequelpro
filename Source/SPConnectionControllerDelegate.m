@@ -40,6 +40,7 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
+#import "SPFavoritesOutlineView.h"
 #endif
 
 #ifndef SP_CODA
@@ -260,6 +261,13 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
+    NSEvent *event = [NSApp currentEvent];
+    BOOL shiftTabbedIn = ([event type] == NSKeyDown && [[event characters] length] && [[event characters] characterAtIndex:0] == NSBackTabCharacter);
+
+    if (shiftTabbedIn && [(SPFavoritesOutlineView *)outlineView justGainedFocus]) {
+		return NO;
+	}
+
 	return (item != quickConnectItem);
 }
 

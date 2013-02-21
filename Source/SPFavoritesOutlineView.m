@@ -37,6 +37,8 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 @implementation SPFavoritesOutlineView
 
+@synthesize justGainedFocus;
+
 - (void) awakeFromNib
 {
 	systemVersion = 0;
@@ -45,7 +47,17 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 - (BOOL)acceptsFirstResponder
 {
+	if ([[self window] firstResponder] != self) {
+		[self setJustGainedFocus:YES];
+	}
+
 	return YES;
+}
+
+- (BOOL)resignFirstResponder
+{
+	[self setJustGainedFocus:NO];
+	return [super resignFirstResponder];;
 }
 
 /**
@@ -75,6 +87,15 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	if (([self numberOfSelectedRows] == 1) && (([event keyCode] == 36) || ([event keyCode] == 76))) {
 		[[self delegate] performSelector:[self doubleAction]];
 		
+		return;
+
+	// If the Tab key is used, change focus rather than entering edit mode.
+	} else if ([[event characters] length] && [[event characters] characterAtIndex:0] == NSTabCharacter) {
+		if (([event modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
+			[[self window] selectKeyViewFollowingView:self];
+		} else {
+			[[self window] selectKeyViewPrecedingView:self];
+		}
 		return;
 	}
 	
