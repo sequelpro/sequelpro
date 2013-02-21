@@ -340,58 +340,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 }
 
 #pragma mark -
-#pragma mark Tableview delegate methods
-
-/**
- * Called whenever the triggers table view selection changes.
- */
-- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	[removeTriggerButton setEnabled:([triggersTableView numberOfSelectedRows] > 0)];
-}
-
-/**
- * Alter the colour of cells displaying NULL values
- */
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	if (![cell respondsToSelector:@selector(setTextColor:)]) {
-		return;
-	}
-
-	id theValue = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
-
-	if ([theValue isNSNull]) {
-		[cell setTextColor:[NSColor lightGrayColor]];
-	} else {
-		[cell setTextColor:[NSColor blackColor]];
-	}
-}
-
-/**
- * Double-click action on table cells - for the time being, return NO to disable editing.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	if ([tableDocumentInstance isWorking]) return NO;
-
-	// Start Edit panel
-	if (((NSInteger)[triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
-		[self _editTriggerAtIndex:rowIndex];
-	}
-
-	return NO;
-}
-
-/**
- * Disable row selection while the document is working.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return (![tableDocumentInstance isWorking]);
-}
-
-#pragma mark -
 #pragma mark Task interaction
 
 /**
@@ -561,17 +509,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 }
 
 #pragma mark -
-#pragma mark Textfield delegate methods
-
-/**
- * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
- */
-- (void)controlTextDidChange:(NSNotification *)notification
-{
-	[self _toggleConfirmAddTriggerButtonEnabled];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -612,6 +549,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
 	
 	isEdit = YES;
+	
 	[self _openTriggerSheet];
 }
 

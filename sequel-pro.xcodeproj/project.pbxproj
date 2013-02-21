@@ -27,6 +27,7 @@
 		1198F5B31174EDD500670590 /* SPDatabaseCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1198F5B21174EDD500670590 /* SPDatabaseCopy.m */; };
 		11B55BFE1189E3B2009EF465 /* SPDatabaseAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 11B55BFD1189E3B2009EF465 /* SPDatabaseAction.m */; };
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
+		17005CB316D6CF0000AF81F4 /* SPTableTriggersDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17005CB216D6CF0000AF81F4 /* SPTableTriggersDelegate.m */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
 		1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */; };
 		1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */; };
@@ -596,6 +597,8 @@
 		11C210DD1180E9B800758039 /* SPDatabaseRenameTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseRenameTest.h; sourceTree = "<group>"; };
 		11C210DE1180E9B800758039 /* SPDatabaseRenameTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseRenameTest.m; sourceTree = "<group>"; };
 		11D44DEF118F5887002AA43C /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Frameworks/OCMock.framework; sourceTree = "<group>"; };
+		17005CB116D6CF0000AF81F4 /* SPTableTriggersDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTriggersDelegate.h; sourceTree = "<group>"; };
+		17005CB216D6CF0000AF81F4 /* SPTableTriggersDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTriggersDelegate.m; sourceTree = "<group>"; };
 		17128B8A0FE6E0210035DD75 /* QLPreviewPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QLPreviewPanel.h; sourceTree = "<group>"; };
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
@@ -1354,6 +1357,17 @@
 			name = "Database Actions";
 			sourceTree = "<group>";
 		};
+		17005CB016D6CEA400AF81F4 /* Table Triggers */ = {
+			isa = PBXGroup;
+			children = (
+				29FA88211114619E00D1AF3D /* SPTableTriggers.h */,
+				29FA88221114619E00D1AF3D /* SPTableTriggers.m */,
+				17005CB116D6CF0000AF81F4 /* SPTableTriggersDelegate.h */,
+				17005CB216D6CF0000AF81F4 /* SPTableTriggersDelegate.m */,
+			);
+			name = "Table Triggers";
+			sourceTree = "<group>";
+		};
 		170DBD5815BEBE39007E95AB /* zlib */ = {
 			isa = PBXGroup;
 			children = (
@@ -1524,8 +1538,6 @@
 				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
 				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
 				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
-				29FA88211114619E00D1AF3D /* SPTableTriggers.h */,
-				29FA88221114619E00D1AF3D /* SPTableTriggers.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
 				17D3DC1E1281816E002A163A /* SPDatabaseViewController.h */,
@@ -1533,6 +1545,7 @@
 				17D38FC2127B0C9500672B13 /* Connection View */,
 				17386E08151924E9002DC206 /* Table Content */,
 				17D38F691279E17D00672B13 /* Table Structure */,
+				17005CB016D6CEA400AF81F4 /* Table Triggers */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
 			name = "Main View Controllers";
@@ -3223,6 +3236,7 @@
 				58DFC91615CB3501003B4330 /* BGHUDButtonCell.m in Sources */,
 				171B374115DA654300EBC7AB /* SPTableContentFilter.m in Sources */,
 				5843E247162B555B00EAA6D1 /* SPThreadAdditions.m in Sources */,
+				17005CB316D6CF0000AF81F4 /* SPTableTriggersDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
