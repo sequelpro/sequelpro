@@ -33,6 +33,8 @@
 @interface SPFavoritesOutlineView : NSOutlineView
 {
 	SInt32 systemVersion;
+	
+	BOOL justGainedFocus;
 }
 
 @property (assign) BOOL justGainedFocus;

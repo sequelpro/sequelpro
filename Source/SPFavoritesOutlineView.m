@@ -39,7 +39,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 @synthesize justGainedFocus;
 
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 	systemVersion = 0;
 	Gestalt(gestaltSystemVersion, &systemVersion);
@@ -57,6 +57,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 - (BOOL)resignFirstResponder
 {
 	[self setJustGainedFocus:NO];
+	
 	return [super resignFirstResponder];;
 }
 
@@ -93,9 +94,11 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	} else if ([[event characters] length] && [[event characters] characterAtIndex:0] == NSTabCharacter) {
 		if (([event modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
 			[[self window] selectKeyViewFollowingView:self];
-		} else {
+		} 
+		else {
 			[[self window] selectKeyViewPrecedingView:self];
 		}
+		
 		return;
 	}
 	
@@ -172,11 +175,10 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
  */
 - (void)highlightSelectionInClipRect:(NSRect)clipRect
 {
-
 	// Only proceed if a the delegate is a SPConnectionControllerDelegate and a favoruite being edited
-	if ([[self delegate] isKindOfClass:[SPConnectionController class]]
-		&& [(SPConnectionController *)[self delegate] isEditingConnection]
-		&& [(SPConnectionController *)[self delegate] selectedFavorite])
+	if ([[self delegate] isKindOfClass:[SPConnectionController class]] && 
+		[(SPConnectionController *)[self delegate] isEditingConnection] &&
+		[(SPConnectionController *)[self delegate] selectedFavorite])
 	{
 
 		// Draw an editing dot instead of highlighting the whole row
@@ -193,6 +195,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 		[dotGradient drawInRect:dotRect angle:90.f];
 
 		[NSGraphicsContext restoreGraphicsState];
+		
 		return;
 	}
 
