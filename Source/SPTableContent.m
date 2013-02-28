@@ -1261,7 +1261,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 
 /**
- * Esacpe argument by looking for used quoting strings in clause
+ * Escape argument by looking for used quoting strings in a clause.  Attempt to
+ * be smart - use a single escape for most clauses, doubling up for LIKE clauses.
+ * Also attempt to not escape what look like common escape sequences - \n, \r, \t.
  *
  * @param argument The to be used filter argument which should be be escaped
  *
@@ -1270,26 +1272,33 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause
 {
+	BOOL clauseIsLike = [clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"];
+	NSString *recognizedEscapeSequences, *escapeSequence, *regexTerm;
+	NSMutableString *arg = [argument mutableCopy];
 
-	NSMutableString *arg = [[NSMutableString alloc] init];
-	[arg setString:argument];
+	// Determine the character set not to escape slashes before, and the escape depth
+	if (clauseIsLike) {
+		recognizedEscapeSequences = @"nrt_%";
+		escapeSequence = @"\\\\\\\\\\\\\\\\";
+	} else {
+		recognizedEscapeSequences = @"nrt";
+		escapeSequence = @"\\\\\\\\";
+	}
+	regexTerm = [NSString stringWithFormat:@"(\\\\)(?![%@])", recognizedEscapeSequences];
 
-	[arg replaceOccurrencesOfRegex:@"(\\\\)(?![nrt_%])" withString:@"\\\\\\\\\\\\\\\\"];
-	[arg flushCachedRegexData];
-	[arg replaceOccurrencesOfRegex:@"(\\\\)(?=[nrt])" withString:@"\\\\\\"];
+	// Escape slashes appropriately
+	[arg replaceOccurrencesOfRegex:regexTerm withString:escapeSequence];
 	[arg flushCachedRegexData];
 
 	// Get quote sign for escaping - this should work for 99% of all cases
 	NSString *quoteSign = [clause stringByMatching:@"([\"'])[^\\1]*?%@[^\\1]*?\\1" capture:1L];
-	// Esape argument
+
+	// Escape argument
 	if(quoteSign != nil && [quoteSign length] == 1) {
 		[arg replaceOccurrencesOfRegex:[NSString stringWithFormat:@"(%@)", quoteSign] withString:@"\\\\$1"];
 		[arg flushCachedRegexData];
 	}
-	// if([clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"]) {
-	// 	[arg replaceOccurrencesOfRegex:@"([_%])" withString:@"\\\\$1"];
-	// 	[arg flushCachedRegexData];
-	// }
+
 	return [arg autorelease];
 }
 
