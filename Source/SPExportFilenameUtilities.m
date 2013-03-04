@@ -150,8 +150,7 @@
  */
 - (void)tokenizeCustomFilenameTokenField
 {
-	NSCharacterSet *nonAlphanumericSet = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-	NSArray *validTokens = [exportCustomFilenameTokensField objectValue];
+	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
 
 	if ([exportCustomFilenameTokenField currentEditor] == nil) return;
 
@@ -163,20 +162,48 @@
 	// Retrieve the object value of the token field.  This consists of plain text and recognised tokens interspersed.
 	NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 
-	// Walk through the strings - not the tokens - and determine whether any need tokenizing
+	// Walk through the strings - not the tokens - and determine whether any need tokenizing,
+	// including scanning for groups of strings which make up a single token
 	BOOL tokenizingRequired = NO;
-	
-	for (id representedObject in representedObjects) 
-	{
-		if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) continue;
-		
-		NSArray *tokenParts = [representedObject componentsSeparatedByCharactersInSet:nonAlphanumericSet];
-		
-		for (NSString *tokenPart in tokenParts) 
-		{
-			if ([validTokens containsObject:tokenPart]) {
-				tokenizingRequired = YES;
+	NSUInteger i, j;
+	NSInteger k;
+	id tokenCheck;
+	NSMutableArray *tokenParts = [NSMutableArray array];
+
+	// Add all tokens, words, and separators to the array to process
+	for (id eachObject in representedObjects) {
+		if ([eachObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
+			[tokenParts addObject:eachObject];
+		} else {
+			for (i = 0, j = 0; i < [(NSString *)eachObject length]; i++) {
+				if ([alphanumericSet characterIsMember:[eachObject characterAtIndex:i]]) {
+					continue;
+				}
+				if (i > j) {
+					[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
+				}
+				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(i, 1)]];
+				j = i + 1;
+			}
+			if (j < i) {
+				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
+			}
+		}
+	}
+
+	// Walk through the array to process, scanning it for words or groups which are tokens
+	for (i = 0; i < [tokenParts count]; i++) {
+		for (k = i; k >= 0; k--) {
+
+			// Don't process existing token objects
+			if ([[tokenParts objectAtIndex:k] isKindOfClass:[SPExportFileNameTokenObject class]]) {
 				break;
+			}
+
+			// Check whether this item, or group of adjacent items, make up a token
+			tokenCheck = [self tokenObjectForString:[[tokenParts subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
+			if ([tokenCheck isKindOfClass:[SPExportFileNameTokenObject class]]) {
+				tokenizingRequired = YES;
 			}
 		}
 	}
