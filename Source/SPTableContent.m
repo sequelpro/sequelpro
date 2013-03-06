@@ -2882,9 +2882,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		NSString *fieldTypeGroup = [fieldDefinition objectForKey:@"typegrouping"];
 
 		// Use NULL when the user has entered the nullValue string defined in the preferences,
-		// or when a numeric field is empty.
+		// or when a numeric  or date field is empty.
 		if ([rowObject isNSNull]
-			|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"])
+			|| (([fieldTypeGroup isEqualToString:@"float"] || [fieldTypeGroup isEqualToString:@"integer"] || [fieldTypeGroup isEqualToString:@"date"])
 				&& [[rowObject description] isEqualToString:@""] && [[fieldDefinition objectForKey:@"null"] boolValue]))
 		{
 			fieldValue = @"NULL";

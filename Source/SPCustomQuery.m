@@ -1883,7 +1883,7 @@
 			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 				newObject = @"CURRENT_TIMESTAMP";
 			} else if ([anObject isEqualToString:[prefs stringForKey:SPNullValue]]
-						|| (([columnTypeGroup isEqualToString:@"float"] || [columnTypeGroup isEqualToString:@"integer"])
+						|| (([columnTypeGroup isEqualToString:@"float"] || [columnTypeGroup isEqualToString:@"integer"] || [columnTypeGroup isEqualToString:@"date"])
 							&& [[anObject description] isEqualToString:@""]))
 			{
 				newObject = @"NULL";
