@@ -821,6 +821,7 @@
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
+		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
 
@@ -844,19 +845,31 @@
 			}
 
 			if([spf objectForKey:SPQueryFavorites] && [[spf objectForKey:SPQueryFavorites] count]) {
-				// if([favoritesTableView numberOfSelectedRows] > 0) {
-				// 	// Insert imported queries after the last selected favorite
-				// 	NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
-				// 	NSUInteger i;
-				// 	for(i=0; i<[[spf objectForKey:SPQueryFavorites] count]; i++) {
-				// 		[favorites insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertIndex+i];
-				// 	}
-				// } else {
-				// 	// If no selection add them
-				[favorites addObjectsFromArray:[spf objectForKey:SPQueryFavorites]];
-				// }
+
+				// If the DatabaseDocument is an on-disk document, add the favourites to the bottom of it
+				if (![tableDocumentInstance isUntitled]) {
+					insertionIndexStart = [favorites count];
+					[favorites addObjectsFromArray:[spf objectForKey:SPQueryFavorites]];
+					insertionIndexEnd = [favorites count] - 1;
+				}
+
+				// Otherwise, add to the bottom of the Global array
+				else {
+					NSUInteger i, l;
+					insertionIndexStart = 1;
+					while (![[favorites objectAtIndex:insertionIndexStart] objectForKey:@"headerOfFileURL"]) {
+						insertionIndexStart++;
+					}
+					for (i = 0, l = [[spf objectForKey:SPQueryFavorites] count]; i < l; i++) {
+				 		[favorites insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertionIndexStart + i];
+					}
+					insertionIndexEnd = insertionIndexStart + i;
+				}
+
 				[favoritesArrayController rearrangeObjects];
 				[favoritesTableView reloadData];
+				[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertionIndexStart, insertionIndexEnd - insertionIndexStart)] byExtendingSelection:NO];
+				[favoritesTableView scrollRowToVisible:insertionIndexEnd];
 				[spf release];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]

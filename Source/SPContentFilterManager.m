@@ -840,6 +840,7 @@
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
+		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
 
@@ -863,19 +864,35 @@
 			}
 
 			if([[spf objectForKey:SPContentFilters] objectForKey:filterType] && [[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]) {
-				// if([contentFilterTableView numberOfSelectedRows] > 0) {
-				// 	// Insert imported filters after the last selected filter
-				// 	NSUInteger insertIndex = [[contentFilterTableView selectedRowIndexes] lastIndex] + 1;
-				// 	NSUInteger i;
-				// 	for(i=0; i<[[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]; i++) {
-				// 		[contentFilters insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertIndex+i];
-				// 	}
-				// } else {
-				// 	// If no selection add them
-				[contentFilters addObjectsFromArray:[[spf objectForKey:SPContentFilters] objectForKey:filterType]];
-				// }
+
+#ifndef SP_CODA
+				// If the DatabaseDocument is an on-disk document, add the favourites to the bottom of it
+				if (![tableDocumentInstance isUntitled]) {
+					insertionIndexStart = [contentFilters count];
+					[contentFilters addObjectsFromArray:[[spf objectForKey:SPContentFilters] objectForKey:filterType]];
+					insertionIndexEnd = [contentFilters count] - 1;
+				}
+
+				// Otherwise, add to the bottom of the Global array
+				else {
+#endif
+					NSUInteger i, l;
+					insertionIndexStart = 1;
+					while (![[contentFilters objectAtIndex:insertionIndexStart] objectForKey:@"headerOfFileURL"]) {
+						insertionIndexStart++;
+					}
+					for (i = 0, l = [[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]; i < l; i++) {
+				 		[contentFilters insertObject:[[[spf objectForKey:SPContentFilters] objectForKey:filterType] objectAtIndex:i] atIndex:insertionIndexStart + i];
+					}
+					insertionIndexEnd = insertionIndexStart + i;
+#ifndef SP_CODA
+				}
+#endif
+
 				[contentFilterArrayController rearrangeObjects];
 				[contentFilterTableView reloadData];
+				[contentFilterTableView selectRowIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertionIndexStart, insertionIndexEnd - insertionIndexStart)] byExtendingSelection:NO];
+				[contentFilterTableView scrollRowToVisible:insertionIndexEnd];
 				[spf release];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:SP_FILE_PARSER_ERROR_TITLE_STRING]
