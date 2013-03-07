@@ -464,6 +464,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doCancel:(id)sender
 {
+	// Discard any pending changes
+	[treeController discardEditing];
+
 	// Change the first responder to end editing in any field
 	[[self window] makeFirstResponder:self];
 
@@ -479,6 +482,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doApply:(id)sender
 {
+
+	// If editing can't be committed, cancel the apply
+	if (![treeController commitEditing]) {
+		return;
+	}
+
 	errorsString = [[NSMutableString alloc] init];
     
 	// Change the first responder to end editing in any field

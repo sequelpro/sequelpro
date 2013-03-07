@@ -124,7 +124,11 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
     BOOL retVal = YES;
 	
     if ([[treeController selectedObjects] count] == 0) return NO;
-    
+
+	if (![treeController commitEditing]) {
+		return NO;
+	}
+
     // Currently selected object in tree
     id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
     
