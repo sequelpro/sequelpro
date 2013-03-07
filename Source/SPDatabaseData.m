@@ -39,8 +39,10 @@
 @interface SPDatabaseData ()
 
 - (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
++ (NSArray *)_relabelCollationResult:(NSArray *)data;
 
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
+NSInteger _sortMySQL4CollationEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context);
 
 @end
@@ -100,6 +102,14 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		if ([serverSupport supportsInformationSchema]) {
 			[collations addObjectsFromArray:[self _getDatabaseDataForQuery:@"SELECT * FROM `information_schema`.`collations` ORDER BY `collation_name` ASC"]];	
 		}
+		else if([serverSupport supportsShowCollation]) {
+			//use the 4.1-style query
+			NSArray *supportedCollations = [self _getDatabaseDataForQuery:@"SHOW COLLATION"];
+			//apply the sorting
+			supportedCollations = [supportedCollations sortedArrayUsingFunction:_sortMySQL4CollationEntry context:nil];
+			//convert the output to the information_schema style
+			[collations addObjectsFromArray:[SPDatabaseData _relabelCollationResult:supportedCollations]];
+		}
 		
 		// If that failed, get the list of collations from the hard-coded list
 		if (![collations count]) {
@@ -136,6 +146,14 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		// Try to retrieve the available collations for the supplied encoding from the database
 		if ([serverSupport supportsInformationSchema]) {
 			[characterSetCollations addObjectsFromArray:[self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`collations` WHERE character_set_name = '%@' ORDER BY `collation_name` ASC", characterSetEncoding]]];
+		}
+		else if([serverSupport supportsShowCollation]) {
+			//use the 4.1-style query (as every collation name starts with the charset name we can use the prefix search)
+			NSArray *supportedCollations = [self _getDatabaseDataForQuery:[NSString stringWithFormat:@"SHOW COLLATION LIKE '%@%%'",characterSetEncoding]];
+			//apply the sorting
+			supportedCollations = [supportedCollations sortedArrayUsingFunction:_sortMySQL4CollationEntry context:nil];
+			
+			[characterSetCollations addObjectsFromArray:[SPDatabaseData _relabelCollationResult:supportedCollations]];
 		}
 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
@@ -386,11 +404,42 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 }
 
 /**
+ * Converts the output of a MySQL 4.1 style "SHOW COLLATION" to the format of a MySQL 5.0 style "SELECT * FROM information_schema.collations"
+ */
++ (NSArray *)_relabelCollationResult:(NSArray *)data
+{
+	NSMutableArray *outData = [[NSMutableArray alloc] initWithCapacity:[data count]];
+	
+	for (NSDictionary *aCollation in data)
+	{
+		NSDictionary *convertedCollation = [NSDictionary dictionaryWithObjectsAndKeys:
+											[aCollation objectForKey:@"Collation"], @"COLLATION_NAME",
+											[aCollation objectForKey:@"Charset"],   @"CHARACTER_SET_NAME",
+											[aCollation objectForKey:@"Id"],        @"ID",
+											[aCollation objectForKey:@"Default"],   @"IS_DEFAULT",
+											[aCollation objectForKey:@"Compiled"],  @"IS_COMPILED",
+											[aCollation objectForKey:@"Sortlen"],   @"SORTLEN",
+											nil];
+		
+		[outData addObject:convertedCollation];
+	}
+	return [outData autorelease];
+}
+
+/**
  * Sorts a 4.1-style SHOW CHARACTER SET result by the Charset key.
  */
 NSInteger _sortMySQL4CharsetEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
 {
 	return [[itemOne objectForKey:@"Charset"] compare:[itemTwo objectForKey:@"Charset"]];
+}
+
+/**
+ * Sorts a 4.1-style SHOW COLLATION result by the Collation key.
+ */
+NSInteger _sortMySQL4CollationEntry(NSDictionary *itemOne, NSDictionary *itemTwo, void *context)
+{
+	return [[itemOne objectForKey:@"Collation"] compare:[itemTwo objectForKey:@"Collation"]];
 }
 
 /**

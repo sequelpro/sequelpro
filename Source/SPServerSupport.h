@@ -61,6 +61,7 @@
 	
 	// Encoding
 	BOOL supportsShowCharacterSet;
+    BOOL supportsShowCollation;
 	BOOL supportsCharacterSetDatabaseVar;
 	BOOL supportsPost41CharacterSetHandling;
 	
@@ -142,6 +143,11 @@
  * @property supportsShowCharacterSet Indicates if the server supports the SHOW CHARACTER SET statement
  */
 @property (readonly) BOOL supportsShowCharacterSet;
+
+/**
+ * @property supportsShowCollation Indicates if the server supports the SHOW COLLATION statement
+ */
+@property (readonly) BOOL supportsShowCollation;
 
 /**
  * @property supportsCharacterSetDatabaseVar Indicates if the server supports the 'character_set_database'

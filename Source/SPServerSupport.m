@@ -55,6 +55,7 @@
 @synthesize supportsInformationSchema;
 @synthesize supportsSpatialExtensions;
 @synthesize supportsShowCharacterSet;
+@synthesize supportsShowCollation;
 @synthesize supportsCharacterSetDatabaseVar;
 @synthesize supportsPost41CharacterSetHandling;
 @synthesize supportsCreateUser;
@@ -137,6 +138,9 @@
 	
 	// The SHOW CHARACTER SET statement wasn't added until MySQL 4.1.0
 	supportsShowCharacterSet = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
+
+	// The SHOW COLLATION statement wasn't added until MySQL 4.1.0
+	supportsShowCollation = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
 	
 	// The variable 'character_set_database' wasn't added until MySQL 4.1.1
 	supportsCharacterSetDatabaseVar = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:1];
@@ -258,6 +262,7 @@
 	supportsInformationSchema               = NO;
 	supportsSpatialExtensions               = NO;
 	supportsShowCharacterSet                = NO;
+	supportsShowCollation                   = NO;
 	supportsCharacterSetDatabaseVar         = NO;
 	supportsPost41CharacterSetHandling      = NO;
 	supportsCreateUser                      = NO;
