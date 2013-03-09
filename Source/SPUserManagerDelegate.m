@@ -42,7 +42,6 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 
 @interface SPUserManager (DeclaredAPI)
 
-- (void)_initializeSchemaPrivs;
 - (void)_initializeAvailablePrivs;
 - (void)_selectParentFromSelection;
 - (void)_selectFirstChildOfParentNode;
@@ -64,15 +63,15 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	if (object == schemasTableView) {
 		[grantedSchemaPrivs removeAllObjects];
 		[grantedTableView reloadData];
-		
+
 		[self _initializeAvailablePrivs];
-		
-		if ([[treeController selectedObjects] count] > 0 && [[schemaController selectedObjects] count] > 0) {
+
+		if ([[treeController selectedObjects] count] > 0 && [[schemasTableView selectedRowIndexes] count] > 0) {
 			NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
 			
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
-				NSString *selectedSchema = [[schemaController selectedObjects] objectAtIndex:0];
+				NSString *selectedSchema = [schemas objectAtIndex:[schemasTableView selectedRow]];
 				
 				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
                                                       schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
@@ -114,6 +113,43 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	else if (object == availableTableView) {
 		[addSchemaPrivButton setEnabled:[[availableController selectedObjects] count] > 0];
 	}		
+}
+
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if (tableView == schemasTableView) {
+		NSString *schemaName = [schemas objectAtIndex:rowIndex];
+
+		// Gray out the "all database" entries
+		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
+			[cell setTextColor:[NSColor lightGrayColor]];
+		} else {
+			[cell setTextColor:[NSColor blackColor]];
+		}
+
+		// If the schema has permissions set, highlight with a yellow background
+		BOOL enabledPermissions = NO;
+		NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
+		NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
+		                                      schema:[schemaName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+		                                        host:[user valueForKey:@"host"]];
+		if ([results count]) {
+			NSManagedObject *schemaPrivs = [results objectAtIndex:0];
+			for (NSString *itemKey in [[[schemaPrivs entity] attributesByName] allKeys]) {
+				if ([itemKey hasSuffix:@"_priv"] && [[schemaPrivs valueForKey:itemKey] boolValue]) {
+					enabledPermissions = YES;
+					break;
+				}
+			}
+		}
+
+		if (enabledPermissions) {
+			[cell setDrawsBackground:YES];
+			[cell setBackgroundColor:[NSColor colorWithDeviceRed:1.f green:1.f blue:0.f alpha:0.2]];
+		} else {
+			[cell setDrawsBackground:NO];
+		}
+	}
 }
 
 #pragma mark -
@@ -191,13 +227,6 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	}
 }
 
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[tabViewItem identifier] isEqualToString:SPSchemaPrivilegesTabIdentifier]) {
-		[self _initializeSchemaPrivs];
-	}
-}
-
 #pragma mark -
 #pragma mark Outline view Delegate Methods
 
@@ -252,6 +281,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	}
 	
 	[schemasTableView deselectAll:nil];
+	[schemasTableView setNeedsDisplay:YES];
 	[grantedTableView deselectAll:nil];
 	[availableTableView deselectAll:nil];
 }

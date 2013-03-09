@@ -38,6 +38,7 @@
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
 #import "SPSplitView.h"
+#import "SPDatabaseDocument.h"
 
 #import <SPMySQL/SPMySQL.h>
 #import <QueryKit/QueryKit.h>
@@ -56,7 +57,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (BOOL)_checkAndDisplayMySqlError;
 - (void)_clearData;
 - (void)_initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
-- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child;
+- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child fromData:(NSArray *)dataForUser;
 - (void)_initializeSchemaPrivs;
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host;
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
@@ -68,6 +69,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 @implementation SPUserManager
 
 @synthesize connection;
+@synthesize databaseDocument;
 @synthesize privsSupportedByServer;
 @synthesize managedObjectContext;
 @synthesize managedObjectModel;
@@ -128,8 +130,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	[grantedTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
 	[availableTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
 
-	[self _initializeUsers];
 	[self _initializeSchemaPrivs];
+	[self _initializeUsers];
+	[self _initializeAvailablePrivs];	
 
 	treeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
 	
@@ -213,6 +216,28 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_initializeTree:(NSArray *)items
 {
+
+	// Retrieve all the user data in order to be able to initialise the schema privs for each child,
+	// copying into a dictionary keyed by user, each with all the host rows.
+	NSMutableDictionary *schemaPrivilegeData = [NSMutableDictionary dictionary];
+	SPMySQLResult *queryResults = [[self connection] queryString:@"SELECT * FROM mysql.db"];
+	[queryResults setReturnDataAsStrings:YES];
+	for (NSDictionary *privRow in queryResults) {
+		if (![schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]]) {
+			[schemaPrivilegeData setObject:[NSMutableArray array] forKey:[privRow objectForKey:@"User"]];
+		}
+		[[schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]] addObject:privRow];
+
+		// If "all database" values were found, add them to the schemas list if not already present
+		NSString *schemaName = [privRow objectForKey:@"Db"];
+		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
+			if (![schemas containsObject:schemaName]) {
+				[schemas addObject:schemaName];
+				[schemasTableView noteNumberOfRowsChanged];
+			}
+		}
+	}
+
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
 	for (NSUInteger i = 0; i < [items count]; i++)
@@ -220,26 +245,20 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
+		NSManagedObject *parent;
+		NSManagedObject *child;
 		
 		// Check to make sure if we already have added the parent
 		if (parentResults != nil && [parentResults count] > 0) {
 			
 			// Add Children
-			NSManagedObject *parent = [parentResults objectAtIndex:0];
-			NSManagedObject *child = [self _createNewSPUser];
-			
-			// Setup the NSManagedObject with values from the dictionary
-			[self _initializeChild:child withItem:item];
-			
-			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
-			[children addObject:child];
-			
-			[self _initializeSchemaPrivsForChild:child];
+			parent = [parentResults objectAtIndex:0];
+			child = [self _createNewSPUser];
 		} 
 		else {
 			// Add Parent
-			NSManagedObject *parent = [self _createNewSPUser];
-			NSManagedObject *child = [self _createNewSPUser];
+			parent = [self _createNewSPUser];
+			child = [self _createNewSPUser];
 			
 			// We only care about setting the user and password keys on the parent, together with their
 			// original values for comparison purposes
@@ -247,14 +266,15 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			[parent setPrimitiveValue:username forKey:@"originaluser"];
 			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
 			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
-
-			[self _initializeChild:child withItem:item];
-			
-			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
-			[children addObject:child];
-			
-			[self _initializeSchemaPrivsForChild:child];
 		}
+
+		// Setup the NSManagedObject with values from the dictionary
+		[self _initializeChild:child withItem:item];
+		
+		NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
+		[children addObject:child];
+		
+		[self _initializeSchemaPrivsForChild:child fromData:[schemaPrivilegeData objectForKey:username]];
 		
 		// Save the initialized objects so that any new changes will be tracked.
 		NSError *error = nil;
@@ -304,11 +324,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Initialize Databases
 	[schemas removeAllObjects];
-	[schemas addObjectsFromArray:[[self connection] databases]];
-	
-	[schemaController rearrangeObjects];
-	
-	[self _initializeAvailablePrivs];	
+	[schemas addObjectsFromArray:[databaseDocument allDatabaseNames]];
+
+	[schemasTableView reloadData];
 }
 
 /**
@@ -352,24 +370,25 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 /**
  * Initialize the schema privileges for the supplied child object.
+ *
+ * Assumes that the child has already been initialized with values from the
+ * global user table.
  */
-- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child
+- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child fromData:(NSArray *)dataForUser
 {
-	// Assumes that the child has already been initialized with values from the
-	// global user table.
+	NSMutableSet *privs = [child mutableSetValueForKey:@"schema_privileges"];
 
 	// Set an originalhost key on the child to allow the tracking of edits
 	[child setPrimitiveValue:[child valueForKey:@"host"] forKey:@"originalhost"];
-	
-	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * FROM mysql.db WHERE user = %@ AND host = %@", 
-							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
-	
-	SPMySQLResult *queryResults = [[self connection] queryString:queryString];
-	[queryResults setReturnDataAsStrings:YES];
-	
-	for (NSDictionary *rowDict in queryResults) 
+
+	for (NSDictionary *rowDict in dataForUser) 
 	{
+
+		// Verify that the host matches, or skip this entry
+		if (![[rowDict objectForKey:@"Host"] isEqualToString:[child valueForKey:@"host"]]) {
+			continue;
+		}
+
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges" inManagedObjectContext:[self managedObjectContext]];
 		
 		for (NSString *key in rowDict)
@@ -386,15 +405,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
 			} 
 			else if ([key isEqualToString:@"Db"]) {
-                [dbPriv setValue:[[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"]
-                          forKey:key];
+				NSString *db = [[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"];
+                [dbPriv setValue:db forKey:key];
             } 
 			else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
 				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 			}
 		}
-		
-		NSMutableSet *privs = [child mutableSetValueForKey:@"schema_privileges"];
 		[privs addObject:dbPriv];
 	}
 }
@@ -668,9 +685,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSArray *selectedObjects = [availableController selectedObjects];
 	
 	[grantedController addObjects:selectedObjects];
-	[grantedTableView reloadData];
+	[grantedTableView noteNumberOfRowsChanged];
 	[availableController removeObjects:selectedObjects];
-	[availableTableView reloadData];
+	[availableTableView noteNumberOfRowsChanged];
+	[schemasTableView setNeedsDisplay:YES];
 	
 	[self _setSchemaPrivValues:selectedObjects enabled:YES];
 }
@@ -683,9 +701,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSArray *selectedObjects = [grantedController selectedObjects];
 	
 	[availableController addObjects:selectedObjects];
-	[availableTableView reloadData];
+	[availableTableView noteNumberOfRowsChanged];
 	[grantedController removeObjects:selectedObjects];
-	[grantedTableView reloadData];
+	[grantedTableView noteNumberOfRowsChanged];
+	[schemasTableView setNeedsDisplay:YES];
 	
 	[self _setSchemaPrivValues:selectedObjects enabled:NO];
 }
@@ -772,7 +791,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// The passed in objects should be an array of NSDictionaries with a key
 	// of "name".
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
-	NSString *selectedDb = [[schemaController selectedObjects] objectAtIndex:0];
+	NSString *selectedDb = [schemas objectAtIndex:[schemasTableView selectedRow]];
 	
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
@@ -791,12 +810,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		isNew = YES;
 	}
 
-	// Now setup all the items that are selected to YES
+	// Now setup all the items that are selected to their enabled value
 	for (NSDictionary *obj in objects)
 	{
 		[priv setValue:[NSNumber numberWithBool:enabled] forKey:[obj valueForKey:@"name"]];
 	}
-	
+
 	if (isNew) {
 		// Set up relationship
 		NSMutableSet *privs = [selectedHost mutableSetValueForKey:@"schema_privileges"];
@@ -1229,10 +1248,26 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+	NSPredicate *predicate;
 	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges" inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
-	
+
+	// Construct the predicate depending on whether a user and schema were supplied;
+	// blank schemas indicate a default priv value (as per %)
+	if ([username length]) {
+		if ([selectedSchema length]) {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+		} else {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db == '')", username, host];
+		}
+	} else {
+		if ([selectedSchema length]) {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user == '') AND (user.host like[cd] %@) AND (db like[cd] %@)", host, selectedSchema];
+		} else {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user == '') AND (user.host like[cd] %@) AND (db == '')", host];
+		}
+	}
+
 	[request setEntity:privEntity];
 	[request setPredicate:predicate];
 	

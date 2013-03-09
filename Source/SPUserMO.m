@@ -46,7 +46,13 @@ static NSString *SPUserMOChildrenKey = @"children";
 
 - (NSString *)displayName
 {
-	return ([self valueForKey:SPUserMOParentKey] == nil) ? self.user : self.host;
+	if ([self valueForKey:SPUserMOParentKey] == nil) {
+		return self.user;
+	}
+	if ([self.host length]) {
+		return self.host;
+	}
+	return @"%";
 }
 
 - (void)setDisplayName:(NSString *)value

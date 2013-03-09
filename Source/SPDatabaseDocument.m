@@ -2382,16 +2382,17 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)showUserManager:(id)sender
 {	
-    if (!userManagerInstance)
-    {
-        userManagerInstance = [[SPUserManager alloc] init];
+	if (!userManagerInstance)
+	{
+		userManagerInstance = [[SPUserManager alloc] init];
 		
-        [userManagerInstance setConnection:mySQLConnection];
+		[userManagerInstance setDatabaseDocument:self];
+		[userManagerInstance setConnection:mySQLConnection];
 		[userManagerInstance setServerSupport:serverSupport];
-    }
-    
+	}
+
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
-	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT user FROM mysql.user LIMIT 1"];
 	
 	if ([mySQLConnection queryErrored] && ([result numberOfRows] == 0)) {
 		
@@ -2417,7 +2418,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 - (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
 {
-    [userManagerInstance release], userManagerInstance = nil;
+	[userManagerInstance release], userManagerInstance = nil;
 }
 
 /**
