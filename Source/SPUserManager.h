@@ -43,6 +43,7 @@
 	NSDictionary *privColumnToGrantMap;
 	
 	SPMySQLConnection *connection;
+	SPDatabaseDocument *databaseDocument;
 	SPServerSupport *serverSupport;
 
 	IBOutlet SPSplitView *splitView;
