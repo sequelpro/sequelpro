@@ -1606,6 +1606,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Reset the window title
 	[[dbDocument parentWindow] setTitle:[dbDocument displayName]];
+	[[dbDocument parentTabViewItem] setLabel:[dbDocument displayName]];
 	
 	// Stop the current tab's progress indicator
 	[dbDocument setIsProcessing:NO];
@@ -1622,7 +1623,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[progressIndicatorText setHidden:YES];
 	[progressIndicatorText display];
 
-	// If not testing a connection,uUpdate the password fields, restoring passwords that may have
+	// If not testing a connection, Update the password fields, restoring passwords that may have
 	// been bulleted out during connection
 	if (!isTestingConnection) {
 		if (connectionKeychainItemName) {
