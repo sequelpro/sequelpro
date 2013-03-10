@@ -191,6 +191,8 @@
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
