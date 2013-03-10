@@ -587,9 +587,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	if ([self database]) [self detectDatabaseEncoding];
 
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	// If not on the query view, alter initial focus - set focus to table list filter
+	// field if visible, otherwise set focus to Table List view
+	if (![[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery]) {
+		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	}
+
 #endif
 #ifdef SP_CODA /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
