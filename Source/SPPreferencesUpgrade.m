@@ -314,19 +314,20 @@ void SPApplyRevisionChanges(void)
 		[prefs setObject:newMappedValue forKey:@"DefaultEncodingTag"];
 	}
 
-	// For versions prior to 3695 (<1.0), migrate the favourites across if appropriate
-	if (recordedVersionNumber < 3695) {
-		SPMigrateConnectionFavoritesData();
-	}
-
 	// For versions prior to 3922 (<1.0), show notes for swapping the custom query buttons and signing changes
 	if (recordedVersionNumber < 3922) {
 		[importantUpdateNotes addObject:NSLocalizedString(@"The Custom Query \"Run\" and \"Run All\" button positions and their shortcuts have been swapped.", @"Short important release note for swap of custom query buttons")];
 		[importantUpdateNotes addObject:NSLocalizedString(@"We've changed Sequel Pro's digital signature for GateKeeper compatibility; you'll have to allow access to your passwords again.", @"Short important release note for why password prompts may occur")];
 	}
 
-	// For versions prior to 3970 (~1.0), move the old plist to the trash
-	if (recordedVersionNumber < 3970) {
+	// For versions prior to 4011 (~1.0), migrate the favourites across if appropriate.  This will only
+	// occur once - if the target file already exists, it won't be re-created
+	if (recordedVersionNumber < 4011) {
+		SPMigrateConnectionFavoritesData();
+	}
+
+	// For versions prior to 4011 (~1.0), move the old plist to the trash
+	if (recordedVersionNumber < 4011) {
 		NSString *oldPrefPath = @"~/Library/Preferences/com.google.code.sequel-pro.plist";
 		oldPrefPath = [oldPrefPath stringByExpandingTildeInPath];
 		if ([[NSFileManager defaultManager] fileExistsAtPath:oldPrefPath]) {
@@ -335,6 +336,11 @@ void SPApplyRevisionChanges(void)
 				FSMoveObjectToTrashSync(&plistFSRef, NULL, 0);
 			}
 		}
+	}
+
+	// For versions prior to r4049 (~1.0.2), delete the old favourites entry in the plist now it's been migrated
+	if (recordedVersionNumber < 4049) {
+		[prefs removeObjectForKey:SPOldFavoritesKey];
 	}
 
 	// Display any important release notes, if any.  Call this after a slight delay to prevent double help
