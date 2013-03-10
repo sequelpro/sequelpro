@@ -38,6 +38,7 @@
 
 @interface SPDatabaseData ()
 
+- (NSString *)_getSingleVariableValue:(NSString *)variable;
 - (NSArray *)_getDatabaseDataForQuery:(NSString *)query;
 + (NSArray *)_relabelCollationResult:(NSArray *)data;
 
@@ -61,6 +62,8 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		characterSetEncoding = nil;
 		defaultCollation = nil;
 		defaultCharacterSetEncoding = nil;
+		serverDefaultCollation = nil;
+		serverDefaultCharacterSetEncoding = nil;
 		
 		collations             = [[NSMutableArray alloc] init];
 		characterSetCollations = [[NSMutableArray alloc] init];
@@ -84,6 +87,8 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil;
 	if (defaultCollation != nil) [defaultCollation release], defaultCollation = nil;
 	if (defaultCharacterSetEncoding != nil) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
+	if (serverDefaultCharacterSetEncoding) [serverDefaultCharacterSetEncoding release], serverDefaultCharacterSetEncoding = nil;
+	if (serverDefaultCollation) [serverDefaultCollation release], serverDefaultCollation = nil;
 	
 	[collations removeAllObjects];
 	[characterSetCollations removeAllObjects];
@@ -191,15 +196,10 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
 			
 			// Check if InnoDB support is enabled
-			SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'have_innodb'"];
+			NSString *result = [self _getSingleVariableValue:@"have_innodb"];
 			
-			[result setReturnDataAsStrings:YES];
-			
-			if ([result numberOfRows] == 1) {
-				if ([[[result getRowAsDictionary] objectForKey:@"Value"] isEqualToString:@"YES"]) {
-					[storageEngines addObject:[NSDictionary dictionaryWithObject:@"InnoDB" forKey:@"Engine"]];
-				}
-			}
+			if(result && [result isEqualToString:@"YES"])
+				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"InnoDB" forKey:@"Engine"]];
 			
 			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
 			if ([serverSupport supportsPre41StorageEngines]) {
@@ -319,13 +319,9 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (!defaultCharacterSetEncoding) {
 		[defaultCharacterSetEncoding release];
 						
-		NSString *variable = [serverSupport supportsCharacterSetDatabaseVar] ? @"character_set_database" : @"character_set";
-	
-		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [variable tickQuotedString]]];
+		NSString *variable = [serverSupport supportsCharacterSetAndCollationVars] ? @"character_set_database" : @"character_set";
 		
-		[result setReturnDataAsStrings:YES];
-		
-		defaultCharacterSetEncoding = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
+		defaultCharacterSetEncoding = [[self _getSingleVariableValue:variable] retain];
 	}
 	
 	return defaultCharacterSetEncoding;
@@ -341,14 +337,44 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (!defaultCollation) {
 		[defaultCollation release];
 				
-		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'collation_database'"];
-		
-		[result setReturnDataAsStrings:YES];
-		
-		defaultCollation = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
+		defaultCollation = [[self _getSingleVariableValue:@"collation_database"] retain];
 	}
 		
 	return defaultCollation;
+}
+
+/**
+ * Returns the server's default character set encoding.
+ *
+ * @return The default encoding as a string
+ */
+- (NSString *)getServerDefaultCharacterSet
+{
+	if (!serverDefaultCharacterSetEncoding) {
+		[serverDefaultCharacterSetEncoding release];
+		
+		NSString *variable = [serverSupport supportsCharacterSetAndCollationVars] ? @"character_set_server" : @"character_set";
+		
+		serverDefaultCharacterSetEncoding = [[self _getSingleVariableValue:variable] retain];
+	}
+	
+	return serverDefaultCharacterSetEncoding;
+}
+
+/**
+ * Returns the server's default collation.
+ *
+ * @return The default collation as a string (nil on MySQL 3 databases)
+ */
+- (NSString *)getServerDefaultCollation
+{
+	if (!serverDefaultCollation) {
+		[serverDefaultCollation release];
+		
+		serverDefaultCollation = [[self _getSingleVariableValue:@"collation_server"] retain];
+	}
+	
+	return serverDefaultCollation;
 }
 
 /**
@@ -375,11 +401,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		}
 
 		// Retrieve the corresponding value for the determined key, ensuring return as a string
-		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [storageEngineKey tickQuotedString]]];;
-		
-		[result setReturnDataAsStrings:YES];
-		
-		defaultStorageEngine = [[[result getRowAsDictionary] objectForKey:@"Value"] retain];
+		defaultStorageEngine = [[self _getSingleVariableValue:storageEngineKey] retain];
 	}
 	
 	return defaultStorageEngine;
@@ -387,6 +409,23 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 
 #pragma mark -
 #pragma mark Private API
+
+/**
+ * Look up the value of a single server variable
+ * @param variable The name of a server variable. Must not contain wildcards
+ * @return The value as string or nil if no such variable exists or the result is ambigious
+ */
+- (NSString *)_getSingleVariableValue:(NSString *)variable
+{
+	SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [variable tickQuotedString]]];;
+	
+	[result setReturnDataAsStrings:YES];
+	
+	if ([result numberOfRows] != 1)
+		return nil;
+	
+	return [[result getRowAsDictionary] objectForKey:@"Value"];
+}
 
 /**
  * Executes the supplied query against the current connection and returns the result as an array of 
@@ -455,9 +494,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 
 - (void)dealloc
 {
-	if (characterSetEncoding) [characterSetEncoding release], characterSetEncoding = nil;
-	if (defaultCharacterSetEncoding) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
-	if (defaultCollation) [defaultCollation release], defaultCollation = nil;
+	[self resetAllData];
 	
 	[collations release], collations = nil;
 	[characterSetCollations release], characterSetCollations = nil;
