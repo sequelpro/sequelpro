@@ -90,12 +90,27 @@ static id NSNullPointer;
 }
 
 /**
- * Prevent SPMySQLResults from being init'd normally.
+ * Standard initialisation - not intended for external use.
  */
 - (id)init
 {
-	[NSException raise:NSInternalInconsistencyException format:@"SPMySQLResults should not be init'd directly; use initWithMySQLResult:stringEncoding: instead."];
-	return nil;
+	if ((self = [super init])) {
+		stringEncoding = NSASCIIStringEncoding;
+		queryExecutionTime = -1;
+
+		resultSet = NULL;
+		numberOfFields = 0;
+		numberOfRows = 0;
+		currentRowIndex = 0;
+
+		fieldDefinitions = NULL;
+		fieldNames = NULL;
+		fieldTypes = NULL;
+
+		defaultRowReturnType = SPMySQLResultRowAsDictionary;
+	}
+
+	return self;
 }
 
 /**
@@ -108,15 +123,13 @@ static id NSNullPointer;
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
-	if ((self = [super init])) {
+	if ((self = [self init])) {
 		stringEncoding = theStringEncoding;
-		queryExecutionTime = -1;
 
 		// Get the result set and cache the number of fields and number of rows
 		resultSet = theResult;
 		numberOfFields = mysql_num_fields(resultSet);
 		numberOfRows = mysql_num_rows(resultSet);
-		currentRowIndex = 0;
 
 		// Cache the field definitions and build up an array of cached field names and types
 		fieldDefinitions = mysql_fetch_fields(resultSet);
@@ -127,8 +140,6 @@ static id NSNullPointer;
 			fieldNames[i] = [[self _stringWithBytes:aField.name length:aField.name_length] retain];
 			fieldTypes[i] = aField.type;
 		}
-
-		defaultRowReturnType = SPMySQLResultRowAsDictionary;
 	}
 
 	return self;
@@ -136,13 +147,15 @@ static id NSNullPointer;
 
 - (void)dealloc
 {
-	mysql_free_result(resultSet);
+	if (resultSet) {
+		mysql_free_result(resultSet);
 
-	for (NSUInteger i = 0; i < numberOfFields; i++) {
-		[fieldNames[i] release];
+		for (NSUInteger i = 0; i < numberOfFields; i++) {
+			[fieldNames[i] release];
+		}
+		free(fieldNames);
+		free(fieldTypes);
 	}
-	free(fieldNames);
-	free(fieldTypes);
 
 	[super dealloc];
 }
