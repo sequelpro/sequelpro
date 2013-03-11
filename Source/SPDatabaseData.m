@@ -260,8 +260,13 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 }
 
 /**
- * Returns all of the database's currently available character set encodings by querying 
- * information_schema.character_sets.
+ * Returns all of the database's currently available character set encodings 
+ * @return [{Charset: 'utf8',Description: 'UTF-8 Unicode', Default collation: 'utf8_general_ci',Maxlen: 3},...]
+ *         The Array is never empty and never nil but results might be unreliable.
+ *
+ * On MySQL 5+ this will query information_schema.character_sets
+ * On MySQL 4.1+ this will query SHOW CHARACTER SET
+ * Else a hardcoded list will be returned
  */ 
 - (NSArray *)getDatabaseCharacterSetEncodings
 {	

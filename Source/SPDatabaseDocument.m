@@ -760,7 +760,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Populate the database encoding popup button with a default menu item
 	[databaseEncodingButton removeAllItems];
-	[databaseEncodingButton addItemWithTitle:@"Default"];
+	NSString *defaultCharset = [databaseDataInstance getServerDefaultCharacterSet];
+	NSString *defaultItemTitle = (defaultCharset)? [NSString stringWithFormat:NSLocalizedString(@"Default (%@)",@"Add Database Sheet : Charset : Use Server Default ($1 = Charset Name)"),defaultCharset] : NSLocalizedString(@"Default",@"Add Database Sheet : Charset : Use Server Default (unknown)");
+	[databaseEncodingButton addItemWithTitle:defaultItemTitle];
 
 	// Retrieve the server-supported encodings and add them to the menu
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
