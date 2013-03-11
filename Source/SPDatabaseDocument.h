@@ -124,6 +124,7 @@
 	
 	IBOutlet id databaseNameField;
 	IBOutlet id databaseEncodingButton;
+	IBOutlet id databaseCollationButton;
 	IBOutlet id addDatabaseButton;
 
 #ifndef SP_CODA
@@ -326,6 +327,7 @@
 #endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
+- (IBAction)databaseEncodingButtonChanged:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)refreshTables:(id)sender;
 #ifndef SP_CODA /* method decls */

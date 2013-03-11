@@ -116,7 +116,7 @@ static NSString *SPCreateSyntx = @"SPCreateSyntax";
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 @interface SPDatabaseDocument ()
-
+- (void)_evaluateCollationsForSelectedCharset;
 - (void)_addDatabase;
 #ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
@@ -794,6 +794,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[databaseEncodingButton setEnabled:NO];
 	}
 	
+	//reevaluate the collations for the selected charset
+	[self _evaluateCollationsForSelectedCharset];
+	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:parentWindow
 		modalDelegate:self
@@ -801,6 +804,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		  contextInfo:@"addDatabase"];
 }
 
+- (IBAction)databaseEncodingButtonChanged:(id)sender
+{
+	[self _evaluateCollationsForSelectedCharset];
+}
 
 #ifndef SP_CODA /* operations on whole databases */
 /**
@@ -5871,6 +5878,76 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 }			 
 
 /**
+ * Checks the new database sheet for the currently selected charset and updates the list of collations accordingly.
+ */
+- (void)_evaluateCollationsForSelectedCharset
+{
+	NSString *fmtStrDefaultId      = NSLocalizedString(@"Default (%@)",@"Add Database : Collation : Default ($1 = collation name)");
+	NSString *fmtStrDefaultUnknown = NSLocalizedString(@"Default",@"Add Database Sheet : Collation : Default (unknown)"); 
+	
+	//throw out all items
+	[databaseCollationButton removeAllItems];
+	//we'll enable that later if the user can actually change the selection.
+	[databaseCollationButton setEnabled:NO];
+	
+	/* logic below is as follows:
+	 *   if the server default charset is selected also use the server default collation
+	 *   regardless of default charset or not get the list of all collations that apply
+	 *   if a non-default charset is selected look out for it's default collation and promote that to the top as default
+	 *
+	 * Selecting a default charset (or collation) means that we don't want to specify one in the CREATE DATABASE statement.
+	 */
+		
+	//is the default charset currently selected?
+	BOOL isDefaultCharset = ([databaseEncodingButton indexOfSelectedItem] == 0);
+	
+	if(isDefaultCharset) {
+		NSString *defaultCollation = [databaseDataInstance getServerDefaultCollation];
+		NSString *defaultItemTitle = (defaultCollation)? [NSString stringWithFormat:fmtStrDefaultId,defaultCollation] : fmtStrDefaultUnknown;
+		[databaseCollationButton addItemWithTitle:defaultItemTitle];
+		//add the separator for the real items
+		[[databaseCollationButton menu] addItem:[NSMenuItem separatorItem]];
+	}
+	
+	//if the server actually has support for charsets & collations we will now get a list of all collations
+	//for the current charset. Even if the default charset is kept by the user he can change the default collation
+	//so we search in that case, too.
+	if([serverSupport supportsPost41CharacterSetHandling]) {
+		//get the charset id the lazy way
+		NSString *charsetName = [[databaseEncodingButton title] stringByMatching:@"\\((.*)\\)\\Z" capture:1L];
+		//this should not fail as even default is "Default (charset)" - if it does there's nothing we can do
+		if(!charsetName) {
+			NSLog(@"Can't find charset id in encoding name <%@>. Format should be <Description (id)>.",[databaseEncodingButton title]);
+			return;
+		}
+		//now let's get the list of collations for the selected charset id
+		NSArray *applicableCollations = [databaseDataInstance getDatabaseCollationsForEncoding:charsetName];
+		if ([applicableCollations count] > 0) {
+			//and add the real items
+			for (NSDictionary *collation in applicableCollations) 
+			{
+				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+				[databaseCollationButton addItemWithTitle:collationName];
+				
+				//if this is not the server default charset let's find it's default collation too
+				if(!isDefaultCharset && [[collation objectForKey:@"IS_DEFAULT"] isEqualToString:@"Yes"]) {
+					NSString *defaultCollateTitle = [NSString stringWithFormat:fmtStrDefaultId,collationName];
+					//add it to the top of the list
+					[databaseCollationButton insertItemWithTitle:defaultCollateTitle atIndex:0];
+					//add a separator underneath
+					[[databaseCollationButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
+				}
+			}
+			//reset selection to first item (it may moved when adding the default item)
+			[databaseCollationButton selectItemAtIndex:0];
+			//yay, now there is actually something not the Default item, so we can enable the button
+			[databaseCollationButton setEnabled:YES];
+		}
+	}
+	
+}
+
+/**
  * Adds a new database.
  */
 - (void)_addDatabase
@@ -5894,6 +5971,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		if (!encodingName) encodingName = @"utf8";
 
 		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [encodingName backtickQuotedString]];
+	}
+	
+	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
+	if ([databaseCollationButton indexOfSelectedItem] > 0) {
+		//collations have no description except for the default item (which is already excluded) so we can directly use the value
+		NSString *collationName = [databaseCollationButton title];
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@", createStatement, [collationName backtickQuotedString]];
 	}
 	
 	// Create the database
