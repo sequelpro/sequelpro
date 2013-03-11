@@ -33,6 +33,8 @@
 #import "SPFavoritesImporter.h"
 #import "SPThreadAdditions.h"
 
+static NSString *SPOldPreferenceFileFavoritesKey = @"favorites";
+
 @interface SPFavoritesImporter ()
 
 - (void)_importFavoritesInBackground;
@@ -81,8 +83,14 @@
 			[self _informDelegateOfImportDataAvailable:favorites];
 		}
 		else {
-			[self _informDelegateOfErrorCode:NSFileReadUnknownError 
-								 description:NSLocalizedString(@"Error reading import file.", @"error reading import file")];
+
+			// Check to see whether we're importing favorites from an old preferences file
+			if ([importData valueForKey:SPOldPreferenceFileFavoritesKey]) {
+				[self _informDelegateOfImportDataAvailable:[importData valueForKey:SPOldPreferenceFileFavoritesKey]];
+			} else {
+				[self _informDelegateOfErrorCode:NSFileReadUnknownError 
+				                     description:NSLocalizedString(@"Error reading import file.", @"error reading import file")];
+			}
 		}
 	}
 	else {
