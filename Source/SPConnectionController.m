@@ -650,8 +650,17 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	[prefs setInteger:[[fav objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
+
+	[self updateFavoriteNextKeyView];
+#endif
+}
 	
-	// Set the next KeyView to password field if the password is empty
+/**
+ * Set the next KeyView to password field if the password is empty
+ */
+- (void)updateFavoriteNextKeyView
+{
+#ifndef SP_CODA
 	switch ([self type])
 	{
 		case SPTCPIPConnection:

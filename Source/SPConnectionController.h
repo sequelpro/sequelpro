@@ -232,6 +232,7 @@
 
 // Favorites interaction
 - (void)updateFavoriteSelection:(id)sender;
+- (void)updateFavoriteNextKeyView;
 - (NSMutableDictionary *)selectedFavorite;
 - (SPTreeNode *)selectedFavoriteNode;
 - (NSArray *)selectedFavoriteNodes;

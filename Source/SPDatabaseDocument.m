@@ -4213,7 +4213,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #ifndef SP_CODA
 	// If not connected, update the favorite selection
 	if (!_isConnected) {
-		[connectionController updateFavoriteSelection:self];
+		[connectionController updateFavoriteNextKeyView];
 	}
 #endif
 }
