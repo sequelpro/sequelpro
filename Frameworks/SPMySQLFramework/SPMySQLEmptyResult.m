@@ -102,6 +102,10 @@
 	return nil;
 }
 
+- (void)cancelResultLoad
+{
+}
+
 - (id)_stringWithBytes:(const void *)bytes length:(NSUInteger)length
 {
 	return nil;
