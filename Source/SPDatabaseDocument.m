@@ -4541,9 +4541,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller.  This will automatically
-	// clear and reset the connection state.
+	// Deselect all favorites on the connection controller,
+	// and clear and reset the connection state.
 	[[connectionController favoritesOutlineView] deselectAll:connectionController];
+	[connectionController updateFavoriteSelection:self];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen
