@@ -114,10 +114,12 @@ enum {
 static NSString *SPCreateSyntx = @"SPCreateSyntax";
 #endif
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
+static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 @interface SPDatabaseDocument ()
 - (void)_evaluateCollationsForSelectedCharset;
 - (void)_addDatabase;
+- (void)_alterDatabase;
 #ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
 #endif
@@ -804,6 +806,103 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		  contextInfo:@"addDatabase"];
 }
 
+
+/**
+ * Show UI for the ALTER DATABASE statement
+ * @warning Make sure this method is only called on mysql 4.1+ servers!
+ */
+- (IBAction)alterDatabase:(id)sender
+{
+	//once the database is created the charset and collation are written
+	//to the db.opt regardless if they were explicity given or not.
+	//So there is no longer a "Default" option.
+	
+	// Populate the database encoding popup button with a default menu item
+	[databaseAlterEncodingButton removeAllItems];
+	NSString *currentCharset = [databaseDataInstance getDatabaseDefaultCharacterSet];
+
+	// Retrieve the server-supported encodings and add them to the menu
+	NSArray *encodings = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	
+	if(![encodings count]) {
+		NSBeep();
+		NSLog(@"%s: Trying to show ALTER UI but getting CHARACTER SET list failed!",__func__);
+		return;
+	}
+		
+	for (NSDictionary *encoding in encodings) 
+	{
+		NSString *charsetId = [encoding objectForKey:@"CHARACTER_SET_NAME"];
+		NSString *description = [encoding objectForKey:@"DESCRIPTION"];
+		NSString *menuItemTitle = (![description length]) ? charsetId : [NSString stringWithFormat:@"%@ (%@)", description, charsetId];
+		
+		NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle:menuItemTitle action:NULL keyEquivalent:@""] autorelease];
+		[menuItem setRepresentedObject:charsetId];
+
+		// If the UTF8 entry has been encountered, promote it to the top of the list (this time we don't want duplicates)
+		if ([charsetId isEqualToString:@"utf8"]) {
+			[[databaseAlterEncodingButton menu] insertItem:menuItem atIndex:0];
+			[[databaseAlterEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
+		}
+		else {
+			[[databaseAlterEncodingButton menu] addItem:menuItem];
+		}
+					 
+		// select the current charset
+		if([charsetId isEqualToString:currentCharset])
+			[databaseAlterEncodingButton selectItem:menuItem];
+		
+	}
+	
+	//refresh collations for charset
+	[self alterDatabaseEncodingButtonChanged:nil];
+	
+	[NSApp beginSheet:databaseAlterSheet
+	   modalForWindow:parentWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:SPAlterDatabaseAction];
+}
+
+/**
+ * Updates the list of collations for the currently selected encoding in the ALTER DATABASE sheet
+ * @warning Make sure this method is only called on mysql 4.1+ servers!
+ */
+- (IBAction)alterDatabaseEncodingButtonChanged:(id)sender
+{
+	NSString *currentCharset   = [databaseDataInstance getDatabaseDefaultCharacterSet];
+	NSString *currentCollation = [databaseDataInstance getDatabaseDefaultCollation];
+
+	//throw out all items
+	[databaseAlterCollationButton removeAllItems];
+	
+	//get the selected charset id
+	NSString *charsetId = [[databaseAlterEncodingButton selectedItem] representedObject];
+	//this should not fail so far down the line
+	if(![charsetId length]) {
+		NSLog(@"%s: Encoding menu item <%@> does not represent any charset!",__func__,[databaseAlterEncodingButton title]);
+		return;
+	}
+
+	//now let's get the list of collations for the selected charset id
+	NSArray *applicableCollations = [databaseDataInstance getDatabaseCollationsForEncoding:charsetId];
+	//and add the real items
+	for (NSDictionary *collation in applicableCollations) 
+	{
+		NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+						
+		NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle:collationName action:NULL keyEquivalent:@""] autorelease];
+		[[databaseAlterCollationButton menu] addItem:menuItem];
+		
+		//if the charset is the current charset and this is the current collation
+		//else if this collation is the default for the selected charset 
+		//  => select it
+		if(([charsetId isEqualToString:currentCharset] && [collationName isEqualToString:currentCollation]) || 
+		   (![charsetId isEqualToString:currentCharset] && [[collation objectForKey:@"IS_DEFAULT"] isEqualToString:@"Yes"]))
+			[databaseAlterCollationButton selectItem:menuItem];
+	}
+}
+
 - (IBAction)databaseEncodingButtonChanged:(id)sender
 {
 	[self _evaluateCollationsForSelectedCharset];
@@ -1020,6 +1119,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		}
 		}
 #endif
+	}
+	else if([contextInfo isEqualToString:SPAlterDatabaseAction]) {
+		if(returnCode == NSOKButton) {
+			[self _alterDatabase];
+		}
 	}
 #ifndef SP_CODA
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
@@ -3491,6 +3595,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			
 			return (enable && (tag == SPSQLExport));
 		}
+	}
+	
+	//can only be enabled on mysql 4.1+
+	if([menuItem action] == @selector(alterDatabase:)) {
+		return (([self database] != nil) && [serverSupport supportsPost41CharacterSetHandling]);
 	}
 
 	if ([menuItem action] == @selector(import:)				  ||
@@ -5999,6 +6108,32 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Select the database
 	[self selectDatabase:[databaseNameField stringValue] item:nil];
+}
+
+/**
+ * Run ALTER statement against current db. This is the callback to alterDatabase:
+ * @warning Make sure this method is only called on mysql 4.1+ servers!
+ */
+- (void)_alterDatabase
+{
+	//we'll always run the alter statement, even if old == new because after all that is what the user requested
+	
+	NSString *newCharset   = [[databaseAlterEncodingButton selectedItem] representedObject];
+	NSString *newCollation = [databaseAlterCollationButton titleOfSelectedItem];
+	
+	NSString *alterStatement = [NSString stringWithFormat:@"ALTER DATABASE %@ DEFAULT CHARACTER SET %@ DEFAULT COLLATE %@", [[self database] backtickQuotedString],[newCharset backtickQuotedString],[newCollation backtickQuotedString]];
+
+	//run alter
+	[mySQLConnection queryString:alterStatement];
+	
+	if ([mySQLConnection queryErrored]) {
+		// An error occurred
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
+		return;
+	}
+	
+	//invalidate old cache values
+	[databaseDataInstance resetAllData];
 }
 
 /**

@@ -111,6 +111,10 @@
 	IBOutlet id databaseSheet;
 	IBOutlet id databaseCopySheet;
 	IBOutlet id databaseRenameSheet;
+	
+	IBOutlet id databaseAlterSheet;
+	IBOutlet NSPopUpButton *databaseAlterEncodingButton;
+	IBOutlet NSPopUpButton *databaseAlterCollationButton;
 
 	IBOutlet NSProgressIndicator* queryProgressBar;
 #ifndef SP_CODA
@@ -327,6 +331,8 @@
 #endif
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
+- (IBAction)alterDatabase:(id)sender;
+- (IBAction)alterDatabaseEncodingButtonChanged:(id)sender;
 - (IBAction)databaseEncodingButtonChanged:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)refreshTables:(id)sender;
