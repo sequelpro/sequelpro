@@ -321,9 +321,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (NSString *)getDatabaseDefaultCharacterSet
 {
-	if (!defaultCharacterSetEncoding) {
-		[defaultCharacterSetEncoding release];
-						
+	if (!defaultCharacterSetEncoding) {						
 		NSString *variable = [serverSupport supportsCharacterSetAndCollationVars] ? @"character_set_database" : @"character_set";
 		
 		defaultCharacterSetEncoding = [[self _getSingleVariableValue:variable] retain];
@@ -339,9 +337,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (NSString *)getDatabaseDefaultCollation
 {
-	if (!defaultCollation) {
-		[defaultCollation release];
-				
+	if (!defaultCollation && [serverSupport supportsCharacterSetAndCollationVars]) {				
 		defaultCollation = [[self _getSingleVariableValue:@"collation_database"] retain];
 	}
 		
@@ -355,9 +351,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (NSString *)getServerDefaultCharacterSet
 {
-	if (!serverDefaultCharacterSetEncoding) {
-		[serverDefaultCharacterSetEncoding release];
-		
+	if (!serverDefaultCharacterSetEncoding) {		
 		NSString *variable = [serverSupport supportsCharacterSetAndCollationVars] ? @"character_set_server" : @"character_set";
 		
 		serverDefaultCharacterSetEncoding = [[self _getSingleVariableValue:variable] retain];
@@ -373,9 +367,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (NSString *)getServerDefaultCollation
 {
-	if (!serverDefaultCollation) {
-		[serverDefaultCollation release];
-		
+	if (!serverDefaultCollation) {		
 		serverDefaultCollation = [[self _getSingleVariableValue:@"collation_server"] retain];
 	}
 	
@@ -390,8 +382,6 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 - (NSString *)getDatabaseDefaultStorageEngine
 {
 	if (!defaultStorageEngine) {
-		
-		[defaultStorageEngine release];
 
 		// Determine which variable to use based on server version.  'table_type' has been available since MySQL 3.23.0.
 		NSString *storageEngineKey = @"table_type";

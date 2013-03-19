@@ -782,7 +782,7 @@
 		if ([fieldValidation isFieldTypeString:theRowType]) {
 			// Add CHARSET
 			NSString *fieldEncoding = @"";
-			if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
+			if([[theRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 				NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
 				NSInteger start = [enc rangeOfString:@"("].location+1;
 				NSInteger end = [enc length] - start - 1;
