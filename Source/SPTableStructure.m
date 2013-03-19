@@ -46,6 +46,7 @@
 #import "SPTableFieldValidation.h"
 #import "SPTableStructureLoading.h"
 #import "SPThreadAdditions.h"
+#import "SPServerSupport.h"
 
 #import <SPMySQL/SPMySQL.h>
 
