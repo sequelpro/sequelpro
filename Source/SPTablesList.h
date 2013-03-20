@@ -73,6 +73,7 @@
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
+	IBOutlet id tableCollationButton;
 	IBOutlet id tableTypeButton;
 	IBOutlet id toolbarAddButton;
 #ifdef SP_CODA
@@ -143,6 +144,7 @@
 - (IBAction)addTable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
+- (IBAction)tableEncodingButtonChanged:(id)sender;
 
 #ifndef SP_CODA /* method decls */
 - (IBAction)copyTable:(id)sender;

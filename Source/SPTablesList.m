@@ -414,6 +414,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	else {
 		[tableEncodingButton setEnabled:NO];
 	}
+	
+	//Load the collations for the current charset
+	[self tableEncodingButtonChanged:self];
 
 	// Set the focus to the name field
 	[tableSheet makeFirstResponder:tableNameField];
@@ -423,6 +426,77 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:SPAddNewTable];
+}
+
+
+- (IBAction)tableEncodingButtonChanged:(id)sender
+{
+	NSString *fmtStrDefaultId      = NSLocalizedString(@"Default (%@)",@"Add Table : Collation : Default ($1 = collation name)");
+	NSString *fmtStrDefaultUnknown = NSLocalizedString(@"Default",@"Add Table Sheet : Collation : Default (unknown)"); // MySQL < 4.1.0
+	
+	//throw out all items
+	[tableCollationButton removeAllItems];
+	//we'll enable that later if the user can actually change the selection.
+	[tableCollationButton setEnabled:NO];
+	
+	/* logic below is as follows:
+	 *   if the database default charset is selected also use the database default collation
+	 *   regardless of default charset or not get the list of all collations that apply
+	 *   if a non-default charset is selected look out for it's default collation and promote that to the top as default
+	 *
+	 * Selecting a default charset (or collation) means that we don't want to specify one in the CREATE TABLE statement.
+	 */
+	
+	//is the default charset currently selected?
+	BOOL isDefaultCharset = ([tableEncodingButton indexOfSelectedItem] == 0);
+	
+	if(isDefaultCharset) {
+		NSString *defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
+		NSString *defaultItemTitle = (defaultCollation)? [NSString stringWithFormat:fmtStrDefaultId,defaultCollation] : fmtStrDefaultUnknown;
+		[tableCollationButton addItemWithTitle:defaultItemTitle];
+		//add the separator for the real items
+		[[tableCollationButton menu] addItem:[NSMenuItem separatorItem]];
+	}
+	
+	//if the server actually has support for charsets & collations we will now get a list of all collations
+	//for the current charset. Even if the default charset is kept by the user he can change the default collation
+	//so we search in that case, too.
+	if(![[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])
+		return;
+	
+	//get the charset id the lazy way
+	NSString *charsetName = [[tableEncodingButton title] stringByMatching:@"\\((.*)\\)\\Z" capture:1L];
+	//this should not fail as even default is "Default (charset)" - if it does there's nothing we can do
+	if(!charsetName) {
+		NSLog(@"%s: Can't find charset id in encoding name <%@>. Format should be <Description (id)>.",__func__,[tableEncodingButton title]);
+		return;
+	}
+	//now let's get the list of collations for the selected charset id
+	NSArray *applicableCollations = [databaseDataInstance getDatabaseCollationsForEncoding:charsetName];
+	
+	//got something?
+	if (![applicableCollations count])
+		return;
+	
+	//add the real items
+	for (NSDictionary *collation in applicableCollations) 
+	{
+		NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+		[tableCollationButton addItemWithTitle:collationName];
+		
+		//if this is not the server default charset let's find it's default collation too
+		if(!isDefaultCharset && [[collation objectForKey:@"IS_DEFAULT"] isEqualToString:@"Yes"]) {
+			NSString *defaultCollateTitle = [NSString stringWithFormat:fmtStrDefaultId,collationName];
+			//add it to the top of the list
+			[tableCollationButton insertItemWithTitle:defaultCollateTitle atIndex:0];
+			//add a separator underneath
+			[[tableCollationButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
+		}
+	}
+	//reset selection to first item (it may moved when adding the default item)
+	[tableCollationButton selectItemAtIndex:0];
+	//yay, now there is actually something not the Default item, so we can enable the button
+	[tableCollationButton setEnabled:YES];
 }
 
 /**
@@ -1781,7 +1855,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		return selectedRows > 0;
 	}
 
-	return [super validateMenuItem:menuItem];
+	//Default to YES (like Apple)
+	return YES;
 }
 
 #pragma mark -
@@ -2196,8 +2271,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	
 	[tableDocumentInstance startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Creating %@...", @"Creating table task string"), [tableNameField stringValue]]];
 
-	NSString *charSetStatement = @"";
-	NSString *engineStatement  = @"";
+	NSString *charSetStatement   = @"";
+	NSString *collationStatement = @"";
+	NSString *engineStatement    = @"";
 
 	NSString *tableType = [tableTypeButton title];
 	NSString *tableName = [tableNameField stringValue];
@@ -2218,13 +2294,20 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		
 		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
 	}
+	
+	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
+	if ([tableCollationButton indexOfSelectedItem] > 0) {
+		//collations have no description except for the default item (which is already excluded) so we can directly use the value
+		NSString *collationName = [tableCollationButton title];
+		collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@",[collationName backtickQuotedString]];
+	}
 
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableTypeButton indexOfSelectedItem] > 0) {
 		engineStatement = [NSString stringWithFormat:@"%@ = %@", [[tableDocumentInstance serverSupport] engineTypeQueryName], [[tableDocumentInstance serverSupport] supportsQuotingEngineTypeInCreateSyntax] ? [tableType backtickQuotedString] : tableType];
 	}
 
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, engineStatement];
+	NSString *createStatement = [NSString stringWithFormat:@"CREATE TABLE %@ (id INT(11) UNSIGNED NOT NULL%@) %@ %@ %@", [tableName backtickQuotedString], [tableType isEqualToString:@"CSV"] ? @"" : @" PRIMARY KEY AUTO_INCREMENT", charSetStatement, collationStatement, engineStatement];
 
 	// Create the table
 	[mySQLConnection queryString:createStatement];
