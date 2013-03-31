@@ -212,6 +212,7 @@ NSString *SPQueryFavorites                       = @"queryFavorites";
 NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesContent";
 NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
+NSString *SPQueryPrimaryControlRunsAll           = @"QueryPrimaryControlRunsAll";
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
 NSString *SPTableInfoChangedNotification         = @"SPTableInformationChanged";

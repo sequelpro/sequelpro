@@ -331,6 +331,7 @@
 		58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */ = {isa = PBXBuildFile; fileRef = 58CDB3310FCE139C00F8ACA3 /* SequelProTunnelAssistant.m */; };
 		58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E641740EF01F80001BC333 /* SPKeychain.m */; };
 		58D29FE016E96306002EB401 /* SPUserManagerDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D29FDF16E96306002EB401 /* SPUserManagerDataSource.m */; };
+		58D2A6A716FBDEFF002EB401 /* SPComboPopupButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */; };
 		58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2E227101222670063EF1D /* SPTextAndLinkCell.m */; };
 		58D2E22E101222870063EF1D /* link-arrow-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22B101222870063EF1D /* link-arrow-clicked.png */; };
 		58D2E22F101222870063EF1D /* link-arrow-highlighted-clicked.png in Resources */ = {isa = PBXBuildFile; fileRef = 58D2E22C101222870063EF1D /* link-arrow-highlighted-clicked.png */; };
@@ -1083,6 +1084,8 @@
 		58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SequelProTunnelAssistant; sourceTree = BUILT_PRODUCTS_DIR; };
 		58D29FDE16E96306002EB401 /* SPUserManagerDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPUserManagerDataSource.h; sourceTree = "<group>"; };
 		58D29FDF16E96306002EB401 /* SPUserManagerDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPUserManagerDataSource.m; sourceTree = "<group>"; };
+		58D2A6A516FBDEFF002EB401 /* SPComboPopupButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPComboPopupButton.h; sourceTree = "<group>"; };
+		58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPComboPopupButton.m; sourceTree = "<group>"; };
 		58D2E227101222670063EF1D /* SPTextAndLinkCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTextAndLinkCell.m; sourceTree = "<group>"; };
 		58D2E228101222670063EF1D /* SPTextAndLinkCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTextAndLinkCell.h; sourceTree = "<group>"; };
 		58D2E22B101222870063EF1D /* link-arrow-clicked.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "link-arrow-clicked.png"; sourceTree = "<group>"; };
@@ -2245,6 +2248,8 @@
 			children = (
 				17FDB04A1280778B00DBBBC2 /* SPFontPreviewTextField.h */,
 				17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */,
+				58D2A6A516FBDEFF002EB401 /* SPComboPopupButton.h */,
+				58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */,
 			);
 			name = Controls;
 			sourceTree = "<group>";
@@ -3243,6 +3248,7 @@
 				5843E247162B555B00EAA6D1 /* SPThreadAdditions.m in Sources */,
 				17005CB316D6CF0000AF81F4 /* SPTableTriggersDelegate.m in Sources */,
 				58D29FE016E96306002EB401 /* SPUserManagerDataSource.m in Sources */,
+				58D2A6A716FBDEFF002EB401 /* SPComboPopupButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

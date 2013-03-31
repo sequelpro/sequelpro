@@ -101,11 +101,16 @@
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
 	IBOutlet id valueTextField;
-	IBOutlet id runSelectionButton;
+
+	// Hooks for old layouts using just the Run All button
 	IBOutlet id runAllButton;
 
-	IBOutlet NSMenuItem *runSelectionMenuItem;
-	IBOutlet NSMenuItem *runAllMenuItem;
+	// Hooks for layouts using the new single button with interchangeable actions
+	IBOutlet id runPrimaryActionButton;
+	IBOutlet id runPrimaryActionButtonAsSelection;
+	IBOutlet NSMenuItem *runPrimaryActionMenuItem;
+	IBOutlet NSMenuItem *runSecondaryActionMenuItem;
+
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
 	IBOutlet NSMenuItem *completionListMenuItem;
@@ -144,8 +149,8 @@
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
+	BOOL currentQueryBeforeCaret;
 
-	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
 	NSTableColumn *sortColumn;
 
@@ -199,13 +204,16 @@
 @property (assign) SPTablesList* tablesListInstance;
 @property (assign) SPTextView *textView;
 @property (assign) SPCopyTable *customQueryView;
-@property (assign) NSButton* runAllButton;
 @property (assign) id affectedRowsText;
 #endif
 
-@property(assign) BOOL textViewWasChanged;
+@property (assign) NSButton* runAllButton;
+@property (assign) BOOL textViewWasChanged;
 
 // IBAction methods
+- (IBAction)runPrimaryQueryAction:(id)sender;
+- (IBAction)runSecondaryQueryAction:(id)sender;
+- (IBAction)switchDefaultQueryAction:(id)sender;
 - (IBAction)runAllQueries:(id)sender;
 - (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
@@ -237,6 +245,10 @@
 - (NSRange)queryRangeAtPosition:(NSUInteger)position lookBehind:(BOOL *)doLookBehind;
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
 - (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
+
+// Interface setup
+- (void)updateQueryInteractionInterface;
+- (void)updateContextualRunInterface;
 
 // Query load actions
 - (void) initQueryLoadTimer;

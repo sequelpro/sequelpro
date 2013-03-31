@@ -58,6 +58,7 @@
 #import "SPTextView.h"
 #import "RegexKitLite.h"
 #import "SPThreadAdditions.h"
+#import "SPConstants.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
@@ -79,15 +80,49 @@
 #ifdef SP_CODA
 @synthesize textView;
 @synthesize customQueryView;
-@synthesize runAllButton;
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
 @synthesize affectedRowsText;
 #endif
 
+@synthesize runAllButton;
 @synthesize textViewWasChanged;
 
 #pragma mark IBAction methods
+
+/**
+ * Run the primary query task, as per the user preference
+ */
+- (IBAction)runPrimaryQueryAction:(id)sender
+{
+	if ([prefs boolForKey:SPQueryPrimaryControlRunsAll]) {
+		[self runAllQueries:sender];
+	} else {
+		[self runSelectedQueries:sender];
+	}
+}
+
+/**
+ * Run the secondary query task, as per the user preference
+ */
+- (IBAction)runSecondaryQueryAction:(id)sender
+{
+	if ([prefs boolForKey:SPQueryPrimaryControlRunsAll]) {
+		[self runSelectedQueries:sender];
+	} else {
+		[self runAllQueries:sender];
+	}
+}
+
+/**
+ * Swap the primary and secondary query run actions
+ */
+- (IBAction)switchDefaultQueryAction:(id)sender
+{
+	BOOL newValue = ![prefs boolForKey:SPQueryPrimaryControlRunsAll];
+	[prefs setBool:newValue forKey:SPQueryPrimaryControlRunsAll];
+	[self updateQueryInteractionInterface];
+}
 
 /*
  * Split all the queries in the text view, split them into individual queries,
@@ -1341,6 +1376,68 @@
 }
 
 #pragma mark -
+#pragma mark Interface setup
+
+/**
+ * Update the Run Selection/Query/All button and menu item state according
+ * to the user preferences.
+ */
+- (void)updateQueryInteractionInterface
+{
+	NSString *runAllTitle = NSLocalizedString(@"Run All Queries", @"Run All button and menu item title");
+
+	// By default, the interface uses Run Query/Run Selection as the primary interface,
+	// but the user can switch this.
+	BOOL primaryActionIsRunAll = [prefs boolForKey:SPQueryPrimaryControlRunsAll];
+
+	// Update the links as appropriate
+	if (primaryActionIsRunAll) {
+		runPrimaryActionButtonAsSelection = nil;
+		[runPrimaryActionButton setTitle:runAllTitle];
+		[runPrimaryActionMenuItem setTitle:runAllTitle];
+	} else {
+		runPrimaryActionButtonAsSelection = runPrimaryActionButton;
+		[runSecondaryActionMenuItem setTitle:runAllTitle];
+	}
+
+	// Update the Run Current/Previous/Selection menu item (and button if appropriate)
+	[self updateContextualRunInterface];
+}
+
+/**
+ * Update the selection-sensitive "Run Current" / "Run Previous" / "Run Selection"
+ * button and menu items based on the current interface state
+ */
+- (void)updateContextualRunInterface
+{
+	NSMenuItem *runSelectionMenuItem;
+
+	// Determine the menu item to change
+	if (runPrimaryActionButtonAsSelection) {
+		runSelectionMenuItem = runPrimaryActionMenuItem;
+	} else {
+		runSelectionMenuItem = runSecondaryActionMenuItem;
+	}
+
+	// If the current selection is a single caret position, update the button based on
+	// whether the caret is inside a valid query.
+	if (![textView selectedRange].length) {
+		if (currentQueryBeforeCaret) {
+			[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
+		} else {
+			[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
+		}
+
+	// Otherwise, reflect the active selection
+	} else {
+		[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
+	}
+}
+
+#pragma mark -
 #pragma mark Table load actions
 
 /**
@@ -1506,9 +1603,6 @@
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
 #endif
-
-	// Disable runSelectionMenuItem in the gear menu
-	[runSelectionMenuItem setEnabled:NO];
 }
 
 /**
@@ -2568,7 +2662,7 @@
 	if (aTextView == textView) {
 		if ([aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 			[[[NSApp currentEvent] characters] isEqualToString:@"\003"]) {
-			[self runSelectedQueries:self];
+			[self runPrimaryQueryAction:self];
 			
 			return YES;
 		} 
@@ -2611,69 +2705,37 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
 	NSUInteger caretPosition = currentSelection.location;
 
-	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
+	// Detect the current query range, allowing the search to occur if the caret is after
+	// a semicolon
+	currentQueryBeforeCaret = YES;
+	currentQueryRange = [self queryRangeAtPosition:caretPosition lookBehind:&currentQueryBeforeCaret];
 
-	if(qRange.length)
-		currentQueryRange = qRange;
-	else
-		currentQueryRange = NSMakeRange(0, 0);
-
-	[textView setQueryRange:qRange];
+	[textView setQueryRange:currentQueryRange];
 	[textView setNeedsDisplayInRect:[textView bounds]];
 
-	// disable "Comment Current Query" menu item if no current query is selectable
-	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];
-
-	// If no text is selected, disable the button and action menu.
-	if ( caretPosition == NSNotFound ) {
-		selectionButtonCanBeEnabled = NO;
-		[runSelectionButton setEnabled:NO];
-		[runSelectionMenuItem setEnabled:NO];
-		return;
-	}
-
-	// If the current selection is a single caret position, update the button based on
-	// whether the caret is inside a valid query.
-	if (!currentSelection.length) {
-		[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
-		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
-
-		// If a valid query is present at the cursor position, enable the button
-		if (qRange.length) {
-			if (isLookBehind) {
-				[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
-				[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
-			}
-			selectionButtonCanBeEnabled = YES;
-			if (![tableDocumentInstance isWorking]) {
-				[runSelectionButton setEnabled:YES];
-				[runSelectionMenuItem setEnabled:YES];
-			}
-		} else {
-			selectionButtonCanBeEnabled = NO;
-			[runSelectionButton setEnabled:NO];
-			[runSelectionMenuItem setEnabled:NO];
-		}
-		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
-
-	// For selection ranges, enable the button.
+	// If a query range is selected, update the current query range and menu actions
+	if (currentQueryRange.length) {
+		[commentCurrentQueryMenuItem setEnabled:YES];
 	} else {
-		selectionButtonCanBeEnabled = YES;
-		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
-		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
-		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
-		if (![tableDocumentInstance isWorking]) {
-			[runSelectionButton setEnabled:YES];
-			[runSelectionMenuItem setEnabled:YES];
-		}
+		currentQueryRange = NSMakeRange(0, 0);
+		[commentCurrentQueryMenuItem setEnabled:NO];
 	}
 
-	if(!historyItemWasJustInserted)
+	// Vary the comment/line selection menu item according to whether a section is present
+	if (currentSelection.length) {
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
+	} else {
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
+	}
+
+	if (!historyItemWasJustInserted)
 		currentHistoryOffsetIndex = -1;
+
+	// Update the text of the contextual run current/previous/selection button and menu item
+	[self updateContextualRunInterface];
 }
 
 #pragma mark -
@@ -3383,10 +3445,10 @@
 #endif
 
 	tableRowsSelectable = NO;
-	[runSelectionButton setEnabled:NO];
-	[runSelectionMenuItem setEnabled:NO];
 	[runAllButton setEnabled:NO];
-	[runAllMenuItem setEnabled:NO];
+	[runPrimaryActionButton setEnabled:NO];
+	[runPrimaryActionMenuItem setEnabled:NO];
+	[runSecondaryActionMenuItem setEnabled:NO];
 }
 
 /**
@@ -3402,13 +3464,11 @@
 		return;
 #endif
 
-	if (selectionButtonCanBeEnabled) {
-		[runSelectionButton setEnabled:YES];
-		[runSelectionMenuItem setEnabled:YES];
-	}
 	tableRowsSelectable = YES;
 	[runAllButton setEnabled:YES];
-	[runAllMenuItem setEnabled:YES];
+	[runPrimaryActionButton setEnabled:YES];
+	[runPrimaryActionMenuItem setEnabled:YES];
+	[runSecondaryActionMenuItem setEnabled:YES];
 }
 
 #pragma mark -
@@ -3655,7 +3715,6 @@
 		sortField = nil;
 		isDesc = NO;
 		sortColumn = nil;
-		selectionButtonCanBeEnabled = NO;
 		isFieldEditable = NO;
 		cqColumnDefinition = nil;
 		favoritesManager = nil;
@@ -3691,6 +3750,9 @@
 
 		currentHistoryOffsetIndex = -1;
 		historyItemWasJustInserted = NO;
+		currentQueryRange = NSMakeRange(0, 0);
+		currentQueryBeforeCaret = NO;
+		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
 
@@ -3874,6 +3936,7 @@
 {
 
 	[customQueryView setFieldEditorSelectedRange:NSMakeRange(0,0)];
+	[self updateQueryInteractionInterface];
 
 #ifndef SP_CODA
 	// Set pre-defined menu tags
