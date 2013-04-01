@@ -1384,7 +1384,6 @@
  */
 - (void)updateQueryInteractionInterface
 {
-	NSString *runAllTitle = NSLocalizedString(@"Run All Queries", @"Run All button and menu item title");
 
 	// By default, the interface uses Run Query/Run Selection as the primary interface,
 	// but the user can switch this.
@@ -1393,11 +1392,11 @@
 	// Update the links as appropriate
 	if (primaryActionIsRunAll) {
 		runPrimaryActionButtonAsSelection = nil;
-		[runPrimaryActionButton setTitle:runAllTitle];
-		[runPrimaryActionMenuItem setTitle:runAllTitle];
+		[runPrimaryActionButton setTitle:NSLocalizedString(@"Run All", @"run all button")];
+		[runPrimaryActionMenuItem setTitle:NSLocalizedString(@"Run All Queries", @"Run All menu item title")];
 	} else {
 		runPrimaryActionButtonAsSelection = runPrimaryActionButton;
-		[runSecondaryActionMenuItem setTitle:runAllTitle];
+		[runSecondaryActionMenuItem setTitle:NSLocalizedString(@"Run All Queries", @"Run All menu item title")];
 	}
 
 	// Update the Run Current/Previous/Selection menu item (and button if appropriate)

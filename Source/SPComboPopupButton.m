@@ -283,7 +283,7 @@
 
 
 	// Custom tracking to be performed - indent the vertical button area slightly
-	activeRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + heightIndent, cellFrame.size.width, cellFrame.size.height - fabsf(2 * heightIndent));
+	activeRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + heightIndent, cellFrame.size.width - [(SPComboPopupButton *)controlView lineOffset] + 1, cellFrame.size.height - fabsf(2 * heightIndent));
 
 	// Continue tracking the mouse while it's down, updating the state as it enters and leaves the cell,
 	// until it is released; if still within the cell, perform a click.
