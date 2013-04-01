@@ -97,6 +97,7 @@
 	IBOutlet SPCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
+	IBOutlet NSTextField *errorTextTitle;
 	IBOutlet NSScrollView *errorTextScrollView;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
