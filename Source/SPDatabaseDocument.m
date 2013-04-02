@@ -3661,7 +3661,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 #ifndef SP_CODA
 	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
-		return ![connectionController selectedFavorite];
+		return ![connectionController selectedFavorite] || [connectionController isEditingConnection];
 	}
 
 	// Backward in history menu item
@@ -3725,10 +3725,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
 	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
 	// as we don't know what's calling this method.
-	if ([connectionController selectedFavorite]) return;
+	if ([connectionController selectedFavorite] && ![connectionController isEditingConnection]) return;
 
 	// Request the connection controller to add its details to favorites
-	[connectionController addFavorite:self];
+	[connectionController addFavoriteUsingCurrentDetails:self];
 #endif
 }
 
