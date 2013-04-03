@@ -246,7 +246,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 		
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill query?", @"kill query message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
@@ -274,7 +274,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill connection?", @"kill connection message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
@@ -382,7 +382,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
 		}
 		else {
-			long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 			
 			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
