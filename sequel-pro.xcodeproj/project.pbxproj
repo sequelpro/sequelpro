@@ -70,6 +70,7 @@
 		177E792E0FCB54EC00E9E122 /* database-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792B0FCB54EC00E9E122 /* database-small.png */; };
 		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
 		177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */; };
+		17846BA4170C962E00414499 /* SPProcessListControllerDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 17846BA3170C962E00414499 /* SPProcessListControllerDataSource.m */; };
 		1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */; };
 		1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */; };
 		1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */; };
@@ -683,6 +684,8 @@
 		177E792C0FCB54EC00E9E122 /* dummy-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dummy-small.png"; sourceTree = "<group>"; };
 		177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExtendedTableInfo.h; sourceTree = "<group>"; };
 		177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExtendedTableInfo.m; sourceTree = "<group>"; };
+		17846BA2170C962E00414499 /* SPProcessListControllerDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPProcessListControllerDataSource.h; sourceTree = "<group>"; };
+		17846BA3170C962E00414499 /* SPProcessListControllerDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPProcessListControllerDataSource.m; sourceTree = "<group>"; };
 		1785E9F5127D8C7500F468C8 /* SPPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferencePane.h; sourceTree = "<group>"; };
 		1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferencePane.m; sourceTree = "<group>"; };
 		1785EA14127DAE3A00F468C8 /* SPPreferenceControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceControllerDelegate.h; sourceTree = "<group>"; };
@@ -1568,8 +1571,6 @@
 				BC675A131072039C00C5ACD4 /* SPContentFilterManager.m */,
 				BC9F087F100FCF2C00A80D32 /* SPFieldEditorController.h */,
 				BC9F0880100FCF2C00A80D32 /* SPFieldEditorController.m */,
-				174CE14010AB9281008F892B /* SPProcessListController.h */,
-				174CE14110AB9281008F892B /* SPProcessListController.m */,
 				173C4364104455E0001F3A30 /* SPQueryFavoriteManager.h */,
 				173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */,
 				1792C13510AD75C800ABE758 /* SPServerVariablesController.h */,
@@ -1582,6 +1583,7 @@
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
+				17846B9D170C95D800414499 /* Process List */,
 				17381853151FB29C0078FFE2 /* User Manager */,
 				1713C73D140D88D400CFD461 /* Query Controller */,
 			);
@@ -1675,6 +1677,17 @@
 				296DC8AB0F909194002A3258 /* RegexKitLite.m */,
 			);
 			name = RegexKitLite;
+			sourceTree = "<group>";
+		};
+		17846B9D170C95D800414499 /* Process List */ = {
+			isa = PBXGroup;
+			children = (
+				174CE14010AB9281008F892B /* SPProcessListController.h */,
+				174CE14110AB9281008F892B /* SPProcessListController.m */,
+				17846BA2170C962E00414499 /* SPProcessListControllerDataSource.h */,
+				17846BA3170C962E00414499 /* SPProcessListControllerDataSource.m */,
+			);
+			name = "Process List";
 			sourceTree = "<group>";
 		};
 		1792C28910AE1C7200ABE758 /* Controller Categories */ = {
@@ -3249,6 +3262,7 @@
 				17005CB316D6CF0000AF81F4 /* SPTableTriggersDelegate.m in Sources */,
 				58D29FE016E96306002EB401 /* SPUserManagerDataSource.m in Sources */,
 				58D2A6A716FBDEFF002EB401 /* SPComboPopupButton.m in Sources */,
+				17846BA4170C962E00414499 /* SPProcessListControllerDataSource.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
