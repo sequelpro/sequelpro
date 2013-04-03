@@ -3294,15 +3294,18 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
-			SPBeginWaitingAlertSheet(@"title",
-				NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Ignore", @"ignore button"), nil,
-				NSCriticalAlertStyle, parentWindow, self,
-				@selector(sheetDidEnd:returnCode:contextInfo:),
-				@"saveDocPrefSheetStatus",
-				[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")],
-				[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]],
-				&saveDocPrefSheetStatus
-			);
+			[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
+			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
+			                                   otherButton:nil
+			                                    alertStyle:NSCriticalAlertStyle
+			                                     docWindow:parentWindow
+			                                 modalDelegate:self
+			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+			                                   contextInfo:@"saveDocPrefSheetStatus"
+			                                           msg:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
+			                                    returnCode:&saveDocPrefSheetStatus];
 
 			if (spf) [spf release];
 			if(saveDocPrefSheetStatus == NSAlertAlternateReturn)

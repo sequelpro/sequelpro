@@ -733,15 +733,19 @@
 					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						SPBeginWaitingAlertSheet(@"title",
-							NSLocalizedString(@"Run All", @"run all button"), NSLocalizedString(@"Continue", @"continue button"), NSLocalizedString(@"Stop", @"stop button"),
-							NSWarningAlertStyle, [tableDocumentInstance parentWindow], self,
-							@selector(sheetDidEnd:returnCode:contextInfo:),
-							@"runAllContinueStopSheet",
-							NSLocalizedString(@"MySQL Error", @"mysql error message"),
-							[mySQLConnection lastErrorMessage],
-							&runAllContinueStopSheetReturnCode
-						);
+						[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
+						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
+						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+						                                    alertStyle:NSWarningAlertStyle
+						                                     docWindow:[tableDocumentInstance parentWindow]
+						                                 modalDelegate:self
+						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						                                   contextInfo:@"runAllContinueStopSheet"
+						                                           msg:NSLocalizedString(@"MySQL Error", @"mysql error message")
+						                                      infoText:[mySQLConnection lastErrorMessage]
+						                                    returnCode:&runAllContinueStopSheetReturnCode];
+
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
 
 						switch (runAllContinueStopSheetReturnCode) {

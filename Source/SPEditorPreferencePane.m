@@ -758,19 +758,18 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 		
 		[[NSColorPanel sharedColorPanel] close];
 		
-		SPBeginWaitingAlertSheet(@"title",
-								 NSLocalizedString(@"Proceed", @"proceed button"), 
-								 NSLocalizedString(@"Cancel", @"cancel button"), 
-								 nil,
-								 NSWarningAlertStyle, 
-								 [[self view] window], 
-								 self,
-								 @selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:),
-								 nil,
-								 NSLocalizedString(@"Unsaved Theme", @"unsaved theme message"),
-								 NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message"),
-								 &checkForUnsavedThemeSheetStatus
-								 );
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+		                                 defaultButton:NSLocalizedString(@"Proceed", @"proceed button")
+		                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+		                                   otherButton:nil
+		                                    alertStyle:NSWarningAlertStyle
+		                                     docWindow:[[self view] window]
+		                                 modalDelegate:self
+		                                didEndSelector:@selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:)
+		                                   contextInfo:nil
+		                                           msg:NSLocalizedString(@"Unsaved Theme", @"unsaved theme message")
+		                                      infoText:NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message")
+		                                    returnCode:&checkForUnsavedThemeSheetStatus];
 		
 		return (checkForUnsavedThemeSheetStatus == NSAlertDefaultReturn);
 	}
