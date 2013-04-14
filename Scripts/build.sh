@@ -78,6 +78,9 @@ mkdir -p "${SHARED_SUPPORT_DIR}/Default Themes"
 
 cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 
+# Add a SpotLight comment
+osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
+
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then
