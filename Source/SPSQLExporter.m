@@ -884,7 +884,11 @@
 		if ([[column objectForKey:@"unsigned"] integerValue] == 1) [fieldString appendString:@" UNSIGNED"];
 		if ([[column objectForKey:@"zerofill"] integerValue] == 1) [fieldString appendString:@" ZEROFILL"];
 		if ([[column objectForKey:@"binary"] integerValue] == 1) [fieldString appendString:@" BINARY"];
-		if ([[column objectForKey:@"null"] integerValue] == 0) [fieldString appendString:@" NOT NULL"];
+		if ([[column objectForKey:@"null"] integerValue] == 0) {
+			[fieldString appendString:@" NOT NULL"];
+		} else {
+			[fieldString appendString:@" NULL"];
+		}
 		
 		// Provide the field default if appropriate
 		if ([column objectForKey:@"default"]) {
