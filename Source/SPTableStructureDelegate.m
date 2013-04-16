@@ -558,12 +558,12 @@
 		
 		// Only string fields allow encoding settings
 		if (([[aTableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"]) && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]];
+			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
- 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Check if UNSIGNED and ZEROFILL is allowed
