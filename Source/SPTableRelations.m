@@ -589,9 +589,9 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 		{
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									 [constraint objectForKey:SPRelationNameKey], SPRelationNameKey,
-									 [[constraint objectForKey:SPRelationColumnsKey] objectAtIndex:0], SPRelationColumnsKey,
+									 [[constraint objectForKey:SPRelationColumnsKey] componentsJoinedByCommas], SPRelationColumnsKey,
 									 [constraint objectForKey:@"ref_table"], SPRelationFKTableKey,
-									 [constraint objectForKey:@"ref_columns"], SPRelationFKColumnsKey,
+									 [[constraint objectForKey:@"ref_columns"] componentsJoinedByCommas], SPRelationFKColumnsKey,
 									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
 									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
 									 nil]];
@@ -624,7 +624,7 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
 	
-	NSArray *columns = [tableInfo objectForKey:SPRelationColumnsKey];
+	NSArray *columns = [tableInfo objectForKey:@"columns"];
 	
 	NSMutableArray *validColumns = [NSMutableArray array];
 	

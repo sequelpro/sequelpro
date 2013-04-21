@@ -175,10 +175,10 @@
 				}
 				
 				// Get the column references. Currently the columns themselves are an array,
-				// while reference columns and tables are comma separated if there are more than
+				// while tables are comma separated if there are more than
 				// one.  Only use the first of each for the time being.
 				NSArray *originColumns = [constraint objectForKey:@"columns"];
-				NSArray *referenceColumns = [[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","];
+				NSArray *referenceColumns = [constraint objectForKey:@"ref_columns"];
 				
 				NSString *extra = @"";
 				

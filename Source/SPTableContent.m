@@ -514,7 +514,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	for (NSDictionary *constraint in constraints)
 	{
 		NSString *firstColumn    = [[constraint objectForKey:@"columns"] objectAtIndex:0];
-		NSString *firstRefColumn = [[[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","] objectAtIndex:0];
+		NSString *firstRefColumn = [[constraint objectForKey:@"ref_columns"] objectAtIndex:0];
 		NSUInteger columnIndex   = [columnNames indexOfObject:firstColumn];
 
 		if (columnIndex != NSNotFound && ![[dataColumns objectAtIndex:columnIndex] objectForKey:@"foreignkeyreference"]) {
