@@ -45,6 +45,16 @@
 	NSPopUpButton *charsetButton;
 	NSPopUpButton *collationButton;
 	
+	SPDatabaseData *databaseData;
+	SPServerSupport *serverSupport;
+	BOOL promoteUTF8;
+	NSString *defaultCharset;
+	NSString *defaultCollation;
+	NSString *selectedCharset;
+	NSString *selectedCollation;
+	NSString *defaultCharsetFormatString;
+	NSString *_oldCharset;
+	
 	BOOL _enabled;
 }
 
