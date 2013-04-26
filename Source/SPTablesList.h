@@ -39,6 +39,7 @@
 @class SPTableStructure;
 @class SPTableContent;
 @class SPSplitView;
+@class SPCharsetCollationHelper;
 
 #ifdef SP_CODA
 @class SQLSidebarViewController;
@@ -137,6 +138,8 @@
 #ifdef SP_CODA
 	SQLSidebarViewController* sidebarViewController;
 #endif
+	
+	SPCharsetCollationHelper *addTableCharsetHelper;
 }
 
 // IBAction methods
@@ -144,7 +147,6 @@
 - (IBAction)addTable:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
-- (IBAction)tableEncodingButtonChanged:(id)sender;
 
 #ifndef SP_CODA /* method decls */
 - (IBAction)copyTable:(id)sender;

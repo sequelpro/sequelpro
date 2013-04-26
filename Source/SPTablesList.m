@@ -65,6 +65,8 @@
 #import "SQLSidebarViewController.h"
 #endif
 
+#import "SPCharsetCollationHelper.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
@@ -128,6 +130,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		
 		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
+		addTableCharsetHelper = nil; //initialized in awakeFromNib
 	}
 	
 	return self;
@@ -166,6 +169,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #ifndef SP_CODA
 	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, nil]];
 #endif
+	
+	//create the charset helper
+	addTableCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:tableEncodingButton CollationButton:tableCollationButton];
 }
 
 #pragma mark -
@@ -379,45 +385,17 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[tableTypeButton addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 
-	// Populate the table encoding popup button with a default menu item
-	[tableEncodingButton removeAllItems];
-	[tableEncodingButton addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Encoding Dropdown : Default inherited from database"), [tableDocumentInstance databaseEncoding]]];
-
-	// Retrieve the server-supported encodings and add them to the menu
-	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	// Setup the charset and collation dropdowns
+	[addTableCharsetHelper setDatabaseData:databaseDataInstance];
+	[addTableCharsetHelper setServerSupport:[tableDocumentInstance serverSupport]];
+	[addTableCharsetHelper setPromoteUTF8:YES];
+	[addTableCharsetHelper setDefaultCharsetFormatString:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Encoding Dropdown : Default inherited from database")];
+	[addTableCharsetHelper setDefaultCharset:[databaseDataInstance getDatabaseDefaultCharacterSet]];
+	[addTableCharsetHelper setDefaultCollation:[databaseDataInstance getDatabaseDefaultCollation]];
+	[addTableCharsetHelper setSelectedCharset:nil]; //reset to not carry over state from last time sheet was shown
+	[addTableCharsetHelper setSelectedCollation:nil];
+	[addTableCharsetHelper setEnabled:YES];
 	
-	NSString *utf8MenuItemTitle = nil;
-	
-	[tableEncodingButton setEnabled:YES];
-	
-	if (([encodings count] > 0) && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
-		[[tableEncodingButton menu] addItem:[NSMenuItem separatorItem]];
-		
-		for (NSDictionary *encoding in encodings) 
-		{
-			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			
-			[tableEncodingButton addItemWithTitle:menuItemTitle];
-
-			// If the UTF8 entry has been encountered, store the menu title
-			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
-				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
-			}
-		}
-
-		// If a UTF8 entry was found, promote it to the top of the list
-		if (utf8MenuItemTitle) {
-			[[tableEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
-			[tableEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
-		}
-	}
-	else {
-		[tableEncodingButton setEnabled:NO];
-	}
-	
-	//Load the collations for the current charset
-	[self tableEncodingButtonChanged:self];
-
 	// Set the focus to the name field
 	[tableSheet makeFirstResponder:tableNameField];
 
@@ -765,6 +743,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	else 
 #endif
 	if ([contextInfo isEqualToString:SPAddNewTable]) {
+		[addTableCharsetHelper setEnabled:NO];
 		if (returnCode == NSOKButton) {
 			[self _addTable];
 		}
@@ -2287,20 +2266,14 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 
 	// If there is an encoding selected other than the default we must specify it in CREATE TABLE statement
-	if ([tableEncodingButton indexOfSelectedItem] > 0) {
-		NSString *encodingName = [[tableEncodingButton title] stringByMatching:@"\\((.*)\\)" capture:1L];
-		
-		if (!encodingName) encodingName = @"utf8";
-		
+	NSString *encodingName = [addTableCharsetHelper selectedCharset];
+	if (encodingName)		
 		charSetStatement = [NSString stringWithFormat:@"DEFAULT CHARACTER SET %@", [encodingName backtickQuotedString]];
-	}
 	
-	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
-	if ([tableCollationButton indexOfSelectedItem] > 0) {
-		//collations have no description except for the default item (which is already excluded) so we can directly use the value
-		NSString *collationName = [tableCollationButton title];
+	// If there is a collation selected other than the default we must specify it in the CREATE TABLE statement
+	NSString *collationName = [addTableCharsetHelper selectedCollation];
+	if (collationName)		
 		collationStatement = [NSString stringWithFormat:@"DEFAULT COLLATE %@",[collationName backtickQuotedString]];
-	}
 
 	// If there is a type selected other than the default we must specify it in CREATE TABLE statement
 	if ([tableTypeButton indexOfSelectedItem] > 0) {
@@ -2681,6 +2654,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if (isTableListFiltered && filteredTableTypes) [filteredTableTypes release];
 #endif
 	if (selectedTableName) [selectedTableName release];
+	
+	if (addTableCharsetHelper) [addTableCharsetHelper release];
 	
 	[super dealloc];
 }

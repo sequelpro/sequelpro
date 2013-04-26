@@ -56,6 +56,7 @@
 @class SPCustomQuery;
 @class SPDatabaseStructure;
 @class SPMySQLConnection;
+@class SPCharsetCollationHelper;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -115,6 +116,8 @@
 	IBOutlet id databaseAlterSheet;
 	IBOutlet NSPopUpButton *databaseAlterEncodingButton;
 	IBOutlet NSPopUpButton *databaseAlterCollationButton;
+	
+	SPCharsetCollationHelper *alterDatabaseCharsetHelper;
 
 	IBOutlet NSProgressIndicator* queryProgressBar;
 #ifndef SP_CODA
@@ -130,6 +133,8 @@
 	IBOutlet id databaseEncodingButton;
 	IBOutlet id databaseCollationButton;
 	IBOutlet id addDatabaseButton;
+	
+	SPCharsetCollationHelper *addDatabaseCharsetHelper;
 
 #ifndef SP_CODA
 	IBOutlet id databaseCopyNameField;
@@ -332,8 +337,6 @@
 - (void)selectDatabase:(NSString *)aDatabase item:(NSString *)anItem;
 - (IBAction)addDatabase:(id)sender;
 - (IBAction)alterDatabase:(id)sender;
-- (IBAction)alterDatabaseEncodingButtonChanged:(id)sender;
-- (IBAction)databaseEncodingButtonChanged:(id)sender;
 - (IBAction)removeDatabase:(id)sender;
 - (IBAction)refreshTables:(id)sender;
 #ifndef SP_CODA /* method decls */

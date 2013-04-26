@@ -107,6 +107,8 @@ enum {
 #import "SPDatabaseRename.h"
 #endif
 
+#import "SPCharsetCollationHelper.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
@@ -117,7 +119,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 @interface SPDatabaseDocument ()
-- (void)_evaluateCollationsForSelectedCharset;
 - (void)_addDatabase;
 - (void)_alterDatabase;
 #ifndef SP_CODA /* method decls */
@@ -232,6 +233,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		taskCancellationCallbackObject = nil;
 		taskCancellationCallbackSelector = NULL;
 #endif
+		alterDatabaseCharsetHelper = nil; //init in awakeFromNib
+		addDatabaseCharsetHelper = nil;
 		
 		keyChainID = nil;
 #ifndef SP_CODA /* init ivars */
@@ -379,6 +382,9 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	[self updateTitlebarStatusVisibilityForcingHide:NO];
 #endif
+	
+	alterDatabaseCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseAlterEncodingButton CollationButton:databaseAlterCollationButton];
+	addDatabaseCharsetHelper   = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseEncodingButton CollationButton:databaseCollationButton]; 
 }
 
 #ifndef SP_CODA /* password sheet and history navigation */
@@ -760,44 +766,18 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	[databaseNameField setStringValue:@""];
 
-	// Populate the database encoding popup button with a default menu item
-	[databaseEncodingButton removeAllItems];
-	NSString *defaultCharset = [databaseDataInstance getServerDefaultCharacterSet];
-	NSString *defaultItemTitle = (defaultCharset)? [NSString stringWithFormat:NSLocalizedString(@"Default (%@)",@"Add Database Sheet : Charset : Use Server Default ($1 = Charset Name)"),defaultCharset] : NSLocalizedString(@"Default",@"Add Database Sheet : Charset : Use Server Default (unknown)");
-	[databaseEncodingButton addItemWithTitle:defaultItemTitle];
-
-	// Retrieve the server-supported encodings and add them to the menu
-	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
-	NSString *utf8MenuItemTitle = nil;
+	NSString *defaultCharset   = [databaseDataInstance getServerDefaultCharacterSet];
+	NSString *defaultCollation = [databaseDataInstance getServerDefaultCollation];
 	
-	[databaseEncodingButton setEnabled:YES];
-	
-	if (([encodings count] > 0) && [serverSupport supportsPost41CharacterSetHandling]) {
-		[[databaseEncodingButton menu] addItem:[NSMenuItem separatorItem]];
-		
-		for (NSDictionary *encoding in encodings) 
-		{
-			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			[databaseEncodingButton addItemWithTitle:menuItemTitle];
-
-			// If the UTF8 entry has been encountered, store the title
-			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
-				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
-			}
-		}
-
-		// If a UTF8 entry was found, promote it to the top of the list
-		if (utf8MenuItemTitle) {
-			[[databaseEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
-			[databaseEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
-		}
-	}
-	else {
-		[databaseEncodingButton setEnabled:NO];
-	}
-	
-	//reevaluate the collations for the selected charset
-	[self _evaluateCollationsForSelectedCharset];
+	// Setup the charset and collation dropdowns
+	[addDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[addDatabaseCharsetHelper setServerSupport:serverSupport];
+	[addDatabaseCharsetHelper setPromoteUTF8:YES];
+	[addDatabaseCharsetHelper setSelectedCharset:nil];
+	[addDatabaseCharsetHelper setSelectedCollation:nil];
+	[addDatabaseCharsetHelper setDefaultCharset:defaultCharset];
+	[addDatabaseCharsetHelper setDefaultCollation:defaultCollation];
+	[addDatabaseCharsetHelper setEnabled:YES];
 	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:parentWindow
@@ -814,98 +794,25 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 - (IBAction)alterDatabase:(id)sender
 {
 	//once the database is created the charset and collation are written
-	//to the db.opt regardless if they were explicity given or not.
+	//to the db.opt file regardless if they were explicity given or not.
 	//So there is no longer a "Default" option.
 	
-	// Populate the database encoding popup button with a default menu item
-	[databaseAlterEncodingButton removeAllItems];
-	NSString *currentCharset = [databaseDataInstance getDatabaseDefaultCharacterSet];
-
-	// Retrieve the server-supported encodings and add them to the menu
-	NSArray *encodings = [databaseDataInstance getDatabaseCharacterSetEncodings];
+	NSString *currentCharset   = [databaseDataInstance getDatabaseDefaultCharacterSet];
+	NSString *currentCollation = [databaseDataInstance getDatabaseDefaultCollation];
 	
-	if(![encodings count]) {
-		NSBeep();
-		NSLog(@"%s: Trying to show ALTER UI but getting CHARACTER SET list failed!",__func__);
-		return;
-	}
-		
-	for (NSDictionary *encoding in encodings) 
-	{
-		NSString *charsetId = [encoding objectForKey:@"CHARACTER_SET_NAME"];
-		NSString *description = [encoding objectForKey:@"DESCRIPTION"];
-		NSString *menuItemTitle = (![description length]) ? charsetId : [NSString stringWithFormat:@"%@ (%@)", description, charsetId];
-		
-		NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle:menuItemTitle action:NULL keyEquivalent:@""] autorelease];
-		[menuItem setRepresentedObject:charsetId];
-
-		// If the UTF8 entry has been encountered, promote it to the top of the list (this time we don't want duplicates)
-		if ([charsetId isEqualToString:@"utf8"]) {
-			[[databaseAlterEncodingButton menu] insertItem:menuItem atIndex:0];
-			[[databaseAlterEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
-		}
-		else {
-			[[databaseAlterEncodingButton menu] addItem:menuItem];
-		}
-					 
-		// select the current charset
-		if([charsetId isEqualToString:currentCharset])
-			[databaseAlterEncodingButton selectItem:menuItem];
-		
-	}
-	
-	//refresh collations for charset
-	[self alterDatabaseEncodingButtonChanged:nil];
+	// Setup the charset and collation dropdowns
+	[alterDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[alterDatabaseCharsetHelper setServerSupport:serverSupport];
+	[alterDatabaseCharsetHelper setPromoteUTF8:YES];
+	[alterDatabaseCharsetHelper setSelectedCharset:currentCharset];
+	[alterDatabaseCharsetHelper setSelectedCollation:currentCollation];
+	[alterDatabaseCharsetHelper setEnabled:YES];
 	
 	[NSApp beginSheet:databaseAlterSheet
 	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 		  contextInfo:SPAlterDatabaseAction];
-}
-
-/**
- * Updates the list of collations for the currently selected encoding in the ALTER DATABASE sheet
- * @warning Make sure this method is only called on mysql 4.1+ servers!
- */
-- (IBAction)alterDatabaseEncodingButtonChanged:(id)sender
-{
-	NSString *currentCharset   = [databaseDataInstance getDatabaseDefaultCharacterSet];
-	NSString *currentCollation = [databaseDataInstance getDatabaseDefaultCollation];
-
-	//throw out all items
-	[databaseAlterCollationButton removeAllItems];
-	
-	//get the selected charset id
-	NSString *charsetId = [[databaseAlterEncodingButton selectedItem] representedObject];
-	//this should not fail so far down the line
-	if(![charsetId length]) {
-		NSLog(@"%s: Encoding menu item <%@> does not represent any charset!",__func__,[databaseAlterEncodingButton title]);
-		return;
-	}
-
-	//now let's get the list of collations for the selected charset id
-	NSArray *applicableCollations = [databaseDataInstance getDatabaseCollationsForEncoding:charsetId];
-	//and add the real items
-	for (NSDictionary *collation in applicableCollations) 
-	{
-		NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
-						
-		NSMenuItem *menuItem = [[[NSMenuItem alloc] initWithTitle:collationName action:NULL keyEquivalent:@""] autorelease];
-		[[databaseAlterCollationButton menu] addItem:menuItem];
-		
-		//if the charset is the current charset and this is the current collation
-		//else if this collation is the default for the selected charset 
-		//  => select it
-		if(([charsetId isEqualToString:currentCharset] && [collationName isEqualToString:currentCollation]) || 
-		   (![charsetId isEqualToString:currentCharset] && [[collation objectForKey:@"IS_DEFAULT"] isEqualToString:@"Yes"]))
-			[databaseAlterCollationButton selectItem:menuItem];
-	}
-}
-
-- (IBAction)databaseEncodingButtonChanged:(id)sender
-{
-	[self _evaluateCollationsForSelectedCharset];
 }
 
 #ifndef SP_CODA /* operations on whole databases */
@@ -1081,6 +988,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
+		[addDatabaseCharsetHelper setEnabled:NO];
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
 
@@ -1121,6 +1029,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #endif
 	}
 	else if([contextInfo isEqualToString:SPAlterDatabaseAction]) {
+		[alterDatabaseCharsetHelper setEnabled:NO];
 		if(returnCode == NSOKButton) {
 			[self _alterDatabase];
 		}
@@ -6005,76 +5914,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 }			 
 
 /**
- * Checks the new database sheet for the currently selected charset and updates the list of collations accordingly.
- */
-- (void)_evaluateCollationsForSelectedCharset
-{
-	NSString *fmtStrDefaultId      = NSLocalizedString(@"Default (%@)",@"Add Database : Collation : Default ($1 = collation name)");
-	NSString *fmtStrDefaultUnknown = NSLocalizedString(@"Default",@"Add Database Sheet : Collation : Default (unknown)"); 
-	
-	//throw out all items
-	[databaseCollationButton removeAllItems];
-	//we'll enable that later if the user can actually change the selection.
-	[databaseCollationButton setEnabled:NO];
-	
-	/* logic below is as follows:
-	 *   if the server default charset is selected also use the server default collation
-	 *   regardless of default charset or not get the list of all collations that apply
-	 *   if a non-default charset is selected look out for it's default collation and promote that to the top as default
-	 *
-	 * Selecting a default charset (or collation) means that we don't want to specify one in the CREATE DATABASE statement.
-	 */
-		
-	//is the default charset currently selected?
-	BOOL isDefaultCharset = ([databaseEncodingButton indexOfSelectedItem] == 0);
-	
-	if(isDefaultCharset) {
-		NSString *defaultCollation = [databaseDataInstance getServerDefaultCollation];
-		NSString *defaultItemTitle = (defaultCollation)? [NSString stringWithFormat:fmtStrDefaultId,defaultCollation] : fmtStrDefaultUnknown;
-		[databaseCollationButton addItemWithTitle:defaultItemTitle];
-		//add the separator for the real items
-		[[databaseCollationButton menu] addItem:[NSMenuItem separatorItem]];
-	}
-	
-	//if the server actually has support for charsets & collations we will now get a list of all collations
-	//for the current charset. Even if the default charset is kept by the user he can change the default collation
-	//so we search in that case, too.
-	if([serverSupport supportsPost41CharacterSetHandling]) {
-		//get the charset id the lazy way
-		NSString *charsetName = [[databaseEncodingButton title] stringByMatching:@"\\((.*)\\)\\Z" capture:1L];
-		//this should not fail as even default is "Default (charset)" - if it does there's nothing we can do
-		if(!charsetName) {
-			NSLog(@"Can't find charset id in encoding name <%@>. Format should be <Description (id)>.",[databaseEncodingButton title]);
-			return;
-		}
-		//now let's get the list of collations for the selected charset id
-		NSArray *applicableCollations = [databaseDataInstance getDatabaseCollationsForEncoding:charsetName];
-		if ([applicableCollations count] > 0) {
-			//and add the real items
-			for (NSDictionary *collation in applicableCollations) 
-			{
-				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
-				[databaseCollationButton addItemWithTitle:collationName];
-				
-				//if this is not the server default charset let's find it's default collation too
-				if(!isDefaultCharset && [[collation objectForKey:@"IS_DEFAULT"] isEqualToString:@"Yes"]) {
-					NSString *defaultCollateTitle = [NSString stringWithFormat:fmtStrDefaultId,collationName];
-					//add it to the top of the list
-					[databaseCollationButton insertItemWithTitle:defaultCollateTitle atIndex:0];
-					//add a separator underneath
-					[[databaseCollationButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
-				}
-			}
-			//reset selection to first item (it may moved when adding the default item)
-			[databaseCollationButton selectItemAtIndex:0];
-			//yay, now there is actually something not the Default item, so we can enable the button
-			[databaseCollationButton setEnabled:YES];
-		}
-	}
-	
-}
-
-/**
  * Adds a new database.
  */
 - (void)_addDatabase
@@ -6092,20 +5931,14 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
-	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		NSString *encodingName = [[databaseEncodingButton title] stringByMatching:@"\\((.*)\\)\\Z" capture:1L];
-		if (!encodingName) encodingName = [databaseEncodingButton title];
-		if (!encodingName) encodingName = @"utf8";
-
+	NSString *encodingName = [addDatabaseCharsetHelper selectedCharset];
+	if (encodingName)		
 		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [encodingName backtickQuotedString]];
-	}
 	
 	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
-	if ([databaseCollationButton indexOfSelectedItem] > 0) {
-		//collations have no description except for the default item (which is already excluded) so we can directly use the value
-		NSString *collationName = [databaseCollationButton title];
+	NSString *collationName = [addDatabaseCharsetHelper selectedCollation];
+	if (collationName)		
 		createStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@", createStatement, [collationName backtickQuotedString]];
-	}
 	
 	// Create the database
 	[mySQLConnection queryString:createStatement];
@@ -6135,11 +5968,17 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 {
 	//we'll always run the alter statement, even if old == new because after all that is what the user requested
 	
-	NSString *newCharset   = [[databaseAlterEncodingButton selectedItem] representedObject];
-	NSString *newCollation = [databaseAlterCollationButton titleOfSelectedItem];
+	NSString *newCharset   = [alterDatabaseCharsetHelper selectedCharset];
+	NSString *newCollation = [alterDatabaseCharsetHelper selectedCollation];
 	
-	NSString *alterStatement = [NSString stringWithFormat:@"ALTER DATABASE %@ DEFAULT CHARACTER SET %@ DEFAULT COLLATE %@", [[self database] backtickQuotedString],[newCharset backtickQuotedString],[newCollation backtickQuotedString]];
+	NSString *alterStatement = [NSString stringWithFormat:@"ALTER DATABASE %@ DEFAULT CHARACTER SET %@", [[self database] backtickQuotedString],[newCharset backtickQuotedString]];
 
+	//technically there is an issue here: If a user had a non-default collation and now wants to switch to the default collation this cannot be specidifed (default == nil).
+	//However if you just do an ALTER with CHARACTER SET == oldCharset MySQL will still reset the collation therefore doing exactly what we want.
+	if(newCollation) {
+		alterStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@",alterStatement,[newCollation backtickQuotedString]];
+	}
+	
 	//run alter
 	[mySQLConnection queryString:alterStatement];
 	
@@ -6455,6 +6294,9 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	if (tablesListInstance) [tablesListInstance release];
 	if (customQueryInstance) [customQueryInstance release];
 #endif
+	
+	if (alterDatabaseCharsetHelper) [alterDatabaseCharsetHelper release];
+	if (addDatabaseCharsetHelper) [addDatabaseCharsetHelper release];
 	
 	[super dealloc];
 }
