@@ -582,9 +582,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	if ([self database]) [self detectDatabaseEncoding];
 
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	// If not on the query view, alter initial focus - set focus to table list filter
+	// field if visible, otherwise set focus to Table List view
+	if (![[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery]) {
+		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	}
+
 #endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
@@ -2377,16 +2380,17 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)showUserManager:(id)sender
 {	
-    if (!userManagerInstance)
-    {
-        userManagerInstance = [[SPUserManager alloc] init];
+	if (!userManagerInstance)
+	{
+		userManagerInstance = [[SPUserManager alloc] init];
 		
-        [userManagerInstance setConnection:mySQLConnection];
+		[userManagerInstance setDatabaseDocument:self];
+		[userManagerInstance setConnection:mySQLConnection];
 		[userManagerInstance setServerSupport:serverSupport];
-    }
-    
+	}
+
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
-	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT user FROM mysql.user LIMIT 1"];
 	
 	if ([mySQLConnection queryErrored] && ([result numberOfRows] == 0)) {
 		
@@ -2412,7 +2416,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 - (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
 {
-    [userManagerInstance release], userManagerInstance = nil;
+	[userManagerInstance release], userManagerInstance = nil;
 }
 
 /**
@@ -4157,7 +4161,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #ifndef SP_CODA
 	// If not connected, update the favorite selection
 	if (!_isConnected) {
-		[connectionController updateFavoriteSelection:self];
+		[connectionController updateFavoriteNextKeyView];
 	}
 #endif
 }
@@ -4488,9 +4492,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller.  This will automatically
-	// clear and reset the connection state.
+	// Deselect all favorites on the connection controller,
+	// and clear and reset the connection state.
 	[[connectionController favoritesOutlineView] deselectAll:connectionController];
+	[connectionController updateFavoriteSelection:self];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen

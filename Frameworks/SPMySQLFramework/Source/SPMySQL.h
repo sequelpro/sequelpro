@@ -58,6 +58,7 @@
 
 // MySQL result set, streaming subclasses of same, and associated categories
 #import "SPMySQLResult.h"
+#import "SPMySQLEmptyResult.h"
 #import "SPMySQLStreamingResult.h"
 #import "SPMySQLFastStreamingResult.h"
 #import "Field Definitions.h"

@@ -630,7 +630,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		if (supportDelimiters && [finalQuery isMatchedByRegex:@"(?i)^\\s*delimiter\\s+\\S+"])
 			finalQuery = nil;
 		if ([finalQuery length])
-			[resultsArray addObject:[NSValue valueWithRange:NSMakeRange(stringIndex, [string length] - stringIndex - delimiterLengthMinusOne)]];
+			[resultsArray addObject:[NSValue valueWithRange:NSMakeRange(stringIndex, [string length] - stringIndex)]];
 	}
 
 	return resultsArray;

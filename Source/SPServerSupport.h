@@ -61,7 +61,7 @@
 	
 	// Encoding
 	BOOL supportsShowCharacterSet;
-	BOOL supportsCharacterSetDatabaseVar;
+	BOOL supportsCharacterSetAndCollationVars;
 	BOOL supportsPost41CharacterSetHandling;
 	
 	// User account related
@@ -144,10 +144,10 @@
 @property (readonly) BOOL supportsShowCharacterSet;
 
 /**
- * @property supportsCharacterSetDatabaseVar Indicates if the server supports the 'character_set_database'
- *                                           variable.
+ * @property supportsCharacterSetAndCollationVars Indicates if the server supports the 'character_set_*' and 'collation_*'
+ *                                           variables.
  */
-@property (readonly) BOOL supportsCharacterSetDatabaseVar;
+@property (readonly) BOOL supportsCharacterSetAndCollationVars;
 
 /**
  * @property supportsPost41CharacterSetHandling Indicates whether the server supports post 4.1 character set

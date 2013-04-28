@@ -62,6 +62,8 @@
 		58C7C1E514DB6E4C00436315 /* SPMySQLFastStreamingResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */; };
 		58C7C1E814DB6E8600436315 /* Field Definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = 58C7C1E614DB6E8600436315 /* Field Definitions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		58C7C1E914DB6E8600436315 /* Field Definitions.m in Sources */ = {isa = PBXBuildFile; fileRef = 58C7C1E714DB6E8600436315 /* Field Definitions.m */; };
+		58D2A4D116EDF1C6002EB401 /* SPMySQLEmptyResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 58D2A4CF16EDF1C6002EB401 /* SPMySQLEmptyResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58D2A4D216EDF1C6002EB401 /* SPMySQLEmptyResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 58D2A4D016EDF1C6002EB401 /* SPMySQLEmptyResult.m */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
@@ -129,6 +131,8 @@
 		58C7C1E314DB6E4C00436315 /* SPMySQLFastStreamingResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SPMySQLFastStreamingResult.m; path = Source/SPMySQLFastStreamingResult.m; sourceTree = "<group>"; };
 		58C7C1E614DB6E8600436315 /* Field Definitions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Field Definitions.h"; path = "Source/SPMySQLResult Categories/Field Definitions.h"; sourceTree = "<group>"; };
 		58C7C1E714DB6E8600436315 /* Field Definitions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "Field Definitions.m"; path = "Source/SPMySQLResult Categories/Field Definitions.m"; sourceTree = "<group>"; };
+		58D2A4CF16EDF1C6002EB401 /* SPMySQLEmptyResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMySQLEmptyResult.h; sourceTree = "<group>"; };
+		58D2A4D016EDF1C6002EB401 /* SPMySQLEmptyResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPMySQLEmptyResult.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* SPMySQL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SPMySQL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2F7E79907B2D74100F64583 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -202,6 +206,8 @@
 				584294EB14CB8002000F8438 /* Connection Categories */,
 				5884165314D2306A0078027F /* SPMySQLResult.h */,
 				5884165414D2306A0078027F /* SPMySQLResult.m */,
+				58D2A4CF16EDF1C6002EB401 /* SPMySQLEmptyResult.h */,
+				58D2A4D016EDF1C6002EB401 /* SPMySQLEmptyResult.m */,
 				586A99F914F02E21007F82BF /* SPMySQLStreamingResult.h */,
 				586A99FA14F02E21007F82BF /* SPMySQLStreamingResult.m */,
 				58C7C1E214DB6E4C00436315 /* SPMySQLFastStreamingResult.h */,
@@ -397,6 +403,7 @@
 				586AA81414F6C648007F82BF /* SPMySQLArrayAdditions.h in Headers */,
 				584D812E15057ECD00F24774 /* SPMySQLKeepAliveTimer.h in Headers */,
 				584D82551509775000F24774 /* Copying.h in Headers */,
+				58D2A4D116EDF1C6002EB401 /* SPMySQLEmptyResult.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,6 +492,7 @@
 				586AA16814F30C5F007F82BF /* Convenience Methods.m in Sources */,
 				584D812F15057ECD00F24774 /* SPMySQLKeepAliveTimer.m in Sources */,
 				584D82561509775000F24774 /* Copying.m in Sources */,
+				58D2A4D216EDF1C6002EB401 /* SPMySQLEmptyResult.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

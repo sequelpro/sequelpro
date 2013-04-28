@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  QKQueryStringAdditions.m
-//  QueryKit
+//  SPUserManagerDataSource.h
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 12, 2012
-//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
+//  Created by Rowan Beentje on March 8, 2013.
+//  Copyright (c) 2013 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -27,23 +27,11 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
+//
+//  More info at <http://code.google.com/p/sequel-pro/>
 
-#import "QKQueryStringAdditions.h"
+#import "SPUserManager.h"
 
-@implementation NSString (QKQueryStringAdditions)
-
-/**
- * Returns the string quoted with supplied character.
- *
- * @param character The character (as a string) to use.
- *
- * @return The quoted string.
- */
-- (NSString *)quotedStringWithCharacter:(NSString *)character
-{
-	NSString *escapedVersion = [NSString stringWithFormat:@"%@%@", character, character];
-	
-	return [NSString stringWithFormat: @"%1$@%2$@%1$@", character, [self stringByReplacingOccurrencesOfString:character withString:escapedVersion]];
-}
+@interface SPUserManager (SPUserManagerDataSource)
 
 @end

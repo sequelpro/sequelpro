@@ -58,6 +58,11 @@
 	SecKeychainAttribute attributes[4];
 	SecKeychainAttributeList attList;
 
+	// If a nil password was supplied, do nothing.
+	if (!password) {
+		return;
+	}
+
 	// Check supplied variables and replaces nils with empty strings
 	if (!name) name = @"";
 	if (!account) account = @"";

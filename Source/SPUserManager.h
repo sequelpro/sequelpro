@@ -33,6 +33,7 @@
 @class SPServerSupport;
 @class SPMySQLConnection;
 @class SPSplitView;
+@class SPDatabaseDocument;
 
 @interface SPUserManager : NSWindowController
 {	
@@ -42,6 +43,7 @@
 	NSDictionary *privColumnToGrantMap;
 	
 	SPMySQLConnection *connection;
+	SPDatabaseDocument *databaseDocument;
 	SPServerSupport *serverSupport;
 
 	IBOutlet SPSplitView *splitView;
@@ -50,7 +52,6 @@
 	IBOutlet NSTreeController *treeController;
 	IBOutlet NSMutableDictionary *privsSupportedByServer;
 	
-	IBOutlet NSArrayController *schemaController;
 	IBOutlet NSArrayController *grantedController;
 	IBOutlet NSArrayController *availableController;
 	
@@ -82,6 +83,7 @@
 }
 
 @property (nonatomic, retain) SPMySQLConnection *connection;
+@property (nonatomic, assign) SPDatabaseDocument *databaseDocument;
 @property (nonatomic, retain) SPServerSupport *serverSupport;
 @property (nonatomic, retain) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;

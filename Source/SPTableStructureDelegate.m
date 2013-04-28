@@ -38,6 +38,7 @@
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
 #import "SPTableStructureLoading.h"
+#import "SPServerSupport.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -141,12 +142,10 @@
 			[tableSourceView reloadData];
 		}
 	}
-	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
-	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
-		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			if ([anObject integerValue] == 1) {
-				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
-			}
+	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
+	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			
 			[tableSourceView reloadData];
 		}
@@ -312,7 +311,7 @@
 	
 	NSString *fieldEncoding = @"";
 			
-	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0) {
+	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
 		
 		NSInteger start = [enc rangeOfString:@"("].location + 1;
@@ -326,7 +325,7 @@
 		fieldEncoding = [tableDataInstance tableEncoding];
 	}
 	
-	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0) {
+	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0 && ![[originalRow objectForKey:@"binary"] integerValue]) {
 		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
 		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue] - 1] objectForKey:@"COLLATION_NAME"];
 		
@@ -559,12 +558,12 @@
 		
 		// Only string fields allow encoding settings
 		if (([[aTableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"]) && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
- 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Check if UNSIGNED and ZEROFILL is allowed

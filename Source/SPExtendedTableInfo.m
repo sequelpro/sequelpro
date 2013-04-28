@@ -592,7 +592,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 		[tableTypePopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
-	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding]) {
+	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 		[tableEncodingPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 

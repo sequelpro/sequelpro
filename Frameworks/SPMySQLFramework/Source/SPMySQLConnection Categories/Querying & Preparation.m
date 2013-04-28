@@ -322,34 +322,38 @@
 	id theResult = nil;
 
 	// On success, if there is a query result, retrieve the result data type
-	if (!queryStatus && mysql_field_count(mySQLConnection)) {
-		MYSQL_RES *mysqlResult;
+	if (!queryStatus) {
+		if (mysql_field_count(mySQLConnection)) {
+			MYSQL_RES *mysqlResult;
 
-		switch (theReturnType) {
+			switch (theReturnType) {
 
-			// For standard result sets, retrieve all the results now, and afterwards
-			// update the affected row count.
-			case SPMySQLResultAsResult:
-				mysqlResult = mysql_store_result(mySQLConnection);
-				theResult = [[SPMySQLResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding];
-				theAffectedRowCount = mysql_affected_rows(mySQLConnection);
-				break;
+				// For standard result sets, retrieve all the results now, and afterwards
+				// update the affected row count.
+				case SPMySQLResultAsResult:
+					mysqlResult = mysql_store_result(mySQLConnection);
+					theResult = [[SPMySQLResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding];
+					theAffectedRowCount = mysql_affected_rows(mySQLConnection);
+					break;
 
-			// For fast streaming and low memory streaming result sets, set up the result
-			case SPMySQLResultAsLowMemStreamingResult:
-				mysqlResult = mysql_use_result(mySQLConnection);
-				theResult = [[SPMySQLStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
-				break;
+				// For fast streaming and low memory streaming result sets, set up the result
+				case SPMySQLResultAsLowMemStreamingResult:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
 
-			case SPMySQLResultAsFastStreamingResult:
-				mysqlResult = mysql_use_result(mySQLConnection);
-				theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
-				break;
+				case SPMySQLResultAsFastStreamingResult:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
+			}
+
+			// Update the error message, if appropriate, to reflect result store errors or overall success
+			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
+			theErrorID = mysql_errno(mySQLConnection);
+		} else {
+			theResult = [[SPMySQLEmptyResult alloc] init];
 		}
-
-		// Update the error message, if appropriate, to reflect result store errors or overall success
-		theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
-		theErrorID = mysql_errno(mySQLConnection);
 	}
 
 	// Update the connection's stored insert ID if available
