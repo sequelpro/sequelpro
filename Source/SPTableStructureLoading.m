@@ -170,7 +170,7 @@
 		NSString *collation = nil; 
 		NSString *encoding = nil;
 		
-		if ([fieldValidation isFieldTypeString:type] && ![type hasSuffix:@"BINARY"] && ![type hasSuffix:@"BLOB"]) {
+		if ([fieldValidation isFieldTypeString:type]) {
 						
 			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [[tableDataInstance statusValues] objectForKey:@"collation"];
 			encoding = [theField objectForKey:@"encoding"] ? [theField objectForKey:@"encoding"] : [tableDataInstance tableEncoding];

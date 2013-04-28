@@ -3171,15 +3171,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
-			SPBeginWaitingAlertSheet(@"title",
-				NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Ignore", @"ignore button"), nil,
-				NSCriticalAlertStyle, parentWindow, self,
-				@selector(sheetDidEnd:returnCode:contextInfo:),
-				@"saveDocPrefSheetStatus",
-				[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")],
-				[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]],
-				&saveDocPrefSheetStatus
-			);
+			[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
+			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
+			                                   otherButton:nil
+			                                    alertStyle:NSCriticalAlertStyle
+			                                     docWindow:parentWindow
+			                                 modalDelegate:self
+			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+			                                   contextInfo:@"saveDocPrefSheetStatus"
+			                                           msg:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
+			                                    returnCode:&saveDocPrefSheetStatus];
 
 			if (spf) [spf release];
 			if(saveDocPrefSheetStatus == NSAlertAlternateReturn)
@@ -3416,17 +3419,19 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	SEL action = [menuItem action];
+	
 	if ([menuItem menu] == chooseDatabaseButton) {
 		return (_isConnected && databaseListIsSelectable);
 	}
 
 	if (!_isConnected || _isWorkingLevel) {
-		return ([menuItem action] == @selector(newWindow:) || 
-				[menuItem action] == @selector(terminate:) || 
-				[menuItem action] == @selector(closeTab:));
+		return (action == @selector(newWindow:) || 
+				action == @selector(terminate:) || 
+				action == @selector(closeTab:));
 	}
 
-	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
+	if (action == @selector(openCurrentConnectionInNewWindow:))
 	{
 		if ([self isUntitled]) {
 			[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
@@ -3439,12 +3444,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 	
 	// Data export
-	if ([menuItem action] == @selector(export:)) {
+	if (action == @selector(export:)) {
 		return (([self database] != nil) && ([[tablesListInstance tables] count] > 1));
 	}
 	
 	// Selected tables data export
-	if ([menuItem action] == @selector(exportSelectedTablesAs:)) {
+	if (action == @selector(exportSelectedTablesAs:)) {
 		
 		NSInteger tag = [menuItem tag];
 		NSInteger type = [tablesListInstance tableType];
@@ -3470,39 +3475,56 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			return (enable && (tag == SPSQLExport));
 		}
 	}
-
-	if ([menuItem action] == @selector(import:)				  ||
-		[menuItem action] == @selector(removeDatabase:)		  ||
-		[menuItem action] == @selector(copyDatabase:)		  ||
-		[menuItem action] == @selector(renameDatabase:)		  ||
-		[menuItem action] == @selector(openDatabaseInNewTab:) ||
-		[menuItem action] == @selector(refreshTables:))
-	{
-		return ([self database] != nil);
+	
+	// Can only be enabled on mysql 4.1+
+	if (action == @selector(alterDatabase:)) {
+		return (([self database] != nil) && [serverSupport supportsPost41CharacterSetHandling]);
 	}
 	
-	if ([menuItem action] == @selector(importFromClipboard:))
+	// Table specific actions
+	if (action == @selector(viewStructure:) ||
+		action == @selector(viewContent:)   ||
+		action == @selector(viewRelations:) ||
+		action == @selector(viewStatus:)    ||
+		action == @selector(viewTriggers:))
 	{
-		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]];
+		return [self database] != nil && [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 		
+	}
+
+	// Database specific actions
+	if (action == @selector(import:)               ||
+		action == @selector(removeDatabase:)       ||
+		action == @selector(copyDatabase:)         ||
+		action == @selector(renameDatabase:)       ||
+		action == @selector(openDatabaseInNewTab:) ||
+		action == @selector(refreshTables:))
+	{
+		return [self database] != nil;
+	}
+	
+	if (action == @selector(importFromClipboard:)){
+		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]];
 	}
 	
 	// Change "Save Query/Queries" menu item title dynamically
 	// and disable it if no query in the editor
-	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
-		if([customQueryInstance numberOfQueries] < 1) {
+	if (action == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
+		if ([customQueryInstance numberOfQueries] < 1) {
 			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
+			
 			return NO;
 		}
-		else if([customQueryInstance numberOfQueries] == 1)
-			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
-		else
-			[menuItem setTitle:NSLocalizedString(@"Save Queries…", @"Save Queries…")];
+		else {
+			[menuItem setTitle:[customQueryInstance numberOfQueries] == 1 ? 
+			 NSLocalizedString(@"Save Query…", @"Save Query…") : 
+			 NSLocalizedString(@"Save Queries…", @"Save Queries…")];
+		}
 
 		return YES;
 	}
 
-	if ([menuItem action] == @selector(printDocument:)) {
+	if (action == @selector(printDocument:)) {
 		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1) ||
 			// If Custom Query Tab is active the textView will handle printDocument by itself
 			// if it is first responder; otherwise allow to print the Query Result table even 
@@ -3510,70 +3532,70 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2);
 	}
 
-	if ([menuItem action] == @selector(chooseEncoding:)) {
+	if (action == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
 	}
 
-	if ([menuItem action] == @selector(analyzeTable:) || 
-		[menuItem action] == @selector(optimizeTable:) || 
-		[menuItem action] == @selector(repairTable:) || 
-		[menuItem action] == @selector(flushTable:) ||
-		[menuItem action] == @selector(checkTable:) ||
-		[menuItem action] == @selector(checksumTable:) ||
-		[menuItem action] == @selector(showCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyCreateTableSyntax:))
+	// Table actions and view switching
+	if (action == @selector(analyzeTable:) || 
+		action == @selector(optimizeTable:) || 
+		action == @selector(repairTable:) || 
+		action == @selector(flushTable:) ||
+		action == @selector(checkTable:) ||
+		action == @selector(checksumTable:) ||
+		action == @selector(showCreateTableSyntax:) ||
+		action == @selector(copyCreateTableSyntax:))
 	{
 		return [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 	}
 
-	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
-		return ![connectionController selectedFavorite];
+	if (action == @selector(addConnectionToFavorites:)) {
+		return ![connectionController selectedFavorite] || [connectionController isEditingConnection];
 	}
 
 	// Backward in history menu item
-	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
+	if ((action == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
 		return (([[spHistoryControllerInstance history] count]) && ([spHistoryControllerInstance historyPosition] > 0));
 	}
 
 	// Forward in history menu item
-	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
+	if ((action == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
 	}
 	
 	// Show/hide console
-	if ([menuItem action] == @selector(toggleConsole:)) {
+	if (action == @selector(toggleConsole:)) {
 		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible] && [[[NSApp keyWindow] windowController] isKindOfClass:[SPQueryController class]]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
 	}
 	
 	// Clear console
-	if ([menuItem action] == @selector(clearConsole:)) {
+	if (action == @selector(clearConsole:)) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
 	
 	// Show/hide console
-	if ([menuItem action] == @selector(toggleNavigator:)) {
+	if (action == @selector(toggleNavigator:)) {
 		[menuItem setTitle:([[[SPNavigatorController sharedNavigatorController] window] isVisible]) ? NSLocalizedString(@"Hide Navigator", @"hide navigator") : NSLocalizedString(@"Show Navigator", @"show navigator")];
 	}
 	
 	// Focus on table content filter
-	if ([menuItem action] == @selector(focusOnTableContentFilter:) || [menuItem action] == @selector(showFilterTable:)) {
+	if (action == @selector(focusOnTableContentFilter:) || [menuItem action] == @selector(showFilterTable:)) {
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
 	// Focus on table list or filter resp.
-	if ([menuItem action] == @selector(makeTableListFilterHaveFocus:)) {
+	if (action == @selector(makeTableListFilterHaveFocus:)) {
 		
-		if([[tablesListInstance valueForKeyPath:@"tables"] count] > 20)
-			[menuItem setTitle:NSLocalizedString(@"Filter Tables", @"filter tables menu item")];
-		else
-			[menuItem setTitle:NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
+		[menuItem setTitle:[[tablesListInstance valueForKeyPath:@"tables"] count] > 20 ? 
+		 NSLocalizedString(@"Filter Tables", @"filter tables menu item") : 
+		 NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
 			
-		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 1); 
+		return [[tablesListInstance valueForKeyPath:@"tables"] count] > 1; 
 	}
 	
 	// If validation for the sort favorites tableview items reaches here then the preferences window isn't
 	// open return NO.
-	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseSortFavorites:))) {
+	if ((action == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseSortFavorites:))) {
 		return NO;
 	}
 
@@ -3589,10 +3611,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
 	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
 	// as we don't know what's calling this method.
-	if ([connectionController selectedFavorite]) return;
+	if ([connectionController selectedFavorite] && ![connectionController isEditingConnection]) return;
 
 	// Request the connection controller to add its details to favorites
-	[connectionController addFavorite:self];
+	[connectionController addFavoriteUsingCurrentDetails:self];
 }
 
 /**

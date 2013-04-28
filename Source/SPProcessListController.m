@@ -246,7 +246,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 		
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill query?", @"kill query message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
@@ -274,7 +274,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill connection?", @"kill connection message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
@@ -382,7 +382,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
 		}
 		else {
-			long long processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 			
 			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
@@ -476,70 +476,6 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		[processListTableView reloadData];
 	}
 }
-
-#pragma mark -
-#pragma mark Tableview delegate methods
-
-/**
- * Table view delegate method. Returns the number of rows in the table veiw.
- */
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
-{
-	return [processesFiltered count];
-}
-
-/**
- * Table view delegate method. Returns the specific object for the request column and row.
- */
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
-{	
-	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
-
-	if ([object isNSNull]) {
-		return [prefs stringForKey:SPNullValue];
-	}
-
-	// If the string is exactly 100 characters long, and FULL process lists are not enabled, it's a safe
-	// bet that the string is truncated
-	if (!showFullProcessList && [object isKindOfClass:[NSString class]] && [(NSString *)object length] == 100) {
-		return [object stringByAppendingString:@"…"];
-	}
-
-	return object;
-}
-
-/**
- * Table view delegate method. Called when the user changes the sort by column.
- */
-- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
-{
-    [processesFiltered sortUsingDescriptors:[tableView sortDescriptors]];
-    
-	[tableView reloadData];
-}
-
-/**
- * Table view delegate method. Called whenever the user changes a column width.
- */
-- (void)tableViewColumnDidResize:(NSNotification *)notification
-{
-	NSTableColumn *column = [[notification userInfo] objectForKey:@"NSTableColumn"];
-			
-	// Get the existing table column widths dictionary if it exists
-	NSMutableDictionary *tableColumnWidths = ([prefs objectForKey:SPProcessListTableColumnWidths]) ?
-											  [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPProcessListTableColumnWidths]] :
-											  [NSMutableDictionary dictionary];
-	
-	// Save column size
-	NSString *columnName = [[column headerCell] stringValue];
-	
-	if (columnName) {
-		[tableColumnWidths setObject:[NSNumber numberWithDouble:[column width]] forKey:columnName];
-		
-		[prefs setObject:tableColumnWidths forKey:SPProcessListTableColumnWidths];
-	}
-}
-
 
 #pragma mark -
 #pragma mark Text field delegate methods

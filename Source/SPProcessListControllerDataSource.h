@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPFavoritesOutlineView.h
+//  SPProcessListControllerDataSource.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 10, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on April 3, 2013.
+//  Copyright (c) 2013 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -27,15 +27,9 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPFavoritesOutlineView : NSOutlineView
-{
-	SInt32 systemVersion;
-	BOOL justGainedFocus;
-}
+#import "SPProcessListController.h"
 
-@property (assign) BOOL justGainedFocus;
+@interface SPProcessListController (SPProcessListControllerDataSource)
 
 @end

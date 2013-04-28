@@ -30,6 +30,23 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+@interface SPAlertSheets : NSObject
+
++ (void)beginWaitingAlertSheetWithTitle:(NSString *)title
+                          defaultButton:(NSString *)defaultButton
+                        alternateButton:(NSString *)alternateButton
+                            otherButton:(NSString *)otherButton
+                             alertStyle:(NSAlertStyle)alertStyle
+                              docWindow:(NSWindow *)docWindow
+                          modalDelegate:(id)modalDelegate
+                         didEndSelector:(SEL)didEndSelector
+                            contextInfo:(void *)contextInfo
+                                    msg:(NSString *)msg
+                               infoText:(NSString *)infoText
+                             returnCode:(NSInteger *)returnCode;
+
+@end
+
 void SPBeginAlertSheet(
 	NSString *title,
 	NSString *defaultButton,
@@ -40,19 +57,4 @@ void SPBeginAlertSheet(
 		 SEL didEndSelector,
 		void *contextInfo,
 	NSString *msg
-);
-
-void SPBeginWaitingAlertSheet(
-	NSString *title,
-	NSString *defaultButton,
-	NSString *alternateButton,
-	NSString *otherButton,
-NSAlertStyle alertStyle,
-	NSWindow *docWindow,
-		  id modalDelegate,
-		 SEL didEndSelector,
-		void *contextInfo,
-	NSString *msg,
-	NSString *infoText,
-   NSInteger *returnCode
 );

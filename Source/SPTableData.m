@@ -645,8 +645,16 @@
 				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
 				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
 
-				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
+				NSMutableArray *refKeyColumns = [NSMutableArray array];
+				NSArray *refKeyColumnStrings = [[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
+				
+				for (NSString *keyColumn in refKeyColumnStrings)
+				{
+					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
+					[refKeyColumns addObject:[fieldsParser unquotedString]];
+				}
+				
+				[constraintDetails setObject:refKeyColumns forKey:@"ref_columns"];
 
 				NSUInteger nextOffs = 12;
 				

@@ -1250,28 +1250,28 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(type == 2) // PROCEDURE
 		switch(anIndex) {
 			case 0:
-			return @"DTD Identifier";
+			return NSLocalizedString(@"DTD Identifier",@"dtd identifier label (Navigator)");
 			case 1:
-			return @"SQL Data Access";
+			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
 			case 2:
-			return @"Is Deterministic";
+			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
 			case 3:
 			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return @"Definer";
+			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
 		}
 	if(type == 3) // FUNCTION
 		switch(anIndex) {
 			case 0:
 			return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
 			case 1:
-			return @"SQL Data Access";
+			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
 			case 2:
-			return @"Is Deterministic";
+			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
 			case 3:
 			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return @"Definer";
+			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
 		}
 	return @"";
 }

@@ -480,19 +480,19 @@
 			return;
 		}
 
-		// Retrieve the column details
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
+		// Retrieve the column details (only those we need so we don't fetch the whole function body which might be huge)
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT SPECIFIC_NAME, ROUTINE_TYPE, DTD_IDENTIFIER, IS_DETERMINISTIC, SQL_DATA_ACCESS, SECURITY_TYPE, DEFINER FROM `information_schema`.`ROUTINES` WHERE `ROUTINE_SCHEMA` = %@", [currentDatabase tickQuotedString]]];
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
 		// Loop through the rows and extract the function details
 		for (NSArray *row in theResult) {
-			NSString *fname = [row objectAtIndex:0];
-			NSString *type = ([[row objectAtIndex:4] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
-			NSString *dtd = [row objectAtIndex:5];
-			NSString *det = [row objectAtIndex:11];
-			NSString *dataaccess = [row objectAtIndex:12];
-			NSString *security_type = [row objectAtIndex:14];
-			NSString *definer = [row objectAtIndex:19];
+			NSString *fname         =   [row objectAtIndex:0];
+			NSString *type          = ([[row objectAtIndex:1] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
+			NSString *dtd           =   [row objectAtIndex:2];
+			NSString *det           =   [row objectAtIndex:3];
+			NSString *dataaccess    =   [row objectAtIndex:4];
+			NSString *security_type =   [row objectAtIndex:5];
+			NSString *definer       =   [row objectAtIndex:6];
 
 			// Generate "table" and "field" names and add to structure key store
 			NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, fname];

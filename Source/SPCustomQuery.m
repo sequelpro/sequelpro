@@ -574,6 +574,7 @@
 	}
 	
 	[tableDocumentInstance startTaskWithDescription:taskString];
+	[errorTextTitle setStringValue:NSLocalizedString(@"Query Status", @"Query Status")];
 	[errorText setString:taskString];
 	[affectedRowsText setStringValue:@""];
 
@@ -740,21 +741,26 @@
 					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 										(long)(i+1),
 										errorString];
+					[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 					[[errorText onMainThread] setString:errors];
 
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						SPBeginWaitingAlertSheet(@"title",
-							NSLocalizedString(@"Run All", @"run all button"), NSLocalizedString(@"Continue", @"continue button"), NSLocalizedString(@"Stop", @"stop button"),
-							NSWarningAlertStyle, [tableDocumentInstance parentWindow], self,
-							@selector(sheetDidEnd:returnCode:contextInfo:),
-							@"runAllContinueStopSheet",
-							NSLocalizedString(@"MySQL Error", @"mysql error message"),
-							[mySQLConnection lastErrorMessage],
-							&runAllContinueStopSheetReturnCode
-						);
+						[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
+						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
+						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+						                                    alertStyle:NSWarningAlertStyle
+						                                     docWindow:[tableDocumentInstance parentWindow]
+						                                 modalDelegate:self
+						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						                                   contextInfo:@"runAllContinueStopSheet"
+						                                           msg:NSLocalizedString(@"MySQL Error", @"mysql error message")
+						                                      infoText:[mySQLConnection lastErrorMessage]
+						                                    returnCode:&runAllContinueStopSheetReturnCode];
+
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
 
 						switch (runAllContinueStopSheetReturnCode) {
@@ -1309,6 +1315,7 @@
 
 #ifndef SP_REFACTOR
 		// set the error text
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 		[[errorTextScrollView verticalScroller] setFloatValue:1.0f];
 #endif
@@ -1370,6 +1377,7 @@
 		}
 
 	} else if ( [errorsString length] && queryIsTableSorter ) {
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
 		NSBeep();
 	} else {
@@ -1976,6 +1984,7 @@
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 	if(!tableForColumn || ![tableForColumn length]) {
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
 		NSBeep();
 		return;

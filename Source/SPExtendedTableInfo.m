@@ -44,8 +44,24 @@
 
 #import <SPMySQL/SPMySQL.h>
 
-static NSString *SPUpdateTableTypeCurrentType = @"SPUpdateTableTypeCurrentType";
 static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
+static NSString *SPUpdateTableTypeCurrentType = @"SPUpdateTableTypeCurrentType";
+
+// MySQL status field names
+static NSString *SPMySQLEngineField           = @"Engine";
+static NSString *SPMySQLRowFormatField        = @"Row_format";
+static NSString *SPMySQLRowsField             = @"Rows";
+static NSString *SPMySQLAverageRowLengthField = @"Avg_row_length";
+static NSString *SPMySQLDataLengthField       = @"Data_length";
+static NSString *SPMySQLMaxDataLengthField    = @"Max_data_length";
+static NSString *SPMySQLIndexLengthField      = @"Index_length";
+static NSString *SPMySQLDataFreeField         = @"Data_free";
+static NSString *SPMySQLAutoIncrementField    = @"Auto_increment";
+static NSString *SPMySQLCreateTimeField       = @"Create_time";
+static NSString *SPMySQLUpdateTimeField       = @"Update_time";
+static NSString *SPMySQLCheckTimeField        = @"Check_time";
+static NSString *SPMySQLCollationField        = @"Collation";
+static NSString *SPMySQLCommentField          = @"Comment";
 
 @interface SPExtendedTableInfo ()
 
@@ -100,13 +116,13 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 - (IBAction)updateTableType:(id)sender
 {
 	NSString *newType = [sender titleOfSelectedItem];
-	NSString *currentType = [tableDataInstance statusValueForKey:@"Engine"];
+	NSString *currentType = [tableDataInstance statusValueForKey:SPMySQLEngineField];
 
 	// Check if the user selected the same type
 	if ([currentType isEqualToString:newType]) return;
 
 	// If the table is empty, perform the change directly
-	if ([[[tableDataInstance statusValues] objectForKey:@"Rows"] isEqualToString:@"0"]) {
+	if ([[[tableDataInstance statusValues] objectForKey:SPMySQLRowsField] isEqualToString:@"0"]) {
 		[self _changeCurrentTableTypeFrom:currentType to:newType];
 		return;
 	}
@@ -170,7 +186,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 - (IBAction)updateTableCollation:(id)sender
 {
 	NSString *newCollation = [sender titleOfSelectedItem];
-	NSString *currentCollation = [tableDataInstance statusValueForKey:@"Collation"];
+	NSString *currentCollation = [tableDataInstance statusValueForKey:SPMySQLCollationField];
 
 	// Check if the user selected the same collation
 	if ([currentCollation isEqualToString:newCollation]) return;
@@ -252,7 +268,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 		[tableEncodingPopUpButton setEnabled:NO];
 		[tableCollationPopUpButton setEnabled:NO];
 
-		if ([[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) {
+		if ([[statusFields objectForKey:SPMySQLEngineField] isEqualToString:@"View"]) {
 			[tableTypePopUpButton addItemWithTitle:@"View"];
 			// Set create syntax
 			[tableCreateSyntaxTextView setEditable:YES];
@@ -297,9 +313,12 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 		[tableCommentsTextView setString:@""];
 		[tableCommentsTextView didChangeText];
 
-		if([[statusFields objectForKey:@"Engine"] isEqualToString:@"View"] && [statusFields objectForKey:@"CharacterSetClient"] && [statusFields objectForKey:@"Collation"]) {
+		if ([[statusFields objectForKey:SPMySQLEngineField] isEqualToString:@"View"] && 
+			[statusFields objectForKey:@"CharacterSetClient"] && 
+			[statusFields objectForKey:SPMySQLCollationField]) 
+		{
 			[tableEncodingPopUpButton addItemWithTitle:[statusFields objectForKey:@"CharacterSetClient"]];
-			[tableCollationPopUpButton addItemWithTitle:[statusFields objectForKey:@"Collation"]];
+			[tableCollationPopUpButton addItemWithTitle:[statusFields objectForKey:SPMySQLCollationField]];
 		}
 		
 		return;
@@ -309,15 +328,15 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSArray *collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
 
-	if (([engines count] > 0) && ([statusFields objectForKey:@"Engine"])) {
+	if (([engines count] > 0) && ([statusFields objectForKey:SPMySQLEngineField])) {
 
 		// Populate type popup button
 		for (NSDictionary *engine in engines)
 		{
-			[tableTypePopUpButton addItemWithTitle:[engine objectForKey:@"Engine"]];
+			[tableTypePopUpButton addItemWithTitle:[engine objectForKey:SPMySQLEngineField]];
 		}
 
-		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:@"Engine"]];
+		[tableTypePopUpButton selectItemWithTitle:[statusFields objectForKey:SPMySQLEngineField]];
 		[tableTypePopUpButton setEnabled:enableInteraction];
 	}
 	else {
@@ -346,37 +365,38 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 		[tableEncodingPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 
-	if (([collations count] > 0) && ([statusFields objectForKey:@"Collation"])) {
+	if (([collations count] > 0) && ([statusFields objectForKey:SPMySQLCollationField])) {
+
 		// Populate collation popup button
 		for (NSDictionary *collation in collations)
 		{
 			[tableCollationPopUpButton addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
 		}
 
-		[tableCollationPopUpButton selectItemWithTitle:[statusFields objectForKey:@"Collation"]];
+		[tableCollationPopUpButton selectItemWithTitle:[statusFields objectForKey:SPMySQLCollationField]];
 		[tableCollationPopUpButton setEnabled:enableInteraction];
 	}
 	else {
 		[tableCollationPopUpButton addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 	}
 
-	[tableCreatedAt setStringValue:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields]];
-	[tableUpdatedAt setStringValue:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields]];
+	[tableCreatedAt setStringValue:[self _formatValueWithKey:SPMySQLCreateTimeField inDictionary:statusFields]];
+	[tableUpdatedAt setStringValue:[self _formatValueWithKey:SPMySQLUpdateTimeField inDictionary:statusFields]];
 
 	// Set row values
-	[tableRowNumber setStringValue:[self _formatValueWithKey:@"Rows" inDictionary:statusFields]];
-	[tableRowFormat setStringValue:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields]];
-	[tableRowAvgLength setStringValue:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]];
-	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]];
+	[tableRowNumber setStringValue:[self _formatValueWithKey:SPMySQLRowsField inDictionary:statusFields]];
+	[tableRowFormat setStringValue:[self _formatValueWithKey:SPMySQLRowFormatField inDictionary:statusFields]];
+	[tableRowAvgLength setStringValue:[self _formatValueWithKey:SPMySQLAverageRowLengthField inDictionary:statusFields]];
+	[tableRowAutoIncrement setStringValue:[self _formatValueWithKey:SPMySQLAutoIncrementField inDictionary:statusFields]];
 
 	// Set size values
-	[tableDataSize setStringValue:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields]];
-	[tableMaxDataSize setStringValue:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]];
-	[tableIndexSize setStringValue:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields]];
-	[tableSizeFree setStringValue:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields]];
+	[tableDataSize setStringValue:[self _formatValueWithKey:SPMySQLDataLengthField inDictionary:statusFields]];
+	[tableMaxDataSize setStringValue:[self _formatValueWithKey:SPMySQLMaxDataLengthField inDictionary:statusFields]];
+	[tableIndexSize setStringValue:[self _formatValueWithKey:SPMySQLIndexLengthField inDictionary:statusFields]];
+	[tableSizeFree setStringValue:[self _formatValueWithKey:SPMySQLDataFreeField inDictionary:statusFields]];
 
 	// Set comments
-	NSString *commentText = [statusFields objectForKey:@"Comment"];
+	NSString *commentText = [statusFields objectForKey:SPMySQLCommentField];
 	
 	if (!commentText) commentText = @"";
 	
@@ -401,7 +421,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	[tableCreateSyntaxTextView setEditable:NO];
 
 	// Validate Reset AUTO_INCREMENT button
-	if ([statusFields objectForKey:@"Auto_increment"] && ![[statusFields objectForKey:@"Auto_increment"] isNSNull]) {
+	if ([statusFields objectForKey:SPMySQLAutoIncrementField] && ![[statusFields objectForKey:SPMySQLAutoIncrementField] isNSNull]) {
 		[resetAutoIncrementResetButton setHidden:NO];
 	}
 }
@@ -429,43 +449,43 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 		[tableInfo setObject:[tableCollationPopUpButton titleOfSelectedItem] forKey:@"collation"];
 	}
 
-	if ([self _formatValueWithKey:@"Create_time" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Create_time" inDictionary:statusFields] forKey:@"createdAt"];
+	if ([self _formatValueWithKey:SPMySQLCreateTimeField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLCreateTimeField inDictionary:statusFields] forKey:@"createdAt"];
 	}
 	
-	if ([self _formatValueWithKey:@"Update_time" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Update_time" inDictionary:statusFields] forKey:@"updatedAt"];
+	if ([self _formatValueWithKey:SPMySQLUpdateTimeField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLUpdateTimeField inDictionary:statusFields] forKey:@"updatedAt"];
 	}
 	
-	if ([self _formatValueWithKey:@"Rows" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Rows" inDictionary:statusFields] forKey:@"rowNumber"];
+	if ([self _formatValueWithKey:SPMySQLRowsField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLRowsField inDictionary:statusFields] forKey:@"rowNumber"];
 	}
 	
-	if ([self _formatValueWithKey:@"Row_format" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Row_format" inDictionary:statusFields] forKey:@"rowFormat"];
+	if ([self _formatValueWithKey:SPMySQLRowFormatField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLRowFormatField inDictionary:statusFields] forKey:@"rowFormat"];
 	}
 	
-	if ([self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Avg_row_length" inDictionary:statusFields] forKey:@"rowAvgLength"];
+	if ([self _formatValueWithKey:SPMySQLAverageRowLengthField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLAverageRowLengthField inDictionary:statusFields] forKey:@"rowAvgLength"];
 	}
 	
-	if ([self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Auto_increment" inDictionary:statusFields] forKey:@"rowAutoIncrement"];
+	if ([self _formatValueWithKey:SPMySQLAutoIncrementField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLAutoIncrementField inDictionary:statusFields] forKey:@"rowAutoIncrement"];
 	}
 	
-	if ([self _formatValueWithKey:@"Data_length" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Data_length" inDictionary:statusFields] forKey:@"dataSize"];
+	if ([self _formatValueWithKey:SPMySQLDataLengthField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLDataLengthField inDictionary:statusFields] forKey:@"dataSize"];
 	}
 	
-	if ([self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Max_data_length" inDictionary:statusFields] forKey:@"maxDataSize"];
+	if ([self _formatValueWithKey:SPMySQLMaxDataLengthField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLMaxDataLengthField inDictionary:statusFields] forKey:@"maxDataSize"];
 	}
 	
-	if ([self _formatValueWithKey:@"Index_length" inDictionary:statusFields]) {
-		[tableInfo setObject:[self _formatValueWithKey:@"Index_length" inDictionary:statusFields] forKey:@"indexSize"];
+	if ([self _formatValueWithKey:SPMySQLIndexLengthField inDictionary:statusFields]) {
+		[tableInfo setObject:[self _formatValueWithKey:SPMySQLIndexLengthField inDictionary:statusFields] forKey:@"indexSize"];
 	}
 	
-	[tableInfo setObject:[self _formatValueWithKey:@"Data_free" inDictionary:statusFields] forKey:@"sizeFree"];
+	[tableInfo setObject:[self _formatValueWithKey:SPMySQLDataFreeField inDictionary:statusFields] forKey:@"sizeFree"];
 
 	if ([tableCommentsTextView string]) {
 		[tableInfo setObject:[tableCommentsTextView string] forKey:@"comments"];
@@ -541,6 +561,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 - (void)confirmChangeTableTypeDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSDictionary *)contextInfo
 {
 	[[alert window] orderOut:self];
+	
 	if (returnCode == NSAlertDefaultReturn) {
 		[self _changeCurrentTableTypeFrom:[contextInfo objectForKey:SPUpdateTableTypeCurrentType] 
 									   to:[contextInfo objectForKey:SPUpdateTableTypeNewType]];
@@ -579,7 +600,7 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 
 	NSDictionary *statusFields = [tableDataInstance statusValues];
 
-	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:@"Engine"] isEqualToString:@"View"]) return;
+	if (!selectedTable || ![selectedTable length] || [[statusFields objectForKey:SPMySQLEngineField] isEqualToString:@"View"]) return;
 
 	// If we are viewing tables in the information_schema database, then disable all controls that cause table
 	// changes as these tables are not modifiable by anyone.
@@ -588,15 +609,18 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 							 [[tableDocumentInstance database] isEqualToString:SPMySQLPerformanceSchemaDatabase] || 
 							 [[tableDocumentInstance database] isEqualToString:SPMySQLDatabase]);
 
-	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:@"Engine"]) {
+	if ([[databaseDataInstance getDatabaseStorageEngines] count] && [statusFields objectForKey:SPMySQLEngineField]) {
 		[tableTypePopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
-	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
+	if ([[databaseDataInstance getDatabaseCharacterSetEncodings] count] && [tableDataInstance tableEncoding] && 
+		[[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) 
+	{
 		[tableEncodingPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
 
-	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count] && [statusFields objectForKey:@"Collation"])
+	if ([[databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] count] && 
+		[statusFields objectForKey:SPMySQLCollationField])
 	{
 		[tableCollationPopUpButton setEnabled:(!isSystemSchemaDb)];
 	}
@@ -650,16 +674,16 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 	}
 	else {
 		// Format size strings
-		if ([key isEqualToString:@"Data_length"]     ||
-			[key isEqualToString:@"Max_data_length"] ||
-			[key isEqualToString:@"Index_length"]    ||
-			[key isEqualToString:@"Data_free"]) {
+		if ([key isEqualToString:SPMySQLDataLengthField] ||
+			[key isEqualToString:SPMySQLMaxDataLengthField] ||
+			[key isEqualToString:SPMySQLIndexLengthField] ||
+			[key isEqualToString:SPMySQLDataFreeField]) {
 
 			value = [NSString stringForByteSize:[value longLongValue]];
 		}
 		// Format date strings to the user's long date format
-		else if ([key isEqualToString:@"Create_time"] ||
-				 [key isEqualToString:@"Update_time"]) {
+		else if ([key isEqualToString:SPMySQLCreateTimeField] ||
+				 [key isEqualToString:SPMySQLUpdateTimeField]) {
 
 			// Create date formatter
 			NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
@@ -672,9 +696,9 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 			value = [dateFormatter stringFromDate:[NSDate dateWithNaturalLanguageString:value]];
 		}
 		// Format numbers
-		else if ([key isEqualToString:@"Rows"] ||
-				 [key isEqualToString:@"Avg_row_length"] ||
-				 [key isEqualToString:@"Auto_increment"]) {
+		else if ([key isEqualToString:SPMySQLRowsField] ||
+				 [key isEqualToString:SPMySQLAverageRowLengthField] ||
+				 [key isEqualToString:SPMySQLAutoIncrementField]) {
 
 			NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
 
@@ -683,13 +707,13 @@ static NSString *SPUpdateTableTypeNewType = @"SPUpdateTableTypeNewType";
 			value = [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[value longLongValue]]];
 
 			// Prefix number of rows with '~' if it is not an accurate count
-			if ([key isEqualToString:@"Rows"] && ![[infoDict objectForKey:@"RowsCountAccurate"] boolValue]) {
+			if ([key isEqualToString:SPMySQLRowsField] && ![[infoDict objectForKey:@"RowsCountAccurate"] boolValue]) {
 				value = [@"~" stringByAppendingString:value];
 			}
 		}
 	}
 
-	return ([value length] > 0) ? value : NSLocalizedString(@"Not available", @"not available label");
+	return [value length] ? value : NSLocalizedString(@"Not available", @"not available label");
 }
 
 #pragma mark -

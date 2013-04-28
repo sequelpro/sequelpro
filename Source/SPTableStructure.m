@@ -796,7 +796,7 @@
 			}
 
 			// ADD COLLATE
-			if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0) {
+			if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0 && ![[theRow objectForKey:@"binary"] integerValue]) {
 				NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
 				NSString *col = [[theCollations objectAtIndex:[[theRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
 				[queryString appendFormat:@"\n COLLATE %@", col];
