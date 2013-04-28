@@ -35,4 +35,6 @@
 	SInt32 systemVersion;
 }
 
+@property (assign) BOOL justGainedFocus;
+
 @end

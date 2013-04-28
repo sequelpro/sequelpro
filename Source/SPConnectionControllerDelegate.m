@@ -40,6 +40,7 @@
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
+#import "SPFavoritesOutlineView.h"
 #endif
 
 static NSString *SPDatabaseImage = @"database-small";
@@ -55,6 +56,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 - (void)_sortFavorites;
 - (void)_favoriteTypeDidChange;
 - (void)_reloadFavoritesViewData;
+- (void)_scrollToSelectedNode;
 
 - (NSString *)_stripInvalidCharactersFromString:(NSString *)subject;
 
@@ -257,6 +259,13 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
+    NSEvent *event = [NSApp currentEvent];
+    BOOL shiftTabbedIn = ([event type] == NSKeyDown && [[event characters] length] && [[event characters] characterAtIndex:0] == NSBackTabCharacter);
+
+    if (shiftTabbedIn && [(SPFavoritesOutlineView *)outlineView justGainedFocus]) {
+		return NO;
+	}
+
 	return (item != quickConnectItem);
 }
 
@@ -663,17 +672,29 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
  */
 - (void)favoritesImportData:(NSArray *)data
 {
+	SPTreeNode *newNode;
+	NSMutableArray *importedNodes = [NSMutableArray array];
+	NSMutableIndexSet *importedIndexSet = [NSMutableIndexSet indexSet];
+
 	// Add each of the imported favorites to the root node
 	for (NSMutableDictionary *favorite in data)
 	{
-		[favoritesController addFavoriteNodeWithData:favorite asChildOfNode:nil];
+		newNode = [favoritesController addFavoriteNodeWithData:favorite asChildOfNode:nil];
+		[importedNodes addObject:newNode];
 	}
 	
 	if (currentSortItem > SPFavoritesSortUnsorted) {
 		[self _sortFavorites];
 	}
-	
+
 	[self _reloadFavoritesViewData];
+
+	// Select the new nodes and scroll into view
+	for (SPTreeNode *eachNode in importedNodes) {
+		[importedIndexSet addIndex:[favoritesOutlineView rowForItem:eachNode]];
+	}
+	[favoritesOutlineView selectRowIndexes:importedIndexSet byExtendingSelection:NO];
+	[self _scrollToSelectedNode];
 }
 
 /**

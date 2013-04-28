@@ -731,6 +731,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 			// For comments starting "--[\s]", ensure the start syntax is valid before proceeding.
 			case '-':
+				if (ignoreCommentStrings) break;
 				if (stringLength < currentStringIndex + 2) break;
 				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) != '-') break;
 				if (![[NSCharacterSet whitespaceCharacterSet] characterIsMember:(unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+2)]) break;
@@ -738,13 +739,13 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				break;
 
 			case '#':
-				if(ignoreCommentStrings) break;
+				if (ignoreCommentStrings) break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPHashComment startingAtIndex:currentStringIndex];
 				break;
 
 			// For comments starting "/*", ensure the start syntax is valid before proceeding.
 			case '/':
-				if(ignoreCommentStrings) break;
+				if (ignoreCommentStrings) break;
 				if (stringLength < currentStringIndex + 1) break;
 				if ((unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) != '*') break;
 				currentStringIndex = [self endIndexOfCommentOfType:SPCStyleComment startingAtIndex:currentStringIndex];

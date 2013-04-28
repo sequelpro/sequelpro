@@ -418,6 +418,7 @@ extern NSString *SPBundleDeletedDefaultBundlesKey;
 extern NSString *SPHiddenKeyFileVisibilityKey;
 extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
+extern NSString *SPSSHEnableMuxingPreference;
 
 // URLs
 extern NSString *SPDonationsURL;

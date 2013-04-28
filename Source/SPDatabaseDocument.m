@@ -98,6 +98,7 @@ enum {
 #import "SPConnectionDelegate.h"
 #endif
 #import "SPThreadAdditions.h"
+#import "RegexKitLite.h"
 
 #ifdef SP_REFACTOR /* headers */
 #import "SPAlertSheets.h"
@@ -4152,6 +4153,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Add the progress window to this window
 	[self centerTaskWindow];	
 	[parentWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
+
+#ifndef SP_CODA
+	// If not connected, update the favorite selection
+	if (!_isConnected) {
+		[connectionController updateFavoriteSelection:self];
+	}
+#endif
 }
 
 /**
@@ -4196,7 +4204,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
 		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
-		[connectionController updateFavoriteSelection:self];
 	}
 #endif
 
@@ -5830,7 +5837,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
 	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInteger:[databaseEncodingButton tag]]] backtickQuotedString]];
+		NSString *encodingName = [[databaseEncodingButton title] stringByMatching:@"\\((.*)\\)\\Z" capture:1L];
+		if (!encodingName) encodingName = [databaseEncodingButton title];
+		if (!encodingName) encodingName = @"utf8";
+
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [encodingName backtickQuotedString]];
 	}
 	
 	// Create the database
@@ -5842,41 +5853,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		
 		return;
 	}
-	
-	// Error while selecting the new database (is this even possible?)
-	if (![mySQLConnection selectDatabase:[databaseNameField stringValue]] ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
-		
-		[self setDatabases:self];
-		
-		return;
-	}
-	
-	// Select the new database
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-	
-	
-	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
+
 	[self setDatabases:self];
-	
-	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
-	
-#ifndef SP_REFACTOR
-	[self updateWindowTitle:self];
-#endif
 #ifdef SP_REFACTOR /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
-
-	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
-	{
-		if ( [allDatabases count] > 0 )
-		{
-			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:selectedDatabase];
-		}
-	}
 #endif
+
+	// Select the database
+	[self selectDatabase:[databaseNameField stringValue] item:nil];
 }
 
 /**
@@ -5913,7 +5898,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[self setDatabases:self];
 	
 	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
 	
 #ifndef SP_REFACTOR
 	[self updateWindowTitle:self];
@@ -5980,11 +5964,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
 #endif
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-#ifndef SP_REFACTOR /* patch */
-		selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
-#else
 		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
-#endif
+
+		[databaseDataInstance resetAllData];
 
 #ifndef SP_REFACTOR /* update database encoding */
 
@@ -5993,9 +5975,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[self detectDatabaseEncoding];
 #endif
 		
-		// Set the connection of SPTablesList and TablesDump to reload tables in db
+		// Set the connection of SPTablesList to reload tables in db
 		[tablesListInstance setConnection:mySQLConnection];
-		[tableDumpInstance setConnection:mySQLConnection];
 
 #ifndef SP_REFACTOR /* update history controller and ui manip */
 		// Update the window title

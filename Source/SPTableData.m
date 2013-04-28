@@ -718,7 +718,7 @@
 			// add dict root "primarykeyfield" = <field> for faster accessing
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] && [parts count] == 3) {
 				SPSQLParser *keyParser = [SPSQLParser stringWithString:NSArrayObjectAtIndex(parts, 2)];
-				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO]];
+				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO skippingBrackets:YES]];
 				NSArray *primaryKeyQuotedNames = [keyParser splitStringByCharacter:','];
 				if ([keyParser length]) {
 					NSMutableArray *primaryKeyFields = [NSMutableArray array];

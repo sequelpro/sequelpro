@@ -79,7 +79,9 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (void)resetAllData
 {
-	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil; 
+	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil;
+	if (defaultCollation != nil) [defaultCollation release], defaultCollation = nil;
+	if (defaultCharacterSetEncoding != nil) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
 	
 	[collations removeAllObjects];
 	[characterSetCollations removeAllObjects];

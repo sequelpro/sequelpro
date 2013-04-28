@@ -112,8 +112,10 @@
 - (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index
 {
 	NSUInteger i, j;
+	NSInteger k;
 	NSMutableArray *processedTokens = [NSMutableArray array];
 	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
+	id groupToken;
 
 	for (NSString *inputToken in tokens) 
 	{
@@ -134,6 +136,31 @@
 		
 		if (j < i) {
 			[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i - j)]]];
+		}
+	}
+
+	// Check to see whether unprocessed strings can be combined to form tokens
+	for (i = 1; i < [processedTokens count]; i++) {
+
+		// If this is a token object, skip
+		if ([[processedTokens objectAtIndex:i] isKindOfClass:[SPExportFileNameTokenObject class]]) {
+			continue;
+		}
+
+		for (k = i - 1; k >= 0; k--) {
+
+			// If this is a token object, stop processing
+			if ([[processedTokens objectAtIndex:k] isKindOfClass:[SPExportFileNameTokenObject class]]) {
+				break;
+			}
+
+			// Check whether the group of items make up a token
+			groupToken = [self tokenObjectForString:[[processedTokens subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
+			if ([groupToken isKindOfClass:[SPExportFileNameTokenObject class]]) {
+				[processedTokens replaceObjectsInRange:NSMakeRange(k, 1 + i - k) withObjectsFromArray:[NSArray arrayWithObject:groupToken]];
+				i = k + 1;
+				break;
+			}
 		}
 	}
 

@@ -73,11 +73,9 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
 	if ([fileManager fileExistsAtPath:[self importPath]]) {
-		importData = [[NSDictionary alloc] initWithContentsOfFile:[self importPath]];
+		importData = [[[NSDictionary alloc] initWithContentsOfFile:[self importPath]] autorelease];
 		
 		NSArray *favorites = [importData valueForKey:SPFavoritesDataRootKey];
-		
-		[importData release];
 		
 		if (favorites) {
 			[self _informDelegateOfImportDataAvailable:favorites];
