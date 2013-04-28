@@ -157,6 +157,8 @@
 	<false/>
 	<key>QueryHistoryReplacesContent</key>
 	<false/>
+	<key>QueryPrimaryControlRunsAll</key>
+	<false/>
 	<key>QuickLookTypes</key>
 	<array/>
 	<key>ReloadAfterAddingRow</key>

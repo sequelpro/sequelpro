@@ -406,6 +406,7 @@ extern NSString *SPQueryFavorites;
 extern NSString *SPQueryFavoriteReplacesContent;
 extern NSString *SPQueryHistory;
 extern NSString *SPQueryHistoryReplacesContent;
+extern NSString *SPQueryPrimaryControlRunsAll;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
 extern NSString *SPTableInfoChangedNotification;
