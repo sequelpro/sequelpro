@@ -189,16 +189,16 @@
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
-- (void) showFilter;
-- (void) hideFilter;
-- (void) clearFilter;
+- (void)showFilter;
+- (void)hideFilter;
+- (void)clearFilter;
 #endif
 - (IBAction) updateFilter:(id)sender;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) setTableListSelectability:(BOOL)isSelectable;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)setTableListSelectability:(BOOL)isSelectable;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 

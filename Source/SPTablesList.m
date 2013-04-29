@@ -81,7 +81,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 @interface SPTablesList ()
 
 #ifndef SP_CODA
-- (void)_removeTable;
+- (void)_removeTable:(NSNumber *)force;
 - (void)_truncateTable;
 #endif
 - (void)_addTable;
@@ -491,8 +491,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (IBAction)removeTable:(id)sender
 {
-	if (![tablesListView numberOfSelectedRows])
-		return;
+	if (![tablesListView numberOfSelectedRows]) return;
 
 	[[tableDocumentInstance parentWindow] endEditingFor:nil];
 
@@ -518,56 +517,76 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSUInteger currentIndex = [indexes lastIndex];
 
 	if ([tablesListView numberOfSelectedRows] == 1) {
-		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeView)
+		if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeView) {
 			tblTypes = NSLocalizedString(@"view", @"view");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable)
+		}
+		else if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable) {
 			tblTypes = NSLocalizedString(@"table", @"table");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeProc)
+		}
+		else if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeProc) {
 			tblTypes = NSLocalizedString(@"procedure", @"procedure");
-		else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeFunc)
+		}
+		else if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeFunc) {
 			tblTypes = NSLocalizedString(@"function", @"function");
+		}
 
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete %@ '%@'?", @"delete table/view message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the %@ '%@'? This operation cannot be undone.", @"delete table/view informative message"), tblTypes, [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 	}
 	else {
-
 		BOOL areTableTypeEqual = YES;
 		NSInteger lastType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
+		
 		while (currentIndex != NSNotFound)
 		{
-			if([[filteredTableTypes objectAtIndex:currentIndex] integerValue]!=lastType)
-			{
+			if ([[filteredTableTypes objectAtIndex:currentIndex] integerValue] != lastType) {
 				areTableTypeEqual = NO;
 				break;
 			}
+			
 			currentIndex = [indexes indexLessThanIndex:currentIndex];
 		}
-		if(areTableTypeEqual)
+		
+		if (areTableTypeEqual)
 		{
-			switch(lastType) {
+			switch (lastType) {
 				case SPTableTypeTable:
-				tblTypes = NSLocalizedString(@"tables", @"tables");
-				break;
+					tblTypes = NSLocalizedString(@"tables", @"tables");
+					break;
 				case SPTableTypeView:
-				tblTypes = NSLocalizedString(@"views", @"views");
-				break;
+					tblTypes = NSLocalizedString(@"views", @"views");
+					break;
 				case SPTableTypeProc:
-				tblTypes = NSLocalizedString(@"procedures", @"procedures");
-				break;
+					tblTypes = NSLocalizedString(@"procedures", @"procedures");
+					break;
 				case SPTableTypeFunc:
-				tblTypes = NSLocalizedString(@"functions", @"functions");
-				break;
+					tblTypes = NSLocalizedString(@"functions", @"functions");
+					break;
 			}
 
-		} else
+		} 
+		else {
 			tblTypes = NSLocalizedString(@"items", @"items");
+		}
 
 		[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete selected %@?", @"delete tables/views message"), tblTypes]];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %@? This operation cannot be undone.", @"delete tables/views informative message"), tblTypes]];
 	}
+	
+	NSButton *button = [alert suppressionButton];
+	
+	[button setTitle:NSLocalizedString(@"Force delete (disables integrity checks)", @"force table deletion button text")];
+	[button setToolTip:NSLocalizedString(@"Disables foreign key checks (FOREIGN_KEY_CHECKS) before deletion and re-enables them afterwards.", @"force table deltion button text tooltip")];
+	[button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	
+	[[button cell] setControlSize:NSSmallControlSize];
+	
+	[alert setShowsSuppressionButton:YES];
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPRemoveTable];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+					  modalDelegate:self 
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:SPRemoveTable];
 }
 
 #ifndef SP_CODA /* whole table operations */
@@ -606,8 +625,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 
 	[copyTableMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Duplicate %@ '%@' to:", @"duplicate object message"), tableType, [self tableName]]];
-
-	//open copyTableSheet
 	[copyTableNameField setStringValue:[NSString stringWithFormat:@"%@_copy", [filteredTables objectAtIndex:[tablesListView selectedRow]]]];
 	[copyTableContentSwitch setState:NSOffState];
 
@@ -731,7 +748,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	else if ([contextInfo isEqualToString:SPRemoveTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self performSelector:@selector(_removeTable) withObject:nil afterDelay:0.0];
+			[self performSelector:@selector(_removeTable:) 
+					   withObject:[NSNumber numberWithInteger:[[(NSAlert *)sheet suppressionButton] state]] 
+					   afterDelay:0.0];
 		}
 	}
 #ifndef SP_CODA
@@ -2097,98 +2116,125 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Removes the selected object (table, view, procedure, function, etc.) from the database and tableView.
  */
-- (void)_removeTable
+- (void)_removeTable:(NSNumber *)force
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
+	
 	[tablesListView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 
-	// get last index
+	// Get last index
 	NSUInteger currentIndex = [indexes lastIndex];
+	
+	if ([force boolValue]) {
+		[mySQLConnection queryString:@"SET FOREIGN_KEY_CHECKS = 0"];
+	}
 
 	while (currentIndex != NSNotFound)
 	{
-		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeView) {
-			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP VIEW %@",
-										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
-										   ]];
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable) {
-			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP TABLE %@",
-										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
-										   ]];
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeProc) {
-			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP PROCEDURE %@",
-										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
-										   ]];
-		} else if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeFunc) {
-			[mySQLConnection queryString: [NSString stringWithFormat: @"DROP FUNCTION %@",
-										   [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]
-										   ]];
+		NSString *objectIdentifier = @"";
+		NSString *databaseObject = [[filteredTables objectAtIndex:currentIndex] backtickQuotedString];
+		NSInteger objectType = [[filteredTableTypes objectAtIndex:currentIndex] integerValue];
+		
+		if (objectType == SPTableTypeView) {
+			objectIdentifier = @"VIEW";
+		} 
+		else if (objectType == SPTableTypeTable) {
+			objectIdentifier = @"TABLE";
 		}
+		else if (objectType == SPTableTypeProc) {
+			objectIdentifier = @"PROCEDURE";
+		} 
+		else if (objectType == SPTableTypeFunc) {
+			objectIdentifier = @"FUNCTION";
+		}
+		
+		[mySQLConnection queryString:[NSString stringWithFormat:@"DROP %@ %@", objectIdentifier, databaseObject]];
 
 		// If no error is recorded, the table was successfully dropped - remove it from the list
 		if (![mySQLConnection queryErrored]) {
-			//dropped table with success
+			
+			// Dropped table with success
 			if (isTableListFiltered) {
 				NSInteger unfilteredIndex = [tables indexOfObject:[filteredTables objectAtIndex:currentIndex]];
+				
 				[tables removeObjectAtIndex:unfilteredIndex];
 				[tableTypes removeObjectAtIndex:unfilteredIndex];
 			}
+			
 			[filteredTables removeObjectAtIndex:currentIndex];
 			[filteredTableTypes removeObjectAtIndex:currentIndex];
 
 			// Get next index (beginning from the end)
 			currentIndex = [indexes indexLessThanIndex:currentIndex];
-
+		} 
 		// Otherwise, display an alert - and if there's tables left, ask whether to proceed
-		} else {
-
+		else {
 			NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+			
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
-			} else {
+			} 
+			else {
 				[alert addButtonWithTitle:NSLocalizedString(@"Continue", @"continue button")];
 				[alert addButtonWithTitle:NSLocalizedString(@"Stop", @"stop button")];
 			}
+			
+			NSString *databaseError = [mySQLConnection lastErrorMessage];
+			NSString *userMessage = NSLocalizedString(@"Couldn't delete '%@'.\n\nMySQL said: %@", @"message of panel when an item cannot be deleted");
+			
+			// Try to provide a more helpful message
+			if ([databaseError rangeOfString:@"a foreign key constraint fails" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+				userMessage = NSLocalizedString(@"Couldn't delete '%@'.\n\nSelecting the 'Force delete' option may prevent this issue, but may leave the database in an inconsistent state.\n\nMySQL said: %@", 
+												@"message of panel when an item cannot be deleted");
+			}
+			
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete '%@'.\n\nMySQL said: %@", @"message of panel when an item cannot be deleted"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
+			[alert setInformativeText:[NSString stringWithFormat:userMessage, [filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
 			[alert setAlertStyle:NSWarningAlertStyle];
+			
 			if ([indexes indexLessThanIndex:currentIndex] == NSNotFound) {
 				[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+				
 				currentIndex = NSNotFound;
-			} else {
+			}
+			else {
 				NSInteger choice = [alert runModal];
-				if (choice == NSAlertFirstButtonReturn) {
-					currentIndex = [indexes indexLessThanIndex:currentIndex];
-				} else {
-					currentIndex = NSNotFound;
-				}
+				
+				currentIndex = choice == NSAlertFirstButtonReturn ? [indexes indexLessThanIndex:currentIndex] : NSNotFound;
 			}
 		}
 	}
+	
+	if ([force boolValue]) {
+		[mySQLConnection queryString:@"SET FOREIGN_KEY_CHECKS = 1"];
+	}
 
-	// Remove the isolated "current selection" item for filtered lists if appropriate
-	if (isTableListFiltered && [filteredTables count] > 1
-		&& [[filteredTableTypes objectAtIndex:[filteredTableTypes count]-1] integerValue] == SPTableTypeNone
-		&& [[filteredTables objectAtIndex:[filteredTables count]-1] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
+	// Remove the isolated 'current selection' item for filtered lists if appropriate
+	if (isTableListFiltered && 
+		[filteredTables count] > 1 && 
+		[[filteredTableTypes objectAtIndex:[filteredTableTypes count] - 1] integerValue] == SPTableTypeNone && 
+		[[filteredTables objectAtIndex:[filteredTables count] - 1] isEqualToString:NSLocalizedString(@"CURRENT SELECTION",@"header for current selection in filtered list")])
 	{
 		[filteredTables removeLastObject];
 		[filteredTableTypes removeLastObject];
 	}
 
 	[tablesListView reloadData];
-
 	[tablesListView deselectAll:self];
 
 #ifndef SP_CODA
-	// set window title
 	[tableDocumentInstance updateWindowTitle:self];
 #endif
+	
 #ifdef SP_CODA
 	[sidebarViewController setTableNames:filteredTables selectedTableName:nil];
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" 
+							   target:[tableDocumentInstance databaseStructureRetrieval] 
+							 selector:@selector(queryDbStructureWithUserInfo:) 
+							   object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
 #ifndef SP_CODA /* operations performed on whole tables */
