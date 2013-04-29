@@ -2185,7 +2185,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			// Try to provide a more helpful message
 			if ([databaseError rangeOfString:@"a foreign key constraint fails" options:NSCaseInsensitiveSearch].location != NSNotFound) {
 				userMessage = NSLocalizedString(@"Couldn't delete '%@'.\n\nSelecting the 'Force delete' option may prevent this issue, but may leave the database in an inconsistent state.\n\nMySQL said: %@", 
-												@"message of panel when an item cannot be deleted");
+												@"message of panel when an item cannot be deleted including informative message about using force deletion");
 			}
 			
 			[alert setMessageText:NSLocalizedString(@"Error", @"error")];
