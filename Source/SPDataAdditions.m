@@ -304,7 +304,7 @@
 		string = @"-- cannot display --";
 	}
 	else if ([string length] > 255) {
-		string = [string substringToIndex:255];
+		string = [[string substringToIndex:254] stringByAppendingString:@"…"];
 	}
 	
 	return string;
