@@ -108,8 +108,12 @@
 			if ([value isNSNull])
 				return [prefs objectForKey:SPNullValue];
 			
-			if ([value isKindOfClass:[NSData class]])
-				return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			if ([value isKindOfClass:[NSData class]]) {
+				if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex]) {
+					return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+				}
+				return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			}
 			
 			if ([value isSPNotLoaded])
 				return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
