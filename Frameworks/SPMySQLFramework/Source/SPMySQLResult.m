@@ -346,21 +346,31 @@ static id NSNullPointer;
  * Provides a binary representation of the supplied bytes as a returned NSString.
  * The resulting binary representation will be zero-padded according to the supplied
  * field length.
+ * MySQL stores bit data as string data stored in an 8-bit wide character set.
  */
 + (NSString *)bitStringWithBytes:(const char *)bytes length:(NSUInteger)length padToLength:(NSUInteger)padLength
 {
-	if (bytes == NULL) return nil;
-
 	NSUInteger i = 0;
-	length--;
-	padLength--;
+	NSUInteger bitLength = length << 3;
 
-	// Generate a C string representation of the binary data
-	char *cStringBuffer = malloc(length + 1);
-	while (i <= padLength) {
-		cStringBuffer[padLength - i++] = ( (bytes[length - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+	if (bytes == NULL) {
+		return nil;
 	}
-	cStringBuffer[padLength+1] = '\0';
+
+	// Ensure padLength is never lower than the length
+	if (padLength < bitLength) {
+		padLength = bitLength;
+	}
+
+	// Generate a nul-terminated C string representation of the binary data
+	char *cStringBuffer = malloc(padLength + 1);
+	cStringBuffer[padLength] = '\0';
+	while (i < bitLength) {
+		cStringBuffer[padLength - ++i] = ( (bytes[length - 1 - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+	}
+	while (i++ < padLength) {
+		cStringBuffer[padLength - i] = '0';
+	}
 
 	// Convert to a string
 	NSString *returnString = [NSString stringWithUTF8String:cStringBuffer];
