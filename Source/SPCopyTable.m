@@ -803,8 +803,12 @@ static const NSInteger kBlobAsImageFile = 4;
 		// Retrieve the cell's content
 		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
 
+		// If the cell hasn't loaded yet, skip processing
+		if (!contentString)
+			continue;
+
 		// Get WKT string out of the SPMySQLGeometryData for calculation
-		if ([contentString isKindOfClass:spmysqlGeometryData])
+		else if ([contentString isKindOfClass:spmysqlGeometryData])
 			contentString = [contentString wktString];
 
 		// Replace NULLs with their placeholder string
