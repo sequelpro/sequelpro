@@ -42,6 +42,7 @@
 #import "SPExportFileNameTokenObject.h"
 #import "SPDatabaseDocument.h"
 #import "SPThreadAdditions.h"
+#import "SPCustomQuery.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -714,7 +715,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
-		return (([[customQueryInstance currentResult] count] > 1) && (![tableDocumentInstance isProcessing]));
+		return (([customQueryInstance currentResultRowCount] > 0) && (![tableDocumentInstance isProcessing]));		
 	}
 	
 	return YES;

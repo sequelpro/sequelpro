@@ -1532,6 +1532,16 @@
 }
 
 /**
+ * Returns the number of rows in the current data result.
+ *
+ * @return The number of rows.
+ */
+- (NSUInteger)currentResultRowCount
+{
+	return resultDataCount;
+}
+
+/**
  * Returns the current result (as shown in custom result view) as an array, the first object containing 
  * the field names as an array and the following objects containing the rows as arrays.
  *

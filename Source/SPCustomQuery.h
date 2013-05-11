@@ -44,12 +44,12 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
-#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
-#define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
-#define SP_HISTORY_COPY_MENUITEM_TAG                  300000
-#define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
-#define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
+#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG       100001
+#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG 100000
+#define SP_FAVORITE_HEADER_MENUITEM_TAG          200000
+#define SP_HISTORY_COPY_MENUITEM_TAG             300000
+#define SP_HISTORY_SAVE_MENUITEM_TAG             300001
+#define SP_HISTORY_CLEAR_MENUITEM_TAG            300002
 
 @class SPCopyTable;
 @class SPQueryFavoriteManager;
@@ -122,12 +122,10 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
+	
 #ifndef SP_CODA
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
-#endif
-
-#ifndef SP_CODA
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
@@ -141,7 +139,6 @@
 	IBOutlet SPSplitView *queryEditorSplitView;
 
 	SPFieldEditorController *fieldEditor;
-
 	SPQueryFavoriteManager *favoritesManager;
 
 	NSUserDefaults *prefs;
@@ -192,8 +189,8 @@
 	BOOL historyItemWasJustInserted;
 
 	NSTimer *queryLoadTimer;
-	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 	NSInteger runAllContinueStopSheetReturnCode;
+	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 
 	NSString *kCellEditorErrorNoMatch;
 	NSString *kCellEditorErrorNoMultiTabDb;
@@ -252,25 +249,26 @@
 - (void)updateContextualRunInterface;
 
 // Query load actions
-- (void) initQueryLoadTimer;
-- (void) clearQueryLoadTimer;
-- (void) queryLoadUpdate:(NSTimer *)theTimer;
+- (void)initQueryLoadTimer;
+- (void)clearQueryLoadTimer;
+- (void)queryLoadUpdate:(NSTimer *)theTimer;
 
 // Accessors
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs truncateDataFields:(BOOL)truncate;
+- (NSUInteger)currentResultRowCount;
 - (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
 
 // Retrieving and setting table state
-- (void) updateTableView;
-- (NSIndexSet *) resultSelectedRowIndexes;
-- (NSRect) resultViewport;
+- (void)updateTableView;
+- (NSIndexSet *)resultSelectedRowIndexes;
+- (NSRect)resultViewport;
 - (NSArray *)dataColumnDefinitions;
-- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
-- (void) setResultViewportToRestore:(NSRect)theViewport;
-- (void) storeCurrentResultViewForRestoration;
-- (void) clearResultViewDetailsToRestore;
-- (void) autosizeColumns;
+- (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void)setResultViewportToRestore:(NSRect)theViewport;
+- (void)storeCurrentResultViewForRestoration;
+- (void)clearResultViewDetailsToRestore;
+- (void)autosizeColumns;
 
 #ifndef SP_CODA
 // MySQL Help
@@ -284,8 +282,8 @@
 - (void)setMySQLversion:(NSString *)theVersion;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Tableview interaction
 - (void)tableSortCallback;
