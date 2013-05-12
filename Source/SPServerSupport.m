@@ -73,6 +73,7 @@
 @synthesize supportsTriggers;
 @synthesize supportsIndexKeyBlockSize;
 @synthesize supportsQuotingEngineTypeInCreateSyntax;
+@synthesize supportsFractionalSeconds;
 @synthesize serverMajorVersion;
 @synthesize serverMinorVersion;
 @synthesize serverReleaseVersion;
@@ -192,6 +193,9 @@
 	
 	// MySQL 4.0 doesn't seem to like having the ENGINE/TYPE quoted in a table's create syntax
 	supportsQuotingEngineTypeInCreateSyntax = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
+	
+	// Fractional second support wasn't added until MySQL 5.6.4
+	supportsFractionalSeconds = [self isEqualToOrGreaterThanMajorVersion:5 minor:6 release:4];
 }
 
 /**
@@ -280,6 +284,7 @@
 	supportsTriggers                        = NO;
 	supportsIndexKeyBlockSize               = NO;
 	supportsQuotingEngineTypeInCreateSyntax = NO;
+	supportsFractionalSeconds               = NO;
 }
 
 /**

@@ -88,6 +88,9 @@
 	// Indexes
 	BOOL supportsIndexKeyBlockSize;
 	
+	// Data types
+	BOOL supportsFractionalSeconds;
+	
 	// Server versions
 	NSInteger serverMajorVersion;
 	NSInteger serverMinorVersion;
@@ -238,6 +241,11 @@
  *                                                   type in the create syntax.
  */
 @property (readonly) BOOL supportsQuotingEngineTypeInCreateSyntax;
+
+/**
+ * @property supportsFractionalSeconds Indicates whether the server supports fractional seconds in date/time data types.
+ */
+@property (readonly) BOOL supportsFractionalSeconds;
 
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion;
 

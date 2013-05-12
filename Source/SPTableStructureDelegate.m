@@ -548,37 +548,37 @@
 		[aCell setEnabled:NO];
 	} 
 	else {
-		// validate cell against current field type
+		// Validate cell against current field type
+		NSString *rowType = @"";
 		NSDictionary *theRow = NSArrayObjectAtIndex(tableFields, rowIndex);
-		NSString *theRowType = @"";
 		
-		if ((theRowType = [theRow objectForKey:@"type"])) {
-			theRowType = [[theRowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+		if ((rowType = [theRow objectForKey:@"type"])) {
+			rowType = [[rowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		}
 		
 		// Only string fields allow encoding settings
 		if (([[aTableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
- 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Check if UNSIGNED and ZEROFILL is allowed
 		else if ([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:theRowType] && ![theRowType isEqualToString:@"BIT"])];
+			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:rowType] && ![rowType isEqualToString:@"BIT"])];
 		}
 		
 		// Check if BINARY is allowed
 		else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:theRowType])];
+			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:rowType])];
 		}
 		
 		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
 		else if ([[aTableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		
 		// Check allow NULL
@@ -588,11 +588,14 @@
 		
 		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
 		else if ([[aTableColumn identifier] isEqualToString:@"length"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || ([fieldValidation isFieldTypeDate:theRowType] && ![theRowType isEqualToString:@"YEAR"]) || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || 
+							   [rowType hasSuffix:@"BLOB"] || 
+							   ([fieldValidation isFieldTypeDate:rowType] && ![[tableDocumentInstance serverSupport] supportsFractionalSeconds] && ![rowType isEqualToString:@"YEAR"]) || 
+							   [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		else {
 			[aCell setEnabled:YES];
-		}
+		}		
 	}
 }
 
