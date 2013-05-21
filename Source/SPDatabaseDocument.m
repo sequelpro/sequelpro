@@ -45,6 +45,7 @@ enum {
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
+#import "SPDatabaseStructure.h"
 #ifndef SP_CODA /* headers */
 #import "SPFileHandle.h"
 #import "SPKeychain.h"
@@ -99,6 +100,7 @@ enum {
 #endif
 #import "SPThreadAdditions.h"
 #import "RegexKitLite.h"
+#import "SPTextView.h"
 
 #ifdef SP_CODA /* headers */
 #import "SPAlertSheets.h"
@@ -4179,7 +4181,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
-		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"]
 								selector:@selector(doAutoCompletion) 
 								object:nil];
 #ifndef SP_CODA
@@ -5413,7 +5415,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						[fh writeData:[[[theResult fieldNames] componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
 					else
 						[fh writeData:[[[theResult fieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
-					[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+					[fh writeData:[@"\n" dataUsingEncoding:NSUTF8StringEncoding]];
 
 					NSArray *columnDefinition = [theResult fieldDefinitions];
 

@@ -1663,11 +1663,10 @@
 	// Update font size on the table
 #ifndef SP_CODA
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #endif
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// If there are no table columns to add, return
 	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
@@ -3167,7 +3166,7 @@
 
 			// Handle "see [...]" and "in [...]"-style 5.x links.
 			//look-behind won't work here because of the \s+
-			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP\\s+)?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 $2",[SPCustomQuery linkToHelpTopic:@"$2"]]];
+			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP\\s+)?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 %@",[SPCustomQuery linkToHelpTopic:@"$2"]]];
 
 			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
 		}
@@ -3184,7 +3183,7 @@
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
 			[theHelp appendFormat:@"<br><i>%@</i><br>", [NSString stringWithFormat:NSLocalizedString(@"Help topics for “%@”", @"MySQL Help Viewer : Results list : Page title"), searchString]];
 		else
-			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString];
+			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories")];
 
 		// iterate through all found rows and print them as HTML ul/li list
 		[theHelp appendString:@"<ul>"];
@@ -3535,7 +3534,7 @@
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 #ifndef SP_CODA
-		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #else
 		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 #endif
@@ -3723,11 +3722,7 @@
 {
 	if ((self = [super init])) {
 
-#ifndef SP_CODA
-		usedQuery = [[NSString stringWithString:@""] retain];
-#else
 		usedQuery = [@"" retain];
-#endif
 		lastExecutedQuery = nil;
 		fieldIDQueryString = nil;
 		sortField = nil;
@@ -3923,11 +3918,7 @@
 		if([control isKindOfClass:[SPCopyTable class]]) {
 
 		// Check firstly if SPCopyTable can handle command
-#ifndef SP_CODA
-		if([customQueryView control:control textView:aTextView doCommandBySelector:(SEL)command])
-#else
 		if([customQueryView control:control textView:aTextView doCommandBySelector:command])
-#endif
 			return YES;
 
 		// Trap the escape key

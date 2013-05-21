@@ -26,8 +26,6 @@
 - (void)notificationReceived:(NSNotification *)notification;
 
 // Animations
-- (void)setAnimatingAlternateImage:(BOOL)flag;
-- (BOOL)animatingAlternateImage;
 - (void)animateStep:(NSTimer *)timer;
 
 // archiving

@@ -70,7 +70,7 @@
  *
  * @return The initialised instance
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate
+- (id)initWithDelegate:(NSObject<SPSQLExporterProtocol> *)exportDelegate
 {
 	if ((self = [super init])) {
 		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPSQLExporterProtocol));

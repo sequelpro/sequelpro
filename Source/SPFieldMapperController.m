@@ -1002,13 +1002,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 }
 
-// - (IBAction)editColumn:(id)sender
-// {
-// 	toBeEditedRowIndexes = [fieldMapperTableView selectedRow];
-// 	[fieldMapperTableView reloadData];
-// 	[fieldMapperTableView editColumn:3 row:[fieldMapperTableView selectedRow] withEvent:nil select:YES];
-// }
-
 /*
  * Set all table target field types to that one of the current selected type
  */
@@ -1124,14 +1117,14 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		for(id item in [fieldMappingImportArray objectAtIndex:0]) {
 			i++;
 			if ([item isNSNull]) {
-				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, [prefs objectForKey:SPNullValue]]];
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. <%@>", (long)i, [prefs objectForKey:SPNullValue]]];
 			} else if ([item isSPNotLoaded]) {
-				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, @"DEFAULT"]];
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. <%@>", (long)i, @"DEFAULT"]];
 			} else {
 				if([(NSString*)item length] > 20)
-					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@…", i, [item substringToIndex:20]]];
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. %@…", (long)i, [item substringToIndex:20]]];
 				else
-					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@", i, item]];
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. %@", (long)i, item]];
 			}
 		}
 	}
@@ -1520,20 +1513,20 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 		else if ([[fieldMappingButtonOptions objectAtIndex:i] isSPNotLoaded])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, @"DEFAULT"]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", i+1, @"DEFAULT"]];
 		else
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 	}
 
 	// Add global values if any
 	if((NSInteger)[fieldMappingGlobalValues count]>numberOfImportColumns)
 		for( ; i < [fieldMappingGlobalValues count]; i++) {
 			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
 			else
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
 		}
 
 	[fieldMapperTableView reloadData];
@@ -1634,10 +1627,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	}
 	else if (!newTableMode && [menuItem action] == @selector(insertNULLValue:)) {
 		return ([[globalValuesTableView selectedRowIndexes] count] == 1) ? YES : NO;
-	}
-	else if (!newTableMode && [menuItem action] == @selector(editColumn:)) {
-		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
-		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableColumnNames objectAtIndex:row]]];
 	}
 	else if (!newTableMode && [menuItem action] == @selector(removeNewColumn:)) {
 		if([toBeEditedRowIndexes containsIndex:row]) {

@@ -79,11 +79,8 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-#ifndef SP_CODA
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
-#else
+
 		NSSize s = [@"8" sizeWithAttributes:textAttributes];
-#endif
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
@@ -135,11 +132,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			font, NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-#ifndef SP_CODA
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
-#else
 		NSSize s = [@"8" sizeWithAttributes:textAttributes];
-#endif
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
@@ -165,11 +158,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			textColor, NSForegroundColorAttributeName,
 			nil] retain];
-#ifndef SP_CODA
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
-#else
 		NSSize s = [@"8" sizeWithAttributes:textAttributes];
-#endif
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];

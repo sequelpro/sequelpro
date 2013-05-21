@@ -758,12 +758,8 @@
  */
 - (BOOL)control:(NSControl<NSControlTextEditingDelegate> *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-#ifndef SP_CODA
 	// Check firstly if SPCopyTable can handle command
-	if ([control control:control textView:textView doCommandBySelector:(SEL)command])
-#else
 	if ([control control:control textView:textView doCommandBySelector:command])
-#endif
 		return YES;
 	
 	// Trap the escape key

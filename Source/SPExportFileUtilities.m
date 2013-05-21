@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPExportFileUtilities.h"
+#import "SPExportInitializer.h"
 #import "SPExporter.h"
 #import "SPAlertSheets.h"
 #import "SPExportFile.h"
@@ -50,6 +51,7 @@ SPExportErrorChoice;
 @interface SPExportController (SPExportFileUtilitiesPrivateAPI)
 
 - (void)_reopenExportSheet;
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 

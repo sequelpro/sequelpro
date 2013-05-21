@@ -32,6 +32,7 @@
 #import "SPTableData.h"
 #import "SPAlertSheets.h"
 #import "SPDatabaseData.h"
+#import "SPDatabaseStructure.h"
 #import "SPTableFieldValidation.h"
 #import "SPDatabaseViewController.h"
 #import "SPIndexesController.h"

@@ -224,7 +224,7 @@
 	NSMutableString *retVal = [NSMutableString string];
 
 	// get the length of the longest location
-	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
+	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%lX", totalLength - ( totalLength % bytesPerLine )] length];
 
 	for ( i = 0; i < totalLength; i += bytesPerLine ) {
 
@@ -235,7 +235,7 @@
 		NSUInteger buffLength = bytesPerLine;
 
 		// add hex value of location
-		[location appendFormat:@"%X", i];
+		[location appendFormat:@"%llX", (unsigned long long)i];
 
 		// pad it
 		while( longest > [location length] ) {

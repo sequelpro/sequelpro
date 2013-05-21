@@ -46,10 +46,10 @@
 
 	if(aColor) {
 		[aColor getRed:&red green:&green blue:&blue alpha:&alpha];
-		redHexValue   = [NSString stringWithFormat:@"%02X", (NSInteger)(red * 255.0f)];
-		greenHexValue = [NSString stringWithFormat:@"%02X", (NSInteger)(green * 255.0f)];
-		blueHexValue  = [NSString stringWithFormat:@"%02X", (NSInteger)(blue * 255.0f)];
-		alphaHexValue = [NSString stringWithFormat:@"%02X", (NSInteger)(alpha * 255.0f)];
+		redHexValue   = [NSString stringWithFormat:@"%02lX", (long)(red * 255.0f)];
+		greenHexValue = [NSString stringWithFormat:@"%02lX", (long)(green * 255.0f)];
+		blueHexValue  = [NSString stringWithFormat:@"%02lX", (long)(blue * 255.0f)];
+		alphaHexValue = [NSString stringWithFormat:@"%02lX", (long)(alpha * 255.0f)];
 		if([alphaHexValue isEqualToString:@"FF"]) alphaHexValue = @"";
 		return [NSString stringWithFormat:@"#%@%@%@%@", redHexValue, greenHexValue, blueHexValue, alphaHexValue];
 	}

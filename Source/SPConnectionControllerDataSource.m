@@ -86,11 +86,6 @@
 	return NSArrayObjectAtIndex([node childNodes], childIndex);
 }
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
-{	
-	return [(SPTreeNode *)item isGroup];
-}
-
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
 	SPTreeNode *node = (SPTreeNode *)item;

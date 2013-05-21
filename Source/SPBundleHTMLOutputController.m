@@ -529,7 +529,7 @@
 - (void)webView:(WebView *)webView exceptionWasRaised:(WebScriptCallFrame *)frame sourceId:(NSInteger)sid line:(NSInteger)lineno forWebFrame:(WebFrame *)webFrame
 {
 
-	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
+	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nuserinfo = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
 
 	if([self suppressExceptionAlerting]) {
 		NSLog(@"%@", mes);

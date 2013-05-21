@@ -49,7 +49,7 @@ static NSString *SPQuickConnectImage = @"quick-connect-icon.pdf";
 static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 #endif
 
-@interface SPConnectionController ()
+@interface SPConnectionController (SPConnectionControllerDelegate_Private_API)
 
 // Privately redeclare as read/write to get the synthesized setter
 @property (readwrite, assign) BOOL isEditingConnection;

@@ -236,7 +236,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	// If the favorites data file already exists use it, otherwise create an empty one
 	if ([fileManager fileExistsAtPath:favoritesFile]) {
-		favoritesData = [[NSDictionary alloc] initWithContentsOfFile:favoritesFile];
+		favoritesData = [[NSMutableDictionary alloc] initWithContentsOfFile:favoritesFile];
 	}
 	else {
 		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [NSArray array], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
@@ -346,7 +346,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		}
 	}
 	else {
-		node = [[SPFavoriteNode alloc] initWithDictionary:nodeData];
+		node = [[SPFavoriteNode alloc] initWithDictionary:[NSMutableDictionary dictionaryWithDictionary:nodeData]];
 		
 		treeNode = [[SPTreeNode alloc] initWithRepresentedObject:node];
 		

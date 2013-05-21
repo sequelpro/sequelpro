@@ -42,6 +42,12 @@
 
 #import <SPMySQL/SPMySQL.h>
 
+@interface SPTableStructure (PrivateAPI)
+
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+
+@end
+
 @implementation SPTableStructure (SPTableStructureDelegate)
 
 #pragma mark -

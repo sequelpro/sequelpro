@@ -187,7 +187,6 @@
 - (IBAction)dropImage:(id)sender;
 - (IBAction)segmentControllerChanged:(id)sender;
 - (IBAction)quickLookFormatButton:(id)sender;
-- (IBAction)dropImage:(id)sender;
 
 - (IBAction)bitSheetSelectBit0:(id)sender;
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender;

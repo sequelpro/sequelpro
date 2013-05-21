@@ -579,7 +579,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 		}
 		
 		NSArray *triggers = ([[tableDocumentInstance serverSupport] supportsTriggers]) ? [tableDataInstance triggers] : nil;
-		NSCharacterSet *nulSet = [NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"%C", '\0']];
+		NSCharacterSet *nulSet = [NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"%C", (unsigned short)'\0']];
 		
 		for (NSDictionary *trigger in triggers)
 		{

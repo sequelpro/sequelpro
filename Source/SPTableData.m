@@ -1127,7 +1127,7 @@
 		SPRowCountQueryUsageLevels rowCountLevel = SPRowCountFetchAlways;
 		NSInteger rowCountCheapBoundary = 5242880;
 #ifndef SP_CODA
-		rowCountLevel = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountQueryLevel] integerValue];
+		rowCountLevel = (SPRowCountQueryUsageLevels)[[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountQueryLevel] integerValue];
 		rowCountCheapBoundary = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountCheapSizeBoundary] integerValue];
 #endif
 

@@ -146,11 +146,11 @@
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [@"\t" stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
 				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
 	else
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [@"\t" stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
 				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
 
@@ -375,7 +375,7 @@
 	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;

@@ -106,7 +106,7 @@
 	
 	for (id item in theList) 
 	{
-		NSMenuItem *aMenuItem;
+		NSMenuItem *aMenuItem = nil;
 		
 		if ([item isKindOfClass:[NSString class]]) {
 			aMenuItem = [[NSMenuItem alloc] initWithTitle:item action:@selector(menuItemHandler:) keyEquivalent:@""];
@@ -124,10 +124,12 @@
 				[aMenuItem setToolTip:[item objectForKey:@"tooltip"]];
 			}
 		}
-		
-		[aMenuItem setTag:cnt++];
-		[theMenu addItem:aMenuItem];
-		[aMenuItem release];
+
+        if (aMenuItem) {
+            [aMenuItem setTag:cnt++];
+            [theMenu addItem:aMenuItem];
+            [aMenuItem release];
+        }
 	}
 	
 	[dialog setContextMenu:theMenu];

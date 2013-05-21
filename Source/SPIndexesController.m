@@ -894,7 +894,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		
 		// If supplied specify the index's key block size
 		if (indexKeyBlockSize) {
-			[query appendFormat:@" KEY_BLOCK_SIZE = %d", [indexKeyBlockSize integerValue]];
+			[query appendFormat:@" KEY_BLOCK_SIZE = %ld", (long)[indexKeyBlockSize integerValue]];
 		}
 
 		// Execute the query

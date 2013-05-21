@@ -363,22 +363,23 @@
 {
     id <PSMTabStyle> newStyle;
 	
-	if ([name isEqualToString:@"Aqua"]) {
-		//newStyle = [[PSMAquaTabStyle alloc] init];
+/*	if ([name isEqualToString:@"Aqua"]) {
+		newStyle = [[PSMAquaTabStyle alloc] init];
 		
 	} else if ([name isEqualToString:@"Unified"]) {
-		//newStyle = [[PSMUnifiedTabStyle alloc] init];
+		newStyle = [[PSMUnifiedTabStyle alloc] init];
 		
 	} else if ([name isEqualToString:@"Adium"]) {
-		//newStyle = [[PSMAdiumTabStyle alloc] init];
+		newStyle = [[PSMAdiumTabStyle alloc] init];
 	
 	} else if ([name isEqualToString:@"Card"]) {
-		//newStyle = [[PSMCardTabStyle alloc] init]; 
+		newStyle = [[PSMCardTabStyle alloc] init];
 	
 	} else if ([name isEqualToString:@"Metal"]) {
-		//newStyle = [[PSMMetalTabStyle alloc] init];
+		newStyle = [[PSMMetalTabStyle alloc] init];
 
-	} else if ([name isEqualToString:@"SequelPro"]) {
+	} else */
+    if ([name isEqualToString:@"SequelPro"]) {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
 
 	} else {

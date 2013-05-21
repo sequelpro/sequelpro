@@ -102,7 +102,7 @@
 	
 	if (![fieldTypes containsObject:type]) return YES;
 	
-	return ((([fieldTypes indexOfObject:type] > 17) && ([fieldTypes indexOfObject:type] < 24) || (([fieldTypes indexOfObject:type] > 29) && ([fieldTypes indexOfObject:type] < 32))));
+	return (((([fieldTypes indexOfObject:type] > 17) && ([fieldTypes indexOfObject:type] < 24)) || (([fieldTypes indexOfObject:type] > 29) && ([fieldTypes indexOfObject:type] < 32))));
 }
 
 /**

@@ -34,4 +34,8 @@
 
 @interface SPWindowController (SPWindowControllerDelegate)
 
+- (void)tabDragStarted:(id)sender;
+- (void)tabDragStopped:(id)sender;
+
+
 @end

@@ -1090,10 +1090,10 @@
 	}
 
 	// Check for a first responder to restore, using the "true" first responder for field editors
-	NSResponder<NSTextDelegate> *firstResponderToRestore = [[self window] firstResponder];
+	NSResponder *firstResponderToRestore = [[self window] firstResponder];
 	
 	if ([firstResponderToRestore respondsToSelector:@selector(isFieldEditor)] && [(NSText *)firstResponderToRestore isFieldEditor]) {
-		firstResponderToRestore = [(NSText *)firstResponderToRestore delegate];
+		firstResponderToRestore = (NSResponder *)[(NSText *)firstResponderToRestore delegate];
 	}
 	if (![firstResponderToRestore isKindOfClass:[NSView class]] || ![(NSView *)firstResponderToRestore isDescendantOf:wrappedView]) {
 		firstResponderToRestore = nil;

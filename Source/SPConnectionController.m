@@ -1092,14 +1092,14 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		if (contextInfo == SPExportFavorites) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 			
-			[exporter setDelegate:self];
+			[exporter setDelegate:(NSObject<SPFavoritesExportProtocol> *)self];
 			
 			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename]];
 		}
 		else if (contextInfo == SPImportFavorites) {
 			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
 
-			[importer setDelegate:self];
+			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
 			
 			[importer importFavoritesFromFileAtPath:[panel filename]];
 		}

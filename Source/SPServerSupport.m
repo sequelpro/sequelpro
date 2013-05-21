@@ -229,7 +229,7 @@
 - (NSString *)description
 {
 	unsigned int i;
-	NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: Server is MySQL version %d.%d.%d. Supports:\n", [self className], serverMajorVersion, serverMinorVersion, serverReleaseVersion];
+	NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: Server is MySQL version %ld.%ld.%ld. Supports:\n", [self className], (long)serverMajorVersion, (long)serverMinorVersion, (long)serverReleaseVersion];
 	
 	Ivar *vars = class_copyIvarList([self class], &i);
 	

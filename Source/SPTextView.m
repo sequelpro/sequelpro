@@ -320,11 +320,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 {
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-#ifndef SP_CODA
-	if(currentWord == nil) currentWord = [NSString stringWithString:@""];
-#else
 	if(currentWord == nil) currentWord = @"";
-#endif
+
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
@@ -2918,11 +2915,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-#ifndef SP_CODA
-	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
-#else
 	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
-#endif
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;

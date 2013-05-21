@@ -59,7 +59,6 @@ static NSString *SPMySQLDataFreeField         = @"Data_free";
 static NSString *SPMySQLAutoIncrementField    = @"Auto_increment";
 static NSString *SPMySQLCreateTimeField       = @"Create_time";
 static NSString *SPMySQLUpdateTimeField       = @"Update_time";
-static NSString *SPMySQLCheckTimeField        = @"Check_time";
 static NSString *SPMySQLCollationField        = @"Collation";
 static NSString *SPMySQLCommentField          = @"Comment";
 

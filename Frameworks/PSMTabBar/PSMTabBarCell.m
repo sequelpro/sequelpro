@@ -153,7 +153,7 @@
 
 - (NSAttributedString *)attributedStringValue
 {
-    return [(id <PSMTabStyle>)[_controlView style] attributedStringValueForTabCell:self];
+    return [[(PSMTabBarControl *)_controlView style] attributedStringValueForTabCell:self];
 }
 
 - (NSInteger)tabState
@@ -323,22 +323,22 @@
 
 - (NSRect)indicatorRectForFrame:(NSRect)cellFrame
 {
-    return [(id <PSMTabStyle>)[_controlView style] indicatorRectForTabCell:self];
+    return [[(PSMTabBarControl *)_controlView style] indicatorRectForTabCell:self];
 }
 
 - (NSRect)closeButtonRectForFrame:(NSRect)cellFrame
 {
-    return [(id <PSMTabStyle>)[_controlView style] closeButtonRectForTabCell:self withFrame:cellFrame];
+    return [[(PSMTabBarControl *)_controlView style] closeButtonRectForTabCell:self withFrame:cellFrame];
 }
 
 - (CGFloat)minimumWidthOfCell
 {
-    return [(id <PSMTabStyle>)[_controlView style] minimumWidthOfTabCell:self];
+    return [[(PSMTabBarControl *)_controlView style] minimumWidthOfTabCell:self];
 }
 
 - (CGFloat)desiredWidthOfCell
 {
-    return [(id <PSMTabStyle>)[_controlView style] desiredWidthOfTabCell:self];
+    return [[(PSMTabBarControl *)_controlView style] desiredWidthOfTabCell:self];
 }  
 
 #pragma mark -
@@ -354,7 +354,7 @@
         return;
     }
     
-    [(id <PSMTabStyle>)[_controlView style] drawTabCell:self];	
+    [[(PSMTabBarControl *)_controlView style] drawTabCell:self];	
 }
 
 #pragma mark -

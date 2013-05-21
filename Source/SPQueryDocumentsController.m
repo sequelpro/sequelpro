@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPQueryDocumentsController.h"
+#import "SPCustomQuery.h"
 
 @implementation SPQueryController (SPQueryDocumentsController)
 

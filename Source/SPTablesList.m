@@ -34,6 +34,7 @@
 #import "SPTablesList.h"
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
+#import "SPDatabaseStructure.h"
 #import "SPDatabaseViewController.h"
 
 #ifndef SP_CODA /* headers */

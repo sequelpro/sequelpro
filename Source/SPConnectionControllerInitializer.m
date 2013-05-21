@@ -50,11 +50,20 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 - (void)_reloadFavoritesViewData;
 - (void)_selectNode:(SPTreeNode *)node;
 - (void)_scrollToSelectedNode;
-- (void)_restoreOutlineViewStateNode:(SPTreeNode *)node;
+- (void)_documentWillClose:(NSNotification *)notification;
 
 - (SPTreeNode *)_favoriteNodeForFavoriteID:(NSInteger)favoriteID;
 
+- (void)scrollViewFrameChanged:(NSNotification *)aNotification;
+
 @end
+
+@interface SPConnectionController (SPConnectionControllerInitializer_Private_API)
+
+- (void)_restoreOutlineViewStateNode:(SPTreeNode *)node;
+
+@end
+
 
 @implementation SPConnectionController (SPConnectionControllerInitializer)
 

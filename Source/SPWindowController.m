@@ -31,6 +31,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPWindowController.h"
+#import "SPWindowControllerDelegate.h"
 #import "SPDatabaseDocument.h"
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"

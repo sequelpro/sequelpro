@@ -32,6 +32,7 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPTableStructure.h"
+#import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
 #import "SPDatabaseViewController.h"
 #import "SPTableInfo.h"

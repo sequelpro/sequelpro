@@ -87,8 +87,8 @@
 		
 		for (NSInteger anIndex = 0; anIndex < numberOfCols; anIndex++) 
 		{
-			NSString *filterCell;
-			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSString stringWithFormat:@"%d", anIndex]]];
+			NSString *filterCell = nil;
+			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSString stringWithFormat:@"%ld", (long)anIndex]]];
 			
 			// Take filterTableData
 			if (!currentValue) {

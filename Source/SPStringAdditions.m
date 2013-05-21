@@ -186,7 +186,7 @@
 				theChar += 13;
 			}
 			
-			[holder appendFormat:@"%C", (char)theChar];
+			[holder appendFormat:@"%C", theChar];
 
 		} 
 		else if (theChar <= 90 && theChar >= 65) {

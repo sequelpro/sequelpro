@@ -222,7 +222,7 @@
 	if([fieldType length])
 		[label appendString:fieldType];
 	if(maxTextLength > 0)
-		[label appendFormat:@"(%ld) ", maxTextLength];
+		[label appendFormat:@"(%lld) ", maxTextLength];
 	if(!_allowNULL)
 		[label appendString:@"NOT NULL "];
 	if([fieldEncoding length])
@@ -293,7 +293,7 @@
 
 		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
 
-		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@%", NSLocalizedString(@"Field", @"Field"), label]];
+		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), label]];
 
 		// hide all views in editSheet
 		[hexTextView setHidden:YES];
@@ -809,7 +809,7 @@
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
 	if (tmpFileName) [tmpFileName release];
-	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%d.%@", tmpDirPath, counter%2, type];
+	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%ld.%@", tmpDirPath, counter%2, type];
 
 	// if data are binary
 	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
@@ -1153,7 +1153,7 @@
 		bitValue <<= 1;
 	}
 	[bitSheetIntegerTextField setStringValue:[[NSNumber numberWithUnsignedLongLong:intValue] stringValue]];
-	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
+	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
 	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
 	// free old data
 	if ( sheetEditData != nil ) {
@@ -1283,7 +1283,7 @@
 		for(i=0; i<maxBit; i++)
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
 
-		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
+		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
 		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
 
 		i = 0;
@@ -1308,7 +1308,7 @@
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
