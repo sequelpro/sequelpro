@@ -54,7 +54,8 @@ PGPostgresResultRowType;
 @property (readonly) NSUInteger numberOfFields;
 
 /**
- * @property numberOfRows The number or rows this result has.
+ * @property numberOfRows The number or rows this result contains or were affected
+ *                        by the associated query.
  */
 @property (readonly) unsigned long long numberOfRows;
 
