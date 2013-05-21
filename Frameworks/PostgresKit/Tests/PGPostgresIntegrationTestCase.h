@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  PGDataTypeTests.h
+//  PGPostgresIntegrationTestCase.h
 //  PostgresKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 26, 2012.
-//  Copyright (c) 2012 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on May 21, 2013.
+//  Copyright (c) 2013 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -31,25 +31,11 @@
 #import <PostgresKit/PostgresKit.h>
 #import <SenTestingKit/SenTestingKit.h>
 
-#import "PGPostgresIntegrationTestCase.h"
-
-@interface PGDataTypeTests : PGPostgresIntegrationTestCase
+@interface PGPostgresIntegrationTestCase : SenTestCase 
 {
-	id _result;
-	id _expectedResult;
-	
-	NSString *_field;	
+	PGPostgresConnection *_connection;
 }
 
-@property (readwrite, retain) id result;
-
-@property (readwrite, retain) id expectedResult;
-
-@property (readwrite, retain) NSString *field;
-
-- (id)initWithInvocation:(NSInvocation *)invocation 
-			  connection:(PGPostgresConnection *)connection 
-		  expectedResult:(id)result 
-				   field:(NSString *)field;
+@property (readwrite, retain) PGPostgresConnection *connection;
 
 @end

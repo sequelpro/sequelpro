@@ -31,10 +31,11 @@
 #import <PostgresKit/PostgresKit.h>
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface PGPostgresResultTests : SenTestCase 
+#import "PGPostgresIntegrationTestCase.h"
+
+@interface PGPostgresResultTests : PGPostgresIntegrationTestCase 
 {
 	PGPostgresResult *_result;
-	PGPostgresConnection *_connection;
 }
 
 @end

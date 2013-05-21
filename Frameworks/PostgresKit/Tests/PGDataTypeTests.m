@@ -30,18 +30,7 @@
 
 #import "PGDataTypeTests.h"
 
-#import <PostgresKit/PostgresKit.h>
-
-static NSString *PGTestDatabaseHost     = @"localhost";
-static NSString *PGTestDatabaseUser     = @"pgkit_test";
-static NSString *PGTestDatabaseName     = @"pgkit_test";
-static NSString *PGTestDatabasePassword = @"pgkit";
-
-static NSUInteger PGTestDatabasePort = 5432;
-
 @interface PGDataTypeTests ()
-
-- (void)_establishConnection;
 
 + (void)_addTestForField:(NSString *)field 
 	  withExpectedResult:(id)result 
@@ -54,7 +43,6 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 @synthesize field = _field;
 @synthesize result = _result;
-@synthesize connection = _connection;
 @synthesize expectedResult = _expectedResult;
 
 #pragma mark -
@@ -111,9 +99,9 @@ static NSUInteger PGTestDatabasePort = 5432;
 
 - (void)setUp
 {	
-	[self _establishConnection];
+	[super setUp];
 	
-	PGPostgresResult *queryResult = [_connection executeWithFormat:@"SELECT \"%@_field\" FROM \"data_types\"", _field];
+	PGPostgresResult *queryResult = [[self connection] executeWithFormat:@"SELECT \"%@_field\" FROM \"data_types\"", _field];
 	
 	[self setResult:[[queryResult row] objectForKey:[NSString stringWithFormat:@"%@_field", _field]]];
 }
@@ -134,24 +122,6 @@ static NSUInteger PGTestDatabasePort = 5432;
 #pragma mark -
 #pragma mark Private API
 
-- (void)_establishConnection
-{		
-	[_connection setHost:PGTestDatabaseHost];
-	[_connection setUser:PGTestDatabaseUser];
-	[_connection setPort:PGTestDatabasePort];
-	[_connection setDatabase:PGTestDatabaseName];
-	[_connection setPassword:PGTestDatabasePassword];
-	
-	if (![_connection connect]) {
-		STFail(@"Request to establish connection to local database failed.");
-	}	
-		
-	do {
-		sleep(0.1);
-	}
-	while (![_connection isConnected]);
-}
-
 + (void)_addTestForField:(NSString *)field 
 	  withExpectedResult:(id)result 
 			  connection:(PGPostgresConnection *)connection 
@@ -170,14 +140,9 @@ static NSUInteger PGTestDatabasePort = 5432;
 #pragma mark -
 
 - (void)dealloc
-{
-	if (_connection && [_connection isConnected]) {
-		[_connection disconnect];
-	}
-	
+{	
 	if (_result) [_result release], _result = nil;
 	if (_field) [_field release], _field = nil;
-	if (_connection) [_connection release], _connection = nil;
 	
 	[super dealloc];
 }
