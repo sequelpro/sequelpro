@@ -290,6 +290,29 @@
 }
 
 #pragma mark -
+#pragma mark Other
+
+- (NSString *)description
+{
+	NSMutableString *description = [[[NSMutableString alloc] init] autorelease];
+
+	if (![self numberOfRows]) return @"";
+	
+	PGPostgresResultRowType rowType = _defaultRowType;
+	
+	[self setDefaultRowType:PGPostgresResultRowAsDictionary];
+	
+	for (NSDictionary *row in self)
+	{
+		[description appendString:[row description]];
+	}
+			 
+	[self setDefaultRowType:rowType];
+		
+	return description;
+}
+
+#pragma mark -
 
 -(void)dealloc 
 {
