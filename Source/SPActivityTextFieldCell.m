@@ -256,7 +256,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 						NSTask *killTask = [[NSTask alloc] init];
 						[killTask setLaunchPath:@"/bin/sh"];
 						// [killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
-						[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"[[ `ps -ax | egrep '%ld.*%@' | wc -l` -eq \"4\" ]] && kill -9 -%ld 2&> /tmp/sp_kill_error.txt", pid, SPBundleTaskScriptCommandFilePath, pid], nil]];
+						[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"[[ `ps -ax | egrep '%ld.*%@' | wc -l` -eq \"4\" ]] && kill -9 -%ld 2&> /tmp/sp_kill_error.txt", (long)pid, SPBundleTaskScriptCommandFilePath, (long)pid], nil]];
 						[killTask launch];
 						[killTask waitUntilExit];
 						status = [killTask terminationStatus];

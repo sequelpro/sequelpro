@@ -45,7 +45,7 @@ static NSString *SPTestMenuItemTitle = @"Menu Item";
 	
 	for (NSUInteger i = 0; i < num; i++)
 	{
-		[menu addItemWithTitle:[NSString stringWithFormat:@"%@ %d", SPTestMenuItemTitle, i] action:NULL keyEquivalent:@""];	
+		[menu addItemWithTitle:[NSString stringWithFormat:@"%@ %ld", SPTestMenuItemTitle, (unsigned long)i] action:NULL keyEquivalent:@""];	
 	}
 }
 

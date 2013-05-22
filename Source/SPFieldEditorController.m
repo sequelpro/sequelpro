@@ -249,10 +249,10 @@
 		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 		if([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
 			for( i = 0; i<maxBit; i++ )
-				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]]
+				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]]
 					setState:([(NSString*)sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
 		for( i = maxBit; i<64; i++ )
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setEnabled:NO];
 
 		[self updateBitSheet];
 
@@ -809,7 +809,7 @@
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
 	if (tmpFileName) [tmpFileName release];
-	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%ld.%@", tmpDirPath, counter%2, type];
+	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%ld.%@", tmpDirPath, (long)(counter%2), type];
 
 	// if data are binary
 	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
@@ -1146,7 +1146,7 @@
 	NSUInteger bitValue = 0x1;
 
 	for(i=0; i<maxBit; i++) {
-		if([(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
+		if([(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", (unsigned long)i]] state] == NSOnState) {
 			intValue += bitValue;
 			[bitString replaceCharactersInRange:NSMakeRange((NSUInteger)maxTextLength-i-1, 1) withString:@"1"];
 		}
@@ -1154,7 +1154,7 @@
 	}
 	[bitSheetIntegerTextField setStringValue:[[NSNumber numberWithUnsignedLongLong:intValue] stringValue]];
 	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
-	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (unsigned long long)intValue]];
 	// free old data
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
@@ -1170,48 +1170,48 @@
  */
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
 {
-	NSUInteger i = 0;
-	NSUInteger aBit;
-	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+	unsigned long i = 0;
+	unsigned long aBit;
+	unsigned long maxBit = (unsigned long)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	switch([sender tag]) {
 		case 0: // all to 1
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOnState];
 		break;
 		case 1: // all to 0
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOffState];
 		break;
 		case 2: // negate
 		for(i=0; i<maxBit; i++)
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:![(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] state]];
 		break;
 		case 3: // shift left
 		for(i=maxBit-1; i>0; i--) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:NSOffState];
 		break;
 		case 4: // shift right
 		for(i=0; i<maxBit-1; i++) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i+1]] state]];
 		}
-		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:NSOffState];
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", maxBit-1]] setState:NSOffState];
 		break;
 		case 5: // rotate left
 		aBit = [(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] state];
 		for(i=maxBit-1; i>0; i--) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:aBit];
 		break;
 		case 6: // rotate right
 		aBit = [(NSButton*)[self valueForKeyPath:@"bitSheetBitButton0"] state];
 		for(i=0; i<maxBit-1; i++) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i+1]] state]];
 		}
-		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:aBit];
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", maxBit-1]] setState:aBit];
 		break;
 	}
 	[self updateBitSheet];
@@ -1232,18 +1232,18 @@
 - (IBAction)setToNull:(id)sender
 {
 
-	NSUInteger i;
-	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+	unsigned long i;
+	unsigned long maxBit = (unsigned long)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	if([(NSButton*)sender state] == NSOnState) {
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setEnabled:NO];
 		[bitSheetHexTextField setEnabled:NO];
 		[bitSheetIntegerTextField setEnabled:NO];
 		[bitSheetOctalTextField setEnabled:NO];
 	} else {
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:YES];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setEnabled:YES];
 		[bitSheetHexTextField setEnabled:YES];
 		[bitSheetIntegerTextField setEnabled:YES];
 		[bitSheetOctalTextField setEnabled:YES];
@@ -1275,21 +1275,21 @@
 
 	if (object == bitSheetIntegerTextField) {
 
-		NSUInteger i = 0;
-		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+		unsigned long i = 0;
+		unsigned long maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
 		NSUInteger intValue = (NSUInteger)strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
 
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (long long)intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
 		{
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
 			intValue >>= 1;
 			i++;
 		}
@@ -1305,7 +1305,7 @@
 		[[NSScanner scannerWithString:[bitSheetHexTextField stringValue]] scanHexLongLong: &intValue];
 
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
 		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", intValue]];
@@ -1313,7 +1313,7 @@
 		i = 0;
 		while( intValue && i < maxBit )
 		{
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
 			intValue >>= 1;
 			i++;
 		}

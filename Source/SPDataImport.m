@@ -1261,7 +1261,7 @@
 	fieldMappingArrayHasGlobalVariables = NO;
 
 	// Init the field mapper controller
-	fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+	fieldMapperController = [(SPFieldMapperController *)[SPFieldMapperController alloc] initWithDelegate:self];
 	[fieldMapperController setConnection:mySQLConnection];
 	[fieldMapperController setSourcePath:filename];
 	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];

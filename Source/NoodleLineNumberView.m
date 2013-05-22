@@ -350,7 +350,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 					// portion. Need to compensate for the clipview's coordinates.
 
 					// Line numbers are internally stored starting at 0
-					labelText = [NSString stringWithFormat:@"%lu", (NSUInteger)(line + 1)];
+					labelText = [NSString stringWithFormat:@"%llu", (unsigned long long)(line + 1)];
 
 					// How many digits has the current line number?
 					NSUInteger idx = line + 1;

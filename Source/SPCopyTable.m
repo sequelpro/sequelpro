@@ -210,12 +210,12 @@ static const NSInteger kBlobAsImageFile = 4;
 						}
 					}
 					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"%@\t", fp];
 					}
 					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -234,7 +234,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				}
 				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -349,12 +349,12 @@ static const NSInteger kBlobAsImageFile = 4;
 						}
 					}
 					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"\"%@\",", fp];
 					}
 					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -373,7 +373,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				}
 				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -1290,7 +1290,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				NSIndexSet *selectedRows = [self selectedRowIndexes];
 				NSUInteger rowIndex = [selectedRows firstIndex];
 				while ( rowIndex != NSNotFound ) {
-					[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+					[sel addObject:[NSString stringWithFormat:@"%llu", (unsigned long long)rowIndex]];
 					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 				}
 				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];

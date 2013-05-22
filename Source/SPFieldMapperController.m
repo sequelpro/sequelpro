@@ -783,7 +783,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		} else {
 			NSInteger i = 0;
 			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i++]];
 			}
 		}
 		[fieldMapperTableView reloadData];
@@ -897,7 +897,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	} else {
 		NSInteger i = 0;
 		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i++]];
 			[fieldMappingTableDefaultValues addObject:@""];
 			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
 				if(maxLengthOfSourceColumns[columnCounter] < 9)
@@ -1308,7 +1308,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	NSInteger selectedIndex = [sender indexOfItem:[sender selectedItem]] - 4;
 	
 	if ([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)]) {
-		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", selectedIndex]];
+		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", (long)selectedIndex]];
 	}
 }
 
@@ -1513,20 +1513,20 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, [prefs objectForKey:SPNullValue]]];
 		else if ([[fieldMappingButtonOptions objectAtIndex:i] isSPNotLoaded])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", i+1, @"DEFAULT"]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, @"DEFAULT"]];
 		else
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. %@", (long)i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 	}
 
 	// Add global values if any
 	if((NSInteger)[fieldMappingGlobalValues count]>numberOfImportColumns)
 		for( ; i < [fieldMappingGlobalValues count]; i++) {
 			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, [prefs objectForKey:SPNullValue]]];
 			else
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. %@", (long)i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
 		}
 
 	[fieldMapperTableView reloadData];
@@ -1830,7 +1830,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:SPTableViewValueIndexColumnID]) {
-			return [NSString stringWithFormat:@"%ld.", numberOfImportColumns + rowIndex + 1];
+			return [NSString stringWithFormat:@"%ld.", (long)(numberOfImportColumns + rowIndex + 1)];
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID]) {

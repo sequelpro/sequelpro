@@ -583,7 +583,7 @@
 		}
 		if(!copyingWasSuccessful) {
 			// try again with new name
-			newFileName = [NSString stringWithFormat:@"%@_%ld", newFileName, (NSUInteger)(random() % 35000)];
+			newFileName = [NSString stringWithFormat:@"%@_%ld", newFileName, (long)(random() % 35000)];
 			newBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newFileName, SPUserBundleFileExtension];
 			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
 				if([[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:newBundleFilePath error:nil])
@@ -852,7 +852,7 @@
 		NSInteger idx = 0;
 		for(id item in allBundles) {
 			if([allNames objectForKey:[item objectForKey:kBundleNameKey]]) {
-				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:kBundleNameKey], (NSUInteger)(random() % 35000)];
+				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:kBundleNameKey], (long)(random() % 35000)];
 				[[allBundles objectAtIndex:idx] setObject:newName forKey:kBundleNameKey];
 			} else {
 				[allNames setObject:@"" forKey:[item objectForKey:kBundleNameKey]];

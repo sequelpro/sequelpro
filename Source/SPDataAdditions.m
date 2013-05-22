@@ -224,7 +224,7 @@
 	NSMutableString *retVal = [NSMutableString string];
 
 	// get the length of the longest location
-	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%lX", totalLength - ( totalLength % bytesPerLine )] length];
+	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%lX", (unsigned long)(totalLength - ( totalLength % bytesPerLine ))] length];
 
 	for ( i = 0; i < totalLength; i += bytesPerLine ) {
 

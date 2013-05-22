@@ -1174,7 +1174,7 @@
 			NSIndexSet *selectedRows = [firstResponder selectedRowIndexes];
 			NSUInteger rowIndex = [selectedRows firstIndex];
 			while ( rowIndex != NSNotFound ) {
-				[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+				[sel addObject:[NSString stringWithFormat:@"%ld", (long)rowIndex]];
 				rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 			}
 			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
@@ -1567,7 +1567,7 @@
 											if([cmdDataOld objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
 
 												// Duplicate Bundle, change the UUID and rename the menu label
-												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
+												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (long)(random() % 35000), SPUserBundleFileExtension];
 												if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
 													NSLog(@"Couldn't copy “%@” to update it", bundle);
 													NSBeep();
@@ -1629,7 +1629,7 @@
 									NSString *orgPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:1], bundle];
 									NSString *newPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
 									if([fm fileExistsAtPath:newPath isDirectory:&isDir] && isDir)
-										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (NSUInteger)(random() % 35000)];
+										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (long)(random() % 35000)];
 									error = nil;
 									[fm copyItemAtPath:orgPath toPath:newPath error:&error];
 									if(error != nil) {
@@ -2150,11 +2150,11 @@
 			// Kill any BASH commands which are currently active
 			for (NSDictionary* cmd in [doc runningActivities]) 
 			{
-				NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+				NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
 				NSTask *killTask = [[NSTask alloc] init];
 				
 				[killTask setLaunchPath:@"/bin/sh"];
-				[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+				[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
 				[killTask launch];
 				[killTask waitUntilExit];
 				[killTask release];
@@ -2169,11 +2169,11 @@
 	
 	for (NSDictionary* cmd in [self runningActivities]) 
 	{
-		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+		NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
 		NSTask *killTask = [[NSTask alloc] init];
 		
 		[killTask setLaunchPath:@"/bin/sh"];
-		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
 		[killTask launch];
 		[killTask waitUntilExit];
 		[killTask release];

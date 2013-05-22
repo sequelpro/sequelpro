@@ -514,7 +514,7 @@
 
 - (void)webView:(WebView *)webView failedToParseSource:(NSString *)source baseLineNumber:(NSUInteger)lineNumber fromURL:(NSURL *)url withError:(NSError *)error forWebFrame:(WebFrame *)webFrame
 {
-	NSString *mes = [NSString stringWithFormat:@"Failed to parse JavaScript source:\nline = %ld\nerror = %@ with\n%@\nfor source = \n%@", lineNumber, [error localizedDescription], [error userInfo], source];
+	NSString *mes = [NSString stringWithFormat:@"Failed to parse JavaScript source:\nline = %lu\nerror = %@ with\n%@\nfor source = \n%@", (unsigned long)lineNumber, [error localizedDescription], [error userInfo], source];
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"JavaScript Parsing Error", @"javascript parsing error")
 									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
@@ -529,7 +529,7 @@
 - (void)webView:(WebView *)webView exceptionWasRaised:(WebScriptCallFrame *)frame sourceId:(NSInteger)sid line:(NSInteger)lineno forWebFrame:(WebFrame *)webFrame
 {
 
-	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %ld\nfunction = %@\ncaller = %@\nuserinfo = %@\nexception = %@", lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
+	NSString *mes = [NSString stringWithFormat:@"Exception:\nline = %lu\nfunction = %@\ncaller = %@\nuserinfo = %@\nexception = %@", (unsigned long)lineno, [frame functionName], [frame caller], [frame userInfo], [frame exception]];
 
 	if([self suppressExceptionAlerting]) {
 		NSLog(@"%@", mes);

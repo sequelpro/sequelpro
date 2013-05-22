@@ -4152,10 +4152,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Terminate all running BASH commands
 	for(NSDictionary* cmd in [self runningActivities]) {
-		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+		NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
 		NSTask *killTask = [[NSTask alloc] init];
 		[killTask setLaunchPath:@"/bin/sh"];
-		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
 		[killTask launch];
 		[killTask waitUntilExit];
 		[killTask release];

@@ -78,7 +78,7 @@
 	if (newMaxSize > (1024 * 1024 * 1024)) newMaxSize = 1024 * 1024 * 1024;
 
 	// Perform a standard query to set the new size
-	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %lu", newMaxSize]];
+	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %lu", (unsigned long)newMaxSize]];
 
 	// On failure, return NSNotFound - error state will have automatically been set
 	if ([self queryErrored]) return NSNotFound;
