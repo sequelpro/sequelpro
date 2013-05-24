@@ -1061,6 +1061,11 @@
 	if ([menuItem action] == @selector(duplicateField:)) {
 		return ([tableSourceView numberOfSelectedRows] == 1);
 	}
+	
+	//show optimized field type
+	if([menuItem action] == @selector(showOptimizedFieldType:)) {
+		return ([tableSourceView numberOfSelectedRows] == 1);
+	}
 
 	// Reset AUTO_INCREMENT
 	if ([menuItem action] == @selector(resetAutoIncrement:)) {
