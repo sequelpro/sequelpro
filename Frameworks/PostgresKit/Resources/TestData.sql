@@ -10,6 +10,7 @@
 -- CREATE USER pgkit_test WITH PASSWORD 'pgkit';
 
 SET datestyle = 'DMY';
+SET timezone = 'Europe/London';
 SET client_encoding = 'UNICODE';
 
 BEGIN;
