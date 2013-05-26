@@ -47,6 +47,23 @@
 
 - (void)testResultDescriptionIsCorrect
 {	
+	NSLog(@"actual   = %@", [[[_result description] stringByReplacingOccurrencesOfString:@"\n" withString:@""] stringByReplacingOccurrencesOfString:@"    " withString:@""]);
+	NSLog(@"expected = %@", @"{"
+		"\"bigint_field\" = 123456789;"
+		"\"bool_field\" = 1;"
+		"\"char_field\" = CHAR;"
+		"\"date_field\" = \"1987-04-08 00:00:00 +0100\";"
+		"\"float_field\" = \"12345.68\";"
+		"\"int_field\" = 12345;"
+		"\"numeric_field\" = \"12345.678\";"
+		"\"smallint_field\" = 2;"
+		"\"time_field\" = \"2000-01-01 02:02:02 +0000\";"
+		"\"timestamp_field\" = \"1987-04-08 03:02:02 +0100\";"
+		"\"timestamptz_field\" = \"8 Apr 1987 03:02:02 GMT+01:00\";"
+		"\"timetz_field\" = \"02:02:02 GMT+10:00\";"
+		"\"varchar_field\" = VARCHAR;"
+		"}"); 
+	
 	// Compare the output after getting rid of newlines and spaces
 	STAssertTrue([[[[_result description] stringByReplacingOccurrencesOfString:@"\n" withString:@""] stringByReplacingOccurrencesOfString:@"    " withString:@""] isEqualToString:@"{"
 		"\"bigint_field\" = 123456789;"
