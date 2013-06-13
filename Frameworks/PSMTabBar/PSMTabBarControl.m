@@ -118,6 +118,10 @@
     _cells = [[NSMutableArray alloc] initWithCapacity:10];
 	_controller = [[PSMTabBarController alloc] initWithTabBarControl:self];
     _animationTimer = nil;
+	_lastWindowIsMainCheck = NO;
+	_lastAttachedWindowIsMainCheck = NO;
+	_lastAppIsActiveCheck = NO;
+	_lastMouseDownEvent = nil;
 	
     // default config
 	_currentStep = kPSMIsNotBeingResized;
@@ -1805,13 +1809,23 @@
 		if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
 			[[self delegate] tabView:[self tabView] tabBarDidHide:self];
 		}
+
+		// The above tasks only needs to be run once, so set a flag to ensure that
+		_awakenedFromNib = YES;
     }
 
-	// The above tasks only needs to be run once, so set a flag to ensure that
-	_awakenedFromNib = YES;
+	// Determine whether a draw update in response to window state change might be required
+	BOOL isMainWindow = [[self window] isMainWindow];
+	BOOL attachedWindowIsMainWindow = [[[self window] attachedSheet] isMainWindow];
+	BOOL isActiveApplication = [NSApp isActive];
+	if (_lastWindowIsMainCheck != isMainWindow || _lastAttachedWindowIsMainCheck != attachedWindowIsMainWindow || _lastAppIsActiveCheck != isActiveApplication) {
+		_lastWindowIsMainCheck = isMainWindow;
+		_lastAttachedWindowIsMainCheck = attachedWindowIsMainWindow;
+		_lastAppIsActiveCheck = isActiveApplication;
 
-	// Allow the tab bar to redraw itself in result to window ordering/sheet/etc changes
-	[self setNeedsDisplay:YES];
+		// Allow the tab bar to redraw itself in result to window ordering/sheet/etc changes
+		[self setNeedsDisplay:YES];
+	}
 }
 
 #pragma mark -
