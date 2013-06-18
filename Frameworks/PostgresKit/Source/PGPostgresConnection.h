@@ -49,6 +49,8 @@
 	NSUInteger _timeout;
 	NSUInteger _keepAliveInterval;
 	
+	unsigned long long _lastQueryAffectedRowCount;
+	
 	BOOL _useSocket;
 	BOOL _useKeepAlive;
 	BOOL _lastQueryWasCancelled;
@@ -76,6 +78,8 @@
 @property (readonly) PGPostgresError *lastError;
 @property (readonly) NSStringEncoding stringEncoding;
 @property (readonly) PGPostgresConnectionParameters *parameters;
+
+@property (readonly) unsigned long long lastQueryAffectedRowCount;
 
 @property (readwrite, assign) BOOL useSocket;
 @property (readwrite, assign) BOOL useKeepAlive;

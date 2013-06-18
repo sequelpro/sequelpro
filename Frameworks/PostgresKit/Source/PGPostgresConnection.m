@@ -65,6 +65,7 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 @synthesize stringEncoding = _stringEncoding;
 @synthesize parameters = _parameters;
 @synthesize applicationName = _applicationName;
+@synthesize lastQueryAffectedRowCount = _lastQueryAffectedRowCount;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -92,6 +93,8 @@ static void _PGPostgresConnectionNoticeProcessor(void *arg, const char *message)
 		
 		_useKeepAlive = YES;
 		_keepAliveInterval = PGPostgresConnectionDefaultKeepAlive;
+		
+		_lastQueryAffectedRowCount = 0;
 		
 		_lastError = nil;
 		_connection = nil;

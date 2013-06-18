@@ -199,18 +199,18 @@ PGQueryParamData;
 	}	
 	
 	// Execute the command - return data in binary
-	PGresult *result = nil;
+	PGresult *pgResult = nil;
 	
 	if ([query isKindOfClass:[NSString class]]) {
 		
-		result = PQexecParams(_connection, 
-							  [(NSString *)query UTF8String], 
-							  paramData->paramNum, 
-							  paramData->paramTypes, 
-							  (const char **)paramData->paramValues, 
-							  (const int *)paramData->paramLengths, 
-							  (const int *)paramData->paramFormats, 
-							  PGPostgresResultsAsBinary);
+		pgResult = PQexecParams(_connection, 
+								[(NSString *)query UTF8String], 
+								paramData->paramNum, 
+								paramData->paramTypes, 
+								(const char **)paramData->paramValues, 
+								(const int *)paramData->paramLengths, 
+								(const int *)paramData->paramFormats, 
+								PGPostgresResultsAsBinary);
 	} 
 	else if ([query isKindOfClass:[PGPostgresStatement class]]) {
 		PGPostgresStatement *statement = (PGPostgresStatement *)query;
@@ -222,20 +222,24 @@ PGQueryParamData;
 			if (!prepareResult || ![statement name]) return nil;
 		}
 		
-		result = PQexecPrepared(_connection, 
-								[statement UTF8Name], 
-								paramData->paramNum, 
-								(const char **)paramData->paramValues, 
-								(const int *)paramData->paramLengths, 
-								(const int *)paramData->paramFormats, 
-								PGPostgresResultsAsBinary);		
+		pgResult = PQexecPrepared(_connection, 
+								  [statement UTF8Name], 
+								  paramData->paramNum, 
+								  (const char **)paramData->paramValues, 
+								  (const int *)paramData->paramLengths, 
+								  (const int *)paramData->paramFormats, 
+								  PGPostgresResultsAsBinary);		
 	}
 	
 	[self _destroyParamDataStructure:paramData];
 	
-	if (!result || [self _queryDidError:result]) return nil;
+	if (!pgResult || [self _queryDidError:pgResult]) return nil;
 	
-	return [[[PGPostgresResult alloc] initWithResult:result connection:self] autorelease];
+	PGPostgresResult *result = [[[PGPostgresResult alloc] initWithResult:pgResult connection:self] autorelease];
+	
+	_lastQueryAffectedRowCount = [result numberOfRows];
+	
+	return result;
 }
 
 /**
