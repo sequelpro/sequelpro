@@ -40,7 +40,7 @@
 @class SPTextView;
 @class SPFieldEditorController;
 @class SPMySQLConnection;
-@class SPMySQLFastStreamingResult;
+@class SPMySQLStreamingResultStore;
 @class SPTableData;
 @class SPDatabaseDocument;
 @class SPTablesList;
@@ -118,6 +118,7 @@
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
+	NSCondition *tableLoadingCondition;
 #ifndef SP_CODA
 	NSMutableArray *nibObjectsToRelease;
 #endif
@@ -261,7 +262,7 @@
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)saveRowToTable;
 - (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (NSString *)argumentForRow:(NSInteger)row;

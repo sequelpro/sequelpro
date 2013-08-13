@@ -43,6 +43,7 @@
 - (SPMySQLResult *)queryString:(NSString *)theQueryString;
 - (SPMySQLFastStreamingResult *)streamingQueryString:(NSString *)theQueryString;
 - (id)streamingQueryString:(NSString *)theQueryString useLowMemoryBlockingStreaming:(BOOL)fullStreaming;
+- (SPMySQLStreamingResultStore *)resultStoreFromQueryString:(NSString *)theQueryString;
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType;
 
 // Query convenience functions

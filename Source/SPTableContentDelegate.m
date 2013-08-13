@@ -464,29 +464,8 @@
 			
 			if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 			
-			id theValue = nil;
+			BOOL showCellAsGray = NO;
 			NSUInteger columnIndex = [[tableColumn identifier] integerValue];
-			
-			// While the table is being loaded, additional validation is required - data
-			// locks must be used to avoid crashes, and indexes higher than the available
-			// rows or columns may be requested.  Use gray to indicate loading in these cases.
-			if (isWorking) {
-				pthread_mutex_lock(&tableValuesLock);
-				
-				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
-				}
-				
-				pthread_mutex_unlock(&tableValuesLock);
-				
-				if (!theValue) {
-					[cell setTextColor:[NSColor lightGrayColor]];
-					return;
-				}
-			} 
-			else {
-				theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
-			}
 			
 			// If user wants to edit 'cell' set text color to black and return to avoid
 			// writing in gray if value was NULL
@@ -496,12 +475,26 @@
 				[cell setTextColor:blackColor];
 				return;
 			}
-			
-			// For null cells and not loaded cells, display the contents in gray.
-			if ([theValue isNSNull] || [theValue isSPNotLoaded]) {
-				[cell setTextColor:lightGrayColor];
+
+			// While the table is being loaded, additional validation is required - data
+			// locks must be used to avoid crashes, and indexes higher than the available
+			// rows or columns may be requested.  Use gray to indicate loading in these cases.
+			if (isWorking) {
+				pthread_mutex_lock(&tableValuesLock);
 				
-				// Otherwise, set the color to black - required as NSTableView reuses NSCells.
+				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
+					showCellAsGray = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+				}
+				
+				pthread_mutex_unlock(&tableValuesLock);
+			} 
+			else {
+				showCellAsGray = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+			}
+			
+			
+			if (showCellAsGray) {
+				[cell setTextColor:lightGrayColor];
 			} 
 			else {
 				[cell setTextColor:blackColor];

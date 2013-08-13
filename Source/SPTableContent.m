@@ -72,6 +72,12 @@
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
 #endif
 
+@interface SPTableContent (SPTableContentDataSource_Private_API)
+
+- (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;
+
+@end
+
 @interface SPTableContent ()
 
 - (BOOL)cancelRowEditing;
@@ -165,6 +171,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		usedQuery = [[NSString alloc] initWithString:@""];
 
 		tableLoadTimer = nil;
+		tableLoadingCondition = [NSCondition new];
 
 		blackColor = [NSColor blackColor];
 		lightGrayColor = [NSColor lightGrayColor];
@@ -609,10 +616,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		[dataCell setEditable:YES];
 
-		// Set the line break mode and an NSFormatter subclass which truncates long strings for display
+		// Set the line break mode and an NSFormatter subclass which displays line breaks nicely
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-		[[dataCell formatter] setDisplayLimit:150];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
@@ -765,7 +771,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSMutableString *queryString;
 	NSString *queryStringBeforeLimit = nil;
 	NSString *filterString;
-	SPMySQLFastStreamingResult *streamingResult;
+	SPMySQLStreamingResultStore *resultStore;
 	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 
 #ifndef SP_CODA
@@ -828,23 +834,23 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Perform and process the query
 	[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	[self setUsedQuery:queryString];
-	streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
+	resultStore = [[mySQLConnection resultStoreFromQueryString:queryString] retain];
 
 	// Ensure the number of columns are unchanged; if the column count has changed, abort the load
 	// and queue a full table reload.
 	BOOL fullTableReloadRequired = NO;
-	if (streamingResult && [dataColumns count] != [streamingResult numberOfFields]) {
+	if (resultStore && [dataColumns count] != [resultStore numberOfFields]) {
 		[tableDocumentInstance disableTaskCancellation];
 		[mySQLConnection cancelCurrentQuery];
-		[streamingResult cancelResultLoad];
+		[resultStore cancelResultLoad];
 		fullTableReloadRequired = YES;
 	}
 
 	// Process the result into the data store
-	if (!fullTableReloadRequired && streamingResult) {
-		[self processResultIntoDataStorage:streamingResult approximateRowCount:rowsToLoad];
+	if (!fullTableReloadRequired && resultStore) {
+		[self updateResultStore:resultStore approximateRowCount:rowsToLoad];
 	}
-	if (streamingResult) [streamingResult release];
+	if (resultStore) [resultStore release];
 
 	// If the result is empty, and a late page is selected, reset the page
 	if (!fullTableReloadRequired && [prefs boolForKey:SPLimitResults] && queryStringBeforeLimit && !tableRowsCount && ![mySQLConnection lastQueryWasCancelled]) {
@@ -852,10 +858,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		previousTableRowsCount = tableRowsCount;
 		queryString = [NSMutableString stringWithFormat:@"%@ LIMIT 0,%ld", queryStringBeforeLimit, (long)[prefs integerForKey:SPLimitResultsValue]];
 		[self setUsedQuery:queryString];
-		streamingResult = [[mySQLConnection streamingQueryString:queryString] retain];
-		if (streamingResult) {
-			[self processResultIntoDataStorage:streamingResult approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
-			[streamingResult release];
+		resultStore = [[mySQLConnection resultStoreFromQueryString:queryString] retain];
+		if (resultStore) {
+			[self updateResultStore:resultStore approximateRowCount:[prefs integerForKey:SPLimitResultsValue]];
+			[resultStore release];
 		}
 	}
 
@@ -950,7 +956,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Retrieve and cache the column definitions for editing views
 	if (cqColumnDefinition) [cqColumnDefinition release];
-	cqColumnDefinition = [[streamingResult fieldDefinitions] retain];
+	cqColumnDefinition = [[resultStore fieldDefinitions] retain];
 
 
 	// Notify listenters that the query has finished
@@ -985,100 +991,57 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 
 /**
- * Processes a supplied streaming result set, loading it into the data array.
+ * Processes a supplied streaming result store, monitoring the load and updating the data
+ * displayed during download.
  */
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore approximateRowCount:(NSUInteger)targetRowCount;
 {
 	NSUInteger i;
 	NSUInteger dataColumnsCount = [dataColumns count];
-	BOOL *columnBlobStatuses = malloc(dataColumnsCount * sizeof(BOOL));
 	tableLoadTargetRowCount = targetRowCount;
 
-	// Set the column count on the data store before setting up anything else -
-	// ensures that SPDataStorage is set up for timer-driven data loads
-	[tableValues setColumnCount:dataColumnsCount];
+	// Update the data storage, updating the current store if appropriate
+	pthread_mutex_lock(&tableValuesLock);
+	[tableValues setDataStorage:theResultStore updatingExisting:!![tableValues count]];
+	pthread_mutex_unlock(&tableValuesLock);
 
-	// Set up the table updates timer
-	[[self onMainThread] initTableLoadTimer];
+	// Start the data downloading
+	[theResultStore startDownload];
 
-	NSAutoreleasePool *dataLoadingPool;
 #ifndef SP_CODA
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance valueForKey:@"queryProgressBar"];
 #else
 	NSProgressIndicator *dataLoadingIndicator = [tableDocumentInstance queryProgressBar];
 #endif
-	BOOL prefsLoadBlobsAsNeeded = 
+
 #ifndef SP_CODA
-		[prefs boolForKey:SPLoadBlobsAsNeeded]
-#else
-		NO
-#endif
-	;
-	
-	// Build up an array of which columns are blobs for faster iteration
-	for ( i = 0; i < dataColumnsCount ; i++ ) {
-		columnBlobStatuses[i] = [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]];
-	}
-
-	// Set up an autorelease pool for row processing
-	dataLoadingPool = [[NSAutoreleasePool alloc] init];
-
-	// Loop through the result rows as they become available
-	tableRowsCount = 0;
-	for (NSArray *eachRow in theResult) {
-		pthread_mutex_lock(&tableValuesLock);
-
-		if (tableRowsCount < previousTableRowsCount) {
-			SPDataStorageReplaceRow(tableValues, tableRowsCount, eachRow);
-		} else {
-			SPDataStorageAddRow(tableValues, eachRow);
-		}
-
-		// Alter the values for hidden blob and text fields if appropriate
-		if ( prefsLoadBlobsAsNeeded ) {
-			for ( i = 0 ; i < dataColumnsCount ; i++ ) {
-				if (columnBlobStatuses[i]) {
-					SPDataStorageReplaceObjectAtRowAndColumn(tableValues, tableRowsCount, i, [SPNotLoaded notLoaded]);
-				}
+	// Set the column load states on the table values store
+	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
+		for ( i = 0; i < dataColumnsCount ; i++ ) {
+			if ([tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]]) {
+				[tableValues setColumnAsUnloaded:i];
 			}
 		}
-		tableRowsCount++;
-
-		pthread_mutex_unlock(&tableValuesLock);
-
-		// Drain and reset the autorelease pool every ~1024 rows
-		if (!(tableRowsCount % 1024)) {
-			[dataLoadingPool drain];
-			dataLoadingPool = [[NSAutoreleasePool alloc] init];
-		}
 	}
+#endif
 
-	// Clean up the interface update timer
-	[[self onMainThread] clearTableLoadTimer];
+	// Set up the table updates timer and wait for it to notify this thread about completion
+	[[self onMainThread] initTableLoadTimer];
+
+	[tableLoadingCondition lock];
+	while (![tableValues dataDownloaded]) {
+		[tableLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+	}
+	[tableLoadingCondition unlock];
 
 	// If the final column autoresize wasn't performed, perform it
 	if (tableLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
 
-	// If the reloaded table is shorter than the previous table, remove the extra values from the storage
-	if (tableRowsCount < [tableValues count]) {
-		pthread_mutex_lock(&tableValuesLock);
-		[tableValues removeRowsInRange:NSMakeRange(tableRowsCount, [tableValues count] - tableRowsCount)];
-		pthread_mutex_unlock(&tableValuesLock);
-	}
-
 	// Ensure the table is aware of changes
-	if ([NSThread isMainThread]) {
-		[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
-	} else {
-		[tableContentView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
-		[tableContentView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
-	}
+	[[tableContentView onMainThread] noteNumberOfRowsChanged];
 
-	// Clean up the autorelease pool and reset the progress indicator
-	[dataLoadingPool drain];
+	// Reset the progress indicator
 	[dataLoadingIndicator setIndeterminate:YES];
-
-	free(columnBlobStatuses);
 }
 
 /**
@@ -1397,6 +1360,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) tableLoadUpdate:(NSTimer *)theTimer
 {
+	tableRowsCount = [tableValues count];
 
 	// Update the task interface as necessary
 	if (!isFiltered && tableLoadTargetRowCount != NSUIntegerMax) {
@@ -1414,6 +1378,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		return;
 	}
 
+	if ([tableValues dataDownloaded]) {
+		[tableLoadingCondition lock];
+		[tableLoadingCondition signal];
+		[self clearTableLoadTimer];
+		[tableLoadingCondition unlock];
+	}
+
 	// Check whether a table update is required, based on whether new rows are
 	// available to display.
 	if (tableRowsCount == tableLoadLastRowCount) {
@@ -1422,7 +1393,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Update the table display
 	[tableContentView noteNumberOfRowsChanged];
-	if (!tableLoadLastRowCount) [tableContentView setNeedsDisplay:YES];
 
 	// Update column widths in two cases: on very first rows displayed, and once
 	// more than 200 rows are present.
@@ -2452,7 +2422,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		
 		for (NSTableColumn *tableColumn in tableColumns) 
 		{
-			[tempRow addObject:[self tableView:tableContentView objectValueForTableColumn:tableColumn row:i]];
+			[tempRow addObject:[self _contentValueForTableColumn:[[tableColumn identifier] integerValue] row:i asPreview:NO]];
 		}
 		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
@@ -4274,6 +4244,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 
 	[self clearTableLoadTimer];
+	[tableLoadingCondition release];
 	[tableValues release];
 	pthread_mutex_destroy(&tableValuesLock);
 	[dataColumns release];

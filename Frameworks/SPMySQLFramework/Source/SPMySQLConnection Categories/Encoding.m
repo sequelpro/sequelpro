@@ -269,7 +269,7 @@
 	} else if (!strcmp(mysqlCharset, "cp1251")) {
 		return NSWindowsCP1251StringEncoding;
 	} else if (!strcmp(mysqlCharset, "utf16")) {
-		return NSUnicodeStringEncoding;
+		return NSUTF16BigEndianStringEncoding;
 	} else if (!strcmp(mysqlCharset, "utf16le")) {
 		return NSUTF16LittleEndianStringEncoding;
 	} else if (!strcmp(mysqlCharset, "cp1256")) {

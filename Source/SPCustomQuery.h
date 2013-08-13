@@ -57,7 +57,7 @@
 @class SPSplitView;
 @class SPFieldEditorController;
 @class SPMySQLConnection;
-@class SPMySQLFastStreamingResult;
+@class SPMySQLStreamingResultStore;
 @class SPTextView;
 
 #ifdef SP_CODA
@@ -162,6 +162,7 @@
 
 	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
+	NSCondition *resultLoadingCondition;
 	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
@@ -257,7 +258,7 @@
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs truncateDataFields:(BOOL)truncate;
 - (NSUInteger)currentResultRowCount;
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore;
 
 // Retrieving and setting table state
 - (void)updateTableView;

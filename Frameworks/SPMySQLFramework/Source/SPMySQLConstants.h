@@ -73,5 +73,6 @@ typedef struct {
 typedef enum {
 	SPMySQLResultAsResult                = 0,
 	SPMySQLResultAsFastStreamingResult   = 1,
-	SPMySQLResultAsLowMemStreamingResult = 2
+	SPMySQLResultAsLowMemStreamingResult = 2,
+	SPMySQLResultAsStreamingResultStore  = 3
 } SPMySQLResultType;

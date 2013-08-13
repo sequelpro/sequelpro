@@ -800,8 +800,8 @@ static const NSInteger kBlobAsImageFile = 4;
 	maxCellWidth = 0;
 	for (i = 0; i < rowsToCheck; i += rowStep) {
 
-		// Retrieve the cell's content
-		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
+		// Retrieve part of the cell's content to get widths, topping out at a maximum length
+		contentString =	SPDataStoragePreviewAtRowAndColumn(tableStorage, i, columnIndex, 500);
 
 		// If the cell hasn't loaded yet, skip processing
 		if (!contentString)

@@ -30,7 +30,7 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@class SPMySQLConnection, SPMySQLResult, SPMySQLStreamingResult, SPMySQLFastStreamingResult;
+@class SPMySQLConnection, SPMySQLResult, SPMySQLStreamingResult, SPMySQLFastStreamingResult, SPMySQLStreamingResultStore;
 
 // Global include file for the framework.
 // Constants
@@ -61,8 +61,12 @@
 #import "SPMySQLEmptyResult.h"
 #import "SPMySQLStreamingResult.h"
 #import "SPMySQLFastStreamingResult.h"
+#import "SPMySQLStreamingResultStore.h"
 #import "Field Definitions.h"
 #import "Convenience Methods.h"
+
+// MySQL result store delegate protocol
+#import "SPMySQLStreamingResultStoreDelegate.h"
 
 // Result data objects
 #import "SPMySQLGeometryData.h"

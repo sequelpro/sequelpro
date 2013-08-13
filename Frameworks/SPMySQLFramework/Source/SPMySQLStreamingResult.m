@@ -44,6 +44,10 @@
 
 @implementation SPMySQLStreamingResult
 
+#pragma mark - Synthesized properties
+
+@synthesize dataDownloaded;
+
 #pragma mark -
 
 /**

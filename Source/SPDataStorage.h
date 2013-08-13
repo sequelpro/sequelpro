@@ -30,45 +30,54 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
+#import <SPMySQL/SPMySQLStreamingResultStoreDelegate.h>
+
+@class SPMySQLStreamingResultStore;
+
 /**
- * This class provides a storage mechanism intended to represent tabular
- * data, in a 2D array.  Data can be added and retrieved either directly
- * or via NSArrays; internally, C arrays are used to provide speed and
- * memory improvements.
- * This class is essentially mutable.
+ * This class wraps a SPMySQLStreamingResultStore, providing an editable
+ * data store; on a fresh load all data will be proxied from the underlying
+ * result store, but if cells or rows are edited, mutable rows are stored
+ * directly.
  */
 
-@interface SPDataStorage : NSObject 
+@interface SPDataStorage : NSObject <SPMySQLStreamingResultStoreDelegate>
 {
-	NSUInteger numColumns;
-	NSUInteger columnPointerByteSize;
-	NSUInteger numRows, numRowsCapacity;
+	SPMySQLStreamingResultStore *dataStorage;
+	NSPointerArray *editedRows;
+	BOOL *unloadedColumns;
 
-	id **dataStorage;
+	NSUInteger numberOfColumns;
 }
 
+/* Setting result store */
+- (void) setDataStorage:(SPMySQLStreamingResultStore *) newDataStorage updatingExisting:(BOOL)updateExistingStore;
+
 /* Retrieving rows and cells */
-- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)index;
+- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)anIndex;
 - (id) cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex;
+- (id) cellPreviewAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex previewLength:(NSUInteger)previewLength;
+- (BOOL) cellIsNullOrUnloadedAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex;
 
 /* Adding and amending rows and cells */
-- (void) addRowWithContents:(NSArray *)row;
-- (void) insertRowContents:(NSArray *)row atIndex:(NSUInteger)index;
-- (void) replaceRowAtIndex:(NSUInteger)index withRowContents:(NSArray *)row;
-- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)object;
-- (void) removeRowAtIndex:(NSUInteger)index;
+- (void) addRowWithContents:(NSMutableArray *)aRow;
+- (void) insertRowContents:(NSMutableArray *)aRow atIndex:(NSUInteger)anIndex;
+- (void) replaceRowAtIndex:(NSUInteger)anIndex withRowContents:(NSMutableArray *)aRow;
+- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)anObject;
+- (void) removeRowAtIndex:(NSUInteger)anIndex;
 - (void) removeRowsInRange:(NSRange)rangeToRemove;
 - (void) removeAllRows;
 
+/* Unloaded columns */
+- (void) setColumnAsUnloaded:(NSUInteger)columnIndex;
+
 /* Basic information */
 - (NSUInteger) count;
-- (void) setColumnCount:(NSUInteger)columnCount;
 - (NSUInteger) columnCount;
+- (BOOL) dataDownloaded;
 
-/* Initialisation and teardown */
-#pragma mark -
-- (id) init;
-- (void) dealloc;
+/* Delegate callback methods */
+- (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore;
 
 @end
 
@@ -91,14 +100,6 @@ static inline void SPDataStorageReplaceRow(SPDataStorage* self, NSUInteger rowIn
 	SPDSReplaceRow(self, @selector(replaceRowAtIndex:withRowContents:), rowIndex, row);
 }
 
-static inline void SPDataStorageReplaceObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, id newObject) 
-{
-	typedef void (*SPDSObjectReplaceMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger, id);
-	static SPDSObjectReplaceMethodPtr SPDSObjectReplace;
-	if (!SPDSObjectReplace) SPDSObjectReplace = (SPDSObjectReplaceMethodPtr)[self methodForSelector:@selector(replaceObjectInRow:column:withObject:)];
-	SPDSObjectReplace(self, @selector(replaceObjectInRow:column:withObject:), rowIndex, colIndex, newObject);
-}
-
 static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex) 
 {
 	typedef id (*SPDSObjectFetchMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger);
@@ -106,3 +107,12 @@ static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteg
 	if (!SPDSObjectFetch) SPDSObjectFetch = (SPDSObjectFetchMethodPtr)[self methodForSelector:@selector(cellDataAtRow:column:)];
 	return SPDSObjectFetch(self, @selector(cellDataAtRow:column:), rowIndex, colIndex);
 }
+
+static inline id SPDataStoragePreviewAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, NSUInteger previewLength)
+{
+	typedef id (*SPDSPreviewFetchMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger, NSUInteger);
+	static SPDSPreviewFetchMethodPtr SPDSPreviewFetch;
+	if (!SPDSPreviewFetch) SPDSPreviewFetch = (SPDSPreviewFetchMethodPtr)[self methodForSelector:@selector(cellPreviewAtRow:column:previewLength:)];
+	return SPDSPreviewFetch(self, @selector(cellPreviewAtRow:column:previewLength:), rowIndex, colIndex, previewLength);
+}
+

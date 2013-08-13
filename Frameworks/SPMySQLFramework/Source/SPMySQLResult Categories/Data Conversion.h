@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPDataCellFormatter.h
-//  sequel-pro
+//  Data Conversion.h
+//  SPMySQLFramework
 //
-//  Created by Rowan Beentje on February 11, 2009.
-//  Copyright (c) 2009 Arboreal. All rights reserved.
+//  Created by Rowan Beentje (rowan.beent.je) on May 26, 2013
+//  Copyright (c) 2013 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -30,13 +30,13 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPDataCellFormatter : NSFormatter 
-{
-	NSInteger textLimit;
-	NSString *fieldType;
-}
+@interface SPMySQLResult (Data_Conversion_Private_API)
 
-@property (readwrite, assign) NSInteger textLimit;
-@property (readwrite, retain) NSString* fieldType;
+- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength;
+
+static inline SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField);
+
+static inline NSString * _stringWithBytes(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength);
+static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength);
 
 @end

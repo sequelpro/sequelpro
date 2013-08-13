@@ -204,7 +204,7 @@ typedef struct st_spmysqlstreamingrowdata {
 			copiedDataLength += fieldLength;
 
 			// Convert to the correct object type
-			cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, fieldTypes[i], i);
+			cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, i, NSNotFound);
 		}
 
 		// If object creation failed, display a null

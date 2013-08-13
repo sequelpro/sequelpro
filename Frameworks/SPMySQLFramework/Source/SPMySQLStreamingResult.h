@@ -46,6 +46,8 @@
 	SEL isConnectedSelector;
 }
 
+@property (readonly, assign) BOOL dataDownloaded;
+
 - (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection;
 
 // Allow result fetching to be cancelled

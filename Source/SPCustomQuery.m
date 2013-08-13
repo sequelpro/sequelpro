@@ -69,8 +69,7 @@
 
 @interface SPCustomQuery (PrivateAPI)
 
-- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate;
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
 
 @end
@@ -581,7 +580,7 @@
 {
 	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
 	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	SPMySQLFastStreamingResult	*streamingResult  = nil;
+	SPMySQLStreamingResultStore	*resultStore  = nil;
 	NSMutableString		*errors     = [NSMutableString string];
 	SEL					callbackMethod = NULL;
 	NSString			*taskButtonString;
@@ -652,8 +651,8 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
-		executionTime += [streamingResult queryExecutionTime];
+		resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
+		executionTime += [resultStore queryExecutionTime];
 		totalQueriesRun++;
 
 		// If this is the last query, retrieve and store the result; otherwise,
@@ -662,7 +661,7 @@
 
 			// Retrieve and cache the column definitions for the result array
 			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[streamingResult fieldDefinitions] retain];
+			cqColumnDefinition = [[resultStore fieldDefinitions] retain];
 
 			if(!reloadingExistingResult) {
 				[[self onMainThread] updateTableView];
@@ -683,18 +682,18 @@
 			// Init copyTable with necessary information for copying selected rows as SQL INSERT
 			[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 
-			[self processResultIntoDataStorage:streamingResult];
+			[self updateResultStore:resultStore];
 		} else {
-			[streamingResult cancelResultLoad];
+			[resultStore cancelResultLoad];
 		}
 
 		// Record any affected rows
 		if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 )
 			totalAffectedRows += (NSUInteger)[mySQLConnection rowsAffectedByLastQuery];
-		else if ( [streamingResult numberOfRows] )
-			totalAffectedRows += (NSUInteger)[streamingResult numberOfRows];
+		else if ( [resultStore numberOfRows] )
+			totalAffectedRows += (NSUInteger)[resultStore numberOfRows];
 
-		[streamingResult release];
+		[resultStore release];
 
 		// Store any error messages
 		if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
@@ -804,8 +803,8 @@
 
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
-		streamingResult = [mySQLConnection streamingQueryString:@""];
-		[streamingResult cancelResultLoad];
+		resultStore = [mySQLConnection resultStoreFromQueryString:@""];
+		[resultStore cancelResultLoad];
 		[errors setString:[mySQLConnection lastErrorMessage]];
 	}
 
@@ -944,55 +943,38 @@
 }
 
 /**
- * Processes a supplied streaming result set, loading it into the data array.
+ * Processes a supplied streaming result store, monitoring the load and updating
+ * the data displayed during download.
  */
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore
 {
-	NSAutoreleasePool *dataLoadingPool;
 
 	// Remove all items from the table
 	resultDataCount = 0;
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
 	[resultData removeAllRows];
+
+	// Add the new store
+	[resultData setDataStorage:theResultStore updatingExisting:NO];
 	pthread_mutex_unlock(&resultDataLock);
 
-	// Set the column count on the data store before setting up anything else -
-	// ensures that SPDataStorage is set up for timer-driven data loads
-	[resultData setColumnCount:[theResult numberOfFields]];
+	// Start the data downloading
+	[theResultStore startDownload];
 
-	// Set up the table updates timer
+	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initQueryLoadTimer];
 
-	// Set up an autorelease pool for row processing
-	dataLoadingPool = [[NSAutoreleasePool alloc] init];
-
-	// Loop through the result rows as they become available
-	for (NSArray *eachRow in theResult) {
-
-		pthread_mutex_lock(&resultDataLock);
-		SPDataStorageAddRow(resultData, eachRow);
-		resultDataCount++;
-		pthread_mutex_unlock(&resultDataLock);
-
-		// Drain and reset the autorelease pool every ~1024 rows
-		if (!(resultDataCount % 1024)) {
-			[dataLoadingPool drain];
-			dataLoadingPool = [[NSAutoreleasePool alloc] init];
-		}
+	[resultLoadingCondition lock];
+	while (![resultData dataDownloaded]) {
+		[resultLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
 	}
-
-	// Clean up the interface update timer
-	[[self onMainThread] clearQueryLoadTimer];
+	[resultLoadingCondition unlock];
 
 	// If the final column autoresize wasn't performed, perform it
 	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
 
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-	[customQueryView setNeedsDisplay:YES];
-
-	// Clean up the autorelease pool
-	[dataLoadingPool drain];
 }
 
 /**
@@ -1483,9 +1465,18 @@
  */
 - (void) queryLoadUpdate:(NSTimer *)theTimer
 {
+	resultDataCount = [resultData count];
+
 	if (queryLoadTimerTicksSinceLastUpdate < queryLoadInterfaceUpdateInterval) {
 		queryLoadTimerTicksSinceLastUpdate++;
 		return;
+	}
+
+	if ([resultData dataDownloaded]) {
+		[resultLoadingCondition lock];
+		[resultLoadingCondition signal];
+		[self clearQueryLoadTimer];
+		[resultLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
@@ -1496,7 +1487,6 @@
 
 	// Update the table display
 	[customQueryView noteNumberOfRowsChanged];
-	if (!queryLoadLastRowCount) [customQueryView setNeedsDisplay:YES];
 
 	// Update column widths in two cases: on very first rows displayed, and once
 	// more than 200 rows are present.
@@ -1574,9 +1564,7 @@
 		
 		while ((tableColumn = [enumerator nextObject])) 
 		{
-			id value = [self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue]];
-			
-			[tempRow addObject:[self _convertResultDataValueToDisplayableRepresentation:value whilePreservingNULLs:includeNULLs truncateDataFields:truncate]];			
+			[tempRow addObject:[self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:includeNULLs asPreview:truncate]];
 		}
 		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
@@ -1682,7 +1670,6 @@
 
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
 		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
-		[[dataCell formatter] setDisplayLimit:150];
 
 		// Set field length limit if field is a varchar to match varchar length
 		if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"string"]
@@ -2045,7 +2032,7 @@
 		} else {
 #endif
 			// otherwise, just update the data in the data storage
-			SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
+			[resultData replaceObjectInRow:rowIndex column:[[aTableColumn identifier] intValue] withObject:anObject];
 #ifndef SP_CODA
 		}
 #endif
@@ -2075,35 +2062,34 @@
 {
 	if (aTableView == customQueryView) {
 
+		if (![cell respondsToSelector:@selector(setTextColor:)]) {
+			return;
+		}
+
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values
-		if ([cell respondsToSelector:@selector(setTextColor:)]) {
-			
-			id value = nil;
-			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
+		BOOL showCellAsGray = NO;
 
-			// While the table is being loaded, additional validation is required - data
-			// locks must be used to avoid crashes, and indexes higher than the available
-			// rows or columns may be requested.  Use gray to show loading in these cases.
-			if (isWorking) {
-				pthread_mutex_lock(&resultDataLock);
-				
-				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
-					value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
-				}
-				
-				pthread_mutex_unlock(&resultDataLock);
+		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 
-				if (!value) {
-					[cell setTextColor:[NSColor lightGrayColor]];
-					return;
-				}
-			} 
-			else {
-				value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+		// While the table is being loaded, additional validation is required - data
+		// locks must be used to avoid crashes, and indexes higher than the available
+		// rows or columns may be requested.  Use gray to show loading in these cases.
+		if (isWorking) {
+			pthread_mutex_lock(&resultDataLock);
+				
+			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+				showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+			} else {
+				showCellAsGray = YES;
 			}
 
-			[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			pthread_mutex_unlock(&resultDataLock);
 		}
+		else {
+			showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+		}
+
+		[cell setTextColor:showCellAsGray ? [NSColor lightGrayColor] : [NSColor blackColor]];
 	}
 }
 
@@ -2113,8 +2099,7 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		
-		return [self _convertResultDataValueToDisplayableRepresentation:[self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue]] whilePreservingNULLs:NO truncateDataFields:YES];
+		return [self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:NO asPreview:YES];
 	}
 
 	return @"";
@@ -3768,6 +3753,7 @@
 		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
+		resultLoadingCondition = [NSCondition new];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -3988,12 +3974,13 @@
 /**
  * Retrieves the value from the underlying data storage at the supplied row and column indices.
  *
- * @param row    The row index
- * @param column The column index
+ * @param row           The row index
+ * @param column        The column index
+ * @param preserveNULLs Whether t
  * 
  * @return The value from the data storage
  */
-- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
 	id value = nil;
 	
@@ -4005,7 +3992,11 @@
 		pthread_mutex_lock(&resultDataLock);
 		
 		if (row < resultDataCount && column < [resultData columnCount]) {
-			value = [[SPDataStorageObjectAtRowAndColumn(resultData, row, column) copy] autorelease];
+			if (asPreview) {
+				value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
+			} else {
+				value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+			}
 		}
 		
 		pthread_mutex_unlock(&resultDataLock);
@@ -4013,36 +4004,23 @@
 		if (!value) value = @"...";
 	} 
 	else {
-		value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+		if (asPreview) {
+			value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
+		} else {
+			value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+		}
 	}
-	
-	return value;
-}
 
-/**
- * Converts the supplied value into it's displayable representation.
- *
- * @param value         The value to convert
- * @param preserveNULLs Whether or not NULLs should be preserved or converted to the 
- *                      user's NULL placeholder preference.
- * @param truncate      Whether or not data fields should be truncates for display purposes.
- *
- * @return The converted value
- */
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate
-{
+	if ([value isKindOfClass:[SPMySQLGeometryData class]])
+		return [value wktString];
+
+	if ([value isNSNull])
+		return preserveNULLs ? value : [prefs objectForKey:SPNullValue];
+
 	if ([value isKindOfClass:[NSData class]]) {
-		value = truncate ? [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]] : [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]; 
+		return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 	}
-	
-	if ([value isNSNull] && !preserveNULLs) {
-		value = [prefs objectForKey:SPNullValue];
-	}
-	
-	if ([value isKindOfClass:[SPMySQLGeometryData class]]) {
-		value = [value wktString];
-	}
-	
+
 	return value;
 }
 
@@ -4057,6 +4035,7 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
+	[resultLoadingCondition release];
 	[usedQuery release];
 	[lastExecutedQuery release];
 	[resultData release];

@@ -111,7 +111,7 @@
 	return nil;
 }
 
-- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldType:(unsigned int)fieldType fieldDefinitionIndex:(NSUInteger)fieldIndex
+- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength
 {
 	return nil;
 }

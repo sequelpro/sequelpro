@@ -1,11 +1,11 @@
 //
 //  $Id$
 //
-//  SPDataCellFormatter.h
-//  sequel-pro
+//  SPMySQLStreamingResultStoreDelegate.h
+//  SPMySQLFramework
 //
-//  Created by Rowan Beentje on February 11, 2009.
-//  Copyright (c) 2009 Arboreal. All rights reserved.
+//  Created by Rowan Beentje (rowan.beent.je) on July 27, 2013
+//  Copyright (c) 2013 Rowan Beentje. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -30,13 +30,16 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPDataCellFormatter : NSFormatter 
-{
-	NSInteger textLimit;
-	NSString *fieldType;
-}
+@class SPMySQLStreamingResultStore;
 
-@property (readwrite, assign) NSInteger textLimit;
-@property (readwrite, retain) NSString* fieldType;
+@protocol SPMySQLStreamingResultStoreDelegate <NSObject>
+@optional
+
+/**
+ * Notifies the delegate that loading of data has completed.
+ *
+ * @param resultStore The result store that has finished loading data
+ */
+- (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore;
 
 @end

@@ -63,7 +63,10 @@
 	if (previousSeekPosition) [self seekToRow:previousSeekPosition];
 
 	// Instead of empty arrays, return nil if there are no rows.
-	if (![rowsToReturn count]) return nil;
+	if (![rowsToReturn count]) {
+		[rowsToReturn release];
+		return nil;
+	}
 
 	return [rowsToReturn autorelease];
 }

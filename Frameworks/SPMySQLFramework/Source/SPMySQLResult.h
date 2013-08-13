@@ -50,7 +50,6 @@ typedef enum {
 	// Number of fields in the result set, and the field names and information
 	NSUInteger numberOfFields;
 	struct st_mysql_field *fieldDefinitions;
-	unsigned int *fieldTypes;
 	NSString **fieldNames;
 	
 	// Number of rows in the result set and an internal data position counter
@@ -84,9 +83,6 @@ typedef enum {
 - (NSArray *)getRowAsArray;
 - (NSDictionary *)getRowAsDictionary;
 - (id)getRowAsType:(SPMySQLResultRowType)theType;
-
-// Data conversion
-+ (NSString *)bitStringWithBytes:(const char *)bytes length:(NSUInteger)length padToLength:(NSUInteger)padLength;
 
 #pragma mark -
 #pragma mark Synthesized properties

@@ -191,7 +191,17 @@
 {
 	return SPMySQLConnectionQueryString(self, theQueryString, stringEncoding, SPMySQLResultAsFastStreamingResult);
 }
- 
+
+/**
+ * Run a query, provided as a string, on the active connection in the current connection
+ * encoding.  Returns the result as a result set which also handles data storage.  Note
+ * that the donwloading of results will not occur until -[resultSet startDownload] is called.
+ */
+- (SPMySQLStreamingResultStore *)resultStoreFromQueryString:(NSString *)theQueryString
+{
+	return SPMySQLConnectionQueryString(self, theQueryString, stringEncoding, SPMySQLResultAsStreamingResultStore);
+}
+
 /**
  * Run a query, provided as a string, on the active connection in the current connection
  * encoding.  Returns the result as a streaming query set, where not all the results may
@@ -345,6 +355,12 @@
 				case SPMySQLResultAsFastStreamingResult:
 					mysqlResult = mysql_use_result(mySQLConnection);
 					theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
+
+				// Also set up the result for streaming result data stores, but note the data download does not start yet
+				case SPMySQLResultAsStreamingResultStore:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLStreamingResultStore alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
 					break;
 			}
 

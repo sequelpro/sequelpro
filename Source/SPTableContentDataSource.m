@@ -39,6 +39,12 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
+@interface SPTableContent (SPTableContentDataSource_Private_API)
+
+- (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;
+
+@end
+
 @implementation SPTableContent (SPTableContentDataSource)
 
 #pragma mark -
@@ -91,7 +97,7 @@
 				pthread_mutex_lock(&tableValuesLock);
 				
 				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					value = [[SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex) copy] autorelease];
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:YES];
 				}
 				
 				pthread_mutex_unlock(&tableValuesLock);
@@ -99,7 +105,11 @@
 				if (!value) return @"...";
 			} 
 			else {
-				value = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
+				if ([tableView editedColumn] == (NSInteger)columnIndex && [tableView editedRow] == rowIndex) {
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:NO];
+				} else {
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:YES];
+				}
 			}
 			
 			if ([value isKindOfClass:[SPMySQLGeometryData class]])
@@ -182,6 +192,18 @@
 				[tableValues replaceObjectInRow:rowIndex column:[[tableColumn identifier] integerValue] withObject:@""];
 			}
 		}
+}
+
+@end
+
+@implementation SPTableContent (SPTableContentDataSource_Private_API)
+
+- (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview
+{
+	if (asPreview) {
+		return SPDataStoragePreviewAtRowAndColumn(tableValues, rowIndex, columnIndex, 150);
+	}
+	return SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 }
 
 @end
