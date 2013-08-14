@@ -30,6 +30,12 @@
 //
 //  More info at <http://code.google.com/p/sequel-pro/>
 
-@interface SPMySQLEmptyResult : SPMySQLResult
+@interface SPMySQLEmptyResult : SPMySQLResult {
+
+	id delegate;
+
+}
+
+@property (readwrite, assign) id delegate;
 
 @end

@@ -34,6 +34,8 @@
 
 @implementation SPMySQLEmptyResult
 
+@synthesize delegate;
+
 #pragma mark -
 #pragma mark Setup and teardown
 
@@ -72,6 +74,11 @@
 {
 }
 
+- (BOOL)dataDownloaded
+{
+	return YES;
+}
+
 - (id)getRow
 {
 	return nil;
@@ -102,7 +109,15 @@
 	return nil;
 }
 
+- (void)startDownload
+{
+}
+
 - (void)cancelResultLoad
+{
+}
+
+- (void)removeAllRows
 {
 }
 
