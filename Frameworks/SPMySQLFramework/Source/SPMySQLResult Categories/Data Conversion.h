@@ -38,5 +38,6 @@ static inline SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField)
 
 static inline NSString * _stringWithBytes(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength);
 static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength);
+static inline NSString * _convertStringData(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength);
 
 @end
