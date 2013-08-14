@@ -392,7 +392,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (BOOL) dataDownloaded
 {
-	return [dataStorage dataDownloaded];
+	return !dataStorage || [dataStorage dataDownloaded];
 }
 
 #pragma mark - Delegate callback methods
