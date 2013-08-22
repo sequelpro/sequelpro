@@ -1002,6 +1002,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Update the data storage, updating the current store if appropriate
 	pthread_mutex_lock(&tableValuesLock);
+	tableRowsCount = 0;
 	[tableValues setDataStorage:theResultStore updatingExisting:!![tableValues count]];
 	pthread_mutex_unlock(&tableValuesLock);
 
@@ -1033,6 +1034,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[tableLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
 	}
 	[tableLoadingCondition unlock];
+	tableRowsCount = [tableValues count];
 
 	// If the final column autoresize wasn't performed, perform it
 	if (tableLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
