@@ -1709,18 +1709,29 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
 	// Disallow selection while the document is working on a task
-	if ([tableDocumentInstance isWorking]) return NO;
+	if ([tableDocumentInstance isWorking]) {
+		return NO;
+	}
 
 	// Allow deselections
-	if (rowIndex == -1) return YES;
+	if (rowIndex == -1) {
+		return YES;
+	}
 
-	if(![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]])
+	// On 10.6, right-clicking below all rows attempts to select a high row index
+	if (rowIndex >= (NSInteger)[filteredTables count]) {
 		return NO;
+	}
 
-	//return (rowIndex != 0);
-	if( [filteredTableTypes count] == 0 )
+	if (![[filteredTables objectAtIndex:rowIndex] isKindOfClass:[NSString class]]) {
+		return NO;
+	}
+
+	if ([filteredTableTypes count] == 0) {
 		return (rowIndex != 0 );
-	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] != SPTableTypeNone );
+	}
+
+	return ([[filteredTableTypes objectAtIndex:rowIndex] integerValue] != SPTableTypeNone);
 }
 
 /**
