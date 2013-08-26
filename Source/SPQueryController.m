@@ -116,6 +116,10 @@ static SPQueryController *sharedQueryController = nil;
 
 		NSError *error = [self loadCompletionLists];
 
+		// Trigger a load of the nib to prevent problems if it's lazy-loaded on first console message
+		// on a bckground thread
+		[[[self onMainThread] window] displayIfNeeded];
+
 		if (error) {
 			NSLog(@"Error loading completion tokens data: %@", [error localizedDescription]); 
 		}
@@ -595,17 +599,15 @@ static SPQueryController *sharedQueryController = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
-		[saveConsoleButton setEnabled:YES];
-		[clearConsoleButton setEnabled:YES];
+		[[saveConsoleButton onMainThread] setEnabled:YES];
+		[[clearConsoleButton onMainThread] setEnabled:YES];
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)
 	if (allowConsoleUpdate && [[self window] isVisible]) {
-		[consoleTableView noteNumberOfRowsChanged];
-		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
-		[consoleTableView reloadData];
+		[[self onMainThread] updateEntries];
 	}
-	
+
 	pthread_mutex_unlock(&consoleLock);
 #endif
 }
