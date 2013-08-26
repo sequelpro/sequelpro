@@ -683,13 +683,6 @@
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
 
-	// Save any edits which have been made but not saved to the table yet.
-#ifndef SP_CODA /* patch */
-	[[tableDocumentInstance parentWindow] endEditingFor:nil];
-#else
-	[[tableSourceView window] endEditingFor:nil];
-#endif
-
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
 		isSavingRow = NO;
@@ -711,6 +704,12 @@
 	if ((!isEditingRow) || (currentlyEditingRow == -1)) return YES;
 
 	if (alertSheetOpened) return NO;
+
+	// Save any edits which have been started but not saved to the underlying table/data structures
+	// yet - but not if currently undoing/redoing, as this can cause a processing loop
+	if (![[[[tableSourceView window] firstResponder] undoManager] isUndoing] && ![[[[tableSourceView window] firstResponder] undoManager] isRedoing]) {
+		[[tableSourceView window] endEditingFor:nil];
+	}
 
 	NSMutableString *queryString;
 	BOOL fieldDefIncludesLen = NO;
