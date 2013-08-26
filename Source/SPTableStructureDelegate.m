@@ -501,11 +501,11 @@
 			
 			if ( row > 0) {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:row-1 withEvent:nil select:YES];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns]-1) row:row-1 withEvent:nil select:YES];
 			}
 			else {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
 			}
 		}
 		
