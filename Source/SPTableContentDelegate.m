@@ -48,6 +48,7 @@
 #import "SPTableData.h"
 #import "SPFieldEditorController.h"
 #import "SPThreadAdditions.h"
+#import "SPTextAndLinkCell.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -464,7 +465,8 @@
 			
 			if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 			
-			BOOL showCellAsGray = NO;
+			BOOL cellIsNullOrUnloaded = NO;
+			BOOL cellIsLinkCell = [cell isMemberOfClass:[SPTextAndLinkCell class]];
 			NSUInteger columnIndex = [[tableColumn identifier] integerValue];
 			
 			// If user wants to edit 'cell' set text color to black and return to avoid
@@ -473,6 +475,7 @@
 				&& [tableView editedRow] == rowIndex
 				&& (NSUInteger)[[NSArrayObjectAtIndex([tableView tableColumns], [tableView editedColumn]) identifier] integerValue] == columnIndex) {
 				[cell setTextColor:blackColor];
+				if (cellIsLinkCell) [cell setLinkActive:NO];
 				return;
 			}
 
@@ -483,21 +486,30 @@
 				pthread_mutex_lock(&tableValuesLock);
 				
 				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					showCellAsGray = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+					cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 				}
 				
 				pthread_mutex_unlock(&tableValuesLock);
 			} 
 			else {
-				showCellAsGray = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+				cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 			}
 			
 			
-			if (showCellAsGray) {
+			if (cellIsNullOrUnloaded) {
 				[cell setTextColor:lightGrayColor];
 			} 
 			else {
 				[cell setTextColor:blackColor];
+			}
+
+			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
+			if (cellIsLinkCell) {
+				if (cellIsNullOrUnloaded || [tableView editedRow] == rowIndex) {
+					[cell setLinkActive:NO];
+				} else {
+					[cell setLinkActive:YES];
+				}
 			}
 		}
 }

@@ -34,6 +34,8 @@
 
 @implementation SPTextAndLinkCell
 
+@synthesize linkActive;
+
 /**
  * Provide a method to derive the link rect from a cell rect.
  */
@@ -53,6 +55,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	self = [super initWithCoder:coder];
 	if (self) {
 		hasLink = NO;
+		linkActive = YES;
 		linkButton = nil;
 		linkTarget = nil;
 		drawState = SPLinkDrawStateNormal;
@@ -131,7 +134,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 {
 
 	// Fast case for no arrow
-	if (!hasLink) {
+	if (!hasLink || !linkActive) {
 		[super drawInteriorWithFrame:aRect inView:controlView];
 		return;
 	}
@@ -179,7 +182,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 {
 
 	// Fast case for no link - make entire cell editable click area
-	if (!hasLink) return NSCellHitContentArea | NSCellHitEditableTextArea;
+	if (!hasLink || !linkActive) return NSCellHitContentArea | NSCellHitEditableTextArea;
 
 	NSPoint p = [[[NSApp  mainWindow] contentView] convertPoint:[event locationInWindow] toView:controlView];
 	NSRect linkRect = SPTextLinkRectFromCellRect(cellFrame);
@@ -204,7 +207,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 {
 
 	// Fast case for no link
-	if (!hasLink) return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
+	if (!hasLink || !linkActive) return [super trackMouse:theEvent inRect:cellFrame ofView:controlView untilMouseUp:untilMouseUp];
 
 	NSPoint p = [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
 	NSRect linkRect = SPTextLinkRectFromCellRect(cellFrame);

@@ -33,6 +33,7 @@
 @interface SPTextAndLinkCell : NSTextFieldCell 
 {
 	BOOL hasLink;
+	BOOL linkActive;
 
 	NSButtonCell *linkButton;
 	id linkTarget;
@@ -42,6 +43,8 @@
 	NSInteger lastLinkRow;
 	NSInteger drawState;
 }
+
+@property (readwrite, assign) BOOL linkActive;
 
 - (void) setTarget:(id)theTarget action:(SEL)theAction;
 - (NSInteger) getClickedColumn;
