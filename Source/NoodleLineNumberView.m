@@ -85,6 +85,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
 		currentRuleThickness = 0.0f;
+		dragSelectionStartLine = NSNotFound;
 
 		// Cache loop methods for speed
 		lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
