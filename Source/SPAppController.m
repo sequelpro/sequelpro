@@ -349,6 +349,8 @@
 				[[self frontDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
 			}
 
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+
 			break; // open only the first SQL file
 
 		}
