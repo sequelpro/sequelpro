@@ -105,7 +105,7 @@
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue;
+	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -366,7 +366,7 @@
 				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 				
 				// Construct the start of the insertion command
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				j = 0, k = 0;
@@ -396,8 +396,6 @@
 					j++;
 					k++;
 
-					[sqlString setString:@""];
-
 					// Update the progress
 					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
 
@@ -409,23 +407,32 @@
 						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 					}
 
+
+					// Set up the new row as appropriate.  If a new INSERT statement should be created,
+					// set one up; otherwise, set up a new row
+					if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
+						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
+					{
+						[sqlString setString:@";\n\nINSERT INTO "];
+						[sqlString appendString:[tableName backtickQuotedString]];
+						[sqlString appendString:@" ("];
+						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
+						[sqlString appendString:@")\nVALUES\n\t("];
+
+						queryLength = 0, k = 0;
+
+						// Use the opportunity to drain and reset the autorelease pool at the end of this row
+						cleanAutoReleasePool = YES;
+					}
+					else if (j == 1) {
+						[sqlString setString:@"\n\t("];
+					}
+					else {
+						[sqlString setString:@",\n\t("];
+					}
+
 					for (t = 0; t < colCount; t++)
 					{
-						// Check for cancellation flag
-						if ([self isCancelled]) {
-							[connection cancelCurrentQuery];
-							[streamingResult cancelResultLoad];
-							[streamingResult release];
-							[sqlExportPool release];
-							[errors release];
-							[sqlString release];
-							[pool release];
-							free(useRawDataForColumnAtIndex);
-							free(useRawHexDataForColumnAtIndex);
-
-							return;
-						}
-
 						id object = NSArrayObjectAtIndex(row, t);
 
 						// Add NULL values directly to the output row; use a pointer comparison to the singleton
@@ -486,38 +493,19 @@
 						// Add the field separator if this isn't the last cell in the row
 						if (t != ([row count] - 1)) [sqlString appendString:@","];
 					}
-					
+
+					[sqlString appendString:@")"];
 					queryLength += [sqlString length];
-					
-					// Close this VALUES group and set up the next one if appropriate
-					if (j != rowCount) {
-							
-						// If required start a new INSERT statment
-						if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
-							(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
-						{
-							[sqlString appendString:@");\n\nINSERT INTO "];
-							[sqlString appendString:[tableName backtickQuotedString]];
-							[sqlString appendString:@" ("];
-							[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
-							[sqlString appendString:@")\nVALUES\n\t("];
-														
-							queryLength = 0, k = 0;
-							
-							// Use the opportunity to drain and reset the autorelease pool
-							[sqlExportPool release];
-							sqlExportPool = [[NSAutoreleasePool alloc] init];
-						} 
-						else {
-							[sqlString appendString:@"),\n\t("];
-						}
-					} 
-					else {
-						[sqlString appendString:@")"];
-					}
 										
 					// Write this row to the file
 					[[self exportOutputFile] writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
+
+					// Clean autorelease pool if so decided earlier
+					if (cleanAutoReleasePool) {
+						[sqlExportPool release];
+						sqlExportPool = [[NSAutoreleasePool alloc] init];
+						cleanAutoReleasePool = NO;
+					}
 				}
 				
 				// Complete the command
