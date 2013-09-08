@@ -47,7 +47,7 @@ CLEAN='NO'
 MIN_OS_X_VERSION='10.6'
 ARCHITECTURES='-arch i386 -arch x86_64'
 
-CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared"'
+CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared" -DWITHOUT_SERVER=1'
 OUTPUT_DIR='SPMySQLFiles.build'
 
 ESC=`printf '\033'`
@@ -134,7 +134,7 @@ fi
 
 echo ''
 echo "This script builds the MySQL client libraries for distribution in Sequel Pro's MySQL framework."
-echo 'They are all built as 3-way binaries (32 bit PPC, 32/64 bit i386).'
+echo 'They are all built as 2-way binaries (32 and 64 bit i386).'
 echo ''
 echo -n "$ESC[1mThis may take a while, are you sure you want to continue [y | n]: $ESC[0m"
 
