@@ -317,21 +317,24 @@
 			}
 
 			// Attempt to open the file into a string.
+			NSStringEncoding sqlEncoding;
 			NSString *sqlString = nil;
 			
 			// If the user came from an openPanel use the chosen encoding
 			if (encodingPopUp) {
-				NSError *error = nil;
-				sqlString = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&error];
-				if(error != nil) {
-					NSAlert *errorAlert = [NSAlert alertWithError:error];
-					[errorAlert runModal];
-					return;
-				}
-			
-			// Otherwise, read while attempting to autodetect the encoding
+				sqlEncoding = [[encodingPopUp selectedItem] tag];
+
+			// Otherwise, attempt to autodetect the encoding
 			} else {
-				sqlString = [self contentOfFile:filename];
+				sqlEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filename];
+			}
+
+			NSError *error = nil;
+			sqlString = [NSString stringWithContentsOfFile:filename encoding:sqlEncoding error:&error];
+			if(error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+				return;
 			}
 
 			// if encodingPopUp is defined the filename comes from an openPanel and
@@ -346,10 +349,12 @@
 			} else {
 
 				// Pass query to the Query editor of the current document
-				[[self frontDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
+				[[self frontDocument] doPerformLoadQueryService:sqlString];
 			}
 
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+			[[self frontDocument] setSqlFileURL:[NSURL fileURLWithPath:filename]];
+			[[self frontDocument] setSqlFileEncoding:sqlEncoding];
 
 			break; // open only the first SQL file
 
@@ -2012,79 +2017,6 @@
 	
 	// Return YES to the automatic opening
 	return YES;
-}
-
-/**
- * Insert content of a plain text file for a given path.
- * In addition it tries to figure out the file's text encoding heuristically.
- */
-- (NSString *)contentOfFile:(NSString *)aPath
-{
-	NSError *err = nil;
-	NSStringEncoding enc;
-	NSString *content = nil;
-
-	// Make usage of the UNIX command "file" to get an info
-	// about file type and encoding.
-	NSTask *task=[[NSTask alloc] init];
-	NSPipe *pipe=[[NSPipe alloc] init];
-	NSFileHandle *handle;
-	NSString *result;
-	[task setLaunchPath:@"/usr/bin/file"];
-	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
-	[task setStandardOutput:pipe];
-	handle=[pipe fileHandleForReading];
-	[task launch];
-	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
-		encoding:NSASCIIStringEncoding];
-
-	[pipe release];
-	[task release];
-
-	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
-	if( [result hasPrefix:@"text/plain"] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
-		|| [result hasPrefix:@"audio/mpeg"] 
-		|| [result hasPrefix:@"application/octet-stream"]
-	)
-	{
-		// if UTF16/32 cocoa will try to find the correct encoding
-		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
-			enc = 0;
-		else if([result rangeOfString:@"utf-8"].length)
-			enc = NSUTF8StringEncoding;
-		else if([result rangeOfString:@"iso-8859-1"].length)
-			enc = NSISOLatin1StringEncoding;
-		else if([result rangeOfString:@"us-ascii"].length)
-			enc = NSASCIIStringEncoding;
-		else 
-			enc = 0;
-
-		if(enc == 0) // cocoa tries to detect the encoding
-			content = [NSString stringWithContentsOfFile:aPath usedEncoding:&enc error:&err];
-		else
-			content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
-
-		if(content)
-		{
-			[result release];
-			return content;
-		}
-		// If UNIX "file" failed try cocoa's encoding detection
-		content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
-		if(content)
-		{
-			[result release];
-			return content;
-		}
-	}
-	
-	[result release];
-
-	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
-	
-	return @"";
 }
 
 - (NSArray *)bundleCategoriesForScope:(NSString*)scope

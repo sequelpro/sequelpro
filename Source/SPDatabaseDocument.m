@@ -138,6 +138,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 @implementation SPDatabaseDocument
 
 #ifndef SP_CODA /* ivars */
+@synthesize sqlFileURL;
+@synthesize sqlFileEncoding;
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
 #endif
@@ -215,6 +217,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		queryEditorInitString = nil;
 
 #ifndef SP_CODA
+		sqlFileURL = nil;
 		spfFileURL = nil;
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
@@ -2791,7 +2794,15 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[panel setCanSelectHiddenExtension:YES];
 
 	// Save Query…
-	if( sender != nil && [sender tag] == 1006 ) {
+	if( sender != nil && ([sender tag] == 1006 || [sender tag] == 1008)) {
+
+		// If Save was invoked, check whether the file was previously opened, and if so save without the panel
+		if ([sender tag] == 1006 && [[[self sqlFileURL] path] length]) {
+			NSError *error = nil;
+			NSString *content = [NSString stringWithString:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]];
+			[content writeToURL:sqlFileURL atomically:YES encoding:sqlFileEncoding error:&error];
+			return;
+		}
 
 		// Save the editor's content as SQL file
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
@@ -6273,6 +6284,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #endif
 	if (queryEditorInitString) [queryEditorInitString release];
 #ifndef SP_CODA
+	if (sqlFileURL) [sqlFileURL release];
 	if (spfFileURL) [spfFileURL release];
 	if (spfPreferences) [spfPreferences release];
 	if (spfSession) [spfSession release];

@@ -31,6 +31,8 @@
 //  More info at <http://code.google.com/p/sequel-pro/>
 
 #import "SPFileManagerAdditions.h"
+#import "SPFileHandle.h"
+#import <UniversalDetector/UniversalDetector.h>
 
 enum
 {
@@ -151,6 +153,31 @@ static NSString *DirectoryLocationDomain = @"DirectoryLocationDomain";
 	
 	
 	return resolvedPath;
+}
+
+/**
+ * Use the UniversalDetector library to attempt to detect the encoding at the file at
+ * the supplied URL.  Only the first five megabytes are read if the file is larger.
+ * As with all encoding detection, this will return only best-guess result except
+ * for where encoding markers exist.
+ * Uses a SPFileHandle internally so it can detect the encoding within gzipped and
+ * bzipped files.
+ * Returns NSUTF8StringEncoding if the encoding cannot be detected.
+ */
+- (NSStringEncoding)detectEncodingforFileAtPath:(NSString *)aPath
+{
+	NSStringEncoding detectedEncoding;
+	SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:aPath];
+	if (!detectorFileHandle) {
+		return NSUTF8StringEncoding;
+	}
+
+	UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
+	[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:5000000]];
+	detectedEncoding = [fileEncodingDetector encoding];
+	[fileEncodingDetector release];
+
+	return detectedEncoding;
 }
 
 + (NSString *)temporaryDirectory

@@ -34,5 +34,6 @@
 
 - (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory error:(NSError **)errorOut;
 - (NSString *)applicationSupportDirectoryForSubDirectory:(NSString*)subDirectory createIfNotExists:(BOOL)create error:(NSError **)errorOut;
+- (NSStringEncoding)detectEncodingforFileAtPath:(NSString *)aPath;
 + (NSString *)temporaryDirectory;
 @end

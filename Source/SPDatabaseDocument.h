@@ -249,6 +249,8 @@
 	NSString *queryEditorInitString;
 	
 #ifndef SP_CODA /* ivars */
+	NSURL *sqlFileURL;
+	NSStringEncoding sqlFileEncoding;
 	NSURL *spfFileURL;
 	NSDictionary *spfSession;
 	NSMutableDictionary *spfPreferences;
@@ -305,6 +307,8 @@
 #endif
 
 #ifndef SP_CODA /* ivars */
+@property (readwrite, retain) NSURL *sqlFileURL;
+@property (readwrite, assign) NSStringEncoding sqlFileEncoding;
 @property (readwrite, assign) SPWindowController *parentWindowController;
 @property (readwrite, assign) NSTabViewItem *parentTabViewItem;
 #endif

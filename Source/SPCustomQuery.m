@@ -1615,10 +1615,7 @@
  */
 - (void)doPerformQueryService:(NSString *)query
 {
-	[textView shouldChangeTextInRange:NSMakeRange(0, [[textView string] length]) replacementString:query];
-	[textView setString:query];
-	[textView didChangeText];
-	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
+	[self doPerformLoadQueryService:query];
 	[self runAllQueries:self];
 }
 

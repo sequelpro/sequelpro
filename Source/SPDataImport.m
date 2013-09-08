@@ -51,7 +51,6 @@
 #import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
-#import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
 
@@ -420,18 +419,12 @@
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
-	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	// this is selected, attempt to detect the encoding of the file
 	if (![importEncodingPopup indexOfSelectedItem]) {
-		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
-		if (detectorFileHandle) {
-			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
-			sqlEncoding = [fileEncodingDetector encoding];
-			[fileEncodingDetector release];
-			if ([SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]) {
-				connectionEncodingToRestore = [mySQLConnection encoding];
-				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]]];
-			}
+		sqlEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filename];
+		if ([SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]) {
+			connectionEncodingToRestore = [mySQLConnection encoding];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]]];
 		}
 
 	// Otherwise, get the encoding to use from the menu
@@ -782,15 +775,9 @@
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
-	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	// this is selected, attempt to detect the encoding of the file.
 	if (![importEncodingPopup indexOfSelectedItem]) {
-		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
-		if (detectorFileHandle) {
-			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
-			csvEncoding = [fileEncodingDetector encoding];
-			[fileEncodingDetector release];
-		}
+		csvEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filename];
 
 	// Otherwise, get the encoding to use from the menu
 	} else {

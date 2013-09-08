@@ -105,7 +105,6 @@
 - (NSMutableDictionary *)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences;
 
 // Others
-- (NSString *)contentOfFile:(NSString *)aPath;
 - (NSArray *)bundleCategoriesForScope:(NSString *)scope;
 - (NSArray *)bundleItemsForScope:(NSString *)scope;
 - (NSArray *)bundleCommandsForTrigger:(NSString *)trigger;
