@@ -642,8 +642,18 @@
 
 				[constraintDetails setObject:keyColumns forKey:@"columns"];
 
-				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+				NSString *part = [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet];
+												
+				NSArray *reference = [part captureComponentsMatchedByRegex:@"^`([\\w_.]+)`\\.`([\\w_.]+)`$" options:RKLCaseless range:NSMakeRange(0, [part length]) error:nil]; 
+				
+				if ([reference count]) {					
+					[constraintDetails setObject:[reference objectAtIndex:1] forKey:@"ref_database"];
+					[constraintDetails setObject:[reference objectAtIndex:2] forKey:@"ref_table"];
+				}
+				else {
+					[fieldsParser setString:part];
+					[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+				}
 
 				NSMutableArray *refKeyColumns = [NSMutableArray array];
 				NSArray *refKeyColumnStrings = [[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];

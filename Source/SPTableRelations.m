@@ -42,12 +42,13 @@
 
 static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
-static NSString *SPRelationNameKey      = @"name";
-static NSString *SPRelationColumnsKey   = @"columns";
-static NSString *SPRelationFKTableKey   = @"fk_table";
-static NSString *SPRelationFKColumnsKey = @"fk_columns";
-static NSString *SPRelationOnUpdateKey  = @"on_update";
-static NSString *SPRelationOnDeleteKey  = @"on_delete";
+static NSString *SPRelationNameKey       = @"name";
+static NSString *SPRelationColumnsKey    = @"columns";
+static NSString *SPRelationFKDatabaseKey = @"fk_database";
+static NSString *SPRelationFKTableKey    = @"fk_table";
+static NSString *SPRelationFKColumnsKey  = @"fk_columns";
+static NSString *SPRelationOnUpdateKey   = @"on_update";
+static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 @interface SPTableRelations ()
 
@@ -586,15 +587,17 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 		NSArray *constraints = [tableDataInstance getConstraints];
 		
 		for (NSDictionary *constraint in constraints) 
-		{
+		{			
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									 [constraint objectForKey:SPRelationNameKey], SPRelationNameKey,
 									 [[constraint objectForKey:SPRelationColumnsKey] componentsJoinedByCommas], SPRelationColumnsKey,
+									 [constraint objectForKey:@"ref_database"] ? [constraint objectForKey:@"ref_database"] : [tableDocumentInstance database], SPRelationFKDatabaseKey,
 									 [constraint objectForKey:@"ref_table"], SPRelationFKTableKey,
 									 [[constraint objectForKey:@"ref_columns"] componentsJoinedByCommas], SPRelationFKColumnsKey,
 									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
 									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
 									 nil]];
+			
 			[takenConstraintNames addObject:[[constraint objectForKey:SPRelationNameKey] lowercaseString]];			
 		}
 	} 
