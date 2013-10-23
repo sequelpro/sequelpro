@@ -371,6 +371,7 @@ extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPAlwaysShowWindowTabBar;
 extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
+extern NSString *SPFavoriteColorList;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;
@@ -463,6 +464,7 @@ extern NSString *SPFavoriteDatabaseKey;
 extern NSString *SPFavoriteHostKey;
 extern NSString *SPFavoritePortKey;
 extern NSString *SPFavoriteUserKey;
+extern NSString *SPFavoriteColorIndexKey;
 extern NSString *SPFavoriteTypeKey;
 extern NSString *SPFavoriteSocketKey;
 extern NSString *SPFavoriteSSHHostKey;

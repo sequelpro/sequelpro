@@ -110,6 +110,7 @@ enum {
 
 	// Set up a new tab with the connection view as the identifier, add the view, and add it to the tab view
     NSTabViewItem *newItem = [[[NSTabViewItem alloc] initWithIdentifier:newTableDocument] autorelease];
+	[newItem setColor:nil]; //cocoa defaults to [NSColor controlColor] but we want the tabstyle to choose a default color
 	
 	[newItem setView:[newTableDocument databaseView]];
     [tabView addTabViewItem:newItem];

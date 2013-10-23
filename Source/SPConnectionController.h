@@ -44,7 +44,8 @@
 #ifndef SP_CODA /* class decl */
 	   ,SPKeychain, 
 	   SPFavoriteNode,
-	   SPFavoriteTextFieldCell
+	   SPFavoriteTextFieldCell,
+       SPColorSelectorView
 #endif
 ;
 
@@ -79,6 +80,7 @@
 	NSString *database;
 	NSString *socket;
 	NSString *port;
+	NSInteger colorIndex;
 	
 	// SSL details
 	NSInteger useSSL;
@@ -133,6 +135,9 @@
 	IBOutlet NSTextField *standardUserField;
 	IBOutlet NSTextField *socketUserField;
 	IBOutlet NSTextField *sshUserField;
+	IBOutlet SPColorSelectorView *standardColorField;
+	IBOutlet SPColorSelectorView *sshColorField;
+	IBOutlet SPColorSelectorView *socketColorField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -185,6 +190,7 @@
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
 @property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger colorIndex;
 @property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;
 @property (readwrite, assign) NSInteger sslCertificateFileLocationEnabled;

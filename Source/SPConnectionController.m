@@ -52,6 +52,7 @@
 #import "SPFavoritesExporter.h"
 #import "SPFavoritesImporter.h"
 #import "SPThreadAdditions.h"
+#import "SPFavoriteColorSupport.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -120,6 +121,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize database;
 @synthesize socket;
 @synthesize port;
+@synthesize colorIndex;
 @synthesize useSSL;
 @synthesize sslKeyFileLocationEnabled;
 @synthesize sslKeyFileLocation;
@@ -599,6 +601,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setHost:([fav objectForKey:SPFavoriteHostKey] ? [fav objectForKey:SPFavoriteHostKey] : @"")];
 	[self setSocket:([fav objectForKey:SPFavoriteSocketKey] ? [fav objectForKey:SPFavoriteSocketKey] : @"")];
 	[self setUser:([fav objectForKey:SPFavoriteUserKey] ? [fav objectForKey:SPFavoriteUserKey] : @"")];
+	[self setColorIndex:([fav objectForKey:SPFavoriteColorIndexKey]? [[fav objectForKey:SPFavoriteColorIndexKey] integerValue] : -1)];
 	[self setPort:([fav objectForKey:SPFavoritePortKey] ? [fav objectForKey:SPFavoritePortKey] : @"")];
 	[self setDatabase:([fav objectForKey:SPFavoriteDatabaseKey] ? [fav objectForKey:SPFavoriteDatabaseKey] : @"")];
 
@@ -746,20 +749,34 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSNumber *favoriteID = [self _createNewFavoriteID];
 	
-	NSArray *objects = [NSArray arrayWithObjects:NSLocalizedString(@"New Favorite", @"new favorite name"), 
-						[NSNumber numberWithInteger:0], @"", @"", @"", @"", 
+	NSArray *objects = [NSArray arrayWithObjects:
+						NSLocalizedString(@"New Favorite", @"new favorite name"),
+						[NSNumber numberWithInteger:0],
+						@"",
+						@"",
+						@"",
+						[NSNumber numberWithInteger:-1],
+						@"",
 						[NSNumber numberWithInt:NSOffState], 
 						[NSNumber numberWithInt:NSOffState], 
 						[NSNumber numberWithInt:NSOffState], 
-						[NSNumber numberWithInt:NSOffState], @"", @"", @"", 
-						[NSNumber numberWithInt:NSOffState], @"", @"", favoriteID, nil];
+						[NSNumber numberWithInt:NSOffState],
+						@"",
+						@"",
+						@"",
+						[NSNumber numberWithInt:NSOffState],
+						@"",
+						@"",
+						favoriteID,
+						nil];
 	
 	NSArray *keys = [NSArray arrayWithObjects:
 					 SPFavoriteNameKey, 
 					 SPFavoriteTypeKey, 
 					 SPFavoriteHostKey, 
 					 SPFavoriteSocketKey, 
-					 SPFavoriteUserKey, 
+					 SPFavoriteUserKey,
+					 SPFavoriteColorIndexKey,
 					 SPFavoritePortKey, 
 					 SPFavoriteUseSSLKey, 
 					 SPFavoriteSSLKeyFileLocationEnabledKey,
@@ -1210,7 +1227,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	} else {
 		[theFavorite removeObjectForKey:SPFavoriteDatabaseKey];
 	}
-	
+	[theFavorite setObject:[NSNumber numberWithInteger:[self colorIndex]] forKey:SPFavoriteColorIndexKey];
 	// SSL details
 	[theFavorite setObject:[NSNumber numberWithInteger:[self useSSL]] forKey:SPFavoriteUseSSLKey];
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sslKeyFileLocationEnabled]] forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
@@ -1616,6 +1633,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Reset the window title
 	[[dbDocument parentWindow] setTitle:[dbDocument displayName]];
 	[[dbDocument parentTabViewItem] setLabel:[dbDocument displayName]];
+	[[dbDocument parentTabViewItem] setColor:nil];
 	
 	// Stop the current tab's progress indicator
 	[dbDocument setIsProcessing:NO];
@@ -1879,6 +1897,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self removeObserver:self forKeyPath:SPFavoriteNameKey];
 	[self removeObserver:self forKeyPath:SPFavoriteHostKey];
 	[self removeObserver:self forKeyPath:SPFavoriteUserKey];
+	[self removeObserver:self forKeyPath:SPFavoriteColorIndexKey];
 	[self removeObserver:self forKeyPath:SPFavoriteDatabaseKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSocketKey];
 	[self removeObserver:self forKeyPath:SPFavoritePortKey];

@@ -424,6 +424,32 @@
 	// fill in background of tab bar
 	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
 	NSRectFillUsingOperation(rect, NSCompositeSourceAtop);
+	
+	//draw tab bar cells background color
+	NSColor *fillColor;
+	NSUInteger currentIndex = -1;
+	for (PSMTabBarCell *aCell in [tabBar cells]) {
+		currentIndex++;
+		//ignore tabs without color
+		if(![aCell backgroundColor])
+			continue;
+		// Set up colours
+		if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
+			//active window, background cell
+			fillColor = [[aCell backgroundColor] shadowWithLevel:0.15];
+		} else {
+			//background window, background cell
+			NSColor *dark = [[aCell backgroundColor] shadowWithLevel:0.15];
+			fillColor = [NSColor colorWithCalibratedHue:[dark hueComponent] saturation:[dark saturationComponent] brightness:([dark brightnessComponent] * 1.28) alpha:1.0f];
+		}
+		[fillColor set];
+		NSRect frame = [aCell frame];
+		//the leftmost cell has no left border when inactive so we need to expand it's area to the left window edge
+		if(currentIndex == 0 && [aCell state] == NSOffState) {
+			frame = NSMakeRect(frame.origin.x - kPSMSequelProTabCornerRadius, frame.origin.y, frame.size.width + kPSMSequelProTabCornerRadius + 0.5f, frame.size.height);
+		}
+		NSRectFillUsingOperation(frame, NSCompositeSourceAtop);
+	}
 
 	// Draw horizontal line across bottom edge, with a slight bottom glow
 	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0f] set];
@@ -507,26 +533,35 @@
 	// Set up colours
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
-		if ([cell state] == NSOnState) {
+		if ([cell state] == NSOnState) { //active window, active cell
 			float tabWhiteComponent = (systemVersion >= 0x1070)?0.63f:0.59f;
 			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.02f;
-
-			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
+			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
-		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];		
+		} else { //active window, background cell
+			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];
+			if([cell backgroundColor])
+				//should be a slightly darker variant of the color
+				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:1.0f];
 		}
 	} else {
 		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
-		if ([cell state] == NSOnState) {
+		if ([cell state] == NSOnState) { //background window, active cell
 			float tabWhiteComponent = (systemVersion >= 0x1070)?0.85f:0.81f;
 			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.01f;
 
-			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
+			fillColor = [cell backgroundColor] ? [NSColor colorWithCalibratedHue:[[cell backgroundColor] hueComponent] saturation:[[cell backgroundColor] saturationComponent] brightness:([[cell backgroundColor] brightnessComponent] * 1.28 ) alpha:1.0f] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
-		} else {
+		} else { //background window, background cell
 			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.79f:0.73f alpha:1.0f];
+			//make it dark first, then desaturate
+			if([cell backgroundColor]) {
+				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
+				fillColor = [NSColor colorWithCalibratedHue:[dark hueComponent] saturation:[dark saturationComponent] brightness:([dark brightnessComponent] * 1.28) alpha:1.0f];
+			}
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		}
 	}
@@ -582,6 +617,18 @@
 	// Fill the tab with a solid colour
 	[fillColor set];
 	[fillBezier fill];
+	
+	//if we use a non-standard color draw a little highlight along the top edge
+	if([cell backgroundColor] && [cell state] == NSOnState) {
+		NSColor *highlightColor = [[cell backgroundColor] highlightWithLevel:0.5f];
+		[highlightColor set];
+		
+		NSBezierPath *highlightBezier = [NSBezierPath bezierPath];
+		[highlightBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y)];
+		[highlightBezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y)];
+		[highlightBezier setLineWidth:1.0f];
+		[highlightBezier stroke];
+	}
 
 	// Re-stroke without shadow over the fill.
 	[lineColor set];

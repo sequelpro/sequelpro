@@ -539,6 +539,14 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 #endif
 
 #pragma mark -
+#pragma mark Color Selector delegate
+
+- (void)colorSelectorDidChange:(SPColorSelectorView *)sel
+{
+	[self _startEditingConnection];
+}
+
+#pragma mark -
 #pragma mark Scroll view notifications
 
 #ifndef SP_CODA

@@ -2125,6 +2125,7 @@
     
     // bind my string value to the label on the represented tab
     [cell bind:@"title" toObject:item withKeyPath:@"label" options:nil];
+	[cell bind:@"backgroundColor" toObject:item withKeyPath:@"color" options:nil];
 }
 
 - (NSMutableArray *)representedTabViewItems

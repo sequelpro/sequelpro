@@ -34,6 +34,7 @@
     NSInteger                 _count;
 	NSColor				*_countColor;
     BOOL                _isEdited;
+	NSColor             *_backgroundColor;
 }
 
 // creation/destruction
@@ -81,6 +82,8 @@
 - (void)setCurrentStep:(NSInteger)value;
 - (BOOL)isEdited;
 - (void)setIsEdited:(BOOL)value;
+- (void)setBackgroundColor:(NSColor *)aColor;
+- (NSColor *)backgroundColor;
 
 // component attributes
 - (NSRect)indicatorRectForFrame:(NSRect)cellFrame;

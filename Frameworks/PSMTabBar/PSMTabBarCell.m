@@ -37,6 +37,7 @@
 		_countColor = nil;
         _isEdited = NO;
         _isPlaceholder = NO;
+		_backgroundColor = nil;
     }
     return self;
 }
@@ -64,6 +65,7 @@
         _count = 0;
 		_countColor = nil;
         _isEdited = NO;
+		_backgroundColor = nil;
         
         if (value) {
             [self setCurrentStep:(kPSMTabDragAnimationSteps - 1)];
@@ -81,6 +83,7 @@
 	[_indicator removeFromSuperviewWithoutNeedingDisplay];
 
     [_indicator release];
+	[_backgroundColor release];
     [super dealloc];
 }
 
@@ -305,6 +308,17 @@
 {
     _isEdited = value;
     //[_controlView update:[[self controlView] automaticallyAnimates]]; // binding notice is too fast
+}
+
+- (NSColor *)backgroundColor {
+	return _backgroundColor;
+}
+
+- (void)setBackgroundColor:(NSColor *)aColor
+{
+	[aColor retain];
+	[_backgroundColor release];
+	_backgroundColor = aColor;
 }
 
 #pragma mark -

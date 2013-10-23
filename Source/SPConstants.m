@@ -177,6 +177,7 @@ NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
 NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 NSString *SPAlwaysShowWindowTabBar               = @"WindowAlwaysShowTabBar";
 NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfterDeletionOfAllRows";
+NSString *SPFavoriteColorList                    = @"FavoriteColorList";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
@@ -279,6 +280,7 @@ NSString *SPFavoriteDatabaseKey                          = @"database";
 NSString *SPFavoriteHostKey                              = @"host";
 NSString *SPFavoritePortKey                              = @"port";
 NSString *SPFavoriteUserKey                              = @"user";
+NSString *SPFavoriteColorIndexKey                        = @"colorIndex";
 NSString *SPFavoriteTypeKey                              = @"type";
 NSString *SPFavoriteSocketKey                            = @"socket";
 NSString *SPFavoriteSSHHostKey                           = @"sshHost";

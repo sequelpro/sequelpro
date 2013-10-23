@@ -101,6 +101,7 @@ enum {
 #import "SPThreadAdditions.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
+#import "SPFavoriteColorSupport.h"
 
 #ifdef SP_CODA /* headers */
 #import "SPAlertSheets.h"
@@ -3727,6 +3728,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	NSMutableString *tabTitle;
 	NSMutableString *windowTitle;
 	SPDatabaseDocument *frontTableDocument = [parentWindowController selectedTableDocument];
+	
+	NSColor *tabColor = nil;
 
 	// Determine name details
 	NSString *pathName = @"";
@@ -3743,6 +3746,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		tabTitle = windowTitle;
 	} 
 	else {
+		tabColor = [[SPFavoriteColorSupport sharedInstance] colorForIndex:[connectionController colorIndex]];
+		
 		windowTitle = [NSMutableString string];
 		tabTitle = [NSMutableString string];
 
@@ -3784,6 +3789,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	// Set the titles
 	[parentTabViewItem setLabel:tabTitle];
+	[parentTabViewItem setColor:tabColor];
 	if ([parentWindowController selectedTableDocument] == self) {
 		[parentWindow setTitle:windowTitle];
 	}
