@@ -79,8 +79,8 @@ enum trackingAreaIDs
 // -------------------------------------------------------------------------------
 - (id)initWithFrame:(NSRect)frameRect
 {
-	if ( self = [super initWithFrame:frameRect] )
-	{
+	if ((self = [super initWithFrame:frameRect])) {
+		
 		selectedTag = kTrackingAreaNone; //we start out with no selection
 		observer = nil;
 		colorList = nil;
@@ -89,12 +89,13 @@ enum trackingAreaIDs
 		//set ourselves as observer of selectedTag (need to mark view dirty)
 		[self addObserver:self forKeyPath:@"selectedTag" options:0 context:nil];
 	}
+	
 	return self;
 }
 
 - (void)bind:(NSString *)binding toObject:(id)observableObject withKeyPath:(NSString *)keyPath options:(NSDictionary *)options
 {
-	if([binding isEqualToString:@"selectedTag"]) {
+	if ([binding isEqualToString:@"selectedTag"]) {
 		[observableObject addObserver:self forKeyPath:keyPath options:0 context:nil];
 		observer = [observableObject retain];
 		observerKeyPath = [keyPath copy];
@@ -106,30 +107,20 @@ enum trackingAreaIDs
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-	if(object == self) {
+	if (object == self) {
 		[self setNeedsDisplay:YES];
 	}
-	else if(object == observer) {
-    // You passed the binding identifier as the context when registering
-    // as an observer--use that to decide what to update...
+	else if (object == observer) {
+		// You passed the binding identifier as the context when registering
+		// as an observer--use that to decide what to update...
 
         id newValue = [observer valueForKeyPath:observerKeyPath];
 	
-	NSNumber *num = (NSNumber *)newValue;
+		NSNumber *num = (NSNumber *)newValue;
 
 		[self setSelectedTag:[num integerValue]];
 	}
 }
-
-// -------------------------------------------------------------------------------
-//	dealloc:
-// -------------------------------------------------------------------------------
--(void)dealloc
-{
-	[trackingAreas release];
-	[super dealloc];
-}
-
 
 // -------------------------------------------------------------------------------
 //	Returns the rectangle corresponding to the tracking area.
@@ -145,6 +136,7 @@ enum trackingAreaIDs
 	CGFloat height = 16.0;
 	
 	NSRect returnRect = NSZeroRect;
+	
 	switch (index)
 	{
 		case kTrackingAreaNone:
@@ -152,33 +144,34 @@ enum trackingAreaIDs
 			break;
 			
 		case kTrackingArea0:
-			returnRect = NSMakeRect(baseX+1*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 1 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea1:
-			returnRect = NSMakeRect(baseX+2*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 2 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea2:
-			returnRect = NSMakeRect(baseX+3*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 3 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea3:
-			returnRect = NSMakeRect(baseX+4*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 4 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea4:
-			returnRect = NSMakeRect(baseX+5*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 5 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea5:
-			returnRect = NSMakeRect(baseX+6*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 6 * (width + marginR), baseY, width, height);
 			break;
 			
 		case kTrackingArea6:
-			returnRect = NSMakeRect(baseX+7*(width+marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + 7 * (width + marginR), baseY, width, height);
 			break;
 	}
+	
 	return returnRect;
 }
 
@@ -193,8 +186,8 @@ enum trackingAreaIDs
 	
 	//find base color item
 	NSColor *baseColor = (NSColor *)[colorList objectAtIndex:colorTag];
-	if(!baseColor)
-		return nil;
+	
+	if (!baseColor) return nil;
 	
 	//create hightlight and shadow variants of color
 	NSColor *shadowColor = [baseColor shadowWithLevel:0.22];
@@ -225,6 +218,7 @@ enum trackingAreaIDs
 		NSTrackingActiveAlways;
 		
 		NSInteger index;
+		
 		for (index = kTrackingAreaNone; index <= kTrackingArea6; index++)
 		{
 			// make tracking data (to be stored in NSTrackingArea's userInfo) so we can later determine which tracking area is focused on
@@ -249,13 +243,13 @@ enum trackingAreaIDs
 //
 //	Examine all the sub-view colored dots and color them with their appropriate colors.
 // -------------------------------------------------------------------------------
--(void)drawRect:(NSRect)rect
+- (void)drawRect:(NSRect)rect
 {
 	// see if we should be drawing any of the tags as already selected
 	NSInteger currentlySelectedTag = [self selectedTag];
-
 	
 	NSInteger index;
+	
 	for (index = kTrackingAreaNone; index <= kTrackingArea6; index++)
 	{
 		NSRect colorSquareRect = [self rectForColorViewAtIndex:index];
@@ -278,30 +272,30 @@ enum trackingAreaIDs
 		}
 		else if (index == hoverTag && trackEntered)
 		{
-				// if we are tracking inside any tag, we want outline the color choice
-				NSBezierPath *highlightPath = [NSBezierPath bezierPathWithOvalInRect:NSInsetRect(colorSquareRect, -1.5, -1.5)];
-				[[NSColor colorWithCalibratedWhite:0.94 alpha:1.0] set];
-				[highlightPath fill];
-				
-				[[NSColor colorWithCalibratedWhite:0.6 alpha:1.0] set];
-				[highlightPath setLineWidth:1.0];
-				[highlightPath stroke];
+			// if we are tracking inside any tag, we want outline the color choice
+			NSBezierPath *highlightPath = [NSBezierPath bezierPathWithOvalInRect:NSInsetRect(colorSquareRect, -1.5, -1.5)];
+			[[NSColor colorWithCalibratedWhite:0.94 alpha:1.0] set];
+			[highlightPath fill];
+			
+			[[NSColor colorWithCalibratedWhite:0.6 alpha:1.0] set];
+			[highlightPath setLineWidth:1.0];
+			[highlightPath stroke];
 		}
 		
-		if(index == kTrackingAreaNone) {
-
+		if (index == kTrackingAreaNone) {
 			
 			[[NSColor disabledControlTextColor] set];
-			//draw an X
+			
+			// Draw an X
 			NSBezierPath *left = [NSBezierPath bezierPath];
+			
 			[left setLineWidth:3.0];
 			[left setLineCapStyle:NSButtLineCapStyle];
-			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x+4.0, colorSquareRect.origin.y+4.0)];
-			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x+12.0, colorSquareRect.origin.y+12.0)];
-			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x+12.0, colorSquareRect.origin.y+4.0)];
-			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x+4.0, colorSquareRect.origin.y+12.0)];
+			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x + 4.0, colorSquareRect.origin.y + 4.0)];
+			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x + 12.0, colorSquareRect.origin.y + 12.0)];
+			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x + 12.0, colorSquareRect.origin.y + 4.0)];
+			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x + 4.0, colorSquareRect.origin.y + 12.0)];
 			[left stroke];
-			
 		}
 		else {
 			// draw the gradient dot
@@ -309,7 +303,6 @@ enum trackingAreaIDs
 			NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
 			NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
 			[gradient drawInBezierPath:circlePath angle:-90.0];
-			
 			
 			// draw a highlight
 			
@@ -342,10 +335,7 @@ enum trackingAreaIDs
 			[gradient drawInBezierPath:circlePath angle:-90.0];
 			[gradient release];
 		}
-
-		
 	}
-
 }
 
 
@@ -360,8 +350,7 @@ enum trackingAreaIDs
 // -------------------------------------------------------------------------------
 - (int)getTrackerIDFromDict:(NSDictionary*)dict
 {
-	id whichTracker = [dict objectForKey: kTrackerKey];
-	return [whichTracker intValue];
+	return [[dict objectForKey: kTrackerKey] intValue];
 }
 
 // -------------------------------------------------------------------------------
@@ -406,31 +395,40 @@ enum trackingAreaIDs
 	
 	// figure out which tag color was clicked on at mouseUp time
 	NSInteger index;
+	
 	for (index = kTrackingAreaNone; index <= kTrackingArea6; index++)
 	{
 		NSRect tagRect = [self rectForColorViewAtIndex:index];
 		if (NSPointInRect(mousePoint, tagRect))
 		{
-			if(index == selectedTag) //ignore non-changes
-				return;
+			// Ignore non-changes
+			if (index == selectedTag) return;
 			
 			[self setSelectedTag:index];
 			
-			if(observer != nil) {
+			if (observer != nil) {
 				[observer setValue:[NSNumber numberWithInteger:index] forKeyPath:observerKeyPath];
 			}
 			
-			if(delegate != nil && [delegate respondsToSelector:@selector(colorSelectorDidChange:)]) {
+			if (delegate != nil && [delegate respondsToSelector:@selector(colorSelectorDidChange:)]) {
 				[delegate colorSelectorDidChange:self];
 			}
 			
 			[self setNeedsDisplay:YES];
+			
 			return;
 		}
 	}
 }
 
-
-
+// -------------------------------------------------------------------------------
+//	dealloc:
+// -------------------------------------------------------------------------------
+- (void)dealloc
+{
+	[trackingAreas release];
+	
+	[super dealloc];
+}
 
 @end
