@@ -432,7 +432,6 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
 
