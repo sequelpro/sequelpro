@@ -85,7 +85,7 @@
 		[[NSNotificationCenter defaultCenter] addObserver:self
 												 selector:@selector(destroy:) 
 													 name:SPDocumentWillCloseNotification 
-												   object:theDelegate];
+												   object:delegate];
 
 		// Set up the connection, thread management and data locks
 		pthread_mutex_init(&threadManagementLock, NULL);
@@ -103,9 +103,11 @@
  */
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection
 {
-
 	// Perform the task in a background thread to avoid blocking the UI
-	[NSThread detachNewThreadWithName:@"SPDatabaseStructure clone connection task" target:self selector:@selector(_cloneConnectionFromConnection:) object:aConnection];
+	[NSThread detachNewThreadWithName:@"SPDatabaseStructure clone connection task" 
+							   target:self 
+							 selector:@selector(_cloneConnectionFromConnection:) 
+							   object:aConnection];
 }
 
 /**
@@ -117,36 +119,23 @@
 
 	// Ensure all the retrieval threads have ended
 	pthread_mutex_lock(&threadManagementLock);
+	
 	if ([structureRetrievalThreads count]) {
-		for (NSThread *eachThread in structureRetrievalThreads) {
+		for (NSThread *eachThread in structureRetrievalThreads) 
+		{
 			[eachThread cancel];
 		}
-		while ([structureRetrievalThreads count]) {
+		
+		while ([structureRetrievalThreads count]) 
+		{
 			pthread_mutex_unlock(&threadManagementLock);
 			usleep(100000);
 			pthread_mutex_lock(&threadManagementLock);
 		}
 	}
+	
 	pthread_mutex_unlock(&threadManagementLock);
 
-}
-
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[self destroy:nil];
-	[structureRetrievalThreads release];
-
-	pthread_mutex_destroy(&threadManagementLock);
-	pthread_mutex_destroy(&dataLock);
-	pthread_mutex_destroy(&connectionCheckLock);
-
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (structure) [structure release], structure = nil;
-	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
-
-	[super dealloc];
 }
 
 #pragma mark -
@@ -165,7 +154,7 @@
  * executed on the helper connection.
  * Should always be executed on a background thread.
  */
-- (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo
+- (void)queryDbStructureWithUserInfo:(NSDictionary *)userInfo
 {
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 	BOOL structureWasUpdated = NO;
@@ -571,6 +560,26 @@
 - (NSString *)keychainPasswordForConnection:(id)connection
 {
 	return [delegate keychainPasswordForConnection:connection];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[self destroy:nil];
+	[structureRetrievalThreads release];
+	
+	pthread_mutex_destroy(&threadManagementLock);
+	pthread_mutex_destroy(&dataLock);
+	pthread_mutex_destroy(&connectionCheckLock);
+	
+	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
+	if (structure) [structure release], structure = nil;
+	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
+	
+	[super dealloc];
 }
 
 @end
