@@ -3027,7 +3027,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Add the unit test bundle's Frameworks/ path to the search paths for dynamic libraries\nexport DYLD_FRAMEWORK_PATH=\"${CONFIGURATION_BUILD_DIR}/${FULL_PRODUCT_NAME}/Contents/Frameworks\"\n\n# Run the unit tests in this test bundle\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+			shellScript = "# Add the unit test bundle's Frameworks/ path to the search paths for dynamic libraries\nexport DYLD_FRAMEWORK_PATH=\"${CONFIGURATION_BUILD_DIR}/${FULL_PRODUCT_NAME}/Contents/Frameworks\"\n\nexport TEST_AFTER_BUILD=YES\n\n# Run the unit tests in this test bundle\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
