@@ -42,7 +42,7 @@
 
 @interface WebView (WebViewPrivate)
 
-- (void) setScriptDebugDelegate:(id) delegate;
+- (void)setScriptDebugDelegate:(id) delegate;
 
 @end
 

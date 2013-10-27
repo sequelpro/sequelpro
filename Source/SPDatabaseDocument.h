@@ -202,6 +202,7 @@
 	BOOL contentLoaded;
 	BOOL statusLoaded;
 	BOOL triggersLoaded;
+	BOOL relationsLoaded;
 
 	NSString *selectedDatabase;
 	NSString *mySQLVersion;

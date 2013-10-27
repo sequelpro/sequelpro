@@ -195,6 +195,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		contentLoaded = NO;
 		statusLoaded = NO;
 		triggersLoaded = NO;
+		relationsLoaded = NO;
 
 		selectedDatabase = nil;
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];

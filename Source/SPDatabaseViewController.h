@@ -34,9 +34,10 @@
 
 @interface SPDatabaseDocument (SPDatabaseViewController)
 
-// Getters
+// Accessors
 - (NSString *)table;
 - (SPTableType)tableType;
+
 - (BOOL)structureLoaded;
 - (BOOL)contentLoaded;
 - (BOOL)statusLoaded;
@@ -50,9 +51,11 @@
 - (IBAction)viewRelations:(id)sender;
 - (IBAction)viewTriggers:(id)sender;
 #endif
+
 - (void)setStructureRequiresReload:(BOOL)reload;
 - (void)setContentRequiresReload:(BOOL)reload;
 - (void)setStatusRequiresReload:(BOOL)reload;
+- (void)setRelationsRequiresReload:(BOOL)reload;
 
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;

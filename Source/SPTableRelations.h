@@ -32,15 +32,16 @@
 
 @class SPTableView;
 @class SPMySQLConnection;
+@class SPDatabaseDocument;
+@class SPTablesList;
+@class SPTableData;
 
 @interface SPTableRelations : NSObject 
 {	
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tablesListInstance;
-	IBOutlet id tableDataInstance;
-	
-	IBOutlet id tableList;
-	
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTablesList       *tablesListInstance;
+	IBOutlet SPTableData        *tableDataInstance;
+		
 	IBOutlet NSButton    *addRelationButton;
 	IBOutlet NSButton    *removeRelationButton;	
 	IBOutlet NSButton    *refreshRelationsButton;
@@ -48,16 +49,16 @@
 	IBOutlet SPTableView *relationsTableView;
 	IBOutlet NSPanel     *addRelationPanel;
 
-	IBOutlet NSTextField   *constraintName;
-	IBOutlet NSBox         *addRelationTableBox;
-	IBOutlet NSPopUpButton *columnPopUpButton;
-	IBOutlet NSPopUpButton *refTablePopUpButton;
-	IBOutlet NSPopUpButton *refColumnPopUpButton;
-	IBOutlet NSPopUpButton *onUpdatePopUpButton;
-	IBOutlet NSPopUpButton *onDeletePopUpButton;
-	IBOutlet NSButton      *confirmAddRelationButton;
+	IBOutlet NSTextField         *constraintName;
+	IBOutlet NSBox               *addRelationTableBox;
+	IBOutlet NSPopUpButton       *columnPopUpButton;
+	IBOutlet NSPopUpButton       *refTablePopUpButton;
+	IBOutlet NSPopUpButton       *refColumnPopUpButton;
+	IBOutlet NSPopUpButton       *onUpdatePopUpButton;
+	IBOutlet NSPopUpButton       *onDeletePopUpButton;
+	IBOutlet NSButton            *confirmAddRelationButton;
 	IBOutlet NSProgressIndicator *dataProgressIndicator;
-	IBOutlet NSTextField *progressStatusTextField;
+	IBOutlet NSTextField         *progressStatusTextField;
 		
 	SPMySQLConnection *connection;
 
@@ -87,6 +88,5 @@
 
 // Other
 - (NSArray *)relationDataForPrinting;
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
 @end

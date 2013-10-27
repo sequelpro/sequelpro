@@ -51,6 +51,9 @@
 
 #import <SPMySQL/SPMySQL.h>
 
+static NSString *SPRemoveField = @"SPRemoveField";
+static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
+
 @interface SPTableStructure (PrivateAPI)
 
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
@@ -436,7 +439,7 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
+						 informativeTextWithFormat:hasForeignKey ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -452,7 +455,10 @@
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"];
 #endif
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+					  modalDelegate:self 
+					 didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:hasForeignKey ? SPRemoveFieldAndForeignKey : SPRemoveField];
 }
 
 /**
@@ -510,12 +516,17 @@
 	if (returnCode == NSAlertDefaultReturn) {
 		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
 
-		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]];
+		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo isEqualToString:SPRemoveFieldAndForeignKey]];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadWithName:@"SPTableStructure field and key removal task" target:self selector:@selector(_removeFieldAndForeignKey:) object:removeKey];
+			[NSThread detachNewThreadWithName:@"SPTableStructure field and key removal task" 
+									   target:self 
+									 selector:@selector(_removeFieldAndForeignKey:) 
+									   object:removeKey];
 
-			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
+			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") 
+													callbackObject:self 
+												  callbackFunction:NULL];
 		}
 		else {
 			[self _removeFieldAndForeignKey:removeKey];
@@ -531,18 +542,25 @@
 - (BOOL)cancelRowEditing
 {
 	if (!isEditingRow) return NO;
+	
 	if (isEditingNewRow) {
 		isEditingNewRow = NO;
 		[tableFields removeObjectAtIndex:currentlyEditingRow];
-	} else {
+	} 
+	else {
 		[tableFields replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 	}
+	
 	isEditingRow = NO;
 	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
 	autoIncrementIndex = nil;
+	
 	[tableSourceView reloadData];
+	
 	currentlyEditingRow = -1;
+	
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
+	
 	return YES;
 }
 
@@ -555,7 +573,6 @@
 	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
 #endif
 }
-
 
 #pragma mark -
 #pragma mark Index sheet methods
@@ -1418,15 +1435,18 @@
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
 									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"],
 									[mySQLConnection lastErrorMessage]] forKey:@"message"];
+		
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	}
 	else {
 		[tableDataInstance resetAllData];
+		
+		// Refresh relevant views
 		[tableDocumentInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-
-		// Mark the content table cache for refresh
 		[tableDocumentInstance setContentRequiresReload:YES];
+		[tableDocumentInstance setRelationsRequiresReload:YES];
+		
+		[self loadTable:selectedTable];		
 	}
 
 	[tableDocumentInstance endTask];

@@ -40,21 +40,23 @@
 @class SPTableView;
 @class SPMySQLConnection;
 @class SPMySQLResult;
+@class SPExtendedTableInfo;
+@class SPTableInfo;
 
 @interface SPTableStructure : NSObject 
 #ifdef SP_CODA
 <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
 #endif
 {
-	IBOutlet SPTablesList* tablesListInstance;
-	IBOutlet SPTableData* tableDataInstance;
-	IBOutlet SPDatabaseDocument* tableDocumentInstance;
+	IBOutlet SPTablesList *tablesListInstance;
+	IBOutlet SPTableData *tableDataInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 #ifndef SP_CODA /* ivars */
-	IBOutlet id tableInfoInstance;
-	IBOutlet id extendedTableInfoInstance;
+	IBOutlet SPTableInfo *tableInfoInstance;
+	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
 #endif
-	IBOutlet SPIndexesController* indexesController;
-	IBOutlet SPDatabaseData* databaseDataInstance;
+	IBOutlet SPIndexesController *indexesController;
+	IBOutlet SPDatabaseData *databaseDataInstance;
 
 #ifndef SP_CODA /* ivars */
 	IBOutlet id keySheet;

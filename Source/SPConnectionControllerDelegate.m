@@ -84,8 +84,8 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
 	if (initComplete) {
-	[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
-}
+		[databaseConnectionView setPosition:[[[connectionSplitView subviews] objectAtIndex:0] frame].size.width ofDividerAtIndex:0];
+	}
 }
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)dividerIndex
@@ -109,6 +109,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 {
 	if (isEditingConnection) {
 		[self _stopEditingConnection];
+		
 		[[notification object] setNeedsDisplay:YES];
 	}
 }
@@ -157,16 +158,20 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		if (node == quickConnectItem) {
 			if ([outlineView rowForItem:item] == [outlineView selectedRow]) {
 				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImageWhite]];
-			} else {
+			} 
+			else {
 				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImage]];
 			}
-		} else {
+		} 
+		else {
 			[(SPTableTextFieldCell *)cell setImage:nil];
 		}
-	} else {
+	} 
+	else {
 		if ([node isGroup]) {
 			[(SPTableTextFieldCell *)cell setImage:folderImage];
-		} else {
+		} 
+		else {
 			[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPDatabaseImage]];
 		}
 	}
@@ -205,20 +210,26 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 	// Only display a tooltip for group nodes that are a descendant of the root node
 	else if ([[node parentNode] parentNode]) {
+		
 		NSUInteger favCount = 0;
 		NSUInteger groupCount = 0;
-		for (SPTreeNode *eachNode in [node childNodes]) {
+		
+		for (SPTreeNode *eachNode in [node childNodes]) 
+		{
 			if ([eachNode isGroup]) {
 				groupCount++;
-			} else {
+			} 
+			else {
 				favCount++;
 			}
 		}
 
 		NSMutableArray *tooltipParts = [NSMutableArray arrayWithCapacity:2];
+		
 		if (favCount || !groupCount) {
 			[tooltipParts addObject:[NSString stringWithFormat:((favCount == 1) ? NSLocalizedString(@"%d favorite", @"favorite singular label (%d == 1)") : NSLocalizedString(@"%d favorites", @"favorites plural label (%d != 1)")), favCount]];
 		}
+		
 		if (groupCount) {
 			[tooltipParts addObject:[NSString stringWithFormat:((groupCount == 1) ? NSLocalizedString(@"%d group", @"favorite group singular label (%d == 1)") : NSLocalizedString(@"%d groups", @"favorite groups plural label (%d != 1)")), groupCount]];
 		}
@@ -231,13 +242,9 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldSelectItem:(id)item
 {	
-
 	// If this is a top level item, only allow the "Quick Connect" item to be selectable
 	if (![[item parentNode] parentNode]) {
-		if (item == quickConnectItem) {
-			return YES;
-		}
-		return NO;
+		return item == quickConnectItem;
 	}
 
 	// Otherwise allow all items to be selectable
@@ -268,7 +275,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		return NO;
 	}
 
-	return (item != quickConnectItem);
+	return item != quickConnectItem;
 }
 
 - (void)outlineViewItemDidCollapse:(NSNotification *)notification
@@ -290,9 +297,9 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
-
 	// Prevent a drag which includes the outline title group from taking place
-	for (id item in items) {
+	for (id item in items) 
+	{
 		if (![[item parentNode] parentNode]) return NO;
 	}
 
@@ -341,14 +348,14 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		[outlineView setDropItem:item dropChildIndex:childIndex];
 		
 		result = NSDragOperationMove;
- }
+	}
 	
 	return result;
  }
  
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id <NSDraggingInfo>)info item:(id)item childIndex:(NSInteger)childIndex
- {
- BOOL acceptedDrop = NO;
+{
+	BOOL acceptedDrop = NO;
  
 	if ((!item) || ([info draggingSource] != outlineView)) return acceptedDrop;
 	
@@ -357,18 +364,18 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	// Cache the selected nodes for selection restoration afterwards
 	NSArray *preDragSelection = [self selectedFavoriteNodes];
  
- // Disable all automatic sorting
- currentSortItem = -1;
- reverseFavoritesSort = NO;
- 
- [prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
- [prefs setBool:NO forKey:SPFavoritesSortedInReverse];
- 
- // Uncheck sort by menu items
- for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
- {
- [menuItem setState:NSOffState];
- }
+	// Disable all automatic sorting
+	currentSortItem = -1;
+	reverseFavoritesSort = NO;
+	
+	[prefs setInteger:currentSortItem forKey:SPFavoritesSortedBy];
+	[prefs setBool:NO forKey:SPFavoritesSortedInReverse];
+	
+	// Uncheck sort by menu items
+	for (NSMenuItem *menuItem in [[favoritesSortByMenuItem submenu] itemArray])
+	{
+		[menuItem setState:NSOffState];
+	}
  
 	if (![draggedNodes count]) return acceptedDrop;
 	
@@ -391,7 +398,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	NSMutableArray *childNodeArray = [node mutableChildNodes];
 	
     for (SPTreeNode *treeNode in draggedNodes) 
- {
+	{
         // Remove the node from its old location
         NSInteger oldIndex = [childNodeArray indexOfObject:treeNode];
         NSInteger newIndex = childIndex;
@@ -402,8 +409,8 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
             
 			if (childIndex > oldIndex) {
                 newIndex--;
- }
- }
+			}
+		}
 		else {
             [[[treeNode parentNode] mutableChildNodes] removeObject:treeNode];
         }
@@ -419,18 +426,21 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
  
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
  
- [[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
+	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
  
 	// Update the selection to account for rearranged faourites
 	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];
-	for (SPTreeNode *eachNode in preDragSelection) {
+	
+	for (SPTreeNode *eachNode in preDragSelection) 
+	{
 		[restoredSelection addIndex:[favoritesOutlineView rowForItem:eachNode]];
 	}
+	
 	[favoritesOutlineView selectRowIndexes:restoredSelection byExtendingSelection:NO];
  
- acceptedDrop = YES;
+	acceptedDrop = YES;
  
- return acceptedDrop;
+	return acceptedDrop;
 }
 
 #endif
@@ -464,8 +474,8 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 					
 	if (favoriteNameFieldWasAutogenerated && (field != standardNameField && field != socketNameField && field != sshNameField)) {
 		[self setName:[self _generateNameForConnection]];
-				}
-				}
+	}
+}
 				
 /**
  * React to the end of control text changes in the connection interface.
@@ -483,17 +493,19 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 					
 		if (![favoriteName length]) {
 			favoriteName = [self _generateNameForConnection];
+			
 			if (favoriteName) {
 				[self setName:favoriteName];
-				}
+			}
 				
 			// Enable user@host update in reaction to other UI changes
 			favoriteNameFieldWasAutogenerated = YES;
-		} else if (![[field stringValue] isEqualToString:[self _generateNameForConnection]]) {
+		} 
+		else if (![[field stringValue] isEqualToString:[self _generateNameForConnection]]) {
 			favoriteNameFieldWasAutogenerated = NO;
 			[self setName:favoriteName];
+		}
 	}
-}
 
 	// When a host field finishes editing, ensure that it hasn't been set to "localhost" to
 	// ensure that socket connections don't inadvertently occur.
@@ -577,7 +589,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		[connectionResizeContainer setFrame:connectionDetailsFrame];
 		scrollDocumentFrame.size.height = scrollViewFrame.size.height;
 		[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];
-}
+	}
 }
 
 #endif
@@ -597,9 +609,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	SPTreeNode *node = [self selectedFavoriteNode];
 	NSInteger selectedRows = [favoritesOutlineView numberOfSelectedRows];
 	
-	if (node == quickConnectItem) {
-		return NO;
-	}
+	if (node == quickConnectItem) return NO;
 
 	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
 		
@@ -615,7 +625,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		if (action == @selector(reverseSortFavorites:)) {
 			[menuItem setState:reverseFavoritesSort];
 		}
-}
+	}
 
 	// Remove/rename the selected node
 	if (action == @selector(removeNode:) || action == @selector(renameNode:)) {
@@ -625,14 +635,14 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	// Duplicate and make the selected favorite the default
 	if (action == @selector(duplicateFavorite:)) {
 		return ((selectedRows == 1) && (![node isGroup]));
-}
+	}
 
 	// Make selected favorite the default
 	if (action == @selector(makeSelectedFavoriteDefault:)) {
 		NSInteger favoriteID = [[[self selectedFavorite] objectForKey:SPFavoriteIDKey] integerValue];
 
 		return ((selectedRows == 1) && (![node isGroup]) && (favoriteID != [prefs integerForKey:SPDefaultFavorite]));
-}
+	}
 
 	// Favorites export
 	if (action == @selector(exportFavorites:)) {
@@ -645,7 +655,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		}
 		else if (selectedRows > 1) {
 			[menuItem setTitle:NSLocalizedString(@"Export Selected...", @"export selected favorites menu item")];
-	} 
+		} 
 	}
 		
     return YES;
@@ -675,7 +685,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 						 didEndSelector:NULL
 							contextInfo:NULL];			
 	}
-	}
+}
 
 /**
  * Called by the favorites importer when the imported data is available.
@@ -700,10 +710,13 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	[self _reloadFavoritesViewData];
 
 	// Select the new nodes and scroll into view
-	for (SPTreeNode *eachNode in importedNodes) {
+	for (SPTreeNode *eachNode in importedNodes) 
+	{
 		[importedIndexSet addIndex:[favoritesOutlineView rowForItem:eachNode]];
 	}
+	
 	[favoritesOutlineView selectRowIndexes:importedIndexSet byExtendingSelection:NO];
+	
 	[self _scrollToSelectedNode];
 }
 

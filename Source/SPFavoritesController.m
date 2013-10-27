@@ -380,14 +380,15 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	// to create the plist data.  This is done before file changes as it can sometimes
 	// be terminated during shutdown.
 	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:data forKey:SPFavoritesRootKey];
+	
 	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
 																   format:NSPropertyListXMLFormat_v1_0
 														 errorDescription:&errorString];
 	if (errorString) {
 		NSLog(@"Error converting favorites data to plist format: %@", errorString);
+		
 		[errorString release];
 	}
-
 
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
@@ -430,13 +431,14 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		
 		// Restore the original data file
 		error = nil;
+		
 		[fileManager moveItemAtPath:favoritesBackupFile toPath:favoritesFile error:&error];
+		
 		if (error) {
 			NSLog(@"Could not restore backup; favorites.plist left renamed as %@ due to error (%@)", favoritesBackupFile, [error localizedDescription]);
 		}
 	}
 	else {
-
 		// Remove the original backup
 		[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
 	}

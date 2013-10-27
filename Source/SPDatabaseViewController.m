@@ -42,6 +42,7 @@
 #import "SPTablesList.h"
 #import "SPTableTriggers.h"
 #import "SPThreadAdditions.h"
+#import "SPTableRelations.h"
 #ifdef SP_CODA /* headers */
 #import "SPTableStructure.h"
 #import "SPTableStructureLoading.h"
@@ -275,6 +276,24 @@
 	}
 }
 
+/**
+ * Mark the relations tab for refresh when it's next switched to,
+ * or reload the view if it's currently active
+ */
+- (void)setRelationsRequiresReload:(BOOL)reload
+{
+	if (reload && selectedTableName 
+#ifndef SP_CODA /* check which tab is selected */
+		&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewRelations
+#endif
+		) {
+		[[tableRelationsInstance onMainThread] refreshRelations:self];
+	} 
+	else {
+		relationsLoaded = !reload;
+	}
+}
+
 #ifndef SP_CODA /* !!! respond to tab change */
 /**
  * Triggers a task to update the newly selected tab view, ensuring
@@ -285,7 +304,10 @@
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), [self table]]];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPDatabaseViewController view load task" target:self selector:@selector(_loadTabTask:) object:tabViewItem];
+		[NSThread detachNewThreadWithName:@"SPDatabaseViewController view load task" 
+								   target:self 
+								 selector:@selector(_loadTabTask:) 
+								   object:tabViewItem];
 	} 
 	else {
 		[self _loadTabTask:tabViewItem];
@@ -313,6 +335,7 @@
 		
 		// Update the selected table name and type
 		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		
 		selectedTableType = SPTableTypeNone;
 
 		// Clear the views
@@ -322,11 +345,13 @@
 #ifndef SP_CODA /* [extendedTableInfoInstance loadTable:] */
 		[[extendedTableInfoInstance onMainThread] loadTable:nil];
 		[[tableTriggersInstance onMainThread] resetInterface];
+		[[tableRelationsInstance onMainThread] refreshRelations:self];
 #endif
 		structureLoaded = NO;
 		contentLoaded = NO;
 		statusLoaded = NO;
 		triggersLoaded = NO;
+		relationsLoaded = NO;
 
 #ifndef SP_CODA
 		// Update the window title
@@ -346,6 +371,7 @@
 
 	// Store the new name
 	if (selectedTableName) [selectedTableName release];
+	
 	selectedTableName = [[NSString alloc] initWithString:aTable];
 	selectedTableType = aTableType;
 
@@ -363,7 +389,10 @@
 	// If on the main thread, fire up a thread to deal with view changes and data loading;
 	// if already on a background thread, make the changes on the existing thread.
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPDatabaseViewController table load task" target:self selector:@selector(_loadTableTask) object:nil];
+		[NSThread detachNewThreadWithName:@"SPDatabaseViewController table load task" 
+								   target:self 
+								 selector:@selector(_loadTableTask) 
+								   object:nil];
 	} 
 	else {
 		[self _loadTableTask];
@@ -385,8 +414,7 @@
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
 	// If anything other than a single table or view is selected, don't proceed.
-	if (![self table]
-		|| ([tablesListInstance tableType] != SPTableTypeTable && [tablesListInstance tableType] != SPTableTypeView))
+	if (![self table] || ([tablesListInstance tableType] != SPTableTypeTable && [tablesListInstance tableType] != SPTableTypeView))
 	{
 		[self endTask];
 		[tabLoadPool drain];
@@ -422,10 +450,17 @@
 				triggersLoaded = YES;
 			}
 			break;
+		case SPTableViewRelations:
+			if (!relationsLoaded) {
+				[[tableRelationsInstance onMainThread] refreshRelations:self];
+				 relationsLoaded = YES;
+			}
+			break;
 #endif
 	}
 
 	[self endTask];
+	
 	[tabLoadPool drain];
 }
 
@@ -445,14 +480,17 @@
 
 	// Reset table information caches and mark that all loaded views require their data reloading
 	[tableDataInstance resetAllData];
+	
 	structureLoaded = NO;
 	contentLoaded = NO;
 	statusLoaded = NO;
 	triggersLoaded = NO;
-
+	relationsLoaded = NO;
+	
 	// Ensure status and details are fetched using UTF8
 	NSString *previousEncoding = [mySQLConnection encoding];
 	BOOL changeEncoding = ![previousEncoding isEqualToString:@"utf8"];
+	
 	if (changeEncoding) {
 		[mySQLConnection storeEncodingForRestoration];
 		[mySQLConnection setEncoding:@"utf8"];
@@ -517,6 +555,10 @@
 				[[tableTriggersInstance onMainThread] loadTriggers];
 				triggersLoaded = YES;
 				break;
+			case SPTableViewRelations:
+				[[tableRelationsInstance onMainThread] refreshRelations:self];
+				relationsLoaded = YES;
+				break;
 		}
 #endif
 	}
@@ -528,6 +570,7 @@
 	if (!contentLoaded) [tableContentInstance loadTable:nil];
 	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
 	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
+	if (!relationsLoaded) [[tableRelationsInstance onMainThread] refreshRelations:self];
 
 	// If the table row counts an inaccurate and require updating, trigger an update - no
 	// action will be performed if not necessary
