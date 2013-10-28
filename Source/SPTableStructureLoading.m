@@ -197,7 +197,6 @@
 			}
 		}
 		
-		
 		selectedIndex = 0;
 		
 		if (encoding && collation) {
@@ -369,7 +368,7 @@
 	
 	[addFieldButton setEnabled:editingEnabled];
 #ifndef SP_CODA
-	[addIndexButton setEnabled:editingEnabled];
+	[addIndexButton setEnabled:editingEnabled && ![[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]];
 #endif
 	
 	// Reload the views

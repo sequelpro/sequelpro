@@ -142,27 +142,27 @@
 	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
-	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
+		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
 			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			[tableSourceView reloadData];
 		}
 	}
 	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
-	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
-		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
 			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			
 			[tableSourceView reloadData];
 		}
 	}
 	// Set null field to "do not allow NULL" for auto_increment Extra and reset Extra suggestion list
-	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
-		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"Extra"]) {
+		if (![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
 
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
 			
-			if(isCurrentExtraAutoIncrement) {
+			if (isCurrentExtraAutoIncrement) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
@@ -195,10 +195,10 @@
 	// Reset default to "" if field doesn't allow NULL and current default is set to NULL
 	else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
 		if ([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
-			if([anObject integerValue] == 0) {
+			if ([anObject integerValue] == 0) {
 				if ([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 					[currentRow setObject:@"" forKey:@"default"];
-			}
+				}
 			}
 			
 			[tableSourceView reloadData];
@@ -211,10 +211,11 @@
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
-			if ([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] 
-					|| [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] 
-					|| [fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]]
-					|| ([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) {
+			if ([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || 
+				[[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || 
+				[fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]] ||
+				([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) 
+			{
 				[currentRow setObject:@"" forKey:@"default"];
 				[currentRow setObject:@"" forKey:@"length"];
 			}
@@ -258,8 +259,8 @@
 		return YES;
 	} 
 	
-		return NO;
-	}
+	return NO;
+}
 
 /**
  * Determine whether to allow a drag and drop operation on this table - for the purposes of drag reordering,
@@ -268,7 +269,7 @@
  */
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
-    //make sure that the drag operation is for the right table view
+    // Make sure that the drag operation is for the right table view
     if (tableView!=tableSourceView) return NO;
 	
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
@@ -392,8 +393,7 @@
 		[queryString appendString:@" FIRST"];
 	} 
 	else {
-		[queryString appendFormat:@" AFTER %@",
-		 [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
 	}
 	
 	// Run the query; report any errors, or reload the table on success
@@ -406,6 +406,7 @@
 	else {
 		[tableDataInstance resetAllData];
 		[tableDocumentInstance setStatusRequiresReload:YES];
+		
 		[self loadTable:selectedTable];
 		
 		// Mark the content table cache for refresh
@@ -475,15 +476,15 @@
 	column = [tableSourceView editedColumn];
 	
 	// Trap the tab key, selecting the next item in the line
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
+	if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
 	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
-			if ( row < ([tableSourceView numberOfRows] - 1) ) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
-				[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)]) {
+			if (row < ([tableSourceView numberOfRows] - 1)) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row + 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:row + 1 withEvent:nil select:YES];
 			} 
 			else {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -494,24 +495,23 @@
 		return YES;
 	}
 	// Trap shift-tab key
-	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
+	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
 	{
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] ) {
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)]) {
 			[[control window] makeFirstResponder:control];
 			
-			if ( row > 0) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableSourceView numberOfColumns]-1) row:row-1 withEvent:nil select:YES];
+			if (row > 0) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row - 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns] - 1) row:row - 1 withEvent:nil select:YES];
 			}
 			else {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableSourceView numberOfColumns]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count] - 1)] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns] - 1) row:([tableSourceView numberOfRows] - 1) withEvent:nil select:YES];
 			}
 		}
 		
 		return YES;
 	}
-	
 	// Trap the enter key, triggering a save
 	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)])
 	{
@@ -521,17 +521,20 @@
 		}
 		
 		[[control window] makeFirstResponder:control];
+		
 		[self addRowToDB];
+		
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+		
 		[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 		
 		return YES;
 	}
-	
 	// Trap escape, aborting the edit and reverting the row
-	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
+	else if ([[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)])
 	{
 		[control abortEditing];
+		
 		[self cancelRowEditing];
 		
 		return YES;
@@ -545,9 +548,9 @@
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable and do cell validation due to row's field type.
  */
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	//make sure that the message is from the right table view
+	// Make sure that the message is from the right table view
 	if (tableView != tableSourceView) return;
 	
 	if ([tablesListInstance tableType] == SPTableTypeView) {
@@ -556,44 +559,46 @@
 	else {
 		// Validate cell against current field type
 		NSString *rowType = @"";
-		NSDictionary *theRow = NSArrayObjectAtIndex(tableFields, rowIndex);
+		NSDictionary *row = NSArrayObjectAtIndex(tableFields, rowIndex);
 		
-		if ((rowType = [theRow objectForKey:@"type"])) {
+		if ((rowType = [row objectForKey:@"type"])) {
 			rowType = [[rowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		}
 		
 		// Only string fields allow encoding settings
-		if (([[aTableColumn identifier] isEqualToString:@"encoding"])) {
+		if (([[tableColumn identifier] isEqualToString:@"encoding"])) {
 			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
-		else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
- 			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+		else if ([[tableColumn identifier] isEqualToString:@"collation"]) {
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[row objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Check if UNSIGNED and ZEROFILL is allowed
-		else if ([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
+		else if ([[tableColumn identifier] isEqualToString:@"zerofill"] || [[tableColumn identifier] isEqualToString:@"unsigned"]) {
 			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:rowType] && ![rowType isEqualToString:@"BIT"])];
 		}
 		
 		// Check if BINARY is allowed
-		else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		else if ([[tableColumn identifier] isEqualToString:@"binary"]) {
 			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:rowType])];
 		}
 		
 		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
-		else if ([[aTableColumn identifier] isEqualToString:@"default"]) {
+		else if ([[tableColumn identifier] isEqualToString:@"default"]) {
 			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		
 		// Check allow NULL
-		else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
-			[aCell setEnabled:([[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] || [[[theRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) ? NO : YES];
+		else if ([[tableColumn identifier] isEqualToString:@"null"]) {			
+			[aCell setEnabled:([[row objectForKey:@"Key"] isEqualToString:@"PRI"] || 
+							   [[[row objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"] ||
+							   [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]) ? NO : YES];
 		}
 		
 		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
-		else if ([[aTableColumn identifier] isEqualToString:@"length"]) {
+		else if ([[tableColumn identifier] isEqualToString:@"length"]) {
 			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || 
 							   [rowType hasSuffix:@"BLOB"] || 
 							   ([fieldValidation isFieldTypeDate:rowType] && ![[tableDocumentInstance serverSupport] supportsFractionalSeconds] && ![rowType isEqualToString:@"YEAR"]) || 

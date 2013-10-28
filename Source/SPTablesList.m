@@ -1686,13 +1686,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	
 	selectedTableName = [[NSString alloc] initWithString:newName];
 	selectedTableType = newType;
+	
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
-	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
+	if ([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
+		
 		[schemaPath setString:[tableDocumentInstance connectionID]];
 		
-		if([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
+		if ([tableDocumentInstance database] && [[tableDocumentInstance database] length]) {
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:[tableDocumentInstance database]];
 			[schemaPath appendString:SPUniqueSchemaDelimiter];

@@ -245,13 +245,15 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) return;
 
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
 #ifndef SP_CODA /* prefs access */
+	BOOL allowNull = [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"] ? NO : [prefs boolForKey:SPNewFieldsAllowNulls];
+	
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 #else
@@ -263,9 +265,11 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
+	
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
+	
 	[tableSourceView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
@@ -280,14 +284,15 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 	// Check for errors
 	if ([mySQLConnection queryErrored]) {
-		NSString *mText = NSLocalizedString(@"Error while fetching the optimized field type", @"error while fetching the optimized field type message");
+		NSString *message = NSLocalizedString(@"Error while fetching the optimized field type", @"error while fetching the optimized field type message");
+		
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:mText 
+			[[NSAlert alertWithMessageText:message 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@", @"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection lastErrorMessage]]] 
 				  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -298,11 +303,14 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	}
 
 	[theResult setReturnDataAsStrings:YES];
+	
 	NSDictionary *analysisResult = [theResult getRowAsDictionary];
 
 	NSString *type = [analysisResult objectForKey:@"Optimal_fieldtype"];
-	if (!type || [type isNSNull] || ![type length])
+	
+	if (!type || [type isNSNull] || ![type length]) {
 		type = NSLocalizedString(@"No optimized field type found.", @"no optimized field type found. message");
+	}
 
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimized type for field '%@'", @"Optimized type for field %@"), [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"]] 
 					 defaultButton:@"OK" 
@@ -321,7 +329,6 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
  */
 - (IBAction)toggleColumnView:(NSMenuItem *)sender
 {
-
 	NSString *columnIdentifierName = nil;
 
 	switch([sender tag]) {
@@ -1379,7 +1386,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[indexesTableView displayIfNeeded];
 
 #ifndef SP_CODA
-	[addIndexButton setEnabled:editingEnabled];
+	[addIndexButton setEnabled:editingEnabled && ![[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]];
 	[removeIndexButton setEnabled:(editingEnabled && ([indexesTableView numberOfSelectedRows] > 0))];
 	[refreshIndexesButton setEnabled:YES];
 #endif
