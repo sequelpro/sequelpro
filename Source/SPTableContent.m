@@ -2901,7 +2901,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Use INSERT syntax when creating new rows
 	if (isEditingNewRow) {
-		queryString = [NSString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
+		queryString = [NSMutableString stringWithFormat:@"INSERT INTO %@ (%@) VALUES (%@)",
 					   [selectedTable backtickQuotedString], [rowFieldsToSave componentsJoinedAndBacktickQuoted], [rowValuesToSave componentsJoinedByString:@", "]];
 
 	// Otherwise use an UPDATE syntax to save only the changed cells - if this point is reached,

@@ -563,7 +563,7 @@
 		NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
 		if ([filterSettings objectForKey:@"filterField"]) {
 			if([filterSettings objectForKey:@"menuLabel"]) {
-				theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"), 
+				theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"),
 							theName, [filterSettings objectForKey:@"menuLabel"]];
 			}
 		}
@@ -572,7 +572,7 @@
 	if ([theEntry objectForKey:@"contentPageNumber"]) {
 		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntegerValue];
 		if (pageNumber > 1) {
-			theName = [NSString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"),
+			theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"),
 						theName, (unsigned long)pageNumber];
 		}
 	}

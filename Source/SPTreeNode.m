@@ -235,7 +235,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 	
 	if ([object isKindOfClass:[SPFavoriteNode class]]) {
 		
-		dictionary = [NSDictionary dictionaryWithDictionary:[object nodeFavorite]];
+		dictionary = [NSMutableDictionary dictionaryWithDictionary:[object nodeFavorite]];
 	}
 	else if ([object isKindOfClass:[SPGroupNode class]]) {
 		
