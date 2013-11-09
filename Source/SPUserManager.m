@@ -43,7 +43,7 @@
 #import <SPMySQL/SPMySQL.h>
 #import <QueryKit/QueryKit.h>
 
-static const NSString *SPTableViewNameColumnID = @"NameColumn";
+static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 @interface SPUserManager ()
 

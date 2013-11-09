@@ -49,9 +49,9 @@
 // Constants
 static const NSUInteger SPExportUIPadding = 20;
 
-static const NSString *SPTableViewStructureColumnID = @"structure";
-static const NSString *SPTableViewContentColumnID   = @"content";
-static const NSString *SPTableViewDropColumnID      = @"drop";
+static NSString * const SPTableViewStructureColumnID = @"structure";
+static NSString * const SPTableViewContentColumnID   = @"content";
+static NSString * const SPTableViewDropColumnID      = @"drop";
 
 static const NSString *SPSQLExportStructureEnabled  = @"SQLExportStructureEnabled";
 static const NSString *SPSQLExportContentEnabled    = @"SQLExportContentEnabled";
