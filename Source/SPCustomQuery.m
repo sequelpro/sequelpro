@@ -483,7 +483,22 @@
 
 	[encodingPopUp setEnabled:YES];
 
-	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
+    [panel setNameFieldStringValue:@"history"];
+    [panel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+			NSError *error = nil;
+            
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
+			[prefs synchronize];
+            
+			[[self buildHistoryString] writeToURL:[panel URL]
+                                       atomically:YES
+                                         encoding:[[encodingPopUp selectedItem] tag]
+                                            error:&error];
+            
+			if (error) [[NSAlert alertWithError:error] runModal];
+		}
+    }];
 #endif
 }
 
@@ -3587,27 +3602,6 @@
 	}
 
 	[queryFavoriteNameTextField setStringValue:@""];
-#endif
-}
-
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo
-{
-#ifndef SP_CODA
-	if([contextInfo isEqualToString:@"saveHistory"]) {
-		if (returnCode == NSOKButton) {
-			NSError *error = nil;
-
-			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
-			[prefs synchronize];
-
-			[[self buildHistoryString] writeToURL:[panel URL]
-										atomically:YES
-										  encoding:[[encodingPopUp selectedItem] tag]
-											 error:&error];
-
-			if (error) [[NSAlert alertWithError:error] runModal];
-		}
-	}
 #endif
 }
 
