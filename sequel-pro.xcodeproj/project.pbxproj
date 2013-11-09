@@ -3870,7 +3870,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = "-Wmost";
 			};
@@ -3900,6 +3900,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx;
 				SEPARATE_STRIP = NO;
 			};
 			name = Distribution;
@@ -4108,6 +4109,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx;
 				SEPARATE_STRIP = NO;
 			};
 			name = Debug;
@@ -4138,6 +4140,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx;
 				SEPARATE_STRIP = NO;
 			};
 			name = Release;
@@ -4191,7 +4194,7 @@
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
 				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = "-Wmost";
@@ -4239,7 +4242,7 @@
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
 				WARNING_CFLAGS = "-Wmost";
 			};
