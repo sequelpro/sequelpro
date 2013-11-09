@@ -113,9 +113,9 @@ static NSString *QKNoQueryTableException = @"QKNoQueryTable";
 	if ((self = [super init])) {
 		[self setTable:table];
 		[self setDatabase:database];
-		[self setFields:[[NSMutableArray alloc] init]];
-		[self setUpdateParameters:[[NSMutableArray alloc] init]];
-		[self setParameters:[[NSMutableArray alloc] init]];
+		[self setFields:[NSMutableArray array]];
+		[self setUpdateParameters:[NSMutableArray array]];
+		[self setParameters:[NSMutableArray array]];
 		[self setQueryType:QKUnknownQuery];
 		[self setUseQuotedIdentifiers:YES];
 		
