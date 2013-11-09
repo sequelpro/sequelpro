@@ -1001,7 +1001,7 @@
 														 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button") 
 													   alternateButton:nil 
 														  otherButton:nil 
-											informativeTextWithFormat:[error localizedDescription]];
+											informativeTextWithFormat:@"%@", [error localizedDescription]];
 					
 						[alert setAlertStyle:NSCriticalAlertStyle];
 						[alert runModal];

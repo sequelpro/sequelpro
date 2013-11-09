@@ -1822,8 +1822,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button")
 										   alternateButton:nil
 											   otherButton:nil
-								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to import a table via: \n%@\n\n\nMySQL said: %@", @"error importing table informative message"),
-									query, [mySQLConnection lastErrorMessage]]];
+								 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to import a table via: \n%@\n\n\nMySQL said: %@", @"error importing table informative message"),
+									query, [mySQLConnection lastErrorMessage]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"truncateTableError"];
@@ -2273,8 +2273,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button")
 										   alternateButton:nil
 											   otherButton:nil
-								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"),
-									[filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]]];
+								 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"),
+									[filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			

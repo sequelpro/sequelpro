@@ -872,7 +872,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 											 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 										   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 											   otherButton:nil 
-								 informativeTextWithFormat:informativeMessage];
+								 informativeTextWithFormat:@"%@", informativeMessage];
 			
 			NSArray *buttons = [alert buttons];
 			

@@ -520,7 +520,7 @@
 									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 								   alternateButton:nil 
 									  otherButton:nil 
-						informativeTextWithFormat:mes];
+						informativeTextWithFormat:@"%@", mes];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	[alert runModal];
@@ -540,7 +540,7 @@
 									 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 								   alternateButton:nil 
 									  otherButton:nil 
-						informativeTextWithFormat:mes];
+						informativeTextWithFormat:@"%@", mes];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	[alert runModal];
@@ -689,7 +689,7 @@
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:[err localizedDescription]];
+							informativeTextWithFormat:@"%@", [err localizedDescription]];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];

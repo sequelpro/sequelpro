@@ -940,7 +940,7 @@
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:err];
+									informativeTextWithFormat:@"%@", err];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];

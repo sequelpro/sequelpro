@@ -513,7 +513,7 @@
 									 defaultButton:NSLocalizedString(@"Clear", @"clear button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:infoString];
+						 informativeTextWithFormat:@"%@", infoString];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 

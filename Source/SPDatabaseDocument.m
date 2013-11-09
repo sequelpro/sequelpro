@@ -874,7 +874,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
-						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]]];
+						informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
 
 	NSArray *buttons = [alert buttons];
 
@@ -1878,7 +1878,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1913,7 +1913,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -1955,7 +1955,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1990,7 +1990,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2032,7 +2032,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2067,7 +2067,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2108,7 +2108,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2143,7 +2143,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2184,7 +2184,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2219,7 +2219,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2258,7 +2258,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2276,7 +2276,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]] 
+			 informativeTextWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -3136,7 +3136,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:err];
+									informativeTextWithFormat:@"%@", err];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -3262,7 +3262,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
 											  otherButton:nil 
-								informativeTextWithFormat:err];
+								informativeTextWithFormat:@"%@", err];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
@@ -3360,7 +3360,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:err];
+							 informativeTextWithFormat:@"%@", err];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -4762,7 +4762,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]]];
+							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]];
 
 		[alert setAlertStyle:NSWarningAlertStyle];
 		[spf release];
@@ -4883,7 +4883,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:informativeText];
+							informativeTextWithFormat:@"%@", informativeText];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];

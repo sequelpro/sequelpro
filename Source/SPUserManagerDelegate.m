@@ -303,7 +303,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
-									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name]];
+									 informativeTextWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name];
 				[alert runModal];
 				
 				return NO;
@@ -322,7 +322,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 													 defaultButton:NSLocalizedString(@"OK", @"OK button")
 												   alternateButton:nil
 													   otherButton:nil
-										 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host]];
+										 informativeTextWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host];
 					
 					[alert runModal];
 					

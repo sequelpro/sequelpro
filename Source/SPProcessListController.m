@@ -252,7 +252,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), processId]];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), processId];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -280,7 +280,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), processId]];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), processId];
 	
 	NSArray *buttons = [alert buttons];
 	

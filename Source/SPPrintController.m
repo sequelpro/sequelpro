@@ -127,7 +127,7 @@
 											 defaultButton:NSLocalizedString(@"Print", @"print button")
 										   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 											   otherButton:nil
-								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to print the current content view of the table '%@'?\n\nIt currently contains %@ rows, which may take a significant amount of time to print.", @"continue to print informative message"), [self table], [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:resultRows]]]];
+								 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to print the current content view of the table '%@'?\n\nIt currently contains %@ rows, which may take a significant amount of time to print.", @"continue to print informative message"), [self table], [numberFormatter stringFromNumber:[NSNumber numberWithLongLong:resultRows]]];
 
 			NSArray *buttons = [alert buttons];
 

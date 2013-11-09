@@ -678,7 +678,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 										 defaultButton:NSLocalizedString(@"OK", @"OK")
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the export process:\n\n%@", @"favorites export error informative message"), [error localizedDescription]]];
+							 informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the export process:\n\n%@", @"favorites export error informative message"), [error localizedDescription]];
 	
 		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
 						  modalDelegate:self
@@ -730,7 +730,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 										 defaultButton:NSLocalizedString(@"OK", @"OK")
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]]];	
+							 informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the import process:\n\n%@", @"favorites import error informative message"), [error localizedDescription]];
 		
 		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
 						  modalDelegate:self
