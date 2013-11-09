@@ -42,7 +42,8 @@ use Carp;
 
 die "$0: Must be run from within Xcode. Exiting..." unless $ENV{"BUILT_PRODUCTS_DIR"};
 
-my $revision = `svnversion -n ./`;
+my $svn2git_migration_compensation = 480;
+my $revision = `git log --oneline | wc -l` + $svn2git_migration_compensation;
 my $plist_path = "$ENV{BUILT_PRODUCTS_DIR}/$ENV{INFOPLIST_PATH}";
 
 my $version = $revision;
