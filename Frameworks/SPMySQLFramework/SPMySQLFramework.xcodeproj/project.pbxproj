@@ -552,6 +552,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				PRODUCT_NAME = SPMySQL;
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -576,6 +577,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				PRODUCT_NAME = SPMySQL;
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -695,6 +697,7 @@
 					"\"$(SRCROOT)/MySQL Client Libraries/lib\"",
 				);
 				PRODUCT_NAME = SPMySQL;
+				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Distribution;
