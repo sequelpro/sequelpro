@@ -215,6 +215,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	_mainNibLoaded = YES;
 
 #ifndef SP_CODA /* ui manipulation */
+	// Temporary to avoid nib conflicts during WIP
+	[contentSplitView setCollapsibleSubviewIndex:0];
+	[contentSplitView setCollapsibleSubviewCollapsed:YES animate:NO];
+	[contentSplitView setMaxSize:0.f ofSubviewAtIndex:0];
+
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	[filterTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
