@@ -112,6 +112,9 @@
 	IBOutlet NSButton *filterTableSearchAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
 	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
+
+	// Temporary to avoid nib conflicts during WIP
+	IBOutlet SPSplitView *contentSplitView;
 #endif
 	SPMySQLConnection *mySQLConnection;
 
