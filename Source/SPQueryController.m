@@ -228,7 +228,13 @@ static SPQueryController *sharedQueryController = nil;
 
 	[panel setAccessoryView:saveLogView];
 
-	[panel beginSheetForDirectory:nil file:NSLocalizedString(@"ConsoleLog", @"Console : Save as : Initial filename") modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+    [panel setNameFieldStringValue:NSLocalizedString(@"ConsoleLog", @"Console : Save as : Initial filename")];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            [[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state]
+                                       connections:[includeConnectionButton state]] writeToFile:[[panel URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+        }
+    }];
 #endif
 }
 
@@ -307,18 +313,6 @@ static SPQueryController *sharedQueryController = nil;
 	return [messagesFullSet count];
 #else
 	return 0;
-#endif
-}
-
-/**
- * Called when the NSSavePanel sheet ends. Writes the console's current content to the selected file if required.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-#ifndef SP_CODA
-	if (returnCode == NSOKButton) {
-		[[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state] connections:[includeConnectionButton state]] writeToFile:[[sheet URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-	}
 #endif
 }
 
