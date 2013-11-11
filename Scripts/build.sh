@@ -78,8 +78,9 @@ mkdir -p "${SHARED_SUPPORT_DIR}/Default Themes"
 
 cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 
-# Add a SpotLight comment
-osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
+# Add a SpotLight comment (can't use applescript from a continuous integration server, so we manually set the binaryplist with xattr)
+# osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
+xattr -wx com.apple.metadata:kMDItemFinderComment "62 70 6C 69 73 74 30 30 5F 10 22 4D 79 53 51 4C 20 64 61 74 61 62 61 73 65 20 70 61 6E 63 61 6B 65 73 20 77 69 74 68 20 73 79 72 75 70 08 00 00 00 00 00 00 01 01 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D" ${BUILD_PRODUCT}
 
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
