@@ -235,7 +235,32 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"ServerProcesses" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    [panel setNameFieldStringValue:@"ServerProcesses"];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            if ([processesFiltered count] > 0) {
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
+                
+                for (NSDictionary *process in processesFiltered)
+                {
+                    NSString *stringTmp = [NSString stringWithFormat:@"%@ %@ %@ %@ %@ %@ %@ %@",
+                                           [process objectForKey:@"Id"],
+                                           [process objectForKey:@"User"],
+                                           [process objectForKey:@"Host"],
+                                           [process objectForKey:@"db"],
+                                           [process objectForKey:@"Command"],
+                                           [process objectForKey:@"Time"],
+                                           [process objectForKey:@"State"],
+                                           [process objectForKey:@"Info"]];
+                    
+                    [processesString appendString:stringTmp];
+                    [processesString appendString:@"\n"];
+                }
+                
+                [processesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 /**
@@ -390,36 +415,6 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
 				[self _killProcessConnectionWithId:processId];
 			}
-		}
-	}
-}
-
-/**
- * Invoked when the save panel is dismissed.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if ([processesFiltered count] > 0) {
-			NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
-			
-			for (NSDictionary *process in processesFiltered)
-			{
-				NSString *stringTmp = [NSString stringWithFormat:@"%@ %@ %@ %@ %@ %@ %@ %@",
-									   [process objectForKey:@"Id"],
-									   [process objectForKey:@"User"],
-									   [process objectForKey:@"Host"],
-									   [process objectForKey:@"db"],
-									   [process objectForKey:@"Command"],
-									   [process objectForKey:@"Time"],
-									   [process objectForKey:@"State"],
-									   [process objectForKey:@"Info"]];
-				
-				[processesString appendString:stringTmp];
-				[processesString appendString:@"\n"];
-			}
-			
-			[processesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 		}
 	}
 }
