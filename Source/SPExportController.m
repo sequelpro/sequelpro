@@ -399,13 +399,14 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[panel setCanChooseFiles:NO];
 	[panel setCanChooseDirectories:YES];
 	[panel setCanCreateDirectories:YES];
-		
-	[panel beginSheetForDirectory:[exportPathField stringValue] 
-							 file:nil 
-				   modalForWindow:[self window] 
-					modalDelegate:self 
-				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:nil];
+    
+    [panel setDirectoryURL:[NSURL URLWithString:[exportPathField stringValue]]];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            [exportPathField setStringValue:[[panel directoryURL] path]];
+            [prefs setObject:[[panel directoryURL] path] forKey:SPExportLastDirectory];
+        }
+    }];		
 }
 
 /**
@@ -695,17 +696,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	else {
 		// Cancel the export and redisplay the export dialog after a short delay
 		[self performSelector:@selector(export:) withObject:self afterDelay:0.5];		
-	}
-}
-
-/**
- * Invoked when the user dismisses the save panel. Updates the selected directory if they clicked OK.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		[exportPathField setStringValue:[panel directory]];
-		[prefs setObject:[panel directory] forKey:SPExportLastDirectory];
 	}
 }
 
