@@ -133,7 +133,21 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    [panel setNameFieldStringValue:@"ServerVariables"];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            if ([variablesFiltered count] > 0) {
+                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
+                
+                for (NSDictionary *variable in variablesFiltered)
+                {
+                    [variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
+                }
+                
+                [variablesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 
@@ -161,25 +175,6 @@
 	
 	// Open the sheet
 	[NSApp beginSheet:[self window] modalForWindow:window modalDelegate:self didEndSelector:nil contextInfo:nil];
-}
-
-/**
- * Invoked when the save panel is dismissed.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if ([variablesFiltered count] > 0) {
-			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
-			
-			for (NSDictionary *variable in variablesFiltered) 
-			{
-				[variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
-			}
-			
-			[variablesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-		}
-	}
 }
 
 /**
