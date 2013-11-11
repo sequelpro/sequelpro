@@ -2305,7 +2305,18 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 
-	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:SPCreateSyntx];
+    [panel setNameFieldStringValue:[NSString stringWithFormat:@"CreateSyntax-%@", [self table]]];
+    [panel beginSheetModalForWindow:createTableSyntaxWindow completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            NSString *createSyntax = [createTableSyntaxTextView string];
+            
+            if ([createSyntax length] > 0) {
+                NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax];
+
+                [output writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 /**
@@ -3682,27 +3693,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	return [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery];
 #else
 	return ([structureContentSwitcher selectedSegment] == 2);
-#endif
-}
-
-/**
- * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-#ifndef SP_CODA
-	if (returnCode == NSOKButton) {
-		if ([contextInfo isEqualToString:SPCreateSyntx]) {
-
-			NSString *createSyntax = [createTableSyntaxTextView string];
-
-			if ([createSyntax length] > 0) {
-				NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax]; 
-
-				[output writeToURL:[sheet URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-			}
-		}
-	}
 #endif
 }
 
