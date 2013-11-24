@@ -45,7 +45,7 @@ static SPLogger *logger = nil;
 - (void)_initLogFile;
 - (void)_outputTimeString;
 
-int _isSPLeaksLog(struct direct *entry);
+int _isSPLeaksLog(const struct direct *entry);
 
 @end
 
@@ -253,7 +253,7 @@ int _isSPLeaksLog(struct direct *entry);
 	[logFileHandle writeData:[[NSString stringWithFormat:@"Launched at %@\n\n", [[NSDate date] description]] dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-int _isSPLeaksLog(struct direct *entry)
+int _isSPLeaksLog(const struct direct *entry)
 {
 	return (strstr(entry->d_name, "sp.leaks") != NULL);
 }
