@@ -350,7 +350,7 @@
 			}
 
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
-			[[self frontDocument] setSqlFileURL:[NSURL fileURLWithPath:filePath]];
+			[[self frontDocument] setSqlFileURL:file];
 			[[self frontDocument] setSqlFileEncoding:sqlEncoding];
 
 			break; // open only the first SQL file
@@ -377,7 +377,7 @@
 			}
 
 			[[self frontDocument] setStateFromConnectionFile:filePath];
-			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:file];
 		}
 		else if([[[filePath pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
 
@@ -501,7 +501,7 @@
 			}
 
 			[spfs release];
-			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:file];
 		}
 		else if([[[filePath pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
 
@@ -565,7 +565,7 @@
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 			if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSLog(@"“%@/%@” file couldn't be read.", file, SPBundleFileName);
+				NSLog(@"“%@/%@” file couldn't be read.", filePath, SPBundleFileName);
 				NSBeep();
 				if (cmdData) [cmdData release];
 				return;
@@ -576,7 +576,7 @@
 													 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : UUID : OK button") 
 												   alternateButton:nil 
 													  otherButton:nil 
-										informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.", @"Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file"), [file lastPathComponent]];
+										informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.", @"Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file"), [filePath lastPathComponent]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					[alert runModal];
@@ -646,7 +646,7 @@
 												 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Install-Error : OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ already exists.", @"Open Files : Bundle : Install-Error : Destination path already exists error dialog message"), [file lastPathComponent]];
+									informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ already exists.", @"Open Files : Bundle : Install-Error : Destination path already exists error dialog message"), [filePath lastPathComponent]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
