@@ -42,6 +42,9 @@ then
 	exit 1
 fi
 
+BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
+FRAMEWORKS_PATH="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"
+
 dev_sign_resource()
 {
 	codesign -s 'Sequel Pro Development' "$1" 2> /dev/null
@@ -59,14 +62,10 @@ verify_signing()
 
 dev_code_sign()
 {
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework"
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework"
+	while read FRAMEWORK
+	do
+		dev_sign_resource "${FRAMEWORKS_PATH}/${FRAMEWORK}"
+	done < "$1"
 
 	dev_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
 	dev_sign_resource "${BUILD_PRODUCT}"
@@ -74,34 +73,23 @@ dev_code_sign()
 
 dist_code_sign()
 {
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework"
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework"
+	ERRORS=''
+
+	while read FRAMEWORK
+	do
+		dist_sign_resource "${FRAMEWORKS_PATH}/${FRAMEWORK}"
+
+		ERRORS+=$(verify_signing "${FRAMEWORKS_PATH}/${FRAMEWORK}")
+	done < "$1"
 
 	dist_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
 	dist_sign_resource "${BUILD_PRODUCT}"
-
-	ERRORS=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework")
 
 	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant")
 	ERRORS+=$(verify_signing "${BUILD_PRODUCT}")
 
 	echo $ERRORS
 }
-
-BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
 
 echo 'Updating build version...'
 
@@ -141,6 +129,10 @@ cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 # osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
 xattr -wx com.apple.metadata:kMDItemFinderComment "62 70 6C 69 73 74 30 30 5F 10 22 4D 79 53 51 4C 20 64 61 74 61 62 61 73 65 20 70 61 6E 63 61 6B 65 73 20 77 69 74 68 20 73 79 72 75 70 08 00 00 00 00 00 00 01 01 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D" "${BUILD_PRODUCT}"
 
+FRAMEWORKS="/tmp/sp.frameworks.$$"
+
+ls "$FRAMEWORKS_PATH" > "$FRAMEWORKS"
+
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
 then
@@ -155,7 +147,7 @@ then
 
 	echo 'Performing distribution build code signing...'
 
-	VERIFY_ERRORS=$(dist_code_sign)
+	VERIFY_ERRORS=$(dist_code_sign "$FRAMEWORKS")
 	
 	if [ "$VERIFY_ERRORS" != '' ]
 	then
@@ -175,10 +167,12 @@ if [ "$CONFIGURATION" == 'Debug' ]
 then
 	echo 'Performing development build code signing...'
 
-	dev_code_sign
+	dev_code_sign "$FRAMEWORKS"
 
 	# Run a fake command to silence errors
 	touch "$BUILD_PRODUCT"
 fi
+
+rm "$FRAMEWORKS"
 
 exit 0
