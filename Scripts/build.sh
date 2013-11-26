@@ -42,6 +42,65 @@ then
 	exit 1
 fi
 
+dev_sign_resource()
+{
+	codesign -s 'Sequel Pro Development' "$1" 2> /dev/null
+}
+
+dist_sign_resource()
+{
+	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
+}
+
+verify_signing()
+{
+	codesign --verify "$1" 2>&1
+}
+
+dev_code_sign()
+{
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework"
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework"
+
+	dev_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
+	dev_sign_resource "${BUILD_PRODUCT}"
+}
+
+dist_code_sign()
+{
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework"
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework"
+
+	dist_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
+	dist_sign_resource "${BUILD_PRODUCT}"
+
+	ERRORS=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/FeedbackReporter.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/Growl.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/PSMTabBar.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/QueryKit.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/ShortcutRecorder.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/Sparkle.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/SPMySQL.framework")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Frameworks/UniversalDetector.framework")
+
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant")
+	ERRORS+=$(verify_signing "${BUILD_PRODUCT}")
+
+	echo $ERRORS
+}
+
 BUILD_PRODUCT="${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}"
 
 echo 'Updating build version...'
@@ -96,16 +155,11 @@ then
 
 	echo 'Performing distribution build code signing...'
 
-	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
-	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "${BUILD_PRODUCT}"
+	VERIFY_ERRORS=$(dist_code_sign)
 	
-	# Verify that code signing has worked - all distribution builds must be signed with the same key.
-	VERIFYERRORS=`codesign --verify "$BUILD_PRODUCT" 2>&1`
-	VERIFYERRORS+=`codesign --verify "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant" 2>&1`
-	
-	if [ "$VERIFYERRORS" != '' ]
+	if [ "$VERIFY_ERRORS" != '' ]
 	then
-		echo "error: Signing verification threw an error: $VERIFYERRORS"
+		echo "error: Signing verification threw an error: $VERIFY_ERRORS"
 		echo "error: All distribution builds must be signed with the key used for all previous distribution signing!"
 		
 		exit 1
@@ -121,9 +175,8 @@ if [ "$CONFIGURATION" == 'Debug' ]
 then
 	echo 'Performing development build code signing...'
 
-	codesign -s 'Sequel Pro Development' "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant" 2> /dev/null
-	codesign -s 'Sequel Pro Development' "$BUILD_PRODUCT" 2> /dev/null
-	
+	dev_code_sign
+
 	# Run a fake command to silence errors
 	touch "$BUILD_PRODUCT"
 fi
