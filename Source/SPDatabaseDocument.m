@@ -115,9 +115,6 @@ enum {
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
-#ifndef SP_CODA
-static NSString *SPCreateSyntx = @"SPCreateSyntax";
-#endif
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
@@ -2614,37 +2611,30 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (NSString *)connectionID
 {
+	if (!_isConnected) return @"_";
 
-	if(!_isConnected) return @"_";
+	NSString *port = [[self port] length] ? [NSString stringWithFormat:@":%@", [self port]] : @"";
 
-	NSString *port;
-	if([[self port] length])
-		port = [NSString stringWithFormat:@":%@", [self port]];
-	else
-		port = @"";
-
-	switch([connectionController type]) {
+	switch ([connectionController type])
+	{
 		case SPSocketConnection:
-		return [NSString stringWithFormat:@"%@@localhost%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", port];
-		break;
+			return [NSString stringWithFormat:@"%@@localhost%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", port];
+			break;
 		case SPTCPIPConnection:
-		return [NSString stringWithFormat:@"%@@%@%@", 
-			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
-			[connectionController host]?[connectionController host]:@"", 
-			port];
-		break;
+			return [NSString stringWithFormat:@"%@@%@%@",
+					([connectionController user] && [[connectionController user] length]) ? [connectionController user] : @"anonymous",
+					 [connectionController host] ? [connectionController host] : @"", port];
+			break;
 		case SPSSHTunnelConnection:
-		return [NSString stringWithFormat:@"%@@%@%@&SSH&%@@%@:%@", 
-			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
-			[connectionController host]?[connectionController host]:@"", 
-			port,
-			([connectionController sshUser] && [[connectionController sshUser] length])?[connectionController sshUser]:@"anonymous",
-			[connectionController sshHost]?[connectionController sshHost]:@"", 
-			([[connectionController sshPort] length])?[connectionController sshPort]:@"22"];
+			return [NSString stringWithFormat:@"%@@%@%@&SSH&%@@%@:%@",
+					([connectionController user] && [[connectionController user] length]) ? [connectionController user] : @"anonymous",
+					 [connectionController host] ? [connectionController host] : @"", port,
+					([connectionController sshUser] && [[connectionController sshUser] length]) ? [connectionController sshUser] : @"anonymous",
+					 [connectionController sshHost] ? [connectionController sshHost] : @"",
+					([[connectionController sshPort] length]) ? [connectionController sshPort] : @"22"];
 	}
 
 	return @"_";
-
 }
 
 /**
@@ -2798,7 +2788,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (IBAction)saveConnectionSheet:(id)sender
 {
-
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *filename;
 	NSString *contextInfo;
@@ -2806,8 +2795,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 
-	// Save Query…
-	if( sender != nil && ([sender tag] == 1006 || [sender tag] == 1008)) {
+	// Save Query...
+	if (sender != nil && ([sender tag] == 1006 || [sender tag] == 1008)) {
 
 		// If Save was invoked, check whether the file was previously opened, and if so save without the panel
 		if ([sender tag] == 1006 && [[[self sqlFileURL] path] length]) {
@@ -2820,9 +2809,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		// Save the editor's content as SQL file
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
 				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
+
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
-		if(![prefs stringForKey:@"lastSqlFileName"]) {
+
+		if (![prefs stringForKey:@"lastSqlFileName"]) {
 			[prefs setObject:@"" forKey:@"lastSqlFileName"];
 			[prefs synchronize];
 		}
@@ -2831,7 +2821,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		contextInfo = @"saveSQLfile";
 
 		// If no lastSqlFileEncoding in prefs set it to UTF-8
-		if(![prefs integerForKey:SPLastSQLFileEncoding]) {
+		if (![prefs integerForKey:SPLastSQLFileEncoding]) {
 			[prefs setInteger:4 forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
 		}
@@ -2839,18 +2829,19 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[encodingPopUp setEnabled:YES];
 
 	// Save As… or Save
-	} else if(sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
+	}
+	else if (sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
+		if (sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO contextInfo:nil];
 			return;
 		}
 
 		// Load accessory nib each time.
 		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
-		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
+		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
 		}
@@ -2859,18 +2850,24 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionDefault, nil]];
 
 		//Restore accessory view settings if possible
-		if([spfDocData objectForKey:@"save_password"])
+		if ([spfDocData objectForKey:@"save_password"]) {
 			[saveConnectionSavePassword setState:[[spfDocData objectForKey:@"save_password"] boolValue]];
-		if([spfDocData objectForKey:@"auto_connect"])
+		}
+		if ([spfDocData objectForKey:@"auto_connect"]) {
 			[saveConnectionAutoConnect setState:[[spfDocData objectForKey:@"auto_connect"] boolValue]];
-		if([spfDocData objectForKey:@"encrypted"])
+		}
+		if ([spfDocData objectForKey:@"encrypted"]) {
 			[saveConnectionEncrypt setState:[[spfDocData objectForKey:@"encrypted"] boolValue]];
-		if([spfDocData objectForKey:@"include_session"])
+		}
+		if ([spfDocData objectForKey:@"include_session"]) {
 			[saveConnectionIncludeData setState:[[spfDocData objectForKey:@"include_session"] boolValue]];
-		if([[spfDocData objectForKey:@"save_editor_content"] boolValue])
+		}
+		if ([[spfDocData objectForKey:@"save_editor_content"] boolValue]) {
 			[saveConnectionIncludeQuery setState:[[spfDocData objectForKey:@"save_editor_content"] boolValue]];
-		else
+		}
+		else {
 			[saveConnectionIncludeQuery setState:NSOnState];
+		}
 
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
 
@@ -2883,29 +2880,22 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if([[[self fileURL] path] length])
-			filename = [self displayName];
-		else
-			filename = [NSString stringWithFormat:@"%@", [self name]];
+		filename = ([[[self fileURL] path] length]) ? [self displayName] : [NSString stringWithFormat:@"%@", [self name]];
 
-		if(sender == nil)
-			contextInfo = @"saveSPFfileAndClose";
-		else
-			contextInfo = @"saveSPFfile";
+		contextInfo = sender == nil ? @"saveSPFfileAndClose" : @"saveSPFfile";
 	}
-	// Save Session or Save Session As…
+	// Save Session or Save Session As...
 	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
 	{
-
 		// Save As Session
-		if([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
+		if ([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
 			[self saveConnectionPanelDidEnd:panel returnCode:1 contextInfo:@"saveAsSession"];
 			return;
 		}
 
 		// Load accessory nib each time.
 		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
-		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
+		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
 		}
@@ -2914,19 +2904,25 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 		NSDictionary *spfSessionData = [[NSApp delegate] spfSessionDocData];
 
-		//Restore accessory view settings if possible
-		if([spfSessionData objectForKey:@"save_password"])
+		// Restore accessory view settings if possible
+		if ([spfSessionData objectForKey:@"save_password"]) {
 			[saveConnectionSavePassword setState:[[spfSessionData objectForKey:@"save_password"] boolValue]];
-		if([spfSessionData objectForKey:@"auto_connect"])
+		}
+		if ([spfSessionData objectForKey:@"auto_connect"]) {
 			[saveConnectionAutoConnect setState:[[spfSessionData objectForKey:@"auto_connect"] boolValue]];
-		if([spfSessionData objectForKey:@"encrypted"])
+		}
+		if ([spfSessionData objectForKey:@"encrypted"]) {
 			[saveConnectionEncrypt setState:[[spfSessionData objectForKey:@"encrypted"] boolValue]];
-		if([spfSessionData objectForKey:@"include_session"])
+		}
+		if ([spfSessionData objectForKey:@"include_session"]) {
 			[saveConnectionIncludeData setState:[[spfSessionData objectForKey:@"include_session"] boolValue]];
-		if([[spfSessionData objectForKey:@"save_editor_content"] boolValue])
+		}
+		if ([[spfSessionData objectForKey:@"save_editor_content"] boolValue]) {
 			[saveConnectionIncludeQuery setState:[[spfSessionData objectForKey:@"save_editor_content"] boolValue]];
-		else
+		}
+		else {
 			[saveConnectionIncludeQuery setState:YES];
+		}
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
@@ -2938,7 +2934,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if([[NSApp delegate] sessionURL])
+		if ([[NSApp delegate] sessionURL])
 			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
 		else
 			filename = [NSString stringWithFormat:NSLocalizedString(@"Session",@"Initial filename for 'Save session' file")];
@@ -2949,38 +2945,35 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		return;
 	}
 
-	[panel beginSheetForDirectory:nil 
-						   file:filename 
-				 modalForWindow:parentWindow 
-				  modalDelegate:self 
-				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:contextInfo];
+	[panel setNameFieldStringValue:filename];
+
+	[panel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger returnCode) {
+		[self saveConnectionPanelDidEnd:panel returnCode:returnCode contextInfo:contextInfo];
+	}];
 }
 /**
  * Control the save connection panel's accessory view
  */
 - (IBAction)validateSaveConnectionAccessory:(id)sender
 {
-
 	// [saveConnectionAutoConnect setEnabled:([saveConnectionSavePassword state] == NSOnState)];
 	[saveConnectionSavePasswordAlert setHidden:([saveConnectionSavePassword state] == NSOffState)];
 
 	// If user checks the Encrypt check box set focus to password field
-	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
+	if (sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
 		[saveConnectionEncryptString selectText:sender];
 
 	// Unfocus saveConnectionEncryptString
-	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
+	if (sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
 		// [saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
 		// TODO how can one make it better ?
 		[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
 	}
-
 }
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if ( returnCode ) {
+	if (returnCode) {
 
 		NSString *fileName = [[panel URL] path];
 		NSError *error = nil;
@@ -3170,8 +3163,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 			// Register spfs bundle in Recent Files
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
-			
-
 		}
 	}
 }
