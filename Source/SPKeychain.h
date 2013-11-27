@@ -40,9 +40,10 @@
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account;
 - (void)updateItemWithName:(NSString *)name account:(NSString *)account toPassword:(NSString *)password;
 - (void)updateItemWithName:(NSString *)name account:(NSString *)account toName:(NSString *)newName account:(NSString *)newAccount password:(NSString *)password;
-- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID;
-- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase;
-- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID;
-- (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost;
+
+- (NSString *)nameForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId;
+- (NSString *)accountForUser:(NSString *)user host:(NSString *)host database:(NSString *)database;
+- (NSString *)nameForSSHForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId;
+- (NSString *)accountForSSHUser:(NSString *)SSHUser sshHost:(NSString *)SSHHost;
 
 @end
