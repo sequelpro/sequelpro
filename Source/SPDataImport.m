@@ -280,56 +280,51 @@
 
 	[openPanel setAccessoryView:importView];
 	[openPanel setDelegate:self];
+	
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {
 		[importFormatPopup selectItemWithTitle:[prefs valueForKey:@"importFormatPopupValue"]];
 		[self changeFormat:self];
 	}
-	
-	// Show openPanel
-	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
-								 file:[lastFilename lastPathComponent]
-					   modalForWindow:[tableDocumentInstance parentWindow]
-						modalDelegate:self
-					   didEndSelector:@selector(importFileSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:nil];
-}
 
-/**
- * Callback for when the import sheet is closed
- */
-- (void)importFileSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-
-	// Ensure text inputs are completed, preventing dead character entry
-	[sheet makeFirstResponder:nil];
-
-	// Save values to preferences
-	[prefs setObject:[(NSOpenPanel*)sheet directory] forKey:@"openPath"];
-	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
-	
-	// Close NSOpenPanel sheet
-	[sheet orderOut:self];
-
-	// Check if the user canceled
-	if (returnCode != NSOKButton)
-		return;
-
-	// Reset progress cancelled from any previous runs
-	progressCancelled = NO;
-
-	if(lastFilename) [lastFilename release]; lastFilename = nil;
-	lastFilename = [[NSString stringWithString:[[(NSOpenPanel*)sheet URL] path]] retain];
-
-	NSString *importFileName = [NSString stringWithString:lastFilename];
-	if (lastFilename == nil || ![lastFilename length]) {
-		NSBeep();
-		return;
+	if (lastFilename && [lastFilename lastPathComponent]) {
+		[openPanel setNameFieldStringValue:[lastFilename lastPathComponent]];
 	}
 
-	if (importFileName == nil) return;
+	[openPanel setDirectoryURL:[NSURL URLWithString:[prefs objectForKey:@"openPath"]]];
 
-	// Begin the import process
-	[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+	[openPanel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
+		// Ensure text inputs are completed, preventing dead character entry
+		[openPanel makeFirstResponder:nil];
+
+		// Save values to preferences
+		[prefs setObject:[[openPanel directoryURL] path] forKey:@"openPath"];
+		[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
+
+		// Close NSOpenPanel sheet
+		[openPanel orderOut:self];
+
+		// Check if the user canceled
+		if (returnCode != NSOKButton) return;
+
+		// Reset progress cancelled from any previous runs
+		progressCancelled = NO;
+
+		if (lastFilename) [lastFilename release]; lastFilename = nil;
+
+		lastFilename = [[NSString stringWithString:[[openPanel URL] path]] retain];
+
+		NSString *importFileName = [NSString stringWithString:lastFilename];
+
+		if (lastFilename == nil || ![lastFilename length]) {
+			NSBeep();
+			return;
+		}
+
+		if (importFileName == nil) return;
+
+		// Begin the import process
+		[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+	}];
 }
 
 /**
