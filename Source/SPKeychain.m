@@ -224,9 +224,7 @@
 
 	CFDictionaryRef result = NULL;
 
-	BOOL found = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
-
-	return found;
+	return SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
 }
 
 /**
@@ -260,7 +258,7 @@
 
 	if (status != noErr) {
 		NSLog(@"Error (%i) while trying to find keychain item to edit for name: %@ account: %@", (int)status, name, account);
-		
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"), 
 						  NSLocalizedString(@"OK", @"OK button"), 
 						  nil, nil, [NSApp mainWindow], self, nil, nil,
