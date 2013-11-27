@@ -3897,6 +3897,7 @@
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = (
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
 					"-lcrypto",
@@ -4106,6 +4107,7 @@
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = (
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
 					"-lcrypto",
@@ -4137,6 +4139,7 @@
 				INFOPLIST_FILE = Resources/Plists/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "\"$(SRCROOT)/Frameworks/zlib\"";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				OTHER_LDFLAGS = (
 					"$(SRCROOT)/Frameworks/zlib/libz.a",
 					"-lcrypto",
