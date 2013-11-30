@@ -538,7 +538,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	}
 	else if ([contextInfo isEqualToString:SPImportColorScheme]) {
 		if (returnCode == NSOKButton) {
-			if ([self _loadColorSchemeFromFile:[[panel filenames] objectAtIndex:0]]) {
+			if ([self _loadColorSchemeFromFile:[[[panel URLs] objectAtIndex:0] path] ]) {
 				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 				[self updateDisplayColorThemeName];
 			}

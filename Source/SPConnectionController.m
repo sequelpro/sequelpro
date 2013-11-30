@@ -1054,7 +1054,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	NSString *abbreviatedFileName = [[openPanel filename] stringByAbbreviatingWithTildeInPath];
+	NSString *abbreviatedFileName = [[[openPanel URL] path] stringByAbbreviatingWithTildeInPath];
 	
 	// SSH key file selection
 	if (contextInfo == sshSSHKeyButton) {
@@ -1104,24 +1104,24 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 
 - (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-		{
+{
 	if (returnCode == NSOKButton) {
 		if (contextInfo == SPExportFavorites) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 			
 			[exporter setDelegate:(NSObject<SPFavoritesExportProtocol> *)self];
 			
-			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[panel filename]];
+			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[[panel URL] path]];
 		}
 		else if (contextInfo == SPImportFavorites) {
 			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
 
 			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
 			
-			[importer importFavoritesFromFileAtPath:[panel filename]];
+			[importer importFavoritesFromFileAtPath:[[panel URL] path]];
 		}
-		}
-    }
+	}
+}
 
 #endif
 

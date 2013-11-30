@@ -836,7 +836,7 @@
 #ifndef SP_CODA
 	if (returnCode == NSOKButton) {
 
-		NSString *filename = [[panel filenames] objectAtIndex:0];
+		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
