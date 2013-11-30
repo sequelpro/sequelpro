@@ -228,7 +228,6 @@
     return result;
 }
 
-
 - (CGFloat)minimumWidthOfTabCell:(PSMTabBarCell *)cell
 {
     CGFloat resultWidth = 0.0f;
@@ -309,6 +308,7 @@
 - (NSAttributedString *)attributedObjectCountValueForTabCell:(PSMTabBarCell *)cell
 {
     NSString *contents = [NSString stringWithFormat:@"%lu", (unsigned long)[cell count]];
+
     return [[[NSMutableAttributedString alloc] initWithString:contents attributes:_objectCountStringAttributes] autorelease];
 }
 
@@ -476,8 +476,6 @@
 	
 	[NSGraphicsContext restoreGraphicsState];
 }
-
-
 
 // Step 3
 - (void)drawTabCell:(PSMTabBarCell *)cell
@@ -702,7 +700,6 @@
 
 }
 
-
 // Step 4
 - (void)drawInteriorWithTabCell:(PSMTabBarCell *)cell inView:(NSView*)controlView
 {
@@ -748,7 +745,8 @@
         
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
-    } else {
+    }
+	else {
 		insetLabelWidth += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
 	}
     
@@ -793,7 +791,6 @@
     // draw label
     [[cell attributedStringValue] drawInRect:labelRect];
 }
-
    	
 
 #pragma mark -
