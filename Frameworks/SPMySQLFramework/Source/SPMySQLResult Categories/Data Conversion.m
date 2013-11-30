@@ -219,10 +219,16 @@ static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger lengt
 	// Generate a nul-terminated C string representation of the binary data
 	char *cStringBuffer = malloc(padLength + 1);
 	cStringBuffer[padLength] = '\0';
-	while (i < bitLength) {
-		cStringBuffer[padLength - ++i] = ( (bytes[length - 1 - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
+
+	while (i < bitLength)
+	{
+		++i;
+
+		cStringBuffer[padLength - i] = ((bytes[length - 1 - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
 	}
-	while (i++ < padLength) {
+
+	while (i++ < padLength)
+	{
 		cStringBuffer[padLength - i] = '0';
 	}
 
@@ -231,6 +237,7 @@ static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger lengt
 
 	// Free up memory and return
 	free(cStringBuffer);
+
 	return returnString;
 }
 
