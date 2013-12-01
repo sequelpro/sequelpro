@@ -59,8 +59,6 @@
 // Constants
 #ifndef SP_CODA
 static NSString *SPRemoveNode              = @"RemoveNode";
-static NSString *SPImportFavorites         = @"ImportFavorites";
-static NSString *SPExportFavorites         = @"ExportFavorites";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #endif
 
@@ -430,13 +428,52 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
 	}
 
-	[keySelectionPanel beginSheetForDirectory:directoryPath
-										 file:filePath
-								types:nil
-					   modalForWindow:[dbDocument parentWindow]
-								modalDelegate:self
-							   didEndSelector:@selector(chooseKeyLocationSheetDidEnd:returnCode:contextInfo:)
-								  contextInfo:sender];
+	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
+	{
+		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
+
+		// SSH key file selection
+		if (sender == sshSSHKeyButton) {
+			if (returnCode == NSCancelButton) {
+				[self setSshKeyLocationEnabled:NSOffState];
+				return;
+			}
+
+			[self setSshKeyLocation:abbreviatedFileName];
+		}
+		// SSL key file selection
+		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+			if (returnCode == NSCancelButton) {
+				[self setSslKeyFileLocationEnabled:NSOffState];
+				[self setSslKeyFileLocation:nil];
+				return;
+			}
+
+			[self setSslKeyFileLocation:abbreviatedFileName];
+		}
+		// SSL certificate file selection
+		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+			if (returnCode == NSCancelButton) {
+				[self setSslCertificateFileLocationEnabled:NSOffState];
+				[self setSslCertificateFileLocation:nil];
+				return;
+			}
+
+			[self setSslCertificateFileLocation:abbreviatedFileName];
+		}
+		// SSL CA certificate file selection
+		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+			if (returnCode == NSCancelButton) {
+				[self setSslCACertFileLocationEnabled:NSOffState];
+				[self setSslCACertFileLocation:nil];
+				return;
+			}
+
+			[self setSslCACertFileLocation:abbreviatedFileName];
+		}
+		
+		[self _startEditingConnection];
+	}];
 #endif
 }
 
@@ -667,25 +704,19 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	switch ([self type])
 	{
 		case SPTCPIPConnection:
-			if (![[standardPasswordField stringValue] length]) {
-				[favoritesOutlineView setNextKeyView:standardPasswordField];
-			} else {
-				[favoritesOutlineView setNextKeyView:standardNameField];
-			}
+			[favoritesOutlineView setNextKeyView:(![[standardPasswordField stringValue] length]) ? standardPasswordField : standardNameField];
 			break;
 		case SPSocketConnection:
-			if (![[socketPasswordField stringValue] length]) {
-				[favoritesOutlineView setNextKeyView:socketPasswordField];
-			} else {
-				[favoritesOutlineView setNextKeyView:socketNameField];
-			}
+			[favoritesOutlineView setNextKeyView:(![[socketPasswordField stringValue] length]) ? socketPasswordField : socketNameField];
 			break;
 		case SPSSHTunnelConnection:
 			if (![[sshPasswordField stringValue] length]) {
 				[favoritesOutlineView setNextKeyView:sshPasswordField];
-			} else if (![[sshSSHPasswordField stringValue] length]) {
+			}
+			else if (![[sshSSHPasswordField stringValue] length]) {
 				[favoritesOutlineView setNextKeyView:sshSSHPasswordField];
-			} else {
+			}
+			else {
 				[favoritesOutlineView setNextKeyView:sshNameField];
 			}
 			break;
@@ -698,11 +729,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 #ifndef SP_CODA
 - (NSMutableDictionary *)selectedFavorite
-	{
+{
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
 	return (![node isGroup]) ? [[node representedObject] nodeFavorite] : nil;
-	}
+}
 
 /**
  * Returns the selected favorite node or nil if nothing is selected.
@@ -982,14 +1013,19 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (IBAction)importFavorites:(id)sender
 {
 	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-	
-	[openPanel beginSheetForDirectory:nil
-								 file:nil
-								types:[NSArray arrayWithObject:@"plist"]
-					   modalForWindow:[dbDocument parentWindow]
-						modalDelegate:self
-					   didEndSelector:@selector(importExportFavoritesSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:SPImportFavorites];
+
+	[openPanel setAllowedFileTypes:@[@"plist"]];
+
+	[openPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
+
+			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
+
+			[importer importFavoritesFromFileAtPath:[[openPanel URL] path]];
+		}
+	}];
 }
 
 /**
@@ -1002,13 +1038,18 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSString *fileName = [[self selectedFavoriteNodes] count] > 1 ? SPExportFavoritesFilename : [[[self selectedFavorite] objectForKey:SPFavoriteNameKey] stringByAppendingPathExtension:@"plist"];
 	
 	[savePanel setAccessoryView:exportPanelAccessoryView];
-	
-	[savePanel beginSheetForDirectory:nil
-								 file:fileName
-					   modalForWindow:[dbDocument parentWindow]
-						modalDelegate:self
-					   didEndSelector:@selector(importExportFavoritesSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:SPExportFavorites];
+	[savePanel setNameFieldStringValue:fileName];
+
+	[savePanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
+
+			[exporter setDelegate:(NSObject<SPFavoritesExportProtocol> *)self];
+
+			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[[savePanel URL] path]];
+		 }
+	 }];
 }
 
 #pragma mark -
@@ -1047,80 +1088,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self _removeNode:[self selectedFavoriteNode]];
 		}
 	}	
-}
-
-/**
- * Called after closing the SSH/SSL key selection sheet.
- */
-- (void)chooseKeyLocationSheetDidEnd:(NSOpenPanel *)openPanel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	NSString *abbreviatedFileName = [[[openPanel URL] path] stringByAbbreviatingWithTildeInPath];
-	
-	// SSH key file selection
-	if (contextInfo == sshSSHKeyButton) {
-		if (returnCode == NSCancelButton) {
-			[self setSshKeyLocationEnabled:NSOffState];
-			return;
-		}
-		
-		[self setSshKeyLocation:abbreviatedFileName];
-	} 
-	// SSL key file selection
-	else if (contextInfo == standardSSLKeyFileButton || contextInfo == socketSSLKeyFileButton) {
-		if (returnCode == NSCancelButton) {
-			[self setSslKeyFileLocationEnabled:NSOffState];
-			[self setSslKeyFileLocation:nil];
-			return;
-		}
-		
-		[self setSslKeyFileLocation:abbreviatedFileName];
-	}
-	// SSL certificate file selection
-	else if (contextInfo == standardSSLCertificateButton || contextInfo == socketSSLCertificateButton) {
-		if (returnCode == NSCancelButton) {
-			[self setSslCertificateFileLocationEnabled:NSOffState];
-			[self setSslCertificateFileLocation:nil];
-			return;
-		}
-		
-		[self setSslCertificateFileLocation:abbreviatedFileName];
-	} 
-	// SSL CA certificate file selection
-	else if (contextInfo == standardSSLCACertButton || contextInfo == socketSSLCACertButton) {
-		if (returnCode == NSCancelButton) {
-			[self setSslCACertFileLocationEnabled:NSOffState];
-			[self setSslCACertFileLocation:nil];
-			return;
-		}
-
-		[self setSslCACertFileLocation:abbreviatedFileName];
-	}
-
-	[self _startEditingConnection];
-}
-
-/**
- * Called when the user dismisses either the import of export favorites panels.
- */
-
-- (void)importExportFavoritesSheetDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if (contextInfo == SPExportFavorites) {
-			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
-			
-			[exporter setDelegate:(NSObject<SPFavoritesExportProtocol> *)self];
-			
-			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[[panel URL] path]];
-		}
-		else if (contextInfo == SPImportFavorites) {
-			SPFavoritesImporter *importer = [[SPFavoritesImporter alloc] init];
-
-			[importer setDelegate:(NSObject<SPFavoritesImportProtocol> *)self];
-			
-			[importer importFavoritesFromFileAtPath:[[panel URL] path]];
-		}
-	}
 }
 
 #endif
