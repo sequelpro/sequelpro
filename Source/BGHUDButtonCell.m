@@ -135,11 +135,23 @@
 		case NSRecessedBezelStyle:
 			[self drawRecessedButtonInFrame: cellFrame];
 			break;
+		case NSRegularSquareBezelStyle:
+		case NSThickSquareBezelStyle:
+		case NSThickerSquareBezelStyle:
+		case NSDisclosureBezelStyle:
+		case NSShadowlessSquareBezelStyle:
+		case NSCircularBezelStyle:
+		case NSTexturedSquareBezelStyle:
+		case NSHelpButtonBezelStyle:
+		case NSRoundedDisclosureBezelStyle:
+		case NSInlineBezelStyle:
+			// Don't do anything, just to suppress compiler warning
+			break;
 	}
 
-	if(buttonType == NSSwitchButton || buttonType == NSRadioButton) {
+	if (buttonType == NSSwitchButton || buttonType == NSRadioButton) {
 
-		if([self imagePosition] != NSNoImage) {
+		if ([self imagePosition] != NSNoImage) {
 
 			[self drawImage: [self image] withFrame: cellFrame inView: [self controlView]];
 		}
