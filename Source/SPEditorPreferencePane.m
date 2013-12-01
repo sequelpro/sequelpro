@@ -37,15 +37,13 @@
 #import "SPCategoryAdditions.h"
 
 // Constants
-static NSString *SPImportColorScheme             = @"ImportColorScheme";
-static NSString *SPExportColorScheme             = @"ExportColorScheme";
-static NSString *SPSaveColorScheme               = @"SaveColorScheme";
-static NSString *SPDefaultColorSchemeName        = @"Default";
-static NSString *SPDefaultColorSchemeNameLC      = @"default";
-static NSString *SPCustomColorSchemeName         = @"User-defined";
-static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
+static NSString *SPSaveColorScheme          = @"SaveColorScheme";
+static NSString *SPDefaultColorSchemeName   = @"Default";
+static NSString *SPDefaultColorSchemeNameLC = @"default";
+static NSString *SPCustomColorSchemeName    = @"User-defined";
+static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
-#define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme",@"Preferences : Themes : Initial filename for 'Export'")
+#define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme", @"Preferences : Themes : Initial filename for 'Export'")
 
 @interface SPEditorPreferencePane (PrivateAPI)
 
@@ -141,13 +139,14 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
-	
-	[panel beginSheetForDirectory:nil 
-							 file:[SP_EXPORT_COLOR_SCHEME_NAME_STRING stringByAppendingPathExtension:SPColorThemeFileExtension] 
-				   modalForWindow:[[self view] window] 
-					modalDelegate:self 
-				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:SPExportColorScheme];
+	[panel setNameFieldStringValue:[SP_EXPORT_COLOR_SCHEME_NAME_STRING stringByAppendingPathExtension:SPColorThemeFileExtension]];
+
+	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			[self _saveColorThemeAtPath:[[panel URL] path]];
+		}
+	}];
 }
 
 - (IBAction)importColorScheme:(id)sender
@@ -160,15 +159,18 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	
-	[panel beginSheetForDirectory:nil 
-							 file:@"" 
-							types:[NSArray arrayWithObjects:SPColorThemeFileExtension, @"tmTheme", nil] 
-				   modalForWindow:[[self view] window]
-					modalDelegate:self 
-				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:SPImportColorScheme];
-	
+	[panel setAllowedFileTypes:@[SPColorThemeFileExtension, @"tmTheme"]];
+
+	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			if ([self _loadColorSchemeFromFile:[[[panel URLs] objectAtIndex:0] path] ]) {
+				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
+
+				[self updateDisplayColorThemeName];
+			}
+		}
+	}];
 }
 
 - (IBAction)loadColorScheme:(id)sender
@@ -525,23 +527,6 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 			[prefs setObject:[enterNameInputField stringValue] forKey:SPCustomQueryEditorThemeName];
 			
 			[self updateDisplayColorThemeName];
-		}
-	}
-}
-
-- (void)panelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if ([contextInfo isEqualToString:SPExportColorScheme]) {
-		if (returnCode == NSOKButton) {
-			[self _saveColorThemeAtPath:[[panel URL] path]];
-		}
-	}
-	else if ([contextInfo isEqualToString:SPImportColorScheme]) {
-		if (returnCode == NSOKButton) {
-			if ([self _loadColorSchemeFromFile:[[[panel URLs] objectAtIndex:0] path] ]) {
-				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
-				[self updateDisplayColorThemeName];
-			}
 		}
 	}
 }
