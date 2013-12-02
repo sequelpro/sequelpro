@@ -286,7 +286,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 #endif
 
-
 - (void)awakeFromNib
 {
 #ifndef SP_CODA
@@ -410,7 +409,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (IBAction)backForwardInHistory:(id)sender
 {
-
 	// Ensure history navigation is permitted - trigger end editing and any required saves
 	if (![self couldCommitCurrentViewActions]) return;
 
