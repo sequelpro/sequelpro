@@ -33,7 +33,7 @@
 #  More info at <http://code.google.com/p/sequel-pro/>
 
 #  Updates the application/bundle's Info.plist CFBundleVersion to match that of the current
-#  Subversion revision.
+#  git revision.
 
 use strict;
 use warnings;
