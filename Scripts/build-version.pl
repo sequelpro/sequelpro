@@ -33,7 +33,7 @@
 #  More info at <http://code.google.com/p/sequel-pro/>
 
 #  Updates the application/bundle's Info.plist CFBundleVersion to match that of the current
-#  git revision.
+#  Git revision.
 
 use strict;
 use warnings;
@@ -50,7 +50,7 @@ my $version = $revision;
 
 ($version =~ m/(\d+)[MS]*$/) && ($version = $1);
 
-die "$0: No Subversion revision found. Exiting..." unless $version;
+die "$0: No Git revision found. Exiting..." unless $version;
 
 open(my $plist, $plist_path) || croak "Unable to open plist file for reading: $!";
 
