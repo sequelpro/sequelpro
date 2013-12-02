@@ -985,12 +985,13 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			else {
 				[chooseDatabaseButton selectItemAtIndex:0];
 		}
-		}
+	}
 #endif
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
 		[addDatabaseCharsetHelper setEnabled:NO];
+
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
 
@@ -1071,9 +1072,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	SPMySQLResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 	if (![mySQLConnection queryErrored]) {
-		for (NSArray *eachRow in theResult) {
+
+		for (NSArray *eachRow in theResult)
+		{
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
+
 		if(![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
