@@ -269,6 +269,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 
 		if ([[statusFields objectForKey:SPMySQLEngineField] isEqualToString:@"View"]) {
 			[tableTypePopUpButton addItemWithTitle:@"View"];
+			
 			// Set create syntax
 			[tableCreateSyntaxTextView setEditable:YES];
 			[tableCreateSyntaxTextView shouldChangeTextInRange:NSMakeRange(0, [[tableCreateSyntaxTextView string] length]) replacementString:@""];
