@@ -1,5 +1,3 @@
-# $Id$
-
 CONFIG=Debug
 OPTIONS=
 
@@ -15,6 +13,9 @@ sequel-pro:
 
 test:
 	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" -target "Unit Tests" $(OPTIONS) build
+
+analyze:
+	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" analyze
 
 clean:
 	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" $(OPTIONS) -nodependencies clean
