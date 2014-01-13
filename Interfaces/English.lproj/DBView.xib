@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13A3017" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4514" systemVersion="13B3116" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment defaultVersion="1090" identifier="macosx"/>
+        <deployment defaultVersion="1060" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="4514"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="3336"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="3338"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPDatabaseDocument">
@@ -593,7 +593,7 @@
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" multipleSelection="NO" autosaveName="SPTableStructureSource" rowHeight="16" headerView="3926" id="232" customClass="SPTableView">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="689.5" height="288"/>
+                                                                                    <rect key="frame" x="0.0" y="0.0" width="689" height="288"/>
                                                                                     <autoresizingMask key="autoresizingMask"/>
                                                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -702,7 +702,7 @@
                                                                                             </textFieldCell>
                                                                                             <tableColumnResizingMask key="resizingMask" userResizable="YES"/>
                                                                                         </tableColumn>
-                                                                                        <tableColumn identifier="default" width="45.5" minWidth="34" maxWidth="1000" id="248">
+                                                                                        <tableColumn identifier="default" width="45" minWidth="34" maxWidth="1000" id="248">
                                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Default">
                                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -777,7 +777,7 @@
                                                                             </subviews>
                                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                         </clipView>
-                                                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="3925">
+                                                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="3925">
                                                                             <rect key="frame" x="1" y="289" width="689" height="16"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
@@ -786,7 +786,7 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
                                                                         <tableHeaderView key="headerView" id="3926">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="689.5" height="17"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="689" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </tableHeaderView>
                                                                         <connections>
@@ -1172,9 +1172,6 @@
                                                                                 <ruleEditor nestingMode="compound" canRemoveAllRows="YES" rowHeight="25" id="FF9-z2-9od" customClass="SPRuleEditor">
                                                                                     <rect key="frame" x="0.0" y="0.0" width="606" height="25.5"/>
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                                                                    <connections>
-                                                                                        <outlet property="delegate" destination="ki9-Po-bdr" id="rFd-07-AiC"/>
-                                                                                    </connections>
                                                                                 </ruleEditor>
                                                                             </subviews>
                                                                         </clipView>
@@ -1275,7 +1272,7 @@
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <searchField hidden="YES" verticalHuggingPriority="750" id="6371">
-                                                                                        <rect key="frame" x="168.49999999329447" y="4" width="110" height="19"/>
+                                                                                        <rect key="frame" x="168.5" y="4" width="110" height="19"/>
                                                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
                                                                                         <searchFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" bezelStyle="round" sendsSearchStringImmediately="YES" sendsWholeSearchString="YES" id="6372">
                                                                                             <font key="font" metaFont="smallSystem"/>
@@ -1384,9 +1381,6 @@
                                                             <real value="250"/>
                                                             <real value="250"/>
                                                         </holdingPriorities>
-                                                        <connections>
-                                                            <outlet property="delegate" destination="ki9-Po-bdr" id="28j-fv-HkI"/>
-                                                        </connections>
                                                     </splitView>
                                                 </subviews>
                                             </view>
@@ -5045,7 +5039,6 @@ Gw
                 <outlet property="duplicateButton" destination="5178" id="7837"/>
                 <outlet property="fieldField" destination="146" id="164"/>
                 <outlet property="filterButton" destination="4676" id="5942"/>
-                <outlet property="filterControllerInstance" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
                 <outlet property="filterTableDistinctCheckbox" destination="8133" id="8171"/>
                 <outlet property="filterTableFilterButton" destination="8083" id="8177"/>
                 <outlet property="filterTableLiveSearchCheckbox" destination="8129" id="8174"/>
@@ -5073,15 +5066,6 @@ Gw
                 <outlet property="tableInfoInstance" destination="4488" id="6352"/>
                 <outlet property="tableSourceInstance" destination="69" id="6882"/>
                 <outlet property="tablesListInstance" destination="68" id="1026"/>
-            </connections>
-        </customObject>
-        <customObject id="ki9-Po-bdr" userLabel="SPTableContentFilter" customClass="SPTableContentFilterController">
-            <connections>
-                <outlet property="contentSplitView" destination="yTv-Lq-Y3H" id="KB1-gk-Ssi"/>
-                <outlet property="filterRuleEditor" destination="FF9-z2-9od" id="RW4-XM-XQS"/>
-                <outlet property="tableDataInstance" destination="4702" id="e69-W6-UwN"/>
-                <outlet property="tableDocumentInstance" destination="-2" id="2Xe-WU-zRw"/>
-                <outlet property="tablesListInstance" destination="68" id="byh-Eh-UAv"/>
             </connections>
         </customObject>
         <customObject id="362" userLabel="TableDump" customClass="SPDataImport">
