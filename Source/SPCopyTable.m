@@ -1206,9 +1206,11 @@ static const NSInteger kBlobAsImageFile = 4;
 
 	// Otherwise, check the cell value for newlines.
 	id cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+
 	if ([cellValue isKindOfClass:[NSData class]]) {
 		cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
 	}
+
 	if (![cellValue isNSNull]
 		&& [columnType isEqualToString:@"string"]
 		&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
