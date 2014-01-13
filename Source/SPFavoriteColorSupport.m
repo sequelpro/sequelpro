@@ -34,23 +34,24 @@
 
 @implementation SPFavoriteColorSupport
 
-static SPFavoriteColorSupport *ColorSupport = nil;
+static SPFavoriteColorSupport *_colorSupport = nil;
 
 - (id)init
 {
-    self = [super init];
-    if (self) {
+    if ((self = [super init])) {
         prefs = [NSUserDefaults standardUserDefaults];
     }
+
     return self;
 }
 
 + (SPFavoriteColorSupport *)sharedInstance
 {
-	if(!ColorSupport)
-		ColorSupport = [[self allocWithZone:NULL] init];
+	if (!_colorSupport) {
+		_colorSupport = [[self allocWithZone:NULL] init];
+	}
 	
-	return ColorSupport;
+	return _colorSupport;
 }
 
 
@@ -67,26 +68,27 @@ static SPFavoriteColorSupport *ColorSupport = nil;
 			nil];
 }
 
-
 - (NSColor *)colorForIndex:(NSInteger)colorIndex
 {
 	NSArray *colorList = [self userColorList];
-	//check bounds
-	if(colorIndex < 0 || (NSUInteger)colorIndex >= [colorList count]) {
-		NSLog(@"%s: Requesting color index %ld, but only have %lu items. Returning nil.",__PRETTY_FUNCTION__,(long)colorIndex,(unsigned long)[colorList count]);
+
+	// Check bounds
+	if (colorIndex < 0 || (NSUInteger)colorIndex >= [colorList count]) {
 		return nil;
 	}
 
 	return [colorList objectAtIndex:colorIndex];
 }
 
-
 - (NSArray *)userColorList
 {
 	NSArray *archivedColors = [prefs objectForKey:SPFavoriteColorList];
 	NSMutableArray *colorList = [NSMutableArray arrayWithCapacity:[archivedColors count]];
-	for (NSData *archivedColor in archivedColors) {
+
+	for (NSData *archivedColor in archivedColors)
+	{
 		NSColor *color = [NSUnarchiver unarchiveObjectWithData:archivedColor];
+
 		[colorList addObject:color];
 	}
 	
