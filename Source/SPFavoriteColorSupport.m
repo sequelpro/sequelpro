@@ -58,13 +58,13 @@ static SPFavoriteColorSupport *_colorSupport = nil;
 + (NSArray *)defaultColorList
 {
 	return [NSArray arrayWithObjects:
-			[NSColor colorWithDeviceRed:228.0/255.0 green:116.0/255.0 blue:102.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:237.0/255.0 green:174.0/255.0 blue:107.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:227.0/255.0 green:213.0/255.0 blue:119.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:175.0/255.0 green:215.0/255.0 blue:119.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:118.0/255.0 green:185.0/255.0 blue:232.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:202.0/255.0 green:152.0/255.0 blue:224.0/255.0 alpha:1.0],
-			[NSColor colorWithDeviceRed:182.0/255.0 green:182.0/255.0 blue:182.0/255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:228.0 / 255.0 green: 116.0 / 255.0 blue:102.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:237.0 / 255.0 green: 174.0 / 255.0 blue:107.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:227.0 / 255.0 green: 213.0 / 255.0 blue:119.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:175.0 / 255.0 green: 215.0 / 255.0 blue:119.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:118.0 / 255.0 green: 185.0 / 255.0 blue:232.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:202.0 / 255.0 green: 152.0 / 255.0 blue:224.0 / 255.0 alpha:1.0],
+			[NSColor colorWithDeviceRed:182.0 / 255.0 green: 182.0 / 255.0 blue:182.0 / 255.0 alpha:1.0],
 			nil];
 }
 
