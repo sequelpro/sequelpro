@@ -175,11 +175,9 @@
 
 	if (deflateInit(&zlibStream, Z_DEFAULT_COMPRESSION) != Z_OK) return nil;
 
-
 	NSMutableData *zipData = [NSMutableData dataWithLength:16384];
 
-	do{
-
+	do {
 		if (zlibStream.total_out >= [zipData length])
 			[zipData increaseLengthBy: 16384];
 
@@ -188,11 +186,13 @@
 
 		deflate(&zlibStream, Z_FINISH);
 
-	} while(zlibStream.avail_out == 0);
+	}
+	while(zlibStream.avail_out == 0);
 
 	deflateEnd(&zlibStream);
 
 	[zipData setLength: zlibStream.total_out];
+
 	return [NSData dataWithData: zipData];
 }
 
@@ -206,7 +206,8 @@
 	NSUInteger dataLength = [self length];
 	NSMutableString *hexString = [NSMutableString string];
 
-	for (i = 0; i < dataLength; i++) {
+	for (i = 0; i < dataLength; i++)
+	{
 		[hexString appendFormat:@"%02X", bytes[i]];
 	}
 
