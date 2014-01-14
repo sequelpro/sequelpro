@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		17E3A57B1885A286009CF372 /* SPMySQLDataTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E3A5791885A286009CF372 /* SPMySQLDataTypes.h */; };
+		17E3A57B1885A286009CF372 /* SPMySQLDataTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E3A5791885A286009CF372 /* SPMySQLDataTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E3A57C1885A286009CF372 /* SPMySQLDataTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E3A57A1885A286009CF372 /* SPMySQLDataTypes.m */; };
 		580A331E14D75CF7000D6933 /* SPMySQLGeometryData.h in Headers */ = {isa = PBXBuildFile; fileRef = 580A331C14D75CF7000D6933 /* SPMySQLGeometryData.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		580A331F14D75CF7000D6933 /* SPMySQLGeometryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 580A331D14D75CF7000D6933 /* SPMySQLGeometryData.m */; };
@@ -407,11 +407,11 @@
 				584292A414C34B36000F8438 /* mysql_time.h in Headers */,
 				584292A514C34B36000F8438 /* mysql_version.h in Headers */,
 				584292A614C34B36000F8438 /* typelib.h in Headers */,
-				17E3A57B1885A286009CF372 /* SPMySQLDataTypes.h in Headers */,
 				5884127714CC63830078027F /* SPMySQL.h in Headers */,
 				588412A814CC7A4D0078027F /* Locking.h in Headers */,
 				5884142714CCF5190078027F /* Conversion.h in Headers */,
 				588414BD14CE3B110078027F /* SPMySQLConnectionDelegate.h in Headers */,
+				17E3A57B1885A286009CF372 /* SPMySQLDataTypes.h in Headers */,
 				5884165514D2306A0078027F /* SPMySQLResult.h in Headers */,
 				580A331E14D75CF7000D6933 /* SPMySQLGeometryData.h in Headers */,
 				58C7C1E814DB6E8600436315 /* Field Definitions.h in Headers */,
