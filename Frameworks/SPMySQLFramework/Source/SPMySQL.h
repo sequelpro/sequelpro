@@ -35,6 +35,7 @@
 // Global include file for the framework.
 // Constants
 #import "SPMySQLConstants.h"
+#import "SPMySQLDataTypes.h"
 
 // Required category additions
 #ifndef SP_CODA
