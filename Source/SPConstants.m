@@ -178,6 +178,7 @@ NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 NSString *SPAlwaysShowWindowTabBar               = @"WindowAlwaysShowTabBar";
 NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfterDeletionOfAllRows";
 NSString *SPFavoriteColorList                    = @"FavoriteColorList";
+NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";

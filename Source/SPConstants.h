@@ -372,6 +372,7 @@ extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPAlwaysShowWindowTabBar;
 extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 extern NSString *SPFavoriteColorList;
+extern NSString *SPDisplayBinaryDataAsHex;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

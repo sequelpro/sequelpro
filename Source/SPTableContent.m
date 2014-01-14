@@ -175,6 +175,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		blackColor = [NSColor blackColor];
 		lightGrayColor = [NSColor lightGrayColor];
+		blueColor = [NSColor blueColor];
+		whiteColor = [NSColor whiteColor];
 
 		// Init default filters for Content Browser
 		contentFilters = nil;

@@ -403,31 +403,34 @@
 - (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
-- (void) setQueryMode:(NSInteger)theQueryMode;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)closePanelSheet:(id)sender;
+- (IBAction)validateSaveConnectionAccessory:(id)sender;
+- (IBAction)closePasswordSheet:(id)sender;
+- (IBAction)backForwardInHistory:(id)sender;
+- (IBAction)showUserManager:(id)sender;
+- (IBAction)copyChecksumFromSheet:(id)sender;
+- (IBAction)showNavigator:(id)sender;
+- (IBAction)toggleNavigator:(id)sender;
+
+- (void)setQueryMode:(NSInteger)theQueryMode;
 - (void)doPerformQueryService:(NSString *)query;
 - (void)doPerformLoadQueryService:(NSString *)query;
 - (void)flushPrivileges:(id)sender;
 - (void)closeConnection;
 - (NSWindow *)getCreateTableSyntaxWindow;
+
 #endif
 - (void)refreshCurrentDatabase;
 #ifndef SP_CODA /* method decls */
+
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode  contextInfo:(void  *)contextInfo;
-- (IBAction)validateSaveConnectionAccessory:(id)sender;
 - (BOOL)saveDocumentWithFilePath:(NSString *)fileName inBackground:(BOOL)saveInBackground onlyPreferences:(BOOL)saveOnlyPreferences contextInfo:(NSDictionary*)contextInfo;
-- (IBAction)closePasswordSheet:(id)sender;
-- (IBAction)backForwardInHistory:(id)sender;
-- (IBAction)showUserManager:(id)sender;
 - (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context;
-- (IBAction)copyChecksumFromSheet:(id)sender;
 - (void)setIsSavedInBundle:(BOOL)savedInBundle;
 - (void)setFileURL:(NSURL *)fileURL;
 - (void)connect;
 - (void)showConsole:(id)sender;
-- (IBAction)showNavigator:(id)sender;
-- (IBAction)toggleNavigator:(id)sender;
 #endif
 
 // Accessor methods

@@ -201,5 +201,7 @@
 	<false/>
 	<key>WebKitDeveloperExtras</key>
 	<true/>
+	<key>DisplayBinaryDataAsHex</key>
+	<false/>
 </dict>
 </plist>

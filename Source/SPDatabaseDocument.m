@@ -2589,9 +2589,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 - (NSString *)host
 {
 	if ([connectionController type] == SPSocketConnection) return @"localhost";
-	NSString *theHost = [connectionController host];
-	if (!theHost) theHost = @"";
-	return theHost;
+
+	NSString *host = [connectionController host];
+
+	if (!host) host = @"";
+
+	return host;
 }
 
 /**
@@ -2602,9 +2605,11 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	if ([connectionController name] && [[connectionController name] length]) {
 		return [connectionController name];
 	}
+
 	if ([connectionController type] == SPSocketConnection) {
 		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
+
 	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
 }
 

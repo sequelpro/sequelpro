@@ -121,9 +121,9 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (id) cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
-
 	// If an edited row exists at the supplied index, return it
 	NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
 	if (editedRow != NULL) {
 		return CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
 	}

@@ -107,26 +107,40 @@
 			else {
 				if ([tableView editedColumn] == (NSInteger)columnIndex && [tableView editedRow] == rowIndex) {
 					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:NO];
-				} else {
+				}
+				else {
 					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:YES];
 				}
 			}
+
+			NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
+
+			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 			
-			if ([value isKindOfClass:[SPMySQLGeometryData class]])
+			if ([value isKindOfClass:[SPMySQLGeometryData class]]) {
 				return [value wktString];
+			}
 			
-			if ([value isNSNull])
+			if ([value isNSNull]) {
 				return [prefs objectForKey:SPNullValue];
+			}
 			
 			if ([value isKindOfClass:[NSData class]]) {
+
+				if ([columnType isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+					return [NSString stringWithFormat:@"0x%@", [value dataToHexString]];
+				}
+
 				if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex]) {
 					return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 				}
+				
 				return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 			}
 			
-			if ([value isSPNotLoaded])
+			if ([value isSPNotLoaded]) {
 				return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
+			}
 			
 			return value;
 		}
@@ -203,6 +217,7 @@
 	if (asPreview) {
 		return SPDataStoragePreviewAtRowAndColumn(tableValues, rowIndex, columnIndex, 150);
 	}
+
 	return SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 }
 

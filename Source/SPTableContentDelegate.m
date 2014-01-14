@@ -279,12 +279,11 @@
 					isFieldEditable = [[editStatus objectAtIndex:0] integerValue] == 1;
 				}
 				
-				NSString *fieldType = nil;
 				NSUInteger fieldLength = 0;
 				NSString *fieldEncoding = nil;
 				BOOL allowNULL = YES;
 				
-				fieldType = [columnDefinition objectForKey:@"type"];
+				NSString *fieldType = [columnDefinition objectForKey:@"type"];
 				
 				if ([columnDefinition objectForKey:@"char_length"]) {
 					fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
@@ -298,7 +297,7 @@
 					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 				}
 				
-				if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+				if (fieldEditor) [fieldEditor release], fieldEditor = nil;
 				
 				fieldEditor = [[SPFieldEditorController alloc] init];
 				
@@ -309,14 +308,18 @@
 												 nil]];
 				
 				[fieldEditor setTextMaxLength:fieldLength];
-				[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
-				[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
+				[fieldEditor setFieldType:fieldType == nil ? @"" : fieldType];
+				[fieldEditor setFieldEncoding:fieldEncoding == nil ? @"" : fieldEncoding];
 				[fieldEditor setAllowNULL:allowNULL];
-				
+			
 				id cellValue = [tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]];
 				
 				if ([cellValue isNSNull]) {
 					cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+				}
+
+				if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
 				}
 				
 				NSInteger editedColumn = 0;
@@ -467,6 +470,7 @@
 			
 			BOOL cellIsNullOrUnloaded = NO;
 			BOOL cellIsLinkCell = [cell isMemberOfClass:[SPTextAndLinkCell class]];
+
 			NSUInteger columnIndex = [[tableColumn identifier] integerValue];
 			
 			// If user wants to edit 'cell' set text color to black and return to avoid
@@ -494,20 +498,30 @@
 			else {
 				cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 			}
-			
-			
+
 			if (cellIsNullOrUnloaded) {
-				[cell setTextColor:lightGrayColor];
+				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : lightGrayColor];
 			} 
 			else {
 				[cell setTextColor:blackColor];
+			}
+
+			NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
+
+			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+
+			// Find a more reliable way of doing this check
+			if ([columnType isEqualToString:@"binary"] && [[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] hasPrefix:@"0x"]) {
+
+				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
 			}
 
 			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
 			if (cellIsLinkCell) {
 				if (cellIsNullOrUnloaded || [tableView editedRow] == rowIndex) {
 					[cell setLinkActive:NO];
-				} else {
+				}
+				else {
 					[cell setLinkActive:YES];
 				}
 			}

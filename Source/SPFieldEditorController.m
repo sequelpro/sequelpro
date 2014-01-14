@@ -202,9 +202,14 @@
  * @param sender The calling instance.
  * @param contextInfo context info for processing the edited data in sender.
  */
-- (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
-		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo
+- (void)editWithObject:(id)data
+			 fieldName:(NSString *)fieldName
+		 usingEncoding:(NSStringEncoding)anEncoding
+		  isObjectBlob:(BOOL)isFieldBlob
+			isEditable:(BOOL)isEditable
+			withWindow:(NSWindow *)theWindow
+				sender:(id)sender
+		   contextInfo:(NSDictionary *)theContextInfo
 {
 	usedSheet = nil;
 
@@ -216,29 +221,36 @@
 
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
+
 	[label appendFormat:@"“%@”", fieldName];
-	if([fieldType length] || maxTextLength > 0 || [fieldEncoding length] || !_allowNULL)
+
+	if ([fieldType length] || maxTextLength > 0 || [fieldEncoding length] || !_allowNULL)
 		[label appendString:@" – "];
-	if([fieldType length])
+
+	if ([fieldType length])
 		[label appendString:fieldType];
-	if(maxTextLength > 0)
+
+	if (maxTextLength > 0)
 		[label appendFormat:@"(%lld) ", maxTextLength];
-	if(!_allowNULL)
+
+	if (!_allowNULL)
 		[label appendString:@"NOT NULL "];
-	if([fieldEncoding length])
+
+	if ([fieldEncoding length])
 		[label appendString:fieldEncoding];
 
-	if([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
+	if ([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
 
 		sheetEditData = [(NSString*)data retain];
 
 		[bitSheetNULLButton setEnabled:_allowNULL];
 
 		// Check for NULL
-		if([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
+		if ([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[bitSheetNULLButton setState:NSOnState];
 			[self setToNull:bitSheetNULLButton];
-		} else {
+		}
+		else {
 			[bitSheetNULLButton setState:NSOffState];
 		}
 
@@ -247,12 +259,18 @@
 		// Init according bit check boxes
 		NSUInteger i = 0;
 		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
-		if([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
-			for( i = 0; i<maxBit; i++ )
+
+		if ([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
+			for (i = 0; i < maxBit; i++)
+			{
 				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]]
-					setState:([(NSString*)sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
-		for( i = maxBit; i<64; i++ )
+				 setState:([(NSString*)sheetEditData characterAtIndex:(maxBit - i - 1)] == '1') ? NSOnState : NSOffState];
+			}
+
+		for (i = maxBit; i < 64; i++)
+		{
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setEnabled:NO];
+		}
 
 		[self updateBitSheet];
 
@@ -295,7 +313,7 @@
 
 		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), label]];
 
-		// hide all views in editSheet
+		// Hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
@@ -314,11 +332,12 @@
 		encoding = anEncoding;
 
 		_isBlob = isFieldBlob;
-		BOOL _isBINARY = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
+		
+		BOOL isBinary = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
 
 		sheetEditData = [data retain];
 
-		// hide all views in editSheet
+		// Hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
@@ -326,13 +345,13 @@
 		[editTextScrollView setHidden:YES];
 
 		// Hide QuickLook button and text/image/hex control for text data
-		[editSheetQuickLookButton setHidden:((!_isBlob && !_isBINARY) || _isGeometry)];
-		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY && !_isGeometry)];
+		[editSheetQuickLookButton setHidden:((!_isBlob && !isBinary) || _isGeometry)];
+		[editSheetSegmentControl setHidden:(!_isBlob && !isBinary && !_isGeometry)];
 
 		[editSheetSegmentControl setEnabled:YES forSegment:1];
 
 		// Set window's min size since no segment and quicklook buttons are hidden
-		if (_isBlob || _isBINARY || _isGeometry) {
+		if (_isBlob || isBinary || _isGeometry) {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 			[usedSheet setMinSize:NSMakeSize(650, 200)];
 		} 
@@ -362,15 +381,22 @@
 		[editSheetProgressBar startAnimation:self];
 
 		NSImage *image = nil;
-		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
+
+		if ([sheetEditData isKindOfClass:[NSData class]]) {
 			image = [[[NSImage alloc] initWithData:sheetEditData] autorelease];
 
 			// Set hex view to "" - load on demand only
 			[hexTextView setString:@""];
 
 			stringValue = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
-			if (stringValue == nil)
+
+			if (stringValue == nil) {
 				stringValue = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
+			}
+
+			if (isBinary) {
+				stringValue	= [[NSString alloc] initWithFormat:@"0x%@", [sheetEditData dataToHexString]];
+			}
 
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
@@ -378,10 +404,14 @@
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
-		} else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
+		}
+		else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
+
 			image = [v thumbnailImage];
+
 			stringValue = [[sheetEditData wktString] retain];
+
 			[hexTextView setString:@""];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
@@ -389,7 +419,8 @@
 			[editSheetSegmentControl setSelectedSegment:0];
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
-		} else {
+		}
+		else {
 			stringValue = [sheetEditData retain];
 
 			[hexTextView setString:@""];
@@ -412,19 +443,23 @@
 				[editTextScrollView setHidden:YES];
 				[editSheetSegmentControl setSelectedSegment:1];
 			}
-		} else {
+		}
+		else {
 			[editImage setImage:nil];
 		}
+
 		if (stringValue) {
 			[editTextView setString:stringValue];
 
-			if(image == nil) {
-				if(!_isBINARY) {
+			if (image == nil) {
+				if (!isBinary) {
 					[hexTextView setHidden:YES];
 					[hexTextScrollView setHidden:YES];
-				} else {
+				}
+				else {
 					[editSheetSegmentControl setEnabled:NO forSegment:1];
 				}
+
 				[editImage setHidden:YES];
 				[editTextView setHidden:NO];
 				[editTextScrollView setHidden:NO];
@@ -434,22 +469,20 @@
 			// Locate the caret in editTextView
 			// (restore a given selection coming from the in-cell editing mode)
 			NSRange selRange = [callerInstance fieldEditorSelectedRange];
+
 			[editTextView setSelectedRange:selRange];
 			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
 			// If the string content is NULL select NULL for convenience
-			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
+			if ([stringValue isEqualToString:[prefs objectForKey:SPNullValue]]) {
 				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			}
 
 			// Set focus
-			if(image == nil || _isGeometry)
-				[usedSheet makeFirstResponder:editTextView];
-			else
-				[usedSheet makeFirstResponder:editImage];
-
+			[usedSheet makeFirstResponder:image == nil || _isGeometry ? editTextView : editImage];
 		}
 		
-		if(stringValue) [stringValue release], stringValue = nil;
+		if (stringValue) [stringValue release], stringValue = nil;
 
 		editSheetWillBeInitialized = NO;
 
@@ -559,16 +592,17 @@
  */
 - (IBAction)saveEditSheet:(id)sender
 {
-
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *fileDefault = @"";
 
-	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
+	if ([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 		[panel setAllowedFileTypes:[NSArray arrayWithObject:@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
-	} else {
+	}
+	else {
 		[panel setAllowsOtherFileTypes:YES];
 	}
+
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setExtensionHidden:NO];
 
@@ -1231,7 +1265,6 @@
  */
 - (IBAction)setToNull:(id)sender
 {
-
 	unsigned long i;
 	unsigned long maxBit = (unsigned long)((maxTextLength > 64) ? 64 : maxTextLength);
 
@@ -1250,7 +1283,6 @@
 	}
 
 	[self updateBitSheet];
-
 }
 
 /**
@@ -1258,9 +1290,7 @@
  */
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender
 {
-
 	[self updateBitSheet];
-
 }
 
 #pragma mark -
@@ -1317,9 +1347,9 @@
 			intValue >>= 1;
 			i++;
 		}
+		
 		[self updateBitSheet];
 	}
-
 }
 
 /**
@@ -1446,7 +1476,6 @@
 		// set edit data to text
 		sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 	}
-
 }
 
 /**

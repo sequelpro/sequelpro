@@ -179,6 +179,8 @@
 
 	NSColor *blackColor;
 	NSColor *lightGrayColor;
+	NSColor *blueColor;
+	NSColor *whiteColor;
 
 	SPFieldEditorController *fieldEditor;
 	NSRange fieldEditorSelectedRange;
