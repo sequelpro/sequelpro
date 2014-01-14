@@ -1169,7 +1169,7 @@
                                                                             <rect key="frame" x="0.0" y="0.0" width="606" height="25.5"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <ruleEditor nestingMode="compound" canRemoveAllRows="YES" rowHeight="25" id="FF9-z2-9od" customClass="SPRuleEditor">
+                                                                                <ruleEditor nestingMode="compound" canRemoveAllRows="YES" rowHeight="25" id="FF9-z2-9od">
                                                                                     <rect key="frame" x="0.0" y="0.0" width="606" height="25.5"/>
                                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                                                                 </ruleEditor>
@@ -1272,7 +1272,7 @@
                                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                                 <subviews>
                                                                                     <searchField hidden="YES" verticalHuggingPriority="750" id="6371">
-                                                                                        <rect key="frame" x="168.5" y="4" width="110" height="19"/>
+                                                                                        <rect key="frame" x="168.49999999329447" y="4" width="110" height="19"/>
                                                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
                                                                                         <searchFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" bezelStyle="round" sendsSearchStringImmediately="YES" sendsWholeSearchString="YES" id="6372">
                                                                                             <font key="font" metaFont="smallSystem"/>
