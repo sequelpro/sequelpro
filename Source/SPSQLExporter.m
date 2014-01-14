@@ -333,7 +333,6 @@
 				else {
 					[queryColumnDetails addObject:[[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]];
 				}
-				
 			}
 																			
 			// Retrieve the number of rows in the table for progress bar drawing
@@ -586,8 +585,7 @@
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
-					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]
-										   dataUsingEncoding:NSUTF8StringEncoding]];
+					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 			}
 		}
@@ -608,6 +606,7 @@
 		}
 		
 		[metaString setString:@"\n\n"];
+
 		// Add the name of table
 		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", tableName];
 		[metaString appendFormat:@"DROP TABLE %@;\n\n", [tableName backtickQuotedString]];
@@ -770,7 +769,6 @@
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 		}
-		
 	}
 	
 	// Restore unique checks, foreign key checks, and other settings saved at the start
