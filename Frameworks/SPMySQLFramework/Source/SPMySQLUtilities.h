@@ -32,6 +32,8 @@
 
 #include <mach/mach_time.h>
 
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 /**
  * Define a project function to make it easier to use mach_absolute_time()
  * to track monotonically increasing time.
