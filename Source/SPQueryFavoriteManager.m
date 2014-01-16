@@ -321,8 +321,13 @@
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 	
 	[encodingPopUp setEnabled:YES];
-	
-	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveQuery"];
+
+	[panel setNameFieldStringValue:[favoriteNameTextField stringValue]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:@"saveQuery"];
+	}];
 #endif
 }
 
@@ -338,7 +343,10 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFavorites"];
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:@"exportFavorites"];
+	}];
 #endif
 }
 
@@ -346,19 +354,18 @@
 {
 #ifndef SP_CODA
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	// [panel setResolvesAliases:YES];
-	
-	[panel beginSheetForDirectory:nil 
-						   file:@"" 
-						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil] 
-				 modalForWindow:[self window]
-				  modalDelegate:self 
-				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:NULL];
+
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault, SPFileExtensionSQL]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self importPanelDidEnd:panel returnCode:returnCode contextInfo:NULL];
+	}];
 #endif
 }
 
@@ -372,7 +379,6 @@
  */
 - (IBAction)insertPlaceholder:(id)sender
 {
-
 	// Look up the sender's tag to determine the placeholder to insert.
 	// Note that tag values alter behaviour slightly - see below.
 	NSDictionary *lookupTable = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -476,8 +482,6 @@
 		for(id doc in [[NSApp delegate] orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
-
-
 	}
 #endif
 
@@ -887,7 +891,6 @@
 	}
 #endif
 }
-
 
 /**
  * Save panel did end method.

@@ -36,6 +36,8 @@
 #import "SPAppController.h"
 #import "SPBundleCommandRunner.h"
 
+static NSString *SPSaveDocumentAction = @"SPSaveDocument";
+
 @class WebScriptCallFrame;
 
 #pragma mark -
@@ -176,14 +178,13 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
 		[sheet orderOut:nil];
 	else if ([sheet respondsToSelector:@selector(window)])
 		[[sheet window] orderOut:nil];
 
-	if([contextInfo isEqualToString:@"saveDocument"]) {
+	if ([contextInfo isEqualToString:SPSaveDocumentAction]) {
 		if (returnCode == NSOKButton) {
 			NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
 			NSError *err = nil;
@@ -191,11 +192,10 @@
 						atomically:YES
 						encoding:NSUTF8StringEncoding
 						error:&err];
-			if(err != nil) {
+			if (err != nil) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
 								  [NSString stringWithFormat:@"%@", [err localizedDescription]]);
 			}
-			
 		}
 	}
 }
@@ -252,42 +252,52 @@
 		delegate:self
 		didRunSelector:nil
 		contextInfo:nil];
-
 }
 
 - (void)showSourceCode
 {
 	NSString *sourceCode = [webView stringByEvaluatingJavaScriptFromString:@"document.getElementsByTagName('html')[0].outerHTML"];
+
 	SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+
 	[c displayHTMLContent:[NSString stringWithFormat:@"<pre>%@</pre>", [sourceCode HTMLEscapeString]] withOptions:nil];
+
 	[[NSApp delegate] addHTMLOutputController:c];
 }
 
 - (void)saveDocument
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:@"html"]];
+
+	[panel setNameFieldStringValue:@"output"];
+	[panel setAllowedFileTypes:@[@"html"]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:@"output" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveDocument"];
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self sheetDidEnd:panel returnCode:returnCode contextInfo:SPSaveDocumentAction];
+	}];
 }
-
 
 #pragma mark -
 
 - (void)windowWillClose:(NSNotification *)notification
 {
 	[[webView mainFrame] loadHTMLString:@"<html></html>" baseURL:nil];
+
 	[webView close];
+
 	[self setInitHTMLSourceString:@""];
+
 	windowUUID = @"";
 	docUUID = @"";
+
 	[[NSApp delegate] removeHTMLOutputController:self];
+
 	[self release];
 }
 
@@ -333,12 +343,12 @@
 - (void)webViewShow:(WebView *)sender
 {
 	id newWebView = [[NSDocumentController sharedDocumentController] documentForWindow:[sender window]];
+
 	[newWebView showWindows];
 }
 
 - (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener
 {
-
 	NSInteger navigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] integerValue];
 
 	// sequelpro:// handler
@@ -369,9 +379,7 @@
 			default:
 			[listener use];
 		}
-
 	}
-
 }
 
 - (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
@@ -436,7 +444,6 @@
 
 - (void)webView:(WebView *)sender windowScriptObjectAvailable:(WebScriptObject *)windowScriptObject
 {
-
 	[windowScriptObject setValue:self forKey:@"system"];
 	[webView setScriptDebugDelegate:self];
 }
@@ -462,53 +469,68 @@
 	return @"";
 }
 
-+ (BOOL)isSelectorExcludedFromWebScript:(SEL)selector {
++ (BOOL)isSelectorExcludedFromWebScript:(SEL)selector
+{
 	if (selector == @selector(run:)) {
 		return NO;
 	}
+
 	if (selector == @selector(getShellEnvironmentForName:)) {
 		return NO;
 	}
+
 	if (selector == @selector(insertText:)) {
 		return NO;
 	}
+
 	if (selector == @selector(setText:)) {
 		return NO;
 	}
+
 	if (selector == @selector(setSelectedTextRange:)) {
 		return NO;
 	}
+
 	if (selector == @selector(makeHTMLOutputWindowKeyWindow)) {
 		return NO;
 	}
+
 	if (selector == @selector(closeHTMLOutputWindow)) {
 		return NO;
 	}
+
 	if (selector == @selector(suppressExceptionAlert)) {
 		return NO;
 	}
+
 	return YES;
 }
 
-+ (BOOL)isKeyExcludedFromWebScript:(const char *)property {
++ (BOOL)isKeyExcludedFromWebScript:(const char *)property
+{
 	if (strcmp(property, "run") == 0) {
 		return NO;
 	}
+
 	if (strcmp(property, "getShellEnvironmentForName") == 0) {
 		return NO;
 	}
+
 	if (strcmp(property, "insertText") == 0) {
 		return NO;
 	}
+
 	if (strcmp(property, "setText") == 0) {
 		return NO;
 	}
+
 	if (strcmp(property, "setSelectedTextRange") == 0) {
 		return NO;
 	}
 	if (strcmp(property, "makeHTMLOutputWindowKeyWindow") == 0) {
 		return NO;
 	}
+
 	return YES;
 }
 
@@ -579,10 +601,12 @@
 - (void)insertText:(NSString*)text
 {
 	id firstResponder = [[NSApp keyWindow] firstResponder];
-	if([firstResponder isKindOfClass:[NSTextView class]]) {
+
+	if ([firstResponder isKindOfClass:[NSTextView class]]) {
 		[firstResponder insertText:text];
 		return;
 	}
+
 	NSBeep();
 }
 
@@ -593,11 +617,13 @@
 - (void)setText:(NSString*)text
 {
 	id firstResponder = [[NSApp keyWindow] firstResponder];
-	if([firstResponder isKindOfClass:[NSTextView class]]) {
+
+	if ([firstResponder isKindOfClass:[NSTextView class]]) {
 		[firstResponder setSelectedRange:NSMakeRange(0, [[firstResponder string] length])];
 		[firstResponder insertText:text];
 		return;
 	}
+
 	NSBeep();
 }
 
@@ -608,13 +634,15 @@
 - (void)setSelectedTextRange:(NSString*)range
 {
 	id firstResponder = [[NSApp keyWindow] firstResponder];
-	if([firstResponder isKindOfClass:[NSTextView class]]) {
+
+	if ([firstResponder isKindOfClass:[NSTextView class]]) {
 		NSRange theRange = NSIntersectionRange(NSRangeFromString(range), NSMakeRange(0, [[firstResponder string] length]));
 		if(theRange.location != NSNotFound) {
 			[firstResponder setSelectedRange:theRange];
 		}
 		return;
 	}
+
 	NSBeep();
 }
 
@@ -633,7 +661,6 @@
  */
 - (NSString *)run:(id)call
 {
-
 	NSError *err = nil;
 	NSString *command = nil;
 	NSString *uuid = nil;
@@ -703,21 +730,22 @@
 		NSBeep();
 		return @"";
 	}
-
 }
 
 #pragma mark -
-#pragma mark multi-touch trackpad support
+#pragma mark Multi-touch trackpad support
 
 /**
  * Trackpad two-finger zooming gesture for in/decreasing the font size
  */
 - (void)magnifyWithEvent:(NSEvent *)anEvent
 {
-	if([anEvent deltaZ]>2.0)
+	if ([anEvent deltaZ] > 2.0) {
 		[webView makeTextLarger:nil];
-	else if([anEvent deltaZ]<-2.0)
+	}
+	else if ([anEvent deltaZ] < -2.0) {
 		[webView makeTextSmaller:nil];
+	}
 }
 
 @end
