@@ -37,6 +37,8 @@
 #import "SPBundleCommandTextView.h"
 #import "SPSplitView.h"
 
+static NSString *SPSaveBundleAction = @"SPSaveBundle";
+
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
 #define kInputFieldScopeArrayIndex 0
@@ -728,12 +730,10 @@
  */
 - (IBAction)revealCommandBundleInFinder:(id)sender
 {
-
-	if([commandsOutlineView numberOfSelectedRows] != 1) return;
+	if ([commandsOutlineView numberOfSelectedRows] != 1) return;
 
 	[[NSWorkspace sharedWorkspace] selectFile:[NSString stringWithFormat:@"%@/%@.%@/%@", 
 		bundlePath, [[self _currentSelectedObject] objectForKey:kBundleNameKey], SPUserBundleFileExtension, SPBundleFileName] inFileViewerRootedAtPath:nil];
-
 }
 
 /**
@@ -750,7 +750,12 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:[[self _currentSelectedObject] objectForKey:kBundleNameKey] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
+	[panel setNameFieldStringValue:[[self _currentSelectedObject] objectForKey:kBundleNameKey]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger	returnCode)
+	{
+		[self sheetDidEnd:panel returnCode:returnCode contextInfo:SPSaveBundleAction];
+	}];
 }
 
 /**
@@ -774,9 +779,7 @@
  */
 - (IBAction)showWindow:(id)sender
 {
-
 	[super showWindow:sender];
-
 }
 
 - (IBAction)performClose:(id)sender

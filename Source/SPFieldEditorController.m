@@ -580,11 +580,12 @@
  */
 - (IBAction)openEditSheet:(id)sender
 {
-	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
-											   file:@""
-									 modalForWindow:usedSheet
-									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-										contextInfo:NULL];
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self openPanelDidEnd:panel returnCode:returnCode contextInfo:nil];
+	}];
 }
 
 /**
@@ -593,10 +594,9 @@
 - (IBAction)saveEditSheet:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	NSString *fileDefault = @"";
 
 	if ([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
-		[panel setAllowedFileTypes:[NSArray arrayWithObject:@"pdf"]];
+		[panel setAllowedFileTypes:@[@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
 	}
 	else {
@@ -606,12 +606,10 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setExtensionHidden:NO];
 
-	[panel beginSheetForDirectory:nil
-							   file:fileDefault
-					 modalForWindow:usedSheet
-					  modalDelegate:self
-					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
-						contextInfo:NULL];
+	[panel beginSheetModalForWindow:usedSheet completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:nil];
+	}];
 }
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo

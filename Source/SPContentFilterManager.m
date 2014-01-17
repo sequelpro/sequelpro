@@ -40,7 +40,7 @@
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
 
-static NSString *SPExportFilterAction = @"SPExportFilterAction";
+static NSString *SPExportFilterAction = @"SPExportFilter";
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
