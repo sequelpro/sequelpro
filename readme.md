@@ -17,3 +17,9 @@ Build Instructions
  * Click the `Run` button in the toolbar
  * If the above doesn't work, please file a [bug report](https://github.com/sequelpro/sequelpro/issues/new)
  
+License
+=======
+
+Copyright (c) 2002-2014 Sequel Pro & CocoaMySQL Teams. All rights reserved.
+
+Sequel Pro is free and open source software, licensed under MIT. See LICENSE for full details.
