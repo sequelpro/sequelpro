@@ -303,6 +303,7 @@
 																			<object class="NSButtonCell" key="NSCancelButtonCell">
 																				<int key="NSCellFlags">-2147483648</int>
 																				<int key="NSCellFlags2">0</int>
+																				<string key="NSContents">clear</string>
 																				<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 																					<dictionary class="NSMutableDictionary">
 																						<string key="AXDescription">cancel</string>
@@ -1110,7 +1111,6 @@
 										<string key="NSFrame">{{-6.5, -10}, {740, 564}}</string>
 										<reference key="NSSuperview" ref="630926746"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="100283475"/>
 										<array class="NSMutableArray" key="NSTabViewItems">
 											<object class="NSTabViewItem" id="449203689">
 												<string key="NSIdentifier">source</string>
@@ -1165,7 +1165,7 @@
 																							<int key="NSvFlags">4352</int>
 																							<string key="NSFrameSize">{689, 288}</string>
 																							<reference key="NSSuperview" ref="971612446"/>
-																							<reference key="NSNextKeyView" ref="1057730379"/>
+																							<reference key="NSNextKeyView" ref="427920699"/>
 																							<bool key="NSEnabled">YES</bool>
 																							<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 																							<bool key="NSControlAllowsExpansionToolTips">YES</bool>
@@ -1778,7 +1778,7 @@
 																			</array>
 																			<string key="NSFrame">{{-1, 22}, {691, 306}}</string>
 																			<reference key="NSSuperview" ref="981492694"/>
-																			<reference key="NSNextKeyView" ref="427920699"/>
+																			<reference key="NSNextKeyView" ref="971612446"/>
 																			<int key="NSsFlags">133682</int>
 																			<reference key="NSVScroller" ref="346829497"/>
 																			<reference key="NSHScroller" ref="1057730379"/>
@@ -2143,7 +2143,7 @@
 																							<int key="NSvFlags">4352</int>
 																							<string key="NSFrameSize">{689, 141}</string>
 																							<reference key="NSSuperview" ref="472300297"/>
-																							<reference key="NSNextKeyView" ref="673560219"/>
+																							<reference key="NSNextKeyView" ref="982675320"/>
 																							<bool key="NSEnabled">YES</bool>
 																							<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 																							<bool key="NSControlAllowsExpansionToolTips">YES</bool>
@@ -2462,7 +2462,7 @@
 																			</array>
 																			<string key="NSFrame">{{-1, 22}, {691, 159}}</string>
 																			<reference key="NSSuperview" ref="162304252"/>
-																			<reference key="NSNextKeyView" ref="982675320"/>
+																			<reference key="NSNextKeyView" ref="472300297"/>
 																			<int key="NSsFlags">133682</int>
 																			<reference key="NSVScroller" ref="673560219"/>
 																			<reference key="NSHScroller" ref="230182748"/>
@@ -2912,7 +2912,7 @@
 																							<string key="NSFrameSize">{606, 25.5}</string>
 																							<reference key="NSSuperview" ref="889317496"/>
 																							<reference key="NSWindow"/>
-																							<reference key="NSNextKeyView" ref="617505990"/>
+																							<reference key="NSNextKeyView" ref="497073944"/>
 																							<string key="NSHuggingPriority">{250, 250}</string>
 																							<bool key="NSEnabled">YES</bool>
 																							<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
@@ -2973,7 +2973,7 @@
 																			<string key="NSFrame">{{0, -0.5}, {606, 25.5}}</string>
 																			<reference key="NSSuperview" ref="134459988"/>
 																			<reference key="NSWindow"/>
-																			<reference key="NSNextKeyView" ref="497073944"/>
+																			<reference key="NSNextKeyView" ref="889317496"/>
 																			<int key="NSsFlags">133632</int>
 																			<reference key="NSVScroller" ref="287875968"/>
 																			<reference key="NSHScroller" ref="497073944"/>
@@ -3008,7 +3008,7 @@
 																							<string key="NSFrameSize">{693, 432.5}</string>
 																							<reference key="NSSuperview" ref="359368454"/>
 																							<reference key="NSWindow"/>
-																							<reference key="NSNextKeyView" ref="759845062"/>
+																							<reference key="NSNextKeyView" ref="916396282"/>
 																							<bool key="NSEnabled">YES</bool>
 																							<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 																							<bool key="NSControlAllowsExpansionToolTips">YES</bool>
@@ -3123,7 +3123,7 @@
 																			<string key="NSFrame">{{0, -1.5}, {695, 450.5}}</string>
 																			<reference key="NSSuperview" ref="527054400"/>
 																			<reference key="NSWindow"/>
-																			<reference key="NSNextKeyView" ref="916396282"/>
+																			<reference key="NSNextKeyView" ref="359368454"/>
 																			<int key="NSsFlags">133682</int>
 																			<reference key="NSVScroller" ref="849754709"/>
 																			<reference key="NSHScroller" ref="759845062"/>
@@ -3299,6 +3299,7 @@
 																								<object class="NSButtonCell" key="NSCancelButtonCell">
 																									<int key="NSCellFlags">-1610612736</int>
 																									<int key="NSCellFlags2">0</int>
+																									<string key="NSContents">clear</string>
 																									<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 																										<dictionary class="NSMutableDictionary">
 																											<string key="AXDescription">cancel</string>
@@ -3373,6 +3374,7 @@
 																								<object class="NSButtonCell" key="NSCancelButtonCell">
 																									<int key="NSCellFlags">-2147483648</int>
 																									<int key="NSCellFlags2">0</int>
+																									<string key="NSContents">clear</string>
 																									<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 																										<dictionary class="NSMutableDictionary">
 																											<string key="AXDescription">cancel</string>
@@ -3395,7 +3397,7 @@
 																						<object class="NSSearchField" id="316472124">
 																							<reference key="NSNextResponder" ref="56200808"/>
 																							<int key="NSvFlags">-2147483381</int>
-																							<string key="NSFrame">{{168.49999999329447, 4}, {110, 19}}</string>
+																							<string key="NSFrame">{{168.49999998648059, 4}, {110, 19}}</string>
 																							<reference key="NSSuperview" ref="56200808"/>
 																							<reference key="NSWindow"/>
 																							<reference key="NSNextKeyView" ref="332657589"/>
@@ -3425,6 +3427,7 @@
 																								<object class="NSButtonCell" key="NSCancelButtonCell">
 																									<int key="NSCellFlags">-2147483648</int>
 																									<int key="NSCellFlags2">0</int>
+																									<string key="NSContents">clear</string>
 																									<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 																										<dictionary class="NSMutableDictionary">
 																											<string key="AXDescription">cancel</string>
@@ -6814,7 +6817,7 @@
 					</array>
 					<string key="NSFrameSize">{384, 133}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{384, 155}</string>
 				<string key="NSMaxSize">{600, 155}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -6985,7 +6988,7 @@
 					</array>
 					<string key="NSFrameSize">{384, 119}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{384, 141}</string>
 				<string key="NSMaxSize">{600, 141}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -7170,7 +7173,7 @@
 					</array>
 					<string key="NSFrameSize">{379, 154}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{379, 176}</string>
 				<string key="NSMaxSize">{379, 176}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -7278,7 +7281,7 @@
 					</array>
 					<string key="NSFrameSize">{314, 112}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{292, 134}</string>
 				<string key="NSMaxSize">{650, 134}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -7536,7 +7539,7 @@
 					</array>
 					<string key="NSFrameSize">{384, 162}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{384, 164}</string>
 				<string key="NSMaxSize">{600, 184}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -7667,7 +7670,7 @@
 					</array>
 					<string key="NSFrameSize">{260, 127}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{260, 149}</string>
 				<string key="NSMaxSize">{600, 149}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -7824,7 +7827,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{306, 122}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{213, 129}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -8019,7 +8022,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{303, 95}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{255, 117}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -8770,7 +8773,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{379, 369}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
 			</object>
@@ -9165,7 +9168,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{360, 348}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{360, 370}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -9297,7 +9300,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{379, 139}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{213, 72}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -9440,7 +9443,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{381, 247}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{213, 129}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -9668,7 +9671,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{411, 341}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{350, 222}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">SPCreateSyntaxSheet</string>
@@ -9851,7 +9854,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{405, 267}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{213, 129}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -9932,6 +9935,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<object class="NSButtonCell" key="NSCancelButtonCell">
 									<int key="NSCellFlags">-2147483648</int>
 									<int key="NSCellFlags2">0</int>
+									<string key="NSContents">clear</string>
 									<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 										<dictionary class="NSMutableDictionary">
 											<string key="AXDescription">cancel</string>
@@ -10007,10 +10011,10 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="NSSegmentedCell" key="NSCell" id="951022170">
 								<int key="NSCellFlags">67108864</int>
 								<int key="NSCellFlags2">0</int>
-								<object class="NSFont" key="NSSupport" id="28">
+								<object class="NSFont" key="NSSupport" id="513227961">
 									<string key="NSName">.LucidaGrandeUI</string>
 									<double key="NSSize">12</double>
-									<int key="NSfFlags">4883</int>
+									<int key="NSfFlags">787</int>
 								</object>
 								<reference key="NSControlView" ref="789201908"/>
 								<array class="NSMutableArray" key="NSSegmentImages">
@@ -10254,7 +10258,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{505, 308}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{351, 136}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">MYSQL_HELP_WINDOW</string>
@@ -10760,7 +10764,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{752, 317}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{600, 339}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">SPTableFilterPanel</string>
@@ -10863,6 +10867,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<reference key="NSTextColor" ref="667308713"/>
 								<int key="NSVisibleItemCount">5</int>
 								<bool key="NSHasVerticalScroller">YES</bool>
+								<reference key="NSDelegate" ref="636956002"/>
 								<object class="NSComboTableView" key="NSTableView" id="437114783">
 									<reference key="NSNextResponder"/>
 									<int key="NSvFlags">274</int>
@@ -10947,7 +10952,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{251, 102}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{251, 124}</string>
 				<string key="NSMaxSize">{251, 124}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -11078,7 +11083,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{260, 127}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{260, 149}</string>
 				<string key="NSMaxSize">{600, 149}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -11204,12 +11209,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					</array>
 					<string key="NSFrameSize">{338, 150}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {2560, 1418}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
 			</object>
 			<object class="NSCustomView" id="473434057">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">301</int>
 				<array class="NSMutableArray" key="NSSubviews">
 					<object class="NSPopUpButton" id="688363677">
@@ -11217,11 +11222,12 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 						<int key="NSvFlags">298</int>
 						<string key="NSFrame">{{0, 3}, {200, 26}}</string>
 						<reference key="NSSuperview" ref="473434057"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="627468414">
 							<int key="NSCellFlags">-2076180416</int>
 							<int key="NSCellFlags2">134219776</int>
-							<reference key="NSSupport" ref="28"/>
+							<reference key="NSSupport" ref="513227961"/>
 							<reference key="NSControlView" ref="688363677"/>
 							<int key="NSButtonFlags">-2038284288</int>
 							<int key="NSButtonFlags2">268435491</int>
@@ -11298,8 +11304,9 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 					<object class="NSSegmentedControl" id="488920219">
 						<reference key="NSNextResponder" ref="473434057"/>
 						<int key="NSvFlags">301</int>
-						<string key="NSFrame">{{208, 3}, {61, 25}}</string>
+						<string key="NSFrame">{{208, 3}, {57, 25}}</string>
 						<reference key="NSSuperview" ref="473434057"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSSegmentedCell" key="NSCell" id="621744750">
 							<int key="NSCellFlags">67108864</int>
@@ -11333,12 +11340,14 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							</array>
 							<int key="NSSelectedSegment">-1</int>
 							<int key="NSTrackingMode">2</int>
-							<int key="NSSegmentStyle">2</int>
+							<int key="NSSegmentStyle">4</int>
 						</object>
 						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 					</object>
 				</array>
 				<string key="NSFrameSize">{269, 32}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="938785731">
@@ -11649,6 +11658,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="NSButtonCell" key="NSCancelButtonCell">
 								<int key="NSCellFlags">-2147483648</int>
 								<int key="NSCellFlags2">0</int>
+								<string key="NSContents">clear</string>
 								<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 									<dictionary class="NSMutableDictionary">
 										<string key="AXDescription">cancel</string>
@@ -11709,6 +11719,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 							<object class="NSButtonCell" key="NSCancelButtonCell">
 								<int key="NSCellFlags">-2147483648</int>
 								<int key="NSCellFlags2">0</int>
+								<string key="NSContents">clear</string>
 								<array class="NSMutableArray" key="NSAccessibilityOverriddenAttributes">
 									<dictionary class="NSMutableDictionary">
 										<string key="AXDescription">cancel</string>
