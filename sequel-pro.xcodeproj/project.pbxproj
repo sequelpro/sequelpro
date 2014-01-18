@@ -4102,7 +4102,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
 					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release",
-					"$(SRCROOT)/Frameworks/QueryKit/build/Debug",
+					"$(SRCROOT)/Frameworks/QueryKit/build/Release",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
