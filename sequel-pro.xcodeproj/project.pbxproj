@@ -2614,7 +2614,6 @@
 				17E20DEF12D6602F007F75A6 /* Copy Frameworks */,
 				380F4ED50FC0B50500B0BFD7 /* Sources */,
 				17E20DFF12D6609E007F75A6 /* Frameworks */,
-				380F4ED70FC0B50500B0BFD7 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3007,19 +3006,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Scripts/localize.sh\"";
-		};
-		380F4ED70FC0B50500B0BFD7 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Add the unit test bundle's Frameworks/ path to the search paths for dynamic libraries\nexport DYLD_FRAMEWORK_PATH=\"${CONFIGURATION_BUILD_DIR}/${FULL_PRODUCT_NAME}/Contents/Frameworks\"\n\n# Run the unit tests in this test bundle\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3735,7 +3721,6 @@
 				);
 				PRODUCT_NAME = "Unit Tests";
 				WRAPPER_EXTENSION = octest;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -3858,6 +3843,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OBJC_DISABLE_GC = YES;
 				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wmost";
 			};
@@ -4169,10 +4155,10 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_FLATTEN_NIBS = NO;
 				IBC_WARNINGS = YES;
-				LEXFLAGS = "";
 				LEX_INSERT_LINE_DIRECTIVES = YES;
 				LEX_SUPPRESS_DEFAULT_RULE = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OBJC_DISABLE_GC = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -4225,6 +4211,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IBC_WARNINGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OBJC_DISABLE_GC = YES;
 				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wmost";
 			};
