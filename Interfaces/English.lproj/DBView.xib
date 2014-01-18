@@ -1154,7 +1154,7 @@
                                                             <action selector="togglePagination:" target="67" id="6662"/>
                                                         </connections>
                                                     </button>
-                                                    <splitView identifier="ContentSplitView" autosaveName="" dividerStyle="thin" id="yTv-Lq-Y3H" customClass="SPSplitView">
+                                                    <splitView autosaveName="" dividerStyle="thin" id="yTv-Lq-Y3H" customClass="SPSplitView">
                                                         <rect key="frame" x="6.5" y="33.5" width="695" height="505"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <subviews>
