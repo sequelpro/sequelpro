@@ -40,7 +40,6 @@
 #  Parameters: -p -- The path to the application that is to be trimmed 
 #              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
 #              -n -- Trim nib files (i.e. remove .info.nib, classes.nib, data.dependency and designable.nib) (optional).
-#              -s -- Strip debug symbols from application binary (optional).
 #              -t -- Compress tiff images using LZW compression (optional).
 #              -f -- Remove framework headers (optional).
 #              -r -- Remove resource forks (optional).
@@ -58,13 +57,11 @@ do
 	    p) APP_PATH="$OPTARG";;
 		d) REMOVE_FILES=1;;
 		n) TRIM_NIBS=1;;
-		s) STRIP_DEBUG=1;;
 	   	t) COMPRESS_TIFF=1;;
 	   	f) REMOVE_F_HEADERS=1;;
 	   	r) REMOVE_RSRC=1;;
 	   	a) REMOVE_FILES=1;
 	   	   TRIM_NIBS=1;
-	   	   STRIP_DEBUG=1;
 	   	   COMPRESS_TIFF=1;
 	   	   REMOVE_F_HEADERS=1;
 	   	   REMOVE_RSRC=1;;
@@ -112,14 +109,6 @@ then
     printf '\nTrimming nibs...\n'
 
     find "$APP_PATH" \( -name 'info.nib' -or -name 'classes.nib' -or -name 'data.dependency' -or -name 'designable.nib' -type f \) | while read FILE; do; printf "\tRemoving nib file: ${FILE}\n"; rm "$FILE"; done;
-fi
-
-# Strip debug symbols
-if [ $STRIP_DEBUG ]
-then
-    printf '\nStripping debug symbols...\n'
-
-    find "${APP_PATH}/Contents/MacOS" -type f | while read FILE; do; printf "\tStripping binary: ${FILE}\n"; /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Versions/A/Resources/pbxcp -resolve-src-symlinks -strip-debug-symbols "$FILE" '/tmp'; mv "/tmp/$(basename "$FILE")" "$FILE"; done;
 fi
 
 # Compress tiff images
