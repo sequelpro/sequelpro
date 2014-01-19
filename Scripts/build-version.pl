@@ -1,8 +1,6 @@
 #! /usr/bin/perl
 
 #
-#  $Id$
-#
 #  build-version.pl
 #  sequel-pro
 #
@@ -32,38 +30,80 @@
 #
 #  More info at <http://code.google.com/p/sequel-pro/>
 
-#  Updates the application/bundle's Info.plist CFBundleVersion to match that of the current
-#  Git revision.
+#  Updates the application/bundle's Info.plist CFBundleVersion to
+#  match that of the current Git revision.
 
 use strict;
 use warnings;
 
 use Carp;
 
-die "$0: Must be run from within Xcode. Exiting..." unless $ENV{"BUILT_PRODUCTS_DIR"};
+croak "$0: Must be run from within Xcode. Exiting..." unless $ENV{"BUILT_PRODUCTS_DIR"};
 
-my $svn2git_migration_compensation = 480;
-my $revision = `git log --oneline | wc -l` + $svn2git_migration_compensation;
 my $plist_path = "$ENV{BUILT_PRODUCTS_DIR}/$ENV{INFOPLIST_PATH}";
 
-my $version = $revision;
+#
+# Get the revision from Git.
+#
+sub _get_revision_number
+{
+	my $svn2git_migration_compensation = 480;
 
-($version =~ m/(\d+)[MS]*$/) && ($version = $1);
+	return `git log --oneline | wc -l` + $svn2git_migration_compensation;
+}
 
-die "$0: No Git revision found. Exiting..." unless $version;
+#
+# Get the revision short hash from Git.
+#
+sub _get_revision_short_hash
+{
+	return `git log -n 1 --oneline --format=%h`;
+}
 
-open(my $plist, $plist_path) || croak "Unable to open plist file for reading: $!";
+#
+# Get the content of the app's Info.plist file.
+#
+sub _get_plist_content
+{
+	open(my $plist, shift) || croak "Unable to open plist file for reading: $!";
 
-my $info = join('', <$plist>);
+	my $content = join('', <$plist>);
 
-close($plist);
+	close($plist);
+
+	return $content;
+}
+
+#
+# Save the supplied plist content to the supplied path.
+#
+sub _save_plist
+{
+	my ($plist_content, $plist_path) = @_;
+
+	open(my $plist, '>', $plist_path) || croak "Unable to open plist file for writing: $!";
+
+	print $plist $plist_content;
+
+	close($plist);
+}
+
+my $version = _get_revision_number();
+my $version_hash = _get_revision_short_hash();
+
+$version_hash =~ s/\n//;
+
+croak "$0: Unable to determine Git revision. Exiting..." unless $version;
+croak "$0: Unable to determine Git revision hash. Exiting..." unless $version_hash;
+
+my $info = _get_plist_content($plist_path);
 
 $info =~ s/([\t ]+<key>CFBundleVersion<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version$2/;
+$info =~ s/([\t ]+<key>SPVersionShortHash<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version_hash$2/;
 
-open($plist, '>', $plist_path) || croak "Unable to open plist file for writing: $!";
+_save_plist($info, $plist_path);
 
-print $plist $info;
-
-close($plist);
+printf("CFBunderVersion set to $version\n");
+printf("VersionShortHash set to $version_hash");
 
 exit 0

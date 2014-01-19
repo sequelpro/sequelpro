@@ -176,6 +176,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string></string>
+	<key>SPVersionShortHash</key>
+	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>

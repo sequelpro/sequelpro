@@ -35,13 +35,22 @@
 static NSString *SPCreditsFilename = @"Credits";
 static NSString *SPLicenseFilename = @"License";
 
+static NSString *SPAboutPanelNibName = @"AboutPanel";
+static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
+
+@interface SPAboutController ()
+
+- (void)_setVersionLabel:(BOOL)isNightly;
+
+@end
+
 @implementation SPAboutController
 
 #pragma mark -
 
 - (id)init
 {
-	return [super initWithWindowNibName:@"AboutPanel"];
+	return [super initWithWindowNibName:SPAboutPanelNibName];
 }
 
 - (void)awakeFromNib
@@ -52,10 +61,9 @@ static NSString *SPLicenseFilename = @"License";
 	BOOL isNightly = [version hasPrefix:@"Nightly"];
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
-	[appNameVersionTextField setStringValue:(isNightly) ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
-	
-	// Set the bundle/build version
-	[appBuildVersionTextField setStringValue:[NSString stringWithFormat:@"%@ %@", (isNightly) ? NSLocalizedString(@"Nightly Build", @"nightly build label") : NSLocalizedString(@"Build", @"build label") , [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]]];
+	[appNameVersionTextField setStringValue:isNightly ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
+
+	[self _setVersionLabel:isNightly];
 
 	// Get the credits file contents
 	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
@@ -88,6 +96,42 @@ static NSString *SPLicenseFilename = @"License";
 {
 	[NSApp endSheet:appLicensePanel returnCode:0];
 	[appLicensePanel orderOut:self];
+}
+
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Set the UI version labels.
+ *
+ * @param isNightly Indicates whether or not this is a nightly build.
+ */
+- (void)_setVersionLabel:(BOOL)isNightly
+{
+	NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+
+	// Get version numbers
+	NSString *bundleVersion = [infoDictionary objectForKey:(NSString *)kCFBundleVersionKey];
+	NSString *versionHash = [infoDictionary objectForKey:SPShortVersionHashKey];
+
+	BOOL hashIsEmpty = !versionHash && ![versionHash length];
+
+	NSString *textFieldString;
+
+	if (!bundleVersion && ![bundleVersion length] && hashIsEmpty) {
+		textFieldString = @"";
+	}
+	else {
+		textFieldString =
+		 [NSString stringWithFormat:@"%@ %@%@",
+		  isNightly ? NSLocalizedString(@"Nightly Build", @"nightly build label") : NSLocalizedString(@"Build", @"build label"),
+		  bundleVersion,
+		  hashIsEmpty ? @"" : [NSString stringWithFormat:@" (%@)", versionHash]];
+	}
+
+	NSLog(@"%@", textFieldString);
+
+	[appBuildVersionTextField setStringValue:textFieldString];
 }
 
 @end
