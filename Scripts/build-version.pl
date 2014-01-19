@@ -57,7 +57,7 @@ sub _get_revision_number
 #
 sub _get_revision_short_hash
 {
-	return `git log -n 1 --oneline --format=%h`;
+	return `git log -n 1 --pretty=format:%h`;
 }
 
 #
