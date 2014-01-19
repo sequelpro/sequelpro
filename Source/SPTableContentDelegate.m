@@ -511,7 +511,9 @@
 			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 			// Find a more reliable way of doing this check
-			if ([columnType isEqualToString:@"binary"] && [[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] hasPrefix:@"0x"]) {
+			if ([columnType isEqualToString:@"binary"] &&
+				[prefs boolForKey:SPDisplayBinaryDataAsHex] &&
+				[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] hasPrefix:@"0x"]) {
 
 				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
 			}
