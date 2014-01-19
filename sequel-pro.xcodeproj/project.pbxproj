@@ -485,13 +485,6 @@
 			remoteGlobalIDString = 17E5969E14F307CE0054EE08;
 			remoteInfo = Tests;
 		};
-		580C0B691690DDFB00E7543F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 8D15AC270486D014006FF6A4;
-			remoteInfo = "Sequel Pro";
-		};
 		5847571D120A1C6D0057631F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -2618,7 +2611,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				580C0B6A1690DDFB00E7543F /* PBXTargetDependency */,
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
@@ -3275,11 +3267,6 @@
 			target = 58B9096011C3A42B000826E5 /* xibLocalizationPostprocessor */;
 			targetProxy = 1798AB401267731F000D946A /* PBXContainerItemProxy */;
 		};
-		580C0B6A1690DDFB00E7543F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 8D15AC270486D014006FF6A4 /* Sequel Pro */;
-			targetProxy = 580C0B691690DDFB00E7543F /* PBXContainerItemProxy */;
-		};
 		5847571E120A1C6D0057631F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 584754C1120A04560057631F /* Sequel Pro QLGenerator */;
@@ -3691,6 +3678,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -3720,6 +3708,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
@@ -3747,6 +3736,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;

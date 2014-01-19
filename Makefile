@@ -6,7 +6,7 @@ BUILD_CONFIG?=$(CONFIG)
 CP=ditto --rsrc
 RM=rm
 
-.PHONY: sequel-pro test clean localize latest
+.PHONY: sequel-pro test analyze clean localize
 
 sequel-pro:
 	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" $(OPTIONS) build
@@ -21,8 +21,5 @@ clean:
 	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" $(OPTIONS) clean
 
 localize:
-	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" $(OPTIONS) -target Localize
+	xcodebuild -project sequel-pro.xcodeproj -configuration "$(BUILD_CONFIG)" $(OPTIONS) -target Localize
 
-latest:
-	svn update
-	make sequel-pro

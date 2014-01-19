@@ -8,20 +8,16 @@ BUILD_CONFIG?=$(CONFIG)
 CP=ditto --rsrc
 RM=rm
 
-.PHONY: postgreskit test clean clean-all latest
+.PHONY: postgreskit test analyze clean
 
 querykit:
-	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" $(OPTIONS) build
+	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(PGK_CFLAGS)" $(OPTIONS) build
 
 test:
-	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(SP_CFLAGS)" -target Tests $(OPTIONS) build
+	xcodebuild -project PostgresKit.xcodeproj -scheme "PostgresKit" -configuration "$(BUILD_CONFIG)" CFLAGS="$(PGK_CFLAGS)" $(OPTIONS) test
+
+analyze:
+	xcodebuild -project PostgresKit.xcodeproj -scheme "PostgresKit" -configuration "$(BUILD_CONFIG)" CFLAGS="$(PGK_CFLAGS)" $(OPTIONS) analyze
 
 clean:
-	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" $(OPTIONS) -nodependencies clean
-
-clean-all:
 	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" $(OPTIONS) clean
-
-latest:
-	svn update
-	make postgreskit

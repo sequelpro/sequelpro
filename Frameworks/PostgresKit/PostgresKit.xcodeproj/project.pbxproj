@@ -452,7 +452,6 @@
 			buildPhases = (
 				1724CD0015FB68E800AB2291 /* Sources */,
 				1724CD0115FB68E800AB2291 /* Frameworks */,
-				1724CD0215FB68E800AB2291 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -487,6 +486,8 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "PostgresKit" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
@@ -507,22 +508,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		1724CD0215FB68E800AB2291 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Scripts/run-tests.sh\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		1724CD0015FB68E800AB2291 /* Sources */ = {
@@ -595,6 +580,7 @@
 				);
 				PREBINDING = YES;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -621,6 +607,7 @@
 				);
 				PREBINDING = YES;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -646,6 +633,7 @@
 				);
 				PREBINDING = YES;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;
@@ -663,7 +651,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_PREFIX_HEADER = "";
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Distribution;
@@ -827,7 +815,7 @@
 				INFOPLIST_PREFIX_HEADER = "";
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
@@ -845,7 +833,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_PREFIX_HEADER = "";
 				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				SDKROOT = macosx;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Release;

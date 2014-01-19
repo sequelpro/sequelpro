@@ -321,7 +321,6 @@
 			buildPhases = (
 				17E5969A14F307CE0054EE08 /* Sources */,
 				17E5969B14F307CE0054EE08 /* Frameworks */,
-				17E5969C14F307CE0054EE08 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -390,22 +389,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		17E5969C14F307CE0054EE08 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		17E5969A14F307CE0054EE08 /* Sources */ = {
@@ -544,6 +527,7 @@
 					SenTestingKit,
 				);
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -569,6 +553,7 @@
 					SenTestingKit,
 				);
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -593,6 +578,7 @@
 					SenTestingKit,
 				);
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;
