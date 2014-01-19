@@ -129,8 +129,6 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 		  hashIsEmpty ? @"" : [NSString stringWithFormat:@" (%@)", versionHash]];
 	}
 
-	NSLog(@"%@", textFieldString);
-
 	[appBuildVersionTextField setStringValue:textFieldString];
 }
 
