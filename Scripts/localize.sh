@@ -1,8 +1,6 @@
 #! /bin/ksh 
 
 #
-#  $Id$
-#
 #  localize.sh
 #  sequel-pro
 #

@@ -1,8 +1,6 @@
 #! /bin/ksh 
 
 #
-#  $Id$
-#
 #  trim-application.sh
 #  sequel-pro
 #

@@ -1,8 +1,6 @@
 #! /bin/ksh
 
 #
-#  $Id$
-#
 #  build.sh
 #  sequel-pro
 #

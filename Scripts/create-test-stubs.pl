@@ -1,8 +1,6 @@
 #! /usr/bin/perl
 
 #
-#  $Id$
-#
 #  create-test-stubs.pl
 #  sequel-pro
 #
@@ -80,9 +78,7 @@ sub write_header_to_file
 	
 	$filename = ($is_header) ? "${filename}.h" : "${filename}.m";
 	
-	my $content = << "EOF";
-//
-//  \$Id\$  
+	my $content = << "EOF"; 
 //
 //  $filename
 //  $project

@@ -1,8 +1,6 @@
 #!/bin/sh
 
 #
-#  $Id$
-#
 #  package-application.sh
 #  sequel-pro
 #
@@ -32,7 +30,8 @@
 #
 #  More info at <http://code.google.com/p/sequel-pro/>
 
-#  A very basic script to build and sign a disk image for Sequel Pro; based on better work by Stuart Connolly.
+#  A very basic script to build and sign a disk image for Sequel Pro;
+#  based on better work by Stuart Connolly.
 #
 #  Ensure the path to the application has been supplied - should have occurred when the
 #  script was run by selecting 'Distribution' target and building.
