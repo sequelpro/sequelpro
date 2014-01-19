@@ -409,7 +409,7 @@
 					</array>
 					<string key="NSFrameSize">{433, 341}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{433, 363}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>

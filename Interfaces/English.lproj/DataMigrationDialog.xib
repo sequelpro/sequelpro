@@ -493,11 +493,11 @@
 												<int key="NSColorSpace">6</int>
 												<string key="NSCatalogName">System</string>
 												<string key="NSColorName">_sourceListBackgroundColor</string>
-												<object class="NSColor" key="NSColor" id="274967674">
+												<object class="NSColor" key="NSColor" id="556940692">
 													<int key="NSColorSpace">6</int>
 													<string key="NSCatalogName">System</string>
 													<string key="NSColorName">alternateSelectedControlColor</string>
-													<object class="NSColor" key="NSColor" id="520687488">
+													<object class="NSColor" key="NSColor" id="102792149">
 														<int key="NSColorSpace">1</int>
 														<bytes key="NSRGB">MCAwIDEAA</bytes>
 													</object>
@@ -1152,7 +1152,7 @@
 														</dictionary>
 														<reference key="NSInsertionColor" ref="938074100"/>
 														<dictionary key="NSLinkAttributes">
-															<reference key="NSColor" ref="520687488"/>
+															<reference key="NSColor" ref="102792149"/>
 															<object class="NSCursor" key="NSCursor">
 																<string key="NSHotSpot">{8, -8}</string>
 																<int key="NSCursorType">13</int>
@@ -1542,7 +1542,7 @@
 					</array>
 					<string key="NSFrameSize">{634, 348}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{634, 370}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">SPCSVFieldMappingSheet</string>
@@ -1688,7 +1688,7 @@
 												<int key="NSColorSpace">6</int>
 												<string key="NSCatalogName">System</string>
 												<string key="NSColorName">_sourceListBackgroundColor</string>
-												<reference key="NSColor" ref="274967674"/>
+												<reference key="NSColor" ref="556940692"/>
 											</object>
 											<reference key="NSGridColor" ref="406268685"/>
 											<double key="NSRowHeight">14</double>
@@ -1954,7 +1954,7 @@
 					</array>
 					<string key="NSFrameSize">{311, 210}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 1002}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{311, 208}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName"/>
@@ -2262,7 +2262,7 @@
 					</array>
 					<string key="NSFrameSize">{269, 120}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{269, 142}</string>
 				<string key="NSMaxSize">{269, 142}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>

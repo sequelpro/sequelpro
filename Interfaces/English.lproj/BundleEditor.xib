@@ -365,7 +365,7 @@
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
 																<string key="NSColorName">_sourceListBackgroundColor</string>
-																<object class="NSColor" key="NSColor" id="263433358">
+																<object class="NSColor" key="NSColor" id="222491129">
 																	<int key="NSColorSpace">6</int>
 																	<string key="NSCatalogName">System</string>
 																	<string key="NSColorName">alternateSelectedControlColor</string>
@@ -1360,7 +1360,7 @@
 												<int key="NSColorSpace">6</int>
 												<string key="NSCatalogName">System</string>
 												<string key="NSColorName">_sourceListBackgroundColor</string>
-												<reference key="NSColor" ref="263433358"/>
+												<reference key="NSColor" ref="222491129"/>
 											</object>
 											<reference key="NSGridColor" ref="893936909"/>
 											<double key="NSRowHeight">17</double>
@@ -1478,7 +1478,7 @@
 					</array>
 					<string key="NSFrameSize">{341, 198}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{341, 214}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -1729,7 +1729,7 @@
 					</array>
 					<string key="NSFrameSize">{297, 244}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{297, 266}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>

@@ -2038,7 +2038,7 @@
 																						</object>
 																						<object class="NSAttributedString" key="NS.nan">
 																							<string key="NSString">NaN</string>
-																							<dictionary key="NSAttributes" id="794284159"/>
+																							<dictionary key="NSAttributes" id="532972741"/>
 																						</object>
 																						<real value="0.0" key="NS.min"/>
 																						<object class="NSDecimalNumberPlaceholder" key="NS.max" id="738494338">
@@ -2101,7 +2101,7 @@
 																						</object>
 																						<object class="NSAttributedString" key="NS.nan">
 																							<string key="NSString">NaN</string>
-																							<reference key="NSAttributes" ref="794284159"/>
+																							<reference key="NSAttributes" ref="532972741"/>
 																						</object>
 																						<real value="0.0" key="NS.min"/>
 																						<reference key="NS.max" ref="738494338"/>
@@ -2157,7 +2157,7 @@
 																						</object>
 																						<object class="NSAttributedString" key="NS.nan">
 																							<string key="NSString">NaN</string>
-																							<reference key="NSAttributes" ref="794284159"/>
+																							<reference key="NSAttributes" ref="532972741"/>
 																						</object>
 																						<real value="0.0" key="NS.min"/>
 																						<reference key="NS.max" ref="738494338"/>
@@ -2281,7 +2281,7 @@
 					</array>
 					<string key="NSFrameSize">{815, 506}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{752, 528}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>

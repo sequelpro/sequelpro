@@ -93,7 +93,7 @@
 												</object>
 												<object class="NSAttributedString" key="NS.nan">
 													<string key="NSString">NaN</string>
-													<dictionary key="NSAttributes" id="995888577"/>
+													<dictionary key="NSAttributes" id="817797820"/>
 												</object>
 												<real value="1" key="NS.min"/>
 												<object class="NSDecimalNumberPlaceholder" key="NS.max">
@@ -306,7 +306,7 @@
 												</object>
 												<object class="NSAttributedString" key="NS.nan">
 													<string key="NSString">NaN</string>
-													<reference key="NSAttributes" ref="995888577"/>
+													<reference key="NSAttributes" ref="817797820"/>
 												</object>
 												<real value="0.0" key="NS.min"/>
 												<real value="100000" key="NS.max"/>

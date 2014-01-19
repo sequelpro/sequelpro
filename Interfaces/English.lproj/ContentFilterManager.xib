@@ -421,7 +421,7 @@
 																	<int key="NSColorSpace">6</int>
 																	<string key="NSCatalogName">System</string>
 																	<string key="NSColorName">alternateSelectedControlColor</string>
-																	<object class="NSColor" key="NSColor" id="398164803">
+																	<object class="NSColor" key="NSColor" id="717363389">
 																		<int key="NSColorSpace">1</int>
 																		<bytes key="NSRGB">MCAwIDEAA</bytes>
 																	</object>
@@ -842,7 +842,7 @@
 																</dictionary>
 																<reference key="NSInsertionColor" ref="646528321"/>
 																<dictionary key="NSLinkAttributes">
-																	<reference key="NSColor" ref="398164803"/>
+																	<reference key="NSColor" ref="717363389"/>
 																	<integer value="1" key="NSUnderline"/>
 																</dictionary>
 																<nil key="NSDefaultParagraphStyle"/>
@@ -979,7 +979,7 @@
 					</array>
 					<string key="NSFrameSize">{500, 371}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{500, 393}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">SPContentFilterManagerWindow</string>

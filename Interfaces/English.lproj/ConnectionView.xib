@@ -481,7 +481,7 @@
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
 																<string key="NSColorName">alternateSelectedControlColor</string>
-																<object class="NSColor" key="NSColor" id="817889674">
+																<object class="NSColor" key="NSColor" id="981160636">
 																	<int key="NSColorSpace">1</int>
 																	<bytes key="NSRGB">MCAwIDEAA</bytes>
 																</object>
@@ -2475,7 +2475,7 @@
 												</dictionary>
 												<reference key="NSInsertionColor" ref="643097066"/>
 												<dictionary key="NSLinkAttributes">
-													<reference key="NSColor" ref="817889674"/>
+													<reference key="NSColor" ref="981160636"/>
 													<integer value="1" key="NSUnderline"/>
 												</dictionary>
 												<nil key="NSDefaultParagraphStyle"/>

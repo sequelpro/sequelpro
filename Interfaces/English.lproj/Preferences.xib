@@ -259,7 +259,7 @@
 					</array>
 					<string key="NSFrameSize">{227, 114}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{227, 136}</string>
 				<string key="NSMaxSize">{247, 146}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -554,7 +554,7 @@
 					</array>
 					<string key="NSFrameSize">{264, 225}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{264, 247}</string>
 				<string key="NSMaxSize">{264, 296}</string>
 				<bool key="NSWindowIsRestorable">YES</bool>
@@ -1195,7 +1195,7 @@
 								<nil key="NS.nil"/>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<dictionary key="NSAttributes" id="120701911"/>
+									<dictionary key="NSAttributes" id="331219730"/>
 								</object>
 								<real value="0.0" key="NS.min"/>
 								<real value="100" key="NS.max"/>
@@ -1753,7 +1753,7 @@
 								<nil key="NS.nil"/>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="0.0" key="NS.min"/>
 								<real value="100000" key="NS.max"/>
@@ -2488,7 +2488,7 @@ AQAAAAA</bytes>
 								<nil key="NS.nil"/>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="0.0" key="NS.min"/>
 								<real value="10000" key="NS.max"/>
@@ -2612,7 +2612,7 @@ AQAAAAA</bytes>
 								</object>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="1" key="NS.min"/>
 								<real value="32" key="NS.max"/>
@@ -2987,7 +2987,7 @@ AQAAAAA</bytes>
 								</object>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="1" key="NS.min"/>
 								<real value="20" key="NS.max"/>
@@ -3300,7 +3300,7 @@ AQAAAAA</bytes>
 								<nil key="NS.nil"/>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="0.5" key="NS.min"/>
 								<real value="20" key="NS.max"/>
@@ -3435,7 +3435,7 @@ AQAAAAA</bytes>
 								<nil key="NS.nil"/>
 								<object class="NSAttributedString" key="NS.nan">
 									<string key="NSString">NaN</string>
-									<reference key="NSAttributes" ref="120701911"/>
+									<reference key="NSAttributes" ref="331219730"/>
 								</object>
 								<real value="0.10000000000000001" key="NS.min"/>
 								<real value="5" key="NS.max"/>

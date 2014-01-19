@@ -271,7 +271,7 @@
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
 																<string key="NSColorName">_sourceListBackgroundColor</string>
-																<object class="NSColor" key="NSColor" id="335783432">
+																<object class="NSColor" key="NSColor" id="122270706">
 																	<int key="NSColorSpace">6</int>
 																	<string key="NSCatalogName">System</string>
 																	<string key="NSColorName">alternateSelectedControlColor</string>
@@ -434,7 +434,7 @@
 																<int key="NSColorSpace">6</int>
 																<string key="NSCatalogName">System</string>
 																<string key="NSColorName">_sourceListBackgroundColor</string>
-																<reference key="NSColor" ref="335783432"/>
+																<reference key="NSColor" ref="122270706"/>
 															</object>
 															<reference key="NSGridColor" ref="1022465183"/>
 															<double key="NSRowHeight">18</double>
@@ -570,7 +570,7 @@
 					</array>
 					<string key="NSFrameSize">{395, 359}</string>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1280, 778}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{200, 222}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName"/>

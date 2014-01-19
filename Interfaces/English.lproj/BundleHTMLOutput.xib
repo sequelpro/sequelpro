@@ -90,7 +90,7 @@
 					<string key="NSFrameSize">{480, 270}</string>
 					<reference key="NSNextKeyView" ref="472558256"/>
 				</object>
-				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
+				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{50, 72}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
 				<string key="NSFrameAutosaveName">SPBundleHTMLOutputWindow</string>
