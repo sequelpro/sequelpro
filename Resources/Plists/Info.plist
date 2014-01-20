@@ -178,6 +178,8 @@
 	<string></string>
 	<key>SPVersionShortHash</key>
 	<string></string>
+	<key>SPVersionLongHash</key>
+	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>

@@ -53,6 +53,14 @@ sub _get_revision_number
 }
 
 #
+# Get the rveision long hash from Git.
+#
+sub _get_revision_long_hash
+{
+	return `git log -n 1 --pretty=format:%H`;
+}
+
+#
 # Get the revision short hash from Git.
 #
 sub _get_revision_short_hash
@@ -89,21 +97,26 @@ sub _save_plist
 }
 
 my $version = _get_revision_number();
-my $version_hash = _get_revision_short_hash();
+my $version_long_hash = _get_revision_long_hash();
+my $version_short_hash = _get_revision_short_hash();
 
-$version_hash =~ s/\n//;
+$version_long_hash =~ s/\n//;
+$version_short_hash =~ s/\n//;
 
 croak "$0: Unable to determine Git revision. Exiting..." unless $version;
-croak "$0: Unable to determine Git revision hash. Exiting..." unless $version_hash;
+croak "$0: Unable to determine Git revision hash. Exiting..." unless $version_long_hash;
+croak "$0: Unable to determine Git revision short hash. Exiting..." unless $version_short_hash;
 
 my $info = _get_plist_content($plist_path);
 
 $info =~ s/([\t ]+<key>CFBundleVersion<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version$2/;
-$info =~ s/([\t ]+<key>SPVersionShortHash<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version_hash$2/;
+$info =~ s/([\t ]+<key>SPVersionLongHash<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version_long_hash$2/;
+$info =~ s/([\t ]+<key>SPVersionShortHash<\/key>\n[\t ]+<string>).*?(<\/string>)/$1$version_short_hash$2/;
 
 _save_plist($info, $plist_path);
 
 printf("CFBunderVersion set to $version\n");
-printf("VersionShortHash set to $version_hash");
+printf("SPVersionLongHash set to $version_long_hash\n");
+printf("SPVersionShortHash set to $version_short_hash\n");
 
 exit 0
