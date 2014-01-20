@@ -119,14 +119,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 @interface SPDatabaseDocument ()
+
 - (void)_addDatabase;
 - (void)_alterDatabase;
+
 #ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
 #endif
+
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
+
 #ifndef SP_CODA /* method decls */
 - (void)_processDatabaseChangedBundleTriggerActions;
 #endif
@@ -166,9 +170,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 @synthesize structureContentSwitcher;
 #endif
 
+#pragma mark -
+
 - (id)init
 {
 	if ((self = [super init])) {
+
 #ifndef SP_CODA /* init ivars */
 
 		_mainNibLoaded = NO;
@@ -179,6 +186,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		_supportsEncoding = NO;
 		databaseListIsSelectable = YES;
 		_queryMode = SPInterfaceQueryMode;
+
 		chooseDatabaseButton = nil;
 #ifndef SP_CODA /* init ivars */
 		chooseDatabaseToolbarItem = nil;
@@ -200,6 +208,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		mySQLVersion = nil;
 		allDatabases = nil;
 		allSystemDatabases = nil;
+
 #ifndef SP_CODA /* init ivars */
 		mainToolbar = nil;
 		parentWindow = nil;
@@ -225,6 +234,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #endif
 
 		titleAccessoryView = nil;
+
 #ifndef SP_CODA /* init ivars */
 		taskProgressWindow = nil;
 		taskDisplayIsIndeterminate = YES;
@@ -241,6 +251,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		addDatabaseCharsetHelper = nil;
 		
 		keyChainID = nil;
+
 #ifndef SP_CODA /* init ivars */
 		statusValues = nil;
 		printThread = nil;
@@ -261,6 +272,115 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	return self;
 }
+
+- (void)awakeFromNib
+{
+#ifndef SP_CODA
+	if (_mainNibLoaded) return;
+
+	_mainNibLoaded = YES;
+
+	// Set up the toolbar
+	[self setupToolbar];
+
+	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
+	[contentViewSplitter setCollapsibleSubviewIndex:0];
+
+	// Set up the connection controller
+	connectionController = [[SPConnectionController alloc] initWithDocument:self];
+
+	// Set the connection controller's delegate
+	[connectionController setDelegate:self];
+
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the logging preference changes
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register a second observer for when the logging preference changes so we can tell the current connection about it
+	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+#endif
+
+	// Register for notifications
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
+												 name:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
+												 name:@"NSApplicationWillTerminateNotification" object:nil];
+
+#ifndef SP_CODA
+	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
+	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
+
+	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
+	[tableTabView setTabViewType:NSNoTabsNoBorder];
+
+	// Hide the activity list
+	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+
+	// Load additional nibs, keeping track of the top-level objects to allow correct release
+	NSArray *connectionDialogTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
+		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
+	}
+	[nibLoader release];
+
+	// SP_CODA can't use progress indicator because of BWToolkit dependency
+
+	NSArray *progressIndicatorLayerTopLevelObjects = nil;
+	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
+		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
+	}
+	[nibLoader release];
+
+	// Retain the icon accessory view to allow it to be added and removed from windows
+	[titleAccessoryView retain];
+#endif
+
+#ifndef SP_CODA
+	// Set up the progress indicator child window and layer - change indicator color and size
+	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
+	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
+	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
+	[progressIndicatorShadow setShadowBlurRadius:1.0f];
+	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
+	[taskProgressIndicator setShadow:progressIndicatorShadow];
+	[progressIndicatorShadow release];
+	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+	[taskProgressWindow setReleasedWhenClosed:NO];
+	[taskProgressWindow setOpaque:NO];
+	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
+	[taskProgressWindow setAlphaValue:0.0f];
+	[taskProgressWindow setContentView:taskProgressLayer];
+
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
+#endif
+
+	alterDatabaseCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseAlterEncodingButton CollationButton:databaseAlterCollationButton];
+	addDatabaseCharsetHelper   = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseEncodingButton CollationButton:databaseCollationButton];
+}
+
+#pragma mark -
 
 #ifdef SP_CODA /* glue */
 - (SPConnectionController*)createConnectionController
@@ -285,110 +405,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 }
 
 #endif
-
-- (void)awakeFromNib
-{
-#ifndef SP_CODA
-	if (_mainNibLoaded) return;
-	_mainNibLoaded = YES;
-
-	// Set up the toolbar
-	[self setupToolbar];
-
-	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
-	[contentViewSplitter setCollapsibleSubviewIndex:0];
-
-	// Set up the connection controller
-	connectionController = [[SPConnectionController alloc] initWithDocument:self];
-	
-	// Set the connection controller's delegate
-	[connectionController setDelegate:self];
-
-	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
-	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-
-	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register a second observer for when the logging preference changes so we can tell the current connection about it
-	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-#endif
-	// Register for notifications
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
-												 name:@"NSApplicationWillTerminateNotification" object:nil];
-
-#ifndef SP_CODA
-	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
-	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
-
-	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
-	[tableTabView setTabViewType:NSNoTabsNoBorder];
-
-	// Hide the activity list
-	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
-	
-	// Load additional nibs, keeping track of the top-level objects to allow correct release
-	NSArray *connectionDialogTopLevelObjects = nil;
-	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
-		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
-	} else {
-		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
-	}
-	[nibLoader release];
-
-	// SP_CODA can't use progress indicator because of BWToolkit dependency
-	
-	NSArray *progressIndicatorLayerTopLevelObjects = nil;
-	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
-		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
-	} else {
-		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
-	}
-	[nibLoader release];
-
-	// Retain the icon accessory view to allow it to be added and removed from windows
-	[titleAccessoryView retain];
-#endif
-	
-#ifndef SP_CODA
-	// Set up the progress indicator child window and layer - change indicator color and size
-	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
-	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
-	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
-	[progressIndicatorShadow setShadowBlurRadius:1.0f];
-	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
-	[taskProgressIndicator setShadow:progressIndicatorShadow];
-	[progressIndicatorShadow release];
-	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
-	[taskProgressWindow setReleasedWhenClosed:NO];
-	[taskProgressWindow setOpaque:NO];
-	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
-	[taskProgressWindow setAlphaValue:0.0f];
-	[taskProgressWindow setContentView:taskProgressLayer];
-
-	[self updateTitlebarStatusVisibilityForcingHide:NO];
-#endif
-	
-	alterDatabaseCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseAlterEncodingButton CollationButton:databaseAlterCollationButton];
-	addDatabaseCharsetHelper   = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseEncodingButton CollationButton:databaseCollationButton]; 
-}
 
 #ifndef SP_CODA /* password sheet and history navigation */
 /**
