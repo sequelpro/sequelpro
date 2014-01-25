@@ -96,6 +96,8 @@ sub _save_plist
 	close($plist);
 }
 
+printf("Updating Info.plist file at path $plist_path\n");
+
 my $version = _get_revision_number();
 my $version_long_hash = _get_revision_long_hash();
 my $version_short_hash = _get_revision_short_hash();
