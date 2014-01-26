@@ -28,7 +28,7 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-#  More info at <http://code.google.com/p/sequel-pro/>
+#  More info at <https://github.com/sequelpro/sequelpro>
 
 #  Generic Sequel Pro build script. This script is intended to replace entering lots of code
 #  into Xcode's 'Run Scripts' build phase to make it easier to work with. As such this script

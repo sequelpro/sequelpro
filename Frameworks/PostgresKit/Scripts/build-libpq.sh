@@ -1,10 +1,8 @@
 #! /bin/ksh
 
 #
-#  $Id$
-#
 #  build-libpq.sh
-#  sequel-pro
+#  PostgresKit
 #
 #  Created by Stuart Connolly (stuconnolly.com) on August 1, 2012.
 #  Copyright (c) 2012 Stuart Connolly. All rights reserved.
@@ -30,7 +28,7 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-#  More info at <http://code.google.com/p/sequel-pro/>
+#  More info at <https://github.com/sequelpro/sequelpro>
 
 #  Builds the PostgreSQL client library for distrubution in Sequel Pro's PostgresKit framework.
 #

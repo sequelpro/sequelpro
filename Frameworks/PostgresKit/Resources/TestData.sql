@@ -1,4 +1,3 @@
--- $Id$
 --
 -- SQL script used by PostgresKit's integration tests.
 --

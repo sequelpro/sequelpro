@@ -1,10 +1,8 @@
 #! /bin/ksh
 
 #
-#  $Id$
-#
 #  run-tests.sh
-#  sequel-pro
+#  PostgresKit
 #
 #  Created by Stuart Connolly (stuconnolly.com) on September 9, 2012.
 #  Copyright (c) 2012 Stuart Connolly. All rights reserved.
@@ -30,7 +28,7 @@
 #  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 #  OTHER DEALINGS IN THE SOFTWARE.
 #
-#  More info at <http://code.google.com/p/sequel-pro/>
+#  More info at <https://github.com/sequelpro/sequelpro>
 
 if [ "${BUILT_PRODUCTS_DIR}x" == 'x' ]
 then
