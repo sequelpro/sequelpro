@@ -117,7 +117,7 @@ $info =~ s/([\t ]+<key>SPVersionShortHash<\/key>\n[\t ]+<string>).*?(<\/string>)
 
 _save_plist($info, $plist_path);
 
-printf("CFBunderVersion set to $version\n");
+printf("CFBundleVersion set to $version\n");
 printf("SPVersionLongHash set to $version_long_hash\n");
 printf("SPVersionShortHash set to $version_short_hash\n");
 
