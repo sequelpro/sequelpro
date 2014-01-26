@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNetworkPreferencePane.m
 //  sequel-pro
 //

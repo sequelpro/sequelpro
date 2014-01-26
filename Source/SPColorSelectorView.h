@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPColorSelectorView.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPrintAccessory.h
 //  sequel-pro
 //

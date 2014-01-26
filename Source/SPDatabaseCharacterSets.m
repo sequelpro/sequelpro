@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseCharacaterSets.m
 //  sequel-pro
 //

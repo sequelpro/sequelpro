@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFieldMapperController.m
 //  sequel-pro
 //

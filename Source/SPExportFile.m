@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPExportFile.m
 //  sequel-pro
 //

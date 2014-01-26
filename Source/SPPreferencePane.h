@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPreferencePane.h
 //  sequel-pro
 //

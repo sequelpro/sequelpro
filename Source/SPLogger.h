@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPLogger.h
 //  sequel-pro
 //

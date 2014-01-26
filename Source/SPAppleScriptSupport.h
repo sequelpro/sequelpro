@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPAppleScriptSupport.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPEditSheetTextView.h
 //  sequel-pro
 //

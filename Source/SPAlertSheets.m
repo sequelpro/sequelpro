@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPAlertSheets.m
 //  sequel-pro
 //

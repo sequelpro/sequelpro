@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNarrowDownCompletion.m
 //  sequel-pro
 //

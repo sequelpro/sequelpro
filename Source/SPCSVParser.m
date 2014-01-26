@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCSVParser.m
 //  sequel-pro
 //

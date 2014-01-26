@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPEditorPreferencePane.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCustomQuery.m
 //  sequel-pro
 //

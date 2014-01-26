@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  DMLocalizedNib.h
 //  sequel-pro
 //

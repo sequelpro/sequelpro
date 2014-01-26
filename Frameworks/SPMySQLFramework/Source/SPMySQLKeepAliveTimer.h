@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLKeepAliveTimer.h
 //  SPMySQLFramework
 //

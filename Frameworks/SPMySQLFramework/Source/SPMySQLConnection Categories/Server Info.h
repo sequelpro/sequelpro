@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Server Info.h
 //  SPMySQLFramework
 //

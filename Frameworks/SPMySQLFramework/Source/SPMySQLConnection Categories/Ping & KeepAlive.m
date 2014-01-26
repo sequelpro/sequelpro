@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Ping & KeepAlive.m
 //  SPMySQLFramework
 //

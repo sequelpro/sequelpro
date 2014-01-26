@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLEmptyResult.h
 //  SPMySQLFramework
 //

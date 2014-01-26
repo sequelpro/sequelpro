@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNavigatorController.h
 //  sequel-pro
 //

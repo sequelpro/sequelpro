@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDotExporter.h
 //  sequel-pro
 //

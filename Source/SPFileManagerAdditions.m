@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFileManagerAdditions.m
 //  sequel-pro
 //

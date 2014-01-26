@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPComboPopupButton.h
 //  sequel-pro
 //

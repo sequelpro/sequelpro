@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoritesController.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMenuAdditions.h
 //  sequel-pro
 //

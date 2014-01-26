@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKTestConstants.h
 //  QueryKit
 //

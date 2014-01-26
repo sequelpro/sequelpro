@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLStringAdditions.h
 //  SPMySQLFramework
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  PGPostgresTypeBinaryHandler.h
 //  PostgresKit
 //

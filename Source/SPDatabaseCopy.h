@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseCopy.h
 //  sequel-pro
 //

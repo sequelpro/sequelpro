@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPExportControllerDelegate.m
 //  sequel-pro
 //

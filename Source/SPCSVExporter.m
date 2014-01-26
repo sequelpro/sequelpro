@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCSVExporter.m
 //  sequel-pro
 //

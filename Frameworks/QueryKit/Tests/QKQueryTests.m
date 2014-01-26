@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryTests.m
 //  QueryKit
 //

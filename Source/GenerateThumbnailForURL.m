@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  GenerateThumbnailForURL.m
 //  sequel-pro
 //

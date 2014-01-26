@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDataImport.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCharsetCollationHelper.h
 //  sequel-pro
 //

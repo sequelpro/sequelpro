@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseContentViewDelegate.h
 //  sequel-pro
 //

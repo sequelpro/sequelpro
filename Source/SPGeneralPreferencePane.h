@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPGeneralPreferencePane.h
 //  sequel-pro
 //

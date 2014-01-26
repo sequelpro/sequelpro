@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPAutoUpdatePreferencePane.m
 //  sequel-pro
 //

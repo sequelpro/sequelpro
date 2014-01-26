@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCopyTable.h
 //  sequel-pro
 //

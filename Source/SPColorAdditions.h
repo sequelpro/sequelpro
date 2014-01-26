@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPColorAdditions.h
 //  sequel-pro
 //

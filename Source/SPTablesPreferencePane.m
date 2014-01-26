@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTablesPreferencePane.m
 //  sequel-pro
 //

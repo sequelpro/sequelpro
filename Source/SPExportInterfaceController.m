@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPExportInterfaceController.m
 //  sequel-pro
 //

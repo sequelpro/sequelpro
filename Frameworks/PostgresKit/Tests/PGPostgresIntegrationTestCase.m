@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  PGPostgresIntegrationTestCase.m
 //  PostgresKit
 //

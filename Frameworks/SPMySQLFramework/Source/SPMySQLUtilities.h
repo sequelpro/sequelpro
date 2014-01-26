@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Locking.h
 //  SPMySQLFramework
 //

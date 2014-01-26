@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSingleton.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLStreamingResult.m
 //  SPMySQLFramework
 //

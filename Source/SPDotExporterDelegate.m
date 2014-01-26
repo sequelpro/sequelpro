@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDotExporterDelegate.m
 //  sequel-pro
 //

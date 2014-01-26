@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPStringAdditionsTests.m
 //  sequel-pro
 //

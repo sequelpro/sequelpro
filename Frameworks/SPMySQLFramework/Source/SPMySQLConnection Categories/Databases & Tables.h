@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Databases & Tables.h
 //  SPMySQLFramework
 //

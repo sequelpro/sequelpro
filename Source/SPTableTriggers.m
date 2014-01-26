@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableTriggers.m
 //  sequel-pro
 //

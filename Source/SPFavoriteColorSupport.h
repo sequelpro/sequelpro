@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoriteColorSupport.h
 //  sequel-pro
 //

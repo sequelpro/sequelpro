@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPDFExporter.m
 //  sequel-pro
 //

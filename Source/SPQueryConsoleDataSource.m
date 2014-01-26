@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPQueryConsoleDataSource.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPUserMO.h
 //  sequel-pro
 //

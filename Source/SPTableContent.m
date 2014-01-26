@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableContent.m
 //  sequel-pro
 //

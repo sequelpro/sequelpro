@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSXMLExporter.h
 //  sequel-pro
 //

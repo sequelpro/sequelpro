@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFlippedView.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Max Packet Size.m
 //  SPMySQLFramework
 //

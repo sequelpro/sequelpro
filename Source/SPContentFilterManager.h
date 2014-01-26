@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPContentFilterManager.h
 //  sequel-pro
 //

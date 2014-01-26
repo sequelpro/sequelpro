@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableTextFieldCell.h
 //  sequel-pro
 //

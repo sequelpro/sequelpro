@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPServerVariablesController.h
 //  sequel-pro
 //

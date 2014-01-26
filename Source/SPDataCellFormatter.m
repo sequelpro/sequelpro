@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDataCellFormatter.m
 //  sequel-pro
 //

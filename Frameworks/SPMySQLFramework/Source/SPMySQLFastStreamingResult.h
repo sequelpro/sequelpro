@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLFastStreamingResult.h
 //  SPMySQLFramework
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKUpdateQueryTests.h
 //  QueryKit
 //

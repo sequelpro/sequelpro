@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPreferencesUpgrade.h
 //  sequel-pro
 //

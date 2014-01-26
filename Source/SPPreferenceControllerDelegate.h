@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPreferenceControllerDelegate.h
 //  sequel-pro
 //

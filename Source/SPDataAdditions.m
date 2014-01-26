@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDataAdditions.m
 //  sequel-pro
 //

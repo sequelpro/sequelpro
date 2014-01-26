@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoritesExporter.m
 //  sequel-pro
 //

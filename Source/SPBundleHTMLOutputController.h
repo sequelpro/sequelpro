@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPBundleHTMLOutputController.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableCopyTest.h
 //  sequel-pro
 //

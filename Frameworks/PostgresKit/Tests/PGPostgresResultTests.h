@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  PGPostgresResultTests.h
 //  PostgresKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableInfo.h
 //  sequel-pro
 //

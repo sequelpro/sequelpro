@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPProcessListControllerDataSource.m
 //  sequel-pro
 //

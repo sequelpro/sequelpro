@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDataStorage.m
 //  sequel-pro
 //

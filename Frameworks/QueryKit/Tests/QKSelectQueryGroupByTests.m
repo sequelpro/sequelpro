@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKSelectQueryGroupByTests.m
 //  QueryKit
 //

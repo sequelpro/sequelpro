@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoriteTextFieldCell.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLGeometryData.h
 //  sequel-pro
 //

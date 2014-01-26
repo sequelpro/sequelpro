@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDataImport.m
 //  sequel-pro
 //

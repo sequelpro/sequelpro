@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoritesImporter.h
 //  sequel-pro
 //

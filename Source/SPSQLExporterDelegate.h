@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSQLExporterDelegate.h
 //  sequel-pro
 //

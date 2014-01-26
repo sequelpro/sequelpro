@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QLPreviewPanel.h
 //  sequel-pro
 //

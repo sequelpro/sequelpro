@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFileHandle.m
 //  sequel-pro
 //

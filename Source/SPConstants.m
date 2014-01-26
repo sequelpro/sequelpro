@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPConstants.m
 //  sequel-pro
 //

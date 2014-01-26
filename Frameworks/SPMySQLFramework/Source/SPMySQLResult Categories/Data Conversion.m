@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Data Conversion.m
 //  SPMySQLFramework
 //

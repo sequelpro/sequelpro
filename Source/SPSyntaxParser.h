@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSyntaxParser.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPBundleCommandRunner.m
 //  sequel-pro
 //

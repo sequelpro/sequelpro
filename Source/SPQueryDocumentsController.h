@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPQueryDocumentsController.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  NSNotificationCenterThreadingAdditions.h
 //  Enable NSNotification being sent from threads
 //

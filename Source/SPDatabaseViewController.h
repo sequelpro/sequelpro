@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseViewController.h
 //  sequel-pro
 //

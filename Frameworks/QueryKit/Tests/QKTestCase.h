@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKTestCase.h
 //  QueryKit
 //

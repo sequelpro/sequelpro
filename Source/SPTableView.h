@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableView.h
 //  sequel-pro
 //

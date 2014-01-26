@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPEncodingPopupAccessory.h
 //  sequel-pro
 //

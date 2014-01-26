@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPServerSupport.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTextAndLinkCell.m
 //  sequel-pro
 //

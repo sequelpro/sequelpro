@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPWindowAdditions.h
 //  sequel-pro
 //

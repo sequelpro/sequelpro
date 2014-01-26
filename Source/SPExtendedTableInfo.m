@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPExtendedTableInfo.m
 //  sequel-pro
 //

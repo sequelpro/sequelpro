@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Querying & Preparation.m
 //  SPMySQLFramework
 //

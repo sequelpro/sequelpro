@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableContentFilter.m
 //  sequel-pro
 //

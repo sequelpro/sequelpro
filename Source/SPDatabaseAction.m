@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseAction.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableTriggersDelegate.h
 //  sequel-pro
 //

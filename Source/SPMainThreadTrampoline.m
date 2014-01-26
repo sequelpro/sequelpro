@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMainThreadTrampoline.m
 //  sequel-pro
 //

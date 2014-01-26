@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SequelProTunnelAssistant.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  GeneratePreviewForURL.m
 //  sequel-pro
 //

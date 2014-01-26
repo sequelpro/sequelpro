@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNotificationsPreferencePane.m
 //  sequel-pro
 //

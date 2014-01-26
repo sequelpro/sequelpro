@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPActivityTextFieldCell.h
 //  sequel-pro
 //

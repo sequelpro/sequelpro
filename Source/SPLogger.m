@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPLogger.m
 //  sequel-pro
 //

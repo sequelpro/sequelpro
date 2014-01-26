@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFieldEditorController.h
 //  sequel-pro
 //

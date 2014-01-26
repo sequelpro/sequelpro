@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPHTMLExporterDelegate.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPHistoryController.m
 //  sequel-pro
 //

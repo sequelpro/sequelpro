@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCSVExporterDelegate.h
 //  sequel-pro
 //

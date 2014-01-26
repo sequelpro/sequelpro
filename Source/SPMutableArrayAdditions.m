@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMutableArrayAdditions.m
 //  sequel-pro
 //

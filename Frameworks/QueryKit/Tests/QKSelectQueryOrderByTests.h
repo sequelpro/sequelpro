@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKSelectQueryOrderByTests.h
 //  QueryKit
 //

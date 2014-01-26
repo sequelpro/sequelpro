@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryOrderBy.m
 //  QueryKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSQLExporter.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPKeychain.h
 //  sequel-pro
 //

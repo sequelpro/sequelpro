@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFavoriteNode.h
 //  sequel-pro
 //

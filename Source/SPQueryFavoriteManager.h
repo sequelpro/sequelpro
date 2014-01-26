@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPQueryFavoriteManager.h
 //  sequel-pro
 //

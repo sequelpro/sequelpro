@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDateAdditions.h
 //  sequel-pro
 //

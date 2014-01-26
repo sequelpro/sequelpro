@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTreeNode.m
 //  sequel-pro
 //

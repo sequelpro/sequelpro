@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPUserManager.m
 //  sequel-pro
 //

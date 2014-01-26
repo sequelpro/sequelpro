@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPConnectionDelegate.m
 //  sequel-pro
 //

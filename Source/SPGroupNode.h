@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPGroupNode.h
 //  sequel-pro
 //

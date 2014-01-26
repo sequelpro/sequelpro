@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryUpdateParameter.m
 //  QueryKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPObjectAdditions.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPImageView.m
 //  sequel-pro
 //

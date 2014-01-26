@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPGeometryDataView.m
 //  sequel-pro
 //

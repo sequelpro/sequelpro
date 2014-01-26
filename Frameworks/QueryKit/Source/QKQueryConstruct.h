@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryConstruct.h
 //  QueryKit
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLConnection_PrivateAPI.h
 //  SPMySQLFramework
 //

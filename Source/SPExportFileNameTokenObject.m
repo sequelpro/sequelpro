@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPExportFileNameTokenObject.m
 //  sequel-pro
 //

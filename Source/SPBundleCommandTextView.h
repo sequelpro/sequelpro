@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPBundleCommandTextView.h
 //  sequel-pro
 //

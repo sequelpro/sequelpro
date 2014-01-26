@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Copying.h
 //  SPMySQLFramework
 //

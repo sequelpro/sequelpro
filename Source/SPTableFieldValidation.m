@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableFieldValidation.m
 //  sequel-pro
 //

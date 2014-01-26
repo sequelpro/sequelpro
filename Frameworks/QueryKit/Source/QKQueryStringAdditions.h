@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryStringAdditions.h
 //  QueryKit
 //

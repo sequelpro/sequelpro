@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPArrayAdditions.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNavigatorOutlineView.h
 //  sequel-pro
 //

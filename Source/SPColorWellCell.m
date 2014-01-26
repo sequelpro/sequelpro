@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPColorWellCell.m
 //  sequel-pro
 //

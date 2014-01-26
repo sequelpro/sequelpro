@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPAppController.h
 //  sequel-pro
 //

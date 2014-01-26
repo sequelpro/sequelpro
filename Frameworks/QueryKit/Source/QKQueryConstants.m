@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryConstants.m
 //  QueryKit
 //

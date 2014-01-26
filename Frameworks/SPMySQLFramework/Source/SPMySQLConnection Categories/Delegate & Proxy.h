@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Delegate & Proxy.h
 //  SPMySQLFramework
 //

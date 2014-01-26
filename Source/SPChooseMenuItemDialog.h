@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPChooseMenuItemDialog.h
 //  sequel-pro
 //

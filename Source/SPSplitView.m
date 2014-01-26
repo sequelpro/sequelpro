@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSplitView.m
 //  sequel-pro
 //

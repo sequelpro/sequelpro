@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPWindowController.h
 //  sequel-pro
 //

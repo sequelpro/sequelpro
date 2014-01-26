@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPSQLParser.m
 //  sequel-pro
 //

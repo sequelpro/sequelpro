@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPThreadAdditions.m
 //  sequel-pro
 //

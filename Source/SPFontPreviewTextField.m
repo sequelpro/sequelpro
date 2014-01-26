@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFontPreviewTextField.m
 //  sequel-pro
 //

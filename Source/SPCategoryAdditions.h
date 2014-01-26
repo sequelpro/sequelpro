@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPCategoryAdditions.h
 //  sequel-pro
 //

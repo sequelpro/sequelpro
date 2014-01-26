@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPIndexesController.h
 //  sequel-pro
 //

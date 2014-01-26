@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPAboutController.h
 //  sequel-pro
 //

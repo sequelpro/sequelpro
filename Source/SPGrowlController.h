@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPGrowlController.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPreferencesUpgrade.m
 //  sequel-pro
 //

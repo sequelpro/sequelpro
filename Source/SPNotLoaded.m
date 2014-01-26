@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPNotLoaded.m
 //  sequel-pro
 //

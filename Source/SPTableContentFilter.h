@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableContentFilter.h
 //  sequel-pro
 //

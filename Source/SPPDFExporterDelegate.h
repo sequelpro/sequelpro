@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPPDFExporterDelegate.h
 //  sequel-pro
 //

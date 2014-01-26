@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPBundleEditorController.m
 //  sequel-pro
 //

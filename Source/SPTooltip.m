@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTooltip.m
 //  sequel-pro
 //

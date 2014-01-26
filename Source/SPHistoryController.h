@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPHistoryController.h
 //  sequel-pro
 //

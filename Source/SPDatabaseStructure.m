@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDatabaseStructure.m
 //  sequel-pro
 //

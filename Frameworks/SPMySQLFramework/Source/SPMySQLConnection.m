@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLConnection.m
 //  SPMySQLFramework
 //

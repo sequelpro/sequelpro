@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFieldMapperController.h
 //  sequel-pro
 //

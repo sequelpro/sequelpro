@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPProcessListController.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableContentDataSource.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPFontPreviewTextField.h
 //  sequel-pro
 //

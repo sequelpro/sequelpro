@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Field Definitions.h
 //  SPMySQLFramework
 //

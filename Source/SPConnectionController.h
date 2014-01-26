@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPConnectionHandler.h
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTablesPreferencePane.h
 //  sequel-pro
 //

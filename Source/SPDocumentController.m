@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPDocumentController.m
 //  sequel-pro
 //

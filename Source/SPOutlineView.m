@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPOutlineView.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPViewCopy.m
 //  sequel-pro
 //

@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTableStructureLoading.h
 //  sequel-pro
 //

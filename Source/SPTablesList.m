@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPTablesList.m
 //  sequel-pro
 //
