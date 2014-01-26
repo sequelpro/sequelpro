@@ -10,7 +10,7 @@ RM=rm
 
 .PHONY: postgreskit test analyze clean
 
-querykit:
+postgreskit:
 	xcodebuild -project PostgresKit.xcodeproj -configuration "$(BUILD_CONFIG)" CFLAGS="$(PGK_CFLAGS)" $(OPTIONS) build
 
 test:
