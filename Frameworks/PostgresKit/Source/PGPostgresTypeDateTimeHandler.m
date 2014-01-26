@@ -113,7 +113,7 @@ static PGPostgresOid PGPostgresTypeDateTimeTypes[] =
 	
 	if (!PQgetf(_result, (int)_row, PGPostgresResultValueDate, (int)_column, &date)) return [NSNull null];
 		
-	NSDateComponents *components = [[NSDateComponents alloc] init];
+	NSDateComponents *components = [[[NSDateComponents alloc] init] autorelease];
 	
 	[components setDay:date.mday];
 	[components setMonth:date.mon + 1]; // Months are indexed from 0
@@ -151,7 +151,7 @@ static PGPostgresOid PGPostgresTypeDateTimeTypes[] =
 	
 	if (!PQgetf(_result, (int)_row, hasTimeZone ? PGPostgresResultValueTimeTZ : PGPostgresResultValueTime, (int)_column, &pgTime)) return [NSNull null];
 	
-	NSDateComponents *components = [[NSDateComponents alloc] init];
+	NSDateComponents *components = [[[NSDateComponents alloc] init] autorelease];
 	
 	// Default date values; should be ignored
 	[components setDay:1];
