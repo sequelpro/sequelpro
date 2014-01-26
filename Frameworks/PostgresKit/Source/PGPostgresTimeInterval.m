@@ -69,8 +69,8 @@
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"%d years, %d months, %d days, %d hours, %d minutes, %d seconds and %d microseconds", 
-			_years, _months, _days, _hours, _minutes, _seconds, _microseconds];
+	return [NSString stringWithFormat:@"%lu years, %lu months, %lu days, %lu hours, %lu minutes, %lu seconds and %lu microseconds",
+			(unsigned long)_years, (unsigned long)_months, (unsigned long)_days, (unsigned long)_hours, (unsigned long)_minutes, (unsigned long)_seconds, (unsigned long)_microseconds];
 }
 
 @end
