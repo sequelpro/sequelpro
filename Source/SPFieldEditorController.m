@@ -49,11 +49,6 @@
 
 @end
 
-#ifdef SP_CODA
-/* Suppress deprecation warning for beginSheetForDirectory: until Sequel Pro team can migrate */
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 @implementation SPFieldEditorController
 
 @synthesize editedFieldInfo;

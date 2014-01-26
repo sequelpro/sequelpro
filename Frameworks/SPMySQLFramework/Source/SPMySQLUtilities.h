@@ -30,7 +30,8 @@
 
 #include <mach/mach_time.h>
 
-#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 
 /**
  * Define a project function to make it easier to use mach_absolute_time()
@@ -43,3 +44,5 @@ static double _elapsedSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9);
 }
+
+#pragma clang diagnostic pop
