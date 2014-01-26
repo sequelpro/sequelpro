@@ -31,6 +31,8 @@
 #import "PGPostgresStatement.h"
 #import "PGPostgresError.h"
 
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
+
 // Constants
 static int PGPostgresResultsAsBinary = 1;
 

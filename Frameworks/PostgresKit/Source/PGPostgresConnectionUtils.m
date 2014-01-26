@@ -104,6 +104,9 @@
 #pragma mark -
 #pragma mark Private API
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
+
 /**
  * Executes the supplied query and returns the result.
  * 
@@ -129,5 +132,7 @@
 	
 	return data;
 }
+
+#pragma clang diagnostic pop
 	
 @end
