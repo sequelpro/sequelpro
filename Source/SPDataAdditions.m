@@ -106,6 +106,7 @@
 		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
 		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 2)) )
 	{
+		free(decryptedBytes);
 		return nil;
 	}
 

@@ -202,7 +202,11 @@
 		}
 	}
 
-	return [NSString stringWithString:holder];
+	NSString *result = [NSString stringWithString:holder];
+
+	[holder release];
+
+	return result;
 }
 
 /**
