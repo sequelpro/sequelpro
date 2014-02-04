@@ -46,6 +46,7 @@
 	BOOL *unloadedColumns;
 
 	NSUInteger numberOfColumns;
+	NSUInteger editedRowCount;
 }
 
 /* Setting result store */
