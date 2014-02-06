@@ -57,8 +57,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 - (void) setDataStorage:(SPMySQLStreamingResultStore *)newDataStorage updatingExisting:(BOOL)updateExistingStore
 {
 	NSUInteger i;
-	[editedRows release], editedRows = nil;
 	editedRowCount = 0;
+	[editedRows release], editedRows = nil;
 	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
 
 	if (dataStorage) {
@@ -343,6 +343,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 	// Remove the row from the edited list and underlying storage
 	if (anIndex < editedRowCount) {
+		editedRowCount--;
 		[editedRows removePointerAtIndex:anIndex];
 	}
 	[dataStorage removeRowAtIndex:anIndex];
@@ -363,8 +364,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	// Remove the rows from the edited list and underlying storage
 	NSUInteger i = MIN(editedRowCount, rangeToRemove.location + rangeToRemove.length);
 	while (--i >= rangeToRemove.location) {
-		[editedRows removePointerAtIndex:i];
 		editedRowCount--;
+		[editedRows removePointerAtIndex:i];
 	}
 	[dataStorage removeRowsInRange:rangeToRemove];
 }
@@ -374,8 +375,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) removeAllRows
 {
-	[editedRows setCount:0];
 	editedRowCount = 0;
+	[editedRows setCount:0];
 	[dataStorage removeAllRows];
 }
 
@@ -426,8 +427,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore
 {
-	editedRowCount = [resultStore numberOfRows];
-	[editedRows setCount:editedRowCount];
+	[editedRows setCount:[resultStore numberOfRows]];
+	editedRowCount = [editedRows count];
 }
 
 /**
