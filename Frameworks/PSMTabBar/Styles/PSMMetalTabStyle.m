@@ -462,12 +462,9 @@
         if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? metalCloseDirtyButtonDown : metalCloseButtonDown;
         
         closeButtonSize = [closeButton size];
-        if ([controlView isFlipped]) {
-            closeButtonRect.origin.y += closeButtonRect.size.height;
-        }
-        
-        [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0];
-        
+
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
         // scoot label over
         labelPosition += closeButtonSize.width + kPSMTabBarCellPadding;
     }
@@ -489,8 +486,8 @@
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0;
         }
         
-		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
-        
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
         // scoot label over
         labelPosition += iconRect.size.width + kPSMTabBarCellPadding;
     }

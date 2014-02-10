@@ -623,13 +623,9 @@
 			closeButtonOrIcon = ([cell isEdited] ? _closeDirtyButton : _closeButton);
 			drawingRect = closeButtonRect;
 		}
-		
-		if ([controlView isFlipped]) {
-			drawingRect.origin.y += drawingRect.size.height;
-		}
 
-		[closeButtonOrIcon compositeToPoint:drawingRect.origin operation:NSCompositeSourceOver fraction:1.0];
-		
+		[closeButtonOrIcon drawInRect:drawingRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
 		// scoot label over
 		switch (orientation)
 		{
@@ -662,12 +658,8 @@
 		NSRect iconRect = [self iconRectForTabCell:cell];
 		NSImage *icon = [[[cell representedObject] identifier] icon];
 
-		if ([controlView isFlipped]) {
-			iconRect.origin.y += iconRect.size.height;
-		}
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
 
-		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
-		
 		// scoot label over by the size of the standard close button
 		switch (orientation)
 		{

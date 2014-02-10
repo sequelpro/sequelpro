@@ -47,23 +47,17 @@
 	NSRect bounds = [self bounds];
 	
 	NSPoint drawPoint = NSMakePoint(NSMidX(bounds) - (imageSize.width * 0.5f), NSMidY(bounds) - (imageSize.height * 0.5f));
+	NSRect drawRect = NSMakeRect(drawPoint.x, drawPoint.y, imageSize.width, imageSize.height);
 	
-    if ([self isFlipped]) {
-        drawPoint.y += imageSize.height;
-    }
-	
-    [image compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:(_animatingAlternateImage ? 0.7f : 1.0f)];
+	[image drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:(_animatingAlternateImage ? 0.7f : 1.0f) respectFlipped:YES hints:nil];
 	
 	if (_animatingAlternateImage) {
 		NSImage *alternateImage = [self alternateImage];
 		NSSize altImageSize = [alternateImage size];
 		drawPoint = NSMakePoint(NSMidX(bounds) - (altImageSize.width * 0.5f), NSMidY(bounds) - (altImageSize.height * 0.5f));
+		drawRect = NSMakeRect(drawPoint.x, drawPoint.y, altImageSize.width, altImageSize.height);
 		
-		if ([self isFlipped]) {
-			drawPoint.y += altImageSize.height;
-		}
-		
-		[[self alternateImage] compositeToPoint:drawPoint operation:NSCompositeSourceOver fraction:sinf(_animationValue * (float)M_PI)];
+		[[self alternateImage] drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:sinf(_animationValue * (float)M_PI) respectFlipped:YES hints:nil];
 	}
 }
 
