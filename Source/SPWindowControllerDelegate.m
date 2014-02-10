@@ -384,6 +384,7 @@
 	// Capture an image of the entire window
 	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, (unsigned int)[[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
 	NSBitmapImageRep *viewRep = [[NSBitmapImageRep alloc] initWithCGImage:windowImage];
+	[viewRep setSize:[[self window] frame].size];
 	[viewImage addRepresentation:viewRep];
 	[viewRep release];
 	
