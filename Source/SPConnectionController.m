@@ -489,8 +489,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (IBAction)updateSSLInterface:(id)sender
 {
 #ifndef SP_CODA
-	[self resizeTabViewToConnectionType:[self type] animating:YES];
 	[self _startEditingConnection];
+	[self resizeTabViewToConnectionType:[self type] animating:YES];
 #endif
 }
 

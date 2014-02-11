@@ -532,17 +532,17 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		
 	if (selectedTabView == previousType) return;
 	
+	[self _startEditingConnection];
+
 	[self resizeTabViewToConnectionType:selectedTabView animating:YES];
 	
 	// Update the host as appropriate
 	if ((selectedTabView != SPSocketConnection) && [[self host] isEqualToString:@"localhost"]) {
 		[self setHost:@""];
 	}
-	
+
 	previousType = selectedTabView;
-	
-	[self _startEditingConnection];
-	
+
 	[self _favoriteTypeDidChange];
 }
 
