@@ -1648,22 +1648,32 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		return;
 	}
 	
+    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+    
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
 	if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
-		if (isDesc) {
+        BOOL invert = NO;
+        if (modifierFlags & NSShiftKeyMask) {
+            invert = YES;
+        }
+        
+        // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
+        if (isDesc != invert) {
 			[sortCol release];
 			sortCol = nil;
 		} 
 		else {
-			if (sortCol) [sortCol release];
-			
-			sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 			isDesc = !isDesc;
 		}
 	} 
 	else {
-		isDesc = NO;
+        // When the column is not sorted, allow to sort in reverse order using Shift+click
+        if (modifierFlags & NSShiftKeyMask) {
+            isDesc = YES;
+        } else {
+            isDesc = NO;
+        }
 		
 		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
 		
