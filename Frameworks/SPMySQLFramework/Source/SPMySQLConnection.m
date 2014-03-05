@@ -165,6 +165,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		// Start with a blank error state
 		queryErrorID = 0;
 		queryErrorMessage = nil;
+		querySqlstate = nil;
 
 		// Start with empty cancellation details
 		lastQueryWasCancelled = NO;
@@ -231,6 +232,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	if (databaseToRestore) [databaseToRestore release], databaseToRestore = nil;
 	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
 	if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
+	if (querySqlstate) [querySqlstate release], querySqlstate = nil;
 	[delegateDecisionLock release];
 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -465,6 +467,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	// Clear the connection error record
 	[self _updateLastErrorID:NSNotFound];
 	[self _updateLastErrorMessage:nil];
+	[self _updateLastSqlstate:nil];
 
 	// Unlock the connection
 	[self _unlockConnection];
@@ -566,6 +569,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		if (isMaster) {
 			[self _updateLastErrorMessage:[self _stringForCString:mysql_error(theConnection)]];
 			[self _updateLastErrorID:mysql_errno(theConnection)];
+			[self _updateLastSqlstate:[self _stringForCString:mysql_sqlstate(theConnection)]];
 		}
 
 		return NULL;

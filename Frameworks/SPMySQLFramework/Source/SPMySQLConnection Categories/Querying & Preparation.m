@@ -227,6 +227,7 @@
 	double queryExecutionTime;
 	NSString *theErrorMessage;
 	NSUInteger theErrorID;
+	NSString *theSqlstate;
 	lastQueryWasCancelled = NO;
 	lastQueryWasCancelledUsingReconnect = NO;
 
@@ -299,6 +300,7 @@
 		if (!queryStatus) {
 			theErrorMessage = nil;
 			theErrorID = 0;
+			theSqlstate = nil;
 			break;
 
 		// If the query failed, determine whether to reattempt the query
@@ -307,6 +309,7 @@
 			// Store the error state
 			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
 			theErrorID = mysql_errno(mySQLConnection);
+			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
 
 			// Prevent retries if the query was cancelled or not a connection error
 			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
@@ -319,6 +322,7 @@
 		if (![self checkConnection]) {
 			[self _updateLastErrorMessage:theErrorMessage];
 			[self _updateLastErrorID:theErrorID];
+			[self _updateLastSqlstate:theSqlstate];
 			return nil;
 		}
 		[self _lockConnection];
@@ -365,6 +369,7 @@
 			// Update the error message, if appropriate, to reflect result store errors or overall success
 			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
 			theErrorID = mysql_errno(mySQLConnection);
+			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
 		} else {
 			theResult = [[SPMySQLEmptyResult alloc] init];
 		}
@@ -379,6 +384,7 @@
 	if (lastQueryWasCancelled) {
 		theErrorMessage = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 		theErrorID = 1317;
+		theSqlstate = @"70100";
 
 		// If the query was cancelled on a MySQL <5 server, check the connection to allow reconnects
 		// after query kills.  This is also handled within the class for internal cancellations, but
@@ -403,6 +409,7 @@
 	// Update error string and ID, and the rows affected
 	[self _updateLastErrorMessage:theErrorMessage];
 	[self _updateLastErrorID:theErrorID];
+	[self _updateLastSqlstate:theSqlstate];
 	lastQueryAffectedRowCount = theAffectedRowCount;
 
 	// Store the result time on the response object
@@ -472,6 +479,12 @@
 {
 	if (!queryErrorMessage) return nil;
 	return [NSString stringWithString:queryErrorMessage];
+}
+
+- (NSString *)lastSqlstate
+{
+	if(!querySqlstate) return nil;
+	return [NSString stringWithString:querySqlstate];
 }
 
 /**
@@ -684,6 +697,30 @@
 	// Otherwise, update the error ID with the supplied ID
 	} else {
 		queryErrorID = theErrorID;
+	}
+}
+
+/**
+ * Update the MySQL SQLSTATE for this connection.
+ * @param thSqlstate If a SQLSTATE is supplied it will be stored and returned to 
+ *                   anything asking the instance for the last SQLSTATE; 
+ *                   if nil is supplied, the connection will be used to derive
+ *                   (or clear) the SQLSTATE string; 
+ *                   if @"" is supplied the SQLSTATE will only be cleared.
+ */
+- (void)_updateLastSqlstate:(NSString *)theSqlstate
+{
+	// If a SQLSTATE wasn't supplied, select one from the connection
+	if(!theSqlstate) {
+		theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+	}
+
+	// Clear the last SQLSTATE stored on the instance
+	if(querySqlstate) [querySqlstate release], querySqlstate = nil;
+
+	// If we have a SQLSTATE *with a length*, update the instance SQLSTATE
+	if(theSqlstate && [theSqlstate length]) {
+		querySqlstate = [[NSString alloc] initWithString:theSqlstate];
 	}
 }
 

@@ -104,6 +104,7 @@
 	// Error state for the last query or connection state
 	NSUInteger queryErrorID;
 	NSString *queryErrorMessage;
+	NSString *querySqlstate;
 
 	// Query details
 	unsigned long long lastQueryAffectedRowCount;

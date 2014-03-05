@@ -84,6 +84,7 @@
 - (void)_flushMultipleResultSets;
 - (void)_updateLastErrorMessage:(NSString *)theErrorMessage;
 - (void)_updateLastErrorID:(NSUInteger)theErrorID;
+- (void)_updateLastSqlstate:(NSString *)theSqlstate;
 
 @end
 

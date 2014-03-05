@@ -63,11 +63,13 @@
 		if (encodingChangeRequired) {
 			NSString *theErrorString = [self lastErrorMessage];
 			NSUInteger theErrorID = [self lastErrorID];
+			NSString *theSqlstate = [self lastSqlstate];
 
 			[self restoreStoredEncoding];
 
 			[self _updateLastErrorMessage:theErrorString];
 			[self _updateLastErrorID:theErrorID];
+			[self _updateLastSqlstate:theSqlstate];
 		}
 
 		return NO;

@@ -56,6 +56,7 @@
 - (BOOL)queryErrored;
 - (NSString *)lastErrorMessage;
 - (NSUInteger)lastErrorID;
+- (NSString *)lastSqlstate;
 + (BOOL)isErrorIDConnectionError:(NSUInteger)theErrorID;
 
 // Query cancellation

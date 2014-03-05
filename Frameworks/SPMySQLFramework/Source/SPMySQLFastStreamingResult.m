@@ -393,6 +393,7 @@ typedef struct st_spmysqlstreamingrowdata {
 	// Update the connection's error statuses to reflect any errors during the content download
 	[parentConnection _updateLastErrorID:NSNotFound];
 	[parentConnection _updateLastErrorMessage:nil];	
+	[parentConnection _updateLastSqlstate:nil];
 
 	// Unlock the parent connection now all data has been retrieved
     [parentConnection _unlockConnection];
