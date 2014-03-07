@@ -120,6 +120,7 @@
 	IBOutlet NSView *socketConnectionFormContainer;
 	IBOutlet NSView *socketConnectionSSLDetailsContainer;
 	IBOutlet NSView *sshConnectionFormContainer;
+	IBOutlet NSView *sshConnectionSSLDetailsContainer;
 	IBOutlet NSView *sshKeyLocationHelp;
 	IBOutlet NSView *sslKeyFileLocationHelp;
 	IBOutlet NSView *sslCertificateLocationHelp;
@@ -147,6 +148,9 @@
 	IBOutlet NSButton *socketSSLKeyFileButton;
 	IBOutlet NSButton *socketSSLCertificateButton;
 	IBOutlet NSButton *socketSSLCACertButton;
+    IBOutlet NSButton *sslOverSSHKeyFileButton;
+    IBOutlet NSButton *sslOverSSHCertificateButton;
+    IBOutlet NSButton *sslOverSSHCACertButton;
 
 	IBOutlet NSButton *connectButton;
 	IBOutlet NSButton *testConnectButton;

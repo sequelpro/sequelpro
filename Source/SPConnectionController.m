@@ -399,7 +399,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
 	}
 	// SSL key file location:
-	else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+	else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslKeyFileLocation:nil];
 			return;
@@ -408,7 +408,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
 	}
 	// SSL certificate file location:
-	else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+	else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslCertificateFileLocation:nil];
 			return;
@@ -417,7 +417,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
 	}
 	// SSL CA certificate file location:
-	else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+	else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
 		if ([sender state] == NSOffState) {
 			[self setSslCACertFileLocation:nil];
 			return;
@@ -440,7 +440,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSshKeyLocation:abbreviatedFileName];
 		}
 		// SSL key file selection
-		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton) {
+		else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
 			if (returnCode == NSCancelButton) {
 				[self setSslKeyFileLocationEnabled:NSOffState];
 				[self setSslKeyFileLocation:nil];
@@ -450,7 +450,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslKeyFileLocation:abbreviatedFileName];
 		}
 		// SSL certificate file selection
-		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton) {
+		else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
 			if (returnCode == NSCancelButton) {
 				[self setSslCertificateFileLocationEnabled:NSOffState];
 				[self setSslCertificateFileLocation:nil];
@@ -460,7 +460,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslCertificateFileLocation:abbreviatedFileName];
 		}
 		// SSL CA certificate file selection
-		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton) {
+		else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
 			if (returnCode == NSCancelButton) {
 				[self setSslCACertFileLocationEnabled:NSOffState];
 				[self setSslCACertFileLocation:nil];
@@ -546,6 +546,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			break;
 		case SPSSHTunnelConnection:
 			targetResizeRect = [sshConnectionFormContainer frame];
+			if ([self useSSL]) additionalFormHeight += [sshConnectionSSLDetailsContainer frame].size.height;
 			break;
 	}
 
