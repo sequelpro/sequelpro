@@ -148,9 +148,9 @@
 	IBOutlet NSButton *socketSSLKeyFileButton;
 	IBOutlet NSButton *socketSSLCertificateButton;
 	IBOutlet NSButton *socketSSLCACertButton;
-    IBOutlet NSButton *sslOverSSHKeyFileButton;
-    IBOutlet NSButton *sslOverSSHCertificateButton;
-    IBOutlet NSButton *sslOverSSHCACertButton;
+	IBOutlet NSButton *sslOverSSHKeyFileButton;
+	IBOutlet NSButton *sslOverSSHCertificateButton;
+	IBOutlet NSButton *sslOverSSHCACertButton;
 
 	IBOutlet NSButton *connectButton;
 	IBOutlet NSButton *testConnectButton;
