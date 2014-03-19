@@ -1343,7 +1343,7 @@
 			[detailParser release];
 			definitionPartsIndex++;
 
-		// Special timestamp case - Whether fields are set to update the current timestamp
+		// Special timestamp/datetime case - Whether fields are set to update the current timestamp
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {

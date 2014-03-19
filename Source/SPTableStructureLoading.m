@@ -247,8 +247,9 @@
 			[theField setObject:@"auto_increment" forKey:@"Extra"];
 		}
 		
-		// For timestamps check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
-		else if ([type isEqualToString:@"TIMESTAMP"] && [[theField objectForKey:@"onupdatetimestamp"] integerValue]) {
+		// For timestamps/datetime check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
+		else if (([type isEqualToString:@"TIMESTAMP"] || [type isEqualToString:@"DATETIME"]) &&
+				 [[theField objectForKey:@"onupdatetimestamp"] integerValue]) {
 			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
 		}
 	}

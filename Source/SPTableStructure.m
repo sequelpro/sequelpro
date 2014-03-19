@@ -856,8 +856,8 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 					[queryString appendString:@"\n DEFAULT NULL"];
 				}
 			}
-			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
-			else if ([theRowType isEqualToString:@"TIMESTAMP"] &&
+			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps/datetimes, use that
+			else if (([theRowType isEqualToString:@"TIMESTAMP"] || [theRowType isEqualToString:@"DATETIME"]) &&
 					 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 			{
 				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP"];

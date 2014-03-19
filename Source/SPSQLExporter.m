@@ -884,7 +884,7 @@
 					[fieldString appendString:@" DEFAULT NULL"];
 				}
 			} 
-			else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+			else if (([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] || [[column objectForKey:@"type"] isEqualToString:@"DATETIME"]) && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 			} 
 			else {
