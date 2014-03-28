@@ -80,6 +80,7 @@
 										NSLocalizedString(@"month", @"export filename date token"),
 										NSLocalizedString(@"day", @"export filename date token"),
 										NSLocalizedString(@"time", @"export filename time token"),
+										NSLocalizedString(@"favorite", @"export filename favorite name token"),
 									nil];
 
 	// Determine whether to remove the table from the tokens list
@@ -369,6 +370,9 @@
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
+			}
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"favorite", @"export filename favorite name token")]) {
+				[string appendString:[tableDocumentInstance name]];
 			}
 		} 
 		else {
