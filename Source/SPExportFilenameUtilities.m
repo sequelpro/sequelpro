@@ -72,6 +72,7 @@
 	BOOL isXML = exportType == SPXMLExport;
 
 	NSMutableArray *exportTokens = [NSMutableArray arrayWithObjects:
+										NSLocalizedString(@"name", @"export filename name token"),
 										NSLocalizedString(@"host", @"export filename host token"),
 										NSLocalizedString(@"database", @"export filename database token"),
 										NSLocalizedString(@"table", @"table"),
@@ -341,6 +342,10 @@
 				[string appendString:[tableDocumentInstance host]];
 
 			} 
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"name", @"export filename name token")]) {
+				[string appendString:[tableDocumentInstance name]];
+                
+			}
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"database", @"export filename database token")]) {
 				[string appendString:[tableDocumentInstance database]];
 
