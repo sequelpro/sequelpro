@@ -1575,18 +1575,18 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 {
 	BOOL enableImportButton = YES;
 
-	if(newTableMode) {
-		if(![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
+	if (newTableMode) {
+		if (![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
 			[importButton setEnabled:NO];
 			return;
 		}
-		for(NSString* fieldName in fieldMappingTableColumnNames) {
-			if(![fieldName length]) {
+		for (NSUInteger i = 0; i < [fieldMappingTableColumnNames count]; i++) {
+			if (![[fieldMappingTableColumnNames objectAtIndex:i] length] && [fieldMappingOperatorArray objectAtIndex:i] == doImport) {
 				[importButton setEnabled:NO];
 				return;
 			}
 		}
-		for(NSString* fieldType in fieldMappingTableTypes) {
+		for (NSString* fieldType in fieldMappingTableTypes) {
 			if(![fieldType length]) {
 				[importButton setEnabled:NO];
 				return;
@@ -1594,7 +1594,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 	}
 
-	if([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
+	if ([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
 		enableImportButton = NO;
 		for(id op in fieldMappingOperatorArray) {
 			if(op == isEqual) {
