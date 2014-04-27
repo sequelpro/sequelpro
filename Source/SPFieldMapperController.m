@@ -50,6 +50,8 @@ static NSString *SPTableViewOperatorColumnID    = @"operator";
 static NSString *SPTableViewValueIndexColumnID  = @"value_index";
 static NSString *SPTableViewGlobalValueColumnID = @"global_value";
 static NSString *SPTableViewSqlColumnID         = @"sql";
+static NSUInteger SPSourceColumnTypeText        = 0;
+static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 @implementation SPFieldMapperController
 
@@ -769,19 +771,22 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (IBAction)changeHasHeaderCheckbox:(id)sender
 {
+	NSInteger i;
+	NSArray *headerRow;
+
 	[matchingNameMenuItem setEnabled:([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO];
 
 	// In New Table mode reset new field name according to importFieldNamesHeaderSwitch's state
-	if(newTableMode) {
+	if (newTableMode) {
 		[fieldMappingTableColumnNames removeAllObjects];
 		if([importFieldNamesHeaderSwitch state] == NSOnState) {
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:h];
+			headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
+			for (i = 0; i < numberOfImportColumns; i++) {
+				[fieldMappingTableColumnNames addObject:NSArrayObjectAtIndex(headerRow, i)];
 			}
 		} else {
-			NSInteger i = 0;
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i++]];
+			for (i = 1; i <= numberOfImportColumns; i++) {
+				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i]];
 			}
 		}
 		[fieldMapperTableView reloadData];
@@ -827,102 +832,79 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[newTableButton setHidden:YES];
 	[newTableNameTextField selectText:nil];
 
-	// Check length and type of fieldMappingImportArray 65,535
+	// Check length and type of fieldMappingImportArray values
 	NSInteger maxLengthOfSourceColumns [numberOfImportColumns];
-	NSInteger typeOfSourceColumns [numberOfImportColumns]; // 0=text 1=integer
+	NSUInteger typeOfSourceColumns [numberOfImportColumns];
 	NSInteger columnCounter;
 
-	for(columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+	// Set up initial defaults for the column states
+	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
 		maxLengthOfSourceColumns[columnCounter] = 0;
-		typeOfSourceColumns[columnCounter] = 1;
+		typeOfSourceColumns[columnCounter] = SPSourceColumnTypeInteger;
 	}
 
-	BOOL skipFirstRow = importFieldNamesHeader;
-
-	for(NSArray* row in fieldMappingImportArray) {
-		if(skipFirstRow) {
-			skipFirstRow = NO;
-			continue;
-		}
-		columnCounter = 0;
-		for(id col in row) {
+	// Step through the currently known data and get the types and values
+	NSUInteger i = (importFieldNamesHeader ? 1 : 0);
+	NSArray *row;
+	id col;
+	for ( ; i < [fieldMappingImportArray count]; i++) {
+		row = NSArrayObjectAtIndex(fieldMappingImportArray, i);
+		for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+			col = NSArrayObjectAtIndex(row, columnCounter);
 			if(col && ![col isNSNull] && ![col isSPNotLoaded]) {
 				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < (NSInteger)[(NSString*)col length]) {
 					maxLengthOfSourceColumns[columnCounter] = [(NSString*)col length];
 				}
-				if(typeOfSourceColumns[columnCounter] == 1) {
+				if(typeOfSourceColumns[columnCounter] == SPSourceColumnTypeInteger) {
 					if(![[[NSNumber numberWithLongLong:[col longLongValue]] stringValue] isEqualToString:col])
-						typeOfSourceColumns[columnCounter] = 0;
+					typeOfSourceColumns[columnCounter] = SPSourceColumnTypeText;
 				}
 			}
-			columnCounter++;
 		}
 	}
 
-	columnCounter = 0;
+
 	[fieldMappingTableColumnNames removeAllObjects];
 	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
 	
 	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
-	
-	if([importFieldNamesHeaderSwitch state] == NSOnState) {
-		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-			[fieldMappingTableColumnNames addObject:h];
-			[fieldMappingTableDefaultValues addObject:@""];
-			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
-				if(maxLengthOfSourceColumns[columnCounter] < 9)
-					[fieldMappingTableTypes addObject:@"INT(11)"];
-				else
-					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
-			} else {
-				if(serverGreaterThanVersion4) {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
-						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				} else {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				}
-			}
-			columnCounter++;
+	BOOL importFirstRowAsFieldNames = ([importFieldNamesHeaderSwitch state] == NSOnState);
+	NSString *headerName;
+
+	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+		if (importFirstRowAsFieldNames) {
+			headerName = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), columnCounter);
+			[fieldMappingTableColumnNames addObject:headerName];
+		} else {
+			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)(columnCounter + 1)]];
 		}
-	} else {
-		NSInteger i = 0;
-		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i++]];
-			[fieldMappingTableDefaultValues addObject:@""];
-			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
-				if(maxLengthOfSourceColumns[columnCounter] < 9)
-					[fieldMappingTableTypes addObject:@"INT(11)"];
+
+		[fieldMappingTableDefaultValues addObject:@""];
+
+		if (typeOfSourceColumns[columnCounter] == SPSourceColumnTypeInteger) {
+			if (maxLengthOfSourceColumns[columnCounter] < 9)
+				[fieldMappingTableTypes addObject:@"INT(11)"];
+			else
+				[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+		} else {
+			if (serverGreaterThanVersion4) {
+				if (maxLengthOfSourceColumns[columnCounter] < 256)
+					[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+				else if (maxLengthOfSourceColumns[columnCounter] < 32768)
+					[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
 				else
-					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+					[fieldMappingTableTypes addObject:@"TEXT"];
 			} else {
-				if(serverGreaterThanVersion4) {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
-						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				} else {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				}
+				if (maxLengthOfSourceColumns[columnCounter] < 256)
+					[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+				else
+					[fieldMappingTableTypes addObject:@"TEXT"];
 			}
-			columnCounter++;
 		}
 	}
 
 	// Update the table view
-	NSUInteger i;
 	fieldMappingCurrentRow = 0;
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[self setupFieldMappingArray];
@@ -935,7 +917,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	// Set all operators to doNotImport
 	[fieldMappingOperatorArray removeAllObjects];
-	for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+	for (i=0; i < [fieldMappingTableColumnNames count]; i++)
 		[fieldMappingOperatorArray addObject:doImport];
 
 	[fieldMapperTableView reloadData];
