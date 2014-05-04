@@ -3843,7 +3843,8 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Distribution",
+					"$(SRCROOT)/Frameworks/QueryKit/build/Distribution",
 					"$(SRCROOT)/Frameworks",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -3979,7 +3980,7 @@
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -4003,7 +4004,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4024,8 +4025,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(SRCROOT)/Frameworks",
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(BUILD_DIR)/Frameworks",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Distribution",
 				);
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -4047,7 +4048,8 @@
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Debug",
+					"$(SRCROOT)/Frameworks/QueryKit/build/Debug",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -4074,7 +4076,8 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(CONFIGURATION_BUILD_DIR)",
+					"$(SRCROOT)/Frameworks/SPMySQLFramework/build/Release",
+					"$(SRCROOT)/Frameworks/QueryKit/build/Release",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
