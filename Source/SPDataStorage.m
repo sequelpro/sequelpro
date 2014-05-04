@@ -427,7 +427,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore
 {
-	[editedRows setCount:[resultStore numberOfRows]];
+	[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
 	editedRowCount = [editedRows count];
 }
 
