@@ -166,7 +166,7 @@
 	if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)]) {
 		[delegate showErrorWithTitle:NSLocalizedString(@"Error", @"error") message:errorMessage];
 	} else {
-		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), errorMessage, @"OK", nil, nil);
+		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), @"%@", @"OK", nil, nil, errorMessage);
 	}
 
 	return NO;
