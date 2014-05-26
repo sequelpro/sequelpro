@@ -1634,12 +1634,10 @@
 	[switchButton setButtonType:NSSwitchButton];
 	[switchButton setControlSize:NSSmallControlSize];
 	[switchButton release];
-	
-	if ([prefs boolForKey:SPUseMonospacedFonts]) {
-		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-	} else {
-		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+
+	CGFloat monospacedFontSize = [[NSUserDefaults standardUserDefaults] floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+	[errorsView setFont:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
 /**

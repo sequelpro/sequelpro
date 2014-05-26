@@ -132,17 +132,19 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	BOOL useMonospacedFont = NO;
 #endif
 
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	// Set the double-click action in blank areas of the table to create new rows
 	[indexesTableView setEmptyDoubleClickAction:@selector(addIndex:)];
 
 	for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 	{
-		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
 	for (NSTableColumn *fieldColumn in [indexedColumnsTableView tableColumns])
 	{
-		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[fieldColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
 #ifndef SP_CODA /* patch */
@@ -707,18 +709,20 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 		for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 		{
-			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		for (NSTableColumn *indexColumn in [indexedColumnsTableView tableColumns])
 		{
-			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		[indexesTableView reloadData];
+
 		[self _reloadIndexedColumnsTableData];
 	}
 }

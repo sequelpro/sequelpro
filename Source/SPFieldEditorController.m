@@ -232,6 +232,8 @@
 	if ([fieldEncoding length])
 		[label appendString:fieldEncoding];
 
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	if ([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
 
 		sheetEditData = [(NSString*)data retain];
@@ -284,7 +286,7 @@
 #endif
 			[editTextView setFont:
 #ifndef SP_CODA
-			([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : 
+			[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] :
 #endif			
 			[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #ifndef SP_CODA
@@ -302,7 +304,7 @@
 #endif
 		];
 
-		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize]];
 
 		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), label]];
 

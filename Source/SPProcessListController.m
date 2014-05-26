@@ -97,10 +97,11 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	for (NSTableColumn *column in [processListTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
 		// Add a formatter for linebreak display
 		[[column dataCell] setFormatter:[[SPDataCellFormatter new] autorelease]];
@@ -460,10 +461,11 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 		
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 		for (NSTableColumn *column in [processListTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 		
 		[processListTableView reloadData];

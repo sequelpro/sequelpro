@@ -80,24 +80,28 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
  */
 - (void)awakeFromNib
 {
+	prefs = [NSUserDefaults standardUserDefaults];
+
 	// Set the table triggers view's vertical gridlines if required
-	[triggersTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[triggersTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[triggersTableView setEmptyDoubleClickAction:@selector(addTrigger:)];
 
 	// Set the strutcture and index view's font
-	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 	[addTriggerPanel setInitialFirstResponder:triggerNameTextField];
 	
 	for (NSTableColumn *column in [triggersTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
 	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(triggerStatementTextDidChange:)
@@ -331,8 +335,9 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	id value = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 
-	if ([value isNSNull])
-		return [[NSUserDefaults standardUserDefaults] objectForKey:SPNullValue];
+	if ([value isNSNull]) {
+		return [prefs objectForKey:SPNullValue];
+	}
 
 	return value;
 }
@@ -425,10 +430,11 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 		for (NSTableColumn *column in [triggersTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		[triggersTableView reloadData];
@@ -630,7 +636,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[editedTrigger release], editedTrigger = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[super dealloc];
 }

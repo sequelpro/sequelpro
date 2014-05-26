@@ -177,6 +177,7 @@ NSString *SPAlwaysShowWindowTabBar               = @"WindowAlwaysShowTabBar";
 NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfterDeletionOfAllRows";
 NSString *SPFavoriteColorList                    = @"FavoriteColorList";
 NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
+NSString *SPMonospacedFontSize                   = @"MonospacedFontSize";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";

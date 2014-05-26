@@ -78,10 +78,11 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
 	
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	for (NSTableColumn *column in [consoleTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 #endif
 }

@@ -371,6 +371,7 @@ extern NSString *SPAlwaysShowWindowTabBar;
 extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 extern NSString *SPFavoriteColorList;
 extern NSString *SPDisplayBinaryDataAsHex;
+extern NSString *SPMonospacedFontSize;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

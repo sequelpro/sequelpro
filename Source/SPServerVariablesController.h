@@ -33,7 +33,8 @@
 @interface SPServerVariablesController : NSWindowController 
 {
 	SPMySQLConnection *connection;
-	
+
+	NSUserDefaults *prefs;
 	NSMutableArray *variables, *variablesFiltered;
 	
 	IBOutlet NSTableView   *variablesTableView;

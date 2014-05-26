@@ -142,8 +142,10 @@
 			[menuStyle setLineBreakMode:NSLineBreakByTruncatingTail];
 			
 			NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
-			
-			[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
+
+			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+			[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
 			
 			NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:defaultEncodingDescription attributes:menuAttributes] autorelease];
 			

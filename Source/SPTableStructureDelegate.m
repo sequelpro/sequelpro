@@ -87,6 +87,9 @@
 			}
 			
 			[[tableColumn dataCell] addItemWithTitle:@""];
+
+			BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 			
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
@@ -100,7 +103,7 @@
 					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
 					NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
 										
-					[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
+					[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
 					
 					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
 					

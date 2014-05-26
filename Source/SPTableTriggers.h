@@ -57,6 +57,7 @@
 	SPMySQLConnection *connection;
 	
 	NSMutableArray *triggerData;
+	NSUserDefaults *prefs;
 	
 	BOOL isEdit;
 	

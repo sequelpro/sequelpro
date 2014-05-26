@@ -100,17 +100,20 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 {
 #ifndef SP_CODA /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
-	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[tableSourceView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexesTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
 
 #ifndef SP_CODA /* set font from prefs */
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	NSInteger monospacedFontSize = [prefs integerForKey:SPMonospacedFontSize] > 0 ? [prefs integerForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	// Set the strutcture and index view's font
-	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 
 	extraFieldSuggestions = [[NSArray arrayWithObjects:
@@ -1159,7 +1162,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	else {
 		[self cancelRowEditing];
 	}
-	
+
 	[tableSourceView reloadData];
 }
 
@@ -1178,11 +1181,12 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	}
 	// Use monospaced fonts preference changed
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-		
+
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
-		[tableSourceView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[indexesTableView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+		[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		
 		[tableSourceView reloadData];
 		[indexesTableView reloadData];
