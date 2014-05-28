@@ -451,11 +451,11 @@
 	if ([problemFiles count] > 0) {
 		[self errorCreatingExportFileHandles:problemFiles];
 	}
-	else {	
-		[problemFiles release];
-		
+	else {
 		[self startExport];
 	}
+
+	[problemFiles release];
 }
 
 /**
