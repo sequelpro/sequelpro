@@ -45,12 +45,12 @@ FRAMEWORKS_PATH="${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"
 
 dev_sign_resource()
 {
-	codesign -s 'Sequel Pro Development' "$1" 2> /dev/null
+	codesign -f -s 'Sequel Pro Development' "$1" 2> /dev/null
 }
 
 dist_sign_resource()
 {
-	codesign -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
+	codesign -f -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
 }
 
 verify_signing()
