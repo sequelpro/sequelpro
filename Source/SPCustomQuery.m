@@ -2121,7 +2121,7 @@
 
 		// If the current cell should have been edited in a sheet, do nothing - field closing will have already
 		// updated the field.
-		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]]) {
+		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL]) {
 			return;
 		}
 
@@ -2449,7 +2449,7 @@
 						|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 
 		// Open the editing sheet if required
-		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]])
+		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL])
 		{
 			if (fieldEditor) [fieldEditor release], fieldEditor = nil;
 			fieldEditor = [[SPFieldEditorController alloc] init];
@@ -3851,7 +3851,7 @@
 	isFieldEditable = shouldBeginEditing;
 
 	// Open the field editor sheet if required
-	if ([customQueryView shouldUseFieldEditorForRow:row column:column])
+	if ([customQueryView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
 	{
 
 		[customQueryView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];

@@ -183,15 +183,16 @@ extern NSInteger SPEditCopyAsSQL;
 - (BOOL)isCellComplex;
 
 /*!
-	@method	 shouldUseFieldEditorForRow:column:
+	@method	 shouldUseFieldEditorForRow:column:useLock:
 	@abstract   Determine whether to trigger sheet editing or in-cell editing for a cell
 	@discussion Checks the column data type, and the cell contents if necessary, to check
 		the most appropriate editing type.
 	@param	 rowIndex The row in the table the cell is present in
 	@param	 colIndex The *original* column in the table the cell is present in (ie pre-reordering)
+	@param	 dataLock An optional pthread_mutex_t lock to use when checking the data
 	@result	 YES if sheet editing should be used, NO otherwise.
 */
-- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex;
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex checkWithLock:(pthread_mutex_t *)dataLock;
 
 - (IBAction)executeBundleItemForDataTable:(id)sender;
 

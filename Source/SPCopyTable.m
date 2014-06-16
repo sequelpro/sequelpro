@@ -52,6 +52,7 @@
 #import "SPDatabaseContentViewDelegate.h"
 
 #import <SPMySQL/SPMySQL.h>
+#import "pthread.h"
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
@@ -1186,7 +1187,7 @@ static const NSInteger kBlobAsImageFile = 4;
  * Determine whether to use the sheet for editing; do so if the multipleLineEditingButton is enabled,
  * or if the column was a blob or a text, or if it contains linebreaks.
  */
-- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex checkWithLock:(pthread_mutex_t *)dataLock
 {
 	// Retrieve the column definition
 	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
@@ -1203,7 +1204,24 @@ static const NSInteger kBlobAsImageFile = 4;
 	if (isBlob && ![columnType isEqualToString:@"enum"]) return YES;
 
 	// Otherwise, check the cell value for newlines.
-	id cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	id cellValue = nil;
+
+	// If a data lock was supplied, use it and perform additional checks for safety
+	if (dataLock) {
+		pthread_mutex_lock(dataLock);
+
+		if (rowIndex < [tableStorage count] && colIndex < [tableStorage columnCount]) {
+			cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+		}
+
+		pthread_mutex_unlock(dataLock);
+
+		if (!cellValue) return YES;
+
+	// Otherwise grab the value directly
+	} else {
+		cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	}
 
 	if ([cellValue isKindOfClass:[NSData class]]) {
 		cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];

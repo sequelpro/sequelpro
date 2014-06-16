@@ -262,7 +262,7 @@
 			}
 			
 			// Open the editing sheet if required
-			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue]]) {
+			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				
 				// Retrieve the column definition
 				NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
@@ -750,7 +750,7 @@
 	}
 	
 	// Open the field editor sheet if required
-	if ([tableContentView shouldUseFieldEditorForRow:row column:column])
+	if ([tableContentView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
 	{
 		[tableContentView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 		

@@ -129,7 +129,12 @@
 					return [NSString stringWithFormat:@"0x%@", [value dataToHexString]];
 				}
 
-				if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex]) {
+				pthread_mutex_t *fieldEditorCheckLock = NULL;
+				if (isWorking) {
+					fieldEditorCheckLock = &tableValuesLock;
+				}
+
+				if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex checkWithLock:fieldEditorCheckLock]) {
 					return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 				}
 				
@@ -167,7 +172,7 @@
 			
 			// If the current cell should have been edited in a sheet, do nothing - field closing will have already
 			// updated the field.
-			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue]]) {
+			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				return;
 			}
 			
