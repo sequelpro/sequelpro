@@ -76,9 +76,9 @@
 			else {
 				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey], [[tableColumn identifier] integerValue] - 1);
 			}
-			else {
-				return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey], rowIndex);
-			}
+		else {
+			return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey], rowIndex);
+		}
 	}
 	else 
 #endif
@@ -134,11 +134,8 @@
 					fieldEditorCheckLock = &tableValuesLock;
 				}
 
-				if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex checkWithLock:fieldEditorCheckLock]) {
-					return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
-				}
-				
-				return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+				// Always retrieve the short string representation, truncating the value where necessary
+				return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 			}
 			
 			if ([value isSPNotLoaded]) {
