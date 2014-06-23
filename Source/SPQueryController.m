@@ -44,6 +44,7 @@ NSString *SPTableViewConnectionColumnID    = @"messageConnection";
 @interface SPQueryController ()
 
 - (void)_updateFilterState;
+- (void)_allowFilterClearOrSave:(NSNumber *)enabled;
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message;
 - (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections;
 - (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error;
@@ -438,8 +439,7 @@ static SPQueryController *sharedQueryController = nil;
 	[progressIndicator startAnimation:self];
 
 	// Don't allow clearing the console while filtering its content
-	[saveConsoleButton setEnabled:NO];
-	[clearConsoleButton setEnabled:NO];
+	[self _allowFilterClearOrSave:[NSNumber numberWithBool:NO]];
 
 	[messagesFilteredSet removeAllObjects];
 
@@ -451,8 +451,7 @@ static SPQueryController *sharedQueryController = nil;
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
-		[saveConsoleButton setEnabled:YES];
-		[clearConsoleButton setEnabled:YES];
+		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
 
 		[saveConsoleButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 
@@ -484,8 +483,7 @@ static SPQueryController *sharedQueryController = nil;
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
 	if ([messagesVisibleSet count] > 0) {
-		[saveConsoleButton setEnabled:YES];
-		[clearConsoleButton setEnabled:YES];
+		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
 	}
 
 	[saveConsoleButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
@@ -494,6 +492,15 @@ static SPQueryController *sharedQueryController = nil;
 	[progressIndicator setHidden:YES];
 	[progressIndicator stopAnimation:self];
 #endif
+}
+
+/**
+ * Enable or disable console save and clear buttons
+ */
+- (void)_allowFilterClearOrSave:(NSNumber *)enabled
+{
+	[saveConsoleButton setEnabled:[enabled boolValue]];
+	[clearConsoleButton setEnabled:[enabled boolValue]];
 }
 
 /**
@@ -592,13 +599,12 @@ static SPQueryController *sharedQueryController = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
-		[[saveConsoleButton onMainThread] setEnabled:YES];
-		[[clearConsoleButton onMainThread] setEnabled:YES];
+		[self performSelectorOnMainThread:@selector(_allowFilterClearOrSave:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:NO];
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)
 	if (allowConsoleUpdate && [[self window] isVisible]) {
-		[[self onMainThread] updateEntries];
+		[self performSelectorOnMainThread:@selector(updateEntries) withObject:nil waitUntilDone:NO];
 	}
 
 	pthread_mutex_unlock(&consoleLock);
