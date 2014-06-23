@@ -564,11 +564,12 @@
 	// Clear any views which haven't been loaded as they weren't visible.  Note
 	// that this should be done after reloading visible views, instead of clearing all
 	// views, to reduce UI operations and avoid resetting state unnecessarily.
+	// Some views (eg TableRelations) make use of the SPTableChangedNotification and
+	// so don't require manual clearing.
 	if (!structureLoaded) [tableSourceInstance loadTable:nil];
 	if (!contentLoaded) [tableContentInstance loadTable:nil];
 	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
 	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
-	if (!relationsLoaded) [[tableRelationsInstance onMainThread] refreshRelations:self];
 
 	// If the table row counts an inaccurate and require updating, trigger an update - no
 	// action will be performed if not necessary
