@@ -1183,14 +1183,14 @@
 
 	id firstResponder = [[NSApp keyWindow] firstResponder];
 	if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
-		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"]) ;
+		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"] && [[firstResponder delegate] respondsToSelector:@selector(currentQueryRange)]);
 		NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 		currentSelectionRange = [firstResponder selectedRange];
 		currentWordRange = [firstResponder getRangeForCurrentWord];
 		currentLineRange = [[firstResponder string] lineRangeForRange:NSMakeRange([firstResponder selectedRange].location, 0)];
 
 		if(selfIsQueryEditor) {
-			currentQueryRange = [[firstResponder delegate] currentQueryRange];
+			currentQueryRange = [(SPCustomQuery *)[firstResponder delegate] currentQueryRange];
 		} else {
 			currentQueryRange = currentLineRange;
 		}
@@ -1199,8 +1199,8 @@
 
 		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
 
-		if(selfIsQueryEditor && [[firstResponder delegate] currentQueryRange].length)
-			[env setObject:[[firstResponder string] substringWithRange:[[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
+		if(selfIsQueryEditor && [(SPCustomQuery *)[firstResponder delegate] currentQueryRange].length)
+			[env setObject:[[firstResponder string] substringWithRange:[(SPCustomQuery *)[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
 
 		if(currentSelectionRange.length)
 			[env setObject:[[firstResponder string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
