@@ -86,4 +86,14 @@ static inline void NSMutableArrayReplaceObject(NSArray *self, CFIndex idx, id an
 
 - (NSArray *)subarrayWithIndexes:(NSIndexSet *)indexes;
 
+/**
+ * Variant of objectAtIndex: that avoids the "index out of bounds" exception by
+ * just returning nil instead.
+ *
+ * @warning This method is NOT thread-safe.
+ * @param index  An index
+ * @return The object located at index or nil.
+ */
+- (id)objectOrNilAtIndex:(NSUInteger)index;
+
 @end

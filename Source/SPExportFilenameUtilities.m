@@ -47,7 +47,8 @@
 		// Get the current export file extension
 		NSString *extension = [self currentDefaultExportFileExtension];
 		
-		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectAtIndex:1]];
+		//note that there will be no tableName if the export is done from a query result without a database selected (or empty).
+		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectOrNilAtIndex:1]];
 		
 		if (![[filename pathExtension] length] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
 	}
@@ -319,6 +320,7 @@
  * Uses the current custom filename field as a data source.
  *
  * @param table  A table name to be used within the expanded filename.
+ *               Can be nil.
  *
  * @return The expanded filename.
  */
