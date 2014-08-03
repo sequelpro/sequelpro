@@ -389,7 +389,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[syncButton setState:NSOffState];
 
 				// Select the database and table
-				[doc selectDatabase:[pathArray objectAtIndex:1] item:([pathArray count] > 2)?[pathArray objectAtIndex:2]:nil];
+				[doc selectDatabase:[pathArray objectAtIndex:1] item:[pathArray objectOrNilAtIndex:2]];
 
 				if(oldState == NSOnState)
 					[self performSelector:@selector(_setSyncButtonOn) withObject:nil afterDelay:0.1];

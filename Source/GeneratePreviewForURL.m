@@ -476,6 +476,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	if(!iconImages || [iconImages count] < 1)
 		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
 
+#warning Shouldn't that be "> 1"?
 	if([iconImages count] > 0)
 		iconImage = [iconImages objectAtIndex:1];
 	else
