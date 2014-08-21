@@ -91,7 +91,7 @@
 			
 			int i, c;
 			char *bzbuf = malloc(4);
-			const char *charFileMode = (fileMode == O_WRONLY) ? "wb" : "rb";
+			const char *charFileMode = fileMode == O_WRONLY ? "wb" : "rb";
 			
 			BZFILE *bzfile;
 			gzFile *gzfile = gzopen(path, charFileMode);
@@ -101,16 +101,19 @@
 			
 			// Get the first 4 bytes from the file
 			for (i = 0; (c = getc(wrappedFile)) != EOF && i < 4; bzbuf[i++] = c);
+
 			rewind(wrappedFile);
 			
 			// Test to see if the file is gzip compressed
-			BOOL isGzip = (!gzdirect(gzfile));
+			BOOL isGzip = !gzdirect(gzfile);
 			
 			// Test to see if the first 2 bytes extracted from the file match the Bzip2 signature/magic number
 			// (BZ). The 3rd byte should be either 'h' (Huffman encoding) or 0 (Bzip1 - deprecated) to 
 			// indicate the Bzip version. Finally, the 4th byte should be a number between 1 and 9 that indicates
 			// the block size used.
-			BOOL isBzip2 = ((bzbuf[0] == 'B')   && (bzbuf[1] == 'Z')  && 
+
+			BOOL isBzip2 = (sizeof(bzbuf) == 4) &&
+							((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')  &&
 							((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
 							((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39)));
 			
@@ -118,7 +121,7 @@
 			
 			if (isBzip2) bzfile = BZ2_bzopen(path, charFileMode);
 						
-			useCompression = (isGzip || isBzip2);
+			useCompression = isGzip || isBzip2;
 									
 			if (useCompression) {
 				if (isGzip) {
