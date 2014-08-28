@@ -48,11 +48,11 @@
 {
 #ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging]) {
-		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
-			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
-			|| (_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
+		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging]) ||
+			(_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging]) ||
+			(_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
 		{
-			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name]];
+			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name] database:[self database]];
 		}
 	}
 #endif
@@ -65,7 +65,7 @@
 {
 #ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
-		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name]];
+		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name] database:[self database]];
 	}
 #endif
 }
@@ -75,7 +75,6 @@
  */
 - (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection
 {
-	
 	// If no keychain item is available, return an empty password
 	if (![connectionController connectionKeychainItemName]) return nil;
 	
@@ -96,23 +95,26 @@
  */
 - (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection
 {
-
 	// If no keychain item is available, return an empty password
 	if (![connectionController connectionKeychainItemName]) return @"";
 
 	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];
+
 	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
 	NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
-	NSString *sshpw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-	if (!sshpw || ![sshpw length])
-		sshpw = @"";
+	NSString *sshPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 
-	if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-	if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+	if (!sshPassword || ![sshPassword length]) {
+		sshPassword = @"";
+	}
+
+	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
+	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+
 	[keychain release];
 	
-	return sshpw;
+	return sshPassword;
 }
 
 /**
@@ -121,7 +123,17 @@
  */
 - (void)noConnectionAvailable:(id)connection
 {	
-	SPBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
+	SPBeginAlertSheet(
+		NSLocalizedString(@"No connection available", @"no connection available message"),
+		NSLocalizedString(@"OK", @"OK button"),
+		nil,
+		nil,
+		[self parentWindow],
+		self,
+		nil,
+		nil,
+		NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message")
+	);
 }
 
 /**

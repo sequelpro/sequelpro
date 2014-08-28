@@ -39,6 +39,7 @@
 NSString *SPQueryConsoleWindowAutoSaveName = @"QueryConsole";
 NSString *SPTableViewDateColumnID          = @"messageDate";
 NSString *SPTableViewConnectionColumnID    = @"messageConnection";
+NSString *SPTableViewDatabaseColumnID      = @"messageDatabase";
 #endif
 
 @interface SPQueryController ()
@@ -46,8 +47,8 @@ NSString *SPTableViewConnectionColumnID    = @"messageConnection";
 - (void)_updateFilterState;
 - (void)_allowFilterClearOrSave:(NSNumber *)enabled;
 - (BOOL)_messageMatchesCurrentFilters:(NSString *)message;
-- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections;
-- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error;
+- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections databases:(BOOL)databases;
+- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error database:(NSString *)database;
 
 @end
 
@@ -161,6 +162,7 @@ static SPQueryController *sharedQueryController = nil;
 
 		BOOL includeTimestamps = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
 		BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
+		BOOL includeDatabases = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDatabaseColumnID] isHidden];
 
 		[string setString:@""];
 
@@ -181,7 +183,12 @@ static SPQueryController *sharedQueryController = nil;
 					[string appendString:@" "];
 				}
 
-				if (includeTimestamps || includeConnections) [string appendString:@"*/ "];
+				if (includeDatabases) {
+					[string appendString:[message messageDatabase]];
+					[string appendString:@" "];
+				}
+
+				if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"*/ "];
 
 				[string appendFormat:@"%@\n", [message message]];
 			}
@@ -228,10 +235,12 @@ static SPQueryController *sharedQueryController = nil;
 	[panel setAccessoryView:saveLogView];
 
     [panel setNameFieldStringValue:NSLocalizedString(@"ConsoleLog", @"Console : Save as : Initial filename")];
+
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             [[self _getConsoleStringWithTimeStamps:[includeTimeStampsButton state]
-                                       connections:[includeConnectionButton state]] writeToFile:[[panel URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+                                       connections:[includeConnectionButton state]
+										 databases:[includeDatabaseButton state]] writeToFile:[[panel URL] path] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
         }
     }];
 #endif
@@ -243,17 +252,27 @@ static SPQueryController *sharedQueryController = nil;
 - (IBAction)toggleShowTimeStamps:(id)sender
 {
 #ifndef SP_CODA
-	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:([sender state])];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] setHidden:[sender state]];
 #endif
 }
 
 /**
- * Toggles the display of message connections column in the table view.
+ * Toggles the display of the message connections column in the table view.
  */
 - (IBAction)toggleShowConnections:(id)sender
 {
 #ifndef SP_CODA
-	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:([sender state])];
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] setHidden:[sender state]];
+#endif
+}
+
+/**
+ * Toggles the display of the message databases column in the table view.
+ */
+- (IBAction)toggleShowDatabases:(id)sender
+{
+#ifndef SP_CODA
+	[[consoleTableView tableColumnWithIdentifier:SPTableViewDatabaseColumnID] setHidden:[sender state]];
 #endif
 }
 
@@ -286,20 +305,20 @@ static SPQueryController *sharedQueryController = nil;
 /**
  * Shows the supplied message from the supplied connection in the console.
  */
-- (void)showMessageInConsole:(NSString *)message connection:(NSString *)connection
+- (void)showMessageInConsole:(NSString *)message connection:(NSString *)connection database:(NSString *)database
 {
 #ifndef SP_CODA
-	[self _addMessageToConsole:message connection:connection isError:NO];
+	[self _addMessageToConsole:message connection:connection isError:NO database:database];
 #endif
 }
 
 /**
  * Shows the supplied error from the supplied connection in the console.
  */
-- (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection
+- (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection database:(NSString *)database
 {
 #ifndef SP_CODA
-	[self _addMessageToConsole:error connection:connection isError:YES];
+	[self _addMessageToConsole:error connection:connection isError:YES database:database];
 #endif
 }
 
@@ -538,7 +557,7 @@ static SPQueryController *sharedQueryController = nil;
  * Creates and returns a string made entirely of all of the console's messages and includes the message
  * time stamp and connection if specified.
  */
-- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections
+- (NSString *)_getConsoleStringWithTimeStamps:(BOOL)timeStamps connections:(BOOL)connections databases:(BOOL)databases
 {
 	NSMutableString *consoleString = [NSMutableString string];
 
@@ -563,6 +582,11 @@ static SPQueryController *sharedQueryController = nil;
 			[consoleString appendString:@" "];
 		}
 
+		if (databases && [message messageDatabase]) {
+			[consoleString appendString:[message messageDatabase]];
+			[consoleString appendString:@" "];
+		}
+
 		// Close the comment
 		if (timeStamps || connections) [consoleString appendString:@"*/ "];
 
@@ -578,7 +602,7 @@ static SPQueryController *sharedQueryController = nil;
 /**
  * Adds the supplied message to the query console.
  */
-- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error
+- (void)_addMessageToConsole:(NSString *)message connection:(NSString *)connection isError:(BOOL)error database:(NSString *)database
 {
 #ifndef SP_CODA
 	NSString *messageTemp = [[message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
@@ -586,7 +610,7 @@ static SPQueryController *sharedQueryController = nil;
 	// Only append a semi-colon (;) if the supplied message is not an error
 	if (!error) messageTemp = [messageTemp stringByAppendingString:@";"];
 
-	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:messageTemp date:[NSDate date] connection:connection];
+	SPConsoleMessage *consoleMessage = [SPConsoleMessage consoleMessageWithMessage:messageTemp date:[NSDate date] connection:connection database:database];
 
 	[consoleMessage setIsError:error];
 

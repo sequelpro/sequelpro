@@ -163,6 +163,7 @@ NSString *SPConsoleShowHelps                     = @"ConsoleShowHelps";
 NSString *SPConsoleShowSelectsAndShows           = @"ConsoleShowSelectsAndShows";
 NSString *SPConsoleShowTimestamps                = @"ConsoleShowTimestamps";
 NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
+NSString *SPConsoleShowDatabases                 = @"ConsoleShowDatabases";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";

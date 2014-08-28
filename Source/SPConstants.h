@@ -355,6 +355,7 @@ extern NSString *SPLastUsedVersion;
 // GUI Prefs
 extern NSString *SPConsoleShowTimestamps;
 extern NSString *SPConsoleShowConnections;
+extern NSString *SPConsoleShowDatabases;
 extern NSString *SPConsoleShowSelectsAndShows;
 extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;

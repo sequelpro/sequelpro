@@ -2956,13 +2956,17 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			[tableValues removeRowAtIndex:currentlyEditingRow];
 			[self updateCountText];
 			isEditingNewRow = NO;
-		} else {
+		}
+		else {
 			[tableValues replaceRowAtIndex:currentlyEditingRow withRowContents:oldRow];
 		}
+
 		isEditingRow = NO;
 		currentlyEditingRow = -1;
 		[tableContentView reloadData];
-		[[SPQueryController sharedQueryController] showErrorInConsole:NSLocalizedString(@"/* WARNING: No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db") connection:[tableDocumentInstance name]];
+
+		[[SPQueryController sharedQueryController] showErrorInConsole:NSLocalizedString(@"/* WARNING: No rows have been affected */\n", @"warning shown in the console when no rows have been affected after writing to the db") connection:[tableDocumentInstance name] database:[tableDocumentInstance database]];
+
 		return YES;
 
 	// On success...

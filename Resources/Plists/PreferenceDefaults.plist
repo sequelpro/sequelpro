@@ -18,6 +18,8 @@
 	<true/>
 	<key>ConsoleShowConnections</key>
 	<true/>
+	<key>ConsoleShowDatabases</key>
+	<true/>
 	<key>ConsoleShowHelps</key>
 	<true/>
 	<key>ConsoleShowSelectsAndShows</key>
