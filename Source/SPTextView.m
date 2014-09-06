@@ -2235,16 +2235,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 #endif
 	}
-
-#ifndef SP_CODA
-	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
-	if([charactersIgnMod isEqualToString:@"h"]) // ^H show MySQL Help
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self showMySQLHelpForCurrentWord:self];
-			return;
-		}
-#endif
+  
 	if([charactersIgnMod isEqualToString:@"y"]) // ^Y select current query
 		if(curFlags==(NSControlKeyMask))
 		{
@@ -3211,6 +3202,12 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
+    if ([self selectedRange].length > 0) {
+      [menuItem setTitle:NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection")];
+    } else {
+      [menuItem setTitle: NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word")];
+    }
+    
 		NSUInteger stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
