@@ -2315,6 +2315,7 @@
 			);
 			name = "sequel-pro";
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		2A37F4C3FDCFA73011CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
