@@ -1124,7 +1124,11 @@
 			// Is completion string a schema name for current connection
 			if([selectedItem objectForKey:@"isRef"]) {
 				backtickMode = 100; // suppress move the caret one step rightwards
-				[self insert_text:[candidateMatch backtickQuotedString]];
+        if ([prefs boolForKey:SPCustomQueryEditorCompleteWithBackticks]) {
+          [self insert_text:[candidateMatch backtickQuotedString]];
+        } else {
+          [self insert_text:candidateMatch];
+        }
 			} else {
 				[self insert_text:candidateMatch];
 			}

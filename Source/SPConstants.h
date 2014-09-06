@@ -342,6 +342,7 @@ extern NSString *SPCustomQueryUpdateAutoHelp;
 extern NSString *SPCustomQueryAutoHelpDelay;
 extern NSString *SPCustomQueryHighlightCurrentQuery;
 extern NSString *SPCustomQueryEditorTabStopWidth;
+extern NSString *SPCustomQueryEditorCompleteWithBackticks;
 extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
