@@ -57,6 +57,8 @@
 	<true/>
 	<key>CustomQueryAutoPairCharacters</key>
 	<true/>
+	<key>SPCustomQueryEditorCompleteWithBackticks</key>
+	<true/>
 	<key>CustomQueryAutoUppercaseKeywords</key>
 	<false/>
 	<key>CustomQueryEditorBackgroundColor</key>
