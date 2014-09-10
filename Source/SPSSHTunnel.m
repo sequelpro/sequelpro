@@ -337,6 +337,7 @@
 	} else {
 
 		// Disable muxing if requested
+		[taskArguments addObject:@"-S none"];
 		[taskArguments addObject:@"-o ControlMaster=no"];
 	}
 
