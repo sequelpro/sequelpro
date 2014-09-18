@@ -98,6 +98,13 @@
 		success = NO;
 	}
 	
+	// Disable auto-id creation for '0' values
+	[connection queryString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */"];
+	
+	if([connection queryErrored]) {
+		success = NO;
+	}
+	
 	for (NSString *tableName in tablesArray) 
 	{
 		if (![self copyTable:tableName from:sourceDB to:targetDB withContent:copyWithContent]) {
@@ -107,6 +114,13 @@
 	
 	// Enable foreign key checks
 	[connection queryString:@"/*!32352 SET foreign_key_checks=1 */"];
+	
+	if ([connection queryErrored]) {
+		success = NO;
+	}
+	
+	// re-enable id creation
+	[connection queryString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */"];
 	
 	if ([connection queryErrored]) {
 		success = NO;
