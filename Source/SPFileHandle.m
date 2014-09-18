@@ -90,7 +90,7 @@
 		if (fileMode == O_RDONLY) {
 			
 			int i, c;
-			char *bzbuf = malloc(4);
+			char bzbuf[4];
 			const char *charFileMode = fileMode == O_WRONLY ? "wb" : "rb";
 			
 			BZFILE *bzfile;
@@ -112,12 +112,9 @@
 			// indicate the Bzip version. Finally, the 4th byte should be a number between 1 and 9 that indicates
 			// the block size used.
 
-			BOOL isBzip2 = (sizeof(bzbuf) == 4) &&
-							((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')  &&
-							((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
-							((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39)));
-			
-			free(bzbuf);
+			BOOL isBzip2 = ((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')) &&
+			               ((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
+			               ((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39));
 			
 			if (isBzip2) bzfile = BZ2_bzopen(path, charFileMode);
 						
