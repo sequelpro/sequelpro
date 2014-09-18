@@ -338,7 +338,7 @@ static SPQueryController *sharedQueryController = nil;
 #pragma mark Other
 
 /**
- * Called whenver the test within the search field changes.
+ * Called whenever the text within the search field changes.
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
