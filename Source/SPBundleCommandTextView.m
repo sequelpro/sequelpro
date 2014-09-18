@@ -62,6 +62,10 @@
 	[commandScrollView setHasHorizontalRuler:NO];
 	[commandScrollView setHasVerticalRuler:YES];
 	[commandScrollView setRulersVisible:YES];
+	
+	// disable typo stuff in 10.8+ SDK
+	[self setAutomaticDashSubstitutionEnabled:NO];
+	[self setAutomaticQuoteSubstitutionEnabled:NO];
 
 	// Re-define tab stops for a better editing
 	[self setTabStops];
