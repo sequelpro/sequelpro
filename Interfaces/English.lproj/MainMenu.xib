@@ -1227,6 +1227,25 @@
 						<object class="NSMenu" key="NSSubmenu" id="762880388">
 							<string key="NSTitle">Database</string>
 							<array class="NSMutableArray" key="NSMenuItems">
+								<object class="NSMenuItem" id="859280893">
+									<reference key="NSMenu" ref="762880388"/>
+									<string key="NSTitle">Go to Database…</string>
+									<string key="NSKeyEquiv">d</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="325032718"/>
+									<reference key="NSMixedImage" ref="674471825"/>
+								</object>
+								<object class="NSMenuItem" id="346403677">
+									<reference key="NSMenu" ref="762880388"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="325032718"/>
+									<reference key="NSMixedImage" ref="674471825"/>
+								</object>
 								<object class="NSMenuItem" id="838091116">
 									<reference key="NSMenu" ref="762880388"/>
 									<string key="NSTitle">Add Database...</string>
@@ -3151,6 +3170,14 @@
 					<string key="id">BUY-hF-nKy</string>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showGotoDatabase:</string>
+						<reference key="source" ref="1005713010"/>
+						<reference key="destination" ref="859280893"/>
+					</object>
+					<string key="id">jS0-aP-Y7o</string>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="524643114"/>
@@ -4145,6 +4172,8 @@
 							<reference ref="1042638490"/>
 							<reference ref="1060677288"/>
 							<reference ref="607642194"/>
+							<reference ref="859280893"/>
+							<reference ref="346403677"/>
 						</array>
 						<reference key="parent" ref="19149132"/>
 					</object>
@@ -4733,6 +4762,16 @@
 						<reference key="object" ref="221903071"/>
 						<reference key="parent" ref="781540470"/>
 					</object>
+					<object class="IBObjectRecord">
+						<string key="id">8MG-hk-1qS</string>
+						<reference key="object" ref="859280893"/>
+						<reference key="parent" ref="762880388"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">Yzp-Qk-v7Y</string>
+						<reference key="object" ref="346403677"/>
+						<reference key="parent" ref="762880388"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -5266,6 +5305,7 @@
 				<boolean value="NO" key="864.showNotes"/>
 				<string key="865.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="865.showNotes"/>
+				<string key="8MG-hk-1qS.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="906.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="906.showNotes"/>
 				<string key="908.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5362,6 +5402,7 @@
 				</object>
 				<string key="998.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="998.showNotes"/>
+				<string key="Yzp-Qk-v7Y.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="nXE-rI-RyI.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
@@ -5371,47 +5412,6 @@
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
-				<object class="IBPartialClassDescription">
-					<string key="className">NSDocument</string>
-					<dictionary class="NSMutableDictionary" key="actions">
-						<string key="printDocument:">id</string>
-						<string key="revertDocumentToSaved:">id</string>
-						<string key="runPageLayout:">id</string>
-						<string key="saveDocument:">id</string>
-						<string key="saveDocumentAs:">id</string>
-						<string key="saveDocumentTo:">id</string>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="actionInfosByName">
-						<object class="IBActionInfo" key="printDocument:">
-							<string key="name">printDocument:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="revertDocumentToSaved:">
-							<string key="name">revertDocumentToSaved:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="runPageLayout:">
-							<string key="name">runPageLayout:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="saveDocument:">
-							<string key="name">saveDocument:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="saveDocumentAs:">
-							<string key="name">saveDocumentAs:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="saveDocumentTo:">
-							<string key="name">saveDocumentTo:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</dictionary>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/NSDocument.h</string>
-					</object>
-				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSTextView</string>
 					<dictionary class="NSMutableDictionary" key="actions">
@@ -6877,6 +6877,7 @@
 						<string key="setDatabases:">id</string>
 						<string key="showCreateTableSyntax:">id</string>
 						<string key="showFilterTable:">id</string>
+						<string key="showGotoDatabase:">id</string>
 						<string key="showMySQLHelp:">id</string>
 						<string key="showNavigator:">id</string>
 						<string key="showServerProcesses:">id</string>
@@ -7042,6 +7043,10 @@
 						</object>
 						<object class="IBActionInfo" key="showFilterTable:">
 							<string key="name">showFilterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showGotoDatabase:">
+							<string key="name">showGotoDatabase:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="showMySQLHelp:">
@@ -9726,24 +9731,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/SUUpdater.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WebView</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">reloadFromOrigin:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<string key="NS.key.0">reloadFromOrigin:</string>
-						<object class="IBActionInfo" key="NS.object.0">
-							<string key="name">reloadFromOrigin:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WebView.h</string>
 					</object>
 				</object>
 			</array>

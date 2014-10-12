@@ -109,6 +109,7 @@ enum {
 #endif
 
 #import "SPCharsetCollationHelper.h"
+#import "SPGotoDatabaseController.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -206,6 +207,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		mySQLVersion = nil;
 		allDatabases = nil;
 		allSystemDatabases = nil;
+		gotoDatabaseController = nil;
 
 #ifndef SP_CODA /* init ivars */
 		mainToolbar = nil;
@@ -1129,6 +1131,22 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 - (NSArray *)allSchemaKeys
 {
 	return [[SPNavigatorController sharedNavigatorController] allSchemaKeysForConnection:[self connectionID]];
+}
+
+- (IBAction)showGotoDatabase:(id)sender
+{
+	if(!gotoDatabaseController) {
+		gotoDatabaseController = [[SPGotoDatabaseController alloc] init];
+	}
+	
+	NSMutableArray *dbList = [[NSMutableArray alloc] init];
+	[dbList addObjectsFromArray:[self allSystemDatabaseNames]];
+	[dbList addObjectsFromArray:[self allDatabaseNames]];
+	[gotoDatabaseController setDatabaseList:[dbList autorelease]];
+	
+	if([gotoDatabaseController runModal]) {
+		[self selectDatabase:[gotoDatabaseController selectedDatabase] item:nil];
+	}
 }
 
 #ifndef SP_CODA /* console and navigator methods */
@@ -6269,6 +6287,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	[allDatabases release];
 	[allSystemDatabases release];
+	[gotoDatabaseController release];
 #ifndef SP_CODA /* dealloc ivars */
 	[undoManager release];
 	[printWebView release];

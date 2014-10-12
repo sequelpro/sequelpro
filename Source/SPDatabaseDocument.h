@@ -55,6 +55,7 @@
 @class SPDatabaseStructure;
 @class SPMySQLConnection;
 @class SPCharsetCollationHelper;
+@class SPGotoDatabaseController;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -280,6 +281,7 @@
 	BOOL windowTitleStatusViewIsVisible;
 #endif
 	SPDatabaseStructure *databaseStructureRetrieval;
+	SPGotoDatabaseController *gotoDatabaseController;
 }
 
 #ifdef SP_CODA /* ivars */
@@ -352,6 +354,7 @@
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
+- (IBAction)showGotoDatabase:(id)sender;
 #endif
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;

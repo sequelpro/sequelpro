@@ -179,6 +179,8 @@
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
+		50A9F8AD19EAD4860053E571 /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50A9F8AC19EAD4860053E571 /* GotoDatabaseDialog.xib */; };
+		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
 		50E217B318174246009D3580 /* SPColorSelectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B218174246009D3580 /* SPColorSelectorView.m */; };
 		50E217B618174280009D3580 /* SPFavoriteColorSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B518174280009D3580 /* SPFavoriteColorSupport.m */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
@@ -879,6 +881,9 @@
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
+		50A9F8AC19EAD4860053E571 /* GotoDatabaseDialog.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = GotoDatabaseDialog.xib; path = English.lproj/GotoDatabaseDialog.xib; sourceTree = "<group>"; };
+		50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGotoDatabaseController.h; sourceTree = "<group>"; };
+		50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGotoDatabaseController.m; sourceTree = "<group>"; };
 		50E217B118174246009D3580 /* SPColorSelectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorSelectorView.h; sourceTree = "<group>"; };
 		50E217B218174246009D3580 /* SPColorSelectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorSelectorView.m; sourceTree = "<group>"; };
 		50E217B418174280009D3580 /* SPFavoriteColorSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteColorSupport.h; sourceTree = "<group>"; };
@@ -1583,6 +1588,8 @@
 				17846B9D170C95D800414499 /* Process List */,
 				17381853151FB29C0078FFE2 /* User Manager */,
 				1713C73D140D88D400CFD461 /* Query Controller */,
+				50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */,
+				50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -2202,6 +2209,7 @@
 				1792C13010AD752100ABE758 /* DatabaseServerVariables.xib */,
 				58C3507310B9ADEA00D37E14 /* ContentPaginationView.xib */,
 				17A7773611C52E61001E27B4 /* IndexesView.xib */,
+				50A9F8AC19EAD4860053E571 /* GotoDatabaseDialog.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -2914,6 +2922,7 @@
 				C9AD7C7C1676158C00234EEE /* toolbar-switch-to-sql@2x.png in Resources */,
 				C9AD7C7F167619B400234EEE /* button_refresh.png in Resources */,
 				C9AD7C80167619B400234EEE /* button_refresh@2x.png in Resources */,
+				50A9F8AD19EAD4860053E571 /* GotoDatabaseDialog.xib in Resources */,
 				C9AD7C8316761B3300234EEE /* button_action.png in Resources */,
 				C9AD7C8416761B3300234EEE /* button_action@2x.png in Resources */,
 				C9AD7C891676204300234EEE /* button_info_pane_hide.png in Resources */,
@@ -3085,6 +3094,7 @@
 				17E6415A0EF01EF6001BC333 /* SPDatabaseDocument.m in Sources */,
 				17E6415B0EF01EF6001BC333 /* SPDataImport.m in Sources */,
 				17E6415C0EF01EF6001BC333 /* SPTableStructure.m in Sources */,
+				50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */,
 				17E641640EF01F15001BC333 /* SPTableInfo.m in Sources */,
 				17E641650EF01F15001BC333 /* SPTablesList.m in Sources */,
 				17E6416C0EF01F37001BC333 /* ImageAndTextCell.m in Sources */,
