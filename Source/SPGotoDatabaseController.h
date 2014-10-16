@@ -29,7 +29,6 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Cocoa/Cocoa.h>
-@class SPDatabaseDocument;
 
 /**
  * This class provides a dialog with a single-column table view and a
@@ -58,10 +57,10 @@
 
 /**
  * Set the list of databases the user can pick from.
- * @param list An array of NSStrings
+ * @param list An array of NSStrings, will be shallow-copied
  *
  * This method must be called before runModal. The list will not be updated
- * when the dialog is on screen.
+ * while the dialog is on screen.
  */
 - (void)setDatabaseList:(NSArray *)list;
 

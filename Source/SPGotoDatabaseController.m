@@ -29,9 +29,19 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPGotoDatabaseController.h"
-#import "SPDatabaseDocument.h"
 
 @interface SPGotoDatabaseController (Private)
+
+/** Update the list of matched names
+ * @param filter     The string to be matched.
+ * @param exactMatch Will be set to YES if there is at least one entry in 
+ *                   unfilteredList that is equivalent to filter. Can be NULL to disable.
+ *
+ * This method will take every item in the unfilteredList and add matching items 
+ * to the filteredList, including highlighting.
+ * It will neither clear the filteredList first, nor change the isFiltered ivar!
+ * Search is case insensitive.
+ */
 - (void)_buildHightlightedFilterList:(NSString *)filter didFindExactMatch:(BOOL *)exactMatch;
 
 - (IBAction)okClicked:(id)sender;
@@ -51,6 +61,12 @@
 		[self setAllowCustomNames:YES];
     }
     return self;
+}
+
+- (void)windowDidLoad {
+	//handle a double click in the DB list the same as if OK was clicked.
+	[databaseListView setTarget:self];
+	[databaseListView setDoubleAction:@selector(okClicked:)];
 }
 
 #pragma mark -
@@ -145,10 +161,11 @@
 						   nil];
 
 	for(NSString *db in unfilteredList) {
-		NSRange match = [db rangeOfString:filter];
+		//let's just assume it is in the users interest (most of the time) for searches to be CI.
+		NSRange match = [db rangeOfString:filter options:NSCaseInsensitiveSearch];
 		if(match.location == NSNotFound)
 			continue;
-		//check for exact match?
+		//should we check for exact match AND have not yet found one?
 		if(exactMatch && !*exactMatch) {
 			if(match.location == 0 && match.length == [db length])
 				*exactMatch = YES;
