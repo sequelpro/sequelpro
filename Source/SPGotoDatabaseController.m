@@ -175,7 +175,7 @@
 
 		if (match.location == NSNotFound) continue;
 
-		//check for exact match?
+		// Check for exact match?
 		if (exactMatch && !*exactMatch) {
 			if (match.location == 0 && match.length == [db length]) {
 				*exactMatch = YES;
@@ -220,13 +220,13 @@
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector
 {
-	//the ESC key will usually clear the search field. we want to close the dialog
+	// The ESC key will usually clear the search field. we want to close the dialog
 	if (commandSelector == @selector(cancelOperation:)) {
 		[cancelButton performClick:control];
 		return YES;
 	}
 
-	//arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
+	// Arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
 	if (commandSelector == @selector(moveDown:)) {
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]+1)] byExtendingSelection:NO];
 		return YES;
@@ -236,8 +236,8 @@
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]-1)] byExtendingSelection:NO];
 		return YES;
 	}
-	//forward return to OK button (enter will not be caught by search field)
 
+	// Forward return to OK button (enter will not be caught by search field)
 	if (commandSelector == @selector(insertNewline:)) {
 		[okButton performClick:control];
 		return YES;

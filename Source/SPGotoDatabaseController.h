@@ -46,7 +46,9 @@
 	
 	NSMutableArray *unfilteredList;
 	NSMutableArray *filteredList;
+
 	BOOL isFiltered;
+	BOOL allowCustomNames;
 }
 
 /**
