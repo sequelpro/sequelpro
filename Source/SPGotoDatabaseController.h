@@ -36,7 +36,8 @@
  * keyboard-based navigation between databases. The dialog also enables
  * jumping to a database by C&P-ing its full name.
  */
-@interface SPGotoDatabaseController : NSWindowController <NSTableViewDataSource,NSControlTextEditingDelegate> {
+@interface SPGotoDatabaseController : NSWindowController <NSTableViewDataSource,NSControlTextEditingDelegate>
+{
 	IBOutlet NSSearchField *searchField;
 	IBOutlet NSButton *okButton;
 	IBOutlet NSButton *cancelButton;
@@ -44,7 +45,9 @@
 	
 	NSMutableArray *unfilteredList;
 	NSMutableArray *filteredList;
+
 	BOOL isFiltered;
+	BOOL allowCustomNames;
 }
 
 /**
@@ -82,4 +85,5 @@
  * This method will only return once the dialog was closed again.
  */
 - (BOOL)runModal;
+
 @end

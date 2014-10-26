@@ -47,24 +47,28 @@
 - (IBAction)okClicked:(id)sender;
 - (IBAction)cancelClicked:(id)sender;
 - (IBAction)searchChanged:(id)sender;
+
 @end
 
 @implementation SPGotoDatabaseController
 
+@synthesize allowCustomNames;
+
 - (id)init
 {
-    self = [super initWithWindowNibName:@"GotoDatabaseDialog"];
-    if (self) {
+    if ((self = [super initWithWindowNibName:@"GotoDatabaseDialog"])) {
         unfilteredList = [[NSMutableArray alloc] init];
 		filteredList   = [[NSMutableArray alloc] init];
 		isFiltered     = NO;
+
 		[self setAllowCustomNames:YES];
     }
+
     return self;
 }
 
 - (void)windowDidLoad {
-	//handle a double click in the DB list the same as if OK was clicked.
+	// Handle a double click in the DB list the same as if OK was clicked.
 	[databaseListView setTarget:self];
 	[databaseListView setDoubleAction:@selector(okClicked:)];
 }
@@ -75,38 +79,50 @@
 - (IBAction)okClicked:(id)sender
 {
 	[NSApp stopModalWithCode:YES];
+
 	[[self window] orderOut:nil];
 }
 
 - (IBAction)cancelClicked:(id)sender
 {
 	[NSApp stopModalWithCode:NO];
+
 	[[self window] orderOut:nil];
 }
 
 - (IBAction)searchChanged:(id)sender
 {
 	[filteredList removeAllObjects];
+
 	NSString *newFilter = [searchField stringValue];
-	if(!newFilter || [newFilter isEqualToString:@""]) {
+
+	if (!newFilter || [newFilter isEqualToString:@""]) {
 		isFiltered = NO;
 	}
 	else {
 		isFiltered = YES;
+
 		BOOL exactMatch = NO;
+
 		[self _buildHightlightedFilterList:newFilter didFindExactMatch:&exactMatch];
+
 		//always add the search string to the end of the list (in case the user
 		//wants to switch to a DB not in the list) unless there was an exact match
-		if([self allowCustomNames] && !exactMatch) {
+		if ([self allowCustomNames] && !exactMatch) {
 			NSMutableAttributedString *searchValue = [[NSMutableAttributedString alloc] initWithString:newFilter];
+
 			[searchValue applyFontTraits:NSItalicFontMask range:NSMakeRange(0, [newFilter length])];
+
 			[filteredList addObject:[searchValue autorelease]];
 		}
 	}
+
 	[databaseListView reloadData];
-	//ensure we have a selection
-	if([databaseListView selectedRow] < 0)
+
+	// Ensure we have a selection
+	if ([databaseListView selectedRow] < 0) {
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+	}
 	
 	[okButton setEnabled:([databaseListView selectedRow] >= 0)];
 }
@@ -114,38 +130,46 @@
 #pragma mark -
 #pragma mark Public
 
-- (NSString *)selectedDatabase {
+- (NSString *)selectedDatabase
+{
 	NSInteger row = [databaseListView selectedRow];
+
 	id attrValue;
-	if(isFiltered) {
+
+	if (isFiltered) {
 		attrValue = [filteredList objectOrNilAtIndex:row];
 	}
 	else {
 		attrValue = [unfilteredList objectOrNilAtIndex:row];
 	}
-	if([attrValue isKindOfClass:[NSAttributedString class]])
+
+	if ([attrValue isKindOfClass:[NSAttributedString class]]) {
 		return [attrValue string];
+	}
+
 	return attrValue;
 }
 
 - (void)setDatabaseList:(NSArray *)list
 {
-	//update list of databases
+	// Update list of databases
 	[unfilteredList removeAllObjects];
 	[unfilteredList addObjectsFromArray:list];
 }
 
 - (BOOL)runModal
 {
-	//NSWindowController is lazy with loading nibs
+	// NSWindowController is lazy with loading nibs
 	[self window];
 	
-	//reset the search field
+	// Reset the search field
 	[searchField setStringValue:@""];
 	[self searchChanged:nil];
-	//give focus to search field
+
+	// Give focus to search field
 	[[self window] makeFirstResponder:searchField];
-	//start modal dialog
+
+	// Start modal dialog
 	return [NSApp runModalForWindow:[self window]];
 }
 
@@ -160,19 +184,23 @@
 						   [NSNumber numberWithInt:NSUnderlineStyleSingle],NSUnderlineStyleAttributeName,
 						   nil];
 
-	for(NSString *db in unfilteredList) {
-		//let's just assume it is in the users interest (most of the time) for searches to be CI.
+	for (NSString *db in unfilteredList) {
+		// Let's just assume it is in the users interest (most of the time) for searches to be CI.
 		NSRange match = [db rangeOfString:filter options:NSCaseInsensitiveSearch];
-		if(match.location == NSNotFound)
-			continue;
-		//should we check for exact match AND have not yet found one?
-		if(exactMatch && !*exactMatch) {
-			if(match.location == 0 && match.length == [db length])
+
+		if (match.location == NSNotFound) continue;
+
+		// Should we check for exact match AND have not yet found one?
+		if (exactMatch && !*exactMatch) {
+			if (match.location == 0 && match.length == [db length]) {
 				*exactMatch = YES;
+			}
 		}
 		
 		NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
+
 		[attrMatch setAttributes:attrs range:match];
+
 		[filteredList addObject:[attrMatch autorelease]];
 	}
 	
@@ -184,7 +212,7 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	if(!isFiltered) {
+	if (!isFiltered) {
 		return [unfilteredList count];
 	}
 	else {
@@ -194,10 +222,12 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(!isFiltered)
+	if (!isFiltered) {
 		return [unfilteredList objectAtIndex:rowIndex];
-	else
+	}
+	else {
 		return [filteredList objectAtIndex:rowIndex];
+	}
 }
 
 #pragma mark -
@@ -205,22 +235,25 @@
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)fieldEditor doCommandBySelector:(SEL)commandSelector
 {
-	//the ESC key will usually clear the search field. we want to close the dialog
-	if(commandSelector == @selector(cancelOperation:)) {
+	// The ESC key will usually clear the search field. we want to close the dialog
+	if (commandSelector == @selector(cancelOperation:)) {
 		[cancelButton performClick:control];
 		return YES;
 	}
-	//arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
-	if(commandSelector == @selector(moveDown:)) {
+
+	// Arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
+	if (commandSelector == @selector(moveDown:)) {
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]+1)] byExtendingSelection:NO];
 		return YES;
 	}
-	if(commandSelector == @selector(moveUp:)) {
+
+	if (commandSelector == @selector(moveUp:)) {
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]-1)] byExtendingSelection:NO];
 		return YES;
 	}
-	//forward return to OK button (enter will not be caught by search field)
-	if(commandSelector == @selector(insertNewline:)) {
+
+	// Forward return to OK button (enter will not be caught by search field)
+	if (commandSelector == @selector(insertNewline:)) {
 		[okButton performClick:control];
 		return YES;
 	}
@@ -234,6 +267,7 @@
 {
     [unfilteredList release], unfilteredList = nil;
 	[filteredList release], filteredList = nil;
+
 	[super dealloc];
 }
 
