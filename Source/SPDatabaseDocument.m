@@ -2483,16 +2483,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		return;
 	}
 	
-	[NSApp beginSheet:[userManagerInstance window]
-	   modalForWindow:parentWindow 
-		modalDelegate:self 
-	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
-}
-
-- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
-{
-	[userManagerInstance release], userManagerInstance = nil;
+	[userManagerInstance beginSheetModalForWindow:parentWindow
+								completionHandler:^(){
+		[userManagerInstance release], userManagerInstance = nil;
+	}];
 }
 
 /**

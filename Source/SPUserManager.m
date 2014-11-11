@@ -61,6 +61,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
 - (void)_initializeAvailablePrivs;
 - (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost;
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context;
 
 @end
 
@@ -471,6 +472,31 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
     return managedObjectContext;
 }
 
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback
+{
+	//copy block from stack to heap, otherwise it wouldn't live long enough to be invoked later.
+	void *heapCallback = callback? Block_copy(callback) : NULL;
+	
+	[NSApp beginSheet:[self window]
+	   modalForWindow:docWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:heapCallback];
+}
+
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
+{
+	//[NSApp endSheet...] does not close the window
+	[[self window] orderOut:self];
+	//notify delegate
+	if(context) {
+		void (^callback)() = context;
+		//directly invoking callback would risk that we are dealloc'd while still in this run loop iteration.
+		dispatch_async(dispatch_get_main_queue(), callback);
+		Block_release(callback);
+	}
+}
+
 #pragma mark -
 #pragma mark General IBAction methods
 
@@ -489,7 +515,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	
 	// Close sheet
 	[NSApp endSheet:[self window] returnCode:0];
-	[[self window] orderOut:self];
 }
 
 /**
@@ -539,7 +564,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 	// Otherwise, close the sheet
 	[NSApp endSheet:[self window] returnCode:0];
-	[[self window] orderOut:self];
 }
 
 /**

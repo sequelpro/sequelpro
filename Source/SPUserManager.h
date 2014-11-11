@@ -124,4 +124,12 @@
 - (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
 - (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
 
+// External
+/**
+ * Display the user manager as a sheet attached to a chosen window
+ * @param docWindow The parent window.
+ * @param callback  A callback that will be called once the window is closed again. Can be NULL.
+ */
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback;
+
 @end
