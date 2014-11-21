@@ -33,6 +33,25 @@
 #define kPSMSequelProTabCornerRadius 4.5f
 #define MARGIN_X 6
 
+#ifndef __MAC_10_10
+#define __MAC_10_10         101000
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
+// This code is available since 10.8 but public only since 10.10
+typedef struct {
+	NSInteger major;
+	NSInteger minor;
+	NSInteger patch;
+} NSOperatingSystemVersion;
+
+@interface NSProcessInfo ()
+- (NSOperatingSystemVersion)operatingSystemVersion;
+- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
+@end
+
+#endif
+
 @implementation PSMSequelProTabStyle
 
 - (NSString *)name
@@ -46,8 +65,25 @@
 - (id) init
 {
     if ( (self = [super init]) ) {
-		systemVersion = 0;
-		Gestalt(gestaltSystemVersion, &systemVersion);
+		// Avoid call to the deprecated (10.8+) Gestalt() function.
+		// This code actually belongs in it's own class, but since both PSMTabBar.framework
+		// and SP itself would need it, the loader will complain about a duplicate class implementation.
+		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
+		if([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
+			NSOperatingSystemVersion os10_7_0 = {10,7,0};
+			NSOperatingSystemVersion os10_10_0 = {10,10,0};
+			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
+			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
+		}
+		else {
+			SInt32 versionMajor = 0;
+			SInt32 versionMinor = 0;
+			Gestalt(gestaltSystemVersionMajor, &versionMajor);
+			Gestalt(gestaltSystemVersionMinor, &versionMinor);
+			
+			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
+			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
+		}
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose"]];
         sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Pressed"]];
@@ -408,7 +444,8 @@
 	[[NSGraphicsContext currentContext] setShouldAntialias:NO];
 
 	float backgroundCalibratedWhite = 0.495f;
-	if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.55f;
+	if (systemVersionIsAtLeast10_7_0)  backgroundCalibratedWhite = 0.55f;
+	if (systemVersionIsAtLeast10_10_0) backgroundCalibratedWhite = 0.68f;
 
 	float lineCalibratedWhite = [[NSColor darkGrayColor] whiteComponent];
 	float shadowAlpha = 0.4f;
@@ -416,7 +453,8 @@
 	// When the window is in the background, tone down the colours
 	if ((![[tabBar window] isMainWindow] && ![[[tabBar window] attachedSheet] isMainWindow]) || ![NSApp isActive]) {
 		backgroundCalibratedWhite = 0.73f;
-		if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.79f;
+		if (systemVersionIsAtLeast10_7_0)  backgroundCalibratedWhite = 0.79f;
+		if (systemVersionIsAtLeast10_10_0) backgroundCalibratedWhite = 0.86f;
 		lineCalibratedWhite = 0.49f;
 		shadowAlpha = 0.3f;
 	}
@@ -532,13 +570,20 @@
 	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
 		if ([cell state] == NSOnState) { //active window, active cell
-			float tabWhiteComponent = (systemVersion >= 0x1070)?0.63f:0.59f;
+			float tabWhiteComponent = 0.59f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.63f; // 160/255
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.795f; // 202/255
+			
 			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.02f;
 			
 			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		} else { //active window, background cell
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];
+			float tabWhiteComponent = 0.495f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.55f;
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.68f; // 173/255
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
 			if([cell backgroundColor])
 				//should be a slightly darker variant of the color
 				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
@@ -547,14 +592,21 @@
 	} else {
 		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
 		if ([cell state] == NSOnState) { //background window, active cell
-			float tabWhiteComponent = (systemVersion >= 0x1070)?0.85f:0.81f;
+			float tabWhiteComponent = 0.81f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.85f;
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.957f; // 244/255
+			
 			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.01f;
 
 			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
 			fillColor = [cell backgroundColor] ? [NSColor colorWithCalibratedHue:[[cell backgroundColor] hueComponent] saturation:[[cell backgroundColor] saturationComponent] brightness:([[cell backgroundColor] brightnessComponent] * 1.28 ) alpha:1.0f] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
 		} else { //background window, background cell
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.79f:0.73f alpha:1.0f];
+			float tabWhiteComponent = 0.73f;
+			if(systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.79f;
+			if(systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.86f; // 219/255
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
 			//make it dark first, then desaturate
 			if([cell backgroundColor]) {
 				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
