@@ -95,6 +95,7 @@
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *openTableInNewTabMenuItem;
+	IBOutlet NSMenuItem *openTableInNewWindowMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *copyCreateSyntaxMenuItem;
@@ -111,6 +112,7 @@
 	IBOutlet NSMenuItem *truncateTableContextMenuItem;
 	IBOutlet NSMenuItem *renameTableContextMenuItem;
 	IBOutlet NSMenuItem *openTableInNewTabContextMenuItem;
+	IBOutlet NSMenuItem *openTableInNewWindowContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *copyCreateSyntaxContextMenuItem;
@@ -151,6 +153,7 @@
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
 - (IBAction)openTableInNewTab:(id)sender;
+- (IBAction)openTableInNewWindow:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 #endif
 

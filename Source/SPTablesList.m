@@ -66,6 +66,8 @@
 
 #import "SPCharsetCollationHelper.h"
 
+#import "SPWindowManagement.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
@@ -88,7 +90,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)_copyTable;
 #endif
 - (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
-
+- (void)_duplicateConnectionToFrontTab;
 @end
 
 @implementation SPTablesList
@@ -693,25 +695,37 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (IBAction)openTableInNewTab:(id)sender
 {
-
 	// Add a new tab to the window
 	[[[tableDocumentInstance parentWindow] windowController] addNewConnection:self];
+	
+	[self _duplicateConnectionToFrontTab];
+}
 
+- (void)_duplicateConnectionToFrontTab
+{
 	// Get the state of the document
 	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:YES], @"connection",
-										[NSNumber numberWithBool:YES], @"history",
-										[NSNumber numberWithBool:YES], @"session",
-										[NSNumber numberWithBool:YES], @"query",
-										[NSNumber numberWithBool:YES], @"password",
-										nil];
+									 [NSNumber numberWithBool:YES], @"connection",
+									 [NSNumber numberWithBool:YES], @"history",
+									 [NSNumber numberWithBool:YES], @"session",
+									 [NSNumber numberWithBool:YES], @"query",
+									 [NSNumber numberWithBool:YES], @"password",
+									 nil];
 	NSMutableDictionary *documentState = [NSMutableDictionary dictionaryWithDictionary:[tableDocumentInstance stateIncludingDetails:allStateDetails]];
-
+	
 	// Ensure it's set to autoconnect
 	[documentState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
-
+	
 	// Set the connection on the new tab
 	[[[NSApp delegate] frontDocument] setState:documentState];
+}
+
+- (IBAction)openTableInNewWindow:(id)sender
+{
+	//create new window
+	[(SPAppController *)[NSApp delegate] newWindow:self];
+	
+	[self _duplicateConnectionToFrontTab];
 }
 
 /**
@@ -911,6 +925,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Context menu
 		[renameTableContextMenuItem setHidden:YES];
 		[openTableInNewTabContextMenuItem setHidden:YES];
+		[openTableInNewWindowContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem3 setHidden:YES];
 		[duplicateTableContextMenuItem setHidden:YES];
 		[separatorTableContextMenuItem setHidden:YES];
@@ -923,6 +938,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// 'Gear' menu
 		[renameTableMenuItem setHidden:YES];
 		[openTableInNewTabMenuItem setHidden:YES];
+		[openTableInNewWindowMenuItem setHidden:YES];
 		[separatorTableMenuItem3 setHidden:YES];
 		[duplicateTableMenuItem setHidden:YES];
 		[separatorTableMenuItem setHidden:YES];
@@ -1015,8 +1031,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
 		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewWindowMenuItem setHidden:NO];
 		[separatorTableMenuItem3 setHidden:NO];
 		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open View in New Tab", @"open view in new table title")];
+		[openTableInNewWindowMenuItem setTitle:NSLocalizedString(@"Open View in New Window", @"Tables List : Gear Menu : Duplicate connection to new window")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 		[copyCreateSyntaxMenuItem setHidden:NO];
@@ -1029,8 +1047,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete View", @"delete view menu title")];
 		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewWindowContextMenuItem setHidden:NO];
 		[separatorTableContextMenuItem3 setHidden:NO];
-		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open View in New Tab", @"open view in new table title")];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open View in New Tab", @"open view in new tab title")];
+		[openTableInNewWindowContextMenuItem setTitle:NSLocalizedString(@"Open View in New Window", @"Tables List : Context Menu : Duplicate connection to new window")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create View Syntax...", @"show create view syntax menu item")];
 		[copyCreateSyntaxContextMenuItem setHidden:NO];
@@ -1062,7 +1082,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableButton setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
 		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewWindowMenuItem setHidden:NO];
 		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Table in New Tab", @"open table in new table title")];
+		[openTableInNewWindowMenuItem setTitle:NSLocalizedString(@"Open Table in New Window", @"Table List : Gear Menu : Duplicate connection to new window")];
 		[separatorTableMenuItem3 setHidden:NO];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
@@ -1077,8 +1099,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Table", @"truncate table menu title")];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Table", @"delete table menu title")];
 		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewWindowContextMenuItem setHidden:NO];
 		[separatorTableContextMenuItem3 setHidden:NO];
-		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Table in New Tab", @"open table in new table title")];
+		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Table in New Tab", @"open table in new tab title")];
+		[openTableInNewWindowContextMenuItem setTitle:NSLocalizedString(@"Open Table in New Window", @"Table List : Context Menu : Duplicate connection to new window")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Table Syntax...", @"show create table syntax menu item")];
 		[copyCreateSyntaxContextMenuItem setHidden:NO];
@@ -1103,7 +1127,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
 		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewWindowMenuItem setHidden:NO];
 		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Tab", @"open procedure in new table title")];
+		[openTableInNewWindowMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Window", @"Table List : Gear Menu : duplicate connection to new window")];
 		[separatorTableMenuItem3 setHidden:NO];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
@@ -1117,8 +1143,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedure", @"delete proc menu title")];
 		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewWindowContextMenuItem setHidden:NO];
 		[separatorTableContextMenuItem3 setHidden:NO];
 		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Tab", @"open procedure in new table title")];
+		[openTableInNewWindowContextMenuItem setTitle:NSLocalizedString(@"Open Procedure in New Window", @"Table List : Context Menu : duplicate connection to new window")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Procedure Syntax...", @"show create proc syntax menu item")];
 		[copyCreateSyntaxContextMenuItem setHidden:NO];
@@ -1143,8 +1171,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableButton setHidden:YES];
 		[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
 		[openTableInNewTabMenuItem setHidden:NO];
+		[openTableInNewWindowMenuItem setHidden:NO];
 		[separatorTableMenuItem3 setHidden:NO];
 		[openTableInNewTabMenuItem setTitle:NSLocalizedString(@"Open Function in New Tab", @"open function in new table title")];
+		[openTableInNewWindowMenuItem setTitle:NSLocalizedString(@"Open Function in New Window", @"Table List : Gear Menu : duplicate connection to new window")];
 		[showCreateSyntaxMenuItem setHidden:NO];
 		[showCreateSyntaxMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 		[copyCreateSyntaxMenuItem setHidden:NO];
@@ -1157,8 +1187,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[truncateTableContextMenuItem setHidden:YES];
 		[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Function", @"delete func menu title")];
 		[openTableInNewTabContextMenuItem setHidden:NO];
+		[openTableInNewWindowContextMenuItem setHidden:NO];
 		[separatorTableContextMenuItem3 setHidden:NO];
 		[openTableInNewTabContextMenuItem setTitle:NSLocalizedString(@"Open Function in New Tab", @"open function in new table title")];
+		[openTableInNewWindowContextMenuItem setTitle:NSLocalizedString(@"Open Function in New Window", @"Table List : Context Menu : duplicate connection to new window")];
 		[showCreateSyntaxContextMenuItem setHidden:NO];
 		[showCreateSyntaxContextMenuItem setTitle:NSLocalizedString(@"Show Create Function Syntax...", @"show create func syntax menu item")];
 		[copyCreateSyntaxContextMenuItem setHidden:NO];
@@ -1854,7 +1886,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	if (action == @selector(copyTable:) || 
 		action == @selector(renameTable:) ||
-		action == @selector(openTableInNewTab:))
+		action == @selector(openTableInNewTab:) ||
+		action == @selector(openTableInNewWindow:))
 	{
 		return selectedRows == 1 && [[self tableName] length];
 	}
