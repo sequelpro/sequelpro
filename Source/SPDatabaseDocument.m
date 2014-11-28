@@ -4314,7 +4314,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (void)tabDidResize
 {
-
+	// Coax the main split view into actually checking its constraints
+	[contentViewSplitter setPosition:[[[contentViewSplitter subviews] objectAtIndex:0] bounds].size.width ofDividerAtIndex:0];
 	// If the task interface is visible, and this tab is frontmost, re-center the task child window
 	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
@@ -5766,6 +5767,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex
 {
+	//the right side of the SP window must be at least 505px wide or the UI will break!
+	if(dividerIndex == 0) {
+		return proposedMaximumPosition - 505;
+	}
 	return proposedMaximumPosition;
 }
 

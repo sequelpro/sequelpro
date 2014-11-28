@@ -641,7 +641,7 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
-	return proposedMin + 200;
+	return proposedMin + 225;
 }
 
 /**

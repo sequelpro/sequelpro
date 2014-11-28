@@ -365,6 +365,27 @@
 		[super adjustSubviews];
 		return;
 	}
+	
+	
+	// Imagine width=9,viewCount=2 and suggestedSizes would return {4.5, 4.5}
+	// If we did a roundf() we would exceed the size limit (because we'd get {5,5}).
+	// However if we don't round, we might get two float values which don't add up anyway
+	// because of a precision issue.
+	// So let's do the following instead: round alernating between DOWN and UP.
+	// Finnally give the remainder to the last subview.
+	// Example with width=11,viewCount=3 -> 3 ; 4 ; 3 + (11 - 10) = 3;4;4
+	CGFloat *viewSizesRaw = calloc(sizeof(CGFloat), viewCount);
+	CGFloat spaceRemaining = totalAvailableSize;
+	for (i = 0; i < viewCount; i++) {
+		//recalculate value
+		CGFloat floatVal = [[viewSizes objectAtIndex:i] floatValue];
+		CGFloat rounded = viewSizesRaw[i] = ((i % 2) == 0)? floorf(floatVal) : ceilf(floatVal);
+		spaceRemaining -= rounded;
+	}
+	//last one gets the remainder
+	if(spaceRemaining) {
+		viewSizesRaw[i-1] += spaceRemaining;
+	}
 
 	CGFloat splitViewBreadth;
 	if ([self isVertical]) {
@@ -377,17 +398,17 @@
 	CGFloat originPosition = 0;
 	for (i = 0; i < viewCount; i++) {
 		NSView *eachSubview = [[self subviews] objectAtIndex:i];
-		CGFloat viewSize = [[viewSizes objectAtIndex:i] floatValue];
+		CGFloat viewSize = viewSizesRaw[i];
 		NSRect viewFrame = [eachSubview frame];
 
 		if ([self isVertical]) {
-			viewFrame.origin.x = roundf(originPosition);
-			viewFrame.size.width = roundf(viewSize);
+			viewFrame.origin.x = originPosition;
+			viewFrame.size.width = viewSize;
 			viewFrame.size.height = splitViewBreadth;
 		} else {
-			viewFrame.origin.y = roundf(originPosition);
+			viewFrame.origin.y = originPosition;
 			viewFrame.size.width = splitViewBreadth;
-			viewFrame.size.height = roundf(viewSize);
+			viewFrame.size.height = viewSize;
 		}
 
 		[eachSubview setFrame:viewFrame];
@@ -398,6 +419,8 @@
 			originPosition += [self dividerThickness];
 		}
 	}
+	
+	free(viewSizesRaw);
 
 	// Invalidate the cursor rects
 	[[self window] invalidateCursorRectsForView:self];
