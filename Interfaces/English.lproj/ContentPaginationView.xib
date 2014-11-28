@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13B3116</string>
-		<string key="IBDocument.InterfaceBuilderVersion">4514</string>
-		<string key="IBDocument.AppKitVersion">1265</string>
-		<string key="IBDocument.HIToolboxVersion">696.00</string>
+		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.InterfaceBuilderVersion">5056</string>
+		<string key="IBDocument.AppKitVersion">1265.21</string>
+		<string key="IBDocument.HIToolboxVersion">698.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">4514</string>
+			<string key="NS.object.0">5056</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSBox</string>
@@ -22,6 +22,7 @@
 			<string>NSTextField</string>
 			<string>NSTextFieldCell</string>
 			<string>NSUserDefaultsController</string>
+			<string>NSViewController</string>
 		</array>
 		<array key="IBDocument.PluginDependencies">
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -41,7 +42,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSCustomView" id="1005">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">289</int>
 				<array class="NSMutableArray" key="NSSubviews">
 					<object class="NSBox" id="323537221">
@@ -51,360 +52,36 @@
 							<object class="NSView" id="64533247">
 								<reference key="NSNextResponder" ref="323537221"/>
 								<int key="NSvFlags">274</int>
-								<array class="NSMutableArray" key="NSSubviews">
-									<object class="NSTextField" id="450027460">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{147, 109}, {52, 19}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSTextFieldCell" key="NSCell" id="978500512">
-											<int key="NSCellFlags">-1804599231</int>
-											<int key="NSCellFlags2">67240960</int>
-											<integer value="1" key="NSContents"/>
-											<object class="NSFont" key="NSSupport" id="26">
-												<string key="NSName">.LucidaGrandeUI</string>
-												<double key="NSSize">11</double>
-												<int key="NSfFlags">3100</int>
-											</object>
-											<object class="NSNumberFormatter" key="NSFormatter" id="348860673">
-												<dictionary class="NSMutableDictionary" key="NS.attributes">
-													<boolean value="NO" key="allowsFloats"/>
-													<integer value="1040" key="formatterBehavior"/>
-													<boolean value="YES" key="lenient"/>
-													<object class="NSLocale" key="locale" id="1021230488">
-														<string key="NS.identifier"/>
-													</object>
-													<real value="1" key="minimum"/>
-													<string key="negativeInfinitySymbol">-∞</string>
-													<string key="nilSymbol"/>
-													<integer value="0" key="numberStyle"/>
-													<string key="positiveFormat">#,##1</string>
-													<string key="positiveInfinitySymbol">+∞</string>
-													<real value="1" key="roundingIncrement"/>
-												</dictionary>
-												<string key="NS.positiveformat">#,##1</string>
-												<string key="NS.negativeformat">#,##1</string>
-												<nil key="NS.positiveattrs"/>
-												<nil key="NS.negativeattrs"/>
-												<nil key="NS.zero"/>
-												<object class="NSAttributedString" key="NS.nil">
-													<string key="NSString"/>
-												</object>
-												<object class="NSAttributedString" key="NS.nan">
-													<string key="NSString">NaN</string>
-													<dictionary key="NSAttributes" id="817797820"/>
-												</object>
-												<real value="1" key="NS.min"/>
-												<object class="NSDecimalNumberPlaceholder" key="NS.max">
-													<int key="NS.exponent">0</int>
-													<int key="NS.length">0</int>
-													<bool key="NS.negative">YES</bool>
-													<bool key="NS.compact">NO</bool>
-													<int key="NS.mantissa.bo">1</int>
-													<bytes key="NS.mantissa">AAAAAAAAAAAAAAAAAAAAAA</bytes>
-												</object>
-												<object class="NSDecimalNumberHandler" key="NS.rounding">
-													<int key="NS.roundingmode">3</int>
-													<bool key="NS.raise.overflow">YES</bool>
-													<bool key="NS.raise.underflow">YES</bool>
-													<bool key="NS.raise.dividebyzero">YES</bool>
-												</object>
-												<string key="NS.decimal">.</string>
-												<string key="NS.thousand">,</string>
-												<bool key="NS.hasthousands">YES</bool>
-												<bool key="NS.localized">NO</bool>
-												<bool key="NS.allowsfloats">NO</bool>
-											</object>
-											<reference key="NSControlView" ref="450027460"/>
-											<bool key="NSDrawsBackground">YES</bool>
-											<object class="NSColor" key="NSBackgroundColor" id="668785110">
-												<int key="NSColorSpace">6</int>
-												<string key="NSCatalogName">System</string>
-												<string key="NSColorName">textBackgroundColor</string>
-												<object class="NSColor" key="NSColor">
-													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MQA</bytes>
-												</object>
-											</object>
-											<object class="NSColor" key="NSTextColor" id="474273511">
-												<int key="NSColorSpace">6</int>
-												<string key="NSCatalogName">System</string>
-												<string key="NSColorName">textColor</string>
-												<object class="NSColor" key="NSColor" id="1002880059">
-													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MAA</bytes>
-												</object>
-											</object>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-										<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
-									</object>
-									<object class="NSStepper" id="481993859">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{201, 107}, {15, 22}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSStepperCell" key="NSCell" id="157148961">
-											<int key="NSCellFlags">67895328</int>
-											<int key="NSCellFlags2">131072</int>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="481993859"/>
-											<double key="NSValue">1</double>
-											<double key="NSMinValue">1</double>
-											<double key="NSMaxValue">1000000</double>
-											<double key="NSIncrement">1</double>
-											<bool key="NSAutorepeat">YES</bool>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-									</object>
-									<object class="NSTextField" id="512168261">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{12, 112}, {129, 14}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSTextFieldCell" key="NSCell" id="579458428">
-											<int key="NSCellFlags">68157504</int>
-											<int key="NSCellFlags2">71435264</int>
-											<string key="NSContents">Jump to page:</string>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="512168261"/>
-											<object class="NSColor" key="NSBackgroundColor" id="580119905">
-												<int key="NSColorSpace">6</int>
-												<string key="NSCatalogName">System</string>
-												<string key="NSColorName">controlColor</string>
-												<object class="NSColor" key="NSColor">
-													<int key="NSColorSpace">3</int>
-													<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
-												</object>
-											</object>
-											<object class="NSColor" key="NSTextColor" id="187149193">
-												<int key="NSColorSpace">6</int>
-												<string key="NSCatalogName">System</string>
-												<string key="NSColorName">controlTextColor</string>
-												<reference key="NSColor" ref="1002880059"/>
-											</object>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-										<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
-									</object>
-									<object class="NSButton" id="247243534">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{222, 110}, {91, 17}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSButtonCell" key="NSCell" id="913212063">
-											<int key="NSCellFlags">-2080374784</int>
-											<int key="NSCellFlags2">134348800</int>
-											<string key="NSContents">Go</string>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="247243534"/>
-											<int key="NSButtonFlags">-2038153216</int>
-											<int key="NSButtonFlags2">164</int>
-											<string key="NSAlternateContents"/>
-											<string key="NSKeyEquivalent"/>
-											<int key="NSPeriodicDelay">400</int>
-											<int key="NSPeriodicInterval">75</int>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-									</object>
-									<object class="NSBox" id="893497089">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">12</int>
-										<string key="NSFrame">{{11, 98}, {302, 5}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<string key="NSOffsets">{0, 0}</string>
-										<object class="NSTextFieldCell" key="NSTitleCell">
-											<int key="NSCellFlags">67108864</int>
-											<int key="NSCellFlags2">0</int>
-											<string key="NSContents">Box</string>
-											<object class="NSFont" key="NSSupport">
-												<string key="NSName">.LucidaGrandeUI</string>
-												<double key="NSSize">13</double>
-												<int key="NSfFlags">1044</int>
-											</object>
-											<reference key="NSBackgroundColor" ref="668785110"/>
-											<object class="NSColor" key="NSTextColor">
-												<int key="NSColorSpace">3</int>
-												<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
-											</object>
-										</object>
-										<int key="NSBorderType">3</int>
-										<int key="NSBoxType">2</int>
-										<int key="NSTitlePosition">0</int>
-										<bool key="NSTransparent">NO</bool>
-									</object>
-									<object class="NSButton" id="498554617">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{12, 79}, {166, 18}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSButtonCell" key="NSCell" id="445646217">
-											<int key="NSCellFlags">67108864</int>
-											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">Limit result to:</string>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="498554617"/>
-											<int key="NSButtonFlags">1211912448</int>
-											<int key="NSButtonFlags2">2</int>
-											<object class="NSCustomResource" key="NSNormalImage" id="41249912">
-												<string key="NSClassName">NSImage</string>
-												<string key="NSResourceName">NSSwitch</string>
-											</object>
-											<object class="NSButtonImageSource" key="NSAlternateImage" id="514662150">
-												<string key="NSImageName">NSSwitch</string>
-											</object>
-											<string key="NSAlternateContents"/>
-											<string key="NSKeyEquivalent"/>
-											<int key="NSPeriodicDelay">200</int>
-											<int key="NSPeriodicInterval">25</int>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-									</object>
-									<object class="NSTextField" id="628214183">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{184, 79}, {52, 19}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSTextFieldCell" key="NSCell" id="449499436">
-											<int key="NSCellFlags">-1804599231</int>
-											<int key="NSCellFlags2">-2076048384</int>
-											<string key="NSContents"/>
-											<reference key="NSSupport" ref="26"/>
-											<object class="NSNumberFormatter" key="NSFormatter" id="509596644">
-												<dictionary class="NSMutableDictionary" key="NS.attributes">
-													<boolean value="NO" key="allowsFloats"/>
-													<string key="decimalSeparator">.</string>
-													<integer value="1040" key="formatterBehavior"/>
-													<string key="groupingSeparator">,</string>
-													<integer value="3" key="groupingSize"/>
-													<boolean value="NO" key="lenient"/>
-													<reference key="locale" ref="1021230488"/>
-													<real value="100000" key="maximum"/>
-													<integer value="309" key="maximumIntegerDigits"/>
-													<real value="0.0" key="minimum"/>
-													<integer value="1" key="minimumIntegerDigits"/>
-													<string key="negativeInfinitySymbol">-∞</string>
-													<string key="nilSymbol"/>
-													<integer value="0" key="numberStyle"/>
-													<string key="positiveInfinitySymbol">+∞</string>
-													<real value="1" key="roundingIncrement"/>
-													<boolean value="YES" key="usesGroupingSeparator"/>
-												</dictionary>
-												<string key="NS.positiveformat">#,##1</string>
-												<string key="NS.negativeformat">#,##1</string>
-												<nil key="NS.positiveattrs"/>
-												<nil key="NS.negativeattrs"/>
-												<nil key="NS.zero"/>
-												<object class="NSAttributedString" key="NS.nil">
-													<string key="NSString"/>
-												</object>
-												<object class="NSAttributedString" key="NS.nan">
-													<string key="NSString">NaN</string>
-													<reference key="NSAttributes" ref="817797820"/>
-												</object>
-												<real value="0.0" key="NS.min"/>
-												<real value="100000" key="NS.max"/>
-												<object class="NSDecimalNumberHandler" key="NS.rounding">
-													<int key="NS.roundingmode">3</int>
-													<bool key="NS.raise.overflow">YES</bool>
-													<bool key="NS.raise.underflow">YES</bool>
-													<bool key="NS.raise.dividebyzero">YES</bool>
-												</object>
-												<string key="NS.decimal">.</string>
-												<string key="NS.thousand">,</string>
-												<bool key="NS.hasthousands">YES</bool>
-												<bool key="NS.localized">NO</bool>
-												<bool key="NS.allowsfloats">NO</bool>
-											</object>
-											<reference key="NSControlView" ref="628214183"/>
-											<bool key="NSDrawsBackground">YES</bool>
-											<reference key="NSBackgroundColor" ref="668785110"/>
-											<reference key="NSTextColor" ref="474273511"/>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-										<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
-									</object>
-									<object class="NSStepper" id="417677936">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{238, 76}, {15, 22}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSStepperCell" key="NSCell" id="346409589">
-											<int key="NSCellFlags">67895328</int>
-											<int key="NSCellFlags2">131072</int>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="417677936"/>
-											<double key="NSValue">100</double>
-											<double key="NSMinValue">1</double>
-											<double key="NSMaxValue">100000</double>
-											<double key="NSIncrement">1</double>
-											<bool key="NSValueWraps">YES</bool>
-											<bool key="NSAutorepeat">YES</bool>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-									</object>
-									<object class="NSTextField" id="910207176">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{256, 81}, {60, 14}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSTextFieldCell" key="NSCell" id="474210615">
-											<int key="NSCellFlags">68157504</int>
-											<int key="NSCellFlags2">272761856</int>
-											<string key="NSContents">rows</string>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="910207176"/>
-											<reference key="NSBackgroundColor" ref="580119905"/>
-											<reference key="NSTextColor" ref="187149193"/>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-										<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
-									</object>
-									<object class="NSButton" id="553131948">
-										<reference key="NSNextResponder" ref="64533247"/>
-										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{12, 54}, {303, 18}}</string>
-										<reference key="NSSuperview" ref="64533247"/>
-										<bool key="NSEnabled">YES</bool>
-										<object class="NSButtonCell" key="NSCell" id="773035657">
-											<int key="NSCellFlags">67108864</int>
-											<int key="NSCellFlags2">131072</int>
-											<string key="NSContents">Defer loading of blobs and texts</string>
-											<reference key="NSSupport" ref="26"/>
-											<reference key="NSControlView" ref="553131948"/>
-											<int key="NSButtonFlags">1211912448</int>
-											<int key="NSButtonFlags2">2</int>
-											<reference key="NSNormalImage" ref="41249912"/>
-											<reference key="NSAlternateImage" ref="514662150"/>
-											<string key="NSAlternateContents"/>
-											<string key="NSKeyEquivalent"/>
-											<int key="NSPeriodicDelay">200</int>
-											<int key="NSPeriodicInterval">25</int>
-										</object>
-										<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-									</object>
-								</array>
+								<array class="NSMutableArray" key="NSSubviews"/>
 								<string key="NSFrame">{{1, 1}, {328, 134}}</string>
 								<reference key="NSSuperview" ref="323537221"/>
+								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView" ref="298938363"/>
 							</object>
 						</array>
 						<string key="NSFrame">{{0, -47}, {330, 136}}</string>
 						<reference key="NSSuperview" ref="1005"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="64533247"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
 							<int key="NSCellFlags">67108864</int>
 							<int key="NSCellFlags2">0</int>
 							<string key="NSContents"/>
-							<reference key="NSSupport" ref="26"/>
-							<reference key="NSBackgroundColor" ref="668785110"/>
+							<object class="NSFont" key="NSSupport" id="26">
+								<string key="NSName">.LucidaGrandeUI</string>
+								<double key="NSSize">11</double>
+								<int key="NSfFlags">3100</int>
+							</object>
+							<object class="NSColor" key="NSBackgroundColor" id="668785110">
+								<int key="NSColorSpace">6</int>
+								<string key="NSCatalogName">System</string>
+								<string key="NSColorName">textBackgroundColor</string>
+								<object class="NSColor" key="NSColor">
+									<int key="NSColorSpace">3</int>
+									<bytes key="NSWhite">MQA</bytes>
+								</object>
+							</object>
 							<object class="NSColor" key="NSTextColor">
 								<int key="NSColorSpace">3</int>
 								<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
@@ -429,27 +106,382 @@
 						<int key="NSvFlags">301</int>
 						<string key="NSFrame">{{52, 0}, {278, 135}}</string>
 						<reference key="NSSuperview" ref="1005"/>
+						<reference key="NSWindow"/>
 						<string key="NSClassName">NSButton</string>
 					</object>
 				</array>
 				<string key="NSFrameSize">{330, 89}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
+				<reference key="NSNextKeyView" ref="323537221"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="763599508">
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
+			<object class="NSViewController" id="972867763"/>
+			<object class="NSCustomView" id="600737852">
+				<reference key="NSNextResponder"/>
+				<int key="NSvFlags">268</int>
+				<array class="NSMutableArray" key="NSSubviews">
+					<object class="NSButton" id="741787207">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{15, 31}, {166, 18}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="367019582"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="318581445">
+							<int key="NSCellFlags">67108864</int>
+							<int key="NSCellFlags2">131072</int>
+							<string key="NSContents">Limit result to:</string>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="741787207"/>
+							<int key="NSButtonFlags">1211912448</int>
+							<int key="NSButtonFlags2">2</int>
+							<object class="NSCustomResource" key="NSNormalImage" id="524581771">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">NSSwitch</string>
+							</object>
+							<object class="NSButtonImageSource" key="NSAlternateImage" id="514662150">
+								<string key="NSImageName">NSSwitch</string>
+							</object>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
+					<object class="NSTextField" id="367019582">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{187, 31}, {52, 19}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="1053293287"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="254835918">
+							<int key="NSCellFlags">-1804599231</int>
+							<int key="NSCellFlags2">-2076048384</int>
+							<string key="NSContents"/>
+							<reference key="NSSupport" ref="26"/>
+							<object class="NSNumberFormatter" key="NSFormatter" id="582659696">
+								<dictionary class="NSMutableDictionary" key="NS.attributes">
+									<boolean value="NO" key="allowsFloats"/>
+									<string key="decimalSeparator">.</string>
+									<integer value="1040" key="formatterBehavior"/>
+									<string key="groupingSeparator">,</string>
+									<integer value="3" key="groupingSize"/>
+									<boolean value="NO" key="lenient"/>
+									<object class="NSLocale" key="locale" id="1021230488">
+										<string key="NS.identifier"/>
+									</object>
+									<real value="100000" key="maximum"/>
+									<integer value="309" key="maximumIntegerDigits"/>
+									<real value="0.0" key="minimum"/>
+									<integer value="1" key="minimumIntegerDigits"/>
+									<string key="negativeInfinitySymbol">-∞</string>
+									<string key="nilSymbol"/>
+									<integer value="0" key="numberStyle"/>
+									<string key="positiveInfinitySymbol">+∞</string>
+									<real value="1" key="roundingIncrement"/>
+									<boolean value="YES" key="usesGroupingSeparator"/>
+								</dictionary>
+								<string key="NS.positiveformat">#,##1</string>
+								<string key="NS.negativeformat">#,##1</string>
+								<nil key="NS.positiveattrs"/>
+								<nil key="NS.negativeattrs"/>
+								<nil key="NS.zero"/>
+								<object class="NSAttributedString" key="NS.nil">
+									<string key="NSString"/>
+								</object>
+								<object class="NSAttributedString" key="NS.nan">
+									<string key="NSString">NaN</string>
+									<dictionary key="NSAttributes" id="453134906"/>
+								</object>
+								<real value="0.0" key="NS.min"/>
+								<real value="100000" key="NS.max"/>
+								<object class="NSDecimalNumberHandler" key="NS.rounding">
+									<int key="NS.roundingmode">3</int>
+									<bool key="NS.raise.overflow">YES</bool>
+									<bool key="NS.raise.underflow">YES</bool>
+									<bool key="NS.raise.dividebyzero">YES</bool>
+								</object>
+								<string key="NS.decimal">.</string>
+								<string key="NS.thousand">,</string>
+								<bool key="NS.hasthousands">YES</bool>
+								<bool key="NS.localized">NO</bool>
+								<bool key="NS.allowsfloats">NO</bool>
+							</object>
+							<reference key="NSControlView" ref="367019582"/>
+							<bool key="NSDrawsBackground">YES</bool>
+							<reference key="NSBackgroundColor" ref="668785110"/>
+							<object class="NSColor" key="NSTextColor" id="474273511">
+								<int key="NSColorSpace">6</int>
+								<string key="NSCatalogName">System</string>
+								<string key="NSColorName">textColor</string>
+								<object class="NSColor" key="NSColor" id="1002880059">
+									<int key="NSColorSpace">3</int>
+									<bytes key="NSWhite">MAA</bytes>
+								</object>
+							</object>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
+					</object>
+					<object class="NSStepper" id="1053293287">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{241, 28}, {15, 22}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="311374174"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSStepperCell" key="NSCell" id="649826098">
+							<int key="NSCellFlags">67895328</int>
+							<int key="NSCellFlags2">131072</int>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="1053293287"/>
+							<double key="NSValue">100</double>
+							<double key="NSMinValue">1</double>
+							<double key="NSMaxValue">100000</double>
+							<double key="NSIncrement">1</double>
+							<bool key="NSValueWraps">YES</bool>
+							<bool key="NSAutorepeat">YES</bool>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
+					<object class="NSBox" id="168692272">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">12</int>
+						<string key="NSFrame">{{14, 50}, {302, 5}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="741787207"/>
+						<string key="NSOffsets">{0, 0}</string>
+						<object class="NSTextFieldCell" key="NSTitleCell">
+							<int key="NSCellFlags">67108864</int>
+							<int key="NSCellFlags2">0</int>
+							<string key="NSContents">Box</string>
+							<object class="NSFont" key="NSSupport">
+								<string key="NSName">.LucidaGrandeUI</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">1044</int>
+							</object>
+							<reference key="NSBackgroundColor" ref="668785110"/>
+							<object class="NSColor" key="NSTextColor">
+								<int key="NSColorSpace">3</int>
+								<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
+							</object>
+						</object>
+						<int key="NSBorderType">3</int>
+						<int key="NSBoxType">2</int>
+						<int key="NSTitlePosition">0</int>
+						<bool key="NSTransparent">NO</bool>
+					</object>
+					<object class="NSStepper" id="1038693239">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{204, 59}, {15, 22}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="998571040"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSStepperCell" key="NSCell" id="376995691">
+							<int key="NSCellFlags">67895328</int>
+							<int key="NSCellFlags2">131072</int>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="1038693239"/>
+							<double key="NSValue">1</double>
+							<double key="NSMinValue">1</double>
+							<double key="NSMaxValue">1000000</double>
+							<double key="NSIncrement">1</double>
+							<bool key="NSAutorepeat">YES</bool>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
+					<object class="NSTextField" id="311374174">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{259, 33}, {60, 14}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="51636128"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="273815993">
+							<int key="NSCellFlags">68157504</int>
+							<int key="NSCellFlags2">272761856</int>
+							<string key="NSContents">rows</string>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="311374174"/>
+							<object class="NSColor" key="NSBackgroundColor" id="580119905">
+								<int key="NSColorSpace">6</int>
+								<string key="NSCatalogName">System</string>
+								<string key="NSColorName">controlColor</string>
+								<object class="NSColor" key="NSColor">
+									<int key="NSColorSpace">3</int>
+									<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+								</object>
+							</object>
+							<object class="NSColor" key="NSTextColor" id="187149193">
+								<int key="NSColorSpace">6</int>
+								<string key="NSCatalogName">System</string>
+								<string key="NSColorName">controlTextColor</string>
+								<reference key="NSColor" ref="1002880059"/>
+							</object>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
+					</object>
+					<object class="NSButton" id="51636128">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{15, 6}, {303, 18}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="879882833">
+							<int key="NSCellFlags">67108864</int>
+							<int key="NSCellFlags2">131072</int>
+							<string key="NSContents">Defer loading of blobs and texts</string>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="51636128"/>
+							<int key="NSButtonFlags">1211912448</int>
+							<int key="NSButtonFlags2">2</int>
+							<reference key="NSNormalImage" ref="524581771"/>
+							<reference key="NSAlternateImage" ref="514662150"/>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
+					<object class="NSTextField" id="752076369">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{15, 64}, {129, 14}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="646478488"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="263475897">
+							<int key="NSCellFlags">68157504</int>
+							<int key="NSCellFlags2">71435264</int>
+							<string key="NSContents">Jump to page:</string>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="752076369"/>
+							<reference key="NSBackgroundColor" ref="580119905"/>
+							<reference key="NSTextColor" ref="187149193"/>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
+					</object>
+					<object class="NSTextField" id="646478488">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{150, 61}, {52, 19}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="1038693239"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSTextFieldCell" key="NSCell" id="929555576">
+							<int key="NSCellFlags">-1804599231</int>
+							<int key="NSCellFlags2">67240960</int>
+							<integer value="1" key="NSContents"/>
+							<reference key="NSSupport" ref="26"/>
+							<object class="NSNumberFormatter" key="NSFormatter" id="20983387">
+								<dictionary class="NSMutableDictionary" key="NS.attributes">
+									<boolean value="NO" key="allowsFloats"/>
+									<integer value="1040" key="formatterBehavior"/>
+									<boolean value="YES" key="lenient"/>
+									<reference key="locale" ref="1021230488"/>
+									<real value="1" key="minimum"/>
+									<string key="negativeInfinitySymbol">-∞</string>
+									<string key="nilSymbol"/>
+									<integer value="0" key="numberStyle"/>
+									<string key="positiveFormat">#,##1</string>
+									<string key="positiveInfinitySymbol">+∞</string>
+									<real value="1" key="roundingIncrement"/>
+								</dictionary>
+								<string key="NS.positiveformat">#,##1</string>
+								<string key="NS.negativeformat">#,##1</string>
+								<nil key="NS.positiveattrs"/>
+								<nil key="NS.negativeattrs"/>
+								<nil key="NS.zero"/>
+								<object class="NSAttributedString" key="NS.nil">
+									<string key="NSString"/>
+								</object>
+								<object class="NSAttributedString" key="NS.nan">
+									<string key="NSString">NaN</string>
+									<reference key="NSAttributes" ref="453134906"/>
+								</object>
+								<real value="1" key="NS.min"/>
+								<object class="NSDecimalNumberPlaceholder" key="NS.max">
+									<int key="NS.exponent">0</int>
+									<int key="NS.length">0</int>
+									<bool key="NS.negative">YES</bool>
+									<bool key="NS.compact">NO</bool>
+									<int key="NS.mantissa.bo">1</int>
+									<bytes key="NS.mantissa">AAAAAAAAAAAAAAAAAAAAAA</bytes>
+								</object>
+								<object class="NSDecimalNumberHandler" key="NS.rounding">
+									<int key="NS.roundingmode">3</int>
+									<bool key="NS.raise.overflow">YES</bool>
+									<bool key="NS.raise.underflow">YES</bool>
+									<bool key="NS.raise.dividebyzero">YES</bool>
+								</object>
+								<string key="NS.decimal">.</string>
+								<string key="NS.thousand">,</string>
+								<bool key="NS.hasthousands">YES</bool>
+								<bool key="NS.localized">NO</bool>
+								<bool key="NS.allowsfloats">NO</bool>
+							</object>
+							<reference key="NSControlView" ref="646478488"/>
+							<bool key="NSDrawsBackground">YES</bool>
+							<reference key="NSBackgroundColor" ref="668785110"/>
+							<reference key="NSTextColor" ref="474273511"/>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+						<int key="NSTextFieldAlignmentRectInsetsVersion">1</int>
+					</object>
+					<object class="NSButton" id="998571040">
+						<reference key="NSNextResponder" ref="600737852"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{225, 62}, {91, 17}}</string>
+						<reference key="NSSuperview" ref="600737852"/>
+						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView" ref="168692272"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="782307404">
+							<int key="NSCellFlags">-2080374784</int>
+							<int key="NSCellFlags2">134348800</int>
+							<string key="NSContents">Go</string>
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="998571040"/>
+							<int key="NSButtonFlags">-2038153216</int>
+							<int key="NSButtonFlags2">164</int>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">400</int>
+							<int key="NSPeriodicInterval">75</int>
+						</object>
+						<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
+					</object>
+				</array>
+				<string key="NSFrameSize">{330, 89}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
+				<reference key="NSNextKeyView" ref="752076369"/>
+				<string key="NSReuseIdentifierKey">_NS:9</string>
+				<string key="NSClassName">NSView</string>
+			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<bool key="usesAutoincrementingIDs">NO</bool>
 			<array class="NSMutableArray" key="connectionRecords">
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">paginationPageField</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="450027460"/>
-					</object>
-					<string key="id">45</string>
-				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">paginationView</string>
@@ -460,115 +492,51 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">paginationPageStepper</string>
+						<string key="label">paginationViewController</string>
 						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="481993859"/>
+						<reference key="destination" ref="972867763"/>
 					</object>
-					<string key="id">49</string>
+					<string key="id">yiZ-Ax-bVs</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">navigatePaginationFromButton:</string>
 						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="247243534"/>
+						<reference key="destination" ref="998571040"/>
 					</object>
-					<string key="id">57</string>
+					<string key="id">28B-A6-zUZ</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">paginationBox</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="323537221"/>
+					</object>
+					<string key="id">plQ-Ch-kaG</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">paginationPageField</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="646478488"/>
+					</object>
+					<string key="id">cwZ-g9-Qbj</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">paginationGoButton</string>
 						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="247243534"/>
+						<reference key="destination" ref="998571040"/>
 					</object>
-					<string key="id">58</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">takeIntValueFrom:</string>
-						<reference key="source" ref="450027460"/>
-						<reference key="destination" ref="481993859"/>
-					</object>
-					<string key="id">21</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.LimitResults</string>
-						<reference key="source" ref="450027460"/>
-						<reference key="destination" ref="763599508"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="450027460"/>
-							<reference key="NSDestination" ref="763599508"/>
-							<string key="NSLabel">enabled: values.LimitResults</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.LimitResults</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">28</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.LimitResults</string>
-						<reference key="source" ref="481993859"/>
-						<reference key="destination" ref="763599508"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="481993859"/>
-							<reference key="NSDestination" ref="763599508"/>
-							<string key="NSLabel">enabled: values.LimitResults</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.LimitResults</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">30</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: values.LimitResults</string>
-						<reference key="source" ref="247243534"/>
-						<reference key="destination" ref="763599508"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="247243534"/>
-							<reference key="NSDestination" ref="763599508"/>
-							<string key="NSLabel">enabled: values.LimitResults</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">values.LimitResults</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">32</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">performClick:</string>
-						<reference key="source" ref="247243534"/>
-						<reference key="destination" ref="450027460"/>
-					</object>
-					<string key="id">48</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.LimitResults</string>
-						<reference key="source" ref="498554617"/>
-						<reference key="destination" ref="763599508"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="498554617"/>
-							<reference key="NSDestination" ref="763599508"/>
-							<string key="NSLabel">value: values.LimitResults</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.LimitResults</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">26</string>
+					<string key="id">tIC-S1-mTE</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: values.LimitResultsValue</string>
-						<reference key="source" ref="628214183"/>
+						<reference key="source" ref="1053293287"/>
 						<reference key="destination" ref="763599508"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="628214183"/>
+							<reference key="NSSource" ref="1053293287"/>
 							<reference key="NSDestination" ref="763599508"/>
 							<string key="NSLabel">value: values.LimitResultsValue</string>
 							<string key="NSBinding">value</string>
@@ -576,15 +544,15 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<string key="id">34</string>
+					<string key="id">xuB-vx-nBA</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: values.LimitResults</string>
-						<reference key="source" ref="628214183"/>
+						<reference key="source" ref="1053293287"/>
 						<reference key="destination" ref="763599508"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="628214183"/>
+							<reference key="NSSource" ref="1053293287"/>
 							<reference key="NSDestination" ref="763599508"/>
 							<string key="NSLabel">enabled: values.LimitResults</string>
 							<string key="NSBinding">enabled</string>
@@ -592,23 +560,39 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<string key="id">41</string>
+					<string key="id">T7i-fq-nKX</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: values.LimitResults</string>
+						<reference key="source" ref="1038693239"/>
+						<reference key="destination" ref="763599508"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1038693239"/>
+							<reference key="NSDestination" ref="763599508"/>
+							<string key="NSLabel">enabled: values.LimitResults</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">values.LimitResults</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<string key="id">Nl1-31-oLD</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">takeIntValueFrom:</string>
-						<reference key="source" ref="628214183"/>
-						<reference key="destination" ref="417677936"/>
+						<reference key="source" ref="646478488"/>
+						<reference key="destination" ref="1038693239"/>
 					</object>
-					<string key="id">42</string>
+					<string key="id">JYr-Pw-YZ2</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: values.LimitResults</string>
-						<reference key="source" ref="417677936"/>
+						<reference key="source" ref="646478488"/>
 						<reference key="destination" ref="763599508"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="417677936"/>
+							<reference key="NSSource" ref="646478488"/>
 							<reference key="NSDestination" ref="763599508"/>
 							<string key="NSLabel">enabled: values.LimitResults</string>
 							<string key="NSBinding">enabled</string>
@@ -616,31 +600,15 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<string key="id">37</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.LimitResultsValue</string>
-						<reference key="source" ref="417677936"/>
-						<reference key="destination" ref="763599508"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="417677936"/>
-							<reference key="NSDestination" ref="763599508"/>
-							<string key="NSLabel">value: values.LimitResultsValue</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.LimitResultsValue</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">44</string>
+					<string key="id">rJH-8j-rCm</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: values.LoadBlobsAsNeeded</string>
-						<reference key="source" ref="553131948"/>
+						<reference key="source" ref="51636128"/>
 						<reference key="destination" ref="763599508"/>
 						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="553131948"/>
+							<reference key="NSSource" ref="51636128"/>
 							<reference key="NSDestination" ref="763599508"/>
 							<string key="NSLabel">value: values.LoadBlobsAsNeeded</string>
 							<string key="NSBinding">value</string>
@@ -648,7 +616,95 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<string key="id">39</string>
+					<string key="id">2GO-pS-eiH</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">performClick:</string>
+						<reference key="source" ref="998571040"/>
+						<reference key="destination" ref="646478488"/>
+					</object>
+					<string key="id">4Uu-gW-Xhz</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: values.LimitResults</string>
+						<reference key="source" ref="998571040"/>
+						<reference key="destination" ref="763599508"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="998571040"/>
+							<reference key="NSDestination" ref="763599508"/>
+							<string key="NSLabel">enabled: values.LimitResults</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">values.LimitResults</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<string key="id">AkR-JA-LEs</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">view</string>
+						<reference key="source" ref="972867763"/>
+						<reference key="destination" ref="600737852"/>
+					</object>
+					<string key="id">zor-2S-MNt</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">takeIntValueFrom:</string>
+						<reference key="source" ref="367019582"/>
+						<reference key="destination" ref="1053293287"/>
+					</object>
+					<string key="id">5tp-h8-JTG</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: values.LimitResults</string>
+						<reference key="source" ref="367019582"/>
+						<reference key="destination" ref="763599508"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="367019582"/>
+							<reference key="NSDestination" ref="763599508"/>
+							<string key="NSLabel">enabled: values.LimitResults</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">values.LimitResults</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<string key="id">5gN-wc-XcR</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: values.LimitResultsValue</string>
+						<reference key="source" ref="367019582"/>
+						<reference key="destination" ref="763599508"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="367019582"/>
+							<reference key="NSDestination" ref="763599508"/>
+							<string key="NSLabel">value: values.LimitResultsValue</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">values.LimitResultsValue</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<string key="id">Hq1-Wj-VOf</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: values.LimitResults</string>
+						<reference key="source" ref="741787207"/>
+						<reference key="destination" ref="763599508"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="741787207"/>
+							<reference key="NSDestination" ref="763599508"/>
+							<string key="NSLabel">value: values.LimitResults</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">values.LimitResults</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<string key="id">FAF-rW-5Nm</string>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -700,157 +756,170 @@
 					<object class="IBObjectRecord">
 						<string key="id">2</string>
 						<reference key="object" ref="323537221"/>
-						<array class="NSMutableArray" key="children">
-							<reference ref="450027460"/>
-							<reference ref="481993859"/>
-							<reference ref="512168261"/>
-							<reference ref="247243534"/>
-							<reference ref="893497089"/>
-							<reference ref="498554617"/>
-							<reference ref="628214183"/>
-							<reference ref="417677936"/>
-							<reference ref="910207176"/>
-							<reference ref="553131948"/>
-						</array>
+						<array class="NSMutableArray" key="children"/>
 						<reference key="parent" ref="1005"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">12</string>
-						<reference key="object" ref="498554617"/>
+						<string key="id">hrG-95-pXC</string>
+						<reference key="object" ref="972867763"/>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">Popover View Controller</string>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">ZlV-bd-j4D</string>
+						<reference key="object" ref="600737852"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="445646217"/>
+							<reference ref="998571040"/>
+							<reference ref="646478488"/>
+							<reference ref="752076369"/>
+							<reference ref="51636128"/>
+							<reference ref="311374174"/>
+							<reference ref="1038693239"/>
+							<reference ref="168692272"/>
+							<reference ref="1053293287"/>
+							<reference ref="367019582"/>
+							<reference ref="741787207"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">Popover Content View</string>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">13</string>
-						<reference key="object" ref="445646217"/>
-						<reference key="parent" ref="498554617"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">16</string>
-						<reference key="object" ref="417677936"/>
+						<string key="id">cXy-Rp-Edv</string>
+						<reference key="object" ref="998571040"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="346409589"/>
+							<reference ref="782307404"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">17</string>
-						<reference key="object" ref="346409589"/>
-						<reference key="parent" ref="417677936"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">14</string>
-						<reference key="object" ref="628214183"/>
+						<string key="id">Vtc-V2-j0v</string>
+						<reference key="object" ref="646478488"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="449499436"/>
+							<reference ref="929555576"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">15</string>
-						<reference key="object" ref="449499436"/>
+						<string key="id">CL3-K8-6Zg</string>
+						<reference key="object" ref="752076369"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="509596644"/>
+							<reference ref="263475897"/>
 						</array>
-						<reference key="parent" ref="628214183"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">53</string>
-						<reference key="object" ref="509596644"/>
-						<reference key="parent" ref="449499436"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">7</string>
-						<reference key="object" ref="512168261"/>
+						<string key="id">Wjm-0L-Yq6</string>
+						<reference key="object" ref="51636128"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="579458428"/>
+							<reference ref="879882833"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">8</string>
-						<reference key="object" ref="579458428"/>
-						<reference key="parent" ref="512168261"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">9</string>
-						<reference key="object" ref="247243534"/>
+						<string key="id">Uld-aI-QB9</string>
+						<reference key="object" ref="311374174"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="913212063"/>
+							<reference ref="273815993"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">10</string>
-						<reference key="object" ref="913212063"/>
-						<reference key="parent" ref="247243534"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">11</string>
-						<reference key="object" ref="893497089"/>
-						<reference key="parent" ref="323537221"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">5</string>
-						<reference key="object" ref="481993859"/>
+						<string key="id">S7c-s1-KCT</string>
+						<reference key="object" ref="1038693239"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="157148961"/>
+							<reference ref="376995691"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">6</string>
-						<reference key="object" ref="157148961"/>
-						<reference key="parent" ref="481993859"/>
+						<string key="id">Gxx-kw-h7E</string>
+						<reference key="object" ref="168692272"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">18</string>
-						<reference key="object" ref="910207176"/>
+						<string key="id">OtF-Sn-bou</string>
+						<reference key="object" ref="1053293287"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="474210615"/>
+							<reference ref="649826098"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">19</string>
-						<reference key="object" ref="474210615"/>
-						<reference key="parent" ref="910207176"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">3</string>
-						<reference key="object" ref="450027460"/>
+						<string key="id">yLU-Zg-DTB</string>
+						<reference key="object" ref="367019582"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="978500512"/>
+							<reference ref="254835918"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">4</string>
-						<reference key="object" ref="978500512"/>
+						<string key="id">zSR-LP-XEx</string>
+						<reference key="object" ref="741787207"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="348860673"/>
+							<reference ref="318581445"/>
 						</array>
-						<reference key="parent" ref="450027460"/>
+						<reference key="parent" ref="600737852"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">20</string>
-						<reference key="object" ref="348860673"/>
-						<reference key="parent" ref="978500512"/>
+						<string key="id">UEh-iO-mvP</string>
+						<reference key="object" ref="318581445"/>
+						<reference key="parent" ref="741787207"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">22</string>
-						<reference key="object" ref="553131948"/>
+						<string key="id">ZXe-ev-5Hv</string>
+						<reference key="object" ref="254835918"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="773035657"/>
+							<reference ref="582659696"/>
 						</array>
-						<reference key="parent" ref="323537221"/>
+						<reference key="parent" ref="367019582"/>
 					</object>
 					<object class="IBObjectRecord">
-						<string key="id">23</string>
-						<reference key="object" ref="773035657"/>
-						<reference key="parent" ref="553131948"/>
+						<string key="id">Pxb-UY-tce</string>
+						<reference key="object" ref="582659696"/>
+						<reference key="parent" ref="254835918"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">389-RH-6nn</string>
+						<reference key="object" ref="649826098"/>
+						<reference key="parent" ref="1053293287"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">l3y-yk-wE1</string>
+						<reference key="object" ref="376995691"/>
+						<reference key="parent" ref="1038693239"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">cTU-XP-iES</string>
+						<reference key="object" ref="273815993"/>
+						<reference key="parent" ref="311374174"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">Giv-Ah-MTQ</string>
+						<reference key="object" ref="879882833"/>
+						<reference key="parent" ref="51636128"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">Wlh-Ec-wfF</string>
+						<reference key="object" ref="263475897"/>
+						<reference key="parent" ref="752076369"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">ctN-fm-6oy</string>
+						<reference key="object" ref="929555576"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="20983387"/>
+						</array>
+						<reference key="parent" ref="646478488"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">7AG-Ve-mEh</string>
+						<reference key="object" ref="20983387"/>
+						<reference key="parent" ref="929555576"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">hd2-jJ-ldo</string>
+						<reference key="object" ref="782307404"/>
+						<reference key="parent" ref="998571040"/>
 					</object>
 				</array>
 			</object>
@@ -860,41 +929,2575 @@
 				<string key="-3.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="1.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<real value="2" key="1.IBViewIntegration.shadowBlurRadius"/>
-				<string key="10.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="11.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="12.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="13.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="14.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="15.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="16.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="17.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="18.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="19.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="2.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<integer value="1040" key="20.IBNumberFormatterBehaviorMetadataKey"/>
-				<boolean value="YES" key="20.IBNumberFormatterLocalizesFormatMetadataKey"/>
-				<string key="20.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="22.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="23.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="24.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="3.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="4.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="5.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="389-RH-6nn.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="52.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<integer value="1040" key="53.IBNumberFormatterBehaviorMetadataKey"/>
-				<boolean value="YES" key="53.IBNumberFormatterLocalizesFormatMetadataKey"/>
-				<string key="53.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="6.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="7.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="8.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="9.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<integer value="1040" key="7AG-Ve-mEh.IBNumberFormatterBehaviorMetadataKey"/>
+				<boolean value="YES" key="7AG-Ve-mEh.IBNumberFormatterLocalizesFormatMetadataKey"/>
+				<string key="7AG-Ve-mEh.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="CL3-K8-6Zg.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Giv-Ah-MTQ.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Gxx-kw-h7E.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="OtF-Sn-bou.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<integer value="1040" key="Pxb-UY-tce.IBNumberFormatterBehaviorMetadataKey"/>
+				<boolean value="YES" key="Pxb-UY-tce.IBNumberFormatterLocalizesFormatMetadataKey"/>
+				<string key="Pxb-UY-tce.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="S7c-s1-KCT.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="UEh-iO-mvP.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Uld-aI-QB9.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Vtc-V2-j0v.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Wjm-0L-Yq6.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="Wlh-Ec-wfF.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="ZXe-ev-5Hv.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="ZlV-bd-j4D.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="cTU-XP-iES.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="cXy-Rp-Edv.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="ctN-fm-6oy.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="hd2-jJ-ldo.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="hrG-95-pXC.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="l3y-yk-wE1.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="yLU-Zg-DTB.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="zSR-LP-XEx.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/NSTextView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPCopyTable</string>
+					<string key="superclassName">SPTableView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">executeBundleItemForDataTable:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">executeBundleItemForDataTable:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">executeBundleItemForDataTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPCopyTable.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPCustomQuery</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="chooseQueryFavorite:">id</string>
+						<string key="chooseQueryHistory:">id</string>
+						<string key="clearQueryHistory:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyQueryHistory:">id</string>
+						<string key="filterQueryFavorites:">id</string>
+						<string key="filterQueryHistory:">id</string>
+						<string key="gearMenuItemSelected:">id</string>
+						<string key="helpSearchFindNextInPage:">id</string>
+						<string key="helpSearchFindPreviousInPage:">id</string>
+						<string key="helpSegmentDispatcher:">id</string>
+						<string key="helpSelectHelpTargetMySQL:">id</string>
+						<string key="helpSelectHelpTargetPage:">id</string>
+						<string key="helpSelectHelpTargetWeb:">id</string>
+						<string key="helpTargetDispatcher:">id</string>
+						<string key="runAllQueries:">id</string>
+						<string key="runPrimaryQueryAction:">id</string>
+						<string key="runSecondaryQueryAction:">id</string>
+						<string key="runSelectedQueries:">id</string>
+						<string key="saveQueryHistory:">id</string>
+						<string key="searchInDocForWebViewSelection:">id</string>
+						<string key="showCompletionList:">id</string>
+						<string key="showHelpForCurrentWord:">id</string>
+						<string key="showHelpForSearchString:">id</string>
+						<string key="showHelpForWebViewSelection:">id</string>
+						<string key="switchDefaultQueryAction:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="chooseQueryFavorite:">
+							<string key="name">chooseQueryFavorite:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseQueryHistory:">
+							<string key="name">chooseQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="clearQueryHistory:">
+							<string key="name">clearQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyQueryHistory:">
+							<string key="name">copyQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterQueryFavorites:">
+							<string key="name">filterQueryFavorites:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterQueryHistory:">
+							<string key="name">filterQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="gearMenuItemSelected:">
+							<string key="name">gearMenuItemSelected:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSearchFindNextInPage:">
+							<string key="name">helpSearchFindNextInPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSearchFindPreviousInPage:">
+							<string key="name">helpSearchFindPreviousInPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSegmentDispatcher:">
+							<string key="name">helpSegmentDispatcher:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetMySQL:">
+							<string key="name">helpSelectHelpTargetMySQL:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetPage:">
+							<string key="name">helpSelectHelpTargetPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetWeb:">
+							<string key="name">helpSelectHelpTargetWeb:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpTargetDispatcher:">
+							<string key="name">helpTargetDispatcher:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runAllQueries:">
+							<string key="name">runAllQueries:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runPrimaryQueryAction:">
+							<string key="name">runPrimaryQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runSecondaryQueryAction:">
+							<string key="name">runSecondaryQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runSelectedQueries:">
+							<string key="name">runSelectedQueries:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveQueryHistory:">
+							<string key="name">saveQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="searchInDocForWebViewSelection:">
+							<string key="name">searchInDocForWebViewSelection:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showCompletionList:">
+							<string key="name">showCompletionList:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForCurrentWord:">
+							<string key="name">showHelpForCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForSearchString:">
+							<string key="name">showHelpForSearchString:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForWebViewSelection:">
+							<string key="name">showHelpForWebViewSelection:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="switchDefaultQueryAction:">
+							<string key="name">switchDefaultQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="affectedRowsText">id</string>
+						<string key="autohelpMenuItem">NSMenuItem</string>
+						<string key="autoindentMenuItem">NSMenuItem</string>
+						<string key="autopairMenuItem">NSMenuItem</string>
+						<string key="autouppercaseKeywordsMenuItem">NSMenuItem</string>
+						<string key="clearHistoryMenuItem">NSMenuItem</string>
+						<string key="commentCurrentQueryMenuItem">NSMenuItem</string>
+						<string key="commentLineOrSelectionMenuItem">NSMenuItem</string>
+						<string key="completionListMenuItem">NSMenuItem</string>
+						<string key="copyHistoryMenuItem">NSMenuItem</string>
+						<string key="customQueryScrollView">NSScrollView</string>
+						<string key="customQueryView">SPCopyTable</string>
+						<string key="editorFontMenuItem">NSMenuItem</string>
+						<string key="encodingPopUp">NSPopUpButton</string>
+						<string key="errorText">id</string>
+						<string key="errorTextScrollView">NSScrollView</string>
+						<string key="errorTextTitle">NSTextField</string>
+						<string key="helpNavigator">NSSegmentedControl</string>
+						<string key="helpSearchField">NSSearchField</string>
+						<string key="helpSearchFieldCell">NSSearchFieldCell</string>
+						<string key="helpTargetSelector">NSSegmentedControl</string>
+						<string key="helpWebView">WebView</string>
+						<string key="helpWebViewWindow">NSWindow</string>
+						<string key="nextHistoryMenuItem">NSMenuItem</string>
+						<string key="previousHistoryMenuItem">NSMenuItem</string>
+						<string key="queryEditorSplitView">SPSplitView</string>
+						<string key="queryFavoriteNameTextField">NSTextField</string>
+						<string key="queryFavoritesButton">id</string>
+						<string key="queryFavoritesSaveAllMenuItem">NSMenuItem</string>
+						<string key="queryFavoritesSaveAsMenuItem">NSMenuItem</string>
+						<string key="queryFavoritesSearchField">NSSearchField</string>
+						<string key="queryFavoritesSearchFieldView">id</string>
+						<string key="queryFavoritesSearchMenuItem">NSMenuItem</string>
+						<string key="queryFavoritesSheet">NSWindow</string>
+						<string key="queryHistoryButton">id</string>
+						<string key="queryHistorySearchField">NSSearchField</string>
+						<string key="queryHistorySearchFieldView">id</string>
+						<string key="queryHistorySearchMenuItem">NSMenuItem</string>
+						<string key="queryInfoButton">NSButton</string>
+						<string key="queryInfoPaneSplitView">SPSplitView</string>
+						<string key="runAllButton">id</string>
+						<string key="runPrimaryActionButton">id</string>
+						<string key="runPrimaryActionButtonAsSelection">id</string>
+						<string key="runPrimaryActionMenuItem">NSMenuItem</string>
+						<string key="runSecondaryActionMenuItem">NSMenuItem</string>
+						<string key="saveHistoryMenuItem">NSMenuItem</string>
+						<string key="saveQueryFavoriteButton">NSButton</string>
+						<string key="saveQueryFavoriteGlobal">NSButton</string>
+						<string key="shiftLeftMenuItem">NSMenuItem</string>
+						<string key="shiftRightMenuItem">NSMenuItem</string>
+						<string key="tableDocumentInstance">id</string>
+						<string key="tablesListInstance">id</string>
+						<string key="textView">SPTextView</string>
+						<string key="valueSheet">id</string>
+						<string key="valueTextField">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="affectedRowsText">
+							<string key="name">affectedRowsText</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="autohelpMenuItem">
+							<string key="name">autohelpMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="autoindentMenuItem">
+							<string key="name">autoindentMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="autopairMenuItem">
+							<string key="name">autopairMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="autouppercaseKeywordsMenuItem">
+							<string key="name">autouppercaseKeywordsMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="clearHistoryMenuItem">
+							<string key="name">clearHistoryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="commentCurrentQueryMenuItem">
+							<string key="name">commentCurrentQueryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="commentLineOrSelectionMenuItem">
+							<string key="name">commentLineOrSelectionMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="completionListMenuItem">
+							<string key="name">completionListMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyHistoryMenuItem">
+							<string key="name">copyHistoryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryScrollView">
+							<string key="name">customQueryScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryView">
+							<string key="name">customQueryView</string>
+							<string key="candidateClassName">SPCopyTable</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editorFontMenuItem">
+							<string key="name">editorFontMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="encodingPopUp">
+							<string key="name">encodingPopUp</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorText">
+							<string key="name">errorText</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorTextScrollView">
+							<string key="name">errorTextScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorTextTitle">
+							<string key="name">errorTextTitle</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpNavigator">
+							<string key="name">helpNavigator</string>
+							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpSearchField">
+							<string key="name">helpSearchField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpSearchFieldCell">
+							<string key="name">helpSearchFieldCell</string>
+							<string key="candidateClassName">NSSearchFieldCell</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpTargetSelector">
+							<string key="name">helpTargetSelector</string>
+							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpWebView">
+							<string key="name">helpWebView</string>
+							<string key="candidateClassName">WebView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="helpWebViewWindow">
+							<string key="name">helpWebViewWindow</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="nextHistoryMenuItem">
+							<string key="name">nextHistoryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="previousHistoryMenuItem">
+							<string key="name">previousHistoryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryEditorSplitView">
+							<string key="name">queryEditorSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoriteNameTextField">
+							<string key="name">queryFavoriteNameTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesButton">
+							<string key="name">queryFavoritesButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSaveAllMenuItem">
+							<string key="name">queryFavoritesSaveAllMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSaveAsMenuItem">
+							<string key="name">queryFavoritesSaveAsMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSearchField">
+							<string key="name">queryFavoritesSearchField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSearchFieldView">
+							<string key="name">queryFavoritesSearchFieldView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSearchMenuItem">
+							<string key="name">queryFavoritesSearchMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryFavoritesSheet">
+							<string key="name">queryFavoritesSheet</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryHistoryButton">
+							<string key="name">queryHistoryButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryHistorySearchField">
+							<string key="name">queryHistorySearchField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryHistorySearchFieldView">
+							<string key="name">queryHistorySearchFieldView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryHistorySearchMenuItem">
+							<string key="name">queryHistorySearchMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryInfoButton">
+							<string key="name">queryInfoButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryInfoPaneSplitView">
+							<string key="name">queryInfoPaneSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="runAllButton">
+							<string key="name">runAllButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="runPrimaryActionButton">
+							<string key="name">runPrimaryActionButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="runPrimaryActionButtonAsSelection">
+							<string key="name">runPrimaryActionButtonAsSelection</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="runPrimaryActionMenuItem">
+							<string key="name">runPrimaryActionMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="runSecondaryActionMenuItem">
+							<string key="name">runSecondaryActionMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveHistoryMenuItem">
+							<string key="name">saveHistoryMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveQueryFavoriteButton">
+							<string key="name">saveQueryFavoriteButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveQueryFavoriteGlobal">
+							<string key="name">saveQueryFavoriteGlobal</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="shiftLeftMenuItem">
+							<string key="name">shiftLeftMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="shiftRightMenuItem">
+							<string key="name">shiftRightMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="textView">
+							<string key="name">textView</string>
+							<string key="candidateClassName">SPTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="valueSheet">
+							<string key="name">valueSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="valueTextField">
+							<string key="name">valueTextField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPCustomQuery.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseData</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPDatabaseData.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addConnectionToFavorites:">id</string>
+						<string key="addDatabase:">id</string>
+						<string key="alterDatabase:">id</string>
+						<string key="analyzeTable:">id</string>
+						<string key="backForwardInHistory:">id</string>
+						<string key="cancelTask:">id</string>
+						<string key="checkTable:">id</string>
+						<string key="checksumTable:">id</string>
+						<string key="chooseDatabase:">id</string>
+						<string key="chooseEncoding:">id</string>
+						<string key="closeErrorConnectionSheet:">id</string>
+						<string key="closePanelSheet:">id</string>
+						<string key="closePasswordSheet:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyChecksumFromSheet:">id</string>
+						<string key="copyCreateTableSyntax:">id</string>
+						<string key="copyCreateTableSyntaxFromSheet:">id</string>
+						<string key="copyDatabase:">id</string>
+						<string key="export:">id</string>
+						<string key="exportSelectedTablesAs:">id</string>
+						<string key="flushTable:">id</string>
+						<string key="focusOnTableContentFilter:">id</string>
+						<string key="import:">id</string>
+						<string key="importFromClipboard:">id</string>
+						<string key="makeTableListFilterHaveFocus:">id</string>
+						<string key="openCurrentConnectionInNewWindow:">id</string>
+						<string key="openDatabaseInNewTab:">id</string>
+						<string key="optimizeTable:">id</string>
+						<string key="printDocument:">id</string>
+						<string key="refreshTables:">id</string>
+						<string key="removeDatabase:">id</string>
+						<string key="renameDatabase:">id</string>
+						<string key="repairTable:">id</string>
+						<string key="saveConnectionSheet:">id</string>
+						<string key="saveCreateSyntax:">id</string>
+						<string key="setDatabases:">id</string>
+						<string key="showCreateTableSyntax:">id</string>
+						<string key="showFilterTable:">id</string>
+						<string key="showGotoDatabase:">id</string>
+						<string key="showMySQLHelp:">id</string>
+						<string key="showNavigator:">id</string>
+						<string key="showServerProcesses:">id</string>
+						<string key="showServerVariables:">id</string>
+						<string key="showUserManager:">id</string>
+						<string key="toggleNavigator:">id</string>
+						<string key="validateSaveConnectionAccessory:">id</string>
+						<string key="viewContent:">id</string>
+						<string key="viewQuery:">id</string>
+						<string key="viewRelations:">id</string>
+						<string key="viewStatus:">id</string>
+						<string key="viewStructure:">id</string>
+						<string key="viewTriggers:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addConnectionToFavorites:">
+							<string key="name">addConnectionToFavorites:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="addDatabase:">
+							<string key="name">addDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="alterDatabase:">
+							<string key="name">alterDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="analyzeTable:">
+							<string key="name">analyzeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="backForwardInHistory:">
+							<string key="name">backForwardInHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="cancelTask:">
+							<string key="name">cancelTask:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="checkTable:">
+							<string key="name">checkTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="checksumTable:">
+							<string key="name">checksumTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseDatabase:">
+							<string key="name">chooseDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseEncoding:">
+							<string key="name">chooseEncoding:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeErrorConnectionSheet:">
+							<string key="name">closeErrorConnectionSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closePanelSheet:">
+							<string key="name">closePanelSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closePasswordSheet:">
+							<string key="name">closePasswordSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyChecksumFromSheet:">
+							<string key="name">copyChecksumFromSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyCreateTableSyntax:">
+							<string key="name">copyCreateTableSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyCreateTableSyntaxFromSheet:">
+							<string key="name">copyCreateTableSyntaxFromSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyDatabase:">
+							<string key="name">copyDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="export:">
+							<string key="name">export:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="exportSelectedTablesAs:">
+							<string key="name">exportSelectedTablesAs:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="flushTable:">
+							<string key="name">flushTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="focusOnTableContentFilter:">
+							<string key="name">focusOnTableContentFilter:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="import:">
+							<string key="name">import:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="importFromClipboard:">
+							<string key="name">importFromClipboard:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="makeTableListFilterHaveFocus:">
+							<string key="name">makeTableListFilterHaveFocus:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openCurrentConnectionInNewWindow:">
+							<string key="name">openCurrentConnectionInNewWindow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openDatabaseInNewTab:">
+							<string key="name">openDatabaseInNewTab:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="optimizeTable:">
+							<string key="name">optimizeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="printDocument:">
+							<string key="name">printDocument:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="refreshTables:">
+							<string key="name">refreshTables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeDatabase:">
+							<string key="name">removeDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="renameDatabase:">
+							<string key="name">renameDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="repairTable:">
+							<string key="name">repairTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveConnectionSheet:">
+							<string key="name">saveConnectionSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveCreateSyntax:">
+							<string key="name">saveCreateSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setDatabases:">
+							<string key="name">setDatabases:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showCreateTableSyntax:">
+							<string key="name">showCreateTableSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showFilterTable:">
+							<string key="name">showFilterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showGotoDatabase:">
+							<string key="name">showGotoDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showMySQLHelp:">
+							<string key="name">showMySQLHelp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showNavigator:">
+							<string key="name">showNavigator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showServerProcesses:">
+							<string key="name">showServerProcesses:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showServerVariables:">
+							<string key="name">showServerVariables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showUserManager:">
+							<string key="name">showUserManager:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleNavigator:">
+							<string key="name">toggleNavigator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="validateSaveConnectionAccessory:">
+							<string key="name">validateSaveConnectionAccessory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewContent:">
+							<string key="name">viewContent:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewQuery:">
+							<string key="name">viewQuery:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewRelations:">
+							<string key="name">viewRelations:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStatus:">
+							<string key="name">viewStatus:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStructure:">
+							<string key="name">viewStructure:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewTriggers:">
+							<string key="name">viewTriggers:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addDatabaseButton">id</string>
+						<string key="chooseDatabaseButton">id</string>
+						<string key="connectionErrorDialog">NSWindow</string>
+						<string key="contentViewSplitter">SPSplitView</string>
+						<string key="copyDatabaseButton">id</string>
+						<string key="copyDatabaseDataButton">NSButton</string>
+						<string key="copyDatabaseMessageField">id</string>
+						<string key="createTableSyntaxTextField">NSTextField</string>
+						<string key="createTableSyntaxTextView">NSTextView</string>
+						<string key="createTableSyntaxWindow">NSWindow</string>
+						<string key="customQueryInstance">id</string>
+						<string key="customQueryTextView">NSTextView</string>
+						<string key="databaseAlterCollationButton">NSPopUpButton</string>
+						<string key="databaseAlterEncodingButton">NSPopUpButton</string>
+						<string key="databaseAlterSheet">id</string>
+						<string key="databaseCollationButton">id</string>
+						<string key="databaseCopyNameField">id</string>
+						<string key="databaseCopySheet">id</string>
+						<string key="databaseDataInstance">id</string>
+						<string key="databaseEncodingButton">id</string>
+						<string key="databaseNameField">id</string>
+						<string key="databaseRenameNameField">id</string>
+						<string key="databaseRenameSheet">id</string>
+						<string key="databaseSheet">id</string>
+						<string key="dbTablesTableView">NSTableView</string>
+						<string key="documentActivityScrollView">NSScrollView</string>
+						<string key="encodingPopUp">NSPopUpButton</string>
+						<string key="exportControllerInstance">id</string>
+						<string key="extendedTableInfoInstance">id</string>
+						<string key="favoritesButton">id</string>
+						<string key="historyControl">id</string>
+						<string key="inputTextWindow">id</string>
+						<string key="inputTextWindowHeader">id</string>
+						<string key="inputTextWindowMessage">id</string>
+						<string key="inputTextWindowSecureTextField">id</string>
+						<string key="listFilterField">NSSearchField</string>
+						<string key="parentView">NSView</string>
+						<string key="queryProgressBar">NSProgressIndicator</string>
+						<string key="renameDatabaseButton">id</string>
+						<string key="renameDatabaseMessageField">id</string>
+						<string key="saveConnectionAccessory">id</string>
+						<string key="saveConnectionAutoConnect">NSButton</string>
+						<string key="saveConnectionEncrypt">NSButton</string>
+						<string key="saveConnectionEncryptString">NSSecureTextField</string>
+						<string key="saveConnectionIncludeData">NSButton</string>
+						<string key="saveConnectionIncludeQuery">NSButton</string>
+						<string key="saveConnectionSavePassword">NSButton</string>
+						<string key="saveConnectionSavePasswordAlert">id</string>
+						<string key="spHistoryControllerInstance">id</string>
+						<string key="statusTableAccessoryView">id</string>
+						<string key="statusTableCopyChecksum">id</string>
+						<string key="statusTableView">id</string>
+						<string key="tableContentInstance">SPTableContent</string>
+						<string key="tableDataInstance">SPTableData</string>
+						<string key="tableDumpInstance">id</string>
+						<string key="tableInfoScrollView">NSScrollView</string>
+						<string key="tableInfoTable">NSTableView</string>
+						<string key="tableRelationsInstance">id</string>
+						<string key="tableSourceInstance">SPTableStructure</string>
+						<string key="tableTabView">NSTabView</string>
+						<string key="tableTriggersInstance">id</string>
+						<string key="tablesListInstance">SPTablesList</string>
+						<string key="taskCancelButton">NSButton</string>
+						<string key="taskDescriptionText">id</string>
+						<string key="taskProgressIndicator">id</string>
+						<string key="taskProgressLayer">NSBox</string>
+						<string key="titleAccessoryView">id</string>
+						<string key="titleImageView">id</string>
+						<string key="titleStringView">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addDatabaseButton">
+							<string key="name">addDatabaseButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="chooseDatabaseButton">
+							<string key="name">chooseDatabaseButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="connectionErrorDialog">
+							<string key="name">connectionErrorDialog</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="contentViewSplitter">
+							<string key="name">contentViewSplitter</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyDatabaseButton">
+							<string key="name">copyDatabaseButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyDatabaseDataButton">
+							<string key="name">copyDatabaseDataButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyDatabaseMessageField">
+							<string key="name">copyDatabaseMessageField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="createTableSyntaxTextField">
+							<string key="name">createTableSyntaxTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="createTableSyntaxTextView">
+							<string key="name">createTableSyntaxTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="createTableSyntaxWindow">
+							<string key="name">createTableSyntaxWindow</string>
+							<string key="candidateClassName">NSWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryInstance">
+							<string key="name">customQueryInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryTextView">
+							<string key="name">customQueryTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseAlterCollationButton">
+							<string key="name">databaseAlterCollationButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseAlterEncodingButton">
+							<string key="name">databaseAlterEncodingButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseAlterSheet">
+							<string key="name">databaseAlterSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseCollationButton">
+							<string key="name">databaseCollationButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseCopyNameField">
+							<string key="name">databaseCopyNameField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseCopySheet">
+							<string key="name">databaseCopySheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseDataInstance">
+							<string key="name">databaseDataInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseEncodingButton">
+							<string key="name">databaseEncodingButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseNameField">
+							<string key="name">databaseNameField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseRenameNameField">
+							<string key="name">databaseRenameNameField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseRenameSheet">
+							<string key="name">databaseRenameSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseSheet">
+							<string key="name">databaseSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="dbTablesTableView">
+							<string key="name">dbTablesTableView</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="documentActivityScrollView">
+							<string key="name">documentActivityScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="encodingPopUp">
+							<string key="name">encodingPopUp</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="exportControllerInstance">
+							<string key="name">exportControllerInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="extendedTableInfoInstance">
+							<string key="name">extendedTableInfoInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="favoritesButton">
+							<string key="name">favoritesButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="historyControl">
+							<string key="name">historyControl</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="inputTextWindow">
+							<string key="name">inputTextWindow</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="inputTextWindowHeader">
+							<string key="name">inputTextWindowHeader</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="inputTextWindowMessage">
+							<string key="name">inputTextWindowMessage</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="inputTextWindowSecureTextField">
+							<string key="name">inputTextWindowSecureTextField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="listFilterField">
+							<string key="name">listFilterField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="parentView">
+							<string key="name">parentView</string>
+							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="queryProgressBar">
+							<string key="name">queryProgressBar</string>
+							<string key="candidateClassName">NSProgressIndicator</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="renameDatabaseButton">
+							<string key="name">renameDatabaseButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="renameDatabaseMessageField">
+							<string key="name">renameDatabaseMessageField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionAccessory">
+							<string key="name">saveConnectionAccessory</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionAutoConnect">
+							<string key="name">saveConnectionAutoConnect</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionEncrypt">
+							<string key="name">saveConnectionEncrypt</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionEncryptString">
+							<string key="name">saveConnectionEncryptString</string>
+							<string key="candidateClassName">NSSecureTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionIncludeData">
+							<string key="name">saveConnectionIncludeData</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionIncludeQuery">
+							<string key="name">saveConnectionIncludeQuery</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionSavePassword">
+							<string key="name">saveConnectionSavePassword</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveConnectionSavePasswordAlert">
+							<string key="name">saveConnectionSavePasswordAlert</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="spHistoryControllerInstance">
+							<string key="name">spHistoryControllerInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="statusTableAccessoryView">
+							<string key="name">statusTableAccessoryView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="statusTableCopyChecksum">
+							<string key="name">statusTableCopyChecksum</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="statusTableView">
+							<string key="name">statusTableView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableContentInstance">
+							<string key="name">tableContentInstance</string>
+							<string key="candidateClassName">SPTableContent</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">SPTableData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDumpInstance">
+							<string key="name">tableDumpInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoScrollView">
+							<string key="name">tableInfoScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoTable">
+							<string key="name">tableInfoTable</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableRelationsInstance">
+							<string key="name">tableRelationsInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceInstance">
+							<string key="name">tableSourceInstance</string>
+							<string key="candidateClassName">SPTableStructure</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableTabView">
+							<string key="name">tableTabView</string>
+							<string key="candidateClassName">NSTabView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableTriggersInstance">
+							<string key="name">tableTriggersInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="taskCancelButton">
+							<string key="name">taskCancelButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="taskDescriptionText">
+							<string key="name">taskDescriptionText</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="taskProgressIndicator">
+							<string key="name">taskProgressIndicator</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="taskProgressLayer">
+							<string key="name">taskProgressLayer</string>
+							<string key="candidateClassName">NSBox</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="titleAccessoryView">
+							<string key="name">titleAccessoryView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="titleImageView">
+							<string key="name">titleImageView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="titleStringView">
+							<string key="name">titleStringView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPDatabaseDocument.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExtendedTableInfo</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="reloadTable:">id</string>
+						<string key="resetAutoIncrement:">id</string>
+						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="updateTableCollation:">id</string>
+						<string key="updateTableEncoding:">id</string>
+						<string key="updateTableType:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="reloadTable:">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrement:">
+							<string key="name">resetAutoIncrement:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
+							<string key="name">resetAutoIncrementValueWasEdited:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableCollation:">
+							<string key="name">updateTableCollation:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableEncoding:">
+							<string key="name">updateTableEncoding:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableType:">
+							<string key="name">updateTableType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="databaseDataInstance">SPDatabaseData</string>
+						<string key="resetAutoIncrementResetButton">id</string>
+						<string key="tableCollationPopUpButton">NSPopUpButton</string>
+						<string key="tableCommentsTextView">NSTextView</string>
+						<string key="tableCreateSyntaxTextView">NSTextView</string>
+						<string key="tableCreatedAt">NSTextField</string>
+						<string key="tableDataInstance">SPTableData</string>
+						<string key="tableDataSize">NSTextField</string>
+						<string key="tableDocumentInstance">id</string>
+						<string key="tableEncodingPopUpButton">NSPopUpButton</string>
+						<string key="tableIndexSize">NSTextField</string>
+						<string key="tableMaxDataSize">NSTextField</string>
+						<string key="tableRowAutoIncrement">NSTextField</string>
+						<string key="tableRowAvgLength">NSTextField</string>
+						<string key="tableRowFormat">NSTextField</string>
+						<string key="tableRowNumber">NSTextField</string>
+						<string key="tableSizeFree">NSTextField</string>
+						<string key="tableSourceInstance">id</string>
+						<string key="tableTypePopUpButton">NSPopUpButton</string>
+						<string key="tableUpdatedAt">NSTextField</string>
+						<string key="tablesListInstance">SPTablesList</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="databaseDataInstance">
+							<string key="name">databaseDataInstance</string>
+							<string key="candidateClassName">SPDatabaseData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="resetAutoIncrementResetButton">
+							<string key="name">resetAutoIncrementResetButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableCollationPopUpButton">
+							<string key="name">tableCollationPopUpButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableCommentsTextView">
+							<string key="name">tableCommentsTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableCreateSyntaxTextView">
+							<string key="name">tableCreateSyntaxTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableCreatedAt">
+							<string key="name">tableCreatedAt</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">SPTableData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataSize">
+							<string key="name">tableDataSize</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableEncodingPopUpButton">
+							<string key="name">tableEncodingPopUpButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableIndexSize">
+							<string key="name">tableIndexSize</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableMaxDataSize">
+							<string key="name">tableMaxDataSize</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableRowAutoIncrement">
+							<string key="name">tableRowAutoIncrement</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableRowAvgLength">
+							<string key="name">tableRowAvgLength</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableRowFormat">
+							<string key="name">tableRowFormat</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableRowNumber">
+							<string key="name">tableRowNumber</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSizeFree">
+							<string key="name">tableSizeFree</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceInstance">
+							<string key="name">tableSourceInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableTypePopUpButton">
+							<string key="name">tableTypePopUpButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableUpdatedAt">
+							<string key="name">tableUpdatedAt</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPExtendedTableInfo.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPHistoryController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">historyControlClicked:</string>
+						<string key="NS.object.0">NSSegmentedControl</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">historyControlClicked:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">historyControlClicked:</string>
+							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+					</object>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="historyControl">NSSegmentedControl</string>
+						<string key="theDocument">SPDatabaseDocument</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="historyControl">
+							<string key="name">historyControl</string>
+							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="theDocument">
+							<string key="name">theDocument</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPHistoryController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPIndexesController</string>
+					<string key="superclassName">NSWindowController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addIndex:">id</string>
+						<string key="addIndexedField:">id</string>
+						<string key="chooseIndexType:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="removeIndex:">id</string>
+						<string key="removeIndexedField:">id</string>
+						<string key="toggleAdvancedIndexOptionsView:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addIndex:">
+							<string key="name">addIndex:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="addIndexedField:">
+							<string key="name">addIndexedField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseIndexType:">
+							<string key="name">chooseIndexType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeIndex:">
+							<string key="name">removeIndex:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeIndexedField:">
+							<string key="name">removeIndexedField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleAdvancedIndexOptionsView:">
+							<string key="name">toggleAdvancedIndexOptionsView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addIndexButton">NSButton</string>
+						<string key="addIndexedColumnButton">NSButton</string>
+						<string key="anchoredButtonBar">NSBox</string>
+						<string key="confirmAddIndexButton">NSButton</string>
+						<string key="dbDocument">SPDatabaseDocument</string>
+						<string key="indexAdvancedOptionsView">NSView</string>
+						<string key="indexAdvancedOptionsViewButton">NSButton</string>
+						<string key="indexAdvancedOptionsViewLabelButton">NSButton</string>
+						<string key="indexKeyBlockSizeTextField">NSTextField</string>
+						<string key="indexNameLabel">NSTextField</string>
+						<string key="indexNameTextField">NSTextField</string>
+						<string key="indexSizeTableColumn">NSTableColumn</string>
+						<string key="indexStorageTypePopUpButton">NSPopUpButton</string>
+						<string key="indexTypeLabel">NSTextField</string>
+						<string key="indexTypePopUpButton">NSPopUpButton</string>
+						<string key="indexedColumnsScrollView">NSScrollView</string>
+						<string key="indexedColumnsTableView">NSTableView</string>
+						<string key="indexesTableView">SPTableView</string>
+						<string key="removeIndexButton">NSButton</string>
+						<string key="removeIndexedColumnButton">NSButton</string>
+						<string key="tableData">SPTableData</string>
+						<string key="tableStructure">SPTableStructure</string>
+						<string key="tablesList">SPTablesList</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addIndexButton">
+							<string key="name">addIndexButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="addIndexedColumnButton">
+							<string key="name">addIndexedColumnButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="anchoredButtonBar">
+							<string key="name">anchoredButtonBar</string>
+							<string key="candidateClassName">NSBox</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="confirmAddIndexButton">
+							<string key="name">confirmAddIndexButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="dbDocument">
+							<string key="name">dbDocument</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexAdvancedOptionsView">
+							<string key="name">indexAdvancedOptionsView</string>
+							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexAdvancedOptionsViewButton">
+							<string key="name">indexAdvancedOptionsViewButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexAdvancedOptionsViewLabelButton">
+							<string key="name">indexAdvancedOptionsViewLabelButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexKeyBlockSizeTextField">
+							<string key="name">indexKeyBlockSizeTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexNameLabel">
+							<string key="name">indexNameLabel</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexNameTextField">
+							<string key="name">indexNameTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexSizeTableColumn">
+							<string key="name">indexSizeTableColumn</string>
+							<string key="candidateClassName">NSTableColumn</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexStorageTypePopUpButton">
+							<string key="name">indexStorageTypePopUpButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexTypeLabel">
+							<string key="name">indexTypeLabel</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexTypePopUpButton">
+							<string key="name">indexTypePopUpButton</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexedColumnsScrollView">
+							<string key="name">indexedColumnsScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexedColumnsTableView">
+							<string key="name">indexedColumnsTableView</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexesTableView">
+							<string key="name">indexesTableView</string>
+							<string key="candidateClassName">SPTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeIndexButton">
+							<string key="name">removeIndexButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeIndexedColumnButton">
+							<string key="name">removeIndexedColumnButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableData">
+							<string key="name">tableData</string>
+							<string key="candidateClassName">SPTableData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableStructure">
+							<string key="name">tableStructure</string>
+							<string key="candidateClassName">SPTableStructure</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesList">
+							<string key="name">tablesList</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPIndexesController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPSplitView</string>
+					<string key="superclassName">NSSplitView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">toggleCollapse:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="additionalDragHandleView">NSView</string>
+						<string key="collapseToggleButton">NSButton</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="additionalDragHandleView">
+							<string key="name">additionalDragHandleView</string>
+							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="collapseToggleButton">
+							<string key="name">collapseToggleButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPSplitView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableContent</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addRow:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="duplicateRow:">id</string>
+						<string key="filterTable:">id</string>
+						<string key="navigatePaginationFromButton:">id</string>
+						<string key="reloadTable:">id</string>
+						<string key="removeRow:">id</string>
+						<string key="setCompareTypes:">id</string>
+						<string key="setDefaultOperator:">id</string>
+						<string key="showDefaultOperaterHelp:">id</string>
+						<string key="showFilterTable:">id</string>
+						<string key="tableFilterClear:">id</string>
+						<string key="toggleDistinctSelect:">id</string>
+						<string key="toggleFilterField:">id</string>
+						<string key="toggleLookAllFieldsMode:">id</string>
+						<string key="toggleNegateClause:">id</string>
+						<string key="togglePagination:">NSButton</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addRow:">
+							<string key="name">addRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="duplicateRow:">
+							<string key="name">duplicateRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterTable:">
+							<string key="name">filterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="navigatePaginationFromButton:">
+							<string key="name">navigatePaginationFromButton:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="reloadTable:">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeRow:">
+							<string key="name">removeRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setCompareTypes:">
+							<string key="name">setCompareTypes:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setDefaultOperator:">
+							<string key="name">setDefaultOperator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showDefaultOperaterHelp:">
+							<string key="name">showDefaultOperaterHelp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showFilterTable:">
+							<string key="name">showFilterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="tableFilterClear:">
+							<string key="name">tableFilterClear:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleDistinctSelect:">
+							<string key="name">toggleDistinctSelect:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleFilterField:">
+							<string key="name">toggleFilterField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleLookAllFieldsMode:">
+							<string key="name">toggleLookAllFieldsMode:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleNegateClause:">
+							<string key="name">toggleNegateClause:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="togglePagination:">
+							<string key="name">togglePagination:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addButton">id</string>
+						<string key="argumentField">id</string>
+						<string key="betweenTextField">id</string>
+						<string key="compareField">id</string>
+						<string key="contentSplitView">SPSplitView</string>
+						<string key="contentViewPane">NSView</string>
+						<string key="countText">id</string>
+						<string key="duplicateButton">id</string>
+						<string key="fieldField">NSPopUpButton</string>
+						<string key="filterButton">id</string>
+						<string key="filterTableClearButton">NSButton</string>
+						<string key="filterTableDistinctCheckbox">NSButton</string>
+						<string key="filterTableFilterButton">NSButton</string>
+						<string key="filterTableLiveSearchCheckbox">NSButton</string>
+						<string key="filterTableNegateCheckbox">NSButton</string>
+						<string key="filterTableQueryTitle">NSTextField</string>
+						<string key="filterTableSearchAllFields">NSButton</string>
+						<string key="filterTableSetDefaultOperatorSheet">NSPanel</string>
+						<string key="filterTableSetDefaultOperatorValue">NSComboBox</string>
+						<string key="filterTableSplitView">SPSplitView</string>
+						<string key="filterTableView">SPCopyTable</string>
+						<string key="filterTableWhereClause">SPTextView</string>
+						<string key="filterTableWindow">NSPanel</string>
+						<string key="firstBetweenField">id</string>
+						<string key="limitRowsButton">id</string>
+						<string key="limitRowsField">id</string>
+						<string key="limitRowsStepper">id</string>
+						<string key="multipleLineEditingButton">NSButton</string>
+						<string key="paginationBox">NSBox</string>
+						<string key="paginationButton">NSButton</string>
+						<string key="paginationGoButton">NSButton</string>
+						<string key="paginationNextButton">NSButton</string>
+						<string key="paginationPageField">NSTextField</string>
+						<string key="paginationPageStepper">NSStepper</string>
+						<string key="paginationPreviousButton">NSButton</string>
+						<string key="paginationView">NSView</string>
+						<string key="paginationViewController">NSViewController</string>
+						<string key="reloadButton">id</string>
+						<string key="removeButton">id</string>
+						<string key="secondBetweenField">id</string>
+						<string key="spHistoryControllerInstance">SPHistoryController</string>
+						<string key="tableContentView">SPCopyTable</string>
+						<string key="tableDataInstance">SPTableData</string>
+						<string key="tableDocumentInstance">SPDatabaseDocument</string>
+						<string key="tableInfoInstance">SPTableInfo</string>
+						<string key="tableSourceInstance">id</string>
+						<string key="tablesListInstance">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addButton">
+							<string key="name">addButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="argumentField">
+							<string key="name">argumentField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="betweenTextField">
+							<string key="name">betweenTextField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="compareField">
+							<string key="name">compareField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="contentSplitView">
+							<string key="name">contentSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="contentViewPane">
+							<string key="name">contentViewPane</string>
+							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="countText">
+							<string key="name">countText</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="duplicateButton">
+							<string key="name">duplicateButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="fieldField">
+							<string key="name">fieldField</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterButton">
+							<string key="name">filterButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableClearButton">
+							<string key="name">filterTableClearButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableDistinctCheckbox">
+							<string key="name">filterTableDistinctCheckbox</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableFilterButton">
+							<string key="name">filterTableFilterButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableLiveSearchCheckbox">
+							<string key="name">filterTableLiveSearchCheckbox</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableNegateCheckbox">
+							<string key="name">filterTableNegateCheckbox</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableQueryTitle">
+							<string key="name">filterTableQueryTitle</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableSearchAllFields">
+							<string key="name">filterTableSearchAllFields</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableSetDefaultOperatorSheet">
+							<string key="name">filterTableSetDefaultOperatorSheet</string>
+							<string key="candidateClassName">NSPanel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableSetDefaultOperatorValue">
+							<string key="name">filterTableSetDefaultOperatorValue</string>
+							<string key="candidateClassName">NSComboBox</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableSplitView">
+							<string key="name">filterTableSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableView">
+							<string key="name">filterTableView</string>
+							<string key="candidateClassName">SPCopyTable</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableWhereClause">
+							<string key="name">filterTableWhereClause</string>
+							<string key="candidateClassName">SPTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="filterTableWindow">
+							<string key="name">filterTableWindow</string>
+							<string key="candidateClassName">NSPanel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="firstBetweenField">
+							<string key="name">firstBetweenField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="limitRowsButton">
+							<string key="name">limitRowsButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="limitRowsField">
+							<string key="name">limitRowsField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="limitRowsStepper">
+							<string key="name">limitRowsStepper</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="multipleLineEditingButton">
+							<string key="name">multipleLineEditingButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationBox">
+							<string key="name">paginationBox</string>
+							<string key="candidateClassName">NSBox</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationButton">
+							<string key="name">paginationButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationGoButton">
+							<string key="name">paginationGoButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationNextButton">
+							<string key="name">paginationNextButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationPageField">
+							<string key="name">paginationPageField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationPageStepper">
+							<string key="name">paginationPageStepper</string>
+							<string key="candidateClassName">NSStepper</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationPreviousButton">
+							<string key="name">paginationPreviousButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationView">
+							<string key="name">paginationView</string>
+							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationViewController">
+							<string key="name">paginationViewController</string>
+							<string key="candidateClassName">NSViewController</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="reloadButton">
+							<string key="name">reloadButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeButton">
+							<string key="name">removeButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="secondBetweenField">
+							<string key="name">secondBetweenField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="spHistoryControllerInstance">
+							<string key="name">spHistoryControllerInstance</string>
+							<string key="candidateClassName">SPHistoryController</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableContentView">
+							<string key="name">tableContentView</string>
+							<string key="candidateClassName">SPCopyTable</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">SPTableData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoInstance">
+							<string key="name">tableInfoInstance</string>
+							<string key="candidateClassName">SPTableInfo</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceInstance">
+							<string key="name">tableSourceInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTableContent.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableData</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="tableDocumentInstance">SPDatabaseDocument</string>
+						<string key="tableListInstance">SPTablesList</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableListInstance">
+							<string key="name">tableListInstance</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTableData.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableInfo</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="activitiesTable">NSTableView</string>
+						<string key="infoTable">id</string>
+						<string key="tableDataInstance">id</string>
+						<string key="tableDocumentInstance">id</string>
+						<string key="tableInfoScrollView">NSScrollView</string>
+						<string key="tableList">id</string>
+						<string key="tableListInstance">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="activitiesTable">
+							<string key="name">activitiesTable</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="infoTable">
+							<string key="name">infoTable</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoScrollView">
+							<string key="name">tableInfoScrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableList">
+							<string key="name">tableList</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableListInstance">
+							<string key="name">tableListInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTableInfo.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableStructure</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addField:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="duplicateField:">id</string>
+						<string key="reloadTable:">id</string>
+						<string key="removeField:">id</string>
+						<string key="resetAutoIncrement:">id</string>
+						<string key="showOptimizedFieldType:">id</string>
+						<string key="toggleColumnView:">NSMenuItem</string>
+						<string key="unhideIndexesView:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addField:">
+							<string key="name">addField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="duplicateField:">
+							<string key="name">duplicateField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="reloadTable:">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeField:">
+							<string key="name">removeField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrement:">
+							<string key="name">resetAutoIncrement:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showOptimizedFieldType:">
+							<string key="name">showOptimizedFieldType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleColumnView:">
+							<string key="name">toggleColumnView:</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBActionInfo" key="unhideIndexesView:">
+							<string key="name">unhideIndexesView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addFieldButton">id</string>
+						<string key="addIndexButton">id</string>
+						<string key="chooseKeyButton">id</string>
+						<string key="databaseDataInstance">SPDatabaseData</string>
+						<string key="duplicateFieldButton">id</string>
+						<string key="editTableButton">id</string>
+						<string key="encodingPopupCell">NSPopUpButtonCell</string>
+						<string key="extendedTableInfoInstance">SPExtendedTableInfo</string>
+						<string key="indexesController">SPIndexesController</string>
+						<string key="indexesShowButton">NSButton</string>
+						<string key="indexesTableView">SPTableView</string>
+						<string key="keySheet">id</string>
+						<string key="refreshIndexesButton">id</string>
+						<string key="reloadFieldsButton">id</string>
+						<string key="removeFieldButton">id</string>
+						<string key="removeIndexButton">id</string>
+						<string key="resetAutoIncrementLine">id</string>
+						<string key="resetAutoIncrementSheet">id</string>
+						<string key="resetAutoIncrementValue">id</string>
+						<string key="structureGrabber">id</string>
+						<string key="tableDataInstance">SPTableData</string>
+						<string key="tableDocumentInstance">SPDatabaseDocument</string>
+						<string key="tableInfoInstance">SPTableInfo</string>
+						<string key="tableSourceView">SPTableView</string>
+						<string key="tablesIndexesSplitView">NSSplitView</string>
+						<string key="tablesListInstance">SPTablesList</string>
+						<string key="viewColumnsMenu">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addFieldButton">
+							<string key="name">addFieldButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="addIndexButton">
+							<string key="name">addIndexButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="chooseKeyButton">
+							<string key="name">chooseKeyButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseDataInstance">
+							<string key="name">databaseDataInstance</string>
+							<string key="candidateClassName">SPDatabaseData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="duplicateFieldButton">
+							<string key="name">duplicateFieldButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editTableButton">
+							<string key="name">editTableButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="encodingPopupCell">
+							<string key="name">encodingPopupCell</string>
+							<string key="candidateClassName">NSPopUpButtonCell</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="extendedTableInfoInstance">
+							<string key="name">extendedTableInfoInstance</string>
+							<string key="candidateClassName">SPExtendedTableInfo</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexesController">
+							<string key="name">indexesController</string>
+							<string key="candidateClassName">SPIndexesController</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexesShowButton">
+							<string key="name">indexesShowButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="indexesTableView">
+							<string key="name">indexesTableView</string>
+							<string key="candidateClassName">SPTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="keySheet">
+							<string key="name">keySheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="refreshIndexesButton">
+							<string key="name">refreshIndexesButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="reloadFieldsButton">
+							<string key="name">reloadFieldsButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeFieldButton">
+							<string key="name">removeFieldButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeIndexButton">
+							<string key="name">removeIndexButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="resetAutoIncrementLine">
+							<string key="name">resetAutoIncrementLine</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="resetAutoIncrementSheet">
+							<string key="name">resetAutoIncrementSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="resetAutoIncrementValue">
+							<string key="name">resetAutoIncrementValue</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="structureGrabber">
+							<string key="name">structureGrabber</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">SPTableData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoInstance">
+							<string key="name">tableInfoInstance</string>
+							<string key="candidateClassName">SPTableInfo</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceView">
+							<string key="name">tableSourceView</string>
+							<string key="candidateClassName">SPTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesIndexesSplitView">
+							<string key="name">tablesIndexesSplitView</string>
+							<string key="candidateClassName">NSSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="viewColumnsMenu">
+							<string key="name">viewColumnsMenu</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTableStructure.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableView</string>
+					<string key="superclassName">NSTableView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTableView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTablesList</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addTable:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyTable:">id</string>
+						<string key="openTableInNewTab:">id</string>
+						<string key="openTableInNewWindow:">id</string>
+						<string key="removeTable:">id</string>
+						<string key="renameTable:">id</string>
+						<string key="tableEncodingButtonChanged:">id</string>
+						<string key="togglePaneCollapse:">id</string>
+						<string key="truncateTable:">id</string>
+						<string key="updateFilter:">id</string>
+						<string key="updateTables:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addTable:">
+							<string key="name">addTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyTable:">
+							<string key="name">copyTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openTableInNewTab:">
+							<string key="name">openTableInNewTab:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openTableInNewWindow:">
+							<string key="name">openTableInNewWindow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeTable:">
+							<string key="name">removeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="renameTable:">
+							<string key="name">renameTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="tableEncodingButtonChanged:">
+							<string key="name">tableEncodingButtonChanged:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="togglePaneCollapse:">
+							<string key="name">togglePaneCollapse:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="truncateTable:">
+							<string key="name">truncateTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateFilter:">
+							<string key="name">updateFilter:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTables:">
+							<string key="name">updateTables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addTableButton">id</string>
+						<string key="copyCreateSyntaxContextMenuItem">NSMenuItem</string>
+						<string key="copyCreateSyntaxMenuItem">NSMenuItem</string>
+						<string key="copyTableButton">id</string>
+						<string key="copyTableContentSwitch">NSButton</string>
+						<string key="copyTableMessageField">id</string>
+						<string key="copyTableNameField">id</string>
+						<string key="copyTableSheet">id</string>
+						<string key="customQueryInstance">id</string>
+						<string key="databaseDataInstance">SPDatabaseData</string>
+						<string key="duplicateTableContextMenuItem">NSMenuItem</string>
+						<string key="duplicateTableMenuItem">NSMenuItem</string>
+						<string key="extendedTableInfoInstance">id</string>
+						<string key="listFilterField">NSSearchField</string>
+						<string key="openTableInNewTabContextMenuItem">NSMenuItem</string>
+						<string key="openTableInNewTabMenuItem">NSMenuItem</string>
+						<string key="openTableInNewWindowContextMenuItem">NSMenuItem</string>
+						<string key="openTableInNewWindowMenuItem">NSMenuItem</string>
+						<string key="removeTableContextMenuItem">NSMenuItem</string>
+						<string key="removeTableMenuItem">NSMenuItem</string>
+						<string key="renameTableContextMenuItem">NSMenuItem</string>
+						<string key="renameTableMenuItem">NSMenuItem</string>
+						<string key="separatorTableContextMenuItem">NSMenuItem</string>
+						<string key="separatorTableContextMenuItem2">NSMenuItem</string>
+						<string key="separatorTableContextMenuItem3">NSMenuItem</string>
+						<string key="separatorTableMenuItem">NSMenuItem</string>
+						<string key="separatorTableMenuItem2">NSMenuItem</string>
+						<string key="separatorTableMenuItem3">NSMenuItem</string>
+						<string key="showCreateSyntaxContextMenuItem">NSMenuItem</string>
+						<string key="showCreateSyntaxMenuItem">NSMenuItem</string>
+						<string key="spHistoryControllerInstance">SPHistoryController</string>
+						<string key="tableCollationButton">id</string>
+						<string key="tableContentInstance">SPTableContent</string>
+						<string key="tableDataInstance">id</string>
+						<string key="tableDocumentInstance">SPDatabaseDocument</string>
+						<string key="tableDumpInstance">id</string>
+						<string key="tableEncodingButton">id</string>
+						<string key="tableInfoInstance">id</string>
+						<string key="tableListFilterSplitView">SPSplitView</string>
+						<string key="tableListSplitView">SPSplitView</string>
+						<string key="tableNameField">id</string>
+						<string key="tableSheet">id</string>
+						<string key="tableSourceInstance">SPTableStructure</string>
+						<string key="tableTriggersInstance">id</string>
+						<string key="tableTypeButton">id</string>
+						<string key="tablesListView">SPTableView</string>
+						<string key="toolbarActionsButton">id</string>
+						<string key="toolbarAddButton">id</string>
+						<string key="toolbarReloadButton">id</string>
+						<string key="truncateTableButton">id</string>
+						<string key="truncateTableContextMenuItem">NSMenuItem</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addTableButton">
+							<string key="name">addTableButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyCreateSyntaxContextMenuItem">
+							<string key="name">copyCreateSyntaxContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyCreateSyntaxMenuItem">
+							<string key="name">copyCreateSyntaxMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyTableButton">
+							<string key="name">copyTableButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyTableContentSwitch">
+							<string key="name">copyTableContentSwitch</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyTableMessageField">
+							<string key="name">copyTableMessageField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyTableNameField">
+							<string key="name">copyTableNameField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="copyTableSheet">
+							<string key="name">copyTableSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryInstance">
+							<string key="name">customQueryInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="databaseDataInstance">
+							<string key="name">databaseDataInstance</string>
+							<string key="candidateClassName">SPDatabaseData</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="duplicateTableContextMenuItem">
+							<string key="name">duplicateTableContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="duplicateTableMenuItem">
+							<string key="name">duplicateTableMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="extendedTableInfoInstance">
+							<string key="name">extendedTableInfoInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="listFilterField">
+							<string key="name">listFilterField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewTabContextMenuItem">
+							<string key="name">openTableInNewTabContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewTabMenuItem">
+							<string key="name">openTableInNewTabMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewWindowContextMenuItem">
+							<string key="name">openTableInNewWindowContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewWindowMenuItem">
+							<string key="name">openTableInNewWindowMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeTableContextMenuItem">
+							<string key="name">removeTableContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="removeTableMenuItem">
+							<string key="name">removeTableMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="renameTableContextMenuItem">
+							<string key="name">renameTableContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="renameTableMenuItem">
+							<string key="name">renameTableMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableContextMenuItem">
+							<string key="name">separatorTableContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableContextMenuItem2">
+							<string key="name">separatorTableContextMenuItem2</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableContextMenuItem3">
+							<string key="name">separatorTableContextMenuItem3</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableMenuItem">
+							<string key="name">separatorTableMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableMenuItem2">
+							<string key="name">separatorTableMenuItem2</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="separatorTableMenuItem3">
+							<string key="name">separatorTableMenuItem3</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="showCreateSyntaxContextMenuItem">
+							<string key="name">showCreateSyntaxContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="showCreateSyntaxMenuItem">
+							<string key="name">showCreateSyntaxMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="spHistoryControllerInstance">
+							<string key="name">spHistoryControllerInstance</string>
+							<string key="candidateClassName">SPHistoryController</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableCollationButton">
+							<string key="name">tableCollationButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableContentInstance">
+							<string key="name">tableContentInstance</string>
+							<string key="candidateClassName">SPTableContent</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDumpInstance">
+							<string key="name">tableDumpInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableEncodingButton">
+							<string key="name">tableEncodingButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoInstance">
+							<string key="name">tableInfoInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableListFilterSplitView">
+							<string key="name">tableListFilterSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableListSplitView">
+							<string key="name">tableListSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableNameField">
+							<string key="name">tableNameField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSheet">
+							<string key="name">tableSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceInstance">
+							<string key="name">tableSourceInstance</string>
+							<string key="candidateClassName">SPTableStructure</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableTriggersInstance">
+							<string key="name">tableTriggersInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableTypeButton">
+							<string key="name">tableTypeButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListView">
+							<string key="name">tablesListView</string>
+							<string key="candidateClassName">SPTableView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="toolbarActionsButton">
+							<string key="name">toolbarActionsButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="toolbarAddButton">
+							<string key="name">toolbarAddButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="toolbarReloadButton">
+							<string key="name">toolbarReloadButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="truncateTableButton">
+							<string key="name">truncateTableButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="truncateTableContextMenuItem">
+							<string key="name">truncateTableContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTablesList.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTextView</string>
+					<string key="superclassName">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="printDocument:">id</string>
+						<string key="showMySQLHelpForCurrentWord:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="printDocument:">
+							<string key="name">printDocument:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showMySQLHelpForCurrentWord:">
+							<string key="name">showMySQLHelpForCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="customQueryInstance">SPCustomQuery</string>
+						<string key="scrollView">NSScrollView</string>
+						<string key="tableDocumentInstance">SPDatabaseDocument</string>
+						<string key="tablesListInstance">SPTablesList</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="customQueryInstance">
+							<string key="name">customQueryInstance</string>
+							<string key="candidateClassName">SPCustomQuery</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="scrollView">
+							<string key="name">scrollView</string>
+							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">SPDatabaseDocument</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">SPTablesList</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SPTextView.h</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>

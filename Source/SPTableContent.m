@@ -70,6 +70,10 @@
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
 #endif
 
+#ifndef __MAC_10_7
+#define __MAC_10_7 1070
+#endif
+
 @interface SPTableContent (SPTableContentDataSource_Private_API)
 
 - (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;
@@ -136,6 +140,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		lastEditedFilterTableValue = nil;
 		activeFilter               = 0;
 		schemeFilter               = nil;
+		paginationPopover          = nil;
 #endif
 
 		selectedTable = nil;
@@ -239,16 +244,33 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 	
 	[nibLoader release];
-
-	// Add the pagination view to the content area
-	NSRect paginationViewFrame = [paginationView frame];
-	NSRect paginationButtonFrame = [paginationButton frame];
-	paginationViewHeight = paginationViewFrame.size.height;
-	paginationViewFrame.origin.x = paginationButtonFrame.origin.x + paginationButtonFrame.size.width - paginationViewFrame.size.width;
-	paginationViewFrame.origin.y = paginationButtonFrame.origin.y + paginationButtonFrame.size.height - 2;
-	paginationViewFrame.size.height = 0;
-	[paginationView setFrame:paginationViewFrame];
-	[contentViewPane addSubview:paginationView];
+	
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
+	//let's see if we can use the NSPopover (10.7+) or have to make do with our legacy clone.
+	//this is using reflection right now, as our SDK is 10.8 but our minimum supported version is 10.6
+	Class popOverClass = NSClassFromString(@"NSPopover");
+	if(popOverClass)
+	{
+		paginationPopover = [[popOverClass alloc] init];
+		[paginationPopover setDelegate:(SPTableContent<NSPopoverDelegate> *)self];
+		[paginationPopover setContentViewController:paginationViewController];
+		[paginationPopover setBehavior:NSPopoverBehaviorTransient];
+	}
+	else
+#endif
+	{
+		[paginationBox setContentView:[paginationViewController view]];
+		
+		// Add the pagination view to the content area
+		NSRect paginationViewFrame = [paginationView frame];
+		NSRect paginationButtonFrame = [paginationButton frame];
+		paginationViewHeight = paginationViewFrame.size.height;
+		paginationViewFrame.origin.x = paginationButtonFrame.origin.x + paginationButtonFrame.size.width - paginationViewFrame.size.width;
+		paginationViewFrame.origin.y = paginationButtonFrame.origin.y + paginationButtonFrame.size.height - 2;
+		paginationViewFrame.size.height = 0;
+		[paginationView setFrame:paginationViewFrame];
+		[contentViewPane addSubview:paginationView];
+	}
 
 	// Modify the filter table split view sizes
 	[filterTableSplitView setMinSize:135 ofSubviewAtIndex:1];
@@ -780,7 +802,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSInteger rowsToLoad = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 
 #ifndef SP_CODA
-	[countText setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
+	[[countText onMainThread] setStringValue:NSLocalizedString(@"Loading table data...", @"Loading table data string")];
 #endif
 
 	// Notify any listeners that a query has started
@@ -1520,7 +1542,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 #ifndef SP_CODA
-	[self setPaginationViewVisibility:FALSE];
+	[self setPaginationViewVisibility:NO];
 #endif
 
 	// Select the correct pagination value.
@@ -1749,8 +1771,15 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 - (IBAction) togglePagination:(NSButton *)sender
 {
-	if ([sender state] == NSOnState) [self setPaginationViewVisibility:YES];
-	else [self setPaginationViewVisibility:NO];
+	[self setPaginationViewVisibility:([sender state] == NSOnState)];
+}
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
+- (void)popoverDidClose:(NSNotification *)notification
+{
+	//not to hide the view, but to change the paginationButton
+	[self setPaginationViewVisibility:NO];
 }
 #endif
 
@@ -1761,16 +1790,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 #ifndef SP_CODA
 	NSRect paginationViewFrame = [paginationView frame];
-
-	if (makeVisible) {
-		if (paginationViewFrame.size.height == paginationViewHeight) return;
-		paginationViewFrame.size.height = paginationViewHeight;
+	
+	if(makeVisible) {
 		[paginationButton setState:NSOnState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
 		[[paginationPageField window] makeFirstResponder:paginationPageField];
-	} else {
-		if (paginationViewFrame.size.height == 0) return;
-		paginationViewFrame.size.height = 0;
+	}
+	else {
 		[paginationButton setState:NSOffState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
 		if ([[paginationPageField window] firstResponder] == paginationPageField
@@ -1781,6 +1807,28 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		{
 			[[paginationPageField window] makeFirstResponder:nil];
 		}
+	}
+	
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
+	if(paginationPopover) {
+		if(makeVisible) {
+			[paginationPopover showRelativeToRect:[paginationButton bounds] ofView:paginationButton preferredEdge:NSMinYEdge];
+		}
+		else if([paginationPopover isShown]) {
+			//usually this should not happen, as the popover will disappear once the user clicks somewhere
+			//else in the window (including the paginationButton).
+			[paginationPopover close];
+		}
+		return;
+	}
+#endif
+	
+	if (makeVisible) {
+		if (paginationViewFrame.size.height == paginationViewHeight) return;
+		paginationViewFrame.size.height = paginationViewHeight;
+	} else {
+		if (paginationViewFrame.size.height == 0) return;
+		paginationViewFrame.size.height = 0;
 	}
 
 	[[paginationView animator] setFrame:paginationViewFrame];
@@ -4278,6 +4326,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];	
 	[nibObjectsToRelease release];
+	[paginationPopover release];
 
 	[filterTableData release];
 	if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];

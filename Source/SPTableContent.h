@@ -91,7 +91,10 @@
 	IBOutlet NSButton *paginationNextButton;
 #ifndef SP_CODA
 	IBOutlet NSView *contentViewPane;
+	IBOutlet NSViewController *paginationViewController;
 	IBOutlet NSView *paginationView;
+	IBOutlet NSBox *paginationBox;
+	NSPopover *paginationPopover;
 #endif
 	IBOutlet NSTextField *paginationPageField;
 #ifndef SP_CODA
