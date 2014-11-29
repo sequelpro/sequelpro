@@ -484,7 +484,7 @@ typedef struct {
 		NSRect frame = [aCell frame];
 		//the leftmost cell has no left border when inactive so we need to expand it's area to the left window edge
 		if(currentIndex == 0 && [aCell state] == NSOffState) {
-			frame = NSMakeRect(frame.origin.x - kPSMSequelProTabCornerRadius, frame.origin.y, frame.size.width + kPSMSequelProTabCornerRadius + 0.5f, frame.size.height);
+			frame = NSMakeRect(0.0, frame.origin.y, frame.size.width + kPSMSequelProTabCornerRadius + 0.5f, frame.size.height);
 		}
 		NSRectFillUsingOperation(frame, NSCompositeSourceAtop);
 	}
@@ -629,8 +629,8 @@ typedef struct {
 	// Set up the corner bezier paths arc centers
 	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
-	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius -0.5f);
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius -0.5f);
 
 	// Construct the outline path
 	if (drawLeftEdge) {
@@ -674,8 +674,8 @@ typedef struct {
 		[highlightColor set];
 		
 		NSBezierPath *highlightBezier = [NSBezierPath bezierPath];
-		[highlightBezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y)];
-		[highlightBezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y)];
+		[highlightBezier moveToPoint:NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius+2.5f, aRect.origin.y+0.5f)];
+		[highlightBezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width+kPSMSequelProTabCornerRadius-1.0f, aRect.origin.y+0.5f)];
 		[highlightBezier setLineWidth:1.0f];
 		[highlightBezier stroke];
 	}
