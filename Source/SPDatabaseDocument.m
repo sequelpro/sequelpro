@@ -4481,6 +4481,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[connection setObject:[self name] forKey:@"name"];
 		[connection setObject:[self host] forKey:@"host"];
 		[connection setObject:[self user] forKey:@"user"];
+		if([connectionController colorIndex])
+			[connection setObject:[NSNumber numberWithInteger:[connectionController colorIndex]] forKey:SPFavoriteColorIndexKey];
 		if([connectionController port] && [[connectionController port] length])
 			[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
 		if([[self database] length])
@@ -4645,6 +4647,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if ([connection objectForKey:@"port"])
 		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+	if ([connection objectForKey:SPFavoriteColorIndexKey])
+		[connectionController setColorIndex:[(NSNumber *)[connection objectForKey:SPFavoriteColorIndexKey] integerValue]];
 
 	// Set SSL details
 	if ([connection objectForKey:@"useSSL"])
