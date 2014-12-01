@@ -748,7 +748,7 @@ typedef struct {
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
-	[self drawInteriorWithTabCell:cell inView:[cell controlView]];
+	[self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 
 }
 
