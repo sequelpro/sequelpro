@@ -367,7 +367,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 	}
 	
     [[[self destinationTabBar] cells] replaceObjectAtIndex:destinationIndex withObject:[self draggedCell]];
-    [[self draggedCell] setControlView:[self destinationTabBar]];
+    [[self draggedCell] setCustomControlView:[self destinationTabBar]];
 	
     // move actual NSTabViewItem
     if ([self sourceTabBar] != [self destinationTabBar]) {
@@ -474,7 +474,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 				//rebind the cell to the new control
 				[control bindPropertiesForCell:[self draggedCell] andTabViewItem:[[self draggedCell] representedObject]];
 				
-				[[self draggedCell] setControlView:control];
+				[[self draggedCell] setCustomControlView:control];
 				
 				[[[self sourceTabBar] tabView] removeTabViewItem:[[self draggedCell] representedObject]];
 				

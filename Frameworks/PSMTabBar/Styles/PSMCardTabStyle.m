@@ -423,7 +423,7 @@
 		}
 	}
     
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+    [self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 
@@ -433,7 +433,7 @@
 
 	BOOL showsBaselineSeparator = NO;
 /*
-	NSToolbar *toolbar = [[[cell controlView] window] toolbar];
+	NSToolbar *toolbar = [[[cell customControlView] window] toolbar];
 	BOOL showsBaselineSeparator = (toolbar && [toolbar respondsToSelector:@selector(showsBaselineSeparator)] && [toolbar showsBaselineSeparator]);
 */    
 	if (!showsBaselineSeparator) {

@@ -373,7 +373,7 @@
 			[bezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width-2.5, aRect.origin.y+aRect.size.height)];
 			[bezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y+aRect.size.height-1.5)];
 			[bezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y)];
-			if ([[cell controlView] frame].size.height < 2) {
+			if ([[cell customControlView] frame].size.height < 2) {
 				// special case of hidden control; need line across top of cell
 				[bezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y+0.5)];
 				[bezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y+0.5)];
@@ -442,7 +442,7 @@
     
 	[NSGraphicsContext restoreGraphicsState];
 	
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+    [self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 

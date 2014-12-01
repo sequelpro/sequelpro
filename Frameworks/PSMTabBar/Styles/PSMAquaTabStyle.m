@@ -340,7 +340,7 @@
         else
             currentTint = [cell controlTint];
         
-        if (![[[cell controlView] window] isKeyWindow]) 
+        if (![[[cell customControlView] window] isKeyWindow])
             currentTint = NSClearControlTint;
         
         NSImage *bgImage;
@@ -381,7 +381,7 @@
         [aquaDivider compositeToPoint:NSMakePoint(cellFrame.origin.x + cellFrame.size.width - 1.0, cellFrame.origin.y + cellFrame.size.height) operation:NSCompositeSourceOver];
     }
     
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+    [self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 - (void)drawBackgroundInRect:(NSRect)rect

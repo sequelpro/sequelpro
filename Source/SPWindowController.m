@@ -259,7 +259,7 @@ enum {
 	//rebind the selected cell to the new control
 	[control bindPropertiesForCell:selectedCell andTabViewItem:selectedTabViewItem];
 	
-	[selectedCell setControlView:control];
+	[selectedCell setCustomControlView:control];
 	
 	[[tabBar tabView] removeTabViewItem:[selectedCell representedObject]];
 
