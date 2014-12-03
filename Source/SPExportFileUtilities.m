@@ -269,7 +269,9 @@ SPExportErrorChoice;
 	[NSApp endSheet:exportProgressWindow returnCode:0];
 	[exportProgressWindow orderOut:self];
 	
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:files];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSModalResponse returnCode) {
+		[self alertDidEnd:alert returnCode:returnCode contextInfo:files];
+	}];
 }
 
 /**
