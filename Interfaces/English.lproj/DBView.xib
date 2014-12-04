@@ -4070,14 +4070,6 @@
 																									<string key="NSKeyEquiv"/>
 																									<int key="NSKeyEquivModMask">1048576</int>
 																									<int key="NSMnemonicLoc">2147483647</int>
-																									<object class="NSCustomResource" key="NSOnImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">729BAD60-B632-470B-BA82-856F39114541</string>
-																									</object>
-																									<object class="NSCustomResource" key="NSMixedImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">73B69558-349D-4439-B164-B5723719CCFA</string>
-																									</object>
 																									<string key="NSAction">_popUpItemAction:</string>
 																									<reference key="NSTarget" ref="203451275"/>
 																								</object>
@@ -4191,14 +4183,6 @@
 																									<string key="NSKeyEquiv"/>
 																									<int key="NSKeyEquivModMask">1048576</int>
 																									<int key="NSMnemonicLoc">2147483647</int>
-																									<object class="NSCustomResource" key="NSOnImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">660263D3-793C-406A-89B8-EC5E0D096CD0</string>
-																									</object>
-																									<object class="NSCustomResource" key="NSMixedImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">F1B8C31D-945B-4266-A204-4DAE195D61AE</string>
-																									</object>
 																									<string key="NSAction">_popUpItemAction:</string>
 																									<reference key="NSTarget" ref="564853010"/>
 																								</object>
@@ -4314,14 +4298,6 @@
 																									<int key="NSKeyEquivModMask">1048576</int>
 																									<int key="NSMnemonicLoc">2147483647</int>
 																									<reference key="NSImage" ref="158871648"/>
-																									<object class="NSCustomResource" key="NSOnImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">8250562F-864D-4E5D-880D-0810E6CC5D58</string>
-																									</object>
-																									<object class="NSCustomResource" key="NSMixedImage">
-																										<string key="NSClassName">NSImage</string>
-																										<string key="NSResourceName">F6692946-0767-44FB-B4D4-572DCEEFE404</string>
-																									</object>
 																									<string key="NSAction">_popUpItemAction:</string>
 																									<reference key="NSTarget" ref="364838886"/>
 																								</object>
@@ -26754,12 +26730,6 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="660263D3-793C-406A-89B8-EC5E0D096CD0">{128, 128}</string>
-			<string key="729BAD60-B632-470B-BA82-856F39114541">{128, 128}</string>
-			<string key="73B69558-349D-4439-B164-B5723719CCFA">{128, 128}</string>
-			<string key="8250562F-864D-4E5D-880D-0810E6CC5D58">{128, 128}</string>
-			<string key="F1B8C31D-945B-4266-A204-4DAE195D61AE">{128, 128}</string>
-			<string key="F6692946-0767-44FB-B4D4-572DCEEFE404">{128, 128}</string>
 			<string key="NSAdvanced">{32, 32}</string>
 			<string key="NSApplicationIcon">{128, 128}</string>
 			<string key="NSGoLeftTemplate">{9, 9}</string>
