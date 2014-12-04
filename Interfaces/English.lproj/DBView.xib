@@ -5261,12 +5261,7 @@
 																<string key="NSContents">Box</string>
 																<reference key="NSSupport" ref="71602814"/>
 																<reference key="NSBackgroundColor" ref="812613095"/>
-																<object class="NSColor" key="NSTextColor" id="319378609">
-																	<int key="NSColorSpace">6</int>
-																	<string key="NSCatalogName">System</string>
-																	<string key="NSColorName">labelColor</string>
-																	<reference key="NSColor" ref="437905761"/>
-																</object>
+																<reference key="NSTextColor" ref="667308713" />
 															</object>
 															<int key="NSBorderType">3</int>
 															<int key="NSBoxType">2</int>
@@ -5288,7 +5283,7 @@
 																<string key="NSContents">Box</string>
 																<reference key="NSSupport" ref="71602814"/>
 																<reference key="NSBackgroundColor" ref="812613095"/>
-																<reference key="NSTextColor" ref="319378609"/>
+																<reference key="NSTextColor" ref="667308713"/>
 															</object>
 															<int key="NSBorderType">3</int>
 															<int key="NSBoxType">2</int>
@@ -8113,7 +8108,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="NSContents">Box</string>
 								<reference key="NSSupport" ref="71602814"/>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<int key="NSBorderType">3</int>
 							<int key="NSBoxType">2</int>
@@ -8256,7 +8251,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSfFlags">1558</int>
 								</object>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<reference key="NSContentView" ref="926311790"/>
 							<int key="NSBorderType">1</int>
@@ -8332,7 +8327,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSfFlags">1558</int>
 								</object>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<reference key="NSContentView" ref="642447590"/>
 							<int key="NSBorderType">1</int>
@@ -8590,7 +8585,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSfFlags">1558</int>
 								</object>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<reference key="NSContentView" ref="681913300"/>
 							<int key="NSBorderType">1</int>
@@ -8798,7 +8793,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSfFlags">1558</int>
 								</object>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<reference key="NSContentView" ref="331900158"/>
 							<int key="NSBorderType">1</int>
@@ -9133,7 +9128,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									<int key="NSfFlags">1558</int>
 								</object>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<reference key="NSContentView" ref="962069974"/>
 							<int key="NSBorderType">1</int>
@@ -10289,7 +10284,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 								<string key="NSContents">Box</string>
 								<reference key="NSSupport" ref="71602814"/>
 								<reference key="NSBackgroundColor" ref="812613095"/>
-								<reference key="NSTextColor" ref="319378609"/>
+								<reference key="NSTextColor" ref="667308713"/>
 							</object>
 							<int key="NSBorderType">3</int>
 							<int key="NSBoxType">2</int>
