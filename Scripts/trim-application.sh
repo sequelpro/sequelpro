@@ -1,29 +1,34 @@
 #! /bin/ksh 
 
 #
-#  $Id$  
-#
 #  trim-application.sh
 #  sequel-pro
 #
-#  Created by Stuart Connolly (stuconnolly.com)
+#  Created by Stuart Connolly (stuconnolly.com).
 #  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  Permission is hereby granted, free of charge, to any person
+#  obtaining a copy of this software and associated documentation
+#  files (the "Software"), to deal in the Software without
+#  restriction, including without limitation the rights to use,
+#  copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following
+#  conditions:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  The above copyright notice and this permission notice shall be
+#  included in all copies or substantial portions of the Software.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+#  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+#  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
 #
-#  More info at <http://code.google.com/p/sequel-pro/>
+#  More info at <https://github.com/sequelpro/sequelpro>
 
 #  Trims an application bundle of unnecessary files and resources that are generally not required and otherwise
 #  waste disk space.
@@ -33,7 +38,6 @@
 #  Parameters: -p -- The path to the application that is to be trimmed 
 #              -d -- Remove unnecessary files (i.e. .DS_Store files, etc) (optional).
 #              -n -- Trim nib files (i.e. remove .info.nib, classes.nib, data.dependency and designable.nib) (optional).
-#              -s -- Strip debug symbols from application binary (optional).
 #              -t -- Compress tiff images using LZW compression (optional).
 #              -f -- Remove framework headers (optional).
 #              -r -- Remove resource forks (optional).
@@ -41,7 +45,7 @@
 
 usage() 
 {
-	echo "Usage: `basename $0` -p application_path [-d -n -s -t -f -r]"	
+	echo "Usage: $(basename $0) -p application_path [-d -n -s -t -f -r]"	
 	exit 1
 }
 
@@ -51,13 +55,11 @@ do
 	    p) APP_PATH="$OPTARG";;
 		d) REMOVE_FILES=1;;
 		n) TRIM_NIBS=1;;
-		s) STRIP_DEBUG=1;;
 	   	t) COMPRESS_TIFF=1;;
 	   	f) REMOVE_F_HEADERS=1;;
 	   	r) REMOVE_RSRC=1;;
 	   	a) REMOVE_FILES=1;
 	   	   TRIM_NIBS=1;
-	   	   STRIP_DEBUG=1;
 	   	   COMPRESS_TIFF=1;
 	   	   REMOVE_F_HEADERS=1;
 	   	   REMOVE_RSRC=1;;
@@ -89,7 +91,9 @@ then
 	usage
 fi
 
-printf "Trimming application bundle '`basename $APP_PATH`' at '${APP_PATH}'...\n\n"
+APP_NAME=$(perl -e "print substr('${APP_PATH}', rindex('${APP_PATH}', '/') + 1);")
+
+printf "Trimming application bundle '${APP_NAME}' at '${APP_PATH}'...\n\n"
 
 # Remove unnecessary files
 if [ $REMOVE_FILES ]
@@ -105,14 +109,6 @@ then
     printf '\nTrimming nibs...\n'
 
     find "$APP_PATH" \( -name 'info.nib' -or -name 'classes.nib' -or -name 'data.dependency' -or -name 'designable.nib' -type f \) | while read FILE; do; printf "\tRemoving nib file: ${FILE}\n"; rm "$FILE"; done;
-fi
-
-# Strip debug symbols
-if [ $STRIP_DEBUG ]
-then
-    printf '\nStripping debug symbols...\n'
-
-    find "${APP_PATH}/Contents/MacOS" -type f | while read FILE; do; printf "\tStripping binary: ${FILE}\n"; /Developer/Library/PrivateFrameworks/DevToolsCore.framework/Versions/A/Resources/pbxcp -resolve-src-symlinks -strip-debug-symbols "$FILE" '/tmp'; mv "/tmp/$(basename "$FILE")" "$FILE"; done;
 fi
 
 # Compress tiff images
@@ -144,6 +140,6 @@ then
     find "$APP_PATH" -type f | while read FILE; do if [ -s "${FILE}/rsrc" ]; then; printf "\tRemoving reource: ${FILE}/rsrc\n"; cp /dev/null "${FILE}/rsrc"; fi; done;
 fi
 
-printf "\nTrimming application bundle '`basename $APP_PATH`' complete\n"
+printf "\nTrimming application bundle '${APP_NAME}' complete\n\n"
 
 exit 0

@@ -1,31 +1,36 @@
 //
-//  $Id: SPDataAdditions.m 891 2009-06-19 10:01:14Z bibiko $
-//
 //  SPDataAdditions.m
 //  sequel-pro
 //
+//  Created by Hans-Jörg Bibiko on June 19, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
+//
 //  dataEncryptedWithPassword and dataDecryptedWithPassword:
-//   License: FREEWARE http://aquaticmac.com/cocoa.php
-//    Copyright (c) 2005, Lucas Newman
-//    All rights reserved.
+//  License: FREEWARE http://aquaticmac.com/cocoa.php
+//  Copyright (c) 2005 Lucas Newman. All rights reserved.
 //
-//  Created by Hans-Jörg Bibiko on June 19, 2009
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDataAdditions.h"
 
@@ -101,6 +106,7 @@
 		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 3)) ||
 		 *((UInt32*)decryptedBytes + ((encryptedLength / 4) - 2)) )
 	{
+		free(decryptedBytes);
 		return nil;
 	}
 
@@ -168,11 +174,9 @@
 
 	if (deflateInit(&zlibStream, Z_DEFAULT_COMPRESSION) != Z_OK) return nil;
 
-
 	NSMutableData *zipData = [NSMutableData dataWithLength:16384];
 
-	do{
-
+	do {
 		if (zlibStream.total_out >= [zipData length])
 			[zipData increaseLengthBy: 16384];
 
@@ -181,12 +185,32 @@
 
 		deflate(&zlibStream, Z_FINISH);
 
-	} while(zlibStream.avail_out == 0);
+	}
+	while(zlibStream.avail_out == 0);
 
 	deflateEnd(&zlibStream);
 
 	[zipData setLength: zlibStream.total_out];
+
 	return [NSData dataWithData: zipData];
+}
+
+/**
+ * Returns the hex representation of the given data.
+ */
+- (NSString *)dataToHexString
+{
+	NSUInteger i;
+	const unsigned char *bytes = (const unsigned char *)[self bytes];
+	NSUInteger dataLength = [self length];
+	NSMutableString *hexString = [NSMutableString string];
+
+	for (i = 0; i < dataLength; i++)
+	{
+		[hexString appendFormat:@"%02X", bytes[i]];
+	}
+
+	return hexString;
 }
 
 /**
@@ -200,7 +224,7 @@
 	NSMutableString *retVal = [NSMutableString string];
 
 	// get the length of the longest location
-	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%X", totalLength - ( totalLength % bytesPerLine )] length];
+	NSUInteger longest = [(NSString *)[NSString stringWithFormat:@"%lX", (unsigned long)(totalLength - ( totalLength % bytesPerLine ))] length];
 
 	for ( i = 0; i < totalLength; i += bytesPerLine ) {
 
@@ -211,7 +235,7 @@
 		NSUInteger buffLength = bytesPerLine;
 
 		// add hex value of location
-		[location appendFormat:@"%X", i];
+		[location appendFormat:@"%llX", (unsigned long long)i];
 
 		// pad it
 		while( longest > [location length] ) {
@@ -280,7 +304,7 @@
 		string = @"-- cannot display --";
 	}
 	else if ([string length] > 255) {
-		string = [string substringToIndex:255];
+		string = [[string substringToIndex:254] stringByAppendingString:@"…"];
 	}
 	
 	return string;

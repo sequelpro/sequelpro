@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPGrowlController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Nov 28, 2008
+//  Created by Stuart Connolly (stuconnolly.com) on Nov 28, 2008.
 //  Copyright (c) 2008 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPGrowlController.h"
 #import "SPDatabaseDocument.h"
@@ -53,7 +58,9 @@ static SPGrowlController *sharedGrowlController = nil;
 {    
     @synchronized(self) {
 		return [[self sharedGrowlController] retain]; 
-    }    
+    } 
+	
+	return nil;
 }
 
 - (id)init
@@ -70,6 +77,8 @@ static SPGrowlController *sharedGrowlController = nil;
     return self;
 }
 
+#pragma mark -
+
 /**
  * Posts a Growl notification using the supplied details and default values.
  * Calls the notification after a tiny delay to allow isKeyWindow to have updated
@@ -84,6 +93,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	}
 
 	NSMutableDictionary *notificationDictionary = [NSMutableDictionary dictionary];
+	
 	[notificationDictionary setObject:title forKey:@"title"];
 	[notificationDictionary setObject:description forKey:@"description"];
 	[notificationDictionary setObject:document forKey:@"document"];
@@ -119,8 +129,8 @@ static SPGrowlController *sharedGrowlController = nil;
 
 	// Don't post the notification if the notification document is frontmost
 	// as that suggests the user is already viewing the notification result.
-	if ([[document parentWindow] isKeyWindow]
-		&& [[[document parentTabViewItem] tabView] selectedTabViewItem] == [document parentTabViewItem])
+	if ([[document parentWindow] isKeyWindow] && 
+		[[[document parentTabViewItem] tabView] selectedTabViewItem] == [document parentTabViewItem])
 	{
 		postNotification = NO;
 	}
@@ -129,7 +139,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	// if it does, and the time exceeds the threshold, display the notification even for
 	// frontmost windows to provide feedback for long-running tasks.
 	if (timingNotificationName && [timingNotificationName isEqualToString:name]) {
-		if ([self milliTime] > (longRunningQueryNotificationTime * 1000) + timingNotificationStart) {
+		if ([NSDate monotonicTimeInterval] > (longRunningQueryNotificationTime * 1000) + timingNotificationStart) {
 			postNotification = YES;
 		}
 		
@@ -157,9 +167,11 @@ static SPGrowlController *sharedGrowlController = nil;
 		NSUInteger documentHash = [[clickContext objectForKey:@"notificationDocumentHash"] unsignedIntegerValue];
 
 		// Loop through the windows, looking for the document
-		for (NSWindow *eachWindow in [NSApp orderedWindows]) {
+		for (NSWindow *eachWindow in [NSApp orderedWindows]) 
+		{
 			if ([[eachWindow windowController] isKindOfClass:[SPWindowController class]]) {
-				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) {
+				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) 
+				{
 					if ([eachDocument hash] == documentHash) {
 						[NSApp activateIgnoringOtherApps:YES];
 						[eachDocument makeKeyDocument];
@@ -179,20 +191,12 @@ static SPGrowlController *sharedGrowlController = nil;
  */
 - (void)setVisibilityForNotificationName:(NSString *)name
 {
-	if (timingNotificationName) [timingNotificationName release], timingNotificationName = nil;
+	if (timingNotificationName) {
+		[timingNotificationName release], timingNotificationName = nil;
+	}
+	
 	timingNotificationName = [[NSString alloc] initWithString:name];
-	timingNotificationStart = [self milliTime];
-}
-
-/**
- * Get a monotonically increasing time, in milliseconds.
- */
-- (double)milliTime
-{
-	uint64_t currentTime_t = mach_absolute_time();
-	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(currentTime_t));
-
-	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-6);
+	timingNotificationStart = [NSDate monotonicTimeInterval];
 }
 
 @end

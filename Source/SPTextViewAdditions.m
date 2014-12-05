@@ -1,40 +1,48 @@
 //
-//  $Id$
-//
 //  SPTextViewAdditions.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on April 05, 2009
+//  Created by Hans-Jörg Bibiko on April 05, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPAlertSheets.h"
 #import "SPTooltip.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPCustomQuery.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
+#import "SPWindowManagement.h"
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"
 #import "SPWindowController.h"
 #import "SPDatabaseDocument.h"
+#import "SPBundleCommandRunner.h"
 
 @implementation NSTextView (SPTextViewAdditions)
 
@@ -497,7 +505,7 @@
 	[self setEditable:editableStatus];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)executeBundleItemForInputField:(id)sender
 {
 
@@ -651,14 +659,13 @@
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
 											atCurrentDirectoryPath:nil 
 											callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
 											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
@@ -793,7 +800,7 @@
 		[menu removeItem:bItem];
 	}
 
-	if([[[[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
+	if ([[[(SPWindowController *)[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
 
 	[[NSApp delegate] reloadBundles:self];
 
@@ -865,7 +872,6 @@
  */
 - (void) magnifyWithEvent:(NSEvent *)anEvent
 {
-
 	//Avoid font resizing for NSTextViews in SPCopyTable or NSTableView
 	if([[[[self delegate] class] description] isEqualToString:@"SPCopyTable"] 
 		|| [[[[self delegate] class] description] isEqualToString:@"NSTableView"]) return;

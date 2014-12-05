@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPTableData.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 24/01/2009.
-//  Copyright 2009 Arboreal. All rights reserved.
+//  Created by Rowan Beentje on January 24, 2009.
+//  Copyright (c) 2009 Arboreal. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableData.h"
 #import "SPSQLParser.h"
@@ -30,8 +35,9 @@
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
 #import "SPServerSupport.h"
+
+#import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
-#include <pthread.h>
 
 @interface SPTableData (PrivateAPI)
 
@@ -43,9 +49,6 @@
 
 @synthesize tableHasAutoIncrementField;
 
-/**
- * Init class.
- */
 - (id) init
 {
 	if ((self = [super init])) {
@@ -84,7 +87,6 @@
  */
 - (NSString *) tableEncoding
 {
-
 	// If processing is already in action, wait for it to complete
 	[self _loopWhileWorking];
 
@@ -475,7 +477,7 @@
 		[mySQLConnection storeEncodingForRestoration];
 		[mySQLConnection setEncoding:@"utf8"];
 	}
-	
+
 	// In cases where this method is called directly instead of via -updateInformationForCurrentTable
 	// (for example, from the exporters) clear the list of constraints to prevent the previous call's table
 	// constraints being included in the table information (issue 1206).
@@ -488,10 +490,8 @@
 	// Check for any errors, but only display them if a connection still exists
 	if ([mySQLConnection queryErrored]) {
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
-					nil, nil, [NSApp mainWindow], self, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
-					   tableName, [mySQLConnection lastErrorMessage]]);
+			NSString *errorMessage = [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
+					   tableName, [mySQLConnection lastErrorMessage]];
 
 			// If the current table doesn't exist anymore reload table list
 			if([mySQLConnection lastErrorID] == 1146) {
@@ -502,6 +502,10 @@
 				[[tableListInstance valueForKeyPath:@"tablesListView"] deselectAll:nil];
 				[tableListInstance updateTables:self];
 			}
+
+			SPBeginAlertSheet(NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"), NSLocalizedString(@"OK", @"OK button"),
+					nil, nil, [NSApp mainWindow], self, nil, nil, errorMessage);
+
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
@@ -636,11 +640,29 @@
 
 				[constraintDetails setObject:keyColumns forKey:@"columns"];
 
-				[fieldsParser setString:[[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+				NSString *part = [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet];
+												
+				NSArray *reference = [part captureComponentsMatchedByRegex:@"^`([\\w_.]+)`\\.`([\\w_.]+)`$" options:RKLCaseless range:NSMakeRange(0, [part length]) error:nil]; 
+				
+				if ([reference count]) {					
+					[constraintDetails setObject:[reference objectAtIndex:1] forKey:@"ref_database"];
+					[constraintDetails setObject:[reference objectAtIndex:2] forKey:@"ref_table"];
+				}
+				else {
+					[fieldsParser setString:part];
+					[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+				}
 
-				[fieldsParser setString:[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_columns"];
+				NSMutableArray *refKeyColumns = [NSMutableArray array];
+				NSArray *refKeyColumnStrings = [[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
+				
+				for (NSString *keyColumn in refKeyColumnStrings)
+				{
+					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
+					[refKeyColumns addObject:[fieldsParser unquotedString]];
+				}
+				
+				[constraintDetails setObject:refKeyColumns forKey:@"ref_columns"];
 
 				NSUInteger nextOffs = 12;
 				
@@ -712,7 +734,7 @@
 			// add dict root "primarykeyfield" = <field> for faster accessing
 			else if( [NSArrayObjectAtIndex(parts, 0) hasPrefix:@"PRIMARY"] && [parts count] == 3) {
 				SPSQLParser *keyParser = [SPSQLParser stringWithString:NSArrayObjectAtIndex(parts, 2)];
-				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO]];
+				keyParser = [SPSQLParser stringWithString:[keyParser stringFromCharacter:'(' toCharacter:')' inclusively:NO skippingBrackets:YES]];
 				NSArray *primaryKeyQuotedNames = [keyParser splitStringByCharacter:','];
 				if ([keyParser length]) {
 					NSMutableArray *primaryKeyFields = [NSMutableArray array];
@@ -721,11 +743,11 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
-								break;
-							}
+							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							break;
 						}
-					}
+				}
+			}
 					[tableData setObject:primaryKeyFields forKey:@"primarykeyfield"];
 				}
 			}
@@ -739,9 +761,9 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
-							break;
-						}
+								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								break;
+							}
 					}
 				}
 			}
@@ -1083,6 +1105,64 @@
 }
 
 /**
+ * Retrieve the number of rows in the current table if necessary; if a value has already been
+ * set for the current table/view, no update will occur.  However, if the row count value
+ * is an estimate but the preferences are set to retrieve accurate row counts, this will
+ * run a COUNT query to retrieve an accurate value.
+ * Returns YES if the update was successful or not needed, or NO if the update failed
+ */
+- (BOOL) updateAccurateNumberOfRowsForCurrentTableForcingUpdate:(BOOL)alwaysUpdate
+{
+
+	// If no table is currently selected, return failure
+	if (![tableListInstance tableName]) {
+		return NO;
+	}
+
+	// No action needed for non-tables
+	if ([tableListInstance tableType] != SPTableTypeTable) {
+		return YES;
+	}
+
+	// Unless the force option was used, try to work out whether the update is needed
+	if (!alwaysUpdate) {
+
+		// If the row count is already accurate, no further work is required
+		if ([[self statusValueForKey:@"RowsCountAccurate"] boolValue]) {
+			return YES;
+		}
+
+		SPRowCountQueryUsageLevels rowCountLevel = SPRowCountFetchAlways;
+		NSInteger rowCountCheapBoundary = 5242880;
+#ifndef SP_CODA
+		rowCountLevel = (SPRowCountQueryUsageLevels)[[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountQueryLevel] integerValue];
+		rowCountCheapBoundary = [[[NSUserDefaults standardUserDefaults] objectForKey:SPTableRowCountCheapSizeBoundary] integerValue];
+#endif
+
+		if (rowCountLevel == SPRowCountFetchNever
+			|| (rowCountLevel == SPRowCountFetchIfCheap && [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary))
+		{
+			return YES;
+		}
+	}
+
+	// Fetch the number of rows
+	SPMySQLResult *rowResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[tableListInstance tableName] backtickQuotedString]]];
+	if ([mySQLConnection queryErrored]) {
+		return NO;
+	}
+
+	// Store the number of rows
+	[status setObject:[[rowResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
+	[status setObject:@"y" forKey:@"RowsCountAccurate"];
+
+	// Trigger an update to the table info pane and view
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableInfoChangedNotification object:tableDocumentInstance];
+
+	return YES;
+}
+
+/**
  * Parse an array of field definition parts - not including name but including type and optionally unsigned/zerofill/null
  * and so forth - into a dictionary of parsed details.  Intended for use both with CREATE TABLE syntax - with fuller
  * details - and with the "type" column from SHOW COLUMNS.
@@ -1263,7 +1343,7 @@
 			[detailParser release];
 			definitionPartsIndex++;
 
-		// Special timestamp case - Whether fields are set to update the current timestamp
+		// Special timestamp/datetime case - Whether fields are set to update the current timestamp
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
@@ -1343,7 +1423,7 @@
 	pthread_mutex_unlock(&dataProcessingLock);
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 
 - (void)setTableDocumentInstance:(SPDatabaseDocument *)doc
 {

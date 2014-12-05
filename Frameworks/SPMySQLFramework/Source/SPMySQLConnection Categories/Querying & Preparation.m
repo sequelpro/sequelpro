@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Querying & Preparation.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 #import "SPMySQLConnection.h"
@@ -191,7 +189,17 @@
 {
 	return SPMySQLConnectionQueryString(self, theQueryString, stringEncoding, SPMySQLResultAsFastStreamingResult);
 }
- 
+
+/**
+ * Run a query, provided as a string, on the active connection in the current connection
+ * encoding.  Returns the result as a result set which also handles data storage.  Note
+ * that the donwloading of results will not occur until -[resultSet startDownload] is called.
+ */
+- (SPMySQLStreamingResultStore *)resultStoreFromQueryString:(NSString *)theQueryString
+{
+	return SPMySQLConnectionQueryString(self, theQueryString, stringEncoding, SPMySQLResultAsStreamingResultStore);
+}
+
 /**
  * Run a query, provided as a string, on the active connection in the current connection
  * encoding.  Returns the result as a streaming query set, where not all the results may
@@ -217,8 +225,16 @@
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType
 {
 	double queryExecutionTime;
+	NSString *theErrorMessage;
+	NSUInteger theErrorID;
+	NSString *theSqlstate;
 	lastQueryWasCancelled = NO;
 	lastQueryWasCancelledUsingReconnect = NO;
+
+	// If a disconnect was requested, cancel the action
+	if (userTriggeredDisconnect) {
+		return nil;
+	}
 
 	// Check the connection state - if no connection is available, log an
 	// error and return.
@@ -235,7 +251,7 @@
 	// Ensure per-thread variables are set up
 	[self _validateThreadSetup];
 
-	// Check the connection if necessary, returning nil if the query couldn't be validated
+	// Check the connection if necessary, returning nil if the state couldn't be validated
 	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Determine whether a maximum query size needs to be restored from a previous query
@@ -282,10 +298,18 @@
 
 		// If the query succeeded, no need to re-attempt.
 		if (!queryStatus) {
+			theErrorMessage = nil;
+			theErrorID = 0;
+			theSqlstate = nil;
 			break;
 
 		// If the query failed, determine whether to reattempt the query
 		} else {
+
+			// Store the error state
+			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
+			theErrorID = mysql_errno(mySQLConnection);
+			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
 
 			// Prevent retries if the query was cancelled or not a connection error
 			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
@@ -294,10 +318,14 @@
 		}
 
 		// Query has failed - check the connection
+		[self _unlockConnection];
 		if (![self checkConnection]) {
-			[self _unlockConnection];
+			[self _updateLastErrorMessage:theErrorMessage];
+			[self _updateLastErrorID:theErrorID];
+			[self _updateLastSqlstate:theSqlstate];
 			return nil;
 		}
+		[self _lockConnection];
 
 		queryAttemptsAllowed--;
 	}
@@ -306,35 +334,46 @@
 	id theResult = nil;
 
 	// On success, if there is a query result, retrieve the result data type
-	if (!queryStatus && mysql_field_count(mySQLConnection)) {
-		MYSQL_RES *mysqlResult;
+	if (!queryStatus) {
+		if (mysql_field_count(mySQLConnection)) {
+			MYSQL_RES *mysqlResult;
 
-		switch (theReturnType) {
+			switch (theReturnType) {
 
-			// For standard result sets, retrieve all the results now, and afterwards
-			// update the affected row count.
-			case SPMySQLResultAsResult:
-				mysqlResult = mysql_store_result(mySQLConnection);
-				theResult = [[SPMySQLResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding];
-				theAffectedRowCount = mysql_affected_rows(mySQLConnection);
-				break;
+				// For standard result sets, retrieve all the results now, and afterwards
+				// update the affected row count.
+				case SPMySQLResultAsResult:
+					mysqlResult = mysql_store_result(mySQLConnection);
+					theResult = [[SPMySQLResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding];
+					theAffectedRowCount = mysql_affected_rows(mySQLConnection);
+					break;
 
-			// For fast streaming and low memory streaming result sets, set up the result
-			case SPMySQLResultAsLowMemStreamingResult:
-				mysqlResult = mysql_use_result(mySQLConnection);
-				theResult = [[SPMySQLStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
-				break;
+				// For fast streaming and low memory streaming result sets, set up the result
+				case SPMySQLResultAsLowMemStreamingResult:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
 
-			case SPMySQLResultAsFastStreamingResult:
-				mysqlResult = mysql_use_result(mySQLConnection);
-				theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
-				break;
+				case SPMySQLResultAsFastStreamingResult:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLFastStreamingResult alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
+
+				// Also set up the result for streaming result data stores, but note the data download does not start yet
+				case SPMySQLResultAsStreamingResultStore:
+					mysqlResult = mysql_use_result(mySQLConnection);
+					theResult = [[SPMySQLStreamingResultStore alloc] initWithMySQLResult:mysqlResult stringEncoding:theEncoding connection:self];
+					break;
+			}
+
+			// Update the error message, if appropriate, to reflect result store errors or overall success
+			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
+			theErrorID = mysql_errno(mySQLConnection);
+			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+		} else {
+			theResult = [[SPMySQLEmptyResult alloc] init];
 		}
 	}
-
-	// Record the error state now, as it may be affected by subsequent clean-up queries
-	NSString *theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
-	NSUInteger theErrorID = mysql_errno(mySQLConnection);
 
 	// Update the connection's stored insert ID if available
 	if (mySQLConnection->insert_id) {
@@ -345,17 +384,20 @@
 	if (lastQueryWasCancelled) {
 		theErrorMessage = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 		theErrorID = 1317;
+		theSqlstate = @"70100";
 
 		// If the query was cancelled on a MySQL <5 server, check the connection to allow reconnects
 		// after query kills.  This is also handled within the class for internal cancellations, but
 		// as other external classes may also cancel the query.
 		if (![self serverVersionIsGreaterThanOrEqualTo:5 minorVersion:0 releaseVersion:0]) {
+			[self _unlockConnection];
 			[self checkConnection];
 		}
 	}
 
 	// Unlock the connection if appropriate - if not a streaming result type.
 	if (![theResult isKindOfClass:[SPMySQLStreamingResult class]]) {
+		[self _tryLockConnection];
 		[self _unlockConnection];
 
 		// Also perform restore if appropriate
@@ -367,6 +409,7 @@
 	// Update error string and ID, and the rows affected
 	[self _updateLastErrorMessage:theErrorMessage];
 	[self _updateLastErrorID:theErrorID];
+	[self _updateLastSqlstate:theSqlstate];
 	lastQueryAffectedRowCount = theAffectedRowCount;
 
 	// Store the result time on the response object
@@ -434,7 +477,14 @@
  */
 - (NSString *)lastErrorMessage
 {
-	return queryErrorMessage;
+	if (!queryErrorMessage) return nil;
+	return [NSString stringWithString:queryErrorMessage];
+}
+
+- (NSString *)lastSqlstate
+{
+	if(!querySqlstate) return nil;
+	return [NSString stringWithString:querySqlstate];
 }
 
 /**
@@ -501,7 +551,6 @@
 	// so set up a new connection to run the KILL command.
 	MYSQL *killerConnection = [self _makeRawMySQLConnectionWithEncoding:@"utf8" isMasterConnection:NO];
 
-
 	// If the new connection was successfully set up, use it to run a KILL command.
 	if (killerConnection) {
 		NSStringEncoding aStringEncoding = [SPMySQLConnection stringEncodingForMySQLCharset:mysql_character_set_name(killerConnection)];
@@ -540,7 +589,7 @@
 		} else {
 			NSLog(@"SPMySQL Framework: query cancellation failed due to cancellation query error (status %d)", killQueryStatus);
 		}
-	} else {
+	} else if (!userTriggeredDisconnect) {
 		NSLog(@"SPMySQL Framework: query cancellation failed because connection failed");
 	}
 
@@ -552,13 +601,13 @@
 		return;
 	}
 
-	if (state == SPMySQLDisconnecting) return;
+	if (state == SPMySQLDisconnecting || state == SPMySQLDisconnected) return;
 
 	// Reset the connection with a reconnect.  Unlock the connection beforehand,
 	// to allow the reconnect, but lock it again afterwards to restore the expected
 	// state (query execution process should unlock as appropriate).
 	[self _unlockConnection];
-	[self reconnect];
+	[self _reconnectAllowingRetries:YES];
 	[self _lockConnection];
 
 	// Reset tracking bools to cover encompassed queries
@@ -648,6 +697,30 @@
 	// Otherwise, update the error ID with the supplied ID
 	} else {
 		queryErrorID = theErrorID;
+	}
+}
+
+/**
+ * Update the MySQL SQLSTATE for this connection.
+ * @param thSqlstate If a SQLSTATE is supplied it will be stored and returned to 
+ *                   anything asking the instance for the last SQLSTATE; 
+ *                   if nil is supplied, the connection will be used to derive
+ *                   (or clear) the SQLSTATE string; 
+ *                   if @"" is supplied the SQLSTATE will only be cleared.
+ */
+- (void)_updateLastSqlstate:(NSString *)theSqlstate
+{
+	// If a SQLSTATE wasn't supplied, select one from the connection
+	if(!theSqlstate) {
+		theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+	}
+
+	// Clear the last SQLSTATE stored on the instance
+	if(querySqlstate) [querySqlstate release], querySqlstate = nil;
+
+	// If we have a SQLSTATE *with a length*, update the instance SQLSTATE
+	if(theSqlstate && [theSqlstate length]) {
+		querySqlstate = [[NSString alloc] initWithString:theSqlstate];
 	}
 }
 

@@ -1,34 +1,38 @@
 //
-//  $Id$
-//
 //  SPFieldEditorController.m
 //  sequel-pro
 //
-//  Created by Hans-J√∂rg Bibiko on July 16, 2009
+//  Created by Hans-Jörg Bibiko on July 16, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFieldEditorController.h"
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #import "QLPreviewPanel.h"
 #endif
-#import "SPDataCellFormatter.h"
 #import "RegexKitLite.h"
-#import "SPDataCellFormatter.h"
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
 #import "SPCopyTable.h"
@@ -36,6 +40,7 @@
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
@@ -43,11 +48,6 @@
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end
-
-#ifdef SP_REFACTOR
-/* Suppress deprecation warning for beginSheetForDirectory: until Sequel Pro team can migrate */
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
 
 @implementation SPFieldEditorController
 
@@ -59,7 +59,7 @@
  */
 - (id)init
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ((self = [super initWithWindowNibName:@"FieldEditorSheet"]))
 #else
 	if ((self = [super initWithWindowNibName:@"SQLFieldEditorSheet"]))
@@ -103,7 +103,7 @@
 		[menuItem setEnabled:NO];
 		[menu addItem:menuItem];
 		[menuItem release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		NSUInteger tag = 2;
 
 		// Load default QL types
@@ -161,21 +161,23 @@
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
 	// if still visible
-	if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible])
+	if ([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
 		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+	}
 #endif
 
 	if ( sheetEditData ) [sheetEditData release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ( qlTypes ) [qlTypes release];
 #endif
 	if ( tmpFileName ) [tmpFileName release];
 	if ( tmpDirPath ) [tmpDirPath release];
 	if ( esUndoManager ) [esUndoManager release];
 	if ( contextInfo ) [contextInfo release];
+	
 	[super dealloc];
 }
 
@@ -185,27 +187,23 @@
  * Main method for editing data. It will validate several settings and display a modal sheet for theWindow whioch waits until the user closes the sheet.
  *
  * @param data The to be edited table field data.
- *
  * @param fieldName The name of the currently edited table field.
- *
  * @param anEncoding The used encoding while editing.
- *
  * @param isFieldBlob If YES the underlying table field is a TEXT/BLOB field. This setting handles several controls which are offered in the sheet to the user.
- *
  * @param isEditable If YES the underlying table field is editable, if NO the field is not editable and the SPFieldEditorController sheet do not show a "OK" button for saving.
- *
  * @param theWindow The window for displaying the sheet.
- *
  * @param sender The calling instance.
- *
  * @param contextInfo context info for processing the edited data in sender.
- *
  */
-- (void)editWithObject:(id)data fieldName:(NSString*)fieldName usingEncoding:(NSStringEncoding)anEncoding
-		isObjectBlob:(BOOL)isFieldBlob isEditable:(BOOL)isEditable withWindow:(NSWindow *)theWindow
-		sender:(id)sender contextInfo:(NSDictionary*)theContextInfo
+- (void)editWithObject:(id)data
+			 fieldName:(NSString *)fieldName
+		 usingEncoding:(NSStringEncoding)anEncoding
+		  isObjectBlob:(BOOL)isFieldBlob
+			isEditable:(BOOL)isEditable
+			withWindow:(NSWindow *)theWindow
+				sender:(id)sender
+		   contextInfo:(NSDictionary *)theContextInfo
 {
-
 	usedSheet = nil;
 
 	_isEditable = isEditable;
@@ -216,29 +214,38 @@
 
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
+
 	[label appendFormat:@"“%@”", fieldName];
-	if([fieldType length] || maxTextLength > 0 || [fieldEncoding length] || !_allowNULL)
+
+	if ([fieldType length] || maxTextLength > 0 || [fieldEncoding length] || !_allowNULL)
 		[label appendString:@" – "];
-	if([fieldType length])
+
+	if ([fieldType length])
 		[label appendString:fieldType];
-	if(maxTextLength > 0)
-		[label appendFormat:@"(%ld) ", maxTextLength];
-	if(!_allowNULL)
+
+	if (maxTextLength > 0)
+		[label appendFormat:@"(%lld) ", maxTextLength];
+
+	if (!_allowNULL)
 		[label appendString:@"NOT NULL "];
-	if([fieldEncoding length])
+
+	if ([fieldEncoding length])
 		[label appendString:fieldEncoding];
 
-	if([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+	if ([fieldType length] && [[fieldType uppercaseString] isEqualToString:@"BIT"]) {
 
 		sheetEditData = [(NSString*)data retain];
 
 		[bitSheetNULLButton setEnabled:_allowNULL];
 
 		// Check for NULL
-		if([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
+		if ([sheetEditData isEqualToString:[prefs objectForKey:SPNullValue]]) {
 			[bitSheetNULLButton setState:NSOnState];
 			[self setToNull:bitSheetNULLButton];
-		} else {
+		}
+		else {
 			[bitSheetNULLButton setState:NSOffState];
 		}
 
@@ -247,33 +254,42 @@
 		// Init according bit check boxes
 		NSUInteger i = 0;
 		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
-		if([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
-			for( i = 0; i<maxBit; i++ )
-				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]]
-					setState:([(NSString*)sheetEditData characterAtIndex:(maxBit-i-1)] == '1') ? NSOnState : NSOffState];
-		for( i = maxBit; i<64; i++ )
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+
+		if ([bitSheetNULLButton state] == NSOffState && maxBit <= [(NSString*)sheetEditData length])
+			for (i = 0; i < maxBit; i++)
+			{
+				[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]]
+				 setState:([(NSString*)sheetEditData characterAtIndex:(maxBit - i - 1)] == '1') ? NSOnState : NSOffState];
+			}
+
+		for (i = maxBit; i < 64; i++)
+		{
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setEnabled:NO];
+		}
 
 		[self updateBitSheet];
 
 		usedSheet = bitSheet;
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
-
-	} else {
-
+		[NSApp beginSheet:usedSheet 
+		   modalForWindow:theWindow 
+			modalDelegate:self 
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:nil];
+	} 
+	else {
 		usedSheet = editSheet;
 
 		// If required, use monospaced fonts
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if (![prefs objectForKey:SPFieldEditorSheetFont]) {
 #endif
 			[editTextView setFont:
-#ifndef SP_REFACTOR
-			([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : 
+#ifndef SP_CODA
+			[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] :
 #endif			
 			[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		}
 		else {
 			[editTextView setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:@"FieldEditorSheetFont"]]];
@@ -281,18 +297,18 @@
 #endif
 
 		[editTextView setContinuousSpellCheckingEnabled:
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[prefs boolForKey:SPBlobTextEditorSpellCheckingEnabled]
 #else
 		NO
 #endif
 		];
 
-		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
+		[hexTextView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize]];
 
-		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@%", NSLocalizedString(@"Field", @"Field"), label]];
+		[editSheetFieldName setStringValue:[NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"Field", @"Field"), label]];
 
-		// hide all views in editSheet
+		// Hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
@@ -311,11 +327,12 @@
 		encoding = anEncoding;
 
 		_isBlob = isFieldBlob;
-		BOOL _isBINARY = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
+		
+		BOOL isBinary = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
 
 		sheetEditData = [data retain];
 
-		// hide all views in editSheet
+		// Hide all views in editSheet
 		[hexTextView setHidden:YES];
 		[hexTextScrollView setHidden:YES];
 		[editImage setHidden:YES];
@@ -323,16 +340,17 @@
 		[editTextScrollView setHidden:YES];
 
 		// Hide QuickLook button and text/image/hex control for text data
-		[editSheetQuickLookButton setHidden:((!_isBlob && !_isBINARY) || _isGeometry)];
-		[editSheetSegmentControl setHidden:(!_isBlob && !_isBINARY && !_isGeometry)];
+		[editSheetQuickLookButton setHidden:((!_isBlob && !isBinary) || _isGeometry)];
+		[editSheetSegmentControl setHidden:(!_isBlob && !isBinary && !_isGeometry)];
 
 		[editSheetSegmentControl setEnabled:YES forSegment:1];
 
 		// Set window's min size since no segment and quicklook buttons are hidden
-		if (_isBlob || _isBINARY || _isGeometry) {
+		if (_isBlob || isBinary || _isGeometry) {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorBlobSheet"];
 			[usedSheet setMinSize:NSMakeSize(650, 200)];
-		} else {
+		} 
+		else {
 			[usedSheet setFrameAutosaveName:@"SPFieldEditorTextSheet"];
 			[usedSheet setMinSize:NSMakeSize(390, 150)];
 		}
@@ -340,20 +358,40 @@
 		[editTextView setEditable:_isEditable];
 		[editImage setEditable:_isEditable];
 
-		[NSApp beginSheet:usedSheet modalForWindow:theWindow modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:nil];
+		NSSize screen = [[NSScreen mainScreen] visibleFrame].size;
+		NSRect sheet = [usedSheet frame];
+		
+		[usedSheet setFrame:
+		 NSMakeRect(sheet.origin.x, sheet.origin.y, 
+					(sheet.size.width > screen.width) ? screen.width : sheet.size.width, 
+					(sheet.size.height > screen.height) ? screen.height - 100 : sheet.size.height)
+					display:YES];
+							
+		[NSApp beginSheet:usedSheet 
+		   modalForWindow:theWindow 
+			modalDelegate:self 
+		   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
+			  contextInfo:nil];
 
 		[editSheetProgressBar startAnimation:self];
 
 		NSImage *image = nil;
-		if ( [sheetEditData isKindOfClass:[NSData class]] ) {
+
+		if ([sheetEditData isKindOfClass:[NSData class]]) {
 			image = [[[NSImage alloc] initWithData:sheetEditData] autorelease];
 
 			// Set hex view to "" - load on demand only
 			[hexTextView setString:@""];
 
 			stringValue = [[NSString alloc] initWithData:sheetEditData encoding:encoding];
-			if (stringValue == nil)
+
+			if (stringValue == nil) {
 				stringValue = [[NSString alloc] initWithData:sheetEditData encoding:NSASCIIStringEncoding];
+			}
+
+			if (isBinary) {
+				stringValue	= [[NSString alloc] initWithFormat:@"0x%@", [sheetEditData dataToHexString]];
+			}
 
 			[hexTextView setHidden:NO];
 			[hexTextScrollView setHidden:NO];
@@ -361,10 +399,14 @@
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 			[editSheetSegmentControl setSelectedSegment:2];
-		} else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
+		}
+		else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
+
 			image = [v thumbnailImage];
+
 			stringValue = [[sheetEditData wktString] retain];
+
 			[hexTextView setString:@""];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
@@ -372,7 +414,8 @@
 			[editSheetSegmentControl setSelectedSegment:0];
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
-		} else {
+		}
+		else {
 			stringValue = [sheetEditData retain];
 
 			[hexTextView setString:@""];
@@ -395,19 +438,23 @@
 				[editTextScrollView setHidden:YES];
 				[editSheetSegmentControl setSelectedSegment:1];
 			}
-		} else {
+		}
+		else {
 			[editImage setImage:nil];
 		}
+
 		if (stringValue) {
 			[editTextView setString:stringValue];
 
-			if(image == nil) {
-				if(!_isBINARY) {
+			if (image == nil) {
+				if (!isBinary) {
 					[hexTextView setHidden:YES];
 					[hexTextScrollView setHidden:YES];
-				} else {
+				}
+				else {
 					[editSheetSegmentControl setEnabled:NO forSegment:1];
 				}
+
 				[editImage setHidden:YES];
 				[editTextView setHidden:NO];
 				[editTextScrollView setHidden:NO];
@@ -417,21 +464,20 @@
 			// Locate the caret in editTextView
 			// (restore a given selection coming from the in-cell editing mode)
 			NSRange selRange = [callerInstance fieldEditorSelectedRange];
+
 			[editTextView setSelectedRange:selRange];
 			[callerInstance setFieldEditorSelectedRange:NSMakeRange(0,0)];
 
 			// If the string content is NULL select NULL for convenience
-			if([stringValue isEqualToString:[prefs objectForKey:SPNullValue]])
+			if ([stringValue isEqualToString:[prefs objectForKey:SPNullValue]]) {
 				[editTextView setSelectedRange:NSMakeRange(0,[[editTextView string] length])];
+			}
 
 			// Set focus
-			if(image == nil || _isGeometry)
-				[usedSheet makeFirstResponder:editTextView];
-			else
-				[usedSheet makeFirstResponder:editImage];
-
+			[usedSheet makeFirstResponder:image == nil || _isGeometry ? editTextView : editImage];
 		}
-		if(stringValue) [stringValue release], stringValue = nil;
+		
+		if (stringValue) [stringValue release], stringValue = nil;
 
 		editSheetWillBeInitialized = NO;
 
@@ -492,7 +538,7 @@
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[[NSApp mainWindow] makeFirstResponder:editTextView];
 #endif
 			break;
@@ -529,11 +575,12 @@
  */
 - (IBAction)openEditSheet:(id)sender
 {
-	[[NSOpenPanel openPanel] beginSheetForDirectory:nil
-											   file:@""
-									 modalForWindow:usedSheet
-									  modalDelegate:self didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-										contextInfo:NULL];
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self openPanelDidEnd:panel returnCode:returnCode contextInfo:nil];
+	}];
 }
 
 /**
@@ -541,30 +588,28 @@
  */
 - (IBAction)saveEditSheet:(id)sender
 {
-
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	NSString *fileDefault = @"";
 
-	if([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
-		[panel setAllowedFileTypes:[NSArray arrayWithObject:@"pdf"]];
+	if ([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
+		[panel setAllowedFileTypes:@[@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
-	} else {
+	}
+	else {
 		[panel setAllowsOtherFileTypes:YES];
 	}
+
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setExtensionHidden:NO];
 
-	[panel beginSheetForDirectory:nil
-							   file:fileDefault
-					 modalForWindow:usedSheet
-					  modalDelegate:self
-					 didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:)
-						contextInfo:NULL];
+	[panel beginSheetModalForWindow:usedSheet completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:nil];
+	}];
 }
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Remember spell cheecker status
 	[prefs setBool:[editTextView isContinuousSpellCheckingEnabled] forKey:SPBlobTextEditorSpellCheckingEnabled];
 #endif
@@ -623,7 +668,7 @@
 	if(callerInstance) {
 		id returnData = ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
 		
-#ifdef SP_REFACTOR /* patch */
+#ifdef SP_CODA /* patch */
 		if ( [callerInstance isKindOfClass:[SPCustomQuery class]] )
 			[(SPCustomQuery*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 		else if ( [callerInstance isKindOfClass:[SPTableContent class]] )
@@ -719,9 +764,9 @@
 			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
 
 				[[editTextView string] writeToURL:fileURL
-									   atomically:YES
-										 encoding:encoding
-											error:NULL];
+										atomically:YES
+										  encoding:encoding
+											 error:NULL];
 
 			} else if (editImage != nil){
 
@@ -735,9 +780,9 @@
 		// Write other field types' representations to the file via the current encoding
 		else {
 			[[sheetEditData description] writeToURL:fileURL
-										 atomically:YES
-										   encoding:encoding
-											  error:NULL];
+										  atomically:YES
+											encoding:encoding
+											   error:NULL];
 		}
 
 		[editSheetProgressBar stopAnimation:self];
@@ -770,7 +815,7 @@
  */
 - (IBAction)quickLookFormatButton:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(qlTypes != nil && [[qlTypes objectForKey:@"QuickLookTypes"] count] > (NSUInteger)[sender tag] - 2) {
 		NSDictionary *type = [[qlTypes objectForKey:@"QuickLookTypes"] objectAtIndex:[sender tag] - 2];
 		[self invokeQuickLookOfType:[type objectForKey:@"Extension"] treatAsText:([[type objectForKey:@"treatAsText"] integerValue])];
@@ -784,16 +829,14 @@
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
- *
  */
 - (void)createTemporaryQuickLookFileOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-
 	// Create a temporary file name to store the data as file
 	// since QuickLook only works on files.
 	// Alternate the file name to suppress caching by using counter%2.
 	if (tmpFileName) [tmpFileName release];
-	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%d.%@", tmpDirPath, counter%2, type];
+	tmpFileName = [[NSString alloc] initWithFormat:@"%@SequelProQuickLook%ld.%@", tmpDirPath, (long)(counter%2), type];
 
 	// if data are binary
 	if ( [sheetEditData isKindOfClass:[NSData class]] && !isText) {
@@ -835,11 +878,10 @@
  * @param type The type as file extension for Apple's default Quicklook generator.
  *
  * @param isText If YES the content of editSheet will be treates as pure text.
- *
  */
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Load QL via private framework (SDK 10.5)
 	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
 
@@ -925,7 +967,7 @@
  */
 - (void)beginPreviewPanelControl:(id)panel
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// This document is now responsible of the preview panel
 	[panel setDelegate:self];
@@ -934,7 +976,6 @@
 	// Due to the unknown image format disable image sharing
 	[panel setShowsAddToiPhotoButton:NO];
 #endif
-
 }
 
 /**
@@ -1132,15 +1173,15 @@
 	NSUInteger bitValue = 0x1;
 
 	for(i=0; i<maxBit; i++) {
-		if([(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state] == NSOnState) {
+		if([(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", (unsigned long)i]] state] == NSOnState) {
 			intValue += bitValue;
 			[bitString replaceCharactersInRange:NSMakeRange((NSUInteger)maxTextLength-i-1, 1) withString:@"1"];
 		}
 		bitValue <<= 1;
 	}
 	[bitSheetIntegerTextField setStringValue:[[NSNumber numberWithUnsignedLongLong:intValue] stringValue]];
-	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
-	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
+	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (unsigned long long)intValue]];
 	// free old data
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
@@ -1156,49 +1197,48 @@
  */
 - (IBAction)bitSheetOperatorButtonWasClicked:(id)sender
 {
-
-	NSUInteger i = 0;
-	NSUInteger aBit;
-	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+	unsigned long i = 0;
+	unsigned long aBit;
+	unsigned long maxBit = (unsigned long)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	switch([sender tag]) {
 		case 0: // all to 1
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOnState];
 		break;
 		case 1: // all to 0
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOffState];
 		break;
 		case 2: // negate
 		for(i=0; i<maxBit; i++)
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:![(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:![(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] state]];
 		break;
 		case 3: // shift left
 		for(i=maxBit-1; i>0; i--) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:NSOffState];
 		break;
 		case 4: // shift right
 		for(i=0; i<maxBit-1; i++) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i+1]] state]];
 		}
-		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:NSOffState];
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", maxBit-1]] setState:NSOffState];
 		break;
 		case 5: // rotate left
 		aBit = [(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] state];
 		for(i=maxBit-1; i>0; i--) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i-1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i-1]] state]];
 		}
 		[[self valueForKeyPath:@"bitSheetBitButton0"] setState:aBit];
 		break;
 		case 6: // rotate right
 		aBit = [(NSButton*)[self valueForKeyPath:@"bitSheetBitButton0"] state];
 		for(i=0; i<maxBit-1; i++) {
-			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i+1]] state]];
+			[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:[(NSButton*)[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i+1]] state]];
 		}
-		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", maxBit-1]] setState:aBit];
+		[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", maxBit-1]] setState:aBit];
 		break;
 	}
 	[self updateBitSheet];
@@ -1218,26 +1258,24 @@
  */
 - (IBAction)setToNull:(id)sender
 {
-
-	NSUInteger i;
-	NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+	unsigned long i;
+	unsigned long maxBit = (unsigned long)((maxTextLength > 64) ? 64 : maxTextLength);
 
 	if([(NSButton*)sender state] == NSOnState) {
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:NO];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setEnabled:NO];
 		[bitSheetHexTextField setEnabled:NO];
 		[bitSheetIntegerTextField setEnabled:NO];
 		[bitSheetOctalTextField setEnabled:NO];
 	} else {
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setEnabled:YES];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setEnabled:YES];
 		[bitSheetHexTextField setEnabled:YES];
 		[bitSheetIntegerTextField setEnabled:YES];
 		[bitSheetOctalTextField setEnabled:YES];
 	}
 
 	[self updateBitSheet];
-
 }
 
 /**
@@ -1245,9 +1283,7 @@
  */
 - (IBAction)bitSheetBitButtonWasClicked:(id)sender
 {
-
 	[self updateBitSheet];
-
 }
 
 #pragma mark -
@@ -1262,21 +1298,21 @@
 
 	if (object == bitSheetIntegerTextField) {
 
-		NSUInteger i = 0;
-		NSUInteger maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
+		unsigned long i = 0;
+		unsigned long maxBit = (NSUInteger)((maxTextLength > 64) ? 64 : maxTextLength);
 
 		NSUInteger intValue = (NSUInteger)strtoull([[bitSheetIntegerTextField stringValue] UTF8String], NULL, 0);
 
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOffState];
 
-		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (long long)intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
 		{
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
 			intValue >>= 1;
 			i++;
 		}
@@ -1292,21 +1328,21 @@
 		[[NSScanner scannerWithString:[bitSheetHexTextField stringValue]] scanHexLongLong: &intValue];
 
 		for(i=0; i<maxBit; i++)
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:NSOffState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%jO", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
 		{
-			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
+			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setState:( (intValue & 0x1) == 0) ? NSOffState : NSOnState];
 			intValue >>= 1;
 			i++;
 		}
+		
 		[self updateBitSheet];
 	}
-
 }
 
 /**
@@ -1334,7 +1370,7 @@
 
 		// Length checking while using the Input Manager (eg for Japanese)
 		if ([textView hasMarkedText] && (maxTextLength > 0) && (r.location < maxTextLength)) {
-			
+
 			// User tries to insert a new char but max text length was already reached - return NO
 			if (!r.length && ([[textView textStorage] length] >= maxTextLength)) {
 				[SPTooltip showWithObject:[NSString stringWithFormat:NSLocalizedString(@"Maximum text length is set to %llu.", @"Maximum text length is set to %llu."), maxTextLength]];
@@ -1372,7 +1408,7 @@
 				textLength--;
 			}
 		}
-		
+
 		// If it's too long, disallow the change but try
 		// to insert a text chunk partially to maxTextLength.
 		if ((NSUInteger)newLength > maxTextLength) {
@@ -1396,7 +1432,7 @@
 			
 			return NO;
 		}
-		
+
 		maxTextLength = originalMaxTextLength;
 
 		// Otherwise, allow it
@@ -1433,7 +1469,6 @@
 		// set edit data to text
 		sheetEditData = [[NSString stringWithString:[editTextView string]] retain];
 	}
-
 }
 
 /**

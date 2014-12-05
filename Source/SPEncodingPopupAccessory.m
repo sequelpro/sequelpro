@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPEncodingPopupAccessory.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on August 22, 2009
+//  Created by Hans-Jörg Bibiko on August 22, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPEncodingPopupAccessory.h"
 
@@ -29,13 +35,17 @@
 + (NSView *)encodingAccessory:(NSUInteger)encoding includeDefaultEntry:(BOOL)includeDefaultItem encodingPopUp:(NSPopUpButton **)popup 
 {
 	SPEncodingPopupAccessory *owner = [[[SPEncodingPopupAccessory alloc] init] autorelease];
+	
 	// Rather than caching, load the accessory view everytime, as it might appear in multiple panels simultaneously.
 	if (![NSBundle loadNibNamed:@"EncodingPopupView" owner:owner])  {
 		NSLog(@"Failed to load EncodingPopupView.nib");
 		return nil;
 	}
+	
 	if (popup) *popup = owner->encodingPopUp;
+	
 	[[self class] setupPopUp:owner->encodingPopUp selectedEncoding:encoding withDefaultEntry:includeDefaultItem];
+	
 	return [owner->encodingAccessoryView autorelease];
 }
 
@@ -55,17 +65,16 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 	if (first == second) return 0;
 
 	if (macEncodingForFirst == kCFStringEncodingUnicode || macEncodingForSecond == kCFStringEncodingUnicode) {
-		if (macEncodingForSecond == macEncodingForFirst) 
+		if (macEncodingForSecond == macEncodingForFirst) {
 			// Both Unicode; compare second order
 			return (first > second) ? 1 : -1;
+		} 
+			
 		// First is Unicode
 		return (macEncodingForFirst == kCFStringEncodingUnicode) ? -1 : 1;
 	}
 
-	if ((macEncodingForFirst > macEncodingForSecond) || ((macEncodingForFirst == macEncodingForSecond) && (first > second)))
-		return 1;
-
-	return -1;
+	return ((macEncodingForFirst > macEncodingForSecond) || ((macEncodingForFirst == macEncodingForSecond) && (first > second))) ? 1 : -1;
 }
 
 /**
@@ -80,18 +89,29 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 		const CFStringEncoding *cfEncodings = CFStringGetListOfAvailableEncodings();
 		CFStringEncoding *tmp;
 		NSInteger cnt, num = 0;
+		
 		while (cfEncodings[num] != kCFStringEncodingInvalidId) num++;
+		
 		tmp = malloc(sizeof(CFStringEncoding) * num);
+		
 		memcpy(tmp, cfEncodings, sizeof(CFStringEncoding) * num);
+		
 		qsort(tmp, num, sizeof(CFStringEncoding), encodingCompare);
+		
 		allEncodings = [[NSMutableArray alloc] init];
-		for (cnt = 0; cnt < num; cnt++) {
+		
+		for (cnt = 0; cnt < num; cnt++) 
+		{
 			NSStringEncoding nsEncoding = CFStringConvertEncodingToNSStringEncoding(tmp[cnt]);
-			if (nsEncoding && [NSString localizedNameOfStringEncoding:nsEncoding])
+			
+			if (nsEncoding && [NSString localizedNameOfStringEncoding:nsEncoding]) {
 				[allEncodings addObject:[NSNumber numberWithUnsignedInteger:nsEncoding]];
+			}
 		}
+		
 		free(tmp);
 	}
+	
 	return allEncodings;
 }
 
@@ -114,11 +134,14 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 	numEncodings = [encs count];
 
 	// Fill with encodings
-	for (cnt = 0; cnt < numEncodings; cnt++) {
+	for (cnt = 0; cnt < numEncodings; cnt++) 
+	{
 		NSStringEncoding enc = [[encs objectAtIndex:cnt] unsignedIntegerValue];
+		
 		[popup addItemWithTitle:[NSString localizedNameOfStringEncoding:enc]];
 		[[popup lastItem] setTag:enc];
 		[[popup lastItem] setEnabled:YES];
+		
 		if (enc == selectedEncoding) itemToSelect = [popup numberOfItems] - 1;
 	}
 

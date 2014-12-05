@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
-//  SPTableStructureDelegate.m
+//  SPConnectionDelegate.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 26, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on October 26, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableStructureDelegate.h"
 #import "SPAlertSheets.h"
@@ -30,7 +35,16 @@
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"
+#import "SPTableStructureLoading.h"
+#import "SPServerSupport.h"
+
 #import <SPMySQL/SPMySQL.h>
+
+@interface SPTableStructure (PrivateAPI)
+
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+
+@end
 
 @implementation SPTableStructure (SPTableStructureDelegate)
 
@@ -47,40 +61,66 @@
 	// Return a placeholder if the table is reloading
 	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
 	
-	if([[tableColumn identifier] isEqualToString:@"collation"]) {
+	if ([[tableColumn identifier] isEqualToString:@"collation"]) {
 		NSInteger idx = 0;
-		if((idx = [[NSArrayObjectAtIndex(tableFields,rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
+		
+		if ((idx = [[NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
 			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
-			NSInteger start = [enc rangeOfString:@"("].location+1;
-			NSInteger end = [enc length] - start - 1;
-			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, end)]];
-		} else {
 
+			NSUInteger start = [enc rangeOfString:@"("].location + 1;
+			
+			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)]];
+		} 
+		else {
 			// If the structure has loaded (not still loading!) and the table encoding
 			// is set, use the appropriate collations.
-			if([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) {
-				collations = [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]];
-			} else {
-				collations = [NSArray array];
-			}
+			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : [NSArray array];
 		}
 		
 		[[tableColumn dataCell] removeAllItems];
 		
 		if ([collations count] > 0) {
+			NSString *defaultCollation = [[tableDataInstance statusValues] objectForKey:@"collation"];
+			
+			if (!defaultCollation) {
+				defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
+			}
+			
 			[[tableColumn dataCell] addItemWithTitle:@""];
+
+			BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+			
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
-				[[tableColumn dataCell] addItemWithTitle:[collation objectForKey:@"COLLATION_NAME"]];
+			{
+				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+				
+				[[tableColumn dataCell] addItemWithTitle:collationName];
+
+				// If this matches the table's collation, draw in gray
+				if ([collationName length] && [collationName isEqualToString:defaultCollation]) {
+					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
+					NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+										
+					[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
+					
+					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
+					
+					[collationMenuItem setAttributedTitle:itemString];
+				}
+			}
 		}
 	}
-
-	else if([[tableColumn identifier] isEqualToString:@"Extra"]) {
+	else if ([[tableColumn identifier] isEqualToString:@"Extra"]) {
 		id dataCell = [tableColumn dataCell];
+		
 		[dataCell removeAllItems];
+		
 		// Populate Extra suggestion popup button
-		for (id item in extraFieldSuggestions) {
-			if(!(isCurrentExtraAutoIncrement && [item isEqualToString:@"auto_increment"])) {
+		for (id item in extraFieldSuggestions) 
+		{
+			if (!(isCurrentExtraAutoIncrement && [item isEqualToString:@"auto_increment"])) {
 				[dataCell addItemWithObjectValue:item];
 			}
 		}
@@ -103,32 +143,32 @@
 	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
 	
 	// Reset collation if encoding was changed
-	if([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
+	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
+		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
 			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
 			[tableSourceView reloadData];
 		}
 	}
-	// Reset collation if BINARY was set to 1 since BINARY sets collation to *_bin
-	else if([[aTableColumn identifier] isEqualToString:@"binary"]) {
-		if([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			if([anObject integerValue] == 1) {
-				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
-			}
+	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
+	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
+		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
+			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			
 			[tableSourceView reloadData];
 		}
 	}
 	// Set null field to "do not allow NULL" for auto_increment Extra and reset Extra suggestion list
-	else if([[aTableColumn identifier] isEqualToString:@"Extra"]) {
-		if(![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"Extra"]) {
+		if (![[currentRow objectForKey:@"Extra"] isEqualToString:anObject]) {
 
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
-			if(isCurrentExtraAutoIncrement) {
+			
+			if (isCurrentExtraAutoIncrement) {
 				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
 				if ((![currentRow objectForKey:@"Key"] || [[currentRow objectForKey:@"Key"] isEqualToString:@""])) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 					[chooseKeyButton selectItemWithTag:SPPrimaryKeyMenuTag];
 
 					[NSApp beginSheet:keySheet
@@ -137,15 +177,18 @@
 						  contextInfo:@"autoincrementindex" ];
 #endif
 				}
-			} else {
+			} 
+			else {
 				autoIncrementIndex = nil;
 			}
 
 			id dataCell = [aTableColumn dataCell];
+			
 			[dataCell removeAllItems];
 			[dataCell addItemsWithObjectValues:extraFieldSuggestions];
 			[dataCell noteNumberOfItemsChanged];
 			[dataCell reloadData];
+			
 			[tableSourceView reloadData];
 
 		}
@@ -153,10 +196,12 @@
 	// Reset default to "" if field doesn't allow NULL and current default is set to NULL
 	else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
 		if ([[currentRow objectForKey:@"null"] integerValue] != [anObject integerValue]) {
-			if([anObject integerValue] == 0) {
-				if([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]])
+			if ([anObject integerValue] == 0) {
+				if ([[currentRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
 					[currentRow setObject:@"" forKey:@"default"];
+				}
 			}
+			
 			[tableSourceView reloadData];
 		}
 	}
@@ -167,10 +212,11 @@
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
-			if ([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] 
-					|| [[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] 
-					|| [fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]]
-					|| ([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) {
+			if ([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || 
+				[[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || 
+				[fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]] ||
+				([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) 
+			{
 				[currentRow setObject:@"" forKey:@"default"];
 				[currentRow setObject:@"" forKey:@"length"];
 			}
@@ -205,16 +251,16 @@
 	if (aTableView != tableSourceView) return NO;
 	
 	// Check whether a save of the current field row is required.
-	if ( ![self saveRowOnDeselect] ) return NO;
+	if (![self saveRowOnDeselect]) return NO;
 	
 	if ([rows count] == 1) {
 		[pboard declareTypes:[NSArray arrayWithObject:SPDefaultPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
+		
 		return YES;
 	} 
-	else {
-		return NO;
-	}
+	
+	return NO;
 }
 
 /**
@@ -224,7 +270,7 @@
  */
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
-    //make sure that the drag operation is for the right table view
+    // Make sure that the drag operation is for the right table view
     if (tableView!=tableSourceView) return NO;
 	
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
@@ -253,21 +299,18 @@
 {
     // Make sure that the drag operation is for the right table view
     if (tableView != tableSourceView) return NO;
-	
-	NSInteger originalRowIndex;
-	NSMutableString *queryString;
-	NSDictionary *originalRow;
-	
+		
 	// Extract the original row position from the pasteboard and retrieve the details
-	originalRowIndex = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
-	originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
+	NSInteger originalRowIndex = [[[info draggingPasteboard] stringForType:SPDefaultPasteboardDragType] integerValue];
+	NSDictionary *originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 	
+	NSString *fieldType = [[originalRow objectForKey:@"type"] uppercaseString];
+	
 	// Begin construction of the reordering query
-	queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
-				   [[originalRow objectForKey:@"name"] backtickQuotedString],
-				   [[originalRow objectForKey:@"type"] uppercaseString]];
+	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
+									[[originalRow objectForKey:@"name"] backtickQuotedString], fieldType];
 	
 	// Add the length parameter if necessary
 	if ([originalRow objectForKey:@"length"] && ![[originalRow objectForKey:@"length"] isEqualToString:@""]) {
@@ -275,12 +318,14 @@
 	}
 	
 	NSString *fieldEncoding = @"";
-	
-	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0) {
+			
+	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
-		NSInteger start = [enc rangeOfString:@"("].location+1;
-		NSInteger end = [enc length] - start - 1;
-		fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
+		
+		NSInteger start = [enc rangeOfString:@"("].location + 1;
+		
+		fieldEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
+		
 		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
 	}
 	
@@ -288,9 +333,10 @@
 		fieldEncoding = [tableDataInstance tableEncoding];
 	}
 	
-	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0) {
+	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0 && ![[originalRow objectForKey:@"binary"] integerValue]) {
 		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
+		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue] - 1] objectForKey:@"COLLATION_NAME"];
+		
 		[queryString appendFormat:@" COLLATE %@", col];
 	}
 
@@ -316,7 +362,7 @@
 		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
 	}
 	
-	BOOL isTimestampType = [[[originalRow objectForKey:@"type"] lowercaseString] isEqualToString:@"timestamp"];
+	BOOL isTimestampType = [fieldType isEqualToString:@"TIMESTAMP"];
 	
 	// Add the default value, skip it for auto_increment
 	if ([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
@@ -344,11 +390,11 @@
 	}
 	
 	// Add the new location
-	if ( destinationRowIndex == 0 ){
+	if (destinationRowIndex == 0) {
 		[queryString appendString:@" FIRST"];
-	} else {
-		[queryString appendFormat:@" AFTER %@",
-		 [[[tableFields objectAtIndex:destinationRowIndex-1] objectForKey:@"name"] backtickQuotedString]];
+	} 
+	else {
+		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
 	}
 	
 	// Run the query; report any errors, or reload the table on success
@@ -361,16 +407,13 @@
 	else {
 		[tableDataInstance resetAllData];
 		[tableDocumentInstance setStatusRequiresReload:YES];
+		
 		[self loadTable:selectedTable];
 		
 		// Mark the content table cache for refresh
 		[tableDocumentInstance setContentRequiresReload:YES];
 		
-		if ( originalRowIndex < destinationRowIndex ) {
-			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex-1] byExtendingSelection:NO];
-		} else {
-			[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex] byExtendingSelection:NO];
-		}
+		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:destinationRowIndex - ((originalRowIndex < destinationRowIndex) ? 1 : 0)] byExtendingSelection:NO];
 	}
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
@@ -434,16 +477,17 @@
 	column = [tableSourceView editedColumn];
 	
 	// Trap the tab key, selecting the next item in the line
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
+	if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] && [tableSourceView numberOfColumns] - 1 == column)
 	{
 		//save current line
 		[[control window] makeFirstResponder:control];
 		
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)] ) {
-			if ( row < ([tableSourceView numberOfRows] - 1) ) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row+1] byExtendingSelection:NO];
-				[tableSourceView editColumn:0 row:row+1 withEvent:nil select:YES];
-			} else {
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertTab:)]) {
+			if (row < ([tableSourceView numberOfRows] - 1)) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row + 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:0 row:row + 1 withEvent:nil select:YES];
+			} 
+			else {
 				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 				[tableSourceView editColumn:0 row:0 withEvent:nil select:YES];
 			}
@@ -451,43 +495,47 @@
 		
 		return YES;
 	}
-	
 	// Trap shift-tab key
-	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
+	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] && column < 1)
 	{
-		if ( [self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)] ) {
+		if ([self addRowToDB] && [textView methodForSelector:command] == [textView methodForSelector:@selector(insertBacktab:)]) {
 			[[control window] makeFirstResponder:control];
-			if ( row > 0) {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row-1] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:row-1 withEvent:nil select:YES];
-			} else {
-				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count]-1)] byExtendingSelection:NO];
-				[tableSourceView editColumn:([tableFields count]-1) row:([tableSourceView numberOfRows]-1) withEvent:nil select:YES];
+			
+			if (row > 0) {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row - 1] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns] - 1) row:row - 1 withEvent:nil select:YES];
+			}
+			else {
+				[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:([tableFields count] - 1)] byExtendingSelection:NO];
+				[tableSourceView editColumn:([tableSourceView numberOfColumns] - 1) row:([tableSourceView numberOfRows] - 1) withEvent:nil select:YES];
 			}
 		}
 		
 		return YES;
 	}
-	
 	// Trap the enter key, triggering a save
 	else if ([textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)])
 	{
 		// Suppress enter for non-text fields to allow selecting of chosen items from comboboxes or popups
-		if (![[[[[[tableSourceView tableColumns] objectAtIndex:column] dataCell] class] description] isEqualToString:@"NSTextFieldCell"])
+		if (![[[[[[tableSourceView tableColumns] objectAtIndex:column] dataCell] class] description] isEqualToString:@"NSTextFieldCell"]) {
 			return YES;
+		}
 		
 		[[control window] makeFirstResponder:control];
+		
 		[self addRowToDB];
+		
 		[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+		
 		[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 		
 		return YES;
 	}
-	
 	// Trap escape, aborting the edit and reverting the row
-	else if (  [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] )
+	else if ([[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)])
 	{
 		[control abortEditing];
+		
 		[self cancelRowEditing];
 		
 		return YES;
@@ -501,66 +549,71 @@
  * Modify cell display by disabling table cells when a view is selected, meaning structure/index
  * is uneditable and do cell validation due to row's field type.
  */
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	//make sure that the message is from the right table view
+	// Make sure that the message is from the right table view
 	if (tableView != tableSourceView) return;
 	
 	if ([tablesListInstance tableType] == SPTableTypeView) {
 		[aCell setEnabled:NO];
 	} 
 	else {
-		// validate cell against current field type
-		NSDictionary *theRow = NSArrayObjectAtIndex(tableFields, rowIndex);
-		NSString *theRowType = @"";
+		// Validate cell against current field type
+		NSString *rowType = @"";
+		NSDictionary *row = NSArrayObjectAtIndex(tableFields, rowIndex);
 		
-		if ((theRowType = [theRow objectForKey:@"type"])) {
-			theRowType = [[theRowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
+		if ((rowType = [row objectForKey:@"type"])) {
+			rowType = [[rowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		}
 		
 		// Only string fields allow encoding settings
-		if (([[aTableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+		if (([[tableColumn identifier] isEqualToString:@"encoding"])) {
+			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
-		else if ([[aTableColumn identifier] isEqualToString:@"collation"]){
- 			[aCell setEnabled:([fieldValidation isFieldTypeString:theRowType] && [[theRow objectForKey:@"binary"] integerValue] == 0 && ![theRowType hasSuffix:@"BINARY"] && ![theRowType hasSuffix:@"BLOB"])];
+		else if ([[tableColumn identifier] isEqualToString:@"collation"]) {
+ 			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[row objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Check if UNSIGNED and ZEROFILL is allowed
-		else if ([[aTableColumn identifier] isEqualToString:@"zerofill"] || [[aTableColumn identifier] isEqualToString:@"unsigned"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:theRowType] && ![theRowType isEqualToString:@"BIT"])];
+		else if ([[tableColumn identifier] isEqualToString:@"zerofill"] || [[tableColumn identifier] isEqualToString:@"unsigned"]) {
+			[aCell setEnabled:([fieldValidation isFieldTypeNumeric:rowType] && ![rowType isEqualToString:@"BIT"])];
 		}
 		
 		// Check if BINARY is allowed
-		else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:theRowType])];
+		else if ([[tableColumn identifier] isEqualToString:@"binary"]) {
+			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:rowType])];
 		}
 		
 		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
-		else if ([[aTableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
+		else if ([[tableColumn identifier] isEqualToString:@"default"]) {
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		
 		// Check allow NULL
-		else if ([[aTableColumn identifier] isEqualToString:@"null"]) {
-			[aCell setEnabled:([[theRow objectForKey:@"Key"] isEqualToString:@"PRI"] || [[[theRow objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"]) ? NO : YES];
+		else if ([[tableColumn identifier] isEqualToString:@"null"]) {			
+			[aCell setEnabled:([[row objectForKey:@"Key"] isEqualToString:@"PRI"] || 
+							   [[[row objectForKey:@"Extra"] uppercaseString] isEqualToString:@"AUTO_INCREMENT"] ||
+							   [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]) ? NO : YES];
 		}
 		
 		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
-		else if ([[aTableColumn identifier] isEqualToString:@"length"]) {
-			[aCell setEnabled:([theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || ([fieldValidation isFieldTypeDate:theRowType] && ![theRowType isEqualToString:@"YEAR"]) || [fieldValidation isFieldTypeGeometry:theRowType]) ? NO : YES];
+		else if ([[tableColumn identifier] isEqualToString:@"length"]) {
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || 
+							   [rowType hasSuffix:@"BLOB"] || 
+							   ([fieldValidation isFieldTypeDate:rowType] && ![[tableDocumentInstance serverSupport] supportsFractionalSeconds] && ![rowType isEqualToString:@"YEAR"]) || 
+							   [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		else {
 			[aCell setEnabled:YES];
-		}
+		}		
 	}
 }
 
 #pragma mark -
 #pragma mark Split view delegate methods
-#ifndef SP_REFACTOR /* Split view delegate methods */
+#ifndef SP_CODA /* Split view delegate methods */
 
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {

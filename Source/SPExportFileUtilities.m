@@ -1,34 +1,41 @@
 //
-//  $Id$
-//
 //  SPExportFileUtilities.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 30, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on July 30, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportFileUtilities.h"
+#import "SPExportInitializer.h"
 #import "SPExporter.h"
 #import "SPAlertSheets.h"
 #import "SPExportFile.h"
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 typedef enum
@@ -42,6 +49,7 @@ SPExportErrorChoice;
 @interface SPExportController (SPExportFileUtilitiesPrivateAPI)
 
 - (void)_reopenExportSheet;
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -135,6 +143,8 @@ SPExportErrorChoice;
 {
 	// Get the number of files that already exist as well as couldn't be created because of other reasons
 	NSUInteger filesAlreadyExisting = 0;
+	NSUInteger parentFoldersMissing = 0;
+	NSUInteger parentFoldersNotWritable = 0;
 	NSUInteger filesFailed = 0;
 	
 	for (SPExportFile *file in files) 
@@ -160,6 +170,14 @@ SPExportErrorChoice;
 			[exporters removeObjectsInArray:exportersToRemove];
 			
 			[exportersToRemove release];
+
+			// Check the parent folder to see if it still is present
+			BOOL parentIsFolder = NO;
+			if (![[NSFileManager defaultManager] fileExistsAtPath:[[[file exportFilePath] stringByDeletingLastPathComponent] stringByExpandingTildeInPath] isDirectory:&parentIsFolder] || !parentIsFolder) {
+				parentFoldersMissing++;
+			} else if (![[NSFileManager defaultManager] isWritableFileAtPath:[[[file exportFilePath] stringByDeletingLastPathComponent] stringByExpandingTildeInPath]]) {
+				parentFoldersNotWritable++;
+			}
 		}
 	}
 
@@ -200,20 +218,40 @@ SPExportErrorChoice;
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalent:@"s"];
 			[[[alert buttons] objectAtIndex:2] setKeyEquivalentModifierMask:NSCommandKeyMask];
 		}
-	} 
+	}
 	// If one or multiple files failed, but only due to unhandled errors, show a short dialog
 	else {
 		if (filesFailed == 1) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"“%@” could not be created", @"Export file creation error title"), [[[files objectAtIndex:0] exportFilePath] lastPathComponent]]];
-			[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create the export file.  Please check the details and try again.", @"Export file creation error explanatory text")];
+			if (parentFoldersMissing) {
+				[alert setInformativeText:NSLocalizedString(@"The target export folder no longer exists.  Please select a new export location and try again.", @"Export folder missing explanatory text")];
+			} else if (parentFoldersNotWritable) {
+				[alert setInformativeText:NSLocalizedString(@"The target export folder is not writable.  Please select a new export location and try again.", @"Export folder not writable explanatory text")];
+			} else {
+				[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create the export file.  Please check the details and try again.", @"Export file creation error explanatory text")];
+			}
 		} 
 		else if (filesFailed == [exportFiles count]) {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"No files could be created", @"All export files creation error title")]];
-			[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create each of the export files.  Please check the details and try again.", @"All export files creation error explanatory text")];
+			if (parentFoldersMissing == [exportFiles count]) {
+				[alert setInformativeText:NSLocalizedString(@"The target export folder no longer exists.  Please select a new export location and try again.", @"Export folder missing explanatory text")];
+			} else if (parentFoldersMissing) {
+				[alert setInformativeText:NSLocalizedString(@"Some of the target export folders no longer exist.  Please select a new export location and try again.", @"Some export folders missing explanatory text")];			
+			} else if (parentFoldersNotWritable) {
+				[alert setInformativeText:NSLocalizedString(@"Some of the target export folders are not writable.  Please select a new export location and try again.", @"Some export folders not writable explanatory text")];			
+			} else {
+				[alert setInformativeText:NSLocalizedString(@"An unhandled error occurred when attempting to create each of the export files.  Please check the details and try again.", @"All export files creation error explanatory text")];
+			}
 		} 
 		else {
 			[alert setMessageText:[NSString stringWithFormat:NSLocalizedString(@"%lu files could not be created", @"Export files creation error title"), filesFailed]];
-			[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"An unhandled error occurred when attempting to create %lu of the export files.  Please check the details and try again.", @"Export files creation error explanatory text"), filesFailed]];
+			if (parentFoldersMissing) {
+				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"%lu of the export files could not be created because their target export folder no longer exists; please select a new export location and try again.", @"Export folder missing for some files explanatory text"), parentFoldersMissing]];
+			} else if (parentFoldersNotWritable) {
+				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"%lu of the export files could not be created because their target export folder is not writable; please select a new export location and try again.", @"Export folder not writable for some files explanatory text"), parentFoldersNotWritable]];
+			} else {
+				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"An unhandled error occurred when attempting to create %lu of the export files.  Please check the details and try again.", @"Export files creation error explanatory text"), filesFailed]];
+			}
 		}
 
 		[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"cancel button")];
@@ -279,7 +317,7 @@ SPExportErrorChoice;
 			if ([file exportFileHandleStatus] == SPExportFileHandleExists) {
 				
 				if ([file createExportFileHandle:YES] == SPExportFileHandleCreated) {
-					[file setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+					[file setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 					
 					if ([file exportFileNeedsCSVHeader]) {
 						[self writeCSVHeaderToExportFile:file];

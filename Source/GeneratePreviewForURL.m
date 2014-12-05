@@ -1,59 +1,51 @@
 //
-//  $Id$
-//
 //  GeneratePreviewForURL.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on Aug 04, 2010
+//  Created by Hans-Jörg Bibiko on August 4, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Cocoa/Cocoa.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
-#include <QuickLook/QuickLook.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <CoreServices/CoreServices.h>
+#import <QuickLook/QuickLook.h>
 
 #import "SPDataAdditions.h"
 #import "SPEditorTokens.h"
+#import "SPSyntaxParser.h"
 
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize);
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options);
 void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview);
-
 
 /* -----------------------------------------------------------------------------
   Generate a preview for file
 
   This function's job is to create preview for designated file
   ----------------------------------------------------------------------------- */
-
-
-#pragma mark lex init
-
-/*
-* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
-
-
 
 OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
 {
@@ -93,7 +85,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		// Dispatch different spf formats
 		if([[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -150,7 +142,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"content filters"]) {
 
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -166,7 +158,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 		else if([[spf objectForKey:@"format"] isEqualToString:@"query favorites"]) {
 
-			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
+			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
@@ -186,7 +178,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	else if([urlExtension isEqualToString:@"spfs"]) {
 
-		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
+		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
@@ -194,7 +186,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			return noErr;
 		}
 
-		NSString *windowTemplate = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleWindowTemplate" ofType:@"html"] 
+		NSString *windowTemplate = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionBundleWindowTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
@@ -327,7 +319,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	else if([urlExtension isEqualToString:@"sql"]) {
 
-		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.google.code.sequel-pro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
+		template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginSQLTemplate" ofType:@"html"] 
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
@@ -484,6 +476,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	if(!iconImages || [iconImages count] < 1)
 		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
 
+#warning Shouldn't that be "> 1"?
 	if([iconImages count] > 0)
 		iconImage = [iconImages objectAtIndex:1];
 	else
@@ -524,6 +517,5 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview)
 {
-   // implement only if supported
+   // Implement only if supported
 }
-

@@ -11,9 +11,9 @@
 			<string>QLGenerator</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.google.code.sequel-pro.spf</string>
-				<string>com.google.code.sequel-pro.sql</string>
-				<string>com.google.code.sequel-pro.spfs</string>
+				<string>com.sequelpro.SequelPro.spf</string>
+				<string>com.sequelpro.SequelPro.sql</string>
+				<string>com.sequelpro.SequelPro.spfs</string>
 			</array>
 		</dict>
 	</array>
@@ -22,7 +22,7 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.code.sequel-pro.qlgenerator</string>
+	<string>com.sequelpro.SequelPro.qlgenerator</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

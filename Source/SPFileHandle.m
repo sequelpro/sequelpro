@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPFileHandle.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on April 5, 2010
+//  Created by Rowan Beentje on April 5, 2010.
 //  Copyright (c) 2010 Rowan Beentje. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFileHandle.h"
 #import "zlib.1.2.4.h"
@@ -32,7 +37,7 @@
 // waits until some has been written out.  This can affect speed and memory usage.
 #define SPFH_MAX_WRITE_BUFFER_SIZE 1048576
 
-@interface SPFileHandle (PrivateAPI)
+@interface SPFileHandle ()
 
 - (void)_writeBufferToData;
 
@@ -41,7 +46,6 @@
 @implementation SPFileHandle
 
 #pragma mark -
-#pragma mark Setup and teardown
 
 /**
  * Initialises and returns a SPFileHandle with a specified file (FILE, gzFile or BZFILE).
@@ -86,8 +90,8 @@
 		if (fileMode == O_RDONLY) {
 			
 			int i, c;
-			char *bzbuf = malloc(4);
-			const char *charFileMode = (fileMode == O_WRONLY) ? "wb" : "rb";
+			char bzbuf[4];
+			const char *charFileMode = fileMode == O_WRONLY ? "wb" : "rb";
 			
 			BZFILE *bzfile;
 			gzFile *gzfile = gzopen(path, charFileMode);
@@ -97,24 +101,24 @@
 			
 			// Get the first 4 bytes from the file
 			for (i = 0; (c = getc(wrappedFile)) != EOF && i < 4; bzbuf[i++] = c);
+
 			rewind(wrappedFile);
 			
 			// Test to see if the file is gzip compressed
-			BOOL isGzip = (!gzdirect(gzfile));
+			BOOL isGzip = !gzdirect(gzfile);
 			
 			// Test to see if the first 2 bytes extracted from the file match the Bzip2 signature/magic number
 			// (BZ). The 3rd byte should be either 'h' (Huffman encoding) or 0 (Bzip1 - deprecated) to 
 			// indicate the Bzip version. Finally, the 4th byte should be a number between 1 and 9 that indicates
 			// the block size used.
-			BOOL isBzip2 = ((bzbuf[0] == 'B')   && (bzbuf[1] == 'Z')  && 
-							((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
-							((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39)));
-			
-			free(bzbuf);
+
+			BOOL isBzip2 = ((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')) &&
+			               ((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
+			               ((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39));
 			
 			if (isBzip2) bzfile = BZ2_bzopen(path, charFileMode);
 						
-			useCompression = (isGzip || isBzip2);
+			useCompression = isGzip || isBzip2;
 									
 			if (useCompression) {
 				if (isGzip) {
@@ -139,24 +143,12 @@
 		else if (fileMode == O_WRONLY) {
 			useCompression = NO;
 			processingThread = [[NSThread alloc] initWithTarget:self selector:@selector(_writeBufferToData) object:nil];
+			[processingThread setName:@"SPFileHandle data writing thread"];
 			[processingThread start];
 		}
 	}
 
 	return self;
-}
-
-/**
- * Dealloc.
- */
-- (void)dealloc
-{
-	[self closeFile];
-	if (processingThread) [processingThread release];
-	free(wrappedFilePath);
-	[buffer release];
-	pthread_mutex_destroy(&bufferLock);
-	[super dealloc];
 }
 
 #pragma mark -
@@ -210,22 +202,22 @@
  */
 - (NSMutableData *)readDataOfLength:(NSUInteger)length
 {	
-	long theDataLength;
-	void *theData = malloc(length);
+	long dataLength = 0;
+	void *data = malloc(length);
 			
 	if (useCompression) {
 		if (compressionFormat == SPGzipCompression) {
-			theDataLength = gzread(wrappedFile, theData, (unsigned)length);
+			dataLength = gzread(wrappedFile, data, (unsigned)length);
 		}
 		else if (compressionFormat == SPBzip2Compression) {
-			theDataLength = BZ2_bzread(wrappedFile, theData, (int)length);
+			dataLength = BZ2_bzread(wrappedFile, data, (int)length);
 		}		
 	}
 	else {
-		theDataLength = fread(theData, 1, length, wrappedFile);
+		dataLength = fread(data, 1, length, wrappedFile);
 	}
 		
-	return [NSMutableData dataWithBytesNoCopy:theData length:theDataLength freeWhenDone:YES];
+	return [NSMutableData dataWithBytesNoCopy:data length:dataLength freeWhenDone:YES];
 }
 
 /**
@@ -316,11 +308,13 @@
 	}
 
 	// If the buffer is large, wait for some to be written out
-	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) {
+	while (bufferDataLength > SPFH_MAX_WRITE_BUFFER_SIZE) 
+	{
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
 	}
+	
 	pthread_mutex_unlock(&bufferLock);
 }
 
@@ -330,11 +324,14 @@
 - (void)synchronizeFile
 {
 	pthread_mutex_lock(&bufferLock);
-	while (!allDataWritten) {
+	
+	while (!allDataWritten) 
+	{
 		pthread_mutex_unlock(&bufferLock);
 		usleep(100);
 		pthread_mutex_lock(&bufferLock);
 	}
+	
 	pthread_mutex_unlock(&bufferLock);
 }
 
@@ -389,10 +386,6 @@
 	return compressionFormat;
 }
 
-@end
-
-@implementation SPFileHandle (PrivateAPI)
-
 /**
  * A method to be called on a background thread, allowing write data to build
  * up in a buffer and write to disk in chunks as the buffer fills.  This allows
@@ -407,6 +400,7 @@
 
 		// Check whether any data in the buffer needs to be written out - using thread locks for safety
 		pthread_mutex_lock(&bufferLock);
+		
 		if (!bufferDataLength) {
 			pthread_mutex_unlock(&bufferLock);
 			usleep(1000);
@@ -415,8 +409,10 @@
 
 		// Copy the data into a local buffer
 		NSData *dataToBeWritten = [buffer copy];
+		
 		[buffer setLength:0];
 		bufferDataLength = 0;
+		
 		pthread_mutex_unlock(&bufferLock);
 
 		// Write out the data
@@ -441,23 +437,44 @@
 
 		// Restore data to the buffer if it wasn't written out
 		pthread_mutex_lock(&bufferLock);
+		
 		if (bufferLengthWrittenOut < (NSInteger)[dataToBeWritten length]) {
 			if ([buffer length]) {
 				long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
 				[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];
 				bufferDataLength += dataLengthToRestore;
 			}
-
+		} 
 		// Otherwise, mark all data as written if it has been - allows synching to hard disk.
-		} else if (![buffer length]) {
+		else if (![buffer length]) {
 			allDataWritten = YES;
 		}
+		
 		pthread_mutex_unlock(&bufferLock);
 
 		[dataToBeWritten release];
 	}
 
 	[writePool drain];
+}
+
+#pragma mark -
+
+/**
+ * Dealloc.
+ */
+- (void)dealloc
+{
+	[self closeFile];
+	
+	if (processingThread) [processingThread release];
+	
+	free(wrappedFilePath);
+	[buffer release];
+	
+	pthread_mutex_destroy(&bufferLock);
+	
+	[super dealloc];
 }
 
 @end

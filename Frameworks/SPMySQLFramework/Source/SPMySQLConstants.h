@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLConstants.h
 //  SPMySQLFramework
 //
@@ -28,35 +26,36 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 // Connection state
 typedef enum {
-	SPMySQLDisconnected		= 0,
-	SPMySQLConnecting		= 1,
-	SPMySQLConnected		= 2,
-	SPMySQLDisconnecting	= 3
+	SPMySQLDisconnected               = 0,
+	SPMySQLConnecting                 = 1,
+	SPMySQLConnected                  = 2,
+	SPMySQLConnectionLostInBackground = 3,
+	SPMySQLDisconnecting              = 4
 } SPMySQLConnectionState;
 
 // Connection lock state
 typedef enum {
-	SPMySQLConnectionIdle	= 0,
-	SPMySQLConnectionBusy	= 1
+	SPMySQLConnectionIdle = 0,
+	SPMySQLConnectionBusy = 1
 } SPMySQLConnectionLockState;
 
 // Decision on how to handle lost connections
 // Connection check constants
 typedef enum {
-	SPMySQLConnectionLostDisconnect	= 0,
-	SPMySQLConnectionLostReconnect	= 1
+	SPMySQLConnectionLostDisconnect = 0,
+	SPMySQLConnectionLostReconnect  = 1
 } SPMySQLConnectionLostDecision;
 
 // Result set row types
 typedef enum {
-	SPMySQLResultRowAsDefault		= 0,
-	SPMySQLResultRowAsArray			= 1,
-	SPMySQLResultRowAsDictionary	= 2
+	SPMySQLResultRowAsDefault    = 0,
+	SPMySQLResultRowAsArray      = 1,
+	SPMySQLResultRowAsDictionary = 2
 } SPMySQLResultRowType;
 
 // Result charset list
@@ -70,7 +69,8 @@ typedef struct {
 
 // Query result types
 typedef enum {
-	SPMySQLResultAsResult					= 0,
-	SPMySQLResultAsFastStreamingResult		= 1,
-	SPMySQLResultAsLowMemStreamingResult	= 2
+	SPMySQLResultAsResult                = 0,
+	SPMySQLResultAsFastStreamingResult   = 1,
+	SPMySQLResultAsLowMemStreamingResult = 2,
+	SPMySQLResultAsStreamingResultStore  = 3
 } SPMySQLResultType;

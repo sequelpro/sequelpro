@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SequelProTunnelAssistant.m
 //  sequel-pro
 //
 //  Created by Rowan Beentje on May 4, 2009.
+//  Copyright (c) 2009 Rowan Beentje. All rights reserved.
+//  
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Cocoa/Cocoa.h>
 
@@ -32,6 +38,7 @@
 int main(int argc, const char *argv[])
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
 	NSDictionary *environment = [[NSProcessInfo processInfo] environment];
 	NSString *argument = nil;
 	SPSSHTunnel *sequelProTunnel;
@@ -49,19 +56,27 @@ int main(int argc, const char *argv[])
 
 	// Check if we're being asked a question and respond if so
 	if (argument && [argument rangeOfString:@" (yes/no)?"].location != NSNotFound) {
+		
 		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+		
 		if (!sequelProTunnel) {
 			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 			[pool release];
 			return 1;
+		
 		}
+		
 		BOOL response = [sequelProTunnel getResponseForQuestion:argument];
+		
 		if (response) {
 			printf("yes\n");
-		} else {
+		} 
+		else {
 			printf("no\n");
 		}
+		
 		[pool release];
+		
 		return 0;
 	}
 	
@@ -82,15 +97,19 @@ int main(int argc, const char *argv[])
 			}
 
 			keychain = [[SPKeychain alloc] init];
+			
 			if ([keychain passwordExistsForName:keychainName account:keychainAccount]) {
 				printf("%s\n", [[keychain getPasswordForName:keychainName account:keychainAccount] UTF8String]);
 				[keychain release];
 				[pool release];
 				return 0;
 			}
+			
+			[keychain release];
 
 			// If retrieving the password failed, log an error and fall back to requesting from the GUI
 			NSLog(@"SSH Tunnel: specified keychain password not found");
+			
 			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded from the keychain; please enter the SSH password for %@:", @"Prompt for SSH password when keychain fetch failed"), connectionName];
 		}
 
@@ -105,6 +124,7 @@ int main(int argc, const char *argv[])
 			}
 
 			sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+			
 			if (!sequelProTunnel) {
 				NSLog(@"SSH Tunnel: unable to connect to Sequel Pro for internal authentication");
 				[pool release];
@@ -112,6 +132,7 @@ int main(int argc, const char *argv[])
 			}
 			
 			password = [sequelProTunnel getPasswordWithVerificationHash:verificationHash];
+			
 			if (password) {
 				printf("%s\n", [password UTF8String]);
 				[pool release];
@@ -120,6 +141,7 @@ int main(int argc, const char *argv[])
 			
 			// If retrieving the password failed, log an error and fall back to requesting from the GUI
 			NSLog(@"SSH Tunnel: unable to successfully request password from Sequel Pro for internal authentication");
+			
 			argument = [NSString stringWithFormat:NSLocalizedString(@"The SSH password could not be loaded; please enter the SSH password for %@:", @"Prompt for SSH password when direct fetch failed"), connectionName];
 		}
 	}
@@ -133,12 +155,14 @@ int main(int argc, const char *argv[])
 		
 			// Check whether the passphrase is in the keychain, using standard OS X sshagent name and account
 			SPKeychain *keychain = [[SPKeychain alloc] init];
+			
 			if ([keychain passwordExistsForName:@"SSH" account:keyName]) {
 				printf("%s\n", [[keychain getPasswordForName:@"SSH" account:keyName] UTF8String]);
 				[keychain release];
 				[pool release];
 				return 0;
 			}
+			
 			[keychain release];
 		}
 		
@@ -151,19 +175,23 @@ int main(int argc, const char *argv[])
 		}
 
 		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+		
 		if (!sequelProTunnel) {
 			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 			[pool release];
 			return 1;
 		}
 		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
+		
 		if (!passphrase) {
 			[pool release];
 			return 1;
 		}
 
 		printf("%s\n", [passphrase UTF8String]);
+		
 		[pool release];
+		
 		return 0;
 	}
     
@@ -178,6 +206,7 @@ int main(int argc, const char *argv[])
 		}
 
 		sequelProTunnel = (SPSSHTunnel *)[NSConnection rootProxyForConnectionWithRegisteredName:connectionName host:nil];
+		
 		if (!sequelProTunnel) {
 			NSLog(@"SSH Tunnel: unable to connect to Sequel Pro to show SSH question");
 			[pool release];
@@ -185,6 +214,7 @@ int main(int argc, const char *argv[])
 		}
         
 		passphrase = [sequelProTunnel getPasswordForQuery:argument verificationHash:verificationHash];
+		
 		if (!passphrase) {
 			[pool release];
 			return 1;
@@ -197,5 +227,6 @@ int main(int argc, const char *argv[])
 
     
 	[pool release];
+	
 	return 1;
 }

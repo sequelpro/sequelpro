@@ -1,26 +1,34 @@
 //
-//  $Id$
-//
 //  SPCopyTable.m
 //  sequel-pro
 //
-//  Created by Stuart Glenn on Wed Apr 21 2004.
-//  Changed by Lorenz Textor on Sat Nov 13 2004
+//  Created by Stuart Glenn on April 21, 2004.
+//  Changed by Lorenz Textor on November 13, 2004
 //  Copyright (c) 2004 Stuart Glenn. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
+//
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPCopyTable.h"
 #import "SPTableContent.h"
@@ -31,16 +39,20 @@
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
 #import "SPAlertSheets.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPGeometryDataView.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleEditorController.h"
 #import "SPAppController.h"
 #endif
 #import "SPTablesList.h"
+#import "SPBundleCommandRunner.h"
+#import "SPDatabaseContentViewDelegate.h"
+
 #import <SPMySQL/SPMySQL.h>
+#import "pthread.h"
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
@@ -87,7 +99,7 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (void)copy:(id)sender
 {
-#ifndef SP_REFACTOR /* copy table rows */
+#ifndef SP_CODA /* copy table rows */
 	NSString *tmp = nil;
 
 	if ([sender tag] == SPEditCopyAsSQL) {
@@ -116,11 +128,11 @@ static const NSInteger kBlobAsImageFile = 4;
 #endif
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 
 - (void)delete:(id)sender
 {
-	[tableInstance removeRow:self];
+        [tableInstance removeRow:self];
 }
 
 #endif
@@ -129,7 +141,7 @@ static const NSInteger kBlobAsImageFile = 4;
  * Get selected rows a string of newline separated lines of tab separated fields
  * the value in each field is from the objects description method
  */
-#ifndef SP_REFACTOR /* get rows as string */
+#ifndef SP_CODA /* get rows as string */
 - (NSString *)rowsAsTabStringWithHeaders:(BOOL)withHeaders onlySelectedRows:(BOOL)onlySelected blobHandling:(NSInteger)withBlobHandling
 {
 	if (onlySelected && [self numberOfSelectedRows] == 0) return nil;
@@ -197,12 +209,12 @@ static const NSInteger kBlobAsImageFile = 4;
 						}
 					}
 					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"%@\t", fp];
 					}
 					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -221,7 +233,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				}
 				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -336,12 +348,12 @@ static const NSInteger kBlobAsImageFile = 4;
 						}
 					}
 					else if(withBlobHandling == kBlobAsFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.dat", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						[cellData writeToFile:fp atomically:NO];
 						[result appendFormat:@"\"%@\",", fp];
 					}
 					else if(withBlobHandling == kBlobAsImageFile && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.tif", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						NSImage *image = [[NSImage alloc] initWithData:cellData];
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
@@ -360,7 +372,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				}
 				else if ([cellData isKindOfClass:spmysqlGeometryData]) {
 					if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
-						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, rowCounter, c];
+						NSString *fp = [NSString stringWithFormat:@"%@/%ld_%ld.pdf", tmpBlobFileDirectory, (long)rowCounter, (long)c];
 						SPGeometryDataView *v = [[SPGeometryDataView alloc] initWithCoordinates:[cellData coordinates]];
 						NSData *thePDF = [v pdfData];
 						if(thePDF) {
@@ -475,7 +487,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		cellData = nil;
 		rowCounter++;
 		NSMutableArray *rowValues = [[NSMutableArray alloc] initWithCapacity:numColumns];
-
+		
 		for (c = 0; c < numColumns; c++)
 		{
 			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -763,7 +775,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSRange linebreakRange;
 	double rowStep;
 	unichar breakChar;
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
@@ -787,11 +799,15 @@ static const NSInteger kBlobAsImageFile = 4;
 	maxCellWidth = 0;
 	for (i = 0; i < rowsToCheck; i += rowStep) {
 
-		// Retrieve the cell's content
-		contentString = [tableStorage cellDataAtRow:i column:columnIndex];
+		// Retrieve part of the cell's content to get widths, topping out at a maximum length
+		contentString =	SPDataStoragePreviewAtRowAndColumn(tableStorage, i, columnIndex, 500);
+
+		// If the cell hasn't loaded yet, skip processing
+		if (!contentString)
+			continue;
 
 		// Get WKT string out of the SPMySQLGeometryData for calculation
-		if ([contentString isKindOfClass:spmysqlGeometryData])
+		else if ([contentString isKindOfClass:spmysqlGeometryData])
 			contentString = [contentString wktString];
 
 		// Replace NULLs with their placeholder string
@@ -865,7 +881,7 @@ static const NSInteger kBlobAsImageFile = 4;
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {
 	NSMenu *menu = [self menu];
-#ifndef SP_REFACTOR /* menuForEvent: */
+#ifndef SP_CODA /* menuForEvent: */
 
 	if(![[self delegate] isKindOfClass:[SPCustomQuery class]] && ![[self delegate] isKindOfClass:[SPTableContent class]]) return menu;
 
@@ -942,17 +958,19 @@ static const NSInteger kBlobAsImageFile = 4;
 	if (!rowIndices || ![rowIndices count]) return;
 
 	NSMutableIndexSet *selection = [NSMutableIndexSet indexSet];
-#ifndef SP_REFACTOR
-	NSInteger rows = [[self delegate] numberOfRowsInTableView:self];
-#else
+
 	NSInteger rows = [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self];
-#endif
+
 	NSInteger i;
+	
 	if(rows > 0) {
-		for(NSString* idx in rowIndices) {
+		for (NSString* idx in rowIndices) 
+		{
 			i = [idx integerValue];
-			if(i >= 0 && i < rows)
+			
+			if (i >= 0 && i < rows) {
 				[selection addIndex:i];
+		}
 		}
 
 		[self selectRowIndexes:selection byExtendingSelection:NO];
@@ -965,7 +983,7 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL)validateMenuItem:(NSMenuItem*)anItem
 {
-#ifndef SP_REFACTOR /* validateMenuItem: */
+#ifndef SP_CODA /* validateMenuItem: */
 	NSInteger menuItemTag = [anItem tag];
 
 	if ([anItem action] == @selector(performFindPanelAction:)) {
@@ -992,7 +1010,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	if ( [anItem action] == @selector(selectAll:) )
 		return YES;
 		
@@ -1063,14 +1081,13 @@ static const NSInteger kBlobAsImageFile = 4;
 		[[control window] makeFirstResponder:control];
 		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
 			[(SPTableContent*)[self delegate] saveRowToTable];
+		
 		return YES;
-
 	}
 
 	// Trap down arrow key
 	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(moveDown:)] )
 	{
-
 		// If enum field is edited ARROW key navigates through the popup list
 		if([self isCellComplex])
 			return NO;
@@ -1081,57 +1098,57 @@ static const NSInteger kBlobAsImageFile = 4;
 			return NO;
 
 		NSInteger newRow = row+1;
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check if we're already at the end of the list
-#endif
+
+		// Check if we're already at the end of the list
+		if (newRow >= [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
+		
+		if ([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)]) {
 			[(SPTableContent*)([self delegate]) saveRowToTable];
+		}
 
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; //check again. saveRowToTable could reload the table and change the number of rows
-#endif		
-		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		// Check again. saveRowToTable could reload the table and change the number of rows
+		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
+
+		// The column count could change too
+		if (tableStorage && (NSUInteger)column >= [tableStorage columnCount]) return YES;
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
+		
 		return YES;
 	}
-
 	// Trap up arrow key
 	else if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(moveUp:)] )
 	{
-
 		// If enum field is edited ARROW key navigates through the popup list
-		if ([self isCellComplex])
-			return NO;
+		if ([self isCellComplex]) return NO;
 
 		// Check whether the editor is multiline - if so, allow the arrow up to change selection if it's not
 		// on the first line
-		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0)
-			return NO;
+		if ([[textView string] lineRangeForRange:[textView selectedRange]].location > 0) return NO;
 
-		if (row==0) return YES; //already at the beginning of the list
+		// Already at the beginning of the list
+		if (row == 0) return YES;
+
 		NSInteger newRow = row-1;
 
 		[[control window] makeFirstResponder:control];
-		if([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)])
-			[(SPTableContent*)([self delegate]) saveRowToTable];
 
-#ifndef SP_REFACTOR
-		if (newRow>=[[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-#else
-		if (newRow>=[(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES; // saveRowToTable could reload the table and change the number of rows
-#endif
-		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;     //the column count could change too
+		if ([[self delegate] isKindOfClass:[SPTableContent class]] && ![self isCellEditingMode] && [[self delegate] respondsToSelector:@selector(saveRowToTable)]) {
+			[(SPTableContent *)[self delegate] saveRowToTable];
+		}
+
+		// saveRowToTable could reload the table and change the number of rows
+		if (newRow >= [(id<NSTableViewDataSource>)[self delegate] numberOfRowsInTableView:self]) return YES;
+		
+		// The column count could change too
+		if (tableStorage && (NSUInteger)column>=[tableStorage columnCount]) return YES;
 
 		[self selectRowIndexes:[NSIndexSet indexSetWithIndex:newRow] byExtendingSelection:NO];
 		[self editColumn:column row:newRow withEvent:nil select:YES];
+		
 		return YES;
 	}
 
@@ -1163,13 +1180,6 @@ static const NSInteger kBlobAsImageFile = 4;
 	[super keyDown:theEvent];
 }
 
-- (void)performFindPanelAction:(id)sender
-{
-	if([sender tag] == 1 && [[self delegate] isKindOfClass:[SPTableContent class]]) {
-		[(SPTableContent*)[self delegate] showFilterTable:self];
-	}
-}
-
 #pragma mark -
 #pragma mark Field editing checks
 
@@ -1177,26 +1187,15 @@ static const NSInteger kBlobAsImageFile = 4;
  * Determine whether to use the sheet for editing; do so if the multipleLineEditingButton is enabled,
  * or if the column was a blob or a text, or if it contains linebreaks.
  */
-- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex
+- (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex checkWithLock:(pthread_mutex_t *)dataLock
 {
-
 	// Retrieve the column definition
-#if SP_REFACTOR
-	NSDictionary *columnDefinition;
-	
-	if ( [[self delegate] isKindOfClass:[SPTableContent class]] )
-		columnDefinition = [[(SPTableContent*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-	
-	else if ( [[self delegate] isKindOfClass:[SPCustomQuery class]] )
-		columnDefinition = [[(SPCustomQuery*)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-#else
-	NSDictionary *columnDefinition = [[[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-#endif
+	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
 
 	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
 #endif
 
@@ -1205,10 +1204,29 @@ static const NSInteger kBlobAsImageFile = 4;
 	if (isBlob && ![columnType isEqualToString:@"enum"]) return YES;
 
 	// Otherwise, check the cell value for newlines.
-	id cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	id cellValue = nil;
+
+	// If a data lock was supplied, use it and perform additional checks for safety
+	if (dataLock) {
+		pthread_mutex_lock(dataLock);
+
+		if (rowIndex < [tableStorage count] && colIndex < [tableStorage columnCount]) {
+			cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+		}
+
+		pthread_mutex_unlock(dataLock);
+
+		if (!cellValue) return YES;
+
+	// Otherwise grab the value directly
+	} else {
+		cellValue = [tableStorage cellDataAtRow:rowIndex column:colIndex];
+	}
+
 	if ([cellValue isKindOfClass:[NSData class]]) {
 		cellValue = [[[NSString alloc] initWithData:cellValue encoding:[mySQLConnection stringEncoding]] autorelease];
 	}
+
 	if (![cellValue isNSNull]
 		&& [columnType isEqualToString:@"string"]
 		&& [cellValue rangeOfCharacterFromSet:[NSCharacterSet newlineCharacterSet] options:NSLiteralSearch].location != NSNotFound)
@@ -1225,7 +1243,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 - (IBAction)executeBundleItemForDataTable:(id)sender
 {
-#ifndef SP_REFACTOR /* executeBundleItemForDataTable: */
+#ifndef SP_CODA /* executeBundleItemForDataTable: */
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
 	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
@@ -1278,8 +1296,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
 			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 
-			if([[self delegate] respondsToSelector:@selector(usedQuery)] && [[self delegate] usedQuery])
-				[env setObject:[[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+			if ([[self delegate] respondsToSelector:@selector(usedQuery)] && [(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery]) {
+				[env setObject:[(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+			}
 
 			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
 			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
@@ -1289,7 +1308,7 @@ static const NSInteger kBlobAsImageFile = 4;
 				NSIndexSet *selectedRows = [self selectedRowIndexes];
 				NSUInteger rowIndex = [selectedRows firstIndex];
 				while ( rowIndex != NSNotFound ) {
-					[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+					[sel addObject:[NSString stringWithFormat:@"%llu", (unsigned long long)rowIndex]];
 					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 				}
 				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
@@ -1362,7 +1381,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			NSMutableString *tableMetaData = [NSMutableString string];
 			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
-				NSArray *defs = [[self delegate] dataColumnDefinitions];
+				
+				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
+				
 				if(defs && [defs count] == numColumns)
 					for( c = 0; c < numColumns; c++ ) {
 						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
@@ -1377,7 +1398,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			}
 			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
 				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
-				NSArray *defs = [[self delegate] dataColumnDefinitions];
+				
+				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
+				
 				if(defs && [defs count] == numColumns)
 					for( c = 0; c < numColumns; c++ ) {
 						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
@@ -1407,14 +1430,13 @@ static const NSInteger kBlobAsImageFile = 4;
 			}
 
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
 											atCurrentDirectoryPath:nil 
 											callerInstance:[[NSApp delegate] frontDocument] 
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
 											error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
@@ -1518,7 +1540,7 @@ static const NSInteger kBlobAsImageFile = 4;
 - (void)dealloc
 {
 	if (columnDefinitions) [columnDefinitions release];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs release];
 #endif
 

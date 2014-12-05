@@ -1,81 +1,75 @@
 //
-//  $Id$
-//
-//  SPConnectionController.h
+//  SPConnectionHandler.h
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 28/06/2009.
-//  Copyright 2009 Arboreal. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on November 15, 2010.
+//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPConnectionControllerDelegateProtocol.h"
-#import <SPMySQL/SPMySQLConnectionDelegate.h>
 
-#ifndef SP_REFACTOR /* headers */
-#import "SPFavoritesOutlineView.h"
-#endif
+#import <SPMySQL/SPMySQL.h>
 
-@class SPDatabaseDocument, SPSSHTunnel, SPKeychain, SPMySQLConnection
-#ifndef SP_REFACTOR /* class decl */
-, BWAnchoredButtonBar, SPFavoriteNode
+@class SPDatabaseDocument, 
+	   SPFavoritesController, 
+	   SPSSHTunnel,
+	   SPTreeNode,
+	   SPFavoritesOutlineView,
+       SPMySQLConnection,
+	   SPSplitView
+#ifndef SP_CODA /* class decl */
+	   ,SPKeychain, 
+	   SPFavoriteNode,
+	   SPFavoriteTextFieldCell,
+       SPColorSelectorView
 #endif
 ;
-
-#ifndef SP_REFACTOR /* class decl */
-
-@interface NSObject (BWAnchoredButtonBar)
-
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex;
-
-@end
-
-@interface SPFlippedView : NSView
-
-- (BOOL)isFlipped;
-
-@end
-#endif
 
 @interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
-	SPDatabaseDocument *tableDocument;
-#ifndef SP_REFACTOR	/* ivars */
-	NSView *databaseConnectionSuperview;
-	NSSplitView *databaseConnectionView;
-	NSOpenPanel *keySelectionPanel;
-#endif
-	SPKeychain *keychain;
-	NSUserDefaults *prefs;
-#ifndef SP_REFACTOR
-	NSMutableArray *favorites;
-#endif
+	SPDatabaseDocument *dbDocument;
 	SPSSHTunnel *sshTunnel;
 	SPMySQLConnection *mySQLConnection;
-#ifndef SP_REFACTOR	/* ivars */
-	BOOL automaticFavoriteSelection;
+	
+#ifndef SP_CODA	/* ivars */
+	SPKeychain *keychain;
+	NSView *databaseConnectionSuperview;
+	NSSplitView *databaseConnectionView;
 #endif
+	NSOpenPanel *keySelectionPanel;
+	NSUserDefaults *prefs;
+
 	BOOL cancellingConnection;
 	BOOL isConnecting;
-#ifndef SP_REFACTOR	/* ivars */
+	BOOL isEditingConnection;
+	BOOL isTestingConnection;
+	
+	// Standard details
 	NSInteger previousType;
-#endif
 	NSInteger type;
 	NSString *name;
 	NSString *host;
@@ -84,22 +78,24 @@
 	NSString *database;
 	NSString *socket;
 	NSString *port;
-	int useSSL;
-	int sslKeyFileLocationEnabled;
+	NSInteger colorIndex;
+	
+	// SSL details
+	NSInteger useSSL;
+	NSInteger sslKeyFileLocationEnabled;
 	NSString *sslKeyFileLocation;
-	int sslCertificateFileLocationEnabled;
+	NSInteger sslCertificateFileLocationEnabled;
 	NSString *sslCertificateFileLocation;
-	int sslCACertFileLocationEnabled;
+	NSInteger sslCACertFileLocationEnabled;
 	NSString *sslCACertFileLocation;
+	
+	// SSH details
 	NSString *sshHost;
 	NSString *sshUser;
 	NSString *sshPassword;
-	int sshKeyLocationEnabled;
+	NSInteger sshKeyLocationEnabled;
 	NSString *sshKeyLocation;
 	NSString *sshPort;
-#ifndef SP_REFACTOR	/* ivars */
-	@private NSString *favoritesPBoardType;
-#endif
 
 	NSString *connectionKeychainID;
 	NSString *connectionKeychainItemName;
@@ -107,14 +103,13 @@
 	NSString *connectionSSHKeychainItemName;
 	NSString *connectionSSHKeychainItemAccount;
 
-#ifndef SP_REFACTOR	/* ivars */
 	NSMutableArray *nibObjectsToRelease;
 
 	IBOutlet NSView *connectionView;
-	IBOutlet NSSplitView *connectionSplitView;
+	IBOutlet SPSplitView *connectionSplitView;
 	IBOutlet NSScrollView *connectionDetailsScrollView;
-	IBOutlet BWAnchoredButtonBar *connectionSplitViewButtonBar;
-	IBOutlet SPFavoritesOutlineView *favoritesTable;
+	IBOutlet NSTextField *connectionInstructionsTextField;
+	IBOutlet SPFavoritesOutlineView *favoritesOutlineView;
 
 	IBOutlet NSWindow *errorDetailWindow;
 	IBOutlet NSTextView *errorDetailText;
@@ -125,13 +120,23 @@
 	IBOutlet NSView *socketConnectionFormContainer;
 	IBOutlet NSView *socketConnectionSSLDetailsContainer;
 	IBOutlet NSView *sshConnectionFormContainer;
+	IBOutlet NSView *sshConnectionSSLDetailsContainer;
 	IBOutlet NSView *sshKeyLocationHelp;
 	IBOutlet NSView *sslKeyFileLocationHelp;
 	IBOutlet NSView *sslCertificateLocationHelp;
 	IBOutlet NSView *sslCACertLocationHelp;
 
+	IBOutlet NSTextField *standardNameField;
+	IBOutlet NSTextField *sshNameField;
+	IBOutlet NSTextField *socketNameField;
 	IBOutlet NSTextField *standardSQLHostField;
 	IBOutlet NSTextField *sshSQLHostField;
+	IBOutlet NSTextField *standardUserField;
+	IBOutlet NSTextField *socketUserField;
+	IBOutlet NSTextField *sshUserField;
+	IBOutlet SPColorSelectorView *standardColorField;
+	IBOutlet SPColorSelectorView *sshColorField;
+	IBOutlet SPColorSelectorView *socketColorField;
 	IBOutlet NSSecureTextField *standardPasswordField;
 	IBOutlet NSSecureTextField *socketPasswordField;
 	IBOutlet NSSecureTextField *sshPasswordField;
@@ -143,22 +148,37 @@
 	IBOutlet NSButton *socketSSLKeyFileButton;
 	IBOutlet NSButton *socketSSLCertificateButton;
 	IBOutlet NSButton *socketSSLCACertButton;
+	IBOutlet NSButton *sslOverSSHKeyFileButton;
+	IBOutlet NSButton *sslOverSSHCertificateButton;
+	IBOutlet NSButton *sslOverSSHCACertButton;
 
-	IBOutlet NSButton *addToFavoritesButton;
 	IBOutlet NSButton *connectButton;
+	IBOutlet NSButton *testConnectButton;
 	IBOutlet NSButton *helpButton;
+	IBOutlet NSButton *saveFavoriteButton;
 	IBOutlet NSProgressIndicator *progressIndicator;
 	IBOutlet NSTextField *progressIndicatorText;
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
+	IBOutlet NSView *exportPanelAccessoryView;
+	IBOutlet NSView *editButtonsView;
 	
+	BOOL isEditingItemName;
     BOOL reverseFavoritesSort;
-#endif
+	BOOL initComplete;
+	BOOL favoriteNameFieldWasAutogenerated;
 
-	BOOL mySQLConnectionCancelled;
-#ifndef SP_REFACTOR	/* ivars */
-    SPFavoritesSortItem previousSortItem, currentSortItem;
+#ifndef SP_CODA	/* ivars */
+	NSArray *draggedNodes;
+	NSImage *folderImage;
 	
-	SPFavoriteNode *favoritesRoot;
+	SPTreeNode *favoritesRoot;
+	SPTreeNode *quickConnectItem;
+
+	SPFavoriteTextFieldCell *quickConnectCell;
+
+	NSDictionary *currentFavorite;
+	SPFavoritesController *favoritesController;
+	SPFavoritesSortItem currentSortItem;
 #endif
 }
 
@@ -171,17 +191,18 @@
 @property (readwrite, retain) NSString *database;
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
-@property (readwrite, assign) int useSSL;
-@property (readwrite, assign) int sslKeyFileLocationEnabled;
+@property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger colorIndex;
+@property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;
-@property (readwrite, assign) int sslCertificateFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCertificateFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCertificateFileLocation;
-@property (readwrite, assign) int sslCACertFileLocationEnabled;
+@property (readwrite, assign) NSInteger sslCACertFileLocationEnabled;
 @property (readwrite, retain) NSString *sslCACertFileLocation;
 @property (readwrite, retain) NSString *sshHost;
 @property (readwrite, retain) NSString *sshUser;
 @property (readwrite, retain) NSString *sshPassword;
-@property (readwrite, assign) int sshKeyLocationEnabled;
+@property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
 @property (readwrite, retain) NSString *connectionKeychainItemName;
@@ -189,46 +210,56 @@
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
 
-@property (readonly, assign) BOOL isConnecting;
-#ifndef SP_REFACTOR	/* ivars */
-@property (readonly, assign) NSString *favoritesPBoardType;
+#ifdef SP_CODA
+@property (readwrite, assign) SPDatabaseDocument *dbDocument;
 #endif
 
-- (id)initWithDocument:(SPDatabaseDocument *)theTableDocument;
+@property (readonly, assign) BOOL isConnecting;
+@property (readonly, assign) BOOL isEditingConnection;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
-- (IBAction)cancelMySQLConnection:(id)sender;
-- (void)initiateSSHTunnelConnection;
-- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
-- (void)initiateMySQLConnection;
-- (void)cancelConnection;
-- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail;
-- (void)addConnectionToDocument;
+- (IBAction)cancelConnection:(id)sender;
+#ifdef SP_CODA
+- (BOOL)cancellingConnection;
+#endif
 
+#ifndef SP_CODA
 // Interface interaction
-- (IBAction)chooseKeyLocation:(NSButton *)sender;
-#ifndef SP_REFACTOR /* method decls */
-- (IBAction)editFavorites:(id)sender;
+- (IBAction)nodeDoubleClicked:(id)sender;
+- (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
 - (IBAction)updateKeyLocationFileVisibility:(id)sender;
+- (void)updateSplitViewSize;
+
 - (void)resizeTabViewToConnectionType:(NSUInteger)theType animating:(BOOL)animate;
+
 - (IBAction)sortFavorites:(id)sender;
 - (IBAction)reverseSortFavorites:(NSMenuItem *)sender;
-#endif
 
-// Connection details interaction
-- (BOOL)checkHost;
-
-#ifndef SP_REFACTOR
 // Favorites interaction
-- (void)updateFavorites;
 - (void)updateFavoriteSelection:(id)sender;
-- (id)selectedFavorite;
-- (IBAction)addFavorite:(id)sender;
+- (void)updateFavoriteNextKeyView;
+- (NSMutableDictionary *)selectedFavorite;
+- (SPTreeNode *)selectedFavoriteNode;
+- (NSArray *)selectedFavoriteNodes;
 
-- (void)scrollViewFrameChanged:(NSNotification *)aNotification;
+- (IBAction)saveFavorite:(id)sender;
+- (IBAction)addFavorite:(id)sender;
+- (IBAction)addFavoriteUsingCurrentDetails:(id)sender;
+- (IBAction)addGroup:(id)sender;
+- (IBAction)removeNode:(id)sender;
+- (IBAction)duplicateFavorite:(id)sender;
+- (IBAction)renameNode:(id)sender;
+- (IBAction)makeSelectedFavoriteDefault:(id)sender;
+
+// Import/export favorites
+- (IBAction)importFavorites:(id)sender;
+- (IBAction)exportFavorites:(id)sender;
+
+// Accessors
+- (SPFavoritesOutlineView *)favoritesOutlineView;
 
 #endif
 @end

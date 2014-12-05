@@ -1,71 +1,82 @@
 //
-//  $Id$
-//
 //  SPDataStorage.h
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 10/01/2009.
-//  Copyright 2009 Rowan Beentje. All rights reserved.
+//  Created by Rowan Beentje on January 1, 2009.
+//  Copyright (c) 2009 Rowan Beentje. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-#import <Cocoa/Cocoa.h>
+#import <SPMySQL/SPMySQLStreamingResultStoreDelegate.h>
 
-/*
- * This class provides a storage mechanism intended to represent tabular
- * data, in a 2D array.  Data can be added and retrieved either directly
- * or via NSArrays; internally, C arrays are used to provide speed and
- * memory improvements.
- * This class is essentially mutable.
+@class SPMySQLStreamingResultStore;
+
+/**
+ * This class wraps a SPMySQLStreamingResultStore, providing an editable
+ * data store; on a fresh load all data will be proxied from the underlying
+ * result store, but if cells or rows are edited, mutable rows are stored
+ * directly.
  */
 
-#pragma mark -
-#pragma mark Class definition
+@interface SPDataStorage : NSObject <SPMySQLStreamingResultStoreDelegate>
+{
+	SPMySQLStreamingResultStore *dataStorage;
+	NSPointerArray *editedRows;
+	BOOL *unloadedColumns;
 
-@interface SPDataStorage : NSObject {
-	NSUInteger numColumns;
-	NSUInteger columnPointerByteSize;
-	NSUInteger numRows, numRowsCapacity;
-
-	id **dataStorage;
+	NSUInteger numberOfColumns;
+	NSUInteger editedRowCount;
 }
 
+/* Setting result store */
+- (void) setDataStorage:(SPMySQLStreamingResultStore *) newDataStorage updatingExisting:(BOOL)updateExistingStore;
+
 /* Retrieving rows and cells */
-- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)index;
+- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)anIndex;
 - (id) cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex;
+- (id) cellPreviewAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex previewLength:(NSUInteger)previewLength;
+- (BOOL) cellIsNullOrUnloadedAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex;
 
 /* Adding and amending rows and cells */
-- (void) addRowWithContents:(NSArray *)row;
-- (void) insertRowContents:(NSArray *)row atIndex:(NSUInteger)index;
-- (void) replaceRowAtIndex:(NSUInteger)index withRowContents:(NSArray *)row;
-- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)object;
-- (void) removeRowAtIndex:(NSUInteger)index;
+- (void) addRowWithContents:(NSMutableArray *)aRow;
+- (void) insertRowContents:(NSMutableArray *)aRow atIndex:(NSUInteger)anIndex;
+- (void) replaceRowAtIndex:(NSUInteger)anIndex withRowContents:(NSMutableArray *)aRow;
+- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)anObject;
+- (void) removeRowAtIndex:(NSUInteger)anIndex;
 - (void) removeRowsInRange:(NSRange)rangeToRemove;
 - (void) removeAllRows;
 
+/* Unloaded columns */
+- (void) setColumnAsUnloaded:(NSUInteger)columnIndex;
+
 /* Basic information */
 - (NSUInteger) count;
-- (void) setColumnCount:(NSUInteger)columnCount;
 - (NSUInteger) columnCount;
+- (BOOL) dataDownloaded;
 
-/* Initialisation and teardown */
-#pragma mark -
-- (id) init;
-- (void) dealloc;
+/* Delegate callback methods */
+- (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore;
 
 @end
 
@@ -88,14 +99,6 @@ static inline void SPDataStorageReplaceRow(SPDataStorage* self, NSUInteger rowIn
 	SPDSReplaceRow(self, @selector(replaceRowAtIndex:withRowContents:), rowIndex, row);
 }
 
-static inline void SPDataStorageReplaceObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, id newObject) 
-{
-	typedef void (*SPDSObjectReplaceMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger, id);
-	static SPDSObjectReplaceMethodPtr SPDSObjectReplace;
-	if (!SPDSObjectReplace) SPDSObjectReplace = (SPDSObjectReplaceMethodPtr)[self methodForSelector:@selector(replaceObjectInRow:column:withObject:)];
-	SPDSObjectReplace(self, @selector(replaceObjectInRow:column:withObject:), rowIndex, colIndex, newObject);
-}
-
 static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex) 
 {
 	typedef id (*SPDSObjectFetchMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger);
@@ -103,3 +106,12 @@ static inline id SPDataStorageObjectAtRowAndColumn(SPDataStorage* self, NSUInteg
 	if (!SPDSObjectFetch) SPDSObjectFetch = (SPDSObjectFetchMethodPtr)[self methodForSelector:@selector(cellDataAtRow:column:)];
 	return SPDSObjectFetch(self, @selector(cellDataAtRow:column:), rowIndex, colIndex);
 }
+
+static inline id SPDataStoragePreviewAtRowAndColumn(SPDataStorage* self, NSUInteger rowIndex, NSUInteger colIndex, NSUInteger previewLength)
+{
+	typedef id (*SPDSPreviewFetchMethodPtr)(SPDataStorage*, SEL, NSUInteger, NSUInteger, NSUInteger);
+	static SPDSPreviewFetchMethodPtr SPDSPreviewFetch;
+	if (!SPDSPreviewFetch) SPDSPreviewFetch = (SPDSPreviewFetchMethodPtr)[self methodForSelector:@selector(cellPreviewAtRow:column:previewLength:)];
+	return SPDSPreviewFetch(self, @selector(cellPreviewAtRow:column:previewLength:), rowIndex, colIndex, previewLength);
+}
+

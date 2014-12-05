@@ -1,26 +1,32 @@
 //
-//  $Id: SPUserManager.m 856 2009-06-12 05:31:39Z mltownsend $
-//
 //  SPUserManager.m
 //  sequel-pro
 //
-//  Created by Mark Townsend on Jan 01, 2009
+//  Created by Mark Townsend on Jan 1, 2009.
+//  Copyright (c) 2009 Mark Townsend. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPUserManager.h"
 #import "SPUserMO.h"
@@ -29,12 +35,13 @@
 #import "SPConnectionController.h"
 #import "SPServerSupport.h"
 #import "SPAlertSheets.h"
+#import "SPSplitView.h"
+#import "SPDatabaseDocument.h"
 
 #import <SPMySQL/SPMySQL.h>
 #import <QueryKit/QueryKit.h>
-#import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
-static const NSString *SPTableViewNameColumnID = @"NameColumn";
+static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 @interface SPUserManager ()
 
@@ -48,18 +55,20 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (BOOL)_checkAndDisplayMySqlError;
 - (void)_clearData;
 - (void)_initializeChild:(NSManagedObject *)child withItem:(NSDictionary *)item;
-- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child;
+- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child fromData:(NSArray *)dataForUser;
 - (void)_initializeSchemaPrivs;
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host;
 - (void)_setSchemaPrivValues:(NSArray *)objects enabled:(BOOL)enabled;
 - (void)_initializeAvailablePrivs;
 - (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost;
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context;
 
 @end
 
 @implementation SPUserManager
 
 @synthesize connection;
+@synthesize databaseDocument;
 @synthesize privsSupportedByServer;
 @synthesize managedObjectContext;
 @synthesize managedObjectModel;
@@ -71,11 +80,8 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 @synthesize serverSupport;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Initialization.
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"UserManagerView"])) {
@@ -109,22 +115,23 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (void)windowDidLoad
 {
 	[tabView selectTabViewItemAtIndex:0];
-	
+
+	[splitView setMinSize:120.f ofSubviewAtIndex:0];
+	[splitView setMinSize:620.f ofSubviewAtIndex:1];
+
 	NSTableColumn *tableColumn = [outlineView tableColumnWithIdentifier:SPTableViewNameColumnID];
 	ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
 	
 	[imageAndTextCell setEditable:NO];
 	[tableColumn setDataCell:imageAndTextCell];
-	
-	// Set the button delegate 
-	[splitViewButtonBar setSplitViewDelegate:self];
 
 	// Set schema table double-click actions
 	[grantedTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
 	[availableTableView setDoubleAction:@selector(doubleClickSchemaPriv:)];
 
-	[self _initializeUsers];
 	[self _initializeSchemaPrivs];
+	[self _initializeUsers];
+	[self _initializeAvailablePrivs];	
 
 	treeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
 	
@@ -208,6 +215,28 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_initializeTree:(NSArray *)items
 {
+
+	// Retrieve all the user data in order to be able to initialise the schema privs for each child,
+	// copying into a dictionary keyed by user, each with all the host rows.
+	NSMutableDictionary *schemaPrivilegeData = [NSMutableDictionary dictionary];
+	SPMySQLResult *queryResults = [[self connection] queryString:@"SELECT * FROM mysql.db"];
+	[queryResults setReturnDataAsStrings:YES];
+	for (NSDictionary *privRow in queryResults) {
+		if (![schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]]) {
+			[schemaPrivilegeData setObject:[NSMutableArray array] forKey:[privRow objectForKey:@"User"]];
+		}
+		[[schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]] addObject:privRow];
+
+		// If "all database" values were found, add them to the schemas list if not already present
+		NSString *schemaName = [privRow objectForKey:@"Db"];
+		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
+			if (![schemas containsObject:schemaName]) {
+				[schemas addObject:schemaName];
+				[schemasTableView noteNumberOfRowsChanged];
+			}
+		}
+	}
+
 	// Go through each item that contains a dictionary of key-value pairs
 	// for each user currently in the database.
 	for (NSUInteger i = 0; i < [items count]; i++)
@@ -215,26 +244,20 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
 		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
+		NSManagedObject *parent;
+		NSManagedObject *child;
 		
 		// Check to make sure if we already have added the parent
 		if (parentResults != nil && [parentResults count] > 0) {
 			
 			// Add Children
-			NSManagedObject *parent = [parentResults objectAtIndex:0];
-			NSManagedObject *child = [self _createNewSPUser];
-			
-			// Setup the NSManagedObject with values from the dictionary
-			[self _initializeChild:child withItem:item];
-			
-			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
-			[children addObject:child];
-			
-			[self _initializeSchemaPrivsForChild:child];
+			parent = [parentResults objectAtIndex:0];
+			child = [self _createNewSPUser];
 		} 
 		else {
 			// Add Parent
-			NSManagedObject *parent = [self _createNewSPUser];
-			NSManagedObject *child = [self _createNewSPUser];
+			parent = [self _createNewSPUser];
+			child = [self _createNewSPUser];
 			
 			// We only care about setting the user and password keys on the parent, together with their
 			// original values for comparison purposes
@@ -242,14 +265,15 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 			[parent setPrimitiveValue:username forKey:@"originaluser"];
 			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
 			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
-
-			[self _initializeChild:child withItem:item];
-			
-			NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
-			[children addObject:child];
-			
-			[self _initializeSchemaPrivsForChild:child];
 		}
+
+		// Setup the NSManagedObject with values from the dictionary
+		[self _initializeChild:child withItem:item];
+		
+		NSMutableSet *children = [parent mutableSetValueForKey:@"children"];
+		[children addObject:child];
+		
+		[self _initializeSchemaPrivsForChild:child fromData:[schemaPrivilegeData objectForKey:username]];
 		
 		// Save the initialized objects so that any new changes will be tracked.
 		NSError *error = nil;
@@ -299,11 +323,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 {
 	// Initialize Databases
 	[schemas removeAllObjects];
-	[schemas addObjectsFromArray:[[self connection] databases]];
-	
-	[schemaController rearrangeObjects];
-	
-	[self _initializeAvailablePrivs];	
+	[schemas addObjectsFromArray:[databaseDocument allDatabaseNames]];
+
+	[schemasTableView reloadData];
 }
 
 /**
@@ -347,24 +369,25 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 /**
  * Initialize the schema privileges for the supplied child object.
+ *
+ * Assumes that the child has already been initialized with values from the
+ * global user table.
  */
-- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child
+- (void)_initializeSchemaPrivsForChild:(NSManagedObject *)child fromData:(NSArray *)dataForUser
 {
-	// Assumes that the child has already been initialized with values from the
-	// global user table.
+	NSMutableSet *privs = [child mutableSetValueForKey:@"schema_privileges"];
 
 	// Set an originalhost key on the child to allow the tracking of edits
 	[child setPrimitiveValue:[child valueForKey:@"host"] forKey:@"originalhost"];
-	
-	// Select rows from the db table that contains schema privs for each user/host
-	NSString *queryString = [NSString stringWithFormat:@"SELECT * FROM mysql.db WHERE user = %@ AND host = %@", 
-							 [[[child parent] valueForKey:@"user"] tickQuotedString], [[child valueForKey:@"host"] tickQuotedString]];
-	
-	SPMySQLResult *queryResults = [[self connection] queryString:queryString];
-	[queryResults setReturnDataAsStrings:YES];
-	
-	for (NSDictionary *rowDict in queryResults) 
+
+	for (NSDictionary *rowDict in dataForUser) 
 	{
+
+		// Verify that the host matches, or skip this entry
+		if (![[rowDict objectForKey:@"Host"] isEqualToString:[child valueForKey:@"host"]]) {
+			continue;
+		}
+
 		NSManagedObject *dbPriv = [NSEntityDescription insertNewObjectForEntityForName:@"Privileges" inManagedObjectContext:[self managedObjectContext]];
 		
 		for (NSString *key in rowDict)
@@ -381,15 +404,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 				[dbPriv setValue:[NSNumber numberWithBool:boolValue] forKey:key];
 			} 
 			else if ([key isEqualToString:@"Db"]) {
-                [dbPriv setValue:[[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"]
-                          forKey:key];
+				NSString *db = [[rowDict objectForKey:key] stringByReplacingOccurrencesOfString:@"\\_" withString:@"_"];
+                [dbPriv setValue:db forKey:key];
             } 
 			else if (![key isEqualToString:@"Host"] && ![key isEqualToString:@"User"]) {
 				[dbPriv setValue:[rowDict objectForKey:key] forKey:key];
 			}
 		}
-		
-		NSMutableSet *privs = [child mutableSetValueForKey:@"schema_privileges"];
 		[privs addObject:dbPriv];
 	}
 }
@@ -451,6 +472,31 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
     return managedObjectContext;
 }
 
+- (void)beginSheetModalForWindow:(NSWindow *)docWindow completionHandler:(void (^)())callback
+{
+	//copy block from stack to heap, otherwise it wouldn't live long enough to be invoked later.
+	void *heapCallback = callback? Block_copy(callback) : NULL;
+	
+	[NSApp beginSheet:[self window]
+	   modalForWindow:docWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:heapCallback];
+}
+
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
+{
+	//[NSApp endSheet...] does not close the window
+	[[self window] orderOut:self];
+	//notify delegate
+	if(context) {
+		void (^callback)() = context;
+		//directly invoking callback would risk that we are dealloc'd while still in this run loop iteration.
+		dispatch_async(dispatch_get_main_queue(), callback);
+		Block_release(callback);
+	}
+}
+
 #pragma mark -
 #pragma mark General IBAction methods
 
@@ -459,6 +505,9 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doCancel:(id)sender
 {
+	// Discard any pending changes
+	[treeController discardEditing];
+
 	// Change the first responder to end editing in any field
 	[[self window] makeFirstResponder:self];
 
@@ -466,7 +515,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	
 	// Close sheet
 	[NSApp endSheet:[self window] returnCode:0];
-	[[self window] orderOut:self];
 }
 
 /**
@@ -474,26 +522,39 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doApply:(id)sender
 {
-	NSError *error = nil;
+
+	// If editing can't be committed, cancel the apply
+	if (![treeController commitEditing]) {
+		return;
+	}
+
 	errorsString = [[NSMutableString alloc] init];
     
 	// Change the first responder to end editing in any field
 	[[self window] makeFirstResponder:self];
 
 	isSaving = YES;
+
+	NSError *error = nil;
 	
 	[[self managedObjectContext] save:&error];
 	
 	isSaving = NO;
 	
-	if (error != nil) [errorsString appendString:[error localizedDescription]];
+	if (error) [errorsString appendString:[error localizedDescription]];
 
 	[[self connection] queryString:@"FLUSH PRIVILEGES"];
 
 	// Display any errors
 	if ([errorsString length]) {
 		[errorsTextView setString:errorsString];
-		[NSApp beginSheet:errorsSheet modalForWindow:[NSApp keyWindow] modalDelegate:nil didEndSelector:NULL contextInfo:nil];
+		
+		[NSApp beginSheet:errorsSheet 
+		   modalForWindow:[NSApp keyWindow] 
+			modalDelegate:nil 
+		   didEndSelector:NULL 
+			  contextInfo:nil];
+		
 		[errorsString release];
 		
 		return;
@@ -503,7 +564,6 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 
 	// Otherwise, close the sheet
 	[NSApp endSheet:[self window] returnCode:0];
-	[[self window] orderOut:self];
 }
 
 /**
@@ -647,9 +707,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSArray *selectedObjects = [availableController selectedObjects];
 	
 	[grantedController addObjects:selectedObjects];
-	[grantedTableView reloadData];
+	[grantedTableView noteNumberOfRowsChanged];
 	[availableController removeObjects:selectedObjects];
-	[availableTableView reloadData];
+	[availableTableView noteNumberOfRowsChanged];
+	[schemasTableView setNeedsDisplay:YES];
 	
 	[self _setSchemaPrivValues:selectedObjects enabled:YES];
 }
@@ -662,9 +723,10 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	NSArray *selectedObjects = [grantedController selectedObjects];
 	
 	[availableController addObjects:selectedObjects];
-	[availableTableView reloadData];
+	[availableTableView noteNumberOfRowsChanged];
 	[grantedController removeObjects:selectedObjects];
-	[grantedTableView reloadData];
+	[grantedTableView noteNumberOfRowsChanged];
+	[schemasTableView setNeedsDisplay:YES];
 	
 	[self _setSchemaPrivValues:selectedObjects enabled:NO];
 }
@@ -751,7 +813,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 	// The passed in objects should be an array of NSDictionaries with a key
 	// of "name".
 	NSManagedObject *selectedHost = [[treeController selectedObjects] objectAtIndex:0];
-	NSString *selectedDb = [[schemaController selectedObjects] objectAtIndex:0];
+	NSString *selectedDb = [schemas objectAtIndex:[schemasTableView selectedRow]];
 	
 	NSArray *selectedPrivs = [self _fetchPrivsWithUser:[selectedHost valueForKeyPath:@"parent.user"] 
 												schema:[selectedDb stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
@@ -770,12 +832,12 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		isNew = YES;
 	}
 
-	// Now setup all the items that are selected to YES
+	// Now setup all the items that are selected to their enabled value
 	for (NSDictionary *obj in objects)
 	{
 		[priv setValue:[NSNumber numberWithBool:enabled] forKey:[obj valueForKey:@"name"]];
 	}
-	
+
 	if (isNew) {
 		// Set up relationship
 		NSMutableSet *privs = [selectedHost mutableSetValueForKey:@"schema_privileges"];
@@ -916,7 +978,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 					[self _renameUserFrom:[user valueForKey:@"originaluser"] 
 									 host:[child valueForKey:@"originalhost"] ? [child valueForKey:@"originalhost"] : [child host]
 									   to:[user valueForKey:@"user"]
-									 host:[child user]];
+									 host:[child host]];
 				}
 			}
 
@@ -1208,10 +1270,26 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 - (NSArray *)_fetchPrivsWithUser:(NSString *)username schema:(NSString *)selectedSchema host:(NSString *)host
 {
 	NSManagedObjectContext *moc = [self managedObjectContext];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+	NSPredicate *predicate;
 	NSEntityDescription *privEntity = [NSEntityDescription entityForName:@"Privileges" inManagedObjectContext:moc];
 	NSFetchRequest *request = [[[NSFetchRequest alloc] init] autorelease];
-	
+
+	// Construct the predicate depending on whether a user and schema were supplied;
+	// blank schemas indicate a default priv value (as per %)
+	if ([username length]) {
+		if ([selectedSchema length]) {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db like[cd] %@)", username, host, selectedSchema];
+		} else {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user like[cd] %@) AND (user.host like[cd] %@) AND (db == '')", username, host];
+		}
+	} else {
+		if ([selectedSchema length]) {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user == '') AND (user.host like[cd] %@) AND (db like[cd] %@)", host, selectedSchema];
+		} else {
+			predicate = [NSPredicate predicateWithFormat:@"(user.parent.user == '') AND (user.host like[cd] %@) AND (db == '')", host];
+		}
+	}
+
 	[request setEntity:privEntity];
 	[request setPredicate:predicate];
 	
@@ -1332,7 +1410,7 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost
 {
-	NSString *renameQuery;
+	NSString *renameQuery = nil;
 	
 	if ([serverSupport supportsRenameUser]) {
 		renameQuery = [NSString stringWithFormat:@"RENAME USER %@@%@ TO %@@%@",
@@ -1370,14 +1448,13 @@ static const NSString *SPTableViewNameColumnID = @"NameColumn";
 		}
 	}
 	
-	[connection queryString:renameQuery];
+	if (renameQuery) {
+		[connection queryString:renameQuery];
+	}
 }
 
 #pragma mark -
 
-/**
- * Dealloc. Get rid of everything.
- */
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];

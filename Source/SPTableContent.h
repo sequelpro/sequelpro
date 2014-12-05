@@ -1,58 +1,64 @@
 //
-//  $Id$
-//
-//  SPDatabaseDocument.h
+//  SPTableContent.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //  
-//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-@class SPDatabaseDocument, 
-       SPCopyTable, 
-       SPTextAndLinkCell, 
-       SPHistoryController, 
-       SPTableInfo, 
-       SPDataStorage, 
-       SPTextView, 
-       SPFieldEditorController, 
-       SPMySQLConnection, 
-       SPMySQLFastStreamingResult,
-       SPTableData, 
-       SPDatabaseDocument,
-       SPTablesList, 
-       SPTableStructure, 
-	   SPTableList, 
-       SPContentFilterManager;
-
-@interface SPTableContent : NSObject
-#ifdef SP_REFACTOR
-<NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
+@class SPDatabaseDocument;
+@class SPCopyTable;
+@class SPTextAndLinkCell;
+@class SPHistoryController;
+@class SPTableInfo;
+@class SPDataStorage;
+@class SPTextView;
+@class SPFieldEditorController;
+@class SPMySQLConnection;
+@class SPMySQLStreamingResultStore;
+@class SPTableData;
+@class SPDatabaseDocument;
+@class SPTablesList;
+@class SPTableStructure;
+@class SPTableList;
+@class SPContentFilterManager;
+#ifndef SP_CODA
+@class SPSplitView;
 #endif
+
+#import "SPDatabaseContentViewDelegate.h"
+
+@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 	IBOutlet SPTableData* tableDataInstance;
 	IBOutlet id tableSourceInstance;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet SPTableInfo *tableInfoInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
 #endif
@@ -66,7 +72,7 @@
 	IBOutlet id duplicateButton;
 	IBOutlet id removeButton;
 	IBOutlet id reloadButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSButton *multipleLineEditingButton;
 	IBOutlet id countText;
 	IBOutlet id limitRowsField;
@@ -78,36 +84,46 @@
 	IBOutlet id betweenTextField;
 
 	IBOutlet NSButton *paginationPreviousButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSButton *paginationButton;
+	IBOutlet NSButton *paginationGoButton;
 #endif
 	IBOutlet NSButton *paginationNextButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSView *contentViewPane;
+	IBOutlet NSViewController *paginationViewController;
 	IBOutlet NSView *paginationView;
+	IBOutlet NSBox *paginationBox;
+	NSPopover *paginationPopover;
 #endif
 	IBOutlet NSTextField *paginationPageField;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPCopyTable *filterTableView;
 	IBOutlet NSPanel *filterTableWindow;
+	IBOutlet SPSplitView *filterTableSplitView;
+	IBOutlet NSTextField *filterTableQueryTitle;
 	IBOutlet NSButton *filterTableFilterButton;
 	IBOutlet NSButton *filterTableClearButton;
 	IBOutlet SPTextView *filterTableWhereClause;
 	IBOutlet NSButton *filterTableNegateCheckbox;
-	IBOutlet NSMenuItem *filterTableDistinctMenuItem;
+	IBOutlet NSButton *filterTableDistinctCheckbox;
 	IBOutlet NSButton *filterTableLiveSearchCheckbox;
-	IBOutlet NSMenuItem *filterTableGearLookAllFields;
+	IBOutlet NSButton *filterTableSearchAllFields;
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
 	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
+
+	// Temporary to avoid nib conflicts during WIP
+	IBOutlet SPSplitView *contentSplitView;
 #endif
 	SPMySQLConnection *mySQLConnection;
 
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
-#ifndef SP_REFACTOR
+	NSCondition *tableLoadingCondition;
+#ifndef SP_CODA
 	NSMutableArray *nibObjectsToRelease;
 #endif
 
@@ -128,7 +144,7 @@
 	SPContentFilterManager *contentFilterManager;
 	NSUInteger contentPage;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSMutableDictionary *filterTableData;
 	BOOL filterTableNegate;
 	BOOL filterTableDistinct;
@@ -147,7 +163,7 @@
 	NSRect selectionViewportToRestore;
 	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSInteger paginationViewHeight;
 #endif
 
@@ -164,12 +180,14 @@
 
 	NSColor *blackColor;
 	NSColor *lightGrayColor;
+	NSColor *blueColor;
+	NSColor *whiteColor;
 
 	SPFieldEditorController *fieldEditor;
 	NSRange fieldEditorSelectedRange;
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 @property (assign) id filterButton;
 @property (assign) id fieldField;
 @property (assign) id compareField;
@@ -196,6 +214,7 @@
 
 // Table loading methods and information
 - (void)loadTable:(NSString *)aTable;
+- (void)setTableDetails:(NSDictionary *)tableDetails;
 - (void)clearTableValues;
 - (void)loadTableValues;
 - (NSString *)tableFilterString;
@@ -210,12 +229,11 @@
 - (IBAction)filterTable:(id)sender;
 - (void)filterTableTask;
 - (IBAction)toggleFilterField:(id)sender;
-- (NSString *)usedQuery;
 - (void)setUsedQuery:(NSString *)query;
 
 // Pagination
 - (IBAction)navigatePaginationFromButton:(id)sender;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)togglePagination:(NSButton *)sender;
 #endif
 - (void)setPaginationViewVisibility:(BOOL)makeVisible;
@@ -233,7 +251,6 @@
 - (IBAction)toggleNegateClause:(id)sender;
 - (IBAction)toggleDistinctSelect:(id)sender;
 - (IBAction)setDefaultOperator:(id)sender;
-- (IBAction)swapFilterTable:(id)sender;
 - (IBAction)toggleLookAllFieldsMode:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)showDefaultOperaterHelp:(id)sender;
@@ -251,7 +268,7 @@
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
 - (IBAction)setCompareTypes:(id)sender;
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult approximateRowCount:(NSUInteger)targetRowCount;
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)saveRowToTable;
 - (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (NSString *)argumentForRow:(NSInteger)row;
@@ -260,7 +277,6 @@
 - (BOOL)tableContainsBlobOrTextColumns;
 - (NSString *)fieldListForQuery;
 - (void)updateNumberOfRows;
-- (NSInteger)fetchNumberOfRows;
 - (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
@@ -276,7 +292,6 @@
 - (NSRect)viewport;
 - (CGFloat)tablesListWidth;
 - (NSDictionary *)filterSettings;
-- (NSArray *)dataColumnDefinitions;
 - (void)setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending;
 - (void)setPageToRestore:(NSUInteger)thePage;
 - (void)setSelectionToRestore:(NSDictionary *)theSelection;
@@ -284,16 +299,12 @@
 - (void)setFiltersToRestore:(NSDictionary *)filterSettings;
 - (void)storeCurrentDetailsForRestoration;
 - (void)clearDetailsToRestore;
-- (void)setFilterTableData:(NSData*)arcData;
-- (NSData*)filterTableData;
+- (void)setFilterTableData:(NSData *)arcData;
+- (NSData *)filterTableData;
 
 - (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
-- (void)makeContentFilterHaveFocus;
 
-- (NSArray*)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
-
-- (void)updateFilterTableClause:(id)currentValue;
-- (NSString*)escapeFilterTableDefaultOperator:(NSString*)anOperator;
+- (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 
 @end

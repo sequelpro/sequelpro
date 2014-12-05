@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPEditorPreferencePane.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 31, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on October 31, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPEditorPreferencePane.h"
 #import "SPPreferenceController.h"
@@ -30,14 +35,13 @@
 #import "SPCategoryAdditions.h"
 
 // Constants
-static NSString *SPImportColorScheme             = @"ImportColorScheme";
-static NSString *SPExportColorScheme             = @"ExportColorScheme";
-static NSString *SPSaveColorScheme               = @"SaveColorScheme";
-static NSString *SPDefaultColorSchemeName        = @"Default";
-static NSString *SPDefaultColorSchemeNameLC      = @"default";
-static NSString *SPCustomColorSchemeName         = @"User-defined";
-static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
-#define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme",@"Preferences : Themes : Initial filename for 'Export'")
+static NSString *SPSaveColorScheme          = @"SaveColorScheme";
+static NSString *SPDefaultColorSchemeName   = @"Default";
+static NSString *SPDefaultColorSchemeNameLC = @"default";
+static NSString *SPCustomColorSchemeName    = @"User-defined";
+static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
+
+#define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme", @"Preferences : Themes : Initial filename for 'Export'")
 
 @interface SPEditorPreferencePane (PrivateAPI)
 
@@ -53,9 +57,6 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -119,6 +120,8 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[colorCell setAction:@selector(colorClick:)];
 	
 	[column setDataCell:colorCell];
+
+	[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 }
 
 #pragma mark -
@@ -134,13 +137,14 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
-	
-	[panel beginSheetForDirectory:nil 
-							 file:[SP_EXPORT_COLOR_SCHEME_NAME_STRING stringByAppendingPathExtension:SPColorThemeFileExtension] 
-				   modalForWindow:[[self view] window] 
-					modalDelegate:self 
-				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:SPExportColorScheme];
+	[panel setNameFieldStringValue:[SP_EXPORT_COLOR_SCHEME_NAME_STRING stringByAppendingPathExtension:SPColorThemeFileExtension]];
+
+	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			[self _saveColorThemeAtPath:[[panel URL] path]];
+		}
+	}];
 }
 
 - (IBAction)importColorScheme:(id)sender
@@ -153,15 +157,18 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	
-	[panel beginSheetForDirectory:nil 
-							 file:@"" 
-							types:[NSArray arrayWithObjects:SPColorThemeFileExtension, @"tmTheme", nil] 
-				   modalForWindow:[[self view] window]
-					modalDelegate:self 
-				   didEndSelector:@selector(panelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:SPImportColorScheme];
-	
+	[panel setAllowedFileTypes:@[SPColorThemeFileExtension, @"tmTheme"]];
+
+	[panel beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger returnCode)
+	{
+		if (returnCode == NSOKButton) {
+			if ([self _loadColorSchemeFromFile:[[[panel URLs] objectAtIndex:0] path] ]) {
+				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
+
+				[self updateDisplayColorThemeName];
+			}
+		}
+	}];
 }
 
 - (IBAction)loadColorScheme:(id)sender
@@ -265,7 +272,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
  */
 - (IBAction)showCustomQueryFontPanel:(id)sender
 {
-	[(SPPreferenceController *)[[[self view] window] delegate] setFontChangeTarget:2];
+	[(SPPreferenceController *)[[[self view] window] delegate] setFontChangeTarget:SPPrefFontChangeTargetEditor];
 	
 	[[NSFontPanel sharedFontPanel] setPanelFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]] isMultiple:NO];
 	[[NSFontPanel sharedFontPanel] makeKeyAndOrderFront:self];
@@ -292,7 +299,8 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
-	
+
+	[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[colorSettingTableView reloadData];
 	
 	[self updateDisplayColorThemeName];
@@ -462,8 +470,13 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 	if (![[NSColorPanel sharedColorPanel] isVisible]) return;
 	
 	[prefs setObject:[NSArchiver archivedDataWithRootObject:[sender color]] forKey:[editorColors objectAtIndex:colorRow]];
+
+	if ([[editorColors objectAtIndex:colorRow] isEqualTo:SPCustomQueryEditorBackgroundColor]) {
+		[colorSettingTableView setBackgroundColor:[sender color]];
+	}
+
 	[colorSettingTableView reloadData];
-	
+
 	[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 	
 	[self updateDisplayColorThemeName];
@@ -512,23 +525,6 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 			[prefs setObject:[enterNameInputField stringValue] forKey:SPCustomQueryEditorThemeName];
 			
 			[self updateDisplayColorThemeName];
-		}
-	}
-}
-
-- (void)panelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if ([contextInfo isEqualToString:SPExportColorScheme]) {
-		if (returnCode == NSOKButton) {
-			[self _saveColorThemeAtPath:[[panel URL] path]];
-		}
-	}
-	else if ([contextInfo isEqualToString:SPImportColorScheme]) {
-		if (returnCode == NSOKButton) {
-			if ([self _loadColorSchemeFromFile:[[panel filenames] objectAtIndex:0]]) {
-				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
-				[self updateDisplayColorThemeName];
-			}
 		}
 	}
 }
@@ -713,7 +709,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 
 - (NSImage *)preferencePaneIcon
 {
-	return [NSImage imageNamed:@"toolbar-preferences-queryeditor"];
+	return [NSImage imageNamed:@"toolbar-switch-to-sql"];
 }
 
 - (NSString *)preferencePaneName
@@ -745,19 +741,18 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 		
 		[[NSColorPanel sharedColorPanel] close];
 		
-		SPBeginWaitingAlertSheet(@"title",
-								 NSLocalizedString(@"Proceed", @"proceed button"), 
-								 NSLocalizedString(@"Cancel", @"cancel button"), 
-								 nil,
-								 NSWarningAlertStyle, 
-								 [[self view] window], 
-								 self,
-								 @selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:),
-								 nil,
-								 NSLocalizedString(@"Unsaved Theme", @"unsaved theme message"),
-								 NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message"),
-								 &checkForUnsavedThemeSheetStatus
-								 );
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+		                                 defaultButton:NSLocalizedString(@"Proceed", @"proceed button")
+		                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+		                                   otherButton:nil
+		                                    alertStyle:NSWarningAlertStyle
+		                                     docWindow:[[self view] window]
+		                                 modalDelegate:self
+		                                didEndSelector:@selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:)
+		                                   contextInfo:nil
+		                                           msg:NSLocalizedString(@"Unsaved Theme", @"unsaved theme message")
+		                                      infoText:NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message")
+		                                    returnCode:&checkForUnsavedThemeSheetStatus];
 		
 		return (checkForUnsavedThemeSheetStatus == NSAlertDefaultReturn);
 	}
@@ -897,7 +892,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:err];
+							 informativeTextWithFormat:@"%@", err];
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -999,6 +994,7 @@ static NSString *SPCustomColorSchemeNameLC       = @"user-defined";
 		}
 		
 		[theme release];
+		[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 		[colorSettingTableView reloadData];
 	} 
 	else {

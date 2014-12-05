@@ -340,7 +340,7 @@
         else
             currentTint = [cell controlTint];
         
-        if (![[[cell controlView] window] isKeyWindow]) 
+        if (![[[cell customControlView] window] isKeyWindow])
             currentTint = NSClearControlTint;
         
         NSImage *bgImage;
@@ -381,7 +381,7 @@
         [aquaDivider compositeToPoint:NSMakePoint(cellFrame.origin.x + cellFrame.size.width - 1.0, cellFrame.origin.y + cellFrame.size.height) operation:NSCompositeSourceOver];
     }
     
-    [self drawInteriorWithTabCell:cell inView:[cell controlView]];
+    [self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 - (void)drawBackgroundInRect:(NSRect)rect
@@ -451,12 +451,8 @@
         
         closeButtonSize = [closeButton size];
         
-        if ([controlView isFlipped]) {
-            closeButtonRect.origin.y += closeButtonRect.size.height;
-        }
-        
-        [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0];
-        
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
         // scoot label over
         labelPosition += closeButtonSize.width + kPSMTabBarCellPadding;
     }
@@ -465,9 +461,6 @@
     if ([cell hasIcon]) {
         NSRect iconRect = [self iconRectForTabCell:cell];
         NSImage *icon = [[[cell representedObject] identifier] icon];
-        if ([controlView isFlipped]) {
-            iconRect.origin.y += iconRect.size.height;
-        }
         
         // center in available space (in case icon image is smaller than kPSMTabBarIconWidth)
         if ([icon size].width < kPSMTabBarIconWidth) {
@@ -478,8 +471,8 @@
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height) / 2.0;
         }
         
-        [icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
-        
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
         // scoot label over
         labelPosition += iconRect.size.width + kPSMTabBarCellPadding;
     }

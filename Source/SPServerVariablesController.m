@@ -1,34 +1,40 @@
 //
-//  $Id$
-//
 //  SPServerVariablesController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 13, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on November 13, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPServerVariablesController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAppController.h"
+
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPServerVariablesController (PrivateAPI)
+@interface SPServerVariablesController ()
 
 - (void)_getDatabaseServerVariables;
 - (void)_updateServerVariablesFilterForFilterString:(NSString *)filterString;
@@ -43,9 +49,6 @@
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Initialisation
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseServerVariables"])) {
@@ -55,22 +58,20 @@
 	return self;
 }
 
-/**
- * Interface initialisation
- */
 - (void)awakeFromNib
 {
-	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+	prefs = [NSUserDefaults standardUserDefaults];
 	
 	// Set the process table view's vertical gridlines if required
 	[variablesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	for (NSTableColumn *column in [variablesTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
@@ -131,7 +132,21 @@
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"ServerVariables" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    [panel setNameFieldStringValue:@"ServerVariables"];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            if ([variablesFiltered count] > 0) {
+                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
+                
+                for (NSDictionary *variable in variablesFiltered)
+                {
+                    [variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
+                }
+                
+                [variablesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 
@@ -159,25 +174,6 @@
 	
 	// Open the sheet
 	[NSApp beginSheet:[self window] modalForWindow:window modalDelegate:self didEndSelector:nil contextInfo:nil];
-}
-
-/**
- * Invoked when the save panel is dismissed.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if ([variablesFiltered count] > 0) {
-			NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
-			
-			for (NSDictionary *variable in variablesFiltered) 
-			{
-				[variablesString appendFormat:@"%@ = %@\n", [variable objectForKey:@"Variable_name"], [variable objectForKey:@"Value"]];
-			}
-			
-			[variablesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-		}
-	}
 }
 
 /**
@@ -221,10 +217,11 @@
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 		
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 		for (NSTableColumn *column in [variablesTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 		
 		[variablesTableView reloadData];
@@ -266,31 +263,16 @@
 }
 
 #pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	[variables release], variables = nil;
-	
-	[super dealloc];
-}
-
-@end
-
-@implementation SPServerVariablesController (PrivateAPI)
+#pragma mark Private API
 
 /**
  * Gets the database's current server variables.
  */
 - (void)_getDatabaseServerVariables
 {
-	
-	// Get processes
+	// Get variables
 	SPMySQLResult *serverVariables = [connection queryString:@"SHOW VARIABLES"];
+	
 	[serverVariables setReturnDataAsStrings:YES];
 	
 	[variables removeAllObjects];
@@ -391,6 +373,17 @@
 		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[variables release], variables = nil;
+	
+	[super dealloc];
 }
 
 @end

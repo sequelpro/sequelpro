@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPDotExporter.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDotExporter.h"
 #import "SPFileHandle.h"
@@ -47,7 +52,7 @@
  *
  * @return The initialised instance
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate
+- (id)initWithDelegate:(NSObject<SPDotExporterProtocol> *)exportDelegate
 {
 	if ((self = [super init])) {
 		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPDotExporterProtocol));
@@ -168,10 +173,10 @@
 				}
 				
 				// Get the column references. Currently the columns themselves are an array,
-				// while reference columns and tables are comma separated if there are more than
+				// while tables are comma separated if there are more than
 				// one.  Only use the first of each for the time being.
 				NSArray *originColumns = [constraint objectForKey:@"columns"];
-				NSArray *referenceColumns = [[constraint objectForKey:@"ref_columns"] componentsSeparatedByString:@","];
+				NSArray *referenceColumns = [constraint objectForKey:@"ref_columns"];
 				
 				NSString *extra = @"";
 				
@@ -184,7 +189,7 @@
 		}
 
 		// Update progress
-		NSInteger progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
+		double progress = (i * ([self exportMaxProgress] / [[self dotExportTables] count]));
 		
 		[self setExportProgressValue:progress];
 		[delegate performSelectorOnMainThread:@selector(dotExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
@@ -220,9 +225,8 @@
 	[pool release];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	delegate = nil;

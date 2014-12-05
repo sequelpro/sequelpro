@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
-//  SPExporterInitializer.m
+//  SPExportInitializer.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on March 31, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportInitializer.h"
 #import "SPTableData.h"
@@ -32,16 +37,16 @@
 #import "SPCustomQuery.h"
 #import "SPAlertSheets.h"
 #import "SPTableContent.h"
-
 #import "SPCSVExporter.h"
 #import "SPSQLExporter.h"
 #import "SPXMLExporter.h"
 #import "SPDotExporter.h"
-#import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportFile.h"
 #import "SPExportFileUtilities.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
+#import "SPConnectionControllerDelegateProtocol.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @implementation SPExportController (SPExportInitializer)
@@ -68,6 +73,15 @@
 		   didEndSelector:nil 
 			  contextInfo:nil];
 	}
+
+	// If using an export type that requires the connection to start in UTF8, cache the current connection
+	// encoding and then set it here.
+	if (exportType == SPSQLExport || exportType == SPDotExport) {
+		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
+				
+		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];	
+	}
 		
 	// Add the first exporter to the operation queue
 	[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -85,7 +99,7 @@
 	NSArray *dataArray = nil;
 	
 	// Get rid of the cached connection encoding
-	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
+	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
 	
 	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
 	
@@ -281,12 +295,6 @@
 		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
 		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
 		
-		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-				
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-				
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
@@ -380,13 +388,7 @@
 		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
 		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
 		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-		
-		// Cache the current connection encoding then change it to UTF-8 to allow SQL dumps to work
-		sqlPreviousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		sqlPreviousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-		
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];
-		
+
 		[dotExporter setDotExportTables:exportTables];
 		
 		// Create custom filename if required
@@ -420,7 +422,7 @@
 		[exporter setExportOutputEncoding:[connection stringEncoding]];
 		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
 		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
-		[exporter setExportOutputCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+		[exporter setExportOutputCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}
 		
@@ -431,7 +433,7 @@
 	{		
 		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
 
-			[exportFile setCompressionFormat:[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
+			[exportFile setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 			
 			if ([exportFile exportFileNeedsCSVHeader]) {
 				[self writeCSVHeaderToExportFile:exportFile];
@@ -449,11 +451,11 @@
 	if ([problemFiles count] > 0) {
 		[self errorCreatingExportFileHandles:problemFiles];
 	}
-	else {	
-		[problemFiles release];
-		
+	else {
 		[self startExport];
 	}
+
+	[problemFiles release];
 }
 
 /**

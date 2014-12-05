@@ -30,12 +30,11 @@
 
 #import "QKQueryParameter.h"
 #import "QKQueryUtilities.h"
+#import "QKQueryConstants.h"
 
 @implementation QKQueryParameter
 
-@synthesize _field;
-@synthesize _operator;
-@synthesize _value;
+@synthesize operator = _operator;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -64,21 +63,11 @@
 		
 	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
-	[string appendString:field];
-	[string appendFormat:@" %@ ", [QKQueryUtilities operatorRepresentationForType:_operator]];
-	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
+	[string appendFormat:@"%1$@%2$@%1$@", [self useQuotedIdentifier] ? _identiferQuote : EMPTY_STRING, field];
+	[string appendFormat:@" %@ ", [QKQueryUtilities stringRepresentationOfQueryOperator:_operator]];
+	[string appendFormat:![_value isKindOfClass:[NSNumber class]] ? @"'%@'" : @"%@", [_value description]];
 	
 	return string;
-}
-
-#pragma mark -
-
-- (void)dealloc
-{
-	if (_field) [_field release], _field = nil;
-	if (_value) [_value release], _value = nil;
-	
-	[super dealloc];
 }
 
 @end

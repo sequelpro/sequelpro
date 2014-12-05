@@ -1,39 +1,48 @@
 //
-//  $Id$
-// 
 //  SPSSHTunnel.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on April 26, 2009.  Inspired by code by
-//  Yann Bizuel for SSH Tunnel Manager 2.
+//  Created by Rowan Beentje on April 26, 2009.
+//  Copyright (c) 2009 Rowan Beentje. All rights reserved.
+//  
+//  Inspired by code by Yann Bizuel for SSH Tunnel Manager 2.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPSSHTunnel.h"
 #import "RegexKitLite.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
-#import <SPMySQL/SPMySQL.h>
+#import "SPThreadAdditions.h"
 
 #import <netinet/in.h>
+#import <CommonCrypto/CommonDigest.h>
 
 @implementation SPSSHTunnel
 
 @synthesize passwordPromptCancelled;
+@synthesize taskExitedUnexpectedly;
 
 /*
  * Initialise with the supplied connection details.  Host, login and port should all be provided.
@@ -46,6 +55,8 @@
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
+		SInt32 systemVersion = 0;
+		Gestalt(gestaltSystemVersion, &systemVersion);
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -60,7 +71,11 @@
 		debugMessages = [[NSMutableArray alloc] init];
 		debugMessagesLock = [[NSLock alloc] init];
 		answerAvailableLock = [[NSLock alloc] init];
-		
+
+		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
+		// muxing causes connection instability for a large number of users (see Issue #1457)
+		connectionMuxingEnabled = (systemVersion >= 0x1070) && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
+
 		// Set up a connection for use by the tunnel process
 		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
 		tunnelConnectionVerifyHash = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)[[NSString stringWithFormat:@"%f-seeded", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -166,11 +181,11 @@
  */
 - (SPMySQLConnectionProxyState)state
 {
-
 	// See if an auth dialog is up
 	if (![answerAvailableLock tryLock]) {
 		return SPMySQLProxyWaitingForAuth;
 	}
+	
 	[answerAvailableLock unlock];
 
 	// Return the currently recorded state
@@ -206,10 +221,13 @@
 	localPort = 0;
 
 	if (connectionState != SPMySQLProxyIdle) return;
+
 	[debugMessagesLock lock];
 	[debugMessages removeAllObjects];
 	[debugMessagesLock unlock];
-	[NSThread detachNewThreadSelector:@selector(launchTask:) toTarget: self withObject: nil ];
+	taskExitedUnexpectedly = NO;
+
+	[NSThread detachNewThreadWithName:@"SPSSHTunnel SSH binary communication task" target:self selector:@selector(launchTask:) object:nil];
 }
 
 /*
@@ -293,23 +311,59 @@
 	task = [[NSTask alloc] init];
 	[task setLaunchPath: @"/usr/bin/ssh"];
 
-	// Set up the arguments for the task
+	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
-	[taskArguments addObject:@"-N"]; // Tunnel only
-	[taskArguments addObject:@"-v"]; // Verbose mode for messages
-	[taskArguments addObject:@"-o ControlMaster=auto"]; // Support 'master' mode for connection sharing
+
+	// Enable verbose mode for message parsing
+	[taskArguments addObject:@"-v"];
+
+	// Ensure that the connection can be used for only tunnels, not interactive
+	[taskArguments addObject:@"-N"];
+
+	// If explicitly enabled, activate connection multiplexing - note that this can cause connection
+	// instability on some setups, so is currently disabled by default.
+	if (connectionMuxingEnabled) {
+
+		// Enable automatic connection muxing/sharing, for faster connections
+		[taskArguments addObject:@"-o ControlMaster=auto"];
+
+		// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+		// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
+		// hashed path to aid length limit issues.
+		unsigned char hashedPathResult[16];
+		NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, (long)(sshPort?sshPort:0)];
+		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
+		[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
+	} else {
+
+		// Disable muxing if requested
+		[taskArguments addObject:@"-S none"];
+		[taskArguments addObject:@"-o ControlMaster=no"];
+	}
+
+	// If the port forwarding fails, exit - as this is the primary use case for the instance
 	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
+
+	// Specify a connection timeout based on the preferences value
 	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
+
+	// Allow three password prompts
 	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
+
+	// Specify an identity file if available
 	if (identityFilePath) {
 		[taskArguments addObject:@"-i"];
 		[taskArguments addObject:identityFilePath];
 	}
+
+	// If keepalive is set in the preferences, use the same value for the SSH tunnel
 	if (useKeepAlive && keepAliveInterval) {
 		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
 		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
 		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
 	}
+
+	// Specify the port, host, and authentication details
 	if (sshPort) {
 		[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
 	}
@@ -324,6 +378,7 @@
 	} else {
 		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPort, remoteHost, (long)remotePort]];
 	}
+
 	[task setArguments:taskArguments];
 
 	// Set up the environment for the task
@@ -344,6 +399,11 @@
 	}
 	[task setEnvironment:taskEnvironment];
 
+	// Add the connection details to the debug messages
+	[debugMessagesLock lock];
+	[debugMessages addObject:[NSString stringWithFormat:@"Used command:  %@ %@\n", [task launchPath], [[task arguments] componentsJoinedByString:@" "]]];
+	[debugMessagesLock unlock];
+
 	// Set up the standard error pipe
 	standardError = [[NSPipe alloc] init];
     [task setStandardError:standardError];
@@ -355,19 +415,6 @@
 
 	// Launch and run the tunnel
 	[task launch];
-
-	// TODO: The below code doesn't actually appear to work.  We will probably have to switch to system()/exec() for grouped children...
-	// Apply the process group to the child task to ensure it quits with the parent process.
-	// Note that if run from within Xcode, Xcode is the parent process!
-/*	pid_t group = setsid();
-	if (group == -1) group = getpgrp();
-	if(setpgid([task processIdentifier], group) == -1) {
-		connectionState = SPSSH_STATE_IDLE;
-		[task terminate];
-		if (lastError) [lastError release];
-		lastError = [[NSString alloc] initWithFormat:NSLocalizedString(@"The SSH Tunnel could not safely be marked as belonging to Sequel Pro, and so has been shut down for security reasons.  Please try again.\n\n(Error %i)", @"SSH tunnel could not be security marked by Sequel Pro"), errno];
-		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
-	}*/
 
 	// Listen for output
 	[task waitUntilExit];
@@ -382,6 +429,7 @@
 	// If the task closed unexpectedly, alert appropriately
 	if (connectionState != SPMySQLProxyIdle) {
 		connectionState = SPMySQLProxyIdle;
+		taskExitedUnexpectedly = YES;
 		if (lastError) [lastError release];
 		lastError = [[NSString alloc] initWithString:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
@@ -403,11 +451,15 @@
 {
     if (connectionState == SPMySQLProxyIdle) return;
 
+	// If there's a delegate set, clear it to prevent unexpected state change messaging
+	if (delegate) {
+		delegate = nil;
+		stateChangeSelector = NULL;
+	}
+
 	// Before terminating the tunnel, check that it's actually running. This is to accommodate tunnels which
 	// suddenly disappear as a result of network disconnections. 
     if ([task isRunning]) [task terminate];
-	
-	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
 }
  
 /*
@@ -676,6 +728,7 @@
 	delegate = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (connectionState != SPMySQLProxyIdle) [self disconnect];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[sshHost release];
 	[sshLogin release];
 	[remoteHost release];

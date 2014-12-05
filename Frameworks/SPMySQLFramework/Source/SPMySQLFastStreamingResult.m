@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLFastStreamingResult.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPMySQLFastStreamingResult.h"
 #import "SPMySQL Private APIs.h"
@@ -204,7 +202,7 @@ typedef struct st_spmysqlstreamingrowdata {
 			copiedDataLength += fieldLength;
 
 			// Convert to the correct object type
-			cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, fieldTypes[i], i);
+			cellData = SPMySQLResultGetObject(self, rawCellData, fieldLength, i, NSNotFound);
 		}
 
 		// If object creation failed, display a null
@@ -336,6 +334,8 @@ typedef struct st_spmysqlstreamingrowdata {
 	NSUInteger i, dataCopiedLength, rowDataLength;
 	SPMySQLStreamingRowData *newRowStore;
 
+	[[NSThread currentThread] setName:@"SPMySQLFastStreamingResult data download thread"];
+
 	size_t sizeOfStreamingRowData = sizeof(SPMySQLStreamingRowData);
 	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * numberOfFields);
 	size_t sizeOfChar = sizeof(char);
@@ -393,6 +393,7 @@ typedef struct st_spmysqlstreamingrowdata {
 	// Update the connection's error statuses to reflect any errors during the content download
 	[parentConnection _updateLastErrorID:NSNotFound];
 	[parentConnection _updateLastErrorMessage:nil];	
+	[parentConnection _updateLastSqlstate:nil];
 
 	// Unlock the parent connection now all data has been retrieved
     [parentConnection _unlockConnection];

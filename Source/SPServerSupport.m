@@ -1,32 +1,38 @@
 //
-//  $Id$
-//
 //  SPServerSupport.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on September 23, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on September 23, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPServerSupport.h"
+
 #import <objc/runtime.h>
 
-@interface SPServerSupport (PrivateAPI)
+@interface SPServerSupport ()
 
 - (void)_invalidate;
 - (NSComparisonResult)_compareServerMajorVersion:(NSInteger)majorVersionA 
@@ -47,7 +53,8 @@
 @synthesize supportsInformationSchema;
 @synthesize supportsSpatialExtensions;
 @synthesize supportsShowCharacterSet;
-@synthesize supportsCharacterSetDatabaseVar;
+@synthesize supportsShowCollation;
+@synthesize supportsCharacterSetAndCollationVars;
 @synthesize supportsPost41CharacterSetHandling;
 @synthesize supportsCreateUser;
 @synthesize supportsRenameUser;
@@ -64,12 +71,13 @@
 @synthesize supportsTriggers;
 @synthesize supportsIndexKeyBlockSize;
 @synthesize supportsQuotingEngineTypeInCreateSyntax;
+@synthesize supportsFractionalSeconds;
 @synthesize serverMajorVersion;
 @synthesize serverMinorVersion;
 @synthesize serverReleaseVersion;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
 /**
  * Creates and returns an instance of SPServerSupport with the supplied version numbers. The caller is
@@ -129,9 +137,12 @@
 	
 	// The SHOW CHARACTER SET statement wasn't added until MySQL 4.1.0
 	supportsShowCharacterSet = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
+
+	// The SHOW COLLATION statement wasn't added until MySQL 4.1.0
+	supportsShowCollation = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
 	
-	// The variable 'character_set_database' wasn't added until MySQL 4.1.1
-	supportsCharacterSetDatabaseVar = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:1];
+	// The variables 'character_set_*' and 'collation_*' weren't added until MySQL 4.1.1
+	supportsCharacterSetAndCollationVars = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:1];
 	
 	// As of MySQL 4.1 encoding support was greatly improved
 	supportsPost41CharacterSetHandling = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
@@ -180,6 +191,9 @@
 	
 	// MySQL 4.0 doesn't seem to like having the ENGINE/TYPE quoted in a table's create syntax
 	supportsQuotingEngineTypeInCreateSyntax = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:0];
+	
+	// Fractional second support wasn't added until MySQL 5.6.4
+	supportsFractionalSeconds = [self isEqualToOrGreaterThanMajorVersion:5 minor:6 release:4];
 }
 
 /**
@@ -213,7 +227,7 @@
 - (NSString *)description
 {
 	unsigned int i;
-	NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: Server is MySQL version %d.%d.%d. Supports:\n", [self className], serverMajorVersion, serverMinorVersion, serverReleaseVersion];
+	NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: Server is MySQL version %ld.%ld.%ld. Supports:\n", [self className], (long)serverMajorVersion, (long)serverMinorVersion, (long)serverReleaseVersion];
 	
 	Ivar *vars = class_copyIvarList([self class], &i);
 	
@@ -250,7 +264,8 @@
 	supportsInformationSchema               = NO;
 	supportsSpatialExtensions               = NO;
 	supportsShowCharacterSet                = NO;
-	supportsCharacterSetDatabaseVar         = NO;
+	supportsShowCollation                   = NO;
+	supportsCharacterSetAndCollationVars    = NO;
 	supportsPost41CharacterSetHandling      = NO;
 	supportsCreateUser                      = NO;
 	supportsRenameUser                      = NO;
@@ -267,6 +282,7 @@
 	supportsTriggers                        = NO;
 	supportsIndexKeyBlockSize               = NO;
 	supportsQuotingEngineTypeInCreateSyntax = NO;
+	supportsFractionalSeconds               = NO;
 }
 
 /**
@@ -312,9 +328,6 @@
 #pragma mark -
 #pragma mark Other
 
-/**
- * Dealloc. Invalidate all ivars.
- */
 - (void)dealloc
 {
 	// Reset version integers

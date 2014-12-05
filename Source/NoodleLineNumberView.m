@@ -1,8 +1,8 @@
 //
-//  NoodleLineNumberView.m
-//  Line View Test
+//  NoodleLineNumberView.h
+//  sequel-pro
 //
-//  Created by Paul Kim on 9/28/08.
+//  Created by Paul Kim on September 28, 2008.
 //  Copyright (c) 2008 Noodlesoft, LLC. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person
@@ -25,7 +25,6 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
-//
 
 // This version of the NoodleLineNumberView for Sequel Pro removes marker
 // functionality and adds selection by clicking on the ruler. Furthermore
@@ -80,11 +79,13 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+
+		NSSize s = [@"8" sizeWithAttributes:textAttributes];
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
 		currentRuleThickness = 0.0f;
+		dragSelectionStartLine = NSNotFound;
 
 		// Cache loop methods for speed
 		lineNumberForCharacterIndexSel = @selector(lineNumberForCharacterIndex:);
@@ -132,7 +133,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			font, NSFontAttributeName, 
 			[self textColor], NSForegroundColorAttributeName,
 			nil] retain];
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+		NSSize s = [@"8" sizeWithAttributes:textAttributes];
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
@@ -158,7 +159,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			[self font], NSFontAttributeName, 
 			textColor, NSForegroundColorAttributeName,
 			nil] retain];
-		NSSize s = [[NSString stringWithString:@"8"] sizeWithAttributes:textAttributes];
+		NSSize s = [@"8" sizeWithAttributes:textAttributes];
 		maxWidthOfGlyph = s.width;
 		maxHeightOfGlyph = s.height;
 		[self updateGutterThicknessConstants];
@@ -350,7 +351,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 					// portion. Need to compensate for the clipview's coordinates.
 
 					// Line numbers are internally stored starting at 0
-					labelText = [NSString stringWithFormat:@"%lu", (NSUInteger)(line + 1)];
+					labelText = [NSString stringWithFormat:@"%llu", (unsigned long long)(line + 1)];
 
 					// How many digits has the current line number?
 					NSUInteger idx = line + 1;

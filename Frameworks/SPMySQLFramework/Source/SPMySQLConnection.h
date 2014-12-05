@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLConnection.h
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 @class SPMySQLKeepAliveTimer;
 
@@ -59,7 +57,7 @@
 	SPMySQLConnectionState state;
 	BOOL connectedWithSSL;
 	BOOL userTriggeredDisconnect;
-	BOOL isReconnecting;
+	pthread_t reconnectingThread;
 	uint64_t initialConnectTime;
 	unsigned long mysqlConnectionThreadId;
 
@@ -72,7 +70,7 @@
 	NSConditionLock *connectionLock;
 
 	// Currently selected database
-	NSString *database;
+	NSString *database, *databaseToRestore;
 
 	// Delegate connection lost decisions
 	NSUInteger reconnectionRetryAttempts;
@@ -86,16 +84,17 @@
 	CGFloat keepAliveInterval;
 	uint64_t lastKeepAliveTime;
 	NSUInteger keepAlivePingFailures;
-	pthread_t keepAlivePingThread;
+	NSThread *keepAliveThread;
+	pthread_t keepAlivePingThread_t;
 	BOOL keepAlivePingThreadActive;
 	BOOL keepAliveLastPingSuccess;
 	BOOL keepAliveLastPingBlocked;
 
 	// Encoding details - and also a record of any previous encoding to allow
 	// switching back and forth
-	NSString *encoding;
+	NSString *encoding, *encodingToRestore;
 	NSStringEncoding stringEncoding;
-	BOOL encodingUsesLatin1Transport;
+	BOOL encodingUsesLatin1Transport, encodingUsesLatin1TransportToRestore;
 	NSString *previousEncoding;
 	BOOL previousEncodingUsesLatin1Transport;
 
@@ -105,6 +104,7 @@
 	// Error state for the last query or connection state
 	NSUInteger queryErrorID;
 	NSString *queryErrorMessage;
+	NSString *querySqlstate;
 
 	// Query details
 	unsigned long long lastQueryAffectedRowCount;

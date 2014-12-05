@@ -1,29 +1,36 @@
 //
-//  $Id$
-//
 //  SPTableStructure.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableStructure.h"
+#import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
 #import "SPDatabaseViewController.h"
 #import "SPTableInfo.h"
@@ -36,7 +43,14 @@
 #import "SPIndexesController.h"
 #import "RegexKitLite.h"
 #import "SPTableFieldValidation.h"
+#import "SPTableStructureLoading.h"
+#import "SPThreadAdditions.h"
+#import "SPServerSupport.h"
+
 #import <SPMySQL/SPMySQL.h>
+
+static NSString *SPRemoveField = @"SPRemoveField";
+static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -46,7 +60,7 @@
 
 @implementation SPTableStructure
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize indexesController;
 @synthesize indexesTableView;
 @synthesize addFieldButton;
@@ -56,11 +70,8 @@
 #endif
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -85,24 +96,24 @@
 	return self;
 }
 
-/**
- * Nib awakening.
- */
 - (void)awakeFromNib
 {
-#ifndef SP_REFACTOR /* ui manipulation */
+#ifndef SP_CODA /* ui manipulation */
 	// Set the structure and index view's vertical gridlines if required
-	[tableSourceView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[tableSourceView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[indexesTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableSourceView setEmptyDoubleClickAction:@selector(addField:)];
 
-#ifndef SP_REFACTOR /* set font from prefs */
+#ifndef SP_CODA /* set font from prefs */
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
+	NSInteger monospacedFontSize = [prefs integerForKey:SPMonospacedFontSize] > 0 ? [prefs integerForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	// Set the strutcture and index view's font
-	[tableSourceView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	[indexesTableView setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 
 	extraFieldSuggestions = [[NSArray arrayWithObjects:
@@ -115,56 +126,55 @@
 
 	// Note that changing the contents or ordering of this array will affect the implementation of 
 	// SPTableFieldValidation. See it's implementation file for more details.
-	typeSuggestions = [[NSArray arrayWithObjects:
-		@"TINYINT",
-		@"SMALLINT",
-		@"MEDIUMINT",
-		@"INT",
-		@"BIGINT",
-		@"FLOAT",
-		@"DOUBLE",
-		@"DOUBLE PRECISION",
-		@"REAL",
-		@"DECIMAL",
-		@"BIT",
-		@"SERIAL",
-		@"BOOL",
-		@"BOOLEAN",
-		@"DEC",
-		@"FIXED",
-		@"NUMERIC",
+	typeSuggestions = [@[
+		SPMySQLTinyIntType,
+		SPMySQLSmallIntType,
+		SPMySQLMediumIntType,
+		SPMySQLIntType,
+		SPMySQLBigIntType,
+		SPMySQLFloatType,
+		SPMySQLDoubleType,
+		SPMySQLDoublePrecisionType,
+		SPMySQLRealType,
+		SPMySQLDecimalType,
+		SPMySQLBitType,
+		SPMySQLSerialType,
+		SPMySQLBoolType,
+		SPMySQLBoolean,
+		SPMySQLDecType,
+		SPMySQLFixedType,
+		SPMySQLNumericType,
 		@"--------",
-		@"CHAR",
-		@"VARCHAR",
-		@"TINYTEXT",
-		@"TEXT",
-		@"MEDIUMTEXT",
-		@"LONGTEXT",
-		@"TINYBLOB",
-		@"MEDIUMBLOB",
-		@"BLOB",
-		@"LONGBLOB",
-		@"BINARY",
-		@"VARBINARY",
-		@"ENUM",
-		@"SET",
+		SPMySQLCharType,
+		SPMySQLVarCharType,
+		SPMySQLTinyTextType,
+		SPMySQLTextType,
+		SPMySQLMediumTextType,
+		SPMySQLLongTextType,
+		SPMySQLTinyBlobType,
+		SPMySQLMediumBlobType,
+		SPMySQLBlobType,
+		SPMySQLLongBlobType,
+		SPMySQLBinaryType,
+		SPMySQLVarBinaryType,
+		SPMySQLEnumType,
+		SPMySQLSetType,
 		@"--------",
-		@"DATE",
-		@"DATETIME",
-		@"TIMESTAMP",
-		@"TIME",
-		@"YEAR",
+		SPMySQLDateType,
+		SPMySQLDatetimeType,
+		SPMySQLTimestampType,
+		SPMySQLTimeType,
+		SPMySQLYearType,
 		@"--------",
-		@"GEOMETRY",
-		@"POINT",
-		@"LINESTRING",
-		@"POLYGON",
-		@"MULTIPOINT",
-		@"MULTILINESTRING",
-		@"MULTIPOLYGON",
-		@"GEOMETRYCOLLECTION",
-		nil] retain];
-	
+		SPMySQLGeometryType,
+		SPMySQLPointType,
+		SPMySQLLineStringType,
+		SPMySQLPolygonType,
+		SPMySQLMultiPointType,
+		SPMySQLMultiLineStringType,
+		SPMySQLMultiPolygonType,
+		SPMySQLGeometryCollectionType] retain];
+
 	[fieldValidation setFieldTypes:typeSuggestions];
 	
 	// Add observers for document task activity
@@ -178,17 +188,17 @@
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR /* add prefs observer */
+#ifndef SP_CODA /* add prefs observer */
 	[prefs addObserver:indexesController forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 #endif	
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Init the view column submenu according to saved hidden status;
 	// menu items are identified by their tag number which represents the initial column index
 	for (NSMenuItem *item in [viewColumnsMenu itemArray]) [item setState:NSOnState]; // Set all items to NSOnState
 #endif
 
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	for (NSTableColumn *col in [tableSourceView tableColumns]) 
 	{
 		if ([col isHidden]) {
@@ -224,269 +234,6 @@
 }
 
 #pragma mark -
-#pragma mark Table loading
-
-/**
- * Loads aTable, put it in an array, update the tableViewColumns and reload the tableView
- */
-- (void)loadTable:(NSString *)aTable
-{
-	NSArray *theTableIndexes;
-	NSMutableDictionary *theTableEnumLists = [NSMutableDictionary dictionary];
-	SPMySQLResult *indexResult;
-
-	// Check whether a save of the current row is required.
-	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
-
-	// If no table is selected, reset the interface and return
-	if (!aTable || ![aTable length]) {
-		[[self onMainThread] setTableDetails:nil];
-		return;
-	}
-
-	NSMutableArray *theTableFields = [[NSMutableArray alloc] init];
-
-	// Make a mutable copy out of the cached [tableDataInstance columns] since we're adding infos
-	for (id col in [tableDataInstance columns])
-		[theTableFields addObject:[[col mutableCopy] autorelease]];
-
-	// Retrieve the indexes for the table
-	indexResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW INDEX FROM %@", [aTable backtickQuotedString]]];
-
-	// If an error occurred, reset the interface and abort
-	if ([mySQLConnection queryErrored]) {
-		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-		[[self onMainThread] setTableDetails:nil];
-
-		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
-					nil, nil, [NSApp mainWindow], self, nil, nil,
-					[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-					   [mySQLConnection lastErrorMessage]]);
-		}
-
-		return;
-	}
-
-	// Process the indexes into a local array of dictionaries
-	theTableIndexes = [self convertIndexResultToArray:indexResult];
-
-	// Set the Key column
-	for (NSDictionary* theIndex in theTableIndexes) 
-	{
-		for (id field in theTableFields) 
-		{
-			if([[field objectForKey:@"name"] isEqualToString:[theIndex objectForKey:@"Column_name"]]) {
-				if([[theIndex objectForKey:@"Key_name"] isEqualToString:@"PRIMARY"])
-					[field setObject:@"PRI" forKey:@"Key"];
-				else
-					if([[field objectForKey:@"typegrouping"] isEqualToString:@"geometry"])
-						[field setObject:@"SPA" forKey:@"Key"];
-					else
-						[field setObject:(([[theIndex objectForKey:@"Non_unique"] isEqualToString:@"1"]) ? @"MUL" : @"UNI") forKey:@"Key"];
-				break;
-			}
-		}
-	}
-
-	// Set up the encoding PopUpButtonCell
-	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
-	if ([encodings count]) {
-
-		// Populate encoding popup button
-		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
-		[encodingTitles addObject:@""];
-		for (NSDictionary *encoding in encodings)
-			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
-
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
-		[encodingTitles release];
-	}
-	else {
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
-	}
-
-	// Process all the fields to normalise keys and add additional information
-	for (id theField in theTableFields) {
-
-		// Select and re-map encoding and collation since [self dataSource] stores the choice as NSNumbers
-		NSString *fieldEncoding = @"";
-		NSInteger selectedIndex = 0;
-		if([theField objectForKey:@"encoding"]) {
-			for(id enc in encodings) {
-				if([[enc objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:[theField objectForKey:@"encoding"]]) {
-					fieldEncoding = [theField objectForKey:@"encoding"];
-					break;
-				}
-				selectedIndex++;
-			}
-			selectedIndex++; // due to leading @"" in popup list
-		}
-		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"encoding"];
-		selectedIndex = 0;
-		if([fieldEncoding length] && [theField objectForKey:@"collation"]) {
-			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-			for(id col in theCollations) {
-				if([[col objectForKey:@"COLLATION_NAME"] isEqualToString:[theField objectForKey:@"collation"]]) {
-					// Set BINARY if collation ends with _bin for convenience
-					if([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"])
-						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
-					break;
-				}
-				selectedIndex++;
-			}
-			selectedIndex++; // due to leading @"" in popup list
-		}
-		[theField setObject:[NSNumber numberWithInteger:selectedIndex] forKey:@"collation"];
-
-		NSString *type = [[theField objectForKey:@"type"] uppercaseString];
-
-		// Get possible values if the field is an enum or a set
-		if (([type isEqualToString:@"ENUM"] || [type isEqualToString:@"SET"]) && [theField objectForKey:@"values"]) {
-			[theTableEnumLists setObject:[NSArray arrayWithArray:[theField objectForKey:@"values"]] forKey:[theField objectForKey:@"name"]];
-			[theField setObject:[NSString stringWithFormat:@"'%@'", [[theField objectForKey:@"values"] componentsJoinedByString:@"','"]] forKey:@"length"];
-		}
-
-		// Join length and decimals if any
-		if ([theField objectForKey:@"decimals"])
-			[theField setObject:[NSString stringWithFormat:@"%@,%@", [theField objectForKey:@"length"], [theField objectForKey:@"decimals"]] forKey:@"length"];
-
-		// Normalize default
-		if(![theField objectForKey:@"default"])
-			[theField setObject:@"" forKey:@"default"];
-		else if([[theField objectForKey:@"default"] isNSNull])
-			[theField setObject:[prefs stringForKey:SPNullValue] forKey:@"default"];
-
-		// Init Extra field
-		[theField setObject:@"None" forKey:@"Extra"];
-
-		// Check for auto_increment and set Extra accordingly
-		if([[theField objectForKey:@"autoincrement"] integerValue])
-			[theField setObject:@"auto_increment" forKey:@"Extra"];
-
-		// For timestamps check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
-		else if ([type isEqualToString:@"TIMESTAMP"] && [[theField objectForKey:@"onupdatetimestamp"] integerValue])
-			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
-	}
-
-	// Set up the table details for the new table, and request an data/interface update
-	NSDictionary *tableDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									aTable, @"name",
-									theTableFields, @"tableFields",
-									theTableIndexes, @"tableIndexes",
-									theTableEnumLists, @"enumLists",
-									nil];
-	[[self onMainThread] setTableDetails:tableDetails];
-
-	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
-	autoIncrementIndex = nil;
-
-	// Send the query finished/work complete notification
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-
-	[theTableFields release];
-}
-
-/**
- * Reloads the table (performing a new mysql-query)
- */
-- (IBAction)reloadTable:(id)sender
-{
-
-	// Check whether a save of the current row is required
-	if ( ![[self onMainThread] saveRowOnDeselect] ) return;
-
-	[tableDataInstance resetAllData];
-	[tableDocumentInstance setStatusRequiresReload:YES];
-
-	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
-
-	[self loadTable:selectedTable];
-}
-
-/**
- * Update stored table details and update the interface to match the supplied
- * table details.
- * Should be called on the main thread.
- */
-- (void) setTableDetails:(NSDictionary *)tableDetails
-{
-	NSString *newTableName = [tableDetails objectForKey:@"name"];
-	NSMutableDictionary *newDefaultValues;
-
-	BOOL enableInteraction = 
-#ifndef SP_REFACTOR /* patch */
-	![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure] ||
-#endif
-	![tableDocumentInstance isWorking];
-
-	// Update the selected table name
-	if (selectedTable) [selectedTable release], selectedTable = nil;
-	if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
-
-	[indexesController setTable:selectedTable];
-
-	// Reset the table store and display
-	[tableSourceView deselectAll:self];
-	[tableFields removeAllObjects];
-	[enumFields removeAllObjects];
-	[indexesTableView deselectAll:self];
-	[addFieldButton setEnabled:NO];
-	[duplicateFieldButton setEnabled:NO];
-	[removeFieldButton setEnabled:NO];
-#ifndef SP_REFACTOR
-	[addIndexButton setEnabled:NO];
-	[removeIndexButton setEnabled:NO];
-	[editTableButton setEnabled:NO];
-#endif
-
-	// If no table is selected, refresh the table/index display to blank and return
-	if (!selectedTable) {
-		[tableSourceView reloadData];
-		// Empty indexesController's fields and indices explicitly before reloading
-		[indexesController setFields:[NSArray array]];
-		[indexesController setIndexes:[NSArray array]];
-		[indexesTableView reloadData];
-		return;
-	}
-
-	// Update the fields and indexes stores
-	[tableFields setArray:[tableDetails objectForKey:@"tableFields"]];
-
-	[indexesController setFields:tableFields];
-	[indexesController setIndexes:[tableDetails objectForKey:@"tableIndexes"]];
-
-	if (defaultValues) [defaultValues release], defaultValues = nil;
-
-	newDefaultValues = [NSMutableDictionary dictionaryWithCapacity:[tableFields count]];
-
-	for (id theField in tableFields)
-		[newDefaultValues setObject:[theField objectForKey:@"default"] forKey:[theField objectForKey:@"name"]];
-
-	defaultValues = [[NSDictionary dictionaryWithDictionary:newDefaultValues] retain];
-
-#ifndef SP_REFACTOR
-	// Enable the edit table button
-	[editTableButton setEnabled:enableInteraction];
-#endif
-
-	// If a view is selected, disable the buttons; otherwise enable.
-	BOOL editingEnabled = ([tablesListInstance tableType] == SPTableTypeTable) && enableInteraction;
-
-	[addFieldButton setEnabled:editingEnabled];
-#ifndef SP_REFACTOR
-	[addIndexButton setEnabled:editingEnabled];
-#endif
-
-	// Reload the views
-	[indexesTableView reloadData];
-	[tableSourceView reloadData];
-}
-
-#pragma mark -
 #pragma mark Edit methods
 
 /**
@@ -494,18 +241,19 @@
  */
 - (IBAction)addField:(id)sender
 {
-
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
 	// Check whether a save of the current row is required.
-	if ( ![self saveRowOnDeselect] ) return;
+	if (![self saveRowOnDeselect]) return;
 
 	NSInteger insertIndex = ([tableSourceView numberOfSelectedRows] == 0 ? [tableSourceView numberOfRows] : [tableSourceView selectedRow] + 1);
 
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
+	BOOL allowNull = [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"] ? NO : [prefs boolForKey:SPNewFieldsAllowNulls];
+	
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", ([prefs boolForKey:SPNewFieldsAllowNulls]) ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 #else
@@ -517,9 +265,11 @@
 
 	[tableSourceView reloadData];
 	[tableSourceView selectRowIndexes:[NSIndexSet indexSetWithIndex:insertIndex] byExtendingSelection:NO];
+	
 	isEditingRow = YES;
 	isEditingNewRow = YES;
 	currentlyEditingRow = [tableSourceView selectedRow];
+	
 	[tableSourceView editColumn:0 row:insertIndex withEvent:nil select:YES];
 }
 
@@ -534,14 +284,15 @@
 
 	// Check for errors
 	if ([mySQLConnection queryErrored]) {
-		NSString *mText = NSLocalizedString(@"Error while fetching the optimized field type", @"error while fetching the optimized field type message");
+		NSString *message = NSLocalizedString(@"Error while fetching the optimized field type", @"error while fetching the optimized field type message");
+		
 		if ([mySQLConnection isConnected]) {
 
-			[[NSAlert alertWithMessageText:mText 
+			[[NSAlert alertWithMessageText:message 
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@",@"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while fetching the optimized field type.\n\nMySQL said:%@", @"an error occurred while fetching the optimized field type.\n\nMySQL said:%@"), [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -552,17 +303,20 @@
 	}
 
 	[theResult setReturnDataAsStrings:YES];
+	
 	NSDictionary *analysisResult = [theResult getRowAsDictionary];
 
 	NSString *type = [analysisResult objectForKey:@"Optimal_fieldtype"];
-	if (!type || [type isNSNull] || ![type length])
+	
+	if (!type || [type isNSNull] || ![type length]) {
 		type = NSLocalizedString(@"No optimized field type found.", @"no optimized field type found. message");
+	}
 
 	[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Optimized type for field '%@'", @"Optimized type for field %@"), [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"]] 
 					 defaultButton:@"OK" 
 				   alternateButton:nil 
 					   otherButton:nil 
-		 informativeTextWithFormat:type] 
+		 informativeTextWithFormat:@"%@", type]
 		  beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
 					 modalDelegate:self 
 					didEndSelector:NULL 
@@ -575,29 +329,28 @@
  */
 - (IBAction)toggleColumnView:(NSMenuItem *)sender
 {
-
 	NSString *columnIdentifierName = nil;
 
-	switch ([sender tag]) {
+	switch([sender tag]) {
 		case 7:
-			columnIdentifierName = @"Key";
+		columnIdentifierName = @"Key";
 		break;
 		case 10:
-			columnIdentifierName = @"encoding";
+		columnIdentifierName = @"encoding";
 		break;
 		case 11:
-			columnIdentifierName = @"collation";
+		columnIdentifierName = @"collation";
 		break;
 		case 12:
-			columnIdentifierName = @"comment";
+		columnIdentifierName = @"comment";
 		break;
 		default:
 		return;
 	}
 
-	for (NSTableColumn *col in [tableSourceView tableColumns]) {
+	for(NSTableColumn *col in [tableSourceView tableColumns]) {
 
-		if ([[col identifier] isEqualToString:columnIdentifierName]) {
+		if([[col identifier] isEqualToString:columnIdentifierName]) {
 			[col setHidden:([sender state] == NSOffState) ? NO : YES];
 			[(NSMenuItem *)sender setState:![sender state]];
 			break;
@@ -693,13 +446,13 @@
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field]];
+						 informativeTextWithFormat:hasForeignKey ? NSLocalizedString(@"This field is part of a foreign key relationship with the table '%@'. This relationship must be removed before the field can be deleted.\n\nAre you sure you want to continue to delete the relationship and the field? This action cannot be undone.", @"delete field and foreign key informative message"), referencedTable : NSLocalizedString(@"Are you sure you want to delete the field '%@'? This action cannot be undone.", @"delete field informative message"), field];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
 	NSArray *buttons = [alert buttons];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
@@ -709,7 +462,10 @@
 	[[buttons objectAtIndex:1] setKeyEquivalent:@"\e"];
 #endif
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) contextInfo:(hasForeignKey) ? @"removeFieldAndForeignKey" : @"removeField"];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
+					  modalDelegate:self 
+					 didEndSelector:@selector(removeFieldSheetDidEnd:returnCode:contextInfo:) 
+						contextInfo:hasForeignKey ? SPRemoveFieldAndForeignKey : SPRemoveField];
 }
 
 /**
@@ -717,7 +473,7 @@
  */
 - (IBAction)resetAutoIncrement:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([sender tag] == 1) {
 
 		[resetAutoIncrementLine setHidden:YES];
@@ -745,7 +501,7 @@
  */
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Order out current sheet to suppress overlapping of sheets
 	[theSheet orderOut:nil];
 
@@ -767,12 +523,17 @@
 	if (returnCode == NSAlertDefaultReturn) {
 		[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Removing field...", @"removing field task status message")];
 
-		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]];
+		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo isEqualToString:SPRemoveFieldAndForeignKey]];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeFieldAndForeignKey:) toTarget:self withObject:removeKey];
+			[NSThread detachNewThreadWithName:@"SPTableStructure field and key removal task" 
+									   target:self 
+									 selector:@selector(_removeFieldAndForeignKey:) 
+									   object:removeKey];
 
-			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
+			[tableDocumentInstance enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") 
+													callbackObject:self 
+												  callbackFunction:NULL];
 		}
 		else {
 			[self _removeFieldAndForeignKey:removeKey];
@@ -788,18 +549,25 @@
 - (BOOL)cancelRowEditing
 {
 	if (!isEditingRow) return NO;
+	
 	if (isEditingNewRow) {
 		isEditingNewRow = NO;
 		[tableFields removeObjectAtIndex:currentlyEditingRow];
-	} else {
+	} 
+	else {
 		[tableFields replaceObjectAtIndex:currentlyEditingRow withObject:[NSMutableDictionary dictionaryWithDictionary:oldRow]];
 	}
+	
 	isEditingRow = NO;
 	isCurrentExtraAutoIncrement = [tableDataInstance tableHasAutoIncrementField];
 	autoIncrementIndex = nil;
+	
 	[tableSourceView reloadData];
+	
 	currentlyEditingRow = -1;
+	
 	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
+	
 	return YES;
 }
 
@@ -808,11 +576,10 @@
 
 - (IBAction)unhideIndexesView:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[tablesIndexesSplitView setPosition:[tablesIndexesSplitView frame].size.height-130 ofDividerAtIndex:0];
 #endif
 }
-
 
 #pragma mark -
 #pragma mark Index sheet methods
@@ -843,7 +610,7 @@
 	if (valueAsString == nil || ![valueAsString length]) {
 		// reload data and bail
 		[tableDataInstance resetAllData];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[extendedTableInfoInstance loadTable:selTable];
 		[tableInfoInstance tableChanged:nil];
 #endif
@@ -869,12 +636,12 @@
 	[tableDataInstance resetStatusData];
 	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
 		[tableDataInstance resetAllData];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[extendedTableInfoInstance loadTable:selTable];
 #endif
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[tableInfoInstance tableChanged:nil];
 #endif
 }
@@ -940,13 +707,6 @@
 	if (!isEditingRow || isSavingRow) return YES;
 	isSavingRow = YES;
 
-	// Save any edits which have been made but not saved to the table yet.
-#ifndef SP_REFACTOR /* patch */
-	[[tableDocumentInstance parentWindow] endEditingFor:nil];
-#else
-	[[tableSourceView window] endEditingFor:nil];
-#endif
-
 	// Attempt to save the row, and return YES if the save succeeded.
 	if ([self addRowToDB]) {
 		isSavingRow = NO;
@@ -968,6 +728,12 @@
 	if ((!isEditingRow) || (currentlyEditingRow == -1)) return YES;
 
 	if (alertSheetOpened) return NO;
+
+	// Save any edits which have been started but not saved to the underlying table/data structures
+	// yet - but not if currently undoing/redoing, as this can cause a processing loop
+	if (![[[[tableSourceView window] firstResponder] undoManager] isUndoing] && ![[[[tableSourceView window] firstResponder] undoManager] isRedoing]) {
+		[[tableSourceView window] endEditingFor:nil];
+	}
 
 	NSMutableString *queryString;
 	BOOL fieldDefIncludesLen = NO;
@@ -1041,7 +807,7 @@
 		if ([fieldValidation isFieldTypeString:theRowType]) {
 			// Add CHARSET
 			NSString *fieldEncoding = @"";
-			if([[theRow objectForKey:@"encoding"] integerValue] > 0) {
+			if([[theRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 				NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
 				NSInteger start = [enc rangeOfString:@"("].location+1;
 				NSInteger end = [enc length] - start - 1;
@@ -1054,7 +820,7 @@
 			}
 
 			// ADD COLLATE
-			if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0) {
+			if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0 && ![[theRow objectForKey:@"binary"] integerValue]) {
 				NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
 				NSString *col = [[theCollations objectAtIndex:[[theRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
 				[queryString appendFormat:@"\n COLLATE %@", col];
@@ -1093,8 +859,8 @@
 					[queryString appendString:@"\n DEFAULT NULL"];
 				}
 			}
-			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps, use that
-			else if ([theRowType isEqualToString:@"TIMESTAMP"] &&
+			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps/datetimes, use that
+			else if (([theRowType isEqualToString:@"TIMESTAMP"] || [theRowType isEqualToString:@"DATETIME"]) &&
 					 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
 			{
 				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP"];
@@ -1198,7 +964,7 @@
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}
@@ -1220,7 +986,7 @@
 			[addFieldButton setEnabled:NO];
 			[duplicateFieldButton setEnabled:NO];
 			[removeFieldButton setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[addIndexButton setEnabled:NO];
 			[removeIndexButton setEnabled:NO];
 			[editTableButton setEnabled:NO];
@@ -1248,7 +1014,7 @@
 	}
 }
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 
 - (void)setDatabaseDocument:(SPDatabaseDocument*)doc
 {
@@ -1318,6 +1084,11 @@
 	if ([menuItem action] == @selector(duplicateField:)) {
 		return ([tableSourceView numberOfSelectedRows] == 1);
 	}
+	
+	//show optimized field type
+	if([menuItem action] == @selector(showOptimizedFieldType:)) {
+		return ([tableSourceView numberOfSelectedRows] == 1);
+	}
 
 	// Reset AUTO_INCREMENT
 	if ([menuItem action] == @selector(resetAutoIncrement:)) {
@@ -1335,7 +1106,7 @@
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)])
@@ -1391,7 +1162,7 @@
 	else {
 		[self cancelRowEditing];
 	}
-	
+
 	[tableSourceView reloadData];
 }
 
@@ -1403,18 +1174,19 @@
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-#ifndef SP_REFACTOR /* observe prefs change */
+#ifndef SP_CODA /* observe prefs change */
 	// Display table veiew vertical gridlines preference changed
 	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
         [tableSourceView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 	}
 	// Use monospaced fonts preference changed
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
-		
+
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
-		[tableSourceView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-		[indexesTableView setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+		[tableSourceView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		
 		[tableSourceView reloadData];
 		[indexesTableView reloadData];
@@ -1563,7 +1335,7 @@
  */
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification
 {
-#ifndef SP_REFACTOR /* check toolbar mode */
+#ifndef SP_CODA /* check toolbar mode */
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 #endif
@@ -1573,12 +1345,12 @@
 	[removeFieldButton setEnabled:NO];
 	[duplicateFieldButton setEnabled:NO];
 	[reloadFieldsButton setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[editTableButton setEnabled:NO];
 #endif
 
 	[indexesTableView setEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[addIndexButton setEnabled:NO];
 	[removeIndexButton setEnabled:NO];
 	[refreshIndexesButton setEnabled:NO];
@@ -1590,7 +1362,7 @@
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-#ifndef SP_REFACTOR /* check toolbar mode */
+#ifndef SP_CODA /* check toolbar mode */
 	// Only re-enable elements if the current tab is the structure view
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableStructure]) return;
 #endif
@@ -1607,15 +1379,15 @@
 	}
 
 	[reloadFieldsButton setEnabled:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[editTableButton setEnabled:YES];
 #endif
 
 	[indexesTableView setEnabled:YES];
 	[indexesTableView displayIfNeeded];
 
-#ifndef SP_REFACTOR
-	[addIndexButton setEnabled:editingEnabled];
+#ifndef SP_CODA
+	[addIndexButton setEnabled:editingEnabled && ![[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]];
 	[removeIndexButton setEnabled:(editingEnabled && ([indexesTableView numberOfSelectedRows] > 0))];
 	[refreshIndexesButton setEnabled:YES];
 #endif
@@ -1671,15 +1443,18 @@
 		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
 									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"],
 									[mySQLConnection lastErrorMessage]] forKey:@"message"];
+		
 		[[self onMainThread] showErrorSheetWith:errorDictionary];
 	}
 	else {
 		[tableDataInstance resetAllData];
+		
+		// Refresh relevant views
 		[tableDocumentInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-
-		// Mark the content table cache for refresh
 		[tableDocumentInstance setContentRequiresReload:YES];
+		[tableDocumentInstance setRelationsRequiresReload:YES];
+		
+		[self loadTable:selectedTable];		
 	}
 
 	[tableDocumentInstance endTask];
@@ -1692,13 +1467,10 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
 #endif
 

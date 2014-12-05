@@ -1,46 +1,91 @@
 //
-//  $Id$
-//
 //  SPDataStorage.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on 10/01/2009.
-//  Copyright 2009 Rowan Beentje. All rights reserved.
+//  Created by Rowan Beentje on January 1, 2009.
+//  Copyright (c) 2009 Rowan Beentje. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDataStorage.h"
+#import "SPObjectAdditions.h"
+#import <SPMySQL/SPMySQLStreamingResultStore.h>
 
-@interface SPDataStorage (PrivateAPI)
+@interface SPDataStorage (Private_API)
 
-- (void) _ensureCapacityForAdditionalRowCount:(NSUInteger)numExtraRows;
-- (void) _increaseCapacity;
+- (void) _checkNewRow:(NSMutableArray *)aRow;
 
 @end
 
 @implementation SPDataStorage
 
-static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorage* self, NSUInteger numExtraRows) 
+static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore, NSUInteger rowIndex)
 {
-	typedef void (*SPDSEnsureCapacityMethodPtr)(SPDataStorage*, SEL, NSUInteger);
-	static SPDSEnsureCapacityMethodPtr SPDSEnsureCapacity;
-	if (!SPDSEnsureCapacity) SPDSEnsureCapacity = (SPDSEnsureCapacityMethodPtr)[self methodForSelector:@selector(_ensureCapacityForAdditionalRowCount:)];
-	SPDSEnsureCapacity(self, @selector(_ensureCapacityForAdditionalRowCount:), numExtraRows);
+	typedef NSMutableArray* (*SPDSGetEditedRowMethodPtr)(NSPointerArray*, SEL, NSUInteger);
+	static SPDSGetEditedRowMethodPtr SPDSGetEditedRow;
+	if (!SPDSGetEditedRow) SPDSGetEditedRow = (SPDSGetEditedRowMethodPtr)[rowStore methodForSelector:@selector(pointerAtIndex:)];
+	return SPDSGetEditedRow(rowStore, @selector(pointerAtIndex:), rowIndex);
 }
+
+#pragma mark - Setting result store
+
+/**
+ * Set the underlying MySQL data storage.
+ * This will clear all edited rows and unloaded column tracking.
+ */
+- (void) setDataStorage:(SPMySQLStreamingResultStore *)newDataStorage updatingExisting:(BOOL)updateExistingStore
+{
+	NSUInteger i;
+	editedRowCount = 0;
+	[editedRows release], editedRows = nil;
+	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
+
+	if (dataStorage) {
+
+		// If the table is reloading data, link to the current data store for smoother loads
+		if (updateExistingStore) {
+			[newDataStorage replaceExistingResultStore:dataStorage];
+		}
+
+		[dataStorage release], dataStorage = nil;
+	}
+
+	dataStorage = [newDataStorage retain];
+	[dataStorage setDelegate:self];
+
+	numberOfColumns = [dataStorage numberOfFields];
+	editedRows = [NSPointerArray new];
+	if ([dataStorage dataDownloaded]) {
+		[self resultStoreDidFinishLoadingData:dataStorage];
+	}
+
+	unloadedColumns = malloc(numberOfColumns * sizeof(BOOL));
+	for (i = 0; i < numberOfColumns; i++) {
+		unloadedColumns[i] = NO;
+	}
+}
+
 
 #pragma mark -
 #pragma mark Retrieving rows and cells
@@ -48,21 +93,29 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 /**
  * Return a mutable array containing the data for a specified row.
  */
-- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)index
+- (NSMutableArray *) rowContentsAtIndex:(NSUInteger)anIndex
 {
 
-	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
+	// If an edited row exists for the supplied index, return it
+	if (anIndex < editedRowCount) {
+		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, anIndex);
 
-	// Construct the NSMutableArray
-	NSMutableArray *rowArray = [NSMutableArray arrayWithCapacity:numColumns];
-	id *row = dataStorage[index];
-	NSUInteger i;
-	for (i = 0; i < numColumns; i++) {
-		CFArrayAppendValue((CFMutableArrayRef)rowArray, row[i]);
+		if (editedRow != NULL) {
+			return editedRow;
+		}
 	}
 
-	return rowArray;
+	// Otherwise, prepare to return the underlying storage row
+	NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex);
+
+	// Modify unloaded cells as appropriate
+	for (NSUInteger i = 0; i < numberOfColumns; i++) {
+		if (unloadedColumns[i]) {
+			CFArraySetValueAtIndex((CFMutableArrayRef)dataArray, i, [SPNotLoaded notLoaded]);
+		}
+	}
+
+	return dataArray;
 }
 
 /**
@@ -70,12 +123,87 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
  */
 - (id) cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
+	// If an edited row exists at the supplied index, return it
+	if (rowIndex < editedRowCount) {
+		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
 
-	// Throw an exception if the row or column index is out of bounds
-	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index (row %llu, col %llu) beyond bounds (%llu, %llu)", rowIndex, columnIndex, numRows, numColumns];
+		if (editedRow != NULL) {
+			return CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
+		}
+	}
+
+	// Throw an exception if the column index is out of bounds
+	if (columnIndex >= numberOfColumns) {
+		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+	}
+
+	// If the specified column is not loaded, return a SPNotLoaded reference
+	if (unloadedColumns[columnIndex]) {
+		return [SPNotLoaded notLoaded];
+	}
 
 	// Return the content
-	return dataStorage[rowIndex][columnIndex];
+	return SPMySQLResultStoreObjectAtRowAndColumn(dataStorage, rowIndex, columnIndex);
+}
+
+/**
+ * Return a preview of the data at a specified row and column index, limited
+ * to approximately the supplied length.
+ */
+- (id) cellPreviewAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex previewLength:(NSUInteger)previewLength
+{
+
+	// If an edited row exists at the supplied index, return it
+	if (rowIndex < editedRowCount) {
+		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
+		if (editedRow != NULL) {
+			id anObject = CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
+			if ([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > 150) {
+				return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);
+			}
+			return anObject;
+		}
+	}
+
+	// Throw an exception if the column index is out of bounds
+	if (columnIndex >= numberOfColumns) {
+		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+	}
+
+	// If the specified column is not loaded, return a SPNotLoaded reference
+	if (unloadedColumns[columnIndex]) {
+		return [SPNotLoaded notLoaded];
+	}
+
+	// Return the content
+	return SPMySQLResultStorePreviewAtRowAndColumn(dataStorage, rowIndex, columnIndex, previewLength);
+}
+
+/**
+ * Returns whether the data at a specified row and column index is NULL or unloaded
+ */
+- (BOOL) cellIsNullOrUnloadedAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
+{
+	// If an edited row exists at the supplied index, check it for a NULL.
+	if (rowIndex < editedRowCount) {
+		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
+		if (editedRow != NULL) {
+			return [(id)CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex) isNSNull];
+		}
+	}
+
+	// Throw an exception if the column index is out of bounds
+	if (columnIndex >= numberOfColumns) {
+		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+	}
+
+	if (unloadedColumns[columnIndex]) {
+		return YES;
+	}
+
+	return [dataStorage cellIsNullAtRow:rowIndex column:columnIndex];
 }
 
 #pragma mark -
@@ -83,38 +211,41 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 
 /**
  * Implementation of the NSFastEnumeration protocol.
- * Note that this currently doesn't implement mutation guards.
+ * Note that rows are currently retrieved individually to avoid mutation and locking issues,
+ * although this could be improved on.
  */
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
+	NSMutableArray *targetRow = NULL;
 
 	// If the start index is out of bounds, return 0 to indicate end of results
-	if (state->state >= numRows) return 0;
+	if (state->state >= SPMySQLResultStoreGetRowCount(dataStorage)) return 0;
 
-	// Determine how many objects to return - 128, len, or all items remaining
-	NSUInteger itemsToReturn = 128;
-	if (len < 128) itemsToReturn = len;
-	if (numRows - state->state < itemsToReturn) {
-		itemsToReturn = numRows - state->state;
+	// If an edited row exists for the supplied index, use that; otherwise use the underlying
+	// storage row
+	if (state->state < editedRowCount) {
+		targetRow = SPDataStorageGetEditedRow(editedRows, state->state);
 	}
 
-	// Construct the arrays to return
-	NSUInteger i, j;
-	NSMutableArray *rowArray;
-	id *row;
-	for (i = 0; i < itemsToReturn; i++) {
-		row = dataStorage[state->state + i];
-		rowArray = [NSMutableArray arrayWithCapacity:numColumns];
-		for (j = 0; j < numColumns; j++) {
-			CFArrayAppendValue((CFMutableArrayRef)rowArray, row[j]);
+	if (targetRow == NULL) {
+		targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state);
+
+		// Modify unloaded cells as appropriate
+		for (NSUInteger i = 0; i < numberOfColumns; i++) {
+			if (unloadedColumns[i]) {
+				CFArraySetValueAtIndex((CFMutableArrayRef)targetRow, i, [SPNotLoaded notLoaded]);
+			}
 		}
-		stackbuf[i] = rowArray;
 	}
 
-	state->state += itemsToReturn;
+	// Add the item to the buffer and return the appropriate state
+	stackbuf[0] = targetRow;
+
+	state->state += 1;
 	state->itemsPtr = stackbuf;
-	state->mutationsPtr = (unsigned long *)&numRows;
-	return itemsToReturn;
+	state->mutationsPtr = (unsigned long *)self;
+
+	return 1;
 }
 
 #pragma mark -
@@ -125,29 +256,18 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
  * of objects.  Note that the supplied objects are retained as a reference
  * rather than copied.
  */
-- (void) addRowWithContents:(NSArray *)row
+- (void) addRowWithContents:(NSMutableArray *)aRow
 {
-	
-	// Ensure that sufficient capacity is available
-	SPDataStorageEnsureCapacityForAdditionalRowCount(self, 1);
 
-	// Add an empty row array to the data store
-	id *newRow = (id *)malloc(columnPointerByteSize);
-	dataStorage[numRows] = newRow;
-	numRows++;
+	// Verify the row is of the correct length
+	[self _checkNewRow:aRow];
 
-	// Copy over references to the array contents, and retain the objects
-	NSUInteger cellsCopied = 0;
-	for (id cellData in row) {
-		if (cellData) newRow[cellsCopied] = (id)CFRetain(cellData);
-		else newRow[cellsCopied] = nil;
-		if (++cellsCopied == numColumns) break;
-	}
+	// Add the new row to the editable store
+	[editedRows addPointer:aRow];
+	editedRowCount++;
 
-	// If an array shorter than the row width was added, pad with nils
-	if (cellsCopied < numColumns) {
-		for ( ; cellsCopied <= numColumns; cellsCopied++) newRow[cellsCopied] = nil;
-	}
+	// Update the underlying store as well to keep counts correct
+	[dataStorage addDummyRow];
 }
 
 /**
@@ -155,109 +275,78 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
  * all later rows the next index.  Note that the supplied objects within the
  * array are retained as a reference rather than copied.
  */
-- (void) insertRowContents:(NSArray *)row atIndex:(NSUInteger)index
+- (void) insertRowContents:(NSMutableArray *)aRow atIndex:(NSUInteger)anIndex
 {
+	unsigned long long numberOfRows = SPMySQLResultStoreGetRowCount(dataStorage);
+
+	// Verify the row is of the correct length
+	[self _checkNewRow:aRow];
 
 	// Throw an exception if the index is out of bounds
-	if (index > numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
+	if (anIndex > numberOfRows) {
+		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
+	}
 
 	// If "inserting" at the end of the array just add a row
-	if (index == numRows) return SPDataStorageAddRow(self, row);
-
-	// Ensure that sufficient capacity is available to hold all the rows
-	SPDataStorageEnsureCapacityForAdditionalRowCount(self, 1);
-
-	// Renumber the specified index, and all subsequent indices, to create a gap
-	for (NSUInteger j = numRows - 1; j >= index; j--) {
-		dataStorage[j + 1] = dataStorage[j];
+	if (anIndex == numberOfRows) {
+		return [self addRowWithContents:aRow];
 	}
 
-	// Add a new instantiated row array to the data store at the specified point
-	id *newRow = (id *)malloc(columnPointerByteSize);
-	dataStorage[index] = newRow;
-	numRows++;
+	// Add the new row to the editable store
+	[editedRows insertPointer:aRow atIndex:anIndex];
+	editedRowCount++;
 
-	// Copy over references to the array contents, and retain the objects
-	NSUInteger cellsCopied = 0;
-	for (id cellData in row) {
-		if (cellData) newRow[cellsCopied] = (id)CFRetain(cellData);
-		else newRow[cellsCopied] = nil;
-		if (++cellsCopied == numColumns) break;
-	}
-
-	// If an array shorter than the row width was inserted, pad with nils
-	if (cellsCopied < numColumns) {
-		for ( ; cellsCopied <= numColumns; cellsCopied++) newRow[cellsCopied] = nil;
-	}
+	// Update the underlying store to keep counts and indices correct
+	[dataStorage insertDummyRowAtIndex:anIndex];
 }
 
 /**
  * Replace a row with contents of the supplied NSArray.
  */
-- (void) replaceRowAtIndex:(NSUInteger)index withRowContents:(NSArray *)row
+- (void) replaceRowAtIndex:(NSUInteger)anIndex withRowContents:(NSMutableArray *)aRow
 {
-	NSUInteger cellsProcessed = 0;
-
-	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
-
-	id *storageRow = dataStorage[index];
-
-	// Iterate through the row replacing the objects
-	for (id cellData in row) {
-		if (storageRow[cellsProcessed]) CFRelease(storageRow[cellsProcessed]);
-		if (cellData) storageRow[cellsProcessed] = (id)CFRetain(cellData);
-		else storageRow[cellsProcessed] = nil;
-		if (++cellsProcessed == numColumns) break;
-	}
-
-	// Ensure all cells are correctly updated if an array shorter than the row width was supplied
-	if (cellsProcessed < numColumns) {
-		for ( ; cellsProcessed <= numColumns; cellsProcessed++) {
-			if (storageRow[cellsProcessed]) CFRelease(storageRow[cellsProcessed]);
-			storageRow[cellsProcessed] = nil;
-		}
-	}
+	[self _checkNewRow:aRow];
+	[editedRows replacePointerAtIndex:anIndex withPointer:aRow];
 }
 
 /**
  * Replace the contents of a single cell with a supplied object.
  */
-- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)object
+- (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)anObject
 {
+	NSMutableArray *editableRow = NULL;
 
-	// Throw an exception of either index is out of bounds
-	if (rowIndex >= numRows || columnIndex >= numColumns) [NSException raise:NSRangeException format:@"Requested storage index (row %llu, col %llu) beyond bounds (%llu, %llu)", rowIndex, columnIndex, numRows, numColumns];
+	if (rowIndex < editedRowCount) {
+		editableRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+	}
 
-	// Release the old object and retain the new one
-	if (dataStorage[rowIndex][columnIndex]) CFRelease(dataStorage[rowIndex][columnIndex]);
-	if (object) dataStorage[rowIndex][columnIndex] = (id)CFRetain(object);
-	else dataStorage[rowIndex][columnIndex] = nil;
+	// Make sure that the row in question is editable
+	if (editableRow == NULL) {
+		editableRow = [self rowContentsAtIndex:rowIndex];
+		[editedRows replacePointerAtIndex:rowIndex withPointer:editableRow];
+	}
+
+	// Modify the cell
+	[editableRow replaceObjectAtIndex:columnIndex withObject:anObject];
 }
 
 /**
  * Remove a row, renumbering all elements beyond index.
  */
-- (void) removeRowAtIndex:(NSUInteger)index
+- (void) removeRowAtIndex:(NSUInteger)anIndex
 {
 
 	// Throw an exception if the index is out of bounds
-	if (index >= numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", index, numRows];
-
-	// Free the row
-	NSUInteger j = numColumns;
-	id *row = dataStorage[index];
-	while (j > 0) {
-		if (row[--j]) CFRelease(row[j]);
+	if (anIndex >= SPMySQLResultStoreGetRowCount(dataStorage)) {
+		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, SPMySQLResultStoreGetRowCount(dataStorage)];
 	}
-	free(row);
-	numRows--;
 
-	// Renumber all subsequent indices to fill the gap
-	for (j = index; j < numRows; j++) {
-		dataStorage[j] = dataStorage[j + 1];
+	// Remove the row from the edited list and underlying storage
+	if (anIndex < editedRowCount) {
+		editedRowCount--;
+		[editedRows removePointerAtIndex:anIndex];
 	}
-	dataStorage[numRows] = NULL;
+	[dataStorage removeRowAtIndex:anIndex];
 }
 
 /**
@@ -268,27 +357,17 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 {
 
 	// Throw an exception if the range is out of bounds
-	if (rangeToRemove.location + rangeToRemove.length > numRows) [NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (rangeToRemove.location + rangeToRemove.length), numRows];
+	if (rangeToRemove.location + rangeToRemove.length > SPMySQLResultStoreGetRowCount(dataStorage)) {
+		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(rangeToRemove.location + rangeToRemove.length), SPMySQLResultStoreGetRowCount(dataStorage)];
+	}
 
-	// Free rows in the range
-	NSUInteger i, j = numColumns;
-	id *row;
-	for (i = rangeToRemove.location; i < rangeToRemove.location + rangeToRemove.length; i++) {
-		row = dataStorage[i];
-		while (j > 0) {
-			if (row[--j]) CFRelease(row[j]);
-		}
-		free(row);	
+	// Remove the rows from the edited list and underlying storage
+	NSUInteger i = MIN(editedRowCount, rangeToRemove.location + rangeToRemove.length);
+	while (--i >= rangeToRemove.location) {
+		editedRowCount--;
+		[editedRows removePointerAtIndex:i];
 	}
-	numRows -= rangeToRemove.length;
-
-	// Renumber all subsequent indices to fill the gap
-	for (i = rangeToRemove.location + rangeToRemove.length - 1; i < numRows; i++) {
-		dataStorage[i] = dataStorage[i + rangeToRemove.length];
-	}
-	for (i = numRows; i < numRows + rangeToRemove.length; i++) {
-		dataStorage[i] = NULL;
-	}
+	[dataStorage removeRowsInRange:rangeToRemove];
 }
 
 /**
@@ -296,73 +375,33 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
  */
 - (void) removeAllRows
 {
-	NSUInteger j;
-	id *row;
-
-	// Free all the data
-	while (numRows > 0) {
-		row = dataStorage[--numRows];
-		j = numColumns;
-		while (j > 0) {
-			if (row[--j]) CFRelease(row[j]);
-		}
-		free(row);
-	}
-
-	numRows = 0;
+	editedRowCount = 0;
+	[editedRows setCount:0];
+	[dataStorage removeAllRows];
 }
 
-#pragma mark -
-#pragma mark Basic information
+#pragma mark - Unloaded columns
+
+/**
+ * Mark a column as unloaded; SPNotLoaded placeholders will be returned for cells requested
+ * from this store which haven't had their value updated from elsewhere.
+ */
+- (void) setColumnAsUnloaded:(NSUInteger)columnIndex
+{
+	if (columnIndex >= numberOfColumns) {
+		[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+	}
+	unloadedColumns[columnIndex] = true;
+}
+
+#pragma mark - Basic information
 
 /**
  * Returns the number of rows currently held in data storage.
  */
 - (NSUInteger) count
 {
-	return numRows;
-}
-
-/**
- * Set the number of columns represented by the data storage.
- */
-- (void) setColumnCount:(NSUInteger)columnCount
-{
-	columnPointerByteSize = columnCount * sizeof(id);
-
-	// If there are rows present in the storage, and the number of
-	// columns has changed, amend the existing rows to match.
-	if (columnCount != numColumns && numRows) {
-		NSUInteger i = numRows, j;
-		id *row;
-
-		// If the new column count is higher than the old count, iterate through the existing rows
-		// and pad with nils
-		if (columnCount > numColumns) {
-			while (i-- > 0) {
-				dataStorage[i] = (id *)realloc(dataStorage[i], columnPointerByteSize);
-				j = numColumns;
-				while (j < columnCount) {
-					dataStorage[i][j++] = nil;
-				}
-			}
-
-		// If the new column count is lower than the old count, iterate through the existing rows
-		// freeing any extra objects
-		} else {
-			while (i > 0) {
-				row = dataStorage[--i];
-				j = numColumns;
-				while (j > columnCount) {
-					if (row[--j]) CFRelease(row[j]);
-				}
-				dataStorage[i] = (id *)realloc(row, columnPointerByteSize);
-			}
-		}
-	}
-
-	// Update the column count
-	numColumns = columnCount;
+	return (NSUInteger)[dataStorage numberOfRows];
 }
 
 /**
@@ -370,7 +409,26 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
  */
 - (NSUInteger) columnCount
 {
-	return numColumns;
+	return numberOfColumns;
+}
+
+/**
+ * Return whether all the data has been downloaded into the underlying result store.
+ */
+- (BOOL) dataDownloaded
+{
+	return !dataStorage || [dataStorage dataDownloaded];
+}
+
+#pragma mark - Delegate callback methods
+
+/**
+ * When the underlying result store finishes downloading, update the row store to match
+ */
+- (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore
+{
+	[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
+	editedRowCount = [editedRows count];
 }
 
 /**
@@ -380,20 +438,21 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 
 - (id) init {
 	if ((self = [super init])) {
-		numColumns = 0;
-		columnPointerByteSize = 0;
-		numRows = 0;
+		dataStorage = nil;
+		editedRows = nil;
+		unloadedColumns = NULL;
 
-		// Initialise the array, initially with space for 100 rows
-		numRowsCapacity = 100;
-		dataStorage = (id **)malloc(numRowsCapacity * sizeof(id *));
+		numberOfColumns = 0;
+		editedRowCount = 0;
 	}
 	return self;
 }
 
 - (void) dealloc {
-	[self removeAllRows];
-	free(dataStorage);
+	[dataStorage release], dataStorage = nil;
+	[editedRows release], editedRows = nil;
+	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
+
 	[super dealloc];
 }
 
@@ -401,23 +460,12 @@ static inline void SPDataStorageEnsureCapacityForAdditionalRowCount(SPDataStorag
 
 @implementation SPDataStorage (PrivateAPI)
 
-/**
- * Private method to ensure the array always has sufficient capacity
- * to store any additional rows required.
- */
-- (void) _ensureCapacityForAdditionalRowCount:(NSUInteger)numExtraRows
+- (void) _checkNewRow:(NSMutableArray *)aRow
 {
-	while (numRows + numExtraRows > numRowsCapacity) [self _increaseCapacity];
+	if ([aRow count] != numberOfColumns) {
+		[NSException raise:NSInternalInconsistencyException format:@"New row length (%llu) does not match store column	count (%llu)", (unsigned long long)[aRow count], (unsigned long long)numberOfColumns];
+	}
 }
 
-/**
- * Private method to increase the storage available for the array;
- * currently doubles the capacity as boundaries are reached.
- */
-- (void) _increaseCapacity
-{
-	numRowsCapacity *= 2;
-	dataStorage = (id **)realloc(dataStorage, numRowsCapacity * sizeof(id *));
-}
 
 @end

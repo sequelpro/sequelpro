@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPExportFilenameUtilities.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on July 25, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on July 25, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportFilenameUtilities.h"
 #import "SPTablesList.h"
@@ -42,7 +47,8 @@
 		// Get the current export file extension
 		NSString *extension = [self currentDefaultExportFileExtension];
 		
-		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectAtIndex:1]];
+		//note that there will be no tableName if the export is done from a query result without a database selected (or empty).
+		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectOrNilAtIndex:1]];
 		
 		if (![[filename pathExtension] length] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
 	}
@@ -75,6 +81,7 @@
 										NSLocalizedString(@"month", @"export filename date token"),
 										NSLocalizedString(@"day", @"export filename date token"),
 										NSLocalizedString(@"time", @"export filename time token"),
+										NSLocalizedString(@"favorite", @"export filename favorite name token"),
 									nil];
 
 	// Determine whether to remove the table from the tokens list
@@ -143,8 +150,7 @@
  */
 - (void)tokenizeCustomFilenameTokenField
 {
-	NSCharacterSet *nonAlphanumericSet = [[NSCharacterSet alphanumericCharacterSet] invertedSet];
-	NSArray *validTokens = [exportCustomFilenameTokensField objectValue];
+	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
 
 	if ([exportCustomFilenameTokenField currentEditor] == nil) return;
 
@@ -156,20 +162,48 @@
 	// Retrieve the object value of the token field.  This consists of plain text and recognised tokens interspersed.
 	NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 
-	// Walk through the strings - not the tokens - and determine whether any need tokenizing
+	// Walk through the strings - not the tokens - and determine whether any need tokenizing,
+	// including scanning for groups of strings which make up a single token
 	BOOL tokenizingRequired = NO;
-	
-	for (id representedObject in representedObjects) 
-	{
-		if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) continue;
-		
-		NSArray *tokenParts = [representedObject componentsSeparatedByCharactersInSet:nonAlphanumericSet];
-		
-		for (NSString *tokenPart in tokenParts) 
-		{
-			if ([validTokens containsObject:tokenPart]) {
-				tokenizingRequired = YES;
+	NSUInteger i, j;
+	NSInteger k;
+	id tokenCheck;
+	NSMutableArray *tokenParts = [NSMutableArray array];
+
+	// Add all tokens, words, and separators to the array to process
+	for (id eachObject in representedObjects) {
+		if ([eachObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
+			[tokenParts addObject:eachObject];
+		} else {
+			for (i = 0, j = 0; i < [(NSString *)eachObject length]; i++) {
+				if ([alphanumericSet characterIsMember:[eachObject characterAtIndex:i]]) {
+					continue;
+				}
+				if (i > j) {
+					[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
+				}
+				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(i, 1)]];
+				j = i + 1;
+			}
+			if (j < i) {
+				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
+			}
+		}
+	}
+
+	// Walk through the array to process, scanning it for words or groups which are tokens
+	for (i = 0; i < [tokenParts count]; i++) {
+		for (k = i; k >= 0; k--) {
+
+			// Don't process existing token objects
+			if ([[tokenParts objectAtIndex:k] isKindOfClass:[SPExportFileNameTokenObject class]]) {
 				break;
+			}
+
+			// Check whether this item, or group of adjacent items, make up a token
+			tokenCheck = [self tokenObjectForString:[[tokenParts subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
+			if ([tokenCheck isKindOfClass:[SPExportFileNameTokenObject class]]) {
+				tokenizingRequired = YES;
 			}
 		}
 	}
@@ -268,7 +302,7 @@
 	
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {
 		
-		SPFileCompressionFormat compressionFormat = [exportOutputCompressionFormatPopupButton indexOfSelectedItem];
+		SPFileCompressionFormat compressionFormat = (SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem];
 		
 		if ([extension length] > 0) {
 			extension = [extension stringByAppendingPathExtension:(compressionFormat == SPGzipCompression) ? @"gz" : @"bz2"];
@@ -286,6 +320,7 @@
  * Uses the current custom filename field as a data source.
  *
  * @param table  A table name to be used within the expanded filename.
+ *               Can be nil.
  *
  * @return The expanded filename.
  */
@@ -337,6 +372,9 @@
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
+			}
+			else if ([tokenContent isEqualToString:NSLocalizedString(@"favorite", @"export filename favorite name token")]) {
+				[string appendString:[tableDocumentInstance name]];
 			}
 		} 
 		else {

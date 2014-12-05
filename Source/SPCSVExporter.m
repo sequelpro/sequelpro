@@ -1,33 +1,39 @@
 //
-//  $Id$
-//
 //  SPCSVExporter.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPCSVExporter.h"
 #import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @implementation SPCSVExporter
@@ -50,7 +56,7 @@
  *
  * @return The initialised instance
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate
+- (id)initWithDelegate:(NSObject<SPCSVExporterProtocol> *)exportDelegate
 {
 	if ((self = [super init])) {
 		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPCSVExporterProtocol));
@@ -83,11 +89,12 @@
 	BOOL csvCellIsNumeric;
 	BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
 
-	NSUInteger i, totalRows, lastProgressValue, csvCellCount = 0;
+	double lastProgressValue;
+	NSUInteger i, totalRows, csvCellCount = 0;
 	
 	// Check to see if we have at least a table name or data array
-	if ((![self csvTableName]) && (![self csvDataArray]) ||
-		([[self csvTableName] isEqualToString:@""]) && ([[self csvDataArray] count] == 0))
+	if ((![self csvTableName] && ![self csvDataArray]) ||
+		([[self csvTableName] isEqualToString:@""] && [[self csvDataArray] count] == 0))
 	{
 		[pool release];
 		return;
@@ -118,7 +125,37 @@
 	[self setExportProcessIsRunning:YES];
 	
 	lastProgressValue = 0;
-	
+
+	// Before the streaming query is started, build an array of numeric columns if a table
+	// is being exported
+	if ([self csvTableName] && (![self csvDataArray])) {
+		NSDictionary *tableDetails = nil;
+		
+		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
+		
+		if ([queryResult numberOfRows]) {
+			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
+			
+			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+		}
+		
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		{
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:
+				([tableColumnTypeGrouping isEqualToString:@"bit"]
+					|| [tableColumnTypeGrouping isEqualToString:@"integer"]
+					|| [tableColumnTypeGrouping isEqualToString:@"float"])
+			]]; 
+		}
+		
+		[tableDetails release];
+	}
+
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self csvDataArray]) && [self csvTableName]) {
 		totalRows		= [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] integerValue];
@@ -177,35 +214,7 @@
 	
 	if ([self csvDataArray]) totalRows = [[self csvDataArray] count];
 	if (([self csvDataArray]) && (![self csvOutputFieldNames])) currentRowIndex++;
-	
-	if ([self csvTableName] && (![self csvDataArray])) {
 		
-		NSDictionary *tableDetails = nil;
-		
-		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
-		
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numberOfRows]) {
-			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
-			
-			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"integer"] || 
-																		  [tableColumnTypeGrouping isEqualToString:@"float"])]]; 
-		}
-		
-		[tableDetails release];
-	}
-	
 	// Drop into the processing loop
 	NSAutoreleasePool *csvExportPool = [[NSAutoreleasePool alloc] init];
 	
@@ -369,7 +378,7 @@
 		// Update the progress
 		if (totalRows && (currentRowIndex * ([self exportMaxProgress] / totalRows)) > lastProgressValue) {
 			
-			NSInteger progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
+			double progress = (currentRowIndex * ([self exportMaxProgress] / totalRows));
 			
 			[self setExportProgressValue:progress];
 			
@@ -402,9 +411,8 @@
 	[pool release];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	if (csvDataArray) [csvDataArray release], csvDataArray = nil;

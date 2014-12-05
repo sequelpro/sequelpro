@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKSelectQueryGroupByTests.m
 //  QueryKit
 //
@@ -29,23 +27,50 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKSelectQueryGroupByTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
+#import "QKTestConstants.h"
 
 @implementation QKSelectQueryGroupByTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Initialisation
+
++ (id)defaultTestSuite
+{
+    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:NSStringFromClass(self)];
+	
+	[self addTestForDatabase:QKDatabaseUnknown withIdentifierQuote:EMPTY_STRING toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabaseMySQL withIdentifierQuote:QKMySQLIdentifierQuote toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabasePostgreSQL withIdentifierQuote:QKPostgreSQLIdentifierQuote toTestSuite:testSuite];
+	
+    return [testSuite autorelease];
+}
+
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite
+{		
+    for (NSInvocation *invocation in [self testInvocations]) 
+	{
+		SenTestCase *test = [[QKSelectQueryGroupByTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
+		
+		[testSuite addTest:test];
+		
+        [test release];
+    }
+}
+
+#pragma mark -
+#pragma mark Setup
 
 - (void)setUp
 {
-	_query = [QKQuery selectQueryFromTable:QKTestTableName];
+	QKQuery *query = [QKQuery selectQueryFromTable:QKTestTableName];
 	
-	[_query addField:QKTestFieldOne];
-	[_query addField:QKTestFieldTwo];
+	[query setQueryDatabase:[self database]];
+	[query setUseQuotedIdentifiers:[self identifierQuote] && [[self identifierQuote] length] > 0];
+	
+	[query addField:QKTestFieldOne];
+	[query addField:QKTestFieldTwo];
+	
+	[self setQuery:query];
 }
 
 #pragma mark -
@@ -53,26 +78,25 @@ static NSString *QKTestFieldTwo   = @"test_field2";
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	STAssertTrue([[[self query] query] hasPrefix:@"SELECT"], nil);
 }
 
 - (void)testSelectQueryGroupByIsCorrect
 {	
-	[_query groupByField:QKTestFieldOne];
+	[[self query] groupByField:QKTestFieldOne];
 	
-	NSString *query = [NSString stringWithFormat:@"GROUP BY %@", QKTestFieldOne];
-	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
+	NSString *query = [NSString stringWithFormat:@"GROUP BY %1$@%2$@%1$@", [self identifierQuote], QKTestFieldOne];
+		
+	STAssertTrue([[[self query] query] hasSuffix:query], nil);
 }
 
 - (void)testSelectQueryGroupByMultipleFieldsIsCorrect
 {	
-	[_query groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
+	[[self query] groupByFields:[NSArray arrayWithObjects:QKTestFieldOne, QKTestFieldTwo, nil]];
 	
-	NSString *query = [NSString stringWithFormat:@"GROUP BY %@, %@", QKTestFieldOne, QKTestFieldTwo];
+	NSString *query = [NSString stringWithFormat:@"GROUP BY %1$@%2$@%1$@, %1$@%3$@%1$@", [self identifierQuote], QKTestFieldOne, QKTestFieldTwo];
 	
-	STAssertTrue([[_query query] hasSuffix:query], @"query group by");
+	STAssertTrue([[[self query] query] hasSuffix:query], nil);
 }
-
 
 @end

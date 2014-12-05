@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKQueryUpdateParameter.m
 //  QueryKit
 //
@@ -29,11 +27,9 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQueryUpdateParameter.h"
+#import "QKQueryConstants.h"
 
 @implementation QKQueryUpdateParameter
-
-@synthesize _field;
-@synthesize _value;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -61,21 +57,11 @@
 	
 	NSString *field = [_field stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
-	[string appendString:field];
+	[string appendFormat:@"%1$@%2$@%1$@", [self useQuotedIdentifier] ? _identiferQuote : EMPTY_STRING, field];
 	[string appendString:@" = "];
 	[string appendFormat:(![_value isKindOfClass:[NSNumber class]]) ? @"'%@'" : @"%@", [_value description]];
 	
 	return string;
-}
-
-#pragma mark -
-
-- (void)dealloc
-{
-	if (_field) [_field release], _field = nil;
-	if (_value) [_value release], _value = nil;
-	
-	[super dealloc];
 }
 
 @end

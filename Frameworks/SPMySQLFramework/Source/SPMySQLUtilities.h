@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Locking.h
 //  SPMySQLFramework
 //
@@ -28,9 +26,12 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #include <mach/mach_time.h>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 
 /**
  * Define a project function to make it easier to use mach_absolute_time()
@@ -43,3 +44,5 @@ static double _elapsedSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 	return (((double)UnsignedWideToUInt64(elapsedTime)) * 1e-9);
 }
+
+#pragma clang diagnostic pop

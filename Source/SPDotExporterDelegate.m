@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPDotExporterDelegate.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDotExporterDelegate.h"
 #import "SPDotExporter.h"
@@ -29,9 +34,6 @@
 
 @implementation SPExportController (SPDotExporterDelegate)
 
-/**
- *
- */
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter
 {
 	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting Dot File", @"text showing that the application is exporting a Dot file")];
@@ -43,9 +45,6 @@
 	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
 }
 
-/**
- * 
- */
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter
 {
 	[NSApp endSheet:exportProgressWindow returnCode:0];
@@ -54,23 +53,17 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 		
 	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 
 	// Display Growl notification
 	[self displayExportFinishedGrowlNotification];
 }
 
-/**
- *
- */
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter
 {
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
-/**
- *
- */
 - (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter forTableWithIndex:(NSUInteger)tableIndex
 {
 	// Update the current table export index
@@ -81,9 +74,6 @@
 	[exportProgressText displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter
 {
 	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];

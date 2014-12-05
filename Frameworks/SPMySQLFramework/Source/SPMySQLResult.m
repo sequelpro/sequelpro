@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLResult.m
 //  SPMySQLFramework
 //
@@ -28,13 +26,12 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPMySQLResult.h"
 #import "SPMySQL Private APIs.h"
 #import "SPMySQLArrayAdditions.h"
 
-static SPMySQLResultFieldProcessor fieldProcessingMap[256];
 static id NSNullPointer;
 
 @implementation SPMySQLResult
@@ -48,54 +45,37 @@ static id NSNullPointer;
 #pragma mark -
 #pragma mark Setup and teardown
 
-/**
- * In the one-off class initialisation, set up the result processing map
- */
 + (void)initialize
 {
 
 	// Cached NSNull singleton reference
 	if (!NSNullPointer) NSNullPointer = [NSNull null];
 
-	// Go through the list of enum_field_types in mysql_com.h, mapping each to the method for
-	// processing that result set.
-	fieldProcessingMap[MYSQL_TYPE_DECIMAL] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_TINY] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_SHORT] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_LONG] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_FLOAT] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_DOUBLE] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_NULL] = SPMySQLResultFieldAsNull;
-	fieldProcessingMap[MYSQL_TYPE_TIMESTAMP] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_LONGLONG] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_INT24] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_DATE] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_TIME] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_DATETIME] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_YEAR] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_NEWDATE] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_VARCHAR] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_BIT] = SPMySQLResultFieldAsBit;
-	fieldProcessingMap[MYSQL_TYPE_NEWDECIMAL] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_ENUM] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_SET] = SPMySQLResultFieldAsString;
-	fieldProcessingMap[MYSQL_TYPE_TINY_BLOB] = SPMySQLResultFieldAsBlob;
-	fieldProcessingMap[MYSQL_TYPE_MEDIUM_BLOB] = SPMySQLResultFieldAsBlob;
-	fieldProcessingMap[MYSQL_TYPE_LONG_BLOB] = SPMySQLResultFieldAsBlob;
-	fieldProcessingMap[MYSQL_TYPE_BLOB] = SPMySQLResultFieldAsBlob;
-	fieldProcessingMap[MYSQL_TYPE_VAR_STRING] = SPMySQLResultFieldAsStringOrBlob;
-	fieldProcessingMap[MYSQL_TYPE_STRING] = SPMySQLResultFieldAsStringOrBlob;
-	fieldProcessingMap[MYSQL_TYPE_GEOMETRY] = SPMySQLResultFieldAsGeometry;
-	fieldProcessingMap[MYSQL_TYPE_DECIMAL] = SPMySQLResultFieldAsString;
+	// Set up data conversion details
+	[self _initializeDataConversion];
 }
 
 /**
- * Prevent SPMySQLResults from being init'd normally.
+ * Standard initialisation - not intended for external use.
  */
 - (id)init
 {
-	[NSException raise:NSInternalInconsistencyException format:@"SPMySQLResults should not be init'd directly; use initWithMySQLResult:stringEncoding: instead."];
-	return nil;
+	if ((self = [super init])) {
+		stringEncoding = NSASCIIStringEncoding;
+		queryExecutionTime = -1;
+
+		resultSet = NULL;
+		numberOfFields = 0;
+		numberOfRows = 0;
+		currentRowIndex = 0;
+
+		fieldDefinitions = NULL;
+		fieldNames = NULL;
+
+		defaultRowReturnType = SPMySQLResultRowAsDictionary;
+	}
+
+	return self;
 }
 
 /**
@@ -108,27 +88,21 @@ static id NSNullPointer;
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
-	if ((self = [super init])) {
+	if ((self = [self init])) {
 		stringEncoding = theStringEncoding;
-		queryExecutionTime = -1;
 
 		// Get the result set and cache the number of fields and number of rows
 		resultSet = theResult;
 		numberOfFields = mysql_num_fields(resultSet);
 		numberOfRows = mysql_num_rows(resultSet);
-		currentRowIndex = 0;
 
 		// Cache the field definitions and build up an array of cached field names and types
 		fieldDefinitions = mysql_fetch_fields(resultSet);
 		fieldNames = malloc(sizeof(NSString *) * numberOfFields);
-		fieldTypes = malloc(sizeof(unsigned int) * numberOfFields);
 		for (NSUInteger i = 0; i < numberOfFields; i++) {
 			MYSQL_FIELD aField = fieldDefinitions[i];
 			fieldNames[i] = [[self _stringWithBytes:aField.name length:aField.name_length] retain];
-			fieldTypes[i] = aField.type;
 		}
-
-		defaultRowReturnType = SPMySQLResultRowAsDictionary;
 	}
 
 	return self;
@@ -136,13 +110,14 @@ static id NSNullPointer;
 
 - (void)dealloc
 {
-	mysql_free_result(resultSet);
+	if (resultSet) {
+		mysql_free_result(resultSet);
 
-	for (NSUInteger i = 0; i < numberOfFields; i++) {
-		[fieldNames[i] release];
+		for (NSUInteger i = 0; i < numberOfFields; i++) {
+			[fieldNames[i] release];
+		}
+		free(fieldNames);
 	}
-	free(fieldNames);
-	free(fieldTypes);
 
 	[super dealloc];
 }
@@ -268,7 +243,7 @@ static id NSNullPointer;
 
 	// Convert each of the cells in the row in turn
 	for (NSUInteger i = 0; i < numberOfFields; i++) {
-		id cellData = SPMySQLResultGetObject(self, theRow[i], theRowDataLengths[i], fieldTypes[i], i);
+		id cellData = SPMySQLResultGetObject(self, theRow[i], theRowDataLengths[i], i, NSNotFound);
 
 		// If object creation failed, display a null
 		if (!cellData) cellData = NSNullPointer;
@@ -326,37 +301,6 @@ static id NSNullPointer;
 	return itemsToReturn;
 }
 
-#pragma mark -
-#pragma mark Data conversion
-
-/**
- * Provides a binary representation of the supplied bytes as a returned NSString.
- * The resulting binary representation will be zero-padded according to the supplied
- * field length.
- */
-+ (NSString *)bitStringWithBytes:(const char *)bytes length:(NSUInteger)length padToLength:(NSUInteger)padLength
-{
-	if (bytes == NULL) return nil;
-
-	NSUInteger i = 0;
-	length--;
-	padLength--;
-
-	// Generate a C string representation of the binary data
-	char *cStringBuffer = malloc(length + 1);
-	while (i <= padLength) {
-		cStringBuffer[padLength - i++] = ( (bytes[length - (i >> 3)] >> (i & 0x7)) & 1 ) ? '1' : '0';
-	}
-	cStringBuffer[padLength+1] = '\0';
-
-	// Convert to a string
-	NSString *returnString = [NSString stringWithUTF8String:cStringBuffer];
-
-	// Free up memory and return
-	free(cStringBuffer);
-	return returnString;
-}
-
 @end
 
 #pragma mark -
@@ -381,84 +325,6 @@ static id NSNullPointer;
 - (void)_setQueryExecutionTime:(double)theExecutionTime
 {
 	queryExecutionTime = theExecutionTime;
-}
-
-/**
- * Core data conversion function, taking C data provided by MySQL and converting
- * to an appropriate return type.
- * Note that the data passed in currently is *not* nul-terminated for fast
- * streaming results, which is safe for the current implementation but should be
- * kept in mind for future changes.
- */
-- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldType:(unsigned int)fieldType fieldDefinitionIndex:(NSUInteger)fieldIndex
-{
-
-	// A NULL pointer for the data indicates a null value; return a NSNull object.
-	if (bytes == NULL) return NSNullPointer;
-
-	// Determine the field processor to use
-	SPMySQLResultFieldProcessor dataProcessor = fieldProcessingMap[fieldType];
-
-	// Switch the method to process the cell data based on the field type mapping.
-	// Do this in two passes: the first as logic may cause a change in processor required.
-	switch (dataProcessor) {
-
-		// STRING and VAR_STRING types may be strings or binary types; check the binary flag
-		case SPMySQLResultFieldAsStringOrBlob:
-			if (fieldDefinitions[fieldIndex].flags & BINARY_FLAG) {
-				dataProcessor = SPMySQLResultFieldAsBlob;
-			}
-			break;
-
-		// Blob types may be automatically be converted to strings, or may be non-binary
-		case SPMySQLResultFieldAsBlob:
-			if (!(fieldDefinitions[fieldIndex].flags & BINARY_FLAG)) {
-				dataProcessor = SPMySQLResultFieldAsString;
-			}
-			break;
-
-		// In most cases, use the original data processor.
-		default:
-			break;
-	}
-
-	// If this instance is set to convert all data as strings, alter the processor.
-	if (returnDataAsStrings && dataProcessor == SPMySQLResultFieldAsBlob) {
-		dataProcessor = SPMySQLResultFieldAsString;
-	}
-
-	// Now switch the processing method again to actually process the data.
-	switch (dataProcessor) {
-
-		// Convert string types using a method that will preserve any nul characters
-		// within the string
-		case SPMySQLResultFieldAsString:
-		case SPMySQLResultFieldAsStringOrBlob:
-			return [[[NSString alloc] initWithBytes:bytes length:length encoding:stringEncoding] autorelease];
-
-		// Convert BLOB types to NSData
-		case SPMySQLResultFieldAsBlob:
-			return [NSData dataWithBytes:bytes length:length];
-		
-		// For Geometry types, use a special Geometry object to handle their complexity
-		case SPMySQLResultFieldAsGeometry:
-			return [SPMySQLGeometryData dataWithBytes:bytes length:length];
-
-		// For bit fields, get a zero-padded representation of the data
-		case SPMySQLResultFieldAsBit:
-			return [SPMySQLResult bitStringWithBytes:bytes length:length padToLength:fieldDefinitions[fieldIndex].length];
-
-		// Convert null types to NSNulls
-		case SPMySQLResultFieldAsNull:
-			return NSNullPointer;
-
-		case SPMySQLResultFieldAsUnhandled:
-			NSLog(@"SPMySQLResult processing encountered an unknown field type (%d), falling back to NSData handling", fieldType);
-			return [NSData dataWithBytes:bytes length:length];
-	}
-
-	[NSException raise:NSInternalInconsistencyException format:@"Unhandled field type when processing SPMySQLResults"];
-	return nil;
 }
 
 @end

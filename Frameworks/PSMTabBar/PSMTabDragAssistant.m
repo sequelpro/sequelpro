@@ -367,7 +367,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 	}
 	
     [[[self destinationTabBar] cells] replaceObjectAtIndex:destinationIndex withObject:[self draggedCell]];
-    [[self draggedCell] setControlView:[self destinationTabBar]];
+    [[self draggedCell] setCustomControlView:[self destinationTabBar]];
 	
     // move actual NSTabViewItem
     if ([self sourceTabBar] != [self destinationTabBar]) {
@@ -474,7 +474,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 				//rebind the cell to the new control
 				[control bindPropertiesForCell:[self draggedCell] andTabViewItem:[[self draggedCell] representedObject]];
 				
-				[[self draggedCell] setControlView:control];
+				[[self draggedCell] setCustomControlView:control];
 				
 				[[[self sourceTabBar] tabView] removeTabViewItem:[[self draggedCell] representedObject]];
 				
@@ -668,6 +668,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 		//get a custom image representation of the view to drag from the delegate
 		NSImage *tabImage = [_draggedTab image];
 		NSPoint drawPoint;
+		NSRect drawRect;
 		_dragWindowOffset = NSZeroSize;
 		viewImage = [[control delegate] tabView:[control tabView] imageForTabViewItem:[cell representedObject] offset:&_dragWindowOffset styleMask:outMask];
 		[viewImage lockFocus];
@@ -681,9 +682,10 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 		} else {
 			drawPoint.x += [control frame].size.width - [tabImage size].width;
 		}
+		drawRect = NSMakeRect(drawPoint.x, drawPoint.y, [tabImage size].width, [tabImage size].height);
 		
-		[tabImage compositeToPoint:drawPoint operation:NSCompositeSourceOver];
-		
+		[tabImage drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
 		[viewImage unlockFocus];
 	} else {
 		//the delegate doesn't give a custom image, so use an image of the view

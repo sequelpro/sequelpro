@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Convenience Methods.h
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "Convenience Methods.h"
 
@@ -63,7 +61,10 @@
 	if (previousSeekPosition) [self seekToRow:previousSeekPosition];
 
 	// Instead of empty arrays, return nil if there are no rows.
-	if (![rowsToReturn count]) return nil;
+	if (![rowsToReturn count]) {
+		[rowsToReturn release];
+		return nil;
+	}
 
 	return [rowsToReturn autorelease];
 }

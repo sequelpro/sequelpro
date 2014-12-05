@@ -9,19 +9,26 @@
 #  Created by Stuart Connolly (stuconnolly.com)
 #  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 #
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+#  Permission is hereby granted, free of charge, to any person
+#  obtaining a copy of this software and associated documentation
+#  files (the "Software"), to deal in the Software without
+#  restriction, including without limitation the rights to use,
+#  copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the
+#  Software is furnished to do so, subject to the following
+#  conditions:
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  The above copyright notice and this permission notice shall be
+#  included in all copies or substantial portions of the Software.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+#  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+#  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#  OTHER DEALINGS IN THE SOFTWARE.
 #
 #  More info at <http://code.google.com/p/sequel-pro/>
 
@@ -36,15 +43,15 @@ QUIET='NO'
 DEBUG='NO'
 CLEAN='NO'
 
-# C/C++ compiler flags
-export CFLAGS='-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=10.5'
-export CXXFLAGS='-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc -arch i386 -arch x86_64 -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti -mmacosx-version-min=10.5'
+# Configuration
+MIN_OS_X_VERSION='10.6'
+ARCHITECTURES='-arch i386 -arch x86_64'
 
-CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared"'
+CONFIGURE_OPTIONS='-DBUILD_CONFIG=mysql_release -DENABLED_LOCAL_INFILE=1 -DWITH_SSL=bundled -DWITH_MYSQLD_LDFLAGS="-all-static --disable-shared" -DWITHOUT_SERVER=1 -DWITH_ZLIB=system'
 OUTPUT_DIR='SPMySQLFiles.build'
 
-set -A INCLUDE_HEADERS 'my_alloc.h' 'my_list.h' 'mysql_com.h' 'mysql_time.h' 'mysql_version.h' 'mysql.h' 'typelib.h'
 ESC=`printf '\033'`
+set -A INCLUDE_HEADERS 'my_alloc.h' 'my_list.h' 'mysql_com.h' 'mysql_time.h' 'mysql_version.h' 'mysql.h' 'typelib.h'
 
 usage() 
 {	
@@ -60,6 +67,7 @@ Where: -s -- Path to the MySQL source directory
 
 # Test for cmake
 cmake --version > /dev/null 2>&1
+
 if [ ! $? -eq 0 ]
 then
 	echo "$ESC[1;31mIn addition to the standard OS X build tools, '$ESC[0;1mcmake$ESC[1;31m' is required to compile the MySQL source.   $ESC[0;1mcmake$ESC[1;31m is found at $ESC[0mcmake.org$ESC[1;31m, and a binary distribution is available from $ESC[0mhttp://www.cmake.org/cmake/resources/software.mhtml$ESC[1;31m ."
@@ -74,7 +82,6 @@ then
 	usage
 	exit 1
 fi
-
 
 while getopts ':s:qcd' OPTION
 do
@@ -99,6 +106,7 @@ if [ "x${DEBUG}" == 'xYES' ]
 then
 	echo "cd ${MYSQL_SOURCE_DIR}"
 fi
+
 cd "$MYSQL_SOURCE_DIR"
 
 # Perform a clean if requested
@@ -109,10 +117,12 @@ then
 	if [ "x${QUIET}" == 'xYES' ]
 	then
 		make clean > /dev/null
+
 		if [ -f 'CMakeCache.txt' ]; then rm 'CMakeCache.txt' > /dev/null; fi
 		if [ -d "$OUTPUT_DIR" ]; then rm -rf "$OUTPUT_DIR" > /dev/null; fi
 	else
 		make clean
+		
 		if [ -f 'CMakeCache.txt' ]; then rm 'CMakeCache.txt'; fi
 		if [ -d "$OUTPUT_DIR" ]; then rm -rf "$OUTPUT_DIR" > /dev/null; fi
 	fi
@@ -124,7 +134,7 @@ fi
 
 echo ''
 echo "This script builds the MySQL client libraries for distribution in Sequel Pro's MySQL framework."
-echo 'They are all built as 3-way binaries (32 bit PPC, 32/64 bit i386).'
+echo 'They are all built as 2-way binaries (32 and 64 bit i386).'
 echo ''
 echo -n "$ESC[1mThis may take a while, are you sure you want to continue [y | n]: $ESC[0m"
 
@@ -136,6 +146,19 @@ then
 	exit 0
 fi
 
+# Find the SDK path
+SDK_PATH=$(xcodebuild -version -sdk 2>/dev/null | grep "^Path: [a-zA-Z0-9\/\.]*$" | awk -F' ' '{ print $2 }' | grep "$MIN_OS_X_VERSION")
+
+if [ "x${SDK_PATH}" == 'x' ]
+then
+	echo "$ESC[1;31mNo SDK found matching OS X version ${MIN_OS_X_VERSION}.$ESC[0m"
+	echo "$ESC[1;31mExiting...$ESC[0m"
+	exit 1
+fi
+
+# C/C++ compiler flags
+export CFLAGS="-isysroot ${SDK_PATH} ${ARCHITECTURES} -O3 -fno-omit-frame-pointer -fno-exceptions -mmacosx-version-min=${MIN_OS_X_VERSION}"
+export CXXFLAGS="-isysroot ${SDK_PATH} ${ARCHITECTURES} -O3 -fno-omit-frame-pointer -felide-constructors -fno-exceptions -fno-rtti -mmacosx-version-min=${MIN_OS_X_VERSION}"
 
 echo "$ESC[1mConfiguring MySQL source...$ESC[0m"
 
@@ -193,6 +216,7 @@ then
 		exit 1
 	fi
 fi
+
 if [ ! -d "${OUTPUT_DIR}/lib" ]
 then
 	mkdir "${OUTPUT_DIR}/lib"
@@ -202,6 +226,7 @@ then
 		exit 1
 	fi
 fi
+
 if [ ! -d "${OUTPUT_DIR}/include" ]
 then
 	mkdir "${OUTPUT_DIR}/include"
@@ -214,6 +239,7 @@ fi
 
 # Copy the library
 cp 'libmysql/libmysqlclient.a' "${OUTPUT_DIR}/lib/"
+
 if [ ! $? -eq 0 ]
 then
 	echo "$ESC[1;31mCould not copy libmysqlclient.a to output directory! (${MYSQL_SOURCE_DIR}/${OUTPUT_DIR}/lib)$ESC[0m"
@@ -229,8 +255,7 @@ do
 		echo "$ESC[1;31mCould not copy ${eachheader} to output directory! (${MYSQL_SOURCE_DIR}/${OUTPUT_DIR}/include)$ESC[0m"
 		exit 1
 	fi
-done
-	
+done	
 
 echo "$ESC[1mBuilding MySQL client libraries successfully completed.$ESC[0m"
 echo "$ESC[1mSee ${MYSQL_SOURCE_DIR}/${OUTPUT_DIR}/ for the product.$ESC[0m"

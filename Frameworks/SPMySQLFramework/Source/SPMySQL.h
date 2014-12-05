@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQL.h
 //  SPMySQLFramework
 //
@@ -28,16 +26,17 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-@class SPMySQLConnection, SPMySQLResult, SPMySQLStreamingResult, SPMySQLFastStreamingResult;
+@class SPMySQLConnection, SPMySQLResult, SPMySQLStreamingResult, SPMySQLFastStreamingResult, SPMySQLStreamingResultStore;
 
 // Global include file for the framework.
 // Constants
 #import "SPMySQLConstants.h"
+#import "SPMySQLDataTypes.h"
 
 // Required category additions
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #import "SPMySQLStringAdditions.h"
 #else
 #import <SPMySQL/SPMySQL.h>
@@ -58,10 +57,15 @@
 
 // MySQL result set, streaming subclasses of same, and associated categories
 #import "SPMySQLResult.h"
+#import "SPMySQLEmptyResult.h"
 #import "SPMySQLStreamingResult.h"
 #import "SPMySQLFastStreamingResult.h"
+#import "SPMySQLStreamingResultStore.h"
 #import "Field Definitions.h"
 #import "Convenience Methods.h"
+
+// MySQL result store delegate protocol
+#import "SPMySQLStreamingResultStoreDelegate.h"
 
 // Result data objects
 #import "SPMySQLGeometryData.h"

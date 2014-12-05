@@ -1,119 +1,137 @@
 //
-//  $Id$
-//
 //  SPDatabaseRename.m
 //  sequel-pro
 //
-//  Created by David Rekowski on Apr 13, 2010
+//  Created by David Rekowski on April 13, 2010.
+//  Copyright (c) 2010 David Rekowski. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPDBActionCommons.h"
 #import "SPDatabaseRename.h"
 #import "SPTableCopy.h"
-#import "SPDatabaseInfo.h"
+#import "SPViewCopy.h"
+#import "SPTablesList.h"
+
 #import <SPMySQL/SPMySQL.h>
+
+@interface SPDatabaseRename ()
+
+- (BOOL)_createDatabase:(NSString *)database;
+- (BOOL)_dropDatabase:(NSString *)database;
+
+- (void)_moveTables:(NSArray *)tables fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase;
+- (void)_moveViews:(NSArray *)views fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase;
+
+@end
 
 @implementation SPDatabaseRename
 
-@synthesize dbInfo;
-
-- (SPDatabaseInfo *)getDBInfoObject 
+- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabase to:(NSString *)targetDatabase
 {
-	if (dbInfo != nil) {
-		return dbInfo;
-	} 
-	else {
-		dbInfo = [[SPDatabaseInfo alloc] init];
-		
-		[dbInfo setConnection:[self connection]];
-		[dbInfo setMessageWindow:messageWindow];
-	}
+	NSArray *tables = nil;
+	NSArray *views = nil;
 	
-	return dbInfo;
-}
-
-- (BOOL)renameDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName 
-{
-	SPDatabaseInfo *databaseInfo = [self getDBInfoObject];
-
-	// Check, whether the source database exists and the target database doesn't.
-	NSArray *tables = nil; 
-	
-	BOOL sourceExists = [databaseInfo databaseExists:sourceDatabaseName];
-	BOOL targetExists = [databaseInfo databaseExists:targetDatabaseName];
+	// Check, whether the source database exists and the target database doesn't
+	BOOL sourceExists = [[connection databases] containsObject:sourceDatabase];
+	BOOL targetExists = [[connection databases] containsObject:targetDatabase];
 	
 	if (sourceExists && !targetExists) {
-		
-		// Retrieve the list of tables/views/funcs/triggers from the source database
-		tables = [connection tablesFromDatabase:sourceDatabaseName];
+		tables = [tablesList allTableNames];
+		views = [tablesList allViewNames];
 	}
 	else {
 		return NO;
 	}
 		
-	BOOL success = [self createDatabase:targetDatabaseName];
+	BOOL success = [self _createDatabase:targetDatabase];
 	
-	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
+	[self _moveTables:tables fromDatabase:sourceDatabase toDatabase:targetDatabase];
 	
-	[dbActionTableCopy setConnection:connection];
-	
-	for (NSString *currentTable in tables) 
-	{
-		success = [dbActionTableCopy moveTable:currentTable from:sourceDatabaseName to:targetDatabaseName];
-	}
-	
-	[dbActionTableCopy release];
-		
-	tables = [connection tablesFromDatabase:sourceDatabaseName];
+	tables = [connection tablesFromDatabase:sourceDatabase];
 		
 	if ([tables count] == 0) {
-		[self dropDatabase:sourceDatabaseName];
+		[self _dropDatabase:sourceDatabase];
 	} 
 		
 	return success;
 }
 
-- (BOOL)createDatabase:(NSString *)newDatabaseName 
-{
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [newDatabaseName backtickQuotedString]];
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * This method creates a new database.
+ *
+ * @param NSString newDatabaseName name of the new database to be created
+ * @return BOOL YES on success, otherwise NO
+ */
+- (BOOL)_createDatabase:(NSString *)database 
+{	
+	[connection queryString:[NSString stringWithFormat:@"CREATE DATABASE %@", [database backtickQuotedString]]];	
 	
-	[connection queryString:createStatement];	
-	
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
+	return ![connection queryErrored];
 }
 
-- (BOOL)dropDatabase:(NSString *)databaseName 
-{
-	NSString *dropStatement = [NSString stringWithFormat:@"DROP DATABASE %@", [databaseName backtickQuotedString]];
+/**
+ * This method drops a database.
+ *
+ * @param NSString databaseName name of the database to drop
+ * @return BOOL YES on success, otherwise NO
+ */
+- (BOOL)_dropDatabase:(NSString *)database 
+{	
+	[connection queryString:[NSString stringWithFormat:@"DROP DATABASE %@", [database backtickQuotedString]]];	
 	
-	[connection queryString:dropStatement];	
-	
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
+	return ![connection queryErrored];
 }
 
-- (void)dealloc 
+- (void)_moveTables:(NSArray *)tables fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase
 {
-	[dbInfo release], dbInfo = nil;
-	[super dealloc];
+	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
+	
+	[dbActionTableCopy setConnection:connection];
+	
+	for (NSString *table in tables) 
+	{
+		[dbActionTableCopy moveTable:table from:sourceDatabase to:targetDatabase];
+	}
+	
+	[dbActionTableCopy release];
+}
+
+- (void)_moveViews:(NSArray *)views fromDatabase:(NSString *)sourceDatabase toDatabase:(NSString *)targetDatabase
+{
+	SPViewCopy *dbActionViewCopy = [[SPViewCopy alloc] init];
+	
+	[dbActionViewCopy setConnection:connection];
+	
+	for (NSString *view in views) 
+	{
+		[dbActionViewCopy moveView:view from:sourceDatabase to:targetDatabase];
+	}
+	
+	[dbActionViewCopy release];
 }
 
 @end

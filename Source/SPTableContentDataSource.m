@@ -1,10 +1,8 @@
 //
-//  $Id$
-//
 //  SPTableContentDataSource.m
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,15 +26,22 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableContentDataSource.h"
+#import "SPTableContentFilter.h"
 #import "SPDataStorage.h"
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
 
-#import <SPMySQL/SPMySQL.h>
 #import <pthread.h>
+#import <SPMySQL/SPMySQL.h>
+
+@interface SPTableContent (SPTableContentDataSource_Private_API)
+
+- (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;
+
+@end
 
 @implementation SPTableContent (SPTableContentDataSource)
 
@@ -45,9 +50,9 @@
 
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)tableView
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
-		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:[NSNumber numberWithInteger:0]] objectForKey:@"filter"] count];
+		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:SPTableContentFilterKey] count];
 	}
 	else 
 #endif
@@ -60,7 +65,7 @@
 
 - (id)tableView:(SPCopyTable *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		if (filterTableIsSwapped)
 			
@@ -69,11 +74,11 @@
 				return [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
 			} 
 			else {
-				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"], [[tableColumn identifier] integerValue] - 1);
+				return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey], [[tableColumn identifier] integerValue] - 1);
 			}
-			else {
-				return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:@"filter"], rowIndex);
-			}
+		else {
+			return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey], rowIndex);
+		}
 	}
 	else 
 #endif
@@ -90,7 +95,7 @@
 				pthread_mutex_lock(&tableValuesLock);
 				
 				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					value = [[SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex) copy] autorelease];
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:YES];
 				}
 				
 				pthread_mutex_unlock(&tableValuesLock);
@@ -98,20 +103,44 @@
 				if (!value) return @"...";
 			} 
 			else {
-				value = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
+				if ([tableView editedColumn] == (NSInteger)columnIndex && [tableView editedRow] == rowIndex) {
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:NO];
+				}
+				else {
+					value = [self _contentValueForTableColumn:columnIndex row:rowIndex asPreview:YES];
+				}
+			}
+
+			NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
+
+			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+			
+			if ([value isKindOfClass:[SPMySQLGeometryData class]]) {
+				return [value wktString];
 			}
 			
-			if ([value isKindOfClass:[SPMySQLGeometryData class]])
-				return [value wktString];
-			
-			if ([value isNSNull])
+			if ([value isNSNull]) {
 				return [prefs objectForKey:SPNullValue];
+			}
 			
-			if ([value isKindOfClass:[NSData class]])
+			if ([value isKindOfClass:[NSData class]]) {
+
+				if ([columnType isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+					return [NSString stringWithFormat:@"0x%@", [value dataToHexString]];
+				}
+
+				pthread_mutex_t *fieldEditorCheckLock = NULL;
+				if (isWorking) {
+					fieldEditorCheckLock = &tableValuesLock;
+				}
+
+				// Always retrieve the short string representation, truncating the value where necessary
 				return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			}
 			
-			if ([value isSPNotLoaded])
+			if ([value isSPNotLoaded]) {
 				return NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields");
+			}
 			
 			return value;
 		}
@@ -121,13 +150,13 @@
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(tableView == filterTableView) {
 		if (filterTableIsSwapped) {
-			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"filter"] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];
+			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];
 		}
 		else {
-			[[[filterTableData objectForKey:[tableColumn identifier]] objectForKey:@"filter"] replaceObjectAtIndex:rowIndex withObject:(NSString *)object];
+			[[[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:rowIndex withObject:(NSString *)object];
 		}
 		
 		[self updateFilterTableClause:nil];
@@ -140,7 +169,7 @@
 			
 			// If the current cell should have been edited in a sheet, do nothing - field closing will have already
 			// updated the field.
-			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue]]) {
+			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				return;
 			}
 			
@@ -177,6 +206,19 @@
 				[tableValues replaceObjectInRow:rowIndex column:[[tableColumn identifier] integerValue] withObject:@""];
 			}
 		}
+}
+
+@end
+
+@implementation SPTableContent (SPTableContentDataSource_Private_API)
+
+- (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview
+{
+	if (asPreview) {
+		return SPDataStoragePreviewAtRowAndColumn(tableValues, rowIndex, columnIndex, 150);
+	}
+
+	return SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
 }
 
 @end

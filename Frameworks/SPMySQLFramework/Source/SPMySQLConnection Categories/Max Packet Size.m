@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Max Packet Size.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 #import "Max Packet Size.h"
@@ -78,7 +76,7 @@
 	if (newMaxSize > (1024 * 1024 * 1024)) newMaxSize = 1024 * 1024 * 1024;
 
 	// Perform a standard query to set the new size
-	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %lu", newMaxSize]];
+	[self queryString:[NSString stringWithFormat:@"SET GLOBAL max_allowed_packet = %lu", (unsigned long)newMaxSize]];
 
 	// On failure, return NSNotFound - error state will have automatically been set
 	if ([self queryErrored]) return NSNotFound;
@@ -150,7 +148,7 @@
 		if (newSize != NSNotFound) {
 
 			// Successfully increased the global size - reconnect to use it, and return success
-			[self reconnect];
+			[self _reconnectAllowingRetries:YES];
 			return YES;
 		}
 	}
@@ -168,7 +166,7 @@
 	if ([delegate respondsToSelector:@selector(showErrorWithTitle:message:)]) {
 		[delegate showErrorWithTitle:NSLocalizedString(@"Error", @"error") message:errorMessage];
 	} else {
-		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), errorMessage, @"OK", nil, nil);
+		NSRunAlertPanel(NSLocalizedString(@"Error", @"error"), @"%@", @"OK", nil, nil, errorMessage);
 	}
 
 	return NO;

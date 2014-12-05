@@ -1,60 +1,61 @@
 //
-//  $Id$
-//
 //  SPTablesList.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on Wed May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-@class SPHistoryController, SPTableView, SPMySQLConnection;
-@class SPDatabaseDocument, SPDatabaseData, SPTableStructure, SPTableContent;
+@class SPHistoryController;
+@class SPTableView;
+@class SPMySQLConnection;
+@class SPDatabaseDocument; 
+@class SPDatabaseData;
+@class SPTableStructure;
+@class SPTableContent;
+@class SPSplitView;
+@class SPCharsetCollationHelper;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @class SQLSidebarViewController;
 #endif
 
-@interface NSObject (NSSplitView)
-
-- (NSView *)collapsibleSubview;
-- (IBAction)toggleCollapse:(id)sender;
-- (BOOL)collapsibleSubviewIsCollapsed;
-- (void)setCollapsibleSubviewCollapsed:(BOOL)flag;
-
-@end
-
-@interface SPTablesList : NSObject 
-#ifdef SP_REFACTOR
-<NSTextFieldDelegate>
-#endif
+@interface SPTablesList : NSObject <NSTextFieldDelegate, NSTableViewDelegate>
 {
 	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
 	IBOutlet SPTableStructure* tableSourceInstance;
 	IBOutlet SPTableContent* tableContentInstance;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet id tableDataInstance;
 	IBOutlet id extendedTableInfoInstance;
 #endif
 	IBOutlet SPDatabaseData* databaseDataInstance;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id tableInfoInstance;
 	IBOutlet id tableTriggersInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
@@ -62,7 +63,7 @@
 	IBOutlet id copyTableSheet;
 #endif
 	IBOutlet SPTableView *tablesListView;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
@@ -71,21 +72,21 @@
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
+	IBOutlet id tableCollationButton;
 	IBOutlet id tableTypeButton;
 	IBOutlet id toolbarAddButton;
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	id toolbarDeleteButton;
 #endif
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id toolbarActionsButton;
 #endif
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	IBOutlet id truncateTableButton;
-	IBOutlet NSSplitView *tableListSplitView;
-	IBOutlet NSSplitView *tableListFilterSplitView;
-	IBOutlet NSButton *tableInfoCollapseButton;
+	IBOutlet SPSplitView *tableListSplitView;
+	IBOutlet SPSplitView *tableListFilterSplitView;
 
 	IBOutlet NSSearchField *listFilterField;
 
@@ -94,6 +95,7 @@
 	IBOutlet NSMenuItem *duplicateTableMenuItem;
 	IBOutlet NSMenuItem *renameTableMenuItem;
 	IBOutlet NSMenuItem *openTableInNewTabMenuItem;
+	IBOutlet NSMenuItem *openTableInNewWindowMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *copyCreateSyntaxMenuItem;
@@ -103,13 +105,14 @@
 	
 	SPMySQLConnection *mySQLConnection;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	// Table list context menu items
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
 	IBOutlet NSMenuItem *truncateTableContextMenuItem;
 	IBOutlet NSMenuItem *renameTableContextMenuItem;
 	IBOutlet NSMenuItem *openTableInNewTabContextMenuItem;
+	IBOutlet NSMenuItem *openTableInNewWindowContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem;
 	IBOutlet NSMenuItem *showCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *copyCreateSyntaxContextMenuItem;
@@ -121,20 +124,22 @@
 	NSMutableArray *filteredTables;
 	NSMutableArray *tableTypes;
 	NSMutableArray *filteredTableTypes;
-	NSInteger selectedTableType;
+	SPTableType selectedTableType;
 	NSString *selectedTableName;
 	BOOL isTableListFiltered;
 	BOOL tableListIsSelectable;
 	BOOL tableListContainsViews;
 	BOOL alertSheetOpened;
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSFont *smallSystemFont;
 #endif
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 	SQLSidebarViewController* sidebarViewController;
 #endif
+	
+	SPCharsetCollationHelper *addTableCharsetHelper;
 }
 
 // IBAction methods
@@ -143,11 +148,12 @@
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)removeTable:(id)sender;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (IBAction)copyTable:(id)sender;
 - (IBAction)renameTable:(id)sender;
 - (IBAction)truncateTable:(id)sender;
 - (IBAction)openTableInNewTab:(id)sender;
+- (IBAction)openTableInNewWindow:(id)sender;
 - (IBAction)togglePaneCollapse:(id)sender;
 #endif
 
@@ -155,17 +161,16 @@
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)setSelectionState:(NSDictionary *)selectionDetails;
 
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (void)selectTableAtIndex:(NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
+- (void)makeTableListHaveFocus;
 #endif
 
 // Getters
 - (NSArray *)selectedTableNames;
-#ifndef SP_REFACTOR /* method decls */
 - (NSArray *)selectedTableItems;
 - (NSArray *)selectedTableTypes;
-#endif
 - (NSString *)tableName;
 - (SPTableType)tableType;
 - (NSArray *)tables;
@@ -181,7 +186,7 @@
 
 // Setters
 - (BOOL)selectItemWithName:(NSString *)theName;
-#ifndef SP_REFACTOR /* method decls */
+#ifndef SP_CODA /* method decls */
 - (BOOL)selectItemsWithNames:(NSArray *)theNames;
 
 // Table list filter interaction
@@ -192,13 +197,13 @@
 - (IBAction) updateFilter:(id)sender;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) setTableListSelectability:(BOOL)isSelectable;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)setTableListSelectability:(BOOL)isSelectable;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
 - (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
-#ifdef SP_REFACTOR /* method decls */
+#ifdef SP_CODA /* method decls */
 @property (assign) SPTableStructure* tableSourceInstance;
 @property (assign) SPTableContent* tableContentInstance;
 @property (assign) id toolbarAddButton;

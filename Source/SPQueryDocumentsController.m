@@ -1,35 +1,41 @@
 //
-//  $Id$
-//
 //  SPQueryDocumentsController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on August 30, 2011
+//  Created by Stuart Connolly (stuconnolly.com) on August 30, 2011.
 //  Copyright (c) 2011 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPQueryDocumentsController.h"
+#import "SPCustomQuery.h"
 
 @implementation SPQueryController (SPQueryDocumentsController)
 
 - (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Register a new untiled document and return its URL
 	if (fileURL == nil) {
 		NSURL *new = [NSURL URLWithString:[[NSString stringWithFormat:NSLocalizedString(@"Untitled %ld",@"Title of a new Sequel Pro Document"), (unsigned long)untitledDocumentCounter] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -113,7 +119,7 @@
 
 - (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Check for multiple instance of the same document.
 	// Remove it if only one instance was registerd.
 	NSArray *allDocs = [[NSApp delegate] orderedDocuments];
@@ -147,7 +153,7 @@
 
 - (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableDictionary *c = [[NSMutableDictionary alloc] init];
 		[c setDictionary:[contentFilterContainer objectForKey:[fileURL absoluteString]]];
@@ -160,7 +166,7 @@
 
 - (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		[favoritesContainer setObject:favoritesArray forKey:[fileURL absoluteString]];
 	}
@@ -176,21 +182,21 @@
  */
 - (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] removeObjectAtIndex:index];
 #endif
 }
 
 - (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[favoritesContainer objectForKey:[fileURL absoluteString]] insertObject:favorite atIndex:index];
 #endif
 }
 
 - (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		[historyContainer setObject:historyArray forKey:[fileURL absoluteString]];
 	}
@@ -212,7 +218,7 @@
 
 - (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		[[favoritesContainer objectForKey:[fileURL absoluteString]] addObject:favorite];
 	}
@@ -221,7 +227,7 @@
 
 - (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger maxHistoryItems = [[prefs objectForKey:SPCustomQueryMaxHistoryItems] integerValue];
 	
 	// Save each history item due to its document source
@@ -264,7 +270,7 @@
 
 - (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([favoritesContainer objectForKey:[fileURL absoluteString]]) {
 		return [favoritesContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -275,7 +281,7 @@
 
 - (NSMutableArray *)historyForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		return [historyContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -286,7 +292,7 @@
 
 - (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 		NSMutableArray *returnArray = [NSMutableArray arrayWithCapacity:[[historyContainer objectForKey:[fileURL absoluteString]] count]];
 		NSMenuItem *historyMenuItem;
@@ -316,7 +322,7 @@
  */
 - (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([historyContainer objectForKey:[fileURL absoluteString]]) {
 				return [[historyContainer objectForKey:[fileURL absoluteString]] count];
 	}
@@ -337,7 +343,7 @@
  */
 - (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([contentFilterContainer objectForKey:[fileURL absoluteString]]) {
 		return [contentFilterContainer objectForKey:[fileURL absoluteString]];
 	}
@@ -359,7 +365,7 @@
 		}
 	}
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (includeGlobals && [prefs objectForKey:SPQueryFavorites]) {
 		
 		for (id fav in [prefs objectForKey:SPQueryFavorites]) 

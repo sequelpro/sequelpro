@@ -1,26 +1,32 @@
 //
-//  $Id: SPTableView.m 866 2009-06-15 16:05:54Z bibiko $
-//
 //  SPTableView.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on July 15, 2009
+//  Created by Hans-Jörg Bibiko on July 15, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableView.h"
 #import "SPQueryFavoriteManager.h"
@@ -34,14 +40,13 @@
 
 @end
 
-@interface SPTableView (PrivateAPI)
+@interface SPTableView ()
 
 - (void)_doubleClickAction;
 - (void)_disableDoubleClickAction:(NSNotification *)notification;
 - (void)_enableDoubleClickAction:(NSNotification *)notification;
 
 @end
-
 
 @implementation SPTableView
 
@@ -52,22 +57,28 @@
 	if ((self = [super init])) {
 		emptyDoubleClickAction = NULL;
 	}
+	
 	return self;
 }
 
 - (void) awakeFromNib
 {
 	[super setDoubleAction:@selector(_doubleClickAction)];
-	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)])
+	
+	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
 }
+}
+
+#pragma mark -
 
 /**
  * Track window changes, in order to add listeners for when sheets are shown
  * or hidden; this allows the double-click action to be disabled while sheets
  * are open, preventing beeps when using the field editor on double-click.
  */
-- (void) viewWillMoveToWindow:(NSWindow *)aWindow {
+- (void)viewWillMoveToWindow:(NSWindow *)aWindow 
+{
 	NSNotificationCenter *notifier = [NSNotificationCenter defaultCenter];
 
 	[notifier removeObserver:self name:NSWindowWillBeginSheetNotification object:nil];
@@ -79,20 +90,18 @@
 	}
 }
 
-#pragma mark -
-
 /**
  * Right-click at row will select that row before ordering out the contextual menu
  * if not more than one row is selected.
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event
 {
-#ifndef SP_REFACTOR /* menuForEvent: */
+#ifndef SP_CODA /* menuForEvent: */
 	// Try to retrieve a reference to the table document (assuming this is frontmost tab)
 	SPDatabaseDocument *parentTableDocument = nil;
 	
 	if ([[[[[self window] delegate] class] description] isEqualToString:@"SPWindowController"]) {
-		parentTableDocument = [[[self window] delegate] selectedTableDocument];
+		parentTableDocument = [(SPWindowController *)[[self window] delegate] selectedTableDocument];
 	}
 
 	// If SPDatabaseDocument is performing a task suppress any context menu
@@ -142,11 +151,14 @@
  * display instead; this prevents the selected cell from automatically editing
  * if the table is backtabbed to.
  */
-- (BOOL)becomeFirstResponder {
+- (BOOL)becomeFirstResponder 
+{
 	if (tabEditingDisabled) {
 		[self display];
+		
 		return YES;
 	}
+	
 	return [super becomeFirstResponder];
 }
 
@@ -200,9 +212,11 @@
 	else if (tabEditingDisabled && [[theEvent characters] length] && [[theEvent characters] characterAtIndex:0] == NSTabCharacter) {
 		if (([theEvent modifierFlags] & NSShiftKeyMask) != NSShiftKeyMask) {
 			[[self window] selectKeyViewFollowingView:self];
-		} else {
+		} 
+		else {
 			[[self window] selectKeyViewPrecedingView:self];
 		}
+		
 		return;
 	}
 	
@@ -241,7 +255,7 @@
 	emptyDoubleClickAction = aSelector;
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 
 - (void)delete:(id)sender
 {
@@ -268,11 +282,6 @@
 }
 
 #endif
-
-@end
-
-
-@implementation SPTableView (PrivateAPI)
 
 /**
  * On a double click, determine whether the action was in the empty area
