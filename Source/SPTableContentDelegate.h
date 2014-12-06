@@ -1,10 +1,8 @@
 //
-//  $Id$
-//
 //  SPTableContentDelegate.h
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,10 +26,10 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableContent.h"
 
-@interface SPTableContent (SPTableContentDelegate)
+@interface SPTableContent (SPTableContentDelegate) <SPDatabaseContentViewDelegate>
 
 @end

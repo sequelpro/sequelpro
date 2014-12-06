@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPTableTriggers.m
 //  sequel-pro
 //
-//  Created by Marius Ursache
+//  Created by Marius Ursache.
 //  Copyright (c) 2010 Marius Ursache. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableTriggers.h"
 #import "SPDatabaseDocument.h"
@@ -30,11 +35,11 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
 static const NSString *SPTriggerName       = @"TriggerName";
-static const NSString *SPTriggerTableName  = @"TriggerTableName";
 static const NSString *SPTriggerEvent      = @"TriggerEvent";
 static const NSString *SPTriggerActionTime = @"TriggerActionTime";
 static const NSString *SPTriggerStatement  = @"TriggerStatement";
@@ -47,6 +52,8 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 - (void)_editTriggerAtIndex:(NSInteger)index;
 - (void)_toggleConfirmAddTriggerButtonEnabled;
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
+- (void)_openTriggerSheet;
+- (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -55,15 +62,13 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 @synthesize connection;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Init
- */
 - (id)init
 {
 	if ((self = [super init])) {
 		triggerData = [[NSMutableArray alloc] init];
+		editedTrigger = nil;
 		isEdit = NO;
 	}
 
@@ -75,22 +80,28 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
  */
 - (void)awakeFromNib
 {
+	prefs = [NSUserDefaults standardUserDefaults];
+
 	// Set the table triggers view's vertical gridlines if required
-	[triggersTableView setGridStyleMask:([[NSUserDefaults standardUserDefaults] boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+	[triggersTableView setGridStyleMask:[prefs boolForKey:SPDisplayTableViewVerticalGridlines] ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[triggersTableView setEmptyDoubleClickAction:@selector(addTrigger:)];
 
 	// Set the strutcture and index view's font
-	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
+	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
 
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+	[addTriggerPanel setInitialFirstResponder:triggerNameTextField];
+	
 	for (NSTableColumn *column in [triggersTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
 	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[[NSUserDefaults standardUserDefaults] addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(triggerStatementTextDidChange:)
@@ -177,18 +188,18 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 	// MySQL doesn't have ALTER TRIGGER, so we delete the old one and add a new one.
 	// In case of error, all the old trigger info is kept in buffer
-	if (isEdit && [editTriggerName length] > 0)
+	if (isEdit && [(NSString *)[editedTrigger objectForKey:SPTriggerName] length] > 0)
 	{
 		NSString *queryDelete = [NSString stringWithFormat:@"DROP TRIGGER %@.%@",
 								 [[tableDocumentInstance database] backtickQuotedString],
-								 [editTriggerName backtickQuotedString]];
+								 [[editedTrigger objectForKey:SPTriggerName] backtickQuotedString]];
 		
 		[connection queryString:queryDelete];
 		
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], nil, nil, nil,
+							  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"),
 							   [connection lastErrorMessage]]);
 			
@@ -226,38 +237,28 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[connection queryString:query];
 
 	if (([connection queryErrored])) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], nil, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
-						   [connection lastErrorMessage]]);
+		NSString *createTriggerError = [connection lastErrorMessage];
 		
 		// In case of error, re-create the original trigger statement
 		if (isEdit) {
-			[triggerStatementTextView setString:editTriggerStatement];
-			
 			query = [NSString stringWithFormat:createTriggerStatementTemplate,
-					 [editTriggerName backtickQuotedString],
-					 editTriggerActionTime,
-					 editTriggerEvent,
-					 [editTriggerTableName backtickQuotedString],
-					 editTriggerStatement];
+					 [[editedTrigger objectForKey:SPTriggerName] backtickQuotedString],
+					 [editedTrigger objectForKey:SPTriggerActionTime],
+					 [editedTrigger objectForKey:SPTriggerEvent],
+					 [[tablesListInstance tableName] backtickQuotedString],
+					 [editedTrigger objectForKey:SPTriggerStatement]];
 		
 			// If this attempt to re-create the trigger failed, then we're screwed as we've just lost the user's 
 			// data, but they had a backup and everything's cool, right? Should we be displaying an error here
 			// or will it interfere with the one above?
 			[connection queryString:query];
 		}
-	}
-	else {
-		[triggerNameTextField setStringValue:@""];
-		[triggerStatementTextView setString:@""];
-	}
 
-	// After Edit, rename button to Add
-	if (isEdit) {
-		isEdit = NO;
-		[confirmAddTriggerButton setTitle:NSLocalizedString(@"Add", @"Add trigger button label")];
+		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
+						  NSLocalizedString(@"OK", @"OK button"),
+						  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
+						   createTriggerError]);
 	}
 
 	[self _refreshTriggerDataForcingCacheRefresh:YES];
@@ -271,11 +272,13 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
 
-	[NSApp beginSheet:addTriggerPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil
-		  contextInfo:nil];
+	// Reset the interface name and statement
+	[triggerNameTextField setStringValue:@""];
+	[triggerStatementTextView setString:@""];
+	isEdit = NO;
+	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Add", @"Add trigger button label")];
+
+	[self _openTriggerSheet];
 }
 
 /**
@@ -330,41 +333,13 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
-}
+	id value = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
 
-#pragma mark -
-#pragma mark Tableview delegate methods
-
-/**
- * Called whenever the triggers table view selection changes.
- */
-- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	[removeTriggerButton setEnabled:([triggersTableView numberOfSelectedRows] > 0)];
-}
-
-/**
- * Double-click action on table cells - for the time being, return NO to disable editing.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	if ([tableDocumentInstance isWorking]) return NO;
-
-	// Start Edit panel
-	if (((NSInteger)[triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
-		[self _editTriggerAtIndex:rowIndex];
+	if ([value isNSNull]) {
+		return [prefs objectForKey:SPNullValue];
 	}
 
-	return NO;
-}
-
-/**
- * Disable row selection while the document is working.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return (![tableDocumentInstance isWorking]);
+	return value;
 }
 
 #pragma mark -
@@ -455,10 +430,11 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 		for (NSTableColumn *column in [triggersTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		[triggersTableView reloadData];
@@ -537,17 +513,6 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 }
 
 #pragma mark -
-#pragma mark Textfield delegate methods
-
-/**
- * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
- */
-- (void)controlTextDidChange:(NSNotification *)notification
-{
-	[self _toggleConfirmAddTriggerButtonEnabled];
-}
-
-#pragma mark -
 #pragma mark Private API
 
 /**
@@ -559,16 +524,12 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 {
 	NSDictionary *trigger = [triggerData objectAtIndex:index];
 	
-	// Cache the original trigger's name and statement in the event that the editing process fails and
-	// we need to recreate it.
-	editTriggerName       = [trigger objectForKey:SPTriggerName];
-	editTriggerStatement  = [trigger objectForKey:SPTriggerStatement];
-	editTriggerTableName  = [trigger objectForKey:SPTriggerTableName];
-	editTriggerEvent      = [trigger objectForKey:SPTriggerEvent];
-	editTriggerActionTime = [trigger objectForKey:SPTriggerActionTime];
+	// Cache the original trigger in the event that the editing process fails and we need to recreate it.
+	if (editedTrigger) [editedTrigger release];
+	editedTrigger = [trigger copy];
 	
-	[triggerNameTextField setStringValue:editTriggerName];
-	[triggerStatementTextView setString:editTriggerStatement];
+	[triggerNameTextField setStringValue:[trigger objectForKey:SPTriggerName]];
+	[triggerStatementTextView setString:[trigger objectForKey:SPTriggerStatement]];
 	
 	// Timin title is different then what we have saved in the database (case difference)
 	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
@@ -593,11 +554,7 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	
 	isEdit = YES;
 	
-	[NSApp beginSheet:addTriggerPanel
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:nil
-		  contextInfo:nil];
+	[self _openTriggerSheet];
 }
 
 /**
@@ -626,15 +583,20 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 		}
 		
 		NSArray *triggers = ([[tableDocumentInstance serverSupport] supportsTriggers]) ? [tableDataInstance triggers] : nil;
+		NSCharacterSet *nulSet = [NSCharacterSet characterSetWithCharactersInString:[NSString stringWithFormat:@"%C", (unsigned short)'\0']];
 		
 		for (NSDictionary *trigger in triggers)
 		{
+
+			// Trim nul bytes off the Statement, as some versions of MySQL can add these, preventing easy editing
+			NSString *statementString = [[trigger objectForKey:@"Statement"] stringByTrimmingCharactersInSet:nulSet];
+
+			// Copy across all the trigger data needed, trimming nul bytes off the Statement
 			[triggerData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									[trigger objectForKey:@"Table"],     SPTriggerTableName,
 									[trigger objectForKey:@"Trigger"],   SPTriggerName,
 									[trigger objectForKey:@"Event"],     SPTriggerEvent,
 									[trigger objectForKey:@"Timing"],    SPTriggerActionTime,
-									[trigger objectForKey:@"Statement"], SPTriggerStatement,
+									statementString,                     SPTriggerStatement,
 									[trigger objectForKey:@"Definer"],   SPTriggerDefiner,
 									[trigger objectForKey:@"Created"],   SPTriggerCreated,
 									[trigger objectForKey:@"sql_mode"],  SPTriggerSQLMode,
@@ -646,17 +608,35 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[triggersTableView reloadData];
 }
 
-#pragma mark -
+/**
+ * Open the add or edit trigger sheet.
+ */
+- (void)_openTriggerSheet
+{
+	[NSApp beginSheet:addTriggerPanel
+	   modalForWindow:[tableDocumentInstance parentWindow]
+		modalDelegate:self
+	   didEndSelector:nil
+		  contextInfo:nil];
+}
 
 /**
- * Dealloc.
+ * Reopen the add trigger sheet, usually after an error message, with the previous content.
  */
+- (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self performSelector:@selector(_openTriggerSheet) withObject:nil afterDelay:0.0];
+}
+
+#pragma mark -
+
 - (void)dealloc
 {
 	[triggerData release], triggerData = nil;
+	[editedTrigger release], editedTrigger = nil;
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
 	[super dealloc];
 }

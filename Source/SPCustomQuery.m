@@ -1,34 +1,39 @@
 //
-//  $Id$
-//
 //  SPCustomQuery.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPCustomQuery.h"
 #import "SPSQLParser.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPGrowlController.h"
 #endif
-#import <SPMySQL/SPMySQL.h>
 #import "SPDataCellFormatter.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
@@ -36,7 +41,8 @@
 #import "SPFieldEditorController.h"
 #import "SPTextAndLinkCell.h"
 #import "SPTooltip.h"
-#ifndef SP_REFACTOR /* headers */
+#import "SPCopyTable.h"
+#ifndef SP_CODA /* headers */
 #import "SPQueryFavoriteManager.h"
 #endif
 #import "SPQueryController.h"
@@ -46,36 +52,74 @@
 #import "SPAlertSheets.h"
 #import "SPCopyTable.h"
 #import "SPGeometryDataView.h"
-#ifndef SP_REFACTOR /* headers */
+#import "SPSplitView.h"
+#import "SPTextView.h"
+#import "RegexKitLite.h"
+#import "SPThreadAdditions.h"
+#import "SPConstants.h"
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
 #endif
-#include <pthread.h>
 
-#ifndef SP_REFACTOR /* headers */
-#import <BWToolkitFramework/BWToolkitFramework.h>
-#endif
+#import <pthread.h>
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPCustomQuery (PrivateAPI)
 
-- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column;
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate;
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
++ (NSString *)linkToHelpTopic:(NSString *)aTopic;
 
 @end
 
 @implementation SPCustomQuery
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize textView;
 @synthesize customQueryView;
-@synthesize runAllButton;
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
+@synthesize affectedRowsText;
 #endif
 
+@synthesize runAllButton;
 @synthesize textViewWasChanged;
 
 #pragma mark IBAction methods
+
+/**
+ * Run the primary query task, as per the user preference
+ */
+- (IBAction)runPrimaryQueryAction:(id)sender
+{
+	if ([prefs boolForKey:SPQueryPrimaryControlRunsAll]) {
+		[self runAllQueries:sender];
+	} else {
+		[self runSelectedQueries:sender];
+	}
+}
+
+/**
+ * Run the secondary query task, as per the user preference
+ */
+- (IBAction)runSecondaryQueryAction:(id)sender
+{
+	if ([prefs boolForKey:SPQueryPrimaryControlRunsAll]) {
+		[self runSelectedQueries:sender];
+	} else {
+		[self runAllQueries:sender];
+	}
+}
+
+/**
+ * Swap the primary and secondary query run actions
+ */
+- (IBAction)switchDefaultQueryAction:(id)sender
+{
+	BOOL newValue = ![prefs boolForKey:SPQueryPrimaryControlRunsAll];
+	[prefs setBool:newValue forKey:SPQueryPrimaryControlRunsAll];
+	[self updateQueryInteractionInterface];
+}
 
 /*
  * Split all the queries in the text view, split them into individual queries,
@@ -115,40 +159,13 @@
 
 	[queryParser release];
 
-	oldThreadedQueryRange = [textView selectedRange];
-
-	// Unselect a selection if given to avoid interfering with error highlighting
-	[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location, 0)];
-
 	// Reset queryStartPosition
 	queryStartPosition = 0;
 
 	reloadingExistingResult = NO;
 	[self clearResultViewDetailsToRestore];
 
-	// Remember query start position for error highlighting
-	queryTextViewStartPosition = 0;
-
-	[self performQueries:queries withCallback:@selector(runAllQueriesCallback)];
-}
-
-- (void)runAllQueriesCallback
-{
-	// If no error was selected, reconstruct a given selection.  This
-	// may no longer be valid if the query text has changed in the
-	// meantime, so error-checking is required.
-	if (oldThreadedQueryRange.location + oldThreadedQueryRange.length <= [[textView string] length]) {
-
-		if ([textView selectedRange].length == 0)
-			[textView setSelectedRange:oldThreadedQueryRange];
-
-		// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
-		NSRange oldRange = [textView selectedRange];
-		[textView setSelectedRange:NSMakeRange(oldThreadedQueryRange.location,0)];
-		[textView insertText:@""];
-		[textView setSelectedRange:oldRange];
-		[textView scrollRangeToVisible:oldRange];
-	}
+	[self performQueries:queries withCallback:NULL];
 }
 
 /*
@@ -182,9 +199,6 @@
 		}
 		queries = [NSArray arrayWithObject:[SPSQLParser normaliseQueryForExecution:query]];
 
-		// Remember query start position for error highlighting
-		queryTextViewStartPosition = currentQueryRange.location;
-
 	// Otherwise, run the selected text.
 	} else {
 		queryParser = [[SPSQLParser alloc] initWithString:[[textView string] substringWithRange:selectedRange]];
@@ -201,9 +215,6 @@
 		}
 
 		[queryParser release];
-
-		// Remember query start position for error highlighting
-		queryTextViewStartPosition = selectedRange.location;
 	}
 
 	// Invoke textStorageDidProcessEditing: for syntax highlighting and auto-uppercase
@@ -227,6 +238,7 @@
  */
 - (IBAction)chooseQueryFavorite:(id)sender
 {
+#ifndef SP_CODA /* ui manip for query favorites */
 	if ([queryFavoritesButton indexOfSelectedItem] == 1) {
 
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
@@ -237,9 +249,7 @@
 			return;
 		}
 
-#ifndef SP_REFACTOR /* ui manip for query favorites */
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-#endif
 		[NSApp beginSheet:queryFavoritesSheet
 		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:self
@@ -257,9 +267,7 @@
 			return;
 		}
 
-#ifndef SP_REFACTOR /* ui manip for query favorites */
 		if ([tableDocumentInstance isUntitled]) [saveQueryFavoriteGlobal setState:NSOnState];
-#endif
 		[NSApp beginSheet:queryFavoritesSheet
 		   modalForWindow:[tableDocumentInstance parentWindow]
 			modalDelegate:self
@@ -269,7 +277,6 @@
 	else if ([queryFavoritesButton indexOfSelectedItem] == 3) {
 
 		// init query favorites controller
-#ifndef SP_REFACTOR
 		[prefs synchronize];
 
 		if(favoritesManager) [favoritesManager release];
@@ -281,15 +288,10 @@
 			modalDelegate:favoritesManager
 		   didEndSelector:nil
 			  contextInfo:nil];
-#endif
 	}
 	else if ([queryFavoritesButton indexOfSelectedItem] > 5) {
 		// Choose favorite
-#ifndef SP_REFACTOR
 		BOOL replaceContent = [prefs boolForKey:SPQueryFavoriteReplacesContent];
-#else
-		BOOL replaceContent = YES;
-#endif
 
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
@@ -302,6 +304,7 @@
 		// The actual query strings have been already stored as tooltip
 		[textView insertAsSnippet:[[queryFavoritesButton selectedItem] toolTip] atRange:NSMakeRange([textView selectedRange].location, 0)];
 	}
+#endif
 }
 
 /*
@@ -309,19 +312,13 @@
  */
 - (IBAction)chooseQueryHistory:(id)sender
 {
-
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs synchronize];
-#endif
 
 	// Choose history item
 	if ([queryHistoryButton indexOfSelectedItem] > 6) {
 
-#ifndef SP_REFACTOR
 		BOOL replaceContent = [prefs boolForKey:SPQueryHistoryReplacesContent];
-#else
-		BOOL replaceContent = YES;
-#endif
 		[textView breakUndoCoalescing];
 		if([[NSApp currentEvent] modifierFlags] & (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask))
 			replaceContent = !replaceContent;
@@ -330,6 +327,7 @@
 
 		[textView insertText:[[[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] objectAtIndex:[queryHistoryButton indexOfSelectedItem]-7]];
 	}
+#endif
 }
 
 /**
@@ -347,7 +345,7 @@
  */
 - (IBAction)gearMenuItemSelected:(id)sender
 {
-
+#ifndef SP_CODA
 	if ( sender == previousHistoryMenuItem ) {
 		NSInteger numberOfHistoryItems = [[SPQueryController sharedQueryController] numberOfHistoryItemsForFileURL:[tableDocumentInstance fileURL]];
 		currentHistoryOffsetIndex++;
@@ -381,6 +379,7 @@
 		}
 		historyItemWasJustInserted = NO;
 	}
+#endif
 
 	// "Shift Right" menu item - indent the selection with an additional tab.
 	if (sender == shiftRightMenuItem) {
@@ -424,7 +423,7 @@
 	// "Indent new lines" toggle
 	if (sender == autoindentMenuItem) {
 		BOOL enableAutoindent = !([autoindentMenuItem state] == NSOffState);
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 		[prefs setBool:enableAutoindent forKey:SPCustomQueryAutoIndent];
 		[prefs synchronize];
 #endif
@@ -435,7 +434,7 @@
 	// "Auto-pair characters" toggle
 	if (sender == autopairMenuItem) {
 		BOOL enableAutopair = !([autopairMenuItem state] == NSOffState);
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 		[prefs setBool:enableAutopair forKey:SPCustomQueryAutoPairCharacters];
 		[prefs synchronize];
 #endif
@@ -443,7 +442,7 @@
 		[textView setAutopair:enableAutopair];
 	}
 
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 	// "Auto-help" toggle
 	if (sender == autohelpMenuItem) {
 		BOOL enableAutohelp = !([autohelpMenuItem state] == NSOffState);
@@ -457,7 +456,7 @@
 	// "Auto-uppercase keywords" toggle
 	if (sender == autouppercaseKeywordsMenuItem) {
 		BOOL enableAutouppercaseKeywords = !([autouppercaseKeywordsMenuItem state] == NSOffState);
-#ifndef SP_REFACTOR /* prefs access */
+#ifndef SP_CODA /* prefs access */
 		[prefs setBool:enableAutouppercaseKeywords forKey:SPCustomQueryAutoUppercaseKeywords];
 		[prefs synchronize];
 #endif
@@ -468,7 +467,7 @@
 
 - (IBAction)saveQueryHistory:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
@@ -482,7 +481,22 @@
 
 	[encodingPopUp setEnabled:YES];
 
-	[panel beginSheetForDirectory:nil file:@"history" modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveHistory"];
+    [panel setNameFieldStringValue:@"history"];
+    [panel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+			NSError *error = nil;
+            
+			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
+			[prefs synchronize];
+            
+			[[self buildHistoryString] writeToURL:[panel URL]
+                                       atomically:YES
+                                         encoding:[[encodingPopUp selectedItem] tag]
+                                            error:&error];
+            
+			if (error) [[NSAlert alertWithError:error] runModal];
+		}
+    }];
 #endif
 }
 
@@ -500,22 +514,19 @@
  */
 - (IBAction)clearQueryHistory:(id)sender
 {
+#ifndef SP_CODA
 	NSString *infoString;
 
-#ifndef SP_REFACTOR /* if ([tableDocumentInstance isUntitled]) */
 	if ([tableDocumentInstance isUntitled])
-#endif
 		infoString = NSLocalizedString(@"Are you sure you want to clear the global history list? This action cannot be undone.", @"clear global history list informative message");
-#ifndef SP_REFACTOR /* if ([tableDocumentInstance isUntitled]) */
 	else
 		infoString = [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to clear the history list for “%@”? This action cannot be undone.", @"clear history list for “%@” informative message"), [tableDocumentInstance displayName]];
-#endif
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Clear History?", @"clear history message")
 									 defaultButton:NSLocalizedString(@"Clear", @"clear button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:infoString];
+						 informativeTextWithFormat:@"%@", infoString];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -530,7 +541,7 @@
 					  modalDelegate:self
 					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						contextInfo:@"clearHistory"];
-
+#endif
 }
 
 /* *
@@ -539,16 +550,6 @@
 - (NSUInteger)validModesForFontPanel:(NSFontPanel *)fontPanel
 {
 	return (NSFontPanelSizeModeMask|NSFontPanelCollectionModeMask);
-}
-
-/**
- * Toggle whether the query info pane is visible.
- */
-- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender
-{
-	[queryInfoPaneSplitView toggleCollapse:sender];
-
-	[sender setToolTip:([sender state] == NSOffState) ? NSLocalizedString(@"Show Query Information", @"Show Query Information") : NSLocalizedString(@"Hide Query Information", @"Hide Query Information")];
 }
 
 #pragma mark -
@@ -570,6 +571,7 @@
 	}
 	
 	[tableDocumentInstance startTaskWithDescription:taskString];
+	[errorTextTitle setStringValue:NSLocalizedString(@"Query Status", @"Query Status")];
 	[errorText setString:taskString];
 	[affectedRowsText setStringValue:@""];
 
@@ -580,7 +582,7 @@
 
 	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(performQueriesTask:) toTarget:self withObject:taskArguments];
+		[NSThread detachNewThreadWithName:@"SPCustomQuery query perform task" target:self selector:@selector(performQueriesTask:) object:taskArguments];
 	} 
 	else {
 		[self performQueriesTask:taskArguments];
@@ -589,12 +591,12 @@
 
 - (void)performQueriesTask:(NSDictionary *)taskArguments
 {
-	NSAutoreleasePool			*queryRunningPool = [[NSAutoreleasePool alloc] init];
-	NSArray						*queries	= [taskArguments objectForKey:@"queries"];
-	SPMySQLFastStreamingResult	*streamingResult  = nil;
-	NSMutableString				*errors     = [NSMutableString string];
-	SEL							callbackMethod = NULL;
-	NSString					*taskButtonString;
+	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
+	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
+	SPMySQLStreamingResultStore	*resultStore  = nil;
+	NSMutableString		*errors     = [NSMutableString string];
+	SEL					callbackMethod = NULL;
+	NSString			*taskButtonString;
 
 	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
 	double executionTime = 0;
@@ -605,21 +607,21 @@
 	// BOOL queriesSeparatedByDelimiter = NO;
 
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-#ifndef SP_REFACTOR /* [tableDocumentInstance setQueryMode:] */
+#ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
 	[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
 #endif
 
 	// Notify listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR /* growl */
+#ifndef SP_CODA /* growl */
 	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
 	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
 #endif
 
 	// Reset the current table view as necessary to avoid redraw and reload issues.
 	// Restore the view position to the top left to be within the results for all datasets.
-	if(editedRow == -1) {
+	if(editedRow == -1 && !reloadingExistingResult) {
 		[[customQueryView onMainThread] scrollRowToVisible:0];
 		[[customQueryView onMainThread] scrollColumnToVisible:0];
 	}
@@ -662,8 +664,8 @@
 		[tempQueries addObject:query];
 
 		// Run the query, timing execution (note this also includes network and overhead)
-		streamingResult = [[mySQLConnection streamingQueryString:query] retain];
-		executionTime += [streamingResult queryExecutionTime];
+		resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
+		executionTime += [resultStore queryExecutionTime];
 		totalQueriesRun++;
 
 		// If this is the last query, retrieve and store the result; otherwise,
@@ -672,7 +674,7 @@
 
 			// Retrieve and cache the column definitions for the result array
 			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[streamingResult fieldDefinitions] retain];
+			cqColumnDefinition = [[resultStore fieldDefinitions] retain];
 
 			if(!reloadingExistingResult) {
 				[[self onMainThread] updateTableView];
@@ -693,18 +695,18 @@
 			// Init copyTable with necessary information for copying selected rows as SQL INSERT
 			[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
 
-			[self processResultIntoDataStorage:streamingResult];
+			[self updateResultStore:resultStore];
 		} else {
-			[streamingResult cancelResultLoad];
+			[resultStore cancelResultLoad];
 		}
 
 		// Record any affected rows
 		if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 )
 			totalAffectedRows += (NSUInteger)[mySQLConnection rowsAffectedByLastQuery];
-		else if ( [streamingResult numberOfRows] )
-			totalAffectedRows += (NSUInteger)[streamingResult numberOfRows];
+		else if ( [resultStore numberOfRows] )
+			totalAffectedRows += (NSUInteger)[resultStore numberOfRows];
 
-		[streamingResult release];
+		[resultStore release];
 
 		// Store any error messages
 		if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
@@ -717,6 +719,12 @@
 					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 			} else {
 				errorString = [mySQLConnection lastErrorMessage];
+
+				// If dealing with a "MySQL server has gone away" error, explain the situation.
+				// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
+				if ([mySQLConnection lastErrorID] == 2006) {
+					errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
+				}
 			}
 
 			// If the query errored, append error to the error log for display at the end
@@ -730,21 +738,26 @@
 					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
 										(long)(i+1),
 										errorString];
+					[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 					[[errorText onMainThread] setString:errors];
 
 					// ask the user to continue after detecting an error
 					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						SPBeginWaitingAlertSheet(@"title",
-							NSLocalizedString(@"Run All", @"run all button"), NSLocalizedString(@"Continue", @"continue button"), NSLocalizedString(@"Stop", @"stop button"),
-							NSWarningAlertStyle, [tableDocumentInstance parentWindow], self,
-							@selector(sheetDidEnd:returnCode:contextInfo:),
-							@"runAllContinueStopSheet",
-							NSLocalizedString(@"MySQL Error", @"mysql error message"),
-							[mySQLConnection lastErrorMessage],
-							&runAllContinueStopSheetReturnCode
-						);
+						[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
+						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
+						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+						                                    alertStyle:NSWarningAlertStyle
+						                                     docWindow:[tableDocumentInstance parentWindow]
+						                                 modalDelegate:self
+						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						                                   contextInfo:@"runAllContinueStopSheet"
+						                                           msg:NSLocalizedString(@"MySQL Error", @"mysql error message")
+						                                      infoText:[mySQLConnection lastErrorMessage]
+						                                    returnCode:&runAllContinueStopSheetReturnCode];
+
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
 
 						switch (runAllContinueStopSheetReturnCode) {
@@ -803,14 +816,16 @@
 
 	// Perform empty query if no query is given
 	if ( !queryCount ) {
-		streamingResult = [mySQLConnection streamingQueryString:@""];
-		[streamingResult cancelResultLoad];
+		resultStore = [mySQLConnection resultStoreFromQueryString:@""];
+		[resultStore cancelResultLoad];
 		[errors setString:[mySQLConnection lastErrorMessage]];
 	}
 
+#ifndef SP_CODA
 	// add query to history
 	if(!reloadingExistingResult && [usedQuery length])
 		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+#endif
 
 	// Update status/errors text
 	NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -864,14 +879,13 @@
 							];
 		}
 	}
-#ifndef SP_REFACTOR
+
 	[[affectedRowsText onMainThread] setStringValue:statusString];
-#endif
 
 	// Restore automatic query retries
 	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
 
-#ifndef SP_REFACTOR /* [tableDocumentInstance setQueryMode:] */
+#ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 #endif
 
@@ -882,7 +896,7 @@
 		// Notify any listeners that the query has completed
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR /* growl */
+#ifndef SP_CODA /* growl */
 		// Perform the Growl notification for query completion
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                        description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
@@ -909,13 +923,13 @@
 
 		// Scroll the viewport to the saved location
 		selectionViewportToRestore.size = [customQueryView visibleRect].size;
-		[customQueryView scrollRectToVisible:selectionViewportToRestore];
+		[(SPCopyTable*)[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
 	}
 
 	//query finished
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR /* growl */
+#ifndef SP_CODA /* growl */
 	// Query finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
                                                    description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
@@ -942,55 +956,38 @@
 }
 
 /**
- * Processes a supplied streaming result set, loading it into the data array.
+ * Processes a supplied streaming result store, monitoring the load and updating
+ * the data displayed during download.
  */
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore
 {
-	NSAutoreleasePool *dataLoadingPool;
 
 	// Remove all items from the table
 	resultDataCount = 0;
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
 	[resultData removeAllRows];
+
+	// Add the new store
+	[resultData setDataStorage:theResultStore updatingExisting:NO];
 	pthread_mutex_unlock(&resultDataLock);
 
-	// Set the column count on the data store before setting up anything else -
-	// ensures that SPDataStorage is set up for timer-driven data loads
-	[resultData setColumnCount:[theResult numberOfFields]];
+	// Start the data downloading
+	[theResultStore startDownload];
 
-	// Set up the table updates timer
+	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initQueryLoadTimer];
 
-	// Set up an autorelease pool for row processing
-	dataLoadingPool = [[NSAutoreleasePool alloc] init];
-
-	// Loop through the result rows as they become available
-	for (NSArray *eachRow in theResult) {
-
-		pthread_mutex_lock(&resultDataLock);
-		SPDataStorageAddRow(resultData, eachRow);
-		resultDataCount++;
-		pthread_mutex_unlock(&resultDataLock);
-
-		// Drain and reset the autorelease pool every ~1024 rows
-		if (!(resultDataCount % 1024)) {
-			[dataLoadingPool drain];
-			dataLoadingPool = [[NSAutoreleasePool alloc] init];
-		}
+	[resultLoadingCondition lock];
+	while (![resultData dataDownloaded]) {
+		[resultLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
 	}
-
-	// Clean up the interface update timer
-	[[self onMainThread] clearQueryLoadTimer];
+	[resultLoadingCondition unlock];
 
 	// If the final column autoresize wasn't performed, perform it
 	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
 
 	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
-	[customQueryView setNeedsDisplay:YES];
-
-	// Clean up the autorelease pool
-	[dataLoadingPool drain];
 }
 
 /**
@@ -1297,8 +1294,9 @@
 	// If errors occur, display them
 	if ( [mySQLConnection lastQueryWasCancelled] || ([errorsString length] && !queryIsTableSorter)) {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// set the error text
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:[errorsString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 		[[errorTextScrollView verticalScroller] setFloatValue:1.0f];
 #endif
@@ -1360,25 +1358,85 @@
 		}
 
 	} else if ( [errorsString length] && queryIsTableSorter ) {
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:NSLocalizedString(@"Couldn't sort column.", @"text shown if an error occured while sorting the result table")];
 		NSBeep();
 	} else {
 		[errorText setString:NSLocalizedString(@"There were no errors.", @"text shown when query was successfull")];
 	}
 
-#ifndef SP_REFACTOR /* show/hide errror view */
+#ifndef SP_CODA /* show/hide errror view */
 	// Show or hide the error area if necessary
-	if ([errorsString length] && [queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
-		[queryInfoButton setState:NSOnState];
-		[self toggleQueryInfoPaneCollapse:queryInfoButton];
-	} else if (![errorsString length] && ![queryInfoPaneSplitView collapsibleSubviewCollapsed]) {
-		[queryInfoButton setState:NSOffState];
-		[self toggleQueryInfoPaneCollapse:queryInfoButton];
+	if ([errorsString length] && [queryInfoPaneSplitView isCollapsibleSubviewCollapsed]) {
+		[queryInfoPaneSplitView toggleCollapse:self];
+	} else if (![errorsString length] && ![queryInfoPaneSplitView isCollapsibleSubviewCollapsed]) {
+		[queryInfoPaneSplitView toggleCollapse:self];
 	}
 #else
 	if ( [errorsString length] > 0 )
 		NSRunAlertPanel(LOCAL(@"Query Error"), @"%@", LOCAL(@"OK"), nil, nil, errorsString);
 #endif
+}
+
+#pragma mark -
+#pragma mark Interface setup
+
+/**
+ * Update the Run Selection/Query/All button and menu item state according
+ * to the user preferences.
+ */
+- (void)updateQueryInteractionInterface
+{
+
+	// By default, the interface uses Run Query/Run Selection as the primary interface,
+	// but the user can switch this.
+	BOOL primaryActionIsRunAll = [prefs boolForKey:SPQueryPrimaryControlRunsAll];
+
+	// Update the links as appropriate
+	if (primaryActionIsRunAll) {
+		runPrimaryActionButtonAsSelection = nil;
+		[runPrimaryActionButton setTitle:NSLocalizedString(@"Run All", @"run all button")];
+		[runPrimaryActionMenuItem setTitle:NSLocalizedString(@"Run All Queries", @"Run All menu item title")];
+	} else {
+		runPrimaryActionButtonAsSelection = runPrimaryActionButton;
+		[runSecondaryActionMenuItem setTitle:NSLocalizedString(@"Run All Queries", @"Run All menu item title")];
+	}
+
+	// Update the Run Current/Previous/Selection menu item (and button if appropriate)
+	[self updateContextualRunInterface];
+}
+
+/**
+ * Update the selection-sensitive "Run Current" / "Run Previous" / "Run Selection"
+ * button and menu items based on the current interface state
+ */
+- (void)updateContextualRunInterface
+{
+	NSMenuItem *runSelectionMenuItem;
+
+	// Determine the menu item to change
+	if (runPrimaryActionButtonAsSelection) {
+		runSelectionMenuItem = runPrimaryActionMenuItem;
+	} else {
+		runSelectionMenuItem = runSecondaryActionMenuItem;
+	}
+
+	// If the current selection is a single caret position, update the button based on
+	// whether the caret is inside a valid query.
+	if (![textView selectedRange].length) {
+		if (currentQueryBeforeCaret) {
+			[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
+		} else {
+			[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
+			[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
+		}
+
+	// Otherwise, reflect the active selection
+	} else {
+		[runPrimaryActionButtonAsSelection setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
+		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
+	}
 }
 
 #pragma mark -
@@ -1420,9 +1478,18 @@
  */
 - (void) queryLoadUpdate:(NSTimer *)theTimer
 {
+	resultDataCount = [resultData count];
+
 	if (queryLoadTimerTicksSinceLastUpdate < queryLoadInterfaceUpdateInterval) {
 		queryLoadTimerTicksSinceLastUpdate++;
 		return;
+	}
+
+	if ([resultData dataDownloaded]) {
+		[resultLoadingCondition lock];
+		[resultLoadingCondition signal];
+		[self clearQueryLoadTimer];
+		[resultLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
@@ -1433,7 +1500,6 @@
 
 	// Update the table display
 	[customQueryView noteNumberOfRowsChanged];
-	if (!queryLoadLastRowCount) [customQueryView setNeedsDisplay:YES];
 
 	// Update column widths in two cases: on very first rows displayed, and once
 	// more than 200 rows are present.
@@ -1469,6 +1535,16 @@
 }
 
 /**
+ * Returns the number of rows in the current data result.
+ *
+ * @return The number of rows.
+ */
+- (NSUInteger)currentResultRowCount
+{
+	return resultDataCount;
+}
+
+/**
  * Returns the current result (as shown in custom result view) as an array, the first object containing 
  * the field names as an array and the following objects containing the rows as arrays.
  *
@@ -1491,7 +1567,7 @@
 	NSMutableArray *currentResult = [NSMutableArray array];
 	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
-	
+
 	// Add rows
 	for (i = 0; i < [self numberOfRowsInTableView:customQueryView]; i++) 
 	{
@@ -1501,9 +1577,7 @@
 		
 		while ((tableColumn = [enumerator nextObject])) 
 		{
-			id value = [self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue]];
-			
-			[tempRow addObject:[self _convertResultDataValueToDisplayableRepresentation:value whilePreservingNULLs:includeNULLs truncateDataFields:truncate]];			
+			[tempRow addObject:[self _resultDataItemAtRow:i columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:includeNULLs asPreview:truncate]];
 		}
 		
 		[currentResult addObject:[NSArray arrayWithArray:tempRow]];
@@ -1528,7 +1602,7 @@
 	// Set up the interface
 
 	[customQueryView setVerticalMotionCanBeginDrag:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[autoindentMenuItem setState:([prefs boolForKey:SPCustomQueryAutoIndent]?NSOnState:NSOffState)];
 	[autopairMenuItem setState:([prefs boolForKey:SPCustomQueryAutoPairCharacters]?NSOnState:NSOffState)];
 	[autohelpMenuItem setState:([prefs boolForKey:SPCustomQueryUpdateAutoHelp]?NSOnState:NSOffState)];
@@ -1540,16 +1614,13 @@
 	[autouppercaseKeywordsMenuItem setState:(YES?NSOnState:NSOffState)];
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
 		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
 #endif
-
-	// Disable runSelectionMenuItem in the gear menu
-	[runSelectionMenuItem setEnabled:NO];
 }
 
 /**
@@ -1557,10 +1628,7 @@
  */
 - (void)doPerformQueryService:(NSString *)query
 {
-	[textView shouldChangeTextInRange:NSMakeRange(0, [[textView string] length]) replacementString:query];
-	[textView setString:query];
-	[textView didChangeText];
-	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
+	[self doPerformLoadQueryService:query];
 	[self runAllQueries:self];
 }
 
@@ -1570,11 +1638,6 @@
 	[textView setString:query];
 	[textView didChangeText];
 	[textView scrollRangeToVisible:NSMakeRange([query length], 0)];
-}
-
-- (NSString *)usedQuery
-{
-	return usedQuery;
 }
 
 #pragma mark -
@@ -1596,12 +1659,12 @@
 	}
 
 	// Update font size on the table
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]];
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
 
 	// If there are no table columns to add, return
 	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
@@ -1613,7 +1676,6 @@
 		[theCol setEditable:YES];
 		SPTextAndLinkCell *dataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
 		[dataCell setEditable:YES];
-		[dataCell setFormatter:[[SPDataCellFormatter new] autorelease]];
 		[dataCell setFont:tableFont];
 
 		[dataCell setLineBreakMode:NSLineBreakByTruncatingTail];
@@ -1638,7 +1700,7 @@
 		[[theCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
 		[theCol setHeaderToolTip:[NSString stringWithFormat:@"%@ – %@%@", [columnDefinition objectForKey:@"name"], [columnDefinition objectForKey:@"type"], ([columnDefinition objectForKey:@"char_length"]) ? [NSString stringWithFormat:@"(%@)", [columnDefinition objectForKey:@"char_length"]] : @""]];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Set the width of this column to saved value if exists and maps to a real column
 		if ([columnDefinition objectForKey:@"org_name"] && [(NSString *)[columnDefinition objectForKey:@"org_name"] length]) {
 			NSNumber *colWidth = [[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]]] objectForKey:[columnDefinition objectForKey:@"org_table"]] objectForKey:[columnDefinition objectForKey:@"org_name"]];
@@ -1667,14 +1729,6 @@
 - (NSRect)resultViewport
 {
 	return [customQueryView visibleRect];
-}
-
-/**
- * Provide a getter for the custom query result table's current viewport
- */
-- (NSArray *)dataColumnDefinitions
-{
-	return cqColumnDefinition;
 }
 
 /**
@@ -1725,7 +1779,7 @@
 	[customQueryView setDelegate:nil];
 	for (NSDictionary *columnDefinition in cqColumnDefinition) {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Skip columns with saved widths
 		if ([[[[prefs objectForKey:SPTableColumnWidths] objectForKey:[NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]]] objectForKey:[tablesListInstance tableName]] objectForKey:[columnDefinition objectForKey:@"name"]]) continue;
 #endif
@@ -1910,6 +1964,7 @@
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
 
 	if(!tableForColumn || ![tableForColumn length]) {
+		[errorTextTitle setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
 		[errorText setString:[NSString stringWithFormat:NSLocalizedString(@"Couldn't identify field origin unambiguously. The column '%@' contains data from more than one table.", @"Custom Query result editing error - could not identify a corresponding column"), [columnDefinition objectForKey:@"name"]]];
 		NSBeep();
 		return;
@@ -1936,7 +1991,7 @@
 			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
 				newObject = @"CURRENT_TIMESTAMP";
 			} else if ([anObject isEqualToString:[prefs stringForKey:SPNullValue]]
-						|| (([columnTypeGroup isEqualToString:@"float"] || [columnTypeGroup isEqualToString:@"integer"])
+						|| (([columnTypeGroup isEqualToString:@"float"] || [columnTypeGroup isEqualToString:@"integer"] || [columnTypeGroup isEqualToString:@"date"])
 							&& [[anObject description] isEqualToString:@""]))
 			{
 				newObject = @"NULL";
@@ -1967,7 +2022,7 @@
 
 		// This shouldn't happen – for safety reasons
 		if ( ![mySQLConnection rowsAffectedByLastQuery] ) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
 				SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 								  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
@@ -1979,7 +2034,7 @@
 		}
 
 		// On success reload table data by executing the last query if reloading is enabled
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if ([prefs boolForKey:SPReloadAfterEditingRow]) {
 			reloadingExistingResult = YES;
 			[self storeCurrentResultViewForRestoration];
@@ -1987,14 +2042,14 @@
 		} else {
 #endif
 			// otherwise, just update the data in the data storage
-			SPDataStorageReplaceObjectAtRowAndColumn(resultData, rowIndex, [[aTableColumn identifier] intValue], anObject);
-#ifndef SP_REFACTOR
+			[resultData replaceObjectInRow:rowIndex column:[[aTableColumn identifier] intValue] withObject:anObject];
+#ifndef SP_CODA
 		}
 #endif
 	} else {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%ld match%@). It's very likely that while editing this field of table `%@` was changed.", @"message of panel when error while updating field to db after enabling it"),
-									(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?@"es":@"", [columnDefinition objectForKey:@"org_table"]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed.", @"message of panel when error while updating field to db after enabling it"),
+									(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, [columnDefinition objectForKey:@"org_table"]]);
 
 	}
 }
@@ -2017,35 +2072,34 @@
 {
 	if (aTableView == customQueryView) {
 
+		if (![cell respondsToSelector:@selector(setTextColor:)]) {
+			return;
+		}
+
 		// For NULL cell's display the user's NULL value placeholder in grey to easily distinguish it from other values
-		if ([cell respondsToSelector:@selector(setTextColor:)]) {
-			
-			id value = nil;
-			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
+		BOOL showCellAsGray = NO;
 
-			// While the table is being loaded, additional validation is required - data
-			// locks must be used to avoid crashes, and indexes higher than the available
-			// rows or columns may be requested.  Use gray to show loading in these cases.
-			if (isWorking) {
-				pthread_mutex_lock(&resultDataLock);
-				
-				if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
-					value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
-				}
-				
-				pthread_mutex_unlock(&resultDataLock);
+		NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
 
-				if (!value) {
-					[cell setTextColor:[NSColor lightGrayColor]];
-					return;
-				}
-			} 
-			else {
-				value = SPDataStorageObjectAtRowAndColumn(resultData, rowIndex, columnIndex);
+		// While the table is being loaded, additional validation is required - data
+		// locks must be used to avoid crashes, and indexes higher than the available
+		// rows or columns may be requested.  Use gray to show loading in these cases.
+		if (isWorking) {
+			pthread_mutex_lock(&resultDataLock);
+				
+			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+				showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+			} else {
+				showCellAsGray = YES;
 			}
 
-			[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+			pthread_mutex_unlock(&resultDataLock);
 		}
+		else {
+			showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+		}
+
+		[cell setTextColor:showCellAsGray ? [NSColor lightGrayColor] : [NSColor blackColor]];
 	}
 }
 
@@ -2055,8 +2109,7 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		
-		return [self _convertResultDataValueToDisplayableRepresentation:[self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue]] whilePreservingNULLs:NO truncateDataFields:YES];
+		return [self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:NO asPreview:YES];
 	}
 
 	return @"";
@@ -2068,7 +2121,7 @@
 
 		// If the current cell should have been edited in a sheet, do nothing - field closing will have already
 		// updated the field.
-		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]]) {
+		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL]) {
 			return;
 		}
 
@@ -2088,19 +2141,31 @@
 
 	NSMutableString *queryString = [NSMutableString stringWithString:lastExecutedQuery];
 
+    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+    
 	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
 	// header is clicked several times
 	if (sortField && [[tableColumn identifier] integerValue] == [sortField integerValue]) {
-		if(isDesc) {
+        BOOL invert = NO;
+        if (modifierFlags & NSShiftKeyMask) {
+            invert = YES;
+        }
+        
+        // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
+        if (isDesc != invert) {
 			[sortField release];
 			sortField = nil;
 		} else {
-			if (sortField) [sortField release];
-			sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 			isDesc = !isDesc;
 		}
 	} else {
-		isDesc = NO;
+        // When the column is not sorted, allow to sort in reverse order using Shift+click
+        if (modifierFlags & NSShiftKeyMask) {
+            isDesc = YES;
+        } else {
+            isDesc = NO;
+        }
+        
 		[[customQueryView onMainThread] setIndicatorImage:nil inTableColumn:[customQueryView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortField integerValue]]]];
 		if (sortField) [sortField release];
 		sortField = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
@@ -2384,7 +2449,7 @@
 						|| [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"blobdata"]);
 
 		// Open the editing sheet if required
-		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue]])
+		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL])
 		{
 			if (fieldEditor) [fieldEditor release], fieldEditor = nil;
 			fieldEditor = [[SPFieldEditorController alloc] init];
@@ -2447,7 +2512,7 @@
 
 			return NO;
 		}
-		
+
 		return YES;
 	} 
 	else {
@@ -2475,7 +2540,7 @@
 	// Check our notification object is our table content view
 	if ([aNotification object] != customQueryView) return;
 	
-#ifndef SP_REFACTOR /* triggered commands */
+#ifndef SP_CODA /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
 	for(NSString* cmdPath in triggeredCommands) {
 		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
@@ -2537,13 +2602,13 @@
 	NSString *host_db = [NSString stringWithFormat:@"%@@%@", [columnDefinition objectForKey:@"db"], [tableDocumentInstance host]];
 
 	// Retrieve or instantiate the tableColumnWidths object
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs objectForKey:SPTableColumnWidths] != nil) {
 		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
 	} else {
 #endif
 		tableColumnWidths = [NSMutableDictionary dictionary];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #endif
 
@@ -2563,7 +2628,7 @@
 
 	// Save the column size
 	[[[tableColumnWidths objectForKey:host_db] objectForKey:table] setObject:[NSNumber numberWithDouble:[(NSTableColumn *)[[aNotification userInfo] objectForKey:@"NSTableColumn"] width]] forKey:col];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 #endif
 }
@@ -2580,7 +2645,7 @@
 	NSUInteger targetWidth = [customQueryView autodetectWidthForColumnDefinition:columnDefinition maxRows:500];
 
 	// Clear any saved widths for the column
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
 	NSString *tableKey = [tablesListInstance tableName];
 	NSMutableDictionary *savedWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
@@ -2621,7 +2686,7 @@
 	if (aTextView == textView) {
 		if ([aTextView methodForSelector:aSelector] == [aTextView methodForSelector:@selector(insertNewline:)] &&
 			[[[NSApp currentEvent] characters] isEqualToString:@"\003"]) {
-			[self runAllQueries:self];
+			[self runPrimaryQueryAction:self];
 			
 			return YES;
 		} 
@@ -2664,69 +2729,37 @@
 	// Ensure that the notification is from the custom query text view
 	if ( [aNotification object] != textView ) return;
 
-	BOOL isLookBehind = YES;
 	NSRange currentSelection = [textView selectedRange];
 	NSUInteger caretPosition = currentSelection.location;
 
-	NSRange qRange = [self queryRangeAtPosition:caretPosition lookBehind:&isLookBehind];
+	// Detect the current query range, allowing the search to occur if the caret is after
+	// a semicolon
+	currentQueryBeforeCaret = YES;
+	currentQueryRange = [self queryRangeAtPosition:caretPosition lookBehind:&currentQueryBeforeCaret];
 
-	if(qRange.length)
-		currentQueryRange = qRange;
-	else
-		currentQueryRange = NSMakeRange(0, 0);
-
-	[textView setQueryRange:qRange];
+	[textView setQueryRange:currentQueryRange];
 	[textView setNeedsDisplayInRect:[textView bounds]];
 
-	// disable "Comment Current Query" menu item if no current query is selectable
-	[commentCurrentQueryMenuItem setEnabled:(currentQueryRange.length) ? YES : NO];
-
-	// If no text is selected, disable the button and action menu.
-	if ( caretPosition == NSNotFound ) {
-		selectionButtonCanBeEnabled = NO;
-		[runSelectionButton setEnabled:NO];
-		[runSelectionMenuItem setEnabled:NO];
-		return;
-	}
-
-	// If the current selection is a single caret position, update the button based on
-	// whether the caret is inside a valid query.
-	if (!currentSelection.length) {
-		[runSelectionButton setTitle:NSLocalizedString(@"Run Current", @"Title of button to run current query in custom query view")];
-		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Current Query", @"Title of action menu item to run current query in custom query view")];
-
-		// If a valid query is present at the cursor position, enable the button
-		if (qRange.length) {
-			if (isLookBehind) {
-				[runSelectionButton setTitle:NSLocalizedString(@"Run Previous", @"Title of button to run query just before text caret in custom query view")];
-				[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Previous Query", @"Title of action menu item to run query just before text caret in custom query view")];
-			}
-			selectionButtonCanBeEnabled = YES;
-			if (![tableDocumentInstance isWorking]) {
-				[runSelectionButton setEnabled:YES];
-				[runSelectionMenuItem setEnabled:YES];
-			}
-		} else {
-			selectionButtonCanBeEnabled = NO;
-			[runSelectionButton setEnabled:NO];
-			[runSelectionMenuItem setEnabled:NO];
-		}
-		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
-
-	// For selection ranges, enable the button.
+	// If a query range is selected, update the current query range and menu actions
+	if (currentQueryRange.length) {
+		[commentCurrentQueryMenuItem setEnabled:YES];
 	} else {
-		selectionButtonCanBeEnabled = YES;
-		[runSelectionButton setTitle:NSLocalizedString(@"Run Selection", @"Title of button to run selected text in custom query view")];
-		[runSelectionMenuItem setTitle:NSLocalizedString(@"Run Selected Text", @"Title of action menu item to run selected text in custom query view")];
-		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
-		if (![tableDocumentInstance isWorking]) {
-			[runSelectionButton setEnabled:YES];
-			[runSelectionMenuItem setEnabled:YES];
-		}
+		currentQueryRange = NSMakeRange(0, 0);
+		[commentCurrentQueryMenuItem setEnabled:NO];
 	}
 
-	if(!historyItemWasJustInserted)
+	// Vary the comment/line selection menu item according to whether a section is present
+	if (currentSelection.length) {
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Selection", @"Title of action menu item to comment selection")];
+	} else {
+		[commentLineOrSelectionMenuItem setTitle:NSLocalizedString(@"Comment Line", @"Title of action menu item to comment line")];
+	}
+
+	if (!historyItemWasJustInserted)
 		currentHistoryOffsetIndex = -1;
+
+	// Update the text of the contextual run current/previous/selection button and menu item
+	[self updateContextualRunInterface];
 }
 
 #pragma mark -
@@ -2738,6 +2771,7 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
+#ifndef SP_CODA
 	if ([notification object] == queryFavoriteNameTextField)
 		[saveQueryFavoriteButton setEnabled:[[queryFavoriteNameTextField stringValue] length]];
 	else if ([notification object] == queryFavoritesSearchField){
@@ -2746,9 +2780,10 @@
 	else if ([notification object] == queryHistorySearchField) {
 		[self filterQueryHistory:nil];
 	}
+#endif
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (NSUndoManager *)undoManagerForTextView:(NSTextView *)aTextView
 {
 	return [tableDocumentInstance undoManager];
@@ -2758,34 +2793,14 @@
 #pragma mark -
 #pragma mark SplitView delegate methods
 
-#ifndef SP_REFACTOR /* splitview delegate methods */
+#ifndef SP_CODA /* splitview delegate methods */
 
 /**
- * Tells the splitView that it can collapse views
+ * Tells the split views that they can collapse views
  */
 - (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
 {
 	return YES;
-}
-
-/**
- * Defines max position of splitView
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	if (sender != queryInfoPaneSplitView) return (offset == 0) ? (proposedMax - 100) : (proposedMax - 73);
-	
-	return proposedMax;
-}
-
-/**
- * Defines min position of splitView
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	if (sender != queryInfoPaneSplitView) return proposedMin + 100;
-	
-	return proposedMin;
 }
 
 /**
@@ -2810,7 +2825,7 @@
 	[textView setConnection:mySQLConnection withVersion:[[[mySQLversion componentsSeparatedByString:@"."] objectAtIndex:0] integerValue]];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Return the Help window.
  */
@@ -2824,7 +2839,12 @@
  */
 - (void)showHelpFor:(NSString *)searchString addToHistory:(BOOL)addToHistory calledByAutoHelp:(BOOL)autoHelp
 {
-	if(![searchString length]) return;
+
+	// If there's no search string, show nothing if called by autohelp, and the index otherwise
+	if (![searchString length]) {
+		if (autoHelp) return;
+		searchString = SP_HELP_TOC_SEARCH_STRING;
+	}
 
 	NSString *helpString = [self getHTMLformattedMySQLHelpFor:searchString calledByAutoHelp:autoHelp];
 
@@ -3024,7 +3044,7 @@
 	}
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Show the data for "HELP 'currentWord' invoked by autohelp"
  */
@@ -3077,6 +3097,9 @@
 
 	if(![searchString length]) return @"";
 
+	// Don't escape % when being used as a wildcard, but escape it when it's being used by itself.
+	if ([searchString isEqualToString:@"%"]) searchString = @"\\%";
+
 	NSRange         aRange;
 	SPMySQLResult   *theResult = nil;
 	NSDictionary    *tableDetails;
@@ -3096,6 +3119,7 @@
 		[helpWebViewWindow close];
 		return SP_HELP_NOT_AVAILABLE;
 	}
+
 	// nothing found?
 	if(![theResult numberOfRows]) {
 
@@ -3104,8 +3128,12 @@
 
 		// really nothing found?
 		if(![theResult numberOfRows])
-			return @"";
+			return [NSString stringWithFormat:@"<em style='color: gray'>%@</em>", NSLocalizedString(@"No results found.", @"Mysql Help Viewer : Search : No results")];
 	}
+
+	// Ensure rows are returned as strings to prevent data problems with older 4.1 servers
+	[theResult setReturnDataAsStrings:YES];
+
 	tableDetails = [[NSDictionary alloc] initWithDictionary:[theResult getRowAsDictionary]];
 
 	if ([tableDetails objectForKey:@"description"]) { // one single help topic found
@@ -3139,37 +3167,13 @@
 				if(safeCnt > 200)
 					break;
 			}
-			// detect and generate mysql links for "[HELP keyword]"
-			aRange = NSMakeRange(0,0);
-			safeCnt = 0;
-			while(1){
-				// TODO how to catch in HELP 'grant' last see [HELP SHOW GRANTS] ?? it's ridiculous
-				aRange = [desc rangeOfRegex:@"\\[HELP ([^ ]*?)\\]" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length+53, [desc length]-53-aRange.location-aRange.length) capture:1 error:&err1];
-				if(aRange.location != NSNotFound) {
-					aUrl = [[desc substringWithRange:aRange] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
-					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
-				}
-				else
-					break;
-				safeCnt++;
-				if(safeCnt > 200)
-					break;
-			}
-			// detect and generate mysql links for capitalzed letters
-			// aRange = NSMakeRange(0,0);
-			// safeCnt = 0;
-			// while(1){
-			// 	aRange = [desc rangeOfRegex:@"(?<!\\w)([A-Z_]{2,}( [A-Z_]{2,})?)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
-			// 	if(aRange.location != NSNotFound) {
-			// 		aUrl = [desc substringWithRange:aRange];
-			// 		[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a title='%@ “%@”' href='%@' class='internallink'>%@</a>", NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), aUrl, aUrl, aUrl]];
-			// 	}
-			// 	else
-			// 		break;
-			// 	safeCnt++;
-			// 	if(safeCnt > 200)
-			// 		break;
-			// }
+
+			// Detect and generate cross-links.  First, handle the old-style [HELP ...] text.
+			[desc replaceOccurrencesOfRegex:@"(\\[HELP ([^\\]]*?)\\]" withString:[SPCustomQuery linkToHelpTopic:@"$1"]];
+
+			// Handle "see [...]" and "in [...]"-style 5.x links.
+			//look-behind won't work here because of the \s+
+			[desc replaceOccurrencesOfRegex:@"(See|see|In|in|and)\\s+\\[(?:HELP\\s+)?([^\\]]*?)\\]" withString:[NSString stringWithFormat:@"$1 %@",[SPCustomQuery linkToHelpTopic:@"$2"]]];
 
 			[theHelp appendFormat:@"<pre class='description'>%@</pre>", desc];
 		}
@@ -3177,26 +3181,23 @@
 		if([tableDetails objectForKey:@"example"]){
 			NSString *examples = [[[tableDetails objectForKey:@"example"] copy] autorelease];
 			if([examples length])
-				[theHelp appendFormat:@"<br><i><b>Example:</b></i><br><pre class='example'>%@</pre>", examples];
+				[theHelp appendFormat:@"<br><i><b>%1$@</b></i><br><pre class='example'>%2$@</pre>",NSLocalizedString(@"Example:",@"Mysql Help Viewer : Help Topic: Example section title"), examples];
 
 		}
 	} else { // list all found topics
-		NSUInteger r = (NSUInteger)[theResult numberOfRows];
-		if (r) [theResult seekToRow:0];
 
 		// check if HELP 'contents' is called
 		if(![searchString isEqualToString:SP_HELP_TOC_SEARCH_STRING])
-			[theHelp appendFormat:@"<br><i>%@ “%@”</i><br>", NSLocalizedString(@"Help topics for", @"help topics for"), searchString];
+			[theHelp appendFormat:@"<br><i>%@</i><br>", [NSString stringWithFormat:NSLocalizedString(@"Help topics for “%@”", @"MySQL Help Viewer : Results list : Page title"), searchString]];
 		else
-			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories"), searchString];
+			[theHelp appendFormat:@"<br><b>%@:</b><br>", NSLocalizedString(@"MySQL Help – Categories", @"mysql help categories")];
 
 		// iterate through all found rows and print them as HTML ul/li list
 		[theHelp appendString:@"<ul>"];
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 		for (NSArray *eachRow in theResult) {
 			NSString *topic = [eachRow objectAtIndex:[eachRow count]-2];
-			[theHelp appendFormat:@"<li><a title='%@ “%@”' href='%@' class='internallink'>%@</a></li>",
-				NSLocalizedString(@"Show MySQL help for", @"show mysql help for"), topic, topic, topic];
+			[theHelp appendFormat:@"<li>%@</li>",[SPCustomQuery linkToHelpTopic:topic]];
 		}
 		[theHelp appendString:@"</ul>"];
 	}
@@ -3204,6 +3205,12 @@
 	[tableDetails release];
 
 	return [NSString stringWithFormat:helpHTMLTemplate, theHelp];
+}
+
++ (NSString *)linkToHelpTopic:(NSString *)aTopic 
+{
+	NSString *linkTitle = [NSString stringWithFormat:NSLocalizedString(@"Show MySQL help for “%@”", @"MySQL Help Viewer : Results list : Link tooltip"),aTopic];
+	return [NSString stringWithFormat:@"<a title='%2$@' href='%1$@' class='internallink'>%1$@</a>", aTopic, linkTitle];
 }
 
 #pragma mark -
@@ -3339,12 +3346,13 @@
 #pragma mark -
 #pragma mark Query favorites manager delegate methods
 
+#ifndef SP_CODA
+
 /**
  * Rebuild history popup menu.
  */
 - (void)historyItemsHaveBeenUpdated:(id)manager
 {
-
 	// Abort if the connection has been closed already - sign of a closed window
 	if (![mySQLConnection isConnected]) return;
 
@@ -3407,7 +3415,6 @@
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
-#ifndef SP_REFACTOR
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
@@ -3426,7 +3433,23 @@
 		[menu addItem:item];
 		[item release];
 	}
+}
 #endif
+
+#pragma mark -
+#pragma mark Database content view delegate methods
+
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
+
+/**
+ * Provide a getter for the custom query result table's current viewport
+ */
+- (NSArray *)dataColumnDefinitions
+{
+	return cqColumnDefinition;
 }
 
 #pragma mark -
@@ -3439,17 +3462,17 @@
 {
 	isWorking = YES;
 
-#ifndef SP_REFACTOR /* check selected view */
+#ifndef SP_CODA /* check selected view */
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 #endif
 
 	tableRowsSelectable = NO;
-	[runSelectionButton setEnabled:NO];
-	[runSelectionMenuItem setEnabled:NO];
 	[runAllButton setEnabled:NO];
-	[runAllMenuItem setEnabled:NO];
+	[runPrimaryActionButton setEnabled:NO];
+	[runPrimaryActionMenuItem setEnabled:NO];
+	[runSecondaryActionMenuItem setEnabled:NO];
 }
 
 /**
@@ -3459,19 +3482,17 @@
 {
 	isWorking = NO;
 
-#ifndef SP_REFACTOR /* check active tab */
+#ifndef SP_CODA /* check active tab */
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery])
 		return;
 #endif
 
-	if (selectionButtonCanBeEnabled) {
-		[runSelectionButton setEnabled:YES];
-		[runSelectionMenuItem setEnabled:YES];
-	}
 	tableRowsSelectable = YES;
 	[runAllButton setEnabled:YES];
-	[runAllMenuItem setEnabled:YES];
+	[runPrimaryActionButton setEnabled:YES];
+	[runPrimaryActionMenuItem setEnabled:YES];
+	[runSecondaryActionMenuItem setEnabled:YES];
 }
 
 #pragma mark -
@@ -3519,7 +3540,11 @@
 	// Result Table Font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([[NSString stringWithString:@"{ǞṶḹÜ∑zgyf"] sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+#ifndef SP_CODA
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+#else
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+#endif
 		[customQueryView setFont:tableFont];
 		[customQueryView reloadData];
 	}
@@ -3535,6 +3560,7 @@
 		return;
 	}
 
+#ifndef SP_CODA
 	if ([contextInfo isEqualToString:@"clearHistory"]) {
 		if (returnCode == NSOKButton) {
 			// Remove items in the query controller
@@ -3545,7 +3571,6 @@
 
 	if ([contextInfo isEqualToString:@"addAllToNewQueryFavorite"] || [contextInfo isEqualToString:@"addSelectionToNewQueryFavorite"]) {
 		if (returnCode == NSOKButton) {
-#ifndef SP_REFACTOR
 
 			// Add the new query favorite directly the user's preferences here instead of asking the manager to do it
 			// as it may not have been fully initialized yet.
@@ -3583,33 +3608,11 @@
 			[saveQueryFavoriteGlobal setState:NSOffState];
 
 			[self queryFavoritesHaveBeenUpdated:nil];
-#endif
-
 		}
 	}
 
 	[queryFavoriteNameTextField setStringValue:@""];
-}
-
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo
-{
-	if([contextInfo isEqualToString:@"saveHistory"]) {
-		if (returnCode == NSOKButton) {
-			NSError *error = nil;
-
-#ifndef SP_REFACTOR
-			[prefs setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
-			[prefs synchronize];
 #endif
-
-			[[self buildHistoryString] writeToURL:[panel URL]
-									   atomically:YES
-										 encoding:[[encodingPopUp selectedItem] tag]
-											error:&error];
-
-			if (error) [[NSAlert alertWithError:error] runModal];
-		}
-	}
 }
 
 /**
@@ -3617,6 +3620,7 @@
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+#ifndef SP_CODA
 	// Control "Save ... to Favorites"
 	if ( [menuItem tag] == SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG ) {
 		if ([[textView string] length] < 1) return NO;
@@ -3638,17 +3642,13 @@
 	}
 	// Control Clear History menu item title according to isUntitled
 	else if ( [menuItem tag] == SP_HISTORY_CLEAR_MENUITEM_TAG ) {
-#ifndef SP_REFACTOR /* if ( [tableDocumentInstance isUntitled] ) */
 		if ( [tableDocumentInstance isUntitled] ) {
-#endif
 			[menuItem setTitle:NSLocalizedString(@"Clear Global History", @"clear global history menu item title")];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the global history list", @"clear the global history list tooltip message")];
-#ifndef SP_REFACTOR /* if ( [tableDocumentInstance isUntitled] ) */
 		} else {
 			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Clear History for “%@”", @"clear history for “%@” menu title"), [tableDocumentInstance displayName]]];
 			[menuItem setToolTip:NSLocalizedString(@"Clear the document-based history list", @"clear the document-based history list tooltip message")];
 		}
-#endif
 	}
 	// Check for History items
 	else if ( [menuItem tag] >= SP_HISTORY_COPY_MENUITEM_TAG && [menuItem tag] <= SP_HISTORY_CLEAR_MENUITEM_TAG ) {
@@ -3656,6 +3656,9 @@
 	}
 
 	return YES;
+#else
+	return NO;
+#endif
 }
 
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo
@@ -3705,13 +3708,12 @@
 {
 	if ((self = [super init])) {
 
-		usedQuery = [[NSString stringWithString:@""] retain];
+		usedQuery = [@"" retain];
 		lastExecutedQuery = nil;
 		fieldIDQueryString = nil;
 		sortField = nil;
 		isDesc = NO;
 		sortColumn = nil;
-		selectionButtonCanBeEnabled = NO;
 		isFieldEditable = NO;
 		cqColumnDefinition = nil;
 		favoritesManager = nil;
@@ -3720,7 +3722,7 @@
 		selectionIndexToRestore = nil;
 		selectionViewportToRestore = NSZeroRect;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// init helpHTMLTemplate
 		NSError *error;
 
@@ -3747,33 +3749,36 @@
 
 		currentHistoryOffsetIndex = -1;
 		historyItemWasJustInserted = NO;
+		currentQueryRange = NSMakeRange(0, 0);
+		currentQueryBeforeCaret = NO;
+		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
+		resultLoadingCondition = [NSCondition new];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload data, check encoding, or try to add\na primary key field or more fields\nin your SELECT statement for table '%@'\nto identify field origin unambiguously.", @"Custom Query result editing error - could not identify original row");
 		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
-		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld match%@).", @"Query result editing error - could not match row being edited uniquely");
+		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld matches).", @"Query result editing error - could not match row being edited uniquely");
 
 	}
 
 	return self;
 }
 
+#ifndef SP_CODA
 /**
  * Filters the query favorites menu.
  */
 - (IBAction)filterQueryFavorites:(id)sender
 {
-	NSInteger i;
 	NSMenu *menu = [queryFavoritesButton menu];
-	NSString *searchPattern = [queryFavoritesSearchField stringValue];
 
-	for (i = 7; i < [menu numberOfItems]; i++)
+	for (NSInteger i = 7; i < [menu numberOfItems]; i++)
 	{
 		[[menu itemAtIndex:i] setHidden:([[menu itemAtIndex:i] tag] != SP_FAVORITE_HEADER_MENUITEM_TAG
-										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+										 && ![[[menu itemAtIndex:i] title] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryFavoritesSearchField stringValue]]])];
 	}
 }
 
@@ -3782,16 +3787,16 @@
  */
 - (IBAction)filterQueryHistory:(id)sender
 {
-	NSMenu *menu = [queryHistoryButton menu];
-	NSUInteger numberOfItems = [menu numberOfItems];
-	NSUInteger i;
-	NSString *searchPattern = [queryHistorySearchField stringValue];
 	NSArray *history = [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]];
-	for (i = 7; i < numberOfItems; i++)
+	
+	NSMenu *menu = [queryHistoryButton menu];
+	
+	for (NSInteger i = 7; i < [menu numberOfItems]; i++)
 	{
-		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i-7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", searchPattern]])];
+		[[menu itemAtIndex:i] setHidden:(![[history objectAtIndex:i - 7] isMatchedByRegex:[NSString stringWithFormat:@"(?i).*%@.*", [queryHistorySearchField stringValue]]])];
 	}
 }
+#endif
 
 /**
  * If user selected a table cell which is a blob field and tried to edit it
@@ -3837,7 +3842,7 @@
 		break;
 
 		default:
-		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
 				atLocation:pos
 				ofType:@"text"];
 		shouldBeginEditing = NO;
@@ -3846,7 +3851,7 @@
 	isFieldEditable = shouldBeginEditing;
 
 	// Open the field editor sheet if required
-	if ([customQueryView shouldUseFieldEditorForRow:row column:column])
+	if ([customQueryView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
 	{
 
 		[customQueryView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
@@ -3877,6 +3882,7 @@
  */
 - (BOOL)control:(NSControl*)control textView:(NSTextView*)aTextView doCommandBySelector:(SEL)command
 {
+#ifndef SP_CODA
 	if(control == queryHistorySearchField || control == queryFavoritesSearchField) {
 		if(command == @selector(moveDown:) || command == @selector(moveUp:)) {
 			[queryHistorySearchField abortEditing];
@@ -3894,10 +3900,12 @@
 		}
 	}
 
-	else if([control isKindOfClass:[SPCopyTable class]]) {
+	else
+#endif
+		if([control isKindOfClass:[SPCopyTable class]]) {
 
 		// Check firstly if SPCopyTable can handle command
-		if([customQueryView control:control textView:aTextView doCommandBySelector:(SEL)command])
+		if([customQueryView control:control textView:aTextView doCommandBySelector:command])
 			return YES;
 
 		// Trap the escape key
@@ -3924,12 +3932,23 @@
 {
 
 	[customQueryView setFieldEditorSelectedRange:NSMakeRange(0,0)];
+	[self updateQueryInteractionInterface];
 
+#ifndef SP_CODA
 	// Set pre-defined menu tags
 	[queryFavoritesSaveAsMenuItem setTag:SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG];
 	[queryFavoritesSaveAllMenuItem setTag:SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG];
+#endif
 
-#ifndef SP_REFACTOR
+	// Set up the split views
+	[queryEditorSplitView setMinSize:100 ofSubviewAtIndex:0];
+	[queryEditorSplitView setMinSize:100 ofSubviewAtIndex:1];
+
+	[queryInfoPaneSplitView setCollapsibleSubviewIndex:1];
+	[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES animate:NO];
+	
+	
+#ifndef SP_CODA
 	// Set the structure and index view's vertical gridlines if required
 	[customQueryView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 #endif
@@ -3944,23 +3963,10 @@
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
 #endif
 
-	// Collapse the query information pane
-	if ([queryInfoPaneSplitView collapsibleSubview]) {
-		queryInfoPanePaddingHeight = [[queryInfoPaneSplitView collapsibleSubview] frame].size.height - [errorTextScrollView frame].size.height;
-
-		[queryInfoButton setNextState];
-		[queryInfoButton setToolTip:NSLocalizedString(@"Show Query Information", @"Show Query Information")];
-
-		[queryInfoPaneSplitView setValue:[NSNumber numberWithFloat:[queryInfoPaneSplitView collapsibleSubview].frame.size.height] forKey:@"uncollapsedSize"];
-		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:NO];
-		[[queryInfoPaneSplitView collapsibleSubview] setFrameSize:NSMakeSize([queryInfoPaneSplitView collapsibleSubview].frame.size.width, 0)];
-		[queryInfoPaneSplitView setCollapsibleSubviewCollapsed:YES];
-		[[queryInfoPaneSplitView collapsibleSubview] setAutoresizesSubviews:YES];
-	}
 }
 
 #pragma mark -
@@ -3969,12 +3975,13 @@
 /**
  * Retrieves the value from the underlying data storage at the supplied row and column indices.
  *
- * @param row    The row index
- * @param column The column index
+ * @param row           The row index
+ * @param column        The column index
+ * @param preserveNULLs Whether t
  * 
  * @return The value from the data storage
  */
-- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column
+- (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
 	id value = nil;
 	
@@ -3986,7 +3993,11 @@
 		pthread_mutex_lock(&resultDataLock);
 		
 		if (row < resultDataCount && column < [resultData columnCount]) {
-			value = [[SPDataStorageObjectAtRowAndColumn(resultData, row, column) copy] autorelease];
+			if (asPreview) {
+				value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
+			} else {
+				value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+			}
 		}
 		
 		pthread_mutex_unlock(&resultDataLock);
@@ -3994,53 +4005,38 @@
 		if (!value) value = @"...";
 	} 
 	else {
-		value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+		if (asPreview) {
+			value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
+		} else {
+			value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
+		}
 	}
-	
-	return value;
-}
 
-/**
- * Converts the supplied value into it's displayable representation.
- *
- * @param value         The value to convert
- * @param preserveNULLs Whether or not NULLs should be preserved or converted to the 
- *                      user's NULL placeholder preference.
- * @param truncate      Whether or not data fields should be truncates for display purposes.
- *
- * @return The converted value
- */
-- (id)_convertResultDataValueToDisplayableRepresentation:(id)value whilePreservingNULLs:(BOOL)preserveNULLs truncateDataFields:(BOOL)truncate
-{
+	if ([value isKindOfClass:[SPMySQLGeometryData class]])
+		return [value wktString];
+
+	if ([value isNSNull])
+		return preserveNULLs ? value : [prefs objectForKey:SPNullValue];
+
 	if ([value isKindOfClass:[NSData class]]) {
-		value = truncate ? [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]] : [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]; 
+		return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 	}
-	
-	if ([value isNSNull] && !preserveNULLs) {
-		value = [prefs objectForKey:SPNullValue];
-	}
-	
-	if ([value isKindOfClass:[SPMySQLGeometryData class]]) {
-		value = [value wktString];
-	}
-	
+
 	return value;
 }
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
 #endif
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
+	[resultLoadingCondition release];
 	[usedQuery release];
 	[lastExecutedQuery release];
 	[resultData release];
@@ -4048,7 +4044,7 @@
 
 	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (helpHTMLTemplate) [helpHTMLTemplate release];
 #endif
 	if (mySQLversion) [mySQLversion release];

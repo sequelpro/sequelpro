@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPExportController.m
 //  sequel-pro
 //
-//  Created by Ben Perry (benperry.com.au) on 21/02/09.
-//  Modified by Stuart Connolly (stuconnolly.com)
+//  Created by Ben Perry (benperry.com.au) on February 12, 2009.
+//  Copyright (c) 2010 Ben Perry. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportController.h"
 #import "SPExportInitializer.h"
@@ -34,14 +39,17 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPDatabaseDocument.h"
+#import "SPThreadAdditions.h"
+#import "SPCustomQuery.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 // Constants
 static const NSUInteger SPExportUIPadding = 20;
 
-static const NSString *SPTableViewStructureColumnID = @"structure";
-static const NSString *SPTableViewContentColumnID   = @"content";
-static const NSString *SPTableViewDropColumnID      = @"drop";
+static NSString * const SPTableViewStructureColumnID = @"structure";
+static NSString * const SPTableViewContentColumnID   = @"content";
+static NSString * const SPTableViewDropColumnID      = @"drop";
 
 static const NSString *SPSQLExportStructureEnabled  = @"SQLExportStructureEnabled";
 static const NSString *SPSQLExportContentEnabled    = @"SQLExportContentEnabled";
@@ -72,7 +80,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 @synthesize exportCancelled;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
 /**
  * Initializes an instance of SPExportController.
@@ -95,7 +103,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		exportTypeLabel = @"";
 		
 		createCustomFilename = NO;
-		sqlPreviousConnectionEncodingViaLatin1 = NO;
+		previousConnectionEncodingViaLatin1 = NO;
 		
 		tables = [[NSMutableArray alloc] init];
 		exporters = [[NSMutableArray alloc] init];
@@ -389,13 +397,14 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[panel setCanChooseFiles:NO];
 	[panel setCanChooseDirectories:YES];
 	[panel setCanCreateDirectories:YES];
-		
-	[panel beginSheetForDirectory:[exportPathField stringValue] 
-							 file:nil 
-				   modalForWindow:[self window] 
-					modalDelegate:self 
-				   didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) 
-					  contextInfo:nil];
+    
+    [panel setDirectoryURL:[NSURL URLWithString:[exportPathField stringValue]]];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            [exportPathField setStringValue:[[panel directoryURL] path]];
+            [prefs setObject:[[panel directoryURL] path] forKey:SPExportLastDirectory];
+        }
+    }];		
 }
 
 /**
@@ -412,7 +421,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 			[tableDict setObject:[NSArray arrayWithObjects:
 								  [item objectAtIndex:1], 
 								  [item objectAtIndex:2], 
-								  [item objectAtIndex:3], 
+								  [item objectAtIndex:3],
+								  [item objectAtIndex:4],
 								  nil] 
 						  forKey:[item objectAtIndex:0]];
 		}
@@ -688,44 +698,15 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 }
 
 /**
- * Invoked when the user dismisses the save panel. Updates the selected directory if they clicked OK.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		[exportPathField setStringValue:[panel directory]];
-		[prefs setObject:[panel directory] forKey:SPExportLastDirectory];
-	}
-}
-
-/**
  * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
-		return (([[customQueryInstance currentResult] count] > 1) && (![tableDocumentInstance isProcessing]));
+		return (([customQueryInstance currentResultRowCount] > 0) && (![tableDocumentInstance isProcessing]));		
 	}
 	
 	return YES;
-}
-
-#pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{	
-    [tables release], tables = nil;
-	[exporters release], exporters = nil;
-	[exportFiles release], exportFiles = nil;
-	[operationQueue release], operationQueue = nil;
-	[exportFilename release], exportFilename = nil;
-	
-	if (sqlPreviousConnectionEncoding) [sqlPreviousConnectionEncoding release], sqlPreviousConnectionEncoding = nil;
-	
-	[super dealloc];
 }
 
 #pragma mark -
@@ -1038,8 +1019,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeStructureCheck state]] forKey:SPSQLExportStructureEnabled];
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:SPSQLExportContentEnabled];
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:SPSQLExportDropEnabled];
-	
-	[NSThread detachNewThreadSelector:@selector(_toggleExportButton:) toTarget:self withObject:uiStateDict];
+
+	[NSThread detachNewThreadWithName:@"SPExportController export button updater" target:self selector:@selector(_toggleExportButton:) object:uiStateDict];
 	
 	[uiStateDict release];
 }
@@ -1052,6 +1033,21 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable
 {
 	[exportButton setEnabled:[enable boolValue]];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{	
+    [tables release], tables = nil;
+	[exporters release], exporters = nil;
+	[exportFiles release], exportFiles = nil;
+	[operationQueue release], operationQueue = nil;
+	[exportFilename release], exportFilename = nil;
+	
+	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	
+	[super dealloc];
 }
 
 @end

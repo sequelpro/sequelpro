@@ -1,30 +1,41 @@
 //
-//  $Id$
-//
 //  SPBundleEditorController.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on November 12, 2010
+//  Created by Hans-Jörg Bibiko on November 12, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPBundleEditorController.h"
-#import "SPArrayAdditions.h"
 #import "SPMenuAdditions.h"
+#import "SPBundleCommandRunner.h"
+#import "SPOutlineView.h"
+#import "SPBundleCommandTextView.h"
+#import "SPSplitView.h"
+
+static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
@@ -59,9 +70,6 @@
 
 @implementation SPBundleEditorController
 
-/**
- * Initialisation
- */
 - (id)init
 {
 
@@ -76,55 +84,19 @@
 	return self;
 }
 
-- (void)dealloc
-{
-	[inputGeneralScopePopUpMenu release];
-	[inputInputFieldScopePopUpMenu release];
-	[inputDataTableScopePopUpMenu release];
-	[outputGeneralScopePopUpMenu release];
-	[outputInputFieldScopePopUpMenu release];
-	[outputDataTableScopePopUpMenu release];
-	[inputFallbackInputFieldScopePopUpMenu release];
-	[triggerInputFieldPopUpMenu release];
-	[triggerDataTablePopUpMenu release];
-	[triggerGeneralPopUpMenu release];
-	[inputNonePopUpMenu release];
-
-	[inputGeneralScopeArray release];
-	[inputInputFieldScopeArray release];
-	[inputDataTableScopeArray release];
-	[outputGeneralScopeArray release];
-	[outputInputFieldScopeArray release];
-	[outputDataTableScopeArray release];
-	[inputFallbackInputFieldScopeArray release];
-	[triggerInputFieldArray release];
-	[triggerDataTableArray release];
-	[triggerGeneralArray release];
-	[withBlobDataTableArray release];
-
-	[shellVariableSuggestions release];
-	[deletedDefaultBundles release];
-
-	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if (bundlePath) [bundlePath release], bundlePath = nil;
-	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
-
-	[super dealloc];
-}
-
 - (void)awakeFromNib
 {
 
-	// Set up the splitview width manually; autosave appears to save but not restore this value
-	// here, so restore in code if present.
-	NSString *splitViewKeyName = [NSString stringWithFormat:@"NSSplitView Subview Frames %@", SP_BUNDLEEDITOR_SPLITVIEW_AUTOSAVE_STRING];
-	if ([[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName]) {
-		NSString *detailString = [[[NSUserDefaults standardUserDefaults] arrayForKey:splitViewKeyName] objectAtIndex:0];
-		float dividerPosition = [[[detailString componentsSeparatedByString:@", "] objectAtIndex:2] floatValue];
-		[splitView setPosition:dividerPosition ofDividerAtIndex:0];
-	}
+	// Set the splitview up
+	[splitView setMinSize:122.f ofSubviewAtIndex:0];
+	[splitView setMinSize:588.f ofSubviewAtIndex:1];
+
+	// Set up the shortcut recorder control
+	[keyEquivalentField setAnimates:YES];
+	[keyEquivalentField setStyle:SRGreyStyle];
+	[keyEquivalentField setAllowedFlags:ShortcutRecorderAllFlags];
+	[keyEquivalentField setRequiredFlags:ShortcutRecorderEmptyFlags];
+	[keyEquivalentField setAllowsKeyOnly:NO escapeKeysRecord:NO];
 
 	// Init all needed variables; popup menus (with the chance for localization); and set
 	// defaults
@@ -611,7 +583,7 @@
 		}
 		if(!copyingWasSuccessful) {
 			// try again with new name
-			newFileName = [NSString stringWithFormat:@"%@_%ld", newFileName, (NSUInteger)(random() % 35000)];
+			newFileName = [NSString stringWithFormat:@"%@_%ld", newFileName, (long)(random() % 35000)];
 			newBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, newFileName, SPUserBundleFileExtension];
 			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
 				if([[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:newBundleFilePath error:nil])
@@ -701,7 +673,7 @@
 		}
 		if(category == nil) category = @"";
 
-		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Bundle", @"New Name", @"", scope, category, newUUID, nil] 
+		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Bundle",@"Bundle Editor : Default name for new bundle in the list on the left"), NSLocalizedString(@"New Name",@"Bundle Editor : Default name for a new bundle in the menu"), @"", scope, category, newUUID, nil] 
 						forKeys:[NSArray arrayWithObjects:kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey, nil]];
 	}
 
@@ -756,12 +728,10 @@
  */
 - (IBAction)revealCommandBundleInFinder:(id)sender
 {
-
-	if([commandsOutlineView numberOfSelectedRows] != 1) return;
+	if ([commandsOutlineView numberOfSelectedRows] != 1) return;
 
 	[[NSWorkspace sharedWorkspace] selectFile:[NSString stringWithFormat:@"%@/%@.%@/%@", 
 		bundlePath, [[self _currentSelectedObject] objectForKey:kBundleNameKey], SPUserBundleFileExtension, SPBundleFileName] inFileViewerRootedAtPath:nil];
-
 }
 
 /**
@@ -778,7 +748,12 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:[[self _currentSelectedObject] objectForKey:kBundleNameKey] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:@"saveBundle"];
+	[panel setNameFieldStringValue:[[self _currentSelectedObject] objectForKey:kBundleNameKey]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger	returnCode)
+	{
+		[self sheetDidEnd:panel returnCode:returnCode contextInfo:SPSaveBundleAction];
+	}];
 }
 
 /**
@@ -802,9 +777,7 @@
  */
 - (IBAction)showWindow:(id)sender
 {
-
 	[super showWindow:sender];
-
 }
 
 - (IBAction)performClose:(id)sender
@@ -880,7 +853,7 @@
 		NSInteger idx = 0;
 		for(id item in allBundles) {
 			if([allNames objectForKey:[item objectForKey:kBundleNameKey]]) {
-				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:kBundleNameKey], (NSUInteger)(random() % 35000)];
+				NSString *newName = [NSString stringWithFormat:@"%@_%ld", [item objectForKey:kBundleNameKey], (long)(random() % 35000)];
 				[[allBundles objectAtIndex:idx] setObject:newName forKey:kBundleNameKey];
 			} else {
 				[allNames setObject:@"" forKey:[item objectForKey:kBundleNameKey]];
@@ -1021,13 +994,15 @@
 					// Use a AppleScript script since NSWorkspace performFileOperation or NSFileManager moveItemAtPath 
 					// have problems probably due access rights.
 					NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", thePath];
-					[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					
+					[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+					
 					if(error != nil) {
 						NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Bundle Editor : Trash-Bundle(s)-Error : error dialog title"), thePath]
 														 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Trash-Bundle(s)-Error : OK button") 
 													   alternateButton:nil 
 														  otherButton:nil 
-											informativeTextWithFormat:[error localizedDescription]];
+											informativeTextWithFormat:@"%@", [error localizedDescription]];
 					
 						[alert setAlertStyle:NSCriticalAlertStyle];
 						[alert runModal];
@@ -1220,31 +1195,30 @@
 
 - (BOOL)outlineView:(id)outlineView isItemExpandable:(id)item
 {
-	if([item isKindOfClass:[NSDictionary class]] && [item objectForKey:kChildrenKey])
-		return YES;
-	return NO;
+	return [item isKindOfClass:[NSDictionary class]] && [item objectForKey:kChildrenKey];
 }
 
 - (NSInteger)outlineView:(id)outlineView numberOfChildrenOfItem:(id)item
 {
-	if(item == nil) item = commandBundleTree;
+	if (item == nil) item = commandBundleTree;
 	
-	if([item isKindOfClass:[NSDictionary class]])
-		if([item objectForKey:kChildrenKey])
-			return [[item objectForKey:kChildrenKey] count];
-		else
-			return [item count];
+	if ([item isKindOfClass:[NSDictionary class]]) {
+		return [item objectForKey:kChildrenKey] ? [[item objectForKey:kChildrenKey] count] : [item count];
+	}
 
-	if([item isKindOfClass:[NSArray class]])
+	if ([item isKindOfClass:[NSArray class]]) {
 		return [item count];
+	}
 	
 	return 0;
 }
 
 - (id)outlineView:(id)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
-	if(item && [[item representedObject] respondsToSelector:@selector(objectForKey:)])
+	if (item && [[item representedObject] respondsToSelector:@selector(objectForKey:)]) {
 		return [[item representedObject] objectForKey:kBundleNameKey];
+	}
+	
 	return @"";
 }
 
@@ -1545,7 +1519,7 @@
 	NSString *bundleFileName = [bundleDict objectForKey:kBundleNameKey];
 	NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
 
-	draggedFilePath = [[NSString stringWithFormat:@"/tmp/%@.%@", bundleFileName, SPUserBundleFileExtension] retain];
+	draggedFilePath = [[NSString stringWithFormat:@"%@/%@.%@", [NSFileManager temporaryDirectory], bundleFileName, SPUserBundleFileExtension] retain];
 
 	BOOL isDir;
 
@@ -2126,5 +2100,44 @@
 	[self _updateBundleMetaSummary];
 }
 
-@end
+#pragma mark -
 
+- (void)dealloc
+{
+	[inputGeneralScopePopUpMenu release];
+	[inputInputFieldScopePopUpMenu release];
+	[inputDataTableScopePopUpMenu release];
+	[outputGeneralScopePopUpMenu release];
+	[outputInputFieldScopePopUpMenu release];
+	[outputDataTableScopePopUpMenu release];
+	[inputFallbackInputFieldScopePopUpMenu release];
+	[triggerInputFieldPopUpMenu release];
+	[triggerDataTablePopUpMenu release];
+	[triggerGeneralPopUpMenu release];
+	[inputNonePopUpMenu release];
+	
+	[inputGeneralScopeArray release];
+	[inputInputFieldScopeArray release];
+	[inputDataTableScopeArray release];
+	[outputGeneralScopeArray release];
+	[outputInputFieldScopeArray release];
+	[outputDataTableScopeArray release];
+	[inputFallbackInputFieldScopeArray release];
+	[triggerInputFieldArray release];
+	[triggerDataTableArray release];
+	[triggerGeneralArray release];
+	[withBlobDataTableArray release];
+	
+	[shellVariableSuggestions release];
+	[deletedDefaultBundles release];
+	
+	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
+	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
+	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
+	if (bundlePath) [bundlePath release], bundlePath = nil;
+	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
+	
+	[super dealloc];
+}
+
+@end

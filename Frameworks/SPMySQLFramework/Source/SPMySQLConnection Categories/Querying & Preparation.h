@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Querying & Preparation.h
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 @interface SPMySQLConnection (Querying_and_Preparation)
@@ -43,6 +41,7 @@
 - (SPMySQLResult *)queryString:(NSString *)theQueryString;
 - (SPMySQLFastStreamingResult *)streamingQueryString:(NSString *)theQueryString;
 - (id)streamingQueryString:(NSString *)theQueryString useLowMemoryBlockingStreaming:(BOOL)fullStreaming;
+- (SPMySQLStreamingResultStore *)resultStoreFromQueryString:(NSString *)theQueryString;
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType;
 
 // Query convenience functions
@@ -57,6 +56,7 @@
 - (BOOL)queryErrored;
 - (NSString *)lastErrorMessage;
 - (NSUInteger)lastErrorID;
+- (NSString *)lastSqlstate;
 + (BOOL)isErrorIDConnectionError:(NSUInteger)theErrorID;
 
 // Query cancellation

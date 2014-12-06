@@ -1,29 +1,36 @@
 //
-//  $Id$
-//
 //  SPNavigatorController.m
 //  sequel-pro
 //
-//  Created by Hans-J. Bibiko on March 17, 2010.
+//  Created by Hans-Jörg Bibiko on March 17, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPNavigatorController.h"
-#ifndef SP_REFACTOR /* headers */
+#import "SPSplitView.h"
+#ifndef SP_CODA /* headers */
 #import "RegexKitLite.h"
 #import "SPNavigatorOutlineView.h"
 #import "ImageAndTextCell.h"
@@ -33,17 +40,18 @@
 #import "SPTooltip.h"
 #import "SPAppController.h"
 #import "SPDatabaseViewController.h"
-#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
+#import "SPThreadAdditions.h"
 
 #import <objc/message.h>
+#import <SPMySQL/SPMySQL.h>
 #endif
 
 static SPNavigatorController *sharedNavigatorController = nil;
 
 @implementation SPNavigatorController
 
-#ifndef SP_REFACTOR /* unused sort func */
+#ifndef SP_CODA /* unused sort func */
 static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* context)
 {
 	return (NSComparisonResult)objc_msgSend(s1, @selector(localizedCompare:), s2);
@@ -84,7 +92,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		cachedSortedKeys    = [[NSMutableDictionary alloc] init];
 		infoArray           = [[NSMutableArray alloc] init];
 		updatingConnections = [[NSMutableArray alloc] init];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		selectedKey2        = @"";
 		ignoreUpdate        = NO;
 		isFiltered          = NO;
@@ -108,7 +116,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(updatingConnections)  [updatingConnections release];
 	if(expandStatus2) [expandStatus2 release];
 	if(cachedSortedKeys) [cachedSortedKeys release];
-#ifndef SP_REFACTOR /* dealloc ivars */
+#ifndef SP_CODA /* dealloc ivars */
 	[connectionIcon release];
 	[databaseIcon release];
 	[tableIcon release];
@@ -134,7 +142,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (oneway void)release { }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Set the window's auto save name and initialise display
  */
@@ -142,18 +150,22 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 {
 	prefs = [NSUserDefaults standardUserDefaults];
 
+	// Set up the splitview
+	[schemaStatusSplitView setMinSize:32.f ofSubviewAtIndex:0];
+	[schemaStatusSplitView setMinSize:16.f ofSubviewAtIndex:1];
+
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
 	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
-	connectionIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"network-small" ofType:@"tif"]];
-	databaseIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"database-small" ofType:@"png"]];
-	tableIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"table-small-square" ofType:@"tiff"]];
-	viewIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"table-view-small-square" ofType:@"tiff"]];
-	procedureIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"proc-small" ofType:@"png"]];
-	functionIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"func-small" ofType:@"png"]];
-	fieldIcon = [[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"field-small-square" ofType:@"tiff"]];
+	connectionIcon = [[NSImage imageNamed:@"network-small"] retain];
+	databaseIcon = [[NSImage imageNamed:@"database-small"] retain];
+	tableIcon = [[NSImage imageNamed:@"table-small-square"] retain];
+	viewIcon = [[NSImage imageNamed:@"table-view-small-square"] retain];
+	procedureIcon = [[NSImage imageNamed:@"proc-small"] retain];
+	functionIcon = [[NSImage imageNamed:@"func-small"] retain];
+	fieldIcon = [[NSImage imageNamed:@"field-small-square"] retain];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
 												 name:@"SPDBStructureWasUpdated" object:nil];
@@ -302,7 +314,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		// If so, don't remove it.
 		if ([[NSApp delegate] frontDocument]) {
 			for(id doc in [[NSApp delegate] orderedDocuments]) {
-				if(![[doc valueForKeyPath:@"mySQLConnection"] isConnected]) continue;
 				if([[doc connectionID] isEqualToString:connectionID])
 					docCounter++;
 				if(docCounter > 1) break;
@@ -378,7 +389,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[syncButton setState:NSOffState];
 
 				// Select the database and table
-				[doc selectDatabase:[pathArray objectAtIndex:1] item:([pathArray count] > 2)?[pathArray objectAtIndex:2]:nil];
+				[doc selectDatabase:[pathArray objectAtIndex:1] item:[pathArray objectOrNilAtIndex:2]];
 
 				if(oldState == NSOnState)
 					[self performSelector:@selector(_setSyncButtonOn) withObject:nil afterDelay:0.1];
@@ -422,12 +433,10 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if (doc && [doc isKindOfClass:[SPDatabaseDocument class]]) {
 
-		id theConnection = [doc valueForKeyPath:@"mySQLConnection"];
-
+		SPMySQLConnection *theConnection = [doc getConnection];
 		if(!theConnection || ![theConnection isConnected]) return;
 
 		NSString *connectionID = [doc connectionID];
-
 		NSString *connectionName = [doc connectionID];
 
 		if(!connectionName || [connectionName isEqualToString:@"_"] || (connectionID && ![connectionName isEqualToString:connectionID]) ) {
@@ -561,7 +570,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 - (BOOL)isUpdatingConnection:(NSString*)connectionID
 {
@@ -582,9 +591,9 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	// Reset everything for current active doc connection
 	SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
-	if (!doc) return;
+	if(!doc) return;
 	NSString *connectionID = [doc connectionID];
-	if (!connectionID || [connectionID length] < 2) return;
+	if(!connectionID || [connectionID length] < 2) return;
 
 	[searchField setStringValue:@""];
 	[schemaDataFiltered removeAllObjects];
@@ -601,8 +610,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	isFiltered = NO;
 
 	if (![[doc getConnection] isConnected]) return;
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[doc databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 }
 
 - (IBAction)outlineViewAction:(id)sender
@@ -700,8 +709,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		[schemaDataFiltered setDictionary:structure];
 
-		[NSThread detachNewThreadSelector:@selector(reloadAfterFiltering) toTarget:self withObject:nil];
-
+		[NSThread detachNewThreadWithName:@"SPNavigatorController update after filtering" target:self selector:@selector(reloadAfterFiltering) object:nil];
 	}
 	@catch(id ae)
 	{
@@ -1240,28 +1248,28 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(type == 2) // PROCEDURE
 		switch(anIndex) {
 			case 0:
-			return @"DTD Identifier";
+			return NSLocalizedString(@"DTD Identifier",@"dtd identifier label (Navigator)");
 			case 1:
-			return @"SQL Data Access";
+			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
 			case 2:
-			return @"Is Deterministic";
+			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
 			case 3:
 			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return @"Definer";
+			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
 		}
 	if(type == 3) // FUNCTION
 		switch(anIndex) {
 			case 0:
 			return NSLocalizedString(@"Return Type", @"return type label (Navigator)");
 			case 1:
-			return @"SQL Data Access";
+			return NSLocalizedString(@"SQL Data Access",@"sql data access label (Navigator)");
 			case 2:
-			return @"Is Deterministic";
+			return NSLocalizedString(@"Is Deterministic",@"is deterministic label (Navigator)");
 			case 3:
 			return NSLocalizedString(@"Execution Privilege", @"execution privilege label (Navigator)");
 			case 4:
-			return @"Definer";
+			return NSLocalizedString(@"Definer",@"definer label (Navigator)");
 		}
 	return @"";
 }

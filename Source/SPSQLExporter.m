@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPSQLExporter.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on August 29, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPSQLExporter.h"
 #import "SPTablesList.h"
@@ -30,6 +35,7 @@
 #import "SPExportFile.h"
 #import "SPTableData.h"
 #import "RegexKitLite.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 @interface SPSQLExporter ()
@@ -62,7 +68,7 @@
  *
  * @return The initialised instance
  */
-- (id)initWithDelegate:(NSObject *)exportDelegate
+- (id)initWithDelegate:(NSObject<SPSQLExporterProtocol> *)exportDelegate
 {
 	if ((self = [super init])) {
 		SPExportDelegateConformsToProtocol(exportDelegate, @protocol(SPSQLExporterProtocol));
@@ -93,11 +99,11 @@
 	NSArray *row;
 	NSString *tableName;
 	NSDictionary *tableDetails;
-	NSMutableArray *tableColumnNumericStatus;
+	BOOL *useRawDataForColumnAtIndex, *useRawHexDataForColumnAtIndex;
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue;
+	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -209,7 +215,12 @@
 		sqlOutputIncludeStructure  = [NSArrayObjectAtIndex(table, 1) boolValue];
 		sqlOutputIncludeContent    = [NSArrayObjectAtIndex(table, 2) boolValue];
 		sqlOutputIncludeDropSyntax = [NSArrayObjectAtIndex(table, 3) boolValue];
-		
+
+		// Skip tables if not set to output any detail for them
+		if (!sqlOutputIncludeStructure && !sqlOutputIncludeContent && !sqlOutputIncludeDropSyntax) {
+			continue;
+		}
+
 		// Set the current table
 		[self setSqlExportCurrentTable:tableName];
 		
@@ -251,10 +262,10 @@
 		}
 		
 		// Add a 'DROP TABLE' command if required
-		if (sqlOutputIncludeDropSyntax)
+		if (sqlOutputIncludeDropSyntax) {
 			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable) ? @"TABLE" : @"VIEW"), [tableName backtickQuotedString]]
-								   dataUsingEncoding:[self exportOutputEncoding]]];
-		
+												dataUsingEncoding:[self exportOutputEncoding]]];
+		}
 		
 		// Add the create syntax for the table if specified in the export dialog
 		if (sqlOutputIncludeStructure && createTableSyntax) {
@@ -269,7 +280,7 @@
 			}
 			
 			[[self exportOutputFile] writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
-			[[self exportOutputFile] writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+			[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 		}
 					
 		// Add the table content if required
@@ -279,22 +290,47 @@
 			tableDetails = [NSDictionary dictionaryWithDictionary:[sqlTableDataInstance informationForTable:tableName]];
 							
 			NSUInteger colCount = [[tableDetails objectForKey:@"columns"] count];
+			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
+			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
-			tableColumnNumericStatus = [NSMutableArray arrayWithCapacity:colCount];
+			useRawDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
+			useRawHexDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
 							
+			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
 			for (j = 0; j < colCount; j++) 
 			{
-				// Check for cancellation flag
-				if ([self isCancelled]) {
-					[errors release];
-					[sqlString release];
-					[pool release];
-					return;
+				NSDictionary *theColumnDetail = NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j);
+				NSString *theTypeGrouping = [theColumnDetail objectForKey:@"typegrouping"];
+
+				// Start by setting the column as non-safe
+				useRawDataForColumnAtIndex[j] = NO;
+				useRawHexDataForColumnAtIndex[j] = NO;
+
+				// Determine whether the column should be retrieved as hex data from the server - for binary strings, to
+				// avoid encoding issues when processing
+				if ([self sqlOutputEncodeBLOBasHex]
+					&& [theTypeGrouping isEqualToString:@"string"]
+					&& ([[theColumnDetail objectForKey:@"binary"] boolValue] || [[theColumnDetail objectForKey:@"collation"] hasSuffix:@"_bin"]))
+				{
+					useRawHexDataForColumnAtIndex[j] = YES;
 				}
+
+				// Floats, integers and bits can be output directly assuming they're non-binary
+				if (![[theColumnDetail objectForKey:@"binary"] boolValue]
+					&& ([theTypeGrouping isEqualToString:@"bit"] || [theTypeGrouping isEqualToString:@"integer"] || [theTypeGrouping isEqualToString:@"float"]))
+				{
+					useRawDataForColumnAtIndex[j] = YES;
+				}
+
+				// Set up the column query string parts
+				[rawColumnNames addObject:[theColumnDetail objectForKey:@"name"]];
 				
-				NSString *tableColumnTypeGrouping = [NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], j) objectForKey:@"typegrouping"];
-				
-				[tableColumnNumericStatus addObject:[NSNumber numberWithBool:([tableColumnTypeGrouping isEqualToString:@"bit"] || [tableColumnTypeGrouping isEqualToString:@"integer"] || [tableColumnTypeGrouping isEqualToString:@"float"])]];
+				if (useRawHexDataForColumnAtIndex[j]) {
+					[queryColumnDetails addObject:[NSString stringWithFormat:@"HEX(%@)", [[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]]];
+				} 
+				else {
+					[queryColumnDetails addObject:[[theColumnDetail objectForKey:@"name"] mySQLBacktickQuotedString]];
+				}
 			}
 																			
 			// Retrieve the number of rows in the table for progress bar drawing
@@ -303,7 +339,8 @@
 			if ([connection queryErrored] || ![rowArray count]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
-				
+				free(useRawDataForColumnAtIndex);
+				free(useRawHexDataForColumnAtIndex);
 				continue;
 			}
 			
@@ -312,10 +349,8 @@
 			if (rowCount) {
 
 				// Set up a result set in streaming mode
-				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
-				
-				NSArray *fieldNames = [streamingResult fieldNames];
-				
+				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
+
 				// Inform the delegate that we are about to start writing data for the current table
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 
@@ -328,7 +363,7 @@
 				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
 				
 				// Construct the start of the insertion command
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES\n\t(", [tableName backtickQuotedString], [fieldNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				j = 0, k = 0;
@@ -349,14 +384,14 @@
 						[errors release];
 						[sqlString release];
 						[pool release];
+						free(useRawDataForColumnAtIndex);
+						free(useRawHexDataForColumnAtIndex);
 
 						return;
 					}
 
 					j++;
 					k++;
-
-					[sqlString setString:@""];
 
 					// Update the progress
 					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
@@ -369,21 +404,32 @@
 						[delegate performSelectorOnMainThread:@selector(sqlExportProcessProgressUpdated:) withObject:self waitUntilDone:NO];
 					}
 
+
+					// Set up the new row as appropriate.  If a new INSERT statement should be created,
+					// set one up; otherwise, set up a new row
+					if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
+						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
+					{
+						[sqlString setString:@";\n\nINSERT INTO "];
+						[sqlString appendString:[tableName backtickQuotedString]];
+						[sqlString appendString:@" ("];
+						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
+						[sqlString appendString:@")\nVALUES\n\t("];
+
+						queryLength = 0, k = 0;
+
+						// Use the opportunity to drain and reset the autorelease pool at the end of this row
+						cleanAutoReleasePool = YES;
+					}
+					else if (j == 1) {
+						[sqlString setString:@"\n\t("];
+					}
+					else {
+						[sqlString setString:@",\n\t("];
+					}
+
 					for (t = 0; t < colCount; t++)
 					{
-						// Check for cancellation flag
-						if ([self isCancelled]) {
-							[connection cancelCurrentQuery];
-							[streamingResult cancelResultLoad];
-							[streamingResult release];
-							[sqlExportPool release];
-							[errors release];
-							[sqlString release];
-							[pool release];
-
-							return;
-						}
-
 						id object = NSArrayObjectAtIndex(row, t);
 
 						// Add NULL values directly to the output row; use a pointer comparison to the singleton
@@ -391,93 +437,76 @@
 						if (object == [NSNull null]) {
 							[sqlString appendString:@"NULL"];
 						}
-						// If the field is off type BIT, the values need a binary prefix of b'x'.
+
+						// Add trusted raw values directly
+						else if (useRawDataForColumnAtIndex[t]) {
+							[sqlString appendString:object];
+						}
+
+						// If the field is of type BIT, the values need a binary prefix of b'x'.
 						else if ([[NSArrayObjectAtIndex([tableDetails objectForKey:@"columns"], t) objectForKey:@"type"] isEqualToString:@"BIT"]) {
 							[sqlString appendFormat:@"b'%@'", [object description]];
 						}
-						// Add data types directly as hex data
+
+						// Add pre-encoded hex types (binary strings) as enclosed but otherwise trusted data
+						else if (useRawHexDataForColumnAtIndex[t]) {
+							[sqlString appendFormat:@"X'%@'", object];
+						}
+
+						// GEOMETRY data types directly as hex data
+						else if ([object isKindOfClass:[SPMySQLGeometryData class]]) {
+							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
+						}
+
+						// Add zero-length data or strings as an empty string
+						else if ([object length] == 0) {
+							[sqlString appendString:@"''"];
+						}
+						
+						// Add other data types as hex data
 						else if ([object isKindOfClass:[NSData class]]) {
 
 							if ([self sqlOutputEncodeBLOBasHex]) {
 								[sqlString appendString:[connection escapeAndQuoteData:object]];
 							}
-							else {
-								[sqlString appendString:@"'"];
-								
+							else {								
 								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
 									data = [[NSString alloc] initWithData:object encoding:NSASCIIStringEncoding];
 								}
 								
-								[sqlString appendString:data];
+								[sqlString appendFormat:@"'%@'", data];
 								
 								[data release];
-
-								[sqlString appendString:@"'"];
 							}
 						} 
 
-						// GEOMETRY data types directly as hex data
-						else if ([object isKindOfClass:[SPMySQLGeometryData class]]) {
-							[sqlString appendString:[connection escapeAndQuoteData:[object data]]];
-						}
+						// Otherwise add a quoted string with special characters escaped
 						else {
-							
-							// Add empty strings as a pair of quotes
-							if ([object length] == 0) {
-								[sqlString appendString:@"''"];
-							} 
-							else {	
-								if ([NSArrayObjectAtIndex(tableColumnNumericStatus, t) boolValue]) {
-									[sqlString appendString:object];
-								} 
-								// Otherwise add a quoted string with special characters escaped
-								else {
-									[sqlString appendString:[connection escapeAndQuoteString:object]];
-								}
-							}
+							[sqlString appendString:[connection escapeAndQuoteString:object]];
 						}
 						
 						// Add the field separator if this isn't the last cell in the row
 						if (t != ([row count] - 1)) [sqlString appendString:@","];
 					}
-					
+
+					[sqlString appendString:@")"];
 					queryLength += [sqlString length];
-					
-					// Close this VALUES group and set up the next one if appropriate
-					if (j != rowCount) {
-							
-						// If required start a new INSERT statment
-						if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
-							(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
-						{
-							[sqlString appendString:@");\n\nINSERT INTO "];
-							[sqlString appendString:[tableName backtickQuotedString]];
-							[sqlString appendString:@" ("];
-							[sqlString appendString:[fieldNames componentsJoinedAndBacktickQuoted]];
-							[sqlString appendString:@")\nVALUES\n\t("];
-														
-							queryLength = 0, k = 0;
-							
-							// Use the opportunity to drain and reset the autorelease pool
-							[sqlExportPool release];
-							sqlExportPool = [[NSAutoreleasePool alloc] init];
-						} 
-						else {
-							[sqlString appendString:@"),\n\t("];
-						}
-					} 
-					else {
-						[sqlString appendString:@")"];
-					}
 										
 					// Write this row to the file
 					[[self exportOutputFile] writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
+
+					// Clean autorelease pool if so decided earlier
+					if (cleanAutoReleasePool) {
+						[sqlExportPool release];
+						sqlExportPool = [[NSAutoreleasePool alloc] init];
+						cleanAutoReleasePool = NO;
+					}
 				}
 				
 				// Complete the command
-				[[self exportOutputFile] writeData:[[NSString stringWithString:@";\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+				[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 				
 				// Unlock the table and re-enable keys if supported
 				[metaString setString:@""];
@@ -491,7 +520,10 @@
 				// Release the result set
 				[streamingResult release];
 			}
-			
+
+			free(useRawDataForColumnAtIndex);
+			free(useRawHexDataForColumnAtIndex);
+
 			if ([connection queryErrored]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
@@ -551,14 +583,13 @@
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
-					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]
-										   dataUsingEncoding:NSUTF8StringEncoding]];
+					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 				}
 			}
 		}
 		
 		// Add an additional separator between tables
-		[[self exportOutputFile] writeData:[[NSString stringWithString:@"\n\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+		[[self exportOutputFile] writeData:[@"\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
@@ -573,9 +604,10 @@
 		}
 		
 		[metaString setString:@"\n\n"];
+
 		// Add the name of table
 		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", tableName];
-		[metaString appendFormat:@"DROP TABLE %@;\n", [tableName backtickQuotedString]];
+		[metaString appendFormat:@"DROP TABLE %@;\n\n", [tableName backtickQuotedString]];
 		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
 		
 		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
@@ -735,7 +767,6 @@
 				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
 			}
 		}
-		
 	}
 	
 	// Restore unique checks, foreign key checks, and other settings saved at the start
@@ -837,7 +868,11 @@
 		if ([[column objectForKey:@"unsigned"] integerValue] == 1) [fieldString appendString:@" UNSIGNED"];
 		if ([[column objectForKey:@"zerofill"] integerValue] == 1) [fieldString appendString:@" ZEROFILL"];
 		if ([[column objectForKey:@"binary"] integerValue] == 1) [fieldString appendString:@" BINARY"];
-		if ([[column objectForKey:@"null"] integerValue] == 0) [fieldString appendString:@" NOT NULL"];
+		if ([[column objectForKey:@"null"] integerValue] == 0) {
+			[fieldString appendString:@" NOT NULL"];
+		} else {
+			[fieldString appendString:@" NULL"];
+		}
 		
 		// Provide the field default if appropriate
 		if ([column objectForKey:@"default"]) {
@@ -849,7 +884,7 @@
 					[fieldString appendString:@" DEFAULT NULL"];
 				}
 			} 
-			else if ([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+			else if (([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] || [[column objectForKey:@"type"] isEqualToString:@"DATETIME"]) && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
 				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
 			} 
 			else {
@@ -871,9 +906,8 @@
 	return [placeholderSyntax autorelease];
 }
 
-/**
- * Dealloc
- */
+#pragma mark -
+
 - (void)dealloc
 {
 	[sqlExportTables release], sqlExportTables = nil;

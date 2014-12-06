@@ -623,13 +623,9 @@
 			closeButtonOrIcon = ([cell isEdited] ? _closeDirtyButton : _closeButton);
 			drawingRect = closeButtonRect;
 		}
-		
-		if ([controlView isFlipped]) {
-			drawingRect.origin.y += drawingRect.size.height;
-		}
 
-		[closeButtonOrIcon compositeToPoint:drawingRect.origin operation:NSCompositeSourceOver fraction:1.0];
-		
+		[closeButtonOrIcon drawInRect:drawingRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
 		// scoot label over
 		switch (orientation)
 		{
@@ -662,12 +658,8 @@
 		NSRect iconRect = [self iconRectForTabCell:cell];
 		NSImage *icon = [[[cell representedObject] identifier] icon];
 
-		if ([controlView isFlipped]) {
-			iconRect.origin.y += iconRect.size.height;
-		}
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
 
-		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0];
-		
 		// scoot label over by the size of the standard close button
 		switch (orientation)
 		{
@@ -765,7 +757,7 @@
 			[bezier lineToPoint:NSMakePoint(NSMaxX(aRect), NSMaxY(aRect))];
 			[bezier lineToPoint:NSMakePoint(NSMaxX(aRect), NSMinY(aRect))];
 			
-			if ([[cell controlView] frame].size.height < 2) {
+			if ([[cell customControlView] frame].size.height < 2) {
 				// special case of hidden control; need line across top of cell
 				[bezier moveToPoint:NSMakePoint(aRect.origin.x, aRect.origin.y + 0.5)];
 				[bezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width, aRect.origin.y + 0.5)];
@@ -862,7 +854,7 @@
 	[NSGraphicsContext restoreGraphicsState];
 	[shadow release];
 	
-	[self drawInteriorWithTabCell:cell inView:[cell controlView]];
+	[self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 - (void)drawBackgroundInRect:(NSRect)rect

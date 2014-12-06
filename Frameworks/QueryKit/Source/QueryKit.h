@@ -30,6 +30,9 @@
 
 #import <QueryKit/QKQuery.h>
 #import <QueryKit/QKQueryTypes.h>
+#import <QueryKit/QKQueryOrderBy.h>
+#import <QueryKit/QKQueryConstants.h>
 #import <QueryKit/QKQueryOperators.h>
+#import <QueryKit/QKQueryDatabases.h>
 #import <QueryKit/QKQueryParameter.h>
 #import <QueryKit/QKQueryUtilities.h>

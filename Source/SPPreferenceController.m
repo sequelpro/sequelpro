@@ -1,30 +1,34 @@
 //
-//  $Id$
-//
 //  SPPreferenceController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Dec 10, 2008
-//  Modified by Ben Perry (benperry.com.au) on Mar 28, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on December 10, 2008.
+//  Copyright (c) 2008 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPPreferenceController.h"
-#import "SPPreferencesUpgrade.h"
 #import "SPTablesPreferencePane.h"
 #import "SPEditorPreferencePane.h"
 #import "SPGeneralPreferencePane.h"
@@ -42,23 +46,15 @@
 
 @synthesize generalPreferencePane;
 @synthesize tablesPreferencePane;
-@synthesize favoritesPreferencePane;
 @synthesize notificationsPreferencePane;
 @synthesize editorPreferencePane;
 @synthesize autoUpdatePreferencePane;
 @synthesize networkPreferencePane;
 @synthesize fontChangeTarget;
 
-/**
- * init.
- */
 - (id)init
 {
-	if ((self = [super initWithWindowNibName:@"Preferences"])) {
-						
-		// Upgrade prefs
-		SPApplyRevisionChanges();
-		
+	if ((self = [super initWithWindowNibName:@"Preferences"])) {		
 		fontChangeTarget = 0;
 	}
 
@@ -72,13 +68,12 @@
 {		
 	[self _setupToolbar];
 
-	[generalPreferencePane updateDefaultFavoritePopup];
+	[(SPGeneralPreferencePane *)generalPreferencePane updateDefaultFavoritePopup];
 	
 	preferencePanes = [[NSArray alloc] initWithObjects:
 					   generalPreferencePane,
 					   tablesPreferencePane,
 					   notificationsPreferencePane,
-					   favoritesPreferencePane,
 					   editorPreferencePane,
 					   autoUpdatePreferencePane,
 					   networkPreferencePane,
@@ -123,30 +118,9 @@
 	
 	[toolbar setSelectedItemIdentifier:[tablesPreferencePane preferencePaneIdentifier]];
 	
-	[tablesPreferencePane updateDisplayedTableFontName];
+	[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
 	
 	[self _resizeWindowForContentView:[tablesPreferencePane preferencePaneView]];
-}
-
-/** 
- * Displays the favorite preferences pane.
- */
-- (IBAction)displayFavoritePreferences:(id)sender
-{
-	// To make the Favorites pane resizable give the window a minimum size and display the resize indicator. 
-	// Notice that we still make all other panes non-resizable by removing the dsiplay of the indicator and
-	// resetting the minimum size to zero.
-	[[self window] setMinSize:NSMakeSize(500, 381)];
-	[[self window] setShowsResizeIndicator:[favoritesPreferencePane preferencePaneAllowsResizing]];
-	
-	[toolbar setSelectedItemIdentifier:[favoritesPreferencePane preferencePaneIdentifier]];
-	
-	[self _resizeWindowForContentView:[favoritesPreferencePane preferencePaneView]];
-	
-	// Set the default favorite popup back to preference
-	if ([sender isKindOfClass:[NSMenuItem class]]) {
-		[generalPreferencePane updateDefaultFavoritePopupSelection];
-	}
 }
 
 /**
@@ -154,15 +128,15 @@
  */
 - (IBAction)displayEditorPreferences:(id)sender
 {
-	[editorPreferencePane updateColorSchemeSelectionMenu];
-	[editorPreferencePane updateDisplayColorThemeName];
+	[(SPEditorPreferencePane *)editorPreferencePane updateColorSchemeSelectionMenu];
+	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayColorThemeName];
 	
 	[[self window] setMinSize:NSMakeSize(0, 0)];
 	[[self window] setShowsResizeIndicator:[editorPreferencePane preferencePaneAllowsResizing]];
 	
 	[toolbar setSelectedItemIdentifier:[editorPreferencePane preferencePaneIdentifier]];
 	
-	[editorPreferencePane updateDisplayedEditorFontName];
+	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
 	
 	[self _resizeWindowForContentView:[editorPreferencePane preferencePaneView]];
 }
@@ -182,19 +156,19 @@
 	
 	switch (fontChangeTarget)
 	{
-		case 1:
+		case SPPrefFontChangeTargetTable:
 			font = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPGlobalResultTableFont]]];
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPGlobalResultTableFont];
 			
-			[tablesPreferencePane updateDisplayedTableFontName];
+			[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
 			break;
-		case 2:
+		case SPPrefFontChangeTargetEditor:
 			font = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPCustomQueryEditorFont];
 			
-			[editorPreferencePane updateDisplayedEditorFontName];
+			[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
 			break;
 	}
 }
@@ -225,14 +199,6 @@
 	[tablesItem setImage:[tablesPreferencePane preferencePaneIcon]];
 	[tablesItem setTarget:self];
 	[tablesItem setAction:@selector(displayTablePreferences:)];
-
-	// Favorite preferences
-	favoritesItem = [[NSToolbarItem alloc] initWithItemIdentifier:[favoritesPreferencePane preferencePaneIdentifier]];
-
-	[favoritesItem setLabel:[favoritesPreferencePane preferencePaneName]];
-	[favoritesItem setImage:[favoritesPreferencePane preferencePaneIcon]];
-	[favoritesItem setTarget:self];
-	[favoritesItem setAction:@selector(displayFavoritePreferences:)];
 
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:[notificationsPreferencePane preferencePaneIdentifier]];
@@ -295,9 +261,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[preferencePanes release], preferencePanes = nil;

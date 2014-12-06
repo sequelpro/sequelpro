@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPConstants.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 16, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on October 16, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 /**
  * This header should be used to define constants that are used globally (i.e. among multiple classes/files).
@@ -214,23 +219,25 @@ typedef enum
 	SPExportFileHandleExists  = 2
 } SPExportFileHandleStatus;
 
+typedef enum
+{
+	SPPrefFontChangeTargetTable  = 1,
+	SPPrefFontChangeTargetEditor = 2
+} SPPreferenceFontChangeTarget;
+
 // Predefined localisable URLs
 #define SPLOCALIZEDURL_HOMEPAGE            NSLocalizedString(@"http://www.sequelpro.com/", @"Localized home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_FAQ                 NSLocalizedString(@"http://www.sequelpro.com/docs/Frequently_Asked_Questions", @"Localized help page for Frequently Asked Questions - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_DOCUMENTATION       NSLocalizedString(@"http://www.sequelpro.com/docs/", @"Localized documentation home page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONTACT             NSLocalizedString(@"http://www.sequelpro.com/docs/Contact_the_developers", @"Localized contact page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_KEYBOARDSHORTCUTS   NSLocalizedString(@"http://www.sequelpro.com/docs/Keyboard_Shortcuts", @"Localized keyboard shortcuts page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/Getting_Connected", @"Localized connection help page - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_CONNECTIONHELP      NSLocalizedString(@"http://www.sequelpro.com/docs/category/getting-connected/", @"Localized connection help page - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_TRANSLATIONFEEDBACK NSLocalizedString(@"http://dev.sequelpro.com/translate/feedback", @"Localized translation feedback page - do not localize if no translated webpage is available")
-#define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"http://www.sequelpro.com/docs/Bundle_Editor", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
+#define SPLOCALIZEDURL_BUNDLEEDITORHELP    NSLocalizedString(@"http://www.sequelpro.com/bundles/reference/", @"Localized help page for bundle editor - do not localize if no translated webpage is available")
 #define SPLOCALIZEDURL_CONTENTFILTERHELP   NSLocalizedString(@"http://www.sequelpro.com/docs/Content_Filters", @"Localized help page for content filter - do not localize if no translated webpage is available")
 
 // Narrow down completion max rows
 extern const NSUInteger SPNarrowDownCompletionMaxRows;
-
-// Kill mode constants
-extern NSString *SPKillProcessQueryMode;
-extern NSString *SPKillProcessConnectionMode;
 
 // Default monospaced font name
 extern NSString *SPDefaultMonospacedFontName;
@@ -265,12 +272,16 @@ extern NSString *SPThemesSupportFolder;
 extern NSString *SPBundleSupportFolder;
 extern NSString *SPDataSupportFolder;
 
+// Table filter
+extern NSString *SPTableContentFilterKey;
+
 // Preference key constants
-//
+extern NSString *SPFirstRun;
+
 // General Prefpane
 extern NSString *SPDefaultFavorite;
 extern NSString *SPSelectLastFavoriteUsed;
-extern NSString *SPLastFavoriteIndex;
+extern NSString *SPLastFavoriteID;
 extern NSString *SPAutoConnectToDefault;
 extern NSString *SPDefaultViewMode;
 extern NSString *SPLastViewMode;
@@ -331,6 +342,7 @@ extern NSString *SPCustomQueryUpdateAutoHelp;
 extern NSString *SPCustomQueryAutoHelpDelay;
 extern NSString *SPCustomQueryHighlightCurrentQuery;
 extern NSString *SPCustomQueryEditorTabStopWidth;
+extern NSString *SPCustomQueryEditorCompleteWithBackticks;
 extern NSString *SPCustomQueryAutoComplete;
 extern NSString *SPCustomQueryAutoCompleteDelay;
 extern NSString *SPCustomQueryFunctionCompletionInsertsArguments;
@@ -344,6 +356,7 @@ extern NSString *SPLastUsedVersion;
 // GUI Prefs
 extern NSString *SPConsoleShowTimestamps;
 extern NSString *SPConsoleShowConnections;
+extern NSString *SPConsoleShowDatabases;
 extern NSString *SPConsoleShowSelectsAndShows;
 extern NSString *SPConsoleShowHelps;
 extern NSString *SPEditInSheetEnabled;
@@ -358,6 +371,9 @@ extern NSString *SPFavoritesSortedBy;
 extern NSString *SPFavoritesSortedInReverse;
 extern NSString *SPAlwaysShowWindowTabBar;
 extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
+extern NSString *SPFavoriteColorList;
+extern NSString *SPDisplayBinaryDataAsHex;
+extern NSString *SPMonospacedFontSize;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;
@@ -382,7 +398,9 @@ extern NSString *SPExportFilenameFormat;
 extern NSString *SPContentFilters;
 extern NSString *SPDocumentTaskEndNotification;
 extern NSString *SPDocumentTaskStartNotification;
+extern NSString *SPDocumentWillCloseNotification;
 extern NSString *SPActivitiesUpdateNotification;
+extern NSString *SPWindowToolbarDidToggleNotification;
 extern NSString *SPFieldEditorSheetFont;
 extern NSString *SPLastSQLFileEncoding;
 extern NSString *SPPrintBackground;
@@ -391,8 +409,10 @@ extern NSString *SPQueryFavorites;
 extern NSString *SPQueryFavoriteReplacesContent;
 extern NSString *SPQueryHistory;
 extern NSString *SPQueryHistoryReplacesContent;
+extern NSString *SPQueryPrimaryControlRunsAll;
 extern NSString *SPQuickLookTypes;
 extern NSString *SPTableChangedNotification;
+extern NSString *SPTableInfoChangedNotification;
 extern NSString *SPBlobTextEditorSpellCheckingEnabled;
 extern NSString *SPUniqueSchemaDelimiter;
 extern NSString *SPLastImportIntoNewTableEncoding;
@@ -402,6 +422,7 @@ extern NSString *SPBundleDeletedDefaultBundlesKey;
 extern NSString *SPHiddenKeyFileVisibilityKey;
 extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
+extern NSString *SPSSHEnableMuxingPreference;
 
 // URLs
 extern NSString *SPDonationsURL;
@@ -438,12 +459,14 @@ extern NSString *SPPreferenceToolbarShortcuts;
 extern NSString *SPFavoritesRootKey;
 extern NSString *SPFavoriteChildrenKey;
 extern NSString *SPFavoritesGroupNameKey;
+extern NSString *SPFavoritesGroupIsExpandedKey;
 extern NSString *SPFavoriteIDKey;
 extern NSString *SPFavoriteNameKey;
 extern NSString *SPFavoriteDatabaseKey;
 extern NSString *SPFavoriteHostKey;
 extern NSString *SPFavoritePortKey;
 extern NSString *SPFavoriteUserKey;
+extern NSString *SPFavoriteColorIndexKey;
 extern NSString *SPFavoriteTypeKey;
 extern NSString *SPFavoriteSocketKey;
 extern NSString *SPFavoriteSSHHostKey;
@@ -458,6 +481,10 @@ extern NSString *SPFavoriteSSLCertificateFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
+extern NSString *SPConnectionFavoritesChangedNotification;
+
+// Favorites import/export
+extern NSString *SPFavoritesDataRootKey;
 
 // Bundle Files and Bundle Editor
 extern NSString *SPBundleScopeQueryEditor;

@@ -1,30 +1,37 @@
 //
-//  $Id$
-//
 //  SPBundleCommandTextView.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on Nov, 19 2010
+//  Created by Hans-Jörg Bibiko on November 19, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPBundleCommandTextView.h"
 #import "SPTextViewAdditions.h"
 #import "SPBundleEditorController.h"
+#import "NoodleLineNumberView.h"
 #import "RegexKitLite.h"
 
 @implementation SPBundleCommandTextView
@@ -55,6 +62,10 @@
 	[commandScrollView setHasHorizontalRuler:NO];
 	[commandScrollView setHasVerticalRuler:YES];
 	[commandScrollView setRulersVisible:YES];
+	
+	// disable typo stuff in 10.8+ SDK
+	[self setAutomaticDashSubstitutionEnabled:NO];
+	[self setAutomaticQuoteSubstitutionEnabled:NO];
 
 	// Re-define tab stops for a better editing
 	[self setTabStops];
@@ -137,11 +148,11 @@
 	NSString *newString;
 	// check for line ending
 	if([textViewString characterAtIndex:NSMaxRange(firstLineRange)-1] == '\r')
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [@"\t" stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
 				stringByReplacingOccurrencesOfString:@"\r" withString:@"\r\t"]];
 	else
-		newString = [[NSString stringWithString:@"\t"] stringByAppendingString:
+		newString = [@"\t" stringByAppendingString:
 			[[textViewString substringWithRange:blockRange] 
 				stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"]];
 
@@ -292,46 +303,54 @@
 	[self insertText:n];
 
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
-
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
 }
 
 - (IBAction)undo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] undo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat undo.
-	if(!textWasChanged) [[self undoManager] undo];
-	if(!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
 }
 
 - (IBAction)redo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] redo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat redo.
-	if(!textWasChanged) [[self undoManager] redo];
-	if(!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
 }
 
 - (IBAction)paste:(id)sender
 {
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]){
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
+	
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+	}
+
 	[super cut:sender];
 }
 
@@ -358,7 +377,7 @@
 	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;
@@ -513,20 +532,18 @@
 
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
-	if([charactersIgnMod isEqualToString:@" "]
-		|| [theEvent keyCode] == 36
-		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-		) {
-		[[self delegate] setDoGroupDueToChars];
+	if ([charactersIgnMod isEqualToString:@" "] ||
+	    [theEvent keyCode] == 36 || 
+	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	{
+		[(SPBundleEditorController *)[self delegate] setDoGroupDueToChars];
 	}
 
 	// Check to see whether several characters are selected, and if so, wrap them with
 	// the auto-paired characters.  This returns false if the selection has zero length.
-	if ([self wrapSelectionWithPrefix:insertedCharacter])
-		return;
+	if ([self wrapSelectionWithPrefix:insertedCharacter]) return;
 
 	[super keyDown: theEvent];
-
 }
 
 /**
@@ -571,8 +588,9 @@
 		}
 
 		// Try to create an undo group
-		if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-			[[self delegate] setWasCutPaste];
+		if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+			[(SPBundleEditorController *)[self delegate] setWasCutPaste];
+		}
 
 		// Return to avoid the original implementation, preventing double linebreaks
 		return;
@@ -612,14 +630,14 @@
 		[self setSelectedRange:NSMakeRange(characterIndex,0)];
 
 		// Check if user pressed  ⌘ while dragging for inserting only the file path
-		if([sender draggingSourceOperationMask] == 4)
-		{
+		if ([sender draggingSourceOperationMask] == 4) {
 			[self insertText:filepath];
 			return YES;
 		}
 
 		// Check size and NSFileType
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+		
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];

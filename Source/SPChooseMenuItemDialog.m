@@ -1,58 +1,57 @@
 //
-//  $Id: SPChooseMenuItemDialog.m 744 2009-05-22 20:00:00Z bibiko $
-//
 //  SPChooseMenuItemDialog.m
 //  sequel-pro
 //
-//  Created by Hans-J. Bibiko on Dec 03, 2010.
+//  Created by Hans-Jörg Bibiko on December 3, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPChooseMenuItemDialog.h"
 
 @interface SPChooseMenuItemDialogTextView : NSTextView
-{
-}
 
 - (IBAction)menuItemHandler:(id)sender;
 
 @end
 
 @implementation SPChooseMenuItemDialogTextView
-{
-}
+
 - (id)init;
 {
-	if((self = [super initWithFrame:NSMakeRect(1,1,2,2)]))
-	{
-		;
-	}
-	return self;
+	return [super initWithFrame:NSMakeRect(1, 1, 2, 2)];
 }
 
 - (IBAction)menuItemHandler:(id)sender
 {
-	[[self delegate] setSelectedItemIndex:[sender tag]];
-	[[self delegate] setWaitForChoice:NO];
+	[(SPChooseMenuItemDialog *)[self delegate] setSelectedItemIndex:[sender tag]];
+	[(SPChooseMenuItemDialog *)[self delegate] setWaitForChoice:NO];
 }
 
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {
-	return [[self delegate] contextMenu];
+	return [(SPChooseMenuItemDialog *)[self delegate] contextMenu];
 }
 
 @end
@@ -65,19 +64,16 @@
 
 - (id)init;
 {
-	if((self = [super initWithContentRect:NSMakeRect(1,1,2,2) 
-					styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
+	if ((self = [super initWithContentRect:NSMakeRect(1, 1, 2, 2) 
+								styleMask:NSBorderlessWindowMask 
+								  backing:NSBackingStoreBuffered 
+									defer:NO]))
 	{
 		waitForChoice = YES;
 		selectedItemIndex = -1;
 	}
+	
 	return self;
-}
-
-- (void)dealloc
-{
-	[dummyTextView release];
-	[super dealloc];
 }
 
 - (void)initDialog
@@ -89,39 +85,51 @@
 	[self setAlphaValue:0.0f];
 
 	dummyTextView = [[SPChooseMenuItemDialogTextView alloc] init];
+	
 	[dummyTextView setDelegate:self];
 
 	[self setContentView:dummyTextView];
-
 }
 
 + (NSInteger)withItems:(NSArray*)theList atPosition:(NSPoint)location
 {
-
-	if(!theList || ![theList count]) return -1;
+	if (!theList || ![theList count]) return -1;
 
 	SPChooseMenuItemDialog *dialog = [SPChooseMenuItemDialog new];
 
 	[dialog initDialog];
 	
-	NSMenu *theMenu = [[[NSMenu alloc] init] autorelease];
 	NSInteger cnt = 0;
-	for(id item in theList) {
-		NSMenuItem *aMenuItem;
-		if([item isKindOfClass:[NSString class]])
+	NSMenu *theMenu = [[[NSMenu alloc] init] autorelease];
+	
+	for (id item in theList) 
+	{
+		NSMenuItem *aMenuItem = nil;
+		
+		if ([item isKindOfClass:[NSString class]]) {
 			aMenuItem = [[NSMenuItem alloc] initWithTitle:item action:@selector(menuItemHandler:) keyEquivalent:@""];
+		}
 		else if([item isKindOfClass:[NSDictionary class]]) {
 			NSString *title = ([item objectForKey:@"title"]) ?: @"";
+			
 			SEL action = ([item objectForKey:@"action"]) ? NSSelectorFromString([item objectForKey:@"action"]) : @selector(menuItemHandler:);
+			
 			NSString *keyEquivalent = ([item objectForKey:@"key"]) ?: @"";
+			
 			aMenuItem = [[NSMenuItem alloc] initWithTitle:title action:action keyEquivalent:keyEquivalent];
-			if([item objectForKey:@"tooltip"])
+			
+			if ([item objectForKey:@"tooltip"]) {
 				[aMenuItem setToolTip:[item objectForKey:@"tooltip"]];
+			}
 		}
-		[aMenuItem setTag:cnt++];
-		[theMenu addItem:aMenuItem];
-		[aMenuItem release];
+
+        if (aMenuItem) {
+            [aMenuItem setTag:cnt++];
+            [theMenu addItem:aMenuItem];
+            [aMenuItem release];
+        }
 	}
+	
 	[dialog setContextMenu:theMenu];
 
 	[dialog setFrameTopLeftPoint:location];
@@ -142,8 +150,8 @@
 
 	[[NSApplication sharedApplication] sendEvent:theEvent];
 
-	while([dialog waitForChoice] && [[[NSApp keyWindow] firstResponder] isKindOfClass:[SPChooseMenuItemDialogTextView class]]) {
-
+	while ([dialog waitForChoice] && [[[NSApp keyWindow] firstResponder] isKindOfClass:[SPChooseMenuItemDialogTextView class]]) 
+	{
 		NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                           untilDate:[NSDate distantFuture]
                                              inMode:NSDefaultRunLoopMode
@@ -160,6 +168,15 @@
 	[dialog performSelector:@selector(close) withObject:nil afterDelay:0.01];
 
 	return [dialog selectedItemIndex];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[dummyTextView release];
+	
+	[super dealloc];
 }
 
 @end

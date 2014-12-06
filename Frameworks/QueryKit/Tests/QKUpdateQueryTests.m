@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKUpdateQueryTests.m
 //  QueryKit
 //
@@ -29,32 +27,53 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKUpdateQueryTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne = @"test_field1";
-static NSString *QKTestFieldTwo = @"test_field2";
-
-static NSString *QKTestUpdateValueOne = @"update_one";
-static NSString *QKTestUpdateValueTwo = @"update_two";
-
-static NSUInteger QKTestParameterOne = 10;
+#import "QKTestConstants.h"
 
 @implementation QKUpdateQueryTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Initialisation
+
++ (id)defaultTestSuite
+{
+    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:NSStringFromClass(self)];
+	
+	[self addTestForDatabase:QKDatabaseUnknown withIdentifierQuote:EMPTY_STRING toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabaseMySQL withIdentifierQuote:QKMySQLIdentifierQuote toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabasePostgreSQL withIdentifierQuote:QKPostgreSQLIdentifierQuote toTestSuite:testSuite];
+	
+    return [testSuite autorelease];
+}
+
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite
+{		
+    for (NSInvocation *invocation in [self testInvocations]) 
+	{
+		SenTestCase *test = [[NSClassFromString(@"QKUpdateQueryTests") alloc] initWithInvocation:invocation database:database identifierQuote:quote];
+		
+		[testSuite addTest:test];
+		
+        [test release];
+    }
+}
+
+#pragma mark -
+#pragma mark Setup
 
 - (void)setUp
 {
-	_query = [QKQuery queryTable:QKTestTableName];
+	QKQuery *query = [QKQuery queryTable:QKTestTableName];
 	
-	[_query setQueryType:QKUpdateQuery];
+	[query setQueryType:QKUpdateQuery];
+	[query setQueryDatabase:[self database]];
+	[query setUseQuotedIdentifiers:[self identifierQuote] && [[self identifierQuote] length] > 0];
 	
-	[_query addFieldToUpdate:QKTestFieldOne toValue:QKTestUpdateValueOne];
-	[_query addFieldToUpdate:QKTestFieldTwo toValue:QKTestUpdateValueTwo];
+	[query addFieldToUpdate:QKTestFieldOne toValue:QKTestUpdateValueOne];
+	[query addFieldToUpdate:QKTestFieldTwo toValue:QKTestUpdateValueTwo];
 	
-	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	[query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	
+	[self setQuery:query];
 }
 
 #pragma mark -
@@ -62,21 +81,30 @@ static NSUInteger QKTestParameterOne = 10;
 
 - (void)testUpdateQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"UPDATE"], @"query type");
+	STAssertTrue([[[self query] query] hasPrefix:@"UPDATE"], nil);
+}
+
+- (void)testUpdateQueryUsingDatabaseAndTableIsCorrect
+{	
+	[[self query] setDatabase:QKTestDatabaseName];
+	
+	NSString *query = [NSString stringWithFormat:@"UPDATE %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
+	
+	STAssertTrue([[[self query] query] hasPrefix:query], nil);
 }
 
 - (void)testUpdateQueryFieldsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = '%@', %@ = '%@'", QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
+	NSString *query = [NSString stringWithFormat:@"UPDATE %1$@%2$@%1$@ SET %1$@%3$@%1$@ = '%4$@', %1$@%5$@%1$@ = '%6$@'", [self identifierQuote], QKTestTableName, QKTestFieldOne, QKTestUpdateValueOne, QKTestFieldTwo, QKTestUpdateValueTwo];
 	
-	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
+	STAssertTrue([[[self query] query] hasPrefix:query], nil);
 }
 
-- (void)testUpdateQueryConstraintsAreCorrect
+- (void)testUpdateQueryConstraintIsCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
-	
-	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
+	NSString *query = [NSString stringWithFormat:@"WHERE %1$@%2$@%1$@ %3$@ %4$@", [self identifierQuote], QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+			
+	STAssertTrue(([[[self query] query] rangeOfString:query].location != NSNotFound), nil);
 }
 
 @end

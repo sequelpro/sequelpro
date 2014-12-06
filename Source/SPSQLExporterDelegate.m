@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
 //  SPSQLExporterDelegate.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 28, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on March 28, 2010.
 //  Copyright (c) 2010 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPSQLExporterDelegate.h"
 #import "SPSQLExporter.h"
@@ -29,9 +34,6 @@
 
 @implementation SPExportController (SPSQLExporterDelegate)
 
-/**
- *
- */
 - (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter
 {
 	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
@@ -41,9 +43,6 @@
 	[[exportProgressText onMainThread] displayIfNeeded];
 }
 
-/**
- * 
- */
 - (void)sqlExportProcessComplete:(SPSQLExporter *)exporter
 {
 	[exportProgressIndicator stopAnimation:self];
@@ -53,7 +52,7 @@
 	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 	
 	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", sqlPreviousConnectionEncoding, (sqlPreviousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 	
 	// Display Growl notification
 	[self displayExportFinishedGrowlNotification];
@@ -64,21 +63,16 @@
 	}
 }
 
-/**
- *
- */
 - (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
 {
 	if ([exportProgressIndicator doubleValue] == 0) {
 		[exportProgressIndicator stopAnimation:self];
 		[exportProgressIndicator setIndeterminate:NO];
 	}
+	
 	[exportProgressIndicator setDoubleValue:[exporter exportProgressValue]];
 }
 
-/**
- *
- */
 - (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter
 {
 	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
@@ -89,9 +83,6 @@
 	[exportProgressIndicator setDoubleValue:0];
 }
 
-/**
- * 
- */
 - (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
 {
 	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];

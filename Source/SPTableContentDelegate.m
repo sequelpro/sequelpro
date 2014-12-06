@@ -1,10 +1,8 @@
 //
-//  $Id$
-//
 //  SPTableContentDelegate.m
-//  Sequel Pro
+//  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,10 +26,11 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableContentDelegate.h"
-#ifndef SP_REFACTOR /* headers */
+#import "SPTableContentFilter.h"
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
 #import "SPDatabaseDocument.h"
@@ -39,16 +38,18 @@
 #import "SPGeometryDataView.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
-#import <SPMySQL/SPMySQL.h>
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPCopyTable.h"
 #import "SPAlertSheets.h"
 #import "SPTableData.h"
 #import "SPFieldEditorController.h"
+#import "SPThreadAdditions.h"
+#import "SPTextAndLinkCell.h"
 
 #import <pthread.h>
+#import <SPMySQL/SPMySQL.h>
 
 @interface SPTableContent (SPDeclaredAPI)
 
@@ -76,7 +77,7 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Sorting table...", @"Sorting table task description")];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(sortTableTaskWithColumn:) toTarget:self withObject:tableColumn];
+		[NSThread detachNewThreadWithName:@"SPTableContent table sort task" target:self selector:@selector(sortTableTaskWithColumn:) object:tableColumn];
 	} 
 	else {
 		[self sortTableTaskWithColumn:tableColumn];
@@ -116,7 +117,7 @@
 	
 	[self updateCountText];
 	
-#ifndef SP_REFACTOR /* triggered commands */
+#ifndef SP_CODA /* triggered commands */
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
 	
 	for (NSString *cmdPath in triggeredCommands) 
@@ -182,14 +183,14 @@
 	NSString *table = [tablesListInstance tableName];
 	
 	// Get tableColumnWidths object
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs objectForKey:SPTableColumnWidths] != nil ) {
 		tableColumnWidths = [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPTableColumnWidths]];
 	} 
 	else {
 #endif
 		tableColumnWidths = [NSMutableDictionary dictionary];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #endif
 	
@@ -213,7 +214,7 @@
 	[[[tableColumnWidths objectForKey:database] objectForKey:table] 
 	 setObject:[NSNumber numberWithDouble:[(NSTableColumn *)[[notification userInfo] objectForKey:@"NSTableColumn"] width]] 
 	 forKey:[[[[notification userInfo] objectForKey:@"NSTableColumn"] headerCell] stringValue]];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs setObject:tableColumnWidths forKey:SPTableColumnWidths];
 #endif
 }
@@ -226,7 +227,7 @@
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		return (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) ? NO : YES;
 	}
@@ -261,7 +262,7 @@
 			}
 			
 			// Open the editing sheet if required
-			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue]]) {
+			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				
 				// Retrieve the column definition
 				NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
@@ -276,12 +277,11 @@
 					isFieldEditable = [[editStatus objectAtIndex:0] integerValue] == 1;
 				}
 				
-				NSString *fieldType = nil;
 				NSUInteger fieldLength = 0;
 				NSString *fieldEncoding = nil;
 				BOOL allowNULL = YES;
 				
-				fieldType = [columnDefinition objectForKey:@"type"];
+				NSString *fieldType = [columnDefinition objectForKey:@"type"];
 				
 				if ([columnDefinition objectForKey:@"char_length"]) {
 					fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
@@ -295,7 +295,7 @@
 					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 				}
 				
-				if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+				if (fieldEditor) [fieldEditor release], fieldEditor = nil;
 				
 				fieldEditor = [[SPFieldEditorController alloc] init];
 				
@@ -306,14 +306,18 @@
 												 nil]];
 				
 				[fieldEditor setTextMaxLength:fieldLength];
-				[fieldEditor setFieldType:(fieldType==nil) ? @"" : fieldType];
-				[fieldEditor setFieldEncoding:(fieldEncoding==nil) ? @"" : fieldEncoding];
+				[fieldEditor setFieldType:fieldType == nil ? @"" : fieldType];
+				[fieldEditor setFieldEncoding:fieldEncoding == nil ? @"" : fieldEncoding];
 				[fieldEditor setAllowNULL:allowNULL];
-				
+			
 				id cellValue = [tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]];
 				
 				if ([cellValue isNSNull]) {
 					cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+				}
+
+				if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
 				}
 				
 				NSInteger editedColumn = 0;
@@ -383,7 +387,7 @@
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		return YES;
 	}
@@ -403,7 +407,7 @@
 	// Get the column width
 	NSUInteger targetWidth = [tableContentView autodetectWidthForColumnDefinition:columnDefinition maxRows:500];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Clear any saved widths for the column
 	NSString *dbKey = [NSString stringWithFormat:@"%@@%@", [tableDocumentInstance database], [tableDocumentInstance host]];
 	NSString *tableKey = [tablesListInstance tableName];
@@ -444,7 +448,7 @@
  */
 - (void)tableView:(SPCopyTable *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (tableView == filterTableView) {
 		if (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) {
 			[cell setDrawsBackground:YES];
@@ -462,29 +466,10 @@
 			
 			if (![cell respondsToSelector:@selector(setTextColor:)]) return;
 			
-			id theValue = nil;
+			BOOL cellIsNullOrUnloaded = NO;
+			BOOL cellIsLinkCell = [cell isMemberOfClass:[SPTextAndLinkCell class]];
+
 			NSUInteger columnIndex = [[tableColumn identifier] integerValue];
-			
-			// While the table is being loaded, additional validation is required - data
-			// locks must be used to avoid crashes, and indexes higher than the available
-			// rows or columns may be requested.  Use gray to indicate loading in these cases.
-			if (isWorking) {
-				pthread_mutex_lock(&tableValuesLock);
-				
-				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
-				}
-				
-				pthread_mutex_unlock(&tableValuesLock);
-				
-				if (!theValue) {
-					[cell setTextColor:[NSColor lightGrayColor]];
-					return;
-				}
-			} 
-			else {
-				theValue = SPDataStorageObjectAtRowAndColumn(tableValues, rowIndex, columnIndex);
-			}
 			
 			// If user wants to edit 'cell' set text color to black and return to avoid
 			// writing in gray if value was NULL
@@ -492,22 +477,58 @@
 				&& [tableView editedRow] == rowIndex
 				&& (NSUInteger)[[NSArrayObjectAtIndex([tableView tableColumns], [tableView editedColumn]) identifier] integerValue] == columnIndex) {
 				[cell setTextColor:blackColor];
+				if (cellIsLinkCell) [cell setLinkActive:NO];
 				return;
 			}
-			
-			// For null cells and not loaded cells, display the contents in gray.
-			if ([theValue isNSNull] || [theValue isSPNotLoaded]) {
-				[cell setTextColor:lightGrayColor];
+
+			// While the table is being loaded, additional validation is required - data
+			// locks must be used to avoid crashes, and indexes higher than the available
+			// rows or columns may be requested.  Use gray to indicate loading in these cases.
+			if (isWorking) {
+				pthread_mutex_lock(&tableValuesLock);
 				
-				// Otherwise, set the color to black - required as NSTableView reuses NSCells.
+				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
+					cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+				}
+				
+				pthread_mutex_unlock(&tableValuesLock);
+			} 
+			else {
+				cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+			}
+
+			if (cellIsNullOrUnloaded) {
+				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : lightGrayColor];
 			} 
 			else {
 				[cell setTextColor:blackColor];
 			}
+
+			NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
+
+			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+
+			// Find a more reliable way of doing this check
+			if ([columnType isEqualToString:@"binary"] &&
+				[prefs boolForKey:SPDisplayBinaryDataAsHex] &&
+				[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] hasPrefix:@"0x"]) {
+
+				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+			}
+
+			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
+			if (cellIsLinkCell) {
+				if (cellIsNullOrUnloaded || [tableView editedRow] == rowIndex) {
+					[cell setLinkActive:NO];
+				}
+				else {
+					[cell setLinkActive:YES];
+				}
+			}
 		}
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Show the table cell content as tooltip
  * 
@@ -597,7 +618,7 @@
 }
 #endif
 
-#ifndef SP_REFACTOR /* SplitView delegate methods */
+#ifndef SP_CODA /* SplitView delegate methods */
 
 #pragma mark -
 #pragma mark SplitView delegate methods
@@ -620,7 +641,7 @@
  */
 - (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
 {
-	return proposedMin + 200;
+	return proposedMin + 225;
 }
 
 /**
@@ -660,7 +681,7 @@
 
 - (void)controlTextDidChange:(NSNotification *)notification
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([notification object] == filterTableView) {
 		
 		NSString *string = [[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string];
@@ -720,7 +741,7 @@
 				shouldBeginEditing = YES;
 				break;
 			default:
-				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows, (numberOfPossibleUpdateRows>1)?NSLocalizedString(@"es", @"Plural suffix for row count, eg 4 match*es*"):@""]
+				[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
 							   atLocation:pos
 								   ofType:@"text"];
 				shouldBeginEditing = NO;
@@ -729,7 +750,7 @@
 	}
 	
 	// Open the field editor sheet if required
-	if ([tableContentView shouldUseFieldEditorForRow:row column:column])
+	if ([tableContentView shouldUseFieldEditorForRow:row column:column checkWithLock:NULL])
 	{
 		[tableContentView setFieldEditorSelectedRange:[aFieldEditor selectedRange]];
 		
@@ -754,22 +775,18 @@
  * Trap the enter, escape, tab and arrow keys, overriding default behaviour and continuing/ending editing,
  * only within the current row.
  */
-- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
+- (BOOL)control:(NSControl<NSControlTextEditingDelegate> *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-#ifndef SP_REFACTOR
 	// Check firstly if SPCopyTable can handle command
-	if ([control control:control textView:textView doCommandBySelector:(SEL)command])
-#else
-		if ([(id<NSControlTextEditingDelegate>)control control:control textView:textView doCommandBySelector:(SEL)command])
-#endif
-			return YES;
+	if ([control control:control textView:textView doCommandBySelector:command])
+		return YES;
 	
 	// Trap the escape key
 	if ([[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)]) {
 		// Abort editing
 		[control abortEditing];
 		
-		if (control == tableContentView) {
+		if ((SPCopyTable*)control == tableContentView) {
 			[self cancelRowEditing];
 		}
 		
@@ -777,6 +794,22 @@
 	}
 	
 	return NO;
+}
+
+#pragma mark -
+#pragma mark Database content view delegate methods
+
+- (NSString *)usedQuery
+{
+	return usedQuery;
+}
+
+/**
+ * Retrieve the data column definitions
+ */
+- (NSArray *)dataColumnDefinitions
+{
+	return dataColumns;
 }
 
 @end

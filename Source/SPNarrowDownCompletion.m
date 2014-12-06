@@ -1,30 +1,34 @@
 //
-//  $Id: SPNarrowDownCompletion.m 744 2009-05-22 20:00:00Z bibiko $
-//
-//  SPGrowlController.m
+//  SPNarrowDownCompletion.m
 //  sequel-pro
 //
-//  Created by Hans-J. Bibiko on May 14, 2009.
-//
 //  This class is based on TextMate's TMDIncrementalPopUp implementation
-//  (Dialog plugin) written by Joachim Mårtensson, Allan Odgaard, and H.-J. Bibiko.
-//   see license: http://svn.textmate.org/trunk/LICENSE
+//  (Dialog plugin) written by Joachim Mårtensson, Allan Odgaard, and Hans-Jörg Bibiko.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  See license: http://svn.textmate.org/trunk/LICENSE
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
+//
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Foundation/NSObjCRuntime.h>
 #import <tgmath.h>
@@ -126,11 +130,11 @@
 		staticPrefix = nil;
 		suggestions = nil;
 		autocompletePlaceholderWasInserted = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		tableFont = [NSUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] dataForKey:SPCustomQueryEditorFont]];
 #else
 		tableFont = [NSFont userFixedPitchFontOfSize:10.0];
@@ -138,12 +142,12 @@
 		[self setupInterface];
 
 		syncArrowImages = [[NSArray alloc] initWithObjects:
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_01" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_02" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_03" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_04" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_05" ofType:@"tiff"]] autorelease],
-			[[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sync_arrows_06" ofType:@"tiff"]] autorelease],
+			[NSImage imageNamed:@"sync_arrows_01"],
+			[NSImage imageNamed:@"sync_arrows_02"],
+			[NSImage imageNamed:@"sync_arrows_03"],
+			[NSImage imageNamed:@"sync_arrows_04"],
+			[NSImage imageNamed:@"sync_arrows_05"],
+			[NSImage imageNamed:@"sync_arrows_06"],
 			nil];
 		
 	}
@@ -153,7 +157,7 @@
 - (void)dealloc
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	if (stateTimer != nil) {
+	if(stateTimer != nil) {
 		[stateTimer invalidate];
 		[stateTimer release];
 		stateTimer = nil;
@@ -318,21 +322,21 @@
 {
 	caretPos = aPos;
 
-	NSRect mainScreen = [self rectOfMainScreen];
+	NSRect screen = [self rectOfMainScreen];
 
-	NSInteger offx = (caretPos.x/mainScreen.size.width) + 1;
+	NSInteger offx = (caretPos.x/screen.size.width) + 1;
 
-	if((caretPos.x + [self frame].size.width) > (mainScreen.size.width*offx))
-		caretPos.x = (mainScreen.size.width*offx) - [self frame].size.width - 5;
+	if((caretPos.x + [self frame].size.width) > (screen.size.width*offx))
+		caretPos.x = (screen.size.width*offx) - [self frame].size.width - 5;
 
 	if(caretPos.y >= 0 && caretPos.y < [self frame].size.height)
 	{
-		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5f);
 		isAbove = YES;
 	}
-	if(caretPos.y < 0 && (mainScreen.size.height-[self frame].size.height) < (caretPos.y*-1))
+	if(caretPos.y < 0 && (screen.size.height-[self frame].size.height) < (caretPos.y*-1))
 	{
-		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5);
+		caretPos.y += [self frame].size.height + ([tableFont pointSize]*1.5f);
 		isAbove = YES;
 	}
 
@@ -345,7 +349,7 @@
 	[self setLevel:NSNormalWindowLevel];
 	[self setHidesOnDeactivate:YES];
 	[self setHasShadow:YES];
-	[self setAlphaValue:0.9];
+	[self setAlphaValue:0.9f];
 
 	NSScrollView* scrollView = [[[NSScrollView alloc] initWithFrame:NSZeroRect] autorelease];
 	[scrollView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
@@ -731,10 +735,10 @@
 	if(caretPos.y >= 0 && (isAbove || caretPos.y < newHeight))
 	{
 		isAbove = YES;
-		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5f);
 	}
 	if(caretPos.y < 0 && (isAbove || ([self rectOfMainScreen].size.height-newHeight) < (caretPos.y*-1)))
-		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5);
+		old.y = caretPos.y + newHeight + ([tableFont pointSize]*1.5f);
 
 	// newHeight is currently the new height for theTableView, but we need to resize the whole window
 	// so here we use the difference in height to find the new height for the window
@@ -759,16 +763,16 @@
 
 - (NSRect)rectOfMainScreen
 {
-	NSRect mainScreen = [[NSScreen mainScreen] frame];
+	NSRect screen = [[NSScreen mainScreen] frame];
 	
 	for (NSScreen *candidate in [NSScreen screens])
 	{
 		if (NSMinX([candidate frame]) == 0.0f && NSMinY([candidate frame]) == 0.0f) {
-			mainScreen = [candidate frame];
+			screen = [candidate frame];
 		}
 	}
 	
-	return mainScreen;
+	return screen;
 }
 
 // =============================
@@ -983,7 +987,7 @@
 
 		// Restore the text selection location, and clearly mark the autosuggested text
 		[theView setSelectedRange:NSMakeRange(currentSelectionPosition, 0)];
-		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3], NSMakeRange(currentSelectionPosition, [toInsert length]));
+		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3f], NSMakeRange(currentSelectionPosition, [toInsert length]));
 		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], kSPAutoCompletePlaceholderName, kSPAutoCompletePlaceholderVal, NSMakeRange(currentSelectionPosition, [toInsert length]));
 
 		[self checkSpaceForAllowedCharacter];
@@ -1077,7 +1081,7 @@
 	if(backtickMode && !triggerMode)
 		[theView performSelector:@selector(moveRight:)];
 	// If it's a function or procedure append () and if a argument list can be retieved insert them as snippets
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	else if([prefs boolForKey:SPCustomQueryFunctionCompletionInsertsArguments] && ([[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"func"] || [[[filtered objectAtIndex:[theTableView selectedRow]] objectForKey:@"image"] hasPrefix:@"proc"]) && ![aString hasSuffix:@")"]) {
 		NSString *functionArgumentSnippet = [NSString stringWithFormat:@"(%@)", [[SPQueryController sharedQueryController] argumentSnippetForFunction:aString]];
 		[theView insertAsSnippet:functionArgumentSnippet atRange:[theView selectedRange]];
@@ -1120,7 +1124,11 @@
 			// Is completion string a schema name for current connection
 			if([selectedItem objectForKey:@"isRef"]) {
 				backtickMode = 100; // suppress move the caret one step rightwards
-				[self insert_text:[candidateMatch backtickQuotedString]];
+        if ([prefs boolForKey:SPCustomQueryEditorCompleteWithBackticks]) {
+          [self insert_text:[candidateMatch backtickQuotedString]];
+        } else {
+          [self insert_text:candidateMatch];
+        }
 			} else {
 				[self insert_text:candidateMatch];
 			}

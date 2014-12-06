@@ -1,33 +1,37 @@
 //
-//  $Id$
-//
 //  SPCustomQuery.h
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
+
+#import "SPDatabaseContentViewDelegate.h"
 
 #import <WebKit/WebKit.h>
-
-#import "SPCopyTable.h"
-#import "SPTextView.h"
-#import "RegexKitLite.h"
 
 #define SP_HELP_TOC_SEARCH_STRING @"contents"
 #define SP_HELP_SEARCH_IN_MYSQL   0
@@ -38,27 +42,33 @@
 #define SP_HELP_GOFORWARD_BUTTON  2
 #define SP_HELP_NOT_AVAILABLE     @"__no_help_available"
 
-#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG            100001
-#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG      100000
-#define SP_FAVORITE_HEADER_MENUITEM_TAG               200000
-#define SP_HISTORY_COPY_MENUITEM_TAG                  300000
-#define SP_HISTORY_SAVE_MENUITEM_TAG                  300001
-#define SP_HISTORY_CLEAR_MENUITEM_TAG                 300002
+#define SP_SAVE_ALL_FAVORTITE_MENUITEM_TAG       100001
+#define SP_SAVE_SELECTION_FAVORTITE_MENUITEM_TAG 100000
+#define SP_FAVORITE_HEADER_MENUITEM_TAG          200000
+#define SP_HISTORY_COPY_MENUITEM_TAG             300000
+#define SP_HISTORY_SAVE_MENUITEM_TAG             300001
+#define SP_HISTORY_CLEAR_MENUITEM_TAG            300002
 
-#ifndef SP_REFACTOR
-@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, BWSplitView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
-#else
-@class SPCopyTable, SPQueryFavoriteManager, SPDataStorage, NSSplitView, SPFieldEditorController, SPMySQLConnection, SPMySQLFastStreamingResult;
+@class SPCopyTable;
+@class SPQueryFavoriteManager;
+@class SPDataStorage;
+@class SPSplitView;
+@class SPFieldEditorController;
+@class SPMySQLConnection;
+@class SPMySQLStreamingResultStore;
+@class SPTextView;
+
+#ifdef SP_CODA
+@class SPDatabaseDocument;
+@class SPTablesList;
 #endif
 
-@interface SPCustomQuery : NSObject 
-#ifdef SP_REFACTOR
-<NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate>
-#endif
+@interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate, SPDatabaseContentViewDelegate>
 {
 	IBOutlet id tableDocumentInstance;
 	IBOutlet id tablesListInstance;
 
+#ifndef SP_CODA
 	IBOutlet id queryFavoritesButton;
 	IBOutlet NSMenuItem *queryFavoritesSearchMenuItem;
 	IBOutlet NSMenuItem *queryFavoritesSaveAsMenuItem;
@@ -79,21 +89,27 @@
 	IBOutlet NSMenuItem *saveHistoryMenuItem;
 	IBOutlet NSMenuItem *copyHistoryMenuItem;
 	IBOutlet NSPopUpButton *encodingPopUp;
+#endif
 
 	IBOutlet SPTextView *textView;
 	IBOutlet SPCopyTable *customQueryView;
 	IBOutlet NSScrollView *customQueryScrollView;
 	IBOutlet id errorText;
+	IBOutlet NSTextField *errorTextTitle;
 	IBOutlet NSScrollView *errorTextScrollView;
 	IBOutlet id affectedRowsText;
 	IBOutlet id valueSheet;
 	IBOutlet id valueTextField;
-	IBOutlet id runSelectionButton;
-	IBOutlet id runAllButton;
-	IBOutlet id multipleLineEditingButton;
 
-	IBOutlet NSMenuItem *runSelectionMenuItem;
-	IBOutlet NSMenuItem *runAllMenuItem;
+	// Hooks for old layouts using just the Run All button
+	IBOutlet id runAllButton;
+
+	// Hooks for layouts using the new single button with interchangeable actions
+	IBOutlet id runPrimaryActionButton;
+	IBOutlet id runPrimaryActionButtonAsSelection;
+	IBOutlet NSMenuItem *runPrimaryActionMenuItem;
+	IBOutlet NSMenuItem *runSecondaryActionMenuItem;
+
 	IBOutlet NSMenuItem *shiftLeftMenuItem;
 	IBOutlet NSMenuItem *shiftRightMenuItem;
 	IBOutlet NSMenuItem *completionListMenuItem;
@@ -104,10 +120,10 @@
 	IBOutlet NSMenuItem *autouppercaseKeywordsMenuItem;
 	IBOutlet NSMenuItem *commentCurrentQueryMenuItem;
 	IBOutlet NSMenuItem *commentLineOrSelectionMenuItem;
+	
+#ifndef SP_CODA
 	IBOutlet NSMenuItem *previousHistoryMenuItem;
 	IBOutlet NSMenuItem *nextHistoryMenuItem;
-
-#ifndef SP_REFACTOR
 	IBOutlet NSWindow *helpWebViewWindow;
 	IBOutlet WebView *helpWebView;
 	IBOutlet NSSearchField *helpSearchField;
@@ -117,14 +133,10 @@
 #endif
 
 	IBOutlet NSButton *queryInfoButton;
-#ifndef SP_REFACTOR
-	IBOutlet BWSplitView *queryInfoPaneSplitView;
-#else
-	IBOutlet NSSplitView *queryInfoPaneSplitView;
-#endif
+	IBOutlet SPSplitView *queryInfoPaneSplitView;
+	IBOutlet SPSplitView *queryEditorSplitView;
 
 	SPFieldEditorController *fieldEditor;
-
 	SPQueryFavoriteManager *favoritesManager;
 
 	NSUserDefaults *prefs;
@@ -133,15 +145,14 @@
 	NSString *usedQuery;
 	NSRange currentQueryRange;
 	NSArray *currentQueryRanges;
-	NSRange oldThreadedQueryRange;
+	BOOL currentQueryBeforeCaret;
 
-	BOOL selectionButtonCanBeEnabled;
 	NSString *mySQLversion;
 	NSTableColumn *sortColumn;
 
 	NSUInteger queryStartPosition;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger helpTarget;
 	WebHistory *helpHistory;
 	NSString *helpHTMLTemplate;
@@ -149,6 +160,7 @@
 
 	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
+	NSCondition *resultLoadingCondition;
 	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;
@@ -170,40 +182,42 @@
 	NSString *fieldIDQueryString;
 
 	NSUInteger numberOfQueries;
-	NSUInteger queryTextViewStartPosition;
 	NSUInteger queryInfoPanePaddingHeight;
 
 	NSInteger currentHistoryOffsetIndex;
 	BOOL historyItemWasJustInserted;
 
 	NSTimer *queryLoadTimer;
-	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 	NSInteger runAllContinueStopSheetReturnCode;
+	NSUInteger queryLoadInterfaceUpdateInterval, queryLoadTimerTicksSinceLastUpdate, queryLoadLastRowCount;
 
 	NSString *kCellEditorErrorNoMatch;
 	NSString *kCellEditorErrorNoMultiTabDb;
 	NSString *kCellEditorErrorTooManyMatches;
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPDatabaseDocument* tableDocumentInstance;
 @property (assign) SPTablesList* tablesListInstance;
 @property (assign) SPTextView *textView;
 @property (assign) SPCopyTable *customQueryView;
-@property (assign) NSButton* runAllButton;
+@property (assign) id affectedRowsText;
 #endif
 
-@property(assign) BOOL textViewWasChanged;
+@property (assign) NSButton* runAllButton;
+@property (assign) BOOL textViewWasChanged;
 
 // IBAction methods
+- (IBAction)runPrimaryQueryAction:(id)sender;
+- (IBAction)runSecondaryQueryAction:(id)sender;
+- (IBAction)switchDefaultQueryAction:(id)sender;
 - (IBAction)runAllQueries:(id)sender;
-- (void) runAllQueriesCallback;
 - (IBAction)runSelectedQueries:(id)sender;
 - (IBAction)chooseQueryFavorite:(id)sender;
 - (IBAction)chooseQueryHistory:(id)sender;
 - (IBAction)closeSheet:(id)sender;
 - (IBAction)gearMenuItemSelected:(id)sender;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (IBAction)showHelpForCurrentWord:(id)sender;
 - (IBAction)showHelpForSearchString:(id)sender;
 - (IBAction)helpSegmentDispatcher:(id)sender;
@@ -220,7 +234,6 @@
 - (IBAction)copyQueryHistory:(id)sender;
 - (IBAction)clearQueryHistory:(id)sender;
 - (IBAction)showCompletionList:(id)sender;
-- (IBAction)toggleQueryInfoPaneCollapse:(NSButton *)sender;
 
 // Query actions
 - (void)performQueries:(NSArray *)queries withCallback:(SEL)customQueryCallbackMethod;
@@ -230,28 +243,33 @@
 - (NSRange)queryTextRangeForQuery:(NSInteger)anIndex startPosition:(NSUInteger)position;
 - (void) updateStatusInterfaceWithDetails:(NSDictionary *)errorDetails;
 
+// Interface setup
+- (void)updateQueryInteractionInterface;
+- (void)updateContextualRunInterface;
+
 // Query load actions
-- (void) initQueryLoadTimer;
-- (void) clearQueryLoadTimer;
-- (void) queryLoadUpdate:(NSTimer *)theTimer;
+- (void)initQueryLoadTimer;
+- (void)clearQueryLoadTimer;
+- (void)queryLoadUpdate:(NSTimer *)theTimer;
 
 // Accessors
 - (NSArray *)currentResult;
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs truncateDataFields:(BOOL)truncate;
-- (void)processResultIntoDataStorage:(SPMySQLFastStreamingResult *)theResult;
+- (NSUInteger)currentResultRowCount;
+- (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore;
 
 // Retrieving and setting table state
-- (void) updateTableView;
-- (NSIndexSet *) resultSelectedRowIndexes;
-- (NSRect) resultViewport;
+- (void)updateTableView;
+- (NSIndexSet *)resultSelectedRowIndexes;
+- (NSRect)resultViewport;
 - (NSArray *)dataColumnDefinitions;
-- (void) setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
-- (void) setResultViewportToRestore:(NSRect)theViewport;
-- (void) storeCurrentResultViewForRestoration;
-- (void) clearResultViewDetailsToRestore;
-- (void) autosizeColumns;
+- (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet;
+- (void)setResultViewportToRestore:(NSRect)theViewport;
+- (void)storeCurrentResultViewForRestoration;
+- (void)clearResultViewDetailsToRestore;
+- (void)autosizeColumns;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 // MySQL Help
 - (void)showAutoHelpForCurrentWord:(id)sender;
 - (NSString *)getHTMLformattedMySQLHelpFor:(NSString *)searchString calledByAutoHelp:(BOOL)autoHelp;
@@ -263,8 +281,8 @@
 - (void)setMySQLversion:(NSString *)theVersion;
 
 // Task interaction
-- (void) startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void) endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
 
 // Tableview interaction
 - (void)tableSortCallback;
@@ -284,10 +302,7 @@
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(id)contextInfo;
-
 - (void)historyItemsHaveBeenUpdated:(id)manager;
-
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end

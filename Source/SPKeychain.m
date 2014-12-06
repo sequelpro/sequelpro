@@ -1,27 +1,33 @@
 //
-//  $Id$
-//
 //  SPKeychain.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed Dec 25 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on December 25, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
@@ -50,6 +56,9 @@
 	SecKeychainAttribute attributes[4];
 	SecKeychainAttributeList attList;
 
+	// If a nil password was supplied, do nothing.
+	if (!password) return;
+
 	// Check supplied variables and replaces nils with empty strings
 	if (!name) name = @"";
 	if (!account) account = @"";
@@ -58,13 +67,16 @@
 	// Check if password already exists before adding
 	if (![self passwordExistsForName:name account:account]) {
 
-		// Create a trusted access list with two items - ourselves and the SSH pass app.
+		// Create a trusted access list with two items - ourselves and the SSH pass app
 		NSString *helperPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
+
 		if ((SecTrustedApplicationCreateFromPath(NULL, &sequelProRef) == noErr) &&
 			(SecTrustedApplicationCreateFromPath([helperPath UTF8String], &sequelProHelperRef) == noErr)) {
 
 			NSArray *trustedApps = [NSArray arrayWithObjects:(id)sequelProRef, (id)sequelProHelperRef, nil];
+
 			status = SecAccessCreate((CFStringRef)name, (CFArrayRef)trustedApps, &passwordAccessRef);
+
 			if (status != noErr) {
 				NSLog(@"Error (%i) while trying to create access list for name: %@ account: %@", (int)status, name, account);
 				passwordAccessRef = NULL;
@@ -139,6 +151,7 @@
 											);
 	
 	if (status == noErr) {
+
 		// Create a \0 terminated cString out of passwordData
 		char passwordBuf[passwordLength + 1];
 		strncpy(passwordBuf, passwordData, (size_t)passwordLength);
@@ -198,9 +211,23 @@
  */
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
 {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+	NSMutableDictionary *query = [NSMutableDictionary dictionary];
+
+	[query setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];
+	[query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
+	[query setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
+
+	[query setObject:account forKey:(id)kSecAttrAccount];
+	[query setObject:name forKey:(id)kSecAttrService];
+
+	CFDictionaryRef result = NULL;
+
+	return SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
+#else
 	SecKeychainItemRef item;
 	SecKeychainSearchRef search = NULL;
-    NSInteger numberOfItemsFound = 0;
+	NSInteger numberOfItemsFound = 0;
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
 
@@ -211,24 +238,26 @@
 	attributes[0].tag    = kSecAccountItemAttr;
 	attributes[0].data   = (void *)[account UTF8String];			// Account name
 	attributes[0].length = (UInt32)strlen([account UTF8String]);	// Length of account name (bytes)
-	
+
 	attributes[1].tag    = kSecServiceItemAttr;
-    attributes[1].data   = (void *)[name UTF8String];			// Service name
-    attributes[1].length = (UInt32)strlen([name UTF8String]);	// Length of service name (bytes)
-	
-    list.count = 2;
-    list.attr  = attributes;
-	
-    if (SecKeychainSearchCreateFromAttributes(NULL, kSecGenericPasswordItemClass, &list, &search) == noErr) {
-		while (SecKeychainSearchCopyNext(search, &item) == noErr) {
+	attributes[1].data   = (void *)[name UTF8String];			// Service name
+	attributes[1].length = (UInt32)strlen([name UTF8String]);	// Length of service name (bytes)
+
+	list.count = 2;
+	list.attr  = attributes;
+
+	if (SecKeychainSearchCreateFromAttributes(NULL, kSecGenericPasswordItemClass, &list, &search) == noErr) {
+		while (SecKeychainSearchCopyNext(search, &item) == noErr)
+		{
 			CFRelease(item);
 			numberOfItemsFound++;
 		}
 	}
-	
-    if (search) CFRelease(search);
-	
+
+	if (search) CFRelease(search);
+
 	return (numberOfItemsFound > 0);
+#endif
 }
 
 /**
@@ -262,6 +291,7 @@
 
 	if (status != noErr) {
 		NSLog(@"Error (%i) while trying to find keychain item to edit for name: %@ account: %@", (int)status, name, account);
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"), 
 						  NSLocalizedString(@"OK", @"OK button"), 
 						  nil, nil, [NSApp mainWindow], self, nil, nil,
@@ -283,7 +313,17 @@
 	status = SecKeychainItemModifyAttributesAndData(itemRef, &attList, (UInt32)strlen([password UTF8String]), [password UTF8String]);
 
 	if (status != noErr) {
+
+		// An error of -25299 indicates that the keychain item is a duplicate.  As connection names include a unique ID,
+		// this indicates an issue when previously altering keychain items; delete the old item and try again.
+		if ((int)status == -25299) {
+			[self deletePasswordForName:newName account:newAccount];
+			
+			return [self updateItemWithName:name account:account toName:newName account:newAccount password:password];
+		}
+
 		NSLog(@"Error (%i) while updating keychain item for name: %@ account: %@", (int)status, name, account);
+
 		SPBeginAlertSheet(NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"), 
 						  NSLocalizedString(@"OK", @"OK button"), 
 						  nil, nil, [NSApp mainWindow], self, nil, nil,
@@ -294,46 +334,27 @@
 /**
  * Retrieve the keychain item name for a supplied name and id.
  */
-- (NSString *)nameForFavoriteName:(NSString *)theName id:(NSString *)theID
+- (NSString *)nameForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId
 {
-	NSString *keychainItemName;
-
 	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
-	keychainItemName = [NSString stringWithFormat:@"Sequel Pro : %@ (%lld)",
-							theName?theName:@"",
-							[theID longLongValue]];
-
-	return keychainItemName;
+	return [NSString stringWithFormat:@"Sequel Pro : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
 }
 
 /**
  * Retrieve the keychain item account for a supplied user, host, and database - which can be nil.
  */
-- (NSString *)accountForUser:(NSString *)theUser host:(NSString *)theHost database:(NSString *)theDatabase
+- (NSString *)accountForUser:(NSString *)user host:(NSString *)host database:(NSString *)database
 {
-	NSString *keychainItemAccount;
-
-	keychainItemAccount = [NSString stringWithFormat:@"%@@%@/%@",
-								theUser?theUser:@"",
-								theHost?theHost:@"",
-								theDatabase?theDatabase:@""];
-
-	return keychainItemAccount;
+	return [NSString stringWithFormat:@"%@@%@/%@", user ? user : @"", host ? host : @"", database ? database : @""];
 }
 
 /**
  * Retrieve the keychain SSH item name for a supplied name and id.
  */
-- (NSString *)nameForSSHForFavoriteName:(NSString *)theName id:(NSString *)theID
+- (NSString *)nameForSSHForFavoriteName:(NSString *)favoriteName id:(NSString *)favoriteId
 {
-	NSString *sshKeychainItemName;
-
 	// Look up the keychain name using long longs to support 64-bit > 32-bit keychain usage
-	sshKeychainItemName = [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%lld)",
-							theName?theName:@"",
-							[theID longLongValue]];
-
-	return sshKeychainItemName;
+	return [NSString stringWithFormat:@"Sequel Pro SSHTunnel : %@ (%lld)", favoriteName ? favoriteName: @"", [favoriteId longLongValue]];
 }
 
 /**
@@ -341,13 +362,7 @@
  */
 - (NSString *)accountForSSHUser:(NSString *)theSSHUser sshHost:(NSString *)theSSHHost
 {
-	NSString *sshKeychainItemAccount;
-
-	sshKeychainItemAccount = [NSString stringWithFormat:@"%@@%@",
-								theSSHUser?theSSHUser:@"",
-								theSSHHost?theSSHHost:@""];
-
-	return sshKeychainItemAccount;
+	return [NSString stringWithFormat:@"%@@%@", theSSHUser ? theSSHUser : @"", theSSHHost ? theSSHHost : @""];
 }
 
 @end

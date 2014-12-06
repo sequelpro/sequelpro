@@ -7,9 +7,7 @@
 
 #import "NSDictionary_DeepMutableCopy.h"
 
-
 @implementation NSDictionary (DeepMutableCopy)
-
 
 - (NSMutableDictionary *)deepMutableCopy;
 {
@@ -38,6 +36,5 @@
 	
     return newDictionary;
 }
-
 
 @end

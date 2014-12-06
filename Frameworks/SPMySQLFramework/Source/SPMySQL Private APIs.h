@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLConnection_PrivateAPI.h
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 /**
  * A collection of Private APIs from the various categories, to simplify
@@ -41,8 +39,12 @@
 
 @interface SPMySQLConnection (PrivateAPI)
 
+- (BOOL)_connect;
 - (MYSQL *)_makeRawMySQLConnectionWithEncoding:(NSString *)encodingName isMasterConnection:(BOOL)isMaster;
+- (BOOL)_reconnectAllowingRetries:(BOOL)canRetry;
+- (BOOL)_reconnectAfterBackgroundConnectionLoss;
 - (BOOL)_waitForNetworkConnectionWithTimeout:(double)timeoutSeconds;
+- (void)_disconnect;
 - (void)_updateConnectionVariables;
 - (void)_restoreConnectionVariables;
 - (BOOL)_checkConnectionIfNecessary;
@@ -82,6 +84,7 @@
 - (void)_flushMultipleResultSets;
 - (void)_updateLastErrorMessage:(NSString *)theErrorMessage;
 - (void)_updateLastErrorID:(NSUInteger)theErrorID;
+- (void)_updateLastSqlstate:(NSString *)theSqlstate;
 
 @end
 
@@ -91,21 +94,28 @@
 
 - (NSString *)_stringWithBytes:(const void *)bytes length:(NSUInteger)length;
 - (void)_setQueryExecutionTime:(double)theExecutionTime;
-- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldType:(unsigned int)fieldType fieldDefinitionIndex:(NSUInteger)fieldIndex;
+
+@end
+
+// SPMySQLResult Data Conversion Private API
+@interface SPMySQLResult (Data_Conversion_Private_API)
+
++ (void)_initializeDataConversion;
+- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength;
 
 @end
 
 /**
  * Set up a static function to allow fast calling of SPMySQLResult data conversion with cached selectors
  */
-static inline id SPMySQLResultGetObject(SPMySQLResult* self, char* bytes, NSUInteger length, unsigned int fieldType, NSUInteger fieldIndex) 
+static inline id SPMySQLResultGetObject(SPMySQLResult* self, char* bytes, NSUInteger length, NSUInteger fieldIndex, NSUInteger previewLength)
 {
-	typedef id (*SPMySQLResultGetObjectMethodPtr)(SPMySQLResult*, SEL, char*, NSUInteger, unsigned int, NSUInteger);
+	typedef id (*SPMySQLResultGetObjectMethodPtr)(SPMySQLResult*, SEL, char*, NSUInteger, NSUInteger, NSUInteger);
 	static SPMySQLResultGetObjectMethodPtr cachedMethodPointer;
 	static SEL cachedSelector;
 
-	if (!cachedSelector) cachedSelector = @selector(_getObjectFromBytes:ofLength:fieldType:fieldDefinitionIndex:);
+	if (!cachedSelector) cachedSelector = @selector(_getObjectFromBytes:ofLength:fieldDefinitionIndex:previewLength:);
 	if (!cachedMethodPointer) cachedMethodPointer = (SPMySQLResultGetObjectMethodPtr)[self methodForSelector:cachedSelector];
 
-	return cachedMethodPointer(self, cachedSelector, bytes, length, fieldType, fieldIndex);
+	return cachedMethodPointer(self, cachedSelector, bytes, length, fieldIndex, previewLength);
 }

@@ -20,7 +20,7 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "PSMSequelProTabStyle.h"
 #import "PSMTabBarCell.h"
@@ -32,6 +32,25 @@
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 4.5f
 #define MARGIN_X 6
+
+#ifndef __MAC_10_10
+#define __MAC_10_10         101000
+#endif
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
+// This code is available since 10.8 but public only since 10.10
+typedef struct {
+	NSInteger major;
+	NSInteger minor;
+	NSInteger patch;
+} NSOperatingSystemVersion;
+
+@interface NSProcessInfo ()
+- (NSOperatingSystemVersion)operatingSystemVersion;
+- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
+@end
+
+#endif
 
 @implementation PSMSequelProTabStyle
 
@@ -46,8 +65,25 @@
 - (id) init
 {
     if ( (self = [super init]) ) {
-		systemVersion = 0;
-		Gestalt(gestaltSystemVersion, &systemVersion);
+		// Avoid call to the deprecated (10.8+) Gestalt() function.
+		// This code actually belongs in it's own class, but since both PSMTabBar.framework
+		// and SP itself would need it, the loader will complain about a duplicate class implementation.
+		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
+		if([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
+			NSOperatingSystemVersion os10_7_0 = {10,7,0};
+			NSOperatingSystemVersion os10_10_0 = {10,10,0};
+			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
+			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
+		}
+		else {
+			SInt32 versionMajor = 0;
+			SInt32 versionMinor = 0;
+			Gestalt(gestaltSystemVersionMajor, &versionMajor);
+			Gestalt(gestaltSystemVersionMinor, &versionMinor);
+			
+			systemVersionIsAtLeast10_7_0  = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 7));
+			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
+		}
 
         sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose"]];
         sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Pressed"]];
@@ -228,7 +264,6 @@
     return result;
 }
 
-
 - (CGFloat)minimumWidthOfTabCell:(PSMTabBarCell *)cell
 {
     CGFloat resultWidth = 0.0f;
@@ -309,6 +344,7 @@
 - (NSAttributedString *)attributedObjectCountValueForTabCell:(PSMTabBarCell *)cell
 {
     NSString *contents = [NSString stringWithFormat:@"%lu", (unsigned long)[cell count]];
+
     return [[[NSMutableAttributedString alloc] initWithString:contents attributes:_objectCountStringAttributes] autorelease];
 }
 
@@ -408,15 +444,17 @@
 	[[NSGraphicsContext currentContext] setShouldAntialias:NO];
 
 	float backgroundCalibratedWhite = 0.495f;
-	if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.55f;
+	if (systemVersionIsAtLeast10_7_0)  backgroundCalibratedWhite = 0.55f;
+	if (systemVersionIsAtLeast10_10_0) backgroundCalibratedWhite = 0.68f;
 
 	float lineCalibratedWhite = [[NSColor darkGrayColor] whiteComponent];
 	float shadowAlpha = 0.4f;
 
 	// When the window is in the background, tone down the colours
-	if (![[tabBar window] isMainWindow] || ![NSApp isActive]) {
+	if ((![[tabBar window] isMainWindow] && ![[[tabBar window] attachedSheet] isMainWindow]) || ![NSApp isActive]) {
 		backgroundCalibratedWhite = 0.73f;
-		if (systemVersion >= 0x1070) backgroundCalibratedWhite = 0.79f;
+		if (systemVersionIsAtLeast10_7_0)  backgroundCalibratedWhite = 0.79f;
+		if (systemVersionIsAtLeast10_10_0) backgroundCalibratedWhite = 0.86f;
 		lineCalibratedWhite = 0.49f;
 		shadowAlpha = 0.3f;
 	}
@@ -424,6 +462,32 @@
 	// fill in background of tab bar
 	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
 	NSRectFillUsingOperation(rect, NSCompositeSourceAtop);
+	
+	//draw tab bar cells background color
+	NSColor *fillColor;
+	NSUInteger currentIndex = -1;
+	for (PSMTabBarCell *aCell in [tabBar cells]) {
+		currentIndex++;
+		//ignore tabs without color
+		if(![aCell backgroundColor])
+			continue;
+		// Set up colours
+		if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
+			//active window, background cell
+			fillColor = [[aCell backgroundColor] shadowWithLevel:0.15];
+		} else {
+			//background window, background cell
+			NSColor *dark = [[aCell backgroundColor] shadowWithLevel:0.15];
+			fillColor = [NSColor colorWithCalibratedHue:[dark hueComponent] saturation:[dark saturationComponent] brightness:([dark brightnessComponent] * 1.28) alpha:1.0f];
+		}
+		[fillColor set];
+		NSRect frame = [aCell frame];
+		//the leftmost cell has no left border when inactive so we need to expand it's area to the left window edge
+		if(currentIndex == 0 && [aCell state] == NSOffState) {
+			frame = NSMakeRect(0.0, frame.origin.y, frame.size.width + kPSMSequelProTabCornerRadius + 0.5f, frame.size.height);
+		}
+		NSRectFillUsingOperation(frame, NSCompositeSourceAtop);
+	}
 
 	// Draw horizontal line across bottom edge, with a slight bottom glow
 	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0f] set];
@@ -450,8 +514,6 @@
 	
 	[NSGraphicsContext restoreGraphicsState];
 }
-
-
 
 // Step 3
 - (void)drawTabCell:(PSMTabBarCell *)cell
@@ -505,22 +567,51 @@
 	}
 
 	// Set up colours
-	if ([[tabBar window] isMainWindow] && [NSApp isActive]) {
+	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
 		lineColor = [NSColor darkGrayColor];
-		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.63f:0.59f alpha:1.0f];
+		if ([cell state] == NSOnState) { //active window, active cell
+			float tabWhiteComponent = 0.59f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.63f; // 160/255
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.795f; // 202/255
+			
+			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.02f;
+			
+			fillColor = [cell backgroundColor] ? [cell backgroundColor] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
-		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.55f:0.495f alpha:1.0f];		
+		} else { //active window, background cell
+			float tabWhiteComponent = 0.495f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.55f;
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.68f; // 173/255
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
+			if([cell backgroundColor])
+				//should be a slightly darker variant of the color
+				fillColor = [[cell backgroundColor] shadowWithLevel:0.15];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:1.0f];
 		}
 	} else {
 		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
-		if ([cell state] == NSOnState) {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.85f:0.81f alpha:1.0f];
+		if ([cell state] == NSOnState) { //background window, active cell
+			float tabWhiteComponent = 0.81f;
+			if (systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.85f;
+			if (systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.957f; // 244/255
+			
+			if (![[[tabBar window] toolbar] isVisible]) tabWhiteComponent += 0.01f;
+
+			//create a slightly desaturated variant (gray can't be desaturated so we instead make it brighter)
+			fillColor = [cell backgroundColor] ? [NSColor colorWithCalibratedHue:[[cell backgroundColor] hueComponent] saturation:[[cell backgroundColor] saturationComponent] brightness:([[cell backgroundColor] brightnessComponent] * 1.28 ) alpha:1.0f] : [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.4f];
-		} else {
-			fillColor = [NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070)?0.79f:0.73f alpha:1.0f];
+		} else { //background window, background cell
+			float tabWhiteComponent = 0.73f;
+			if(systemVersionIsAtLeast10_7_0)  tabWhiteComponent = 0.79f;
+			if(systemVersionIsAtLeast10_10_0) tabWhiteComponent = 0.86f; // 219/255
+			fillColor = [NSColor colorWithCalibratedWhite:tabWhiteComponent alpha:1.0f];
+			
+			//make it dark first, then desaturate
+			if([cell backgroundColor]) {
+				NSColor *dark = [[cell backgroundColor] shadowWithLevel:0.15];
+				fillColor = [NSColor colorWithCalibratedHue:[dark hueComponent] saturation:[dark saturationComponent] brightness:([dark brightnessComponent] * 1.28) alpha:1.0f];
+			}
 			shadowColor = [NSColor colorWithCalibratedWhite:0.0f alpha:0.7f];
 		}
 	}
@@ -538,8 +629,8 @@
 	// Set up the corner bezier paths arc centers
 	topLeftArcCenter = NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
 	topRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + kPSMSequelProTabCornerRadius);
-	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
-	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius);
+	bottomLeftArcCenter = NSMakePoint(aRect.origin.x + kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius -0.5f);
+	bottomRightArcCenter = NSMakePoint(aRect.origin.x + aRect.size.width - kPSMSequelProTabCornerRadius + 0.5f, aRect.origin.y + aRect.size.height - kPSMSequelProTabCornerRadius -0.5f);
 
 	// Construct the outline path
 	if (drawLeftEdge) {
@@ -576,6 +667,18 @@
 	// Fill the tab with a solid colour
 	[fillColor set];
 	[fillBezier fill];
+	
+	//if we use a non-standard color draw a little highlight along the top edge
+	if([cell backgroundColor] && [cell state] == NSOnState) {
+		NSColor *highlightColor = [[cell backgroundColor] highlightWithLevel:0.5f];
+		[highlightColor set];
+		
+		NSBezierPath *highlightBezier = [NSBezierPath bezierPath];
+		[highlightBezier moveToPoint:NSMakePoint(aRect.origin.x - kPSMSequelProTabCornerRadius+2.5f, aRect.origin.y+0.5f)];
+		[highlightBezier lineToPoint:NSMakePoint(aRect.origin.x+aRect.size.width+kPSMSequelProTabCornerRadius-1.0f, aRect.origin.y+0.5f)];
+		[highlightBezier setLineWidth:1.0f];
+		[highlightBezier stroke];
+	}
 
 	// Re-stroke without shadow over the fill.
 	[lineColor set];
@@ -609,7 +712,7 @@
 		CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
 		CGContextSaveGState(context);
 		NSPoint topLeft, topRight;
-		CGFloat drawAlpha = ([[tabBar window] isMainWindow] && [NSApp isActive])? 1.0f : 0.7f;
+		CGFloat drawAlpha = (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive])? 1.0f : 0.7f;
 		outlineBezier = [NSBezierPath bezierPath];
 
 		// Calculate the endpoints of the line
@@ -645,10 +748,9 @@
 	
 	[NSGraphicsContext restoreGraphicsState];
 	
-	[self drawInteriorWithTabCell:cell inView:[cell controlView]];
+	[self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 
 }
-
 
 // Step 4
 - (void)drawInteriorWithTabCell:(PSMTabBarCell *)cell inView:(NSView*)controlView
@@ -667,21 +769,13 @@
         if ([cell closeButtonOver]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonOver : sequelProCloseButtonOver;
         if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonDown : sequelProCloseButtonDown;
 
-        if ([controlView isFlipped]) {
-            closeButtonRect.origin.y += closeButtonRect.size.height;
-        }
-        
-        [closeButton compositeToPoint:closeButtonRect.origin operation:NSCompositeSourceOver fraction:1.0f];
+		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
     }
     
     // icon
     if ([cell hasIcon]) {
         NSRect iconRect = [self iconRectForTabCell:cell];
-        NSImage *icon = [[[cell representedObject] identifier] icon];
-        
-		if ([controlView isFlipped]) {
-			iconRect.origin.y += iconRect.size.height;
-        }
+        NSImage *icon = [(id)[[cell representedObject] identifier] icon];
         
         // center in available space (in case icon image is smaller than kPSMTabBarIconWidth)
         if ([icon size].width < kPSMTabBarIconWidth) {
@@ -691,11 +785,12 @@
             iconRect.origin.y -= (kPSMTabBarIconWidth - [icon size].height)/2.0f;
         }
         
-		[icon compositeToPoint:iconRect.origin operation:NSCompositeSourceOver fraction:1.0f];
-        
+		[icon drawInRect:iconRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
+
         // scoot label over
         insetLabelWidth += iconRect.size.width + kPSMTabBarCellPadding;
-    } else {
+    }
+	else {
 		insetLabelWidth += [sequelProCloseButton size].width + kPSMTabBarCellPadding;
 	}
     
@@ -740,7 +835,6 @@
     // draw label
     [[cell attributedStringValue] drawInRect:labelRect];
 }
-
    	
 
 #pragma mark -

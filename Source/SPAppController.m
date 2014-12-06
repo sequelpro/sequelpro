@@ -1,27 +1,33 @@
 //
-//  $Id$
-//
 //  SPAppController.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPKeychain.h"
 #import "SPAppController.h"
@@ -38,26 +44,28 @@
 #import "SPAlertSheets.h"
 #import "SPChooseMenuItemDialog.h"
 #import "SPCustomQuery.h"
+#import "SPFavoritesController.h"
+#import "SPEditorTokens.h"
+#import "SPBundleCommandRunner.h"
+#import "SPWindowManagement.h"
+#import "SPCopyTable.h"
+#import "SPSyntaxParser.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
 
-#import "SPEditorTokens.h"
+@interface SPAppController ()
 
-#pragma mark lex init
+- (void)_copyDefaultThemes;
 
-/*
-* Include all the extern variables and prototypes required for flex (used for syntax highlighting)
-*/
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
+@end
 
 @implementation SPAppController
 
 @synthesize lastBundleBlobFilesDirectory;
+
+#pragma mark -
+#pragma mark Initialisation
 
 /**
  * Initialise the application's main controller, setting itself as the app delegate.
@@ -92,9 +100,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 {
 	// Register application defaults
 	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
-
-	// Migrate old connection favorites to the app's support directory (only uncomment when ready)
-	//SPMigrateConnectionFavoritesData();
+						
+	// Upgrade prefs before any other parts of the app pick up on the values
+	SPApplyRevisionChanges();
 }
 
 /**
@@ -103,7 +111,10 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (void)awakeFromNib
 {
 	// Register url scheme handle
-	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:self andSelector:@selector(handleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
+	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:self
+													   andSelector:@selector(handleEvent:withReplyEvent:)
+													 forEventClass:kInternetEventClass
+														andEventID:kAEGetURL];
 
 	// Set up the prefs controller
 	prefsController = [[SPPreferenceController alloc] init];
@@ -135,7 +146,17 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[[FRFeedbackReporter sharedReporter] reportIfCrash];
 
 	[self reloadBundles:self];
+    [self _copyDefaultThemes];
 
+	// If no documents are open, open one
+	if (![self frontDocument]) {
+		[self newWindow:self];
+
+		// Set autoconnection if appropriate
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
+			[[self frontDocument] connect];
+		}
+	}
 }
 
 /**
@@ -143,17 +164,18 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
 	{
 		[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
 		
 		return NO;
 	}
+	
 	if ([menuItem action] == @selector(newTab:))
 	{
 		return ([[self frontDocumentWindow] attachedSheet] == nil);
 	}
+	
 	if ([menuItem action] == @selector(duplicateTab:))
 	{
 		return ([[self frontDocument] getConnection] != nil);
@@ -185,12 +207,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (IBAction)openConnectionSheet:(id)sender
 {
 	// Avoid opening more than NSOpenPanel
-	if(encodingPopUp){
+	if (encodingPopUp) {
 		NSBeep();
 		return;
 	}
 	
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	
 	[panel setDelegate:self];
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanChooseDirectories:NO];
@@ -198,7 +221,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	[panel setResolvesAliases:YES];
 
 	// If no lastSqlFileEncoding in prefs set it to UTF-8
-	if(![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {
+	if (![[NSUserDefaults standardUserDefaults] integerForKey:SPLastSQLFileEncoding]) {
 		[[NSUserDefaults standardUserDefaults] setInteger:4 forKey:SPLastSQLFileEncoding];
 		[[NSUserDefaults standardUserDefaults] synchronize];
 	}
@@ -209,33 +232,39 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// it will enabled if user selects a *.sql file
 	[encodingPopUp setEnabled:NO];
 
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault, SPFileExtensionSQL, SPBundleFileExtension]];
+
 	// Check if at least one document exists, if so show a sheet
 	if ([self frontDocumentWindow]) {
-		[panel beginSheetForDirectory:nil 
-								 file:@"" 
-								types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, SPBundleFileExtension, nil] 
-					   modalForWindow:[self frontDocumentWindow]
-						modalDelegate:self 
-					   didEndSelector:@selector(openConnectionPanelDidEnd:returnCode:contextInfo:) 
-						  contextInfo:NULL];
+
+		[panel beginSheetModalForWindow:[self frontDocumentWindow] completionHandler:^(NSInteger returnCode) {
+			if (returnCode) {
+				[panel orderOut:self];
+
+				NSMutableArray *filePaths = [NSMutableArray arrayWithCapacity:[[panel URLs] count]];
+
+				[[panel URLs] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+				{
+					[filePaths addObject:[obj path]];
+				}];
+
+				[self application:nil openFiles:filePaths];
+			}
+		}];
 	} 
 	else {
-		NSInteger returnCode = [panel runModalForDirectory:nil file:nil types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, SPBundleFileExtension, nil]];
+		NSInteger returnCode = [panel runModal];
 
-		if (returnCode) [self application:nil openFiles:[panel filenames]];
+		if (returnCode) {
+			NSMutableArray *filePaths = [NSMutableArray arrayWithCapacity:[[panel URLs] count]];
 
-		encodingPopUp = nil;
-	}
-}
+			[[panel URLs] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+			{
+				 [filePaths addObject:[obj path]];
+			}];
 
-/**
- * Invoked when the open connection panel is dismissed.
- */
-- (void)openConnectionPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	if (returnCode) {
-		[panel orderOut:self];
-		[self application:nil openFiles:[panel filenames]];
+			[self application:nil openFiles:filePaths];
+		}
 	}
 
 	encodingPopUp = nil;
@@ -247,22 +276,24 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)application:(NSApplication *)app openFiles:(NSArray *)filenames
 {
-
-	for (NSString *filename in filenames) 
+	for (NSString *filePath in filenames)
 	{
+		//NSString *filePath = [file path];
+
 		// Opens a sql file and insert its content into the Custom Query editor
-		if([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
+		if ([[[filePath pathExtension] lowercaseString] isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
 
 			// Check size and NSFileType
-			NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filename traverseLink:YES];
-			if(attr)
+			NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil];
+			
+			if (attr)
 			{
 				NSNumber *filesize = [attr objectForKey:NSFileSize];
 				NSString *filetype = [attr objectForKey:NSFileType];
 				if(filetype == NSFileTypeRegular && filesize)
 				{
 					// Ask for confirmation if file content is larger than 1MB
-					if([filesize unsignedLongValue] > 1000000)
+					if ([filesize unsignedLongValue] > 1000000)
 					{
 						NSAlert *alert = [[NSAlert alloc] init];
 						[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
@@ -275,7 +306,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 						[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Do you really want to load a SQL file with %@ of data into the Query Editor?", @"message of panel asking for confirmation for loading large text into the query editor"),
 							 [NSString stringForByteSize:[filesize longLongValue]]]];
-						[alert setHelpAnchor:filename];
+
+						[alert setHelpAnchor:filePath];
 						[alert setMessageText:NSLocalizedString(@"Warning",@"warning")];
 						[alert setAlertStyle:NSWarningAlertStyle];
 
@@ -286,7 +318,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 						if(returnCode == NSAlertSecondButtonReturn) return; // Cancel
 						else if(returnCode == NSAlertThirdButtonReturn) {   // Import
 							// begin import process
-							[[[self frontDocument] valueForKeyPath:@"tableDumpInstance"] startSQLImportProcessWithFile:filename];
+							[[[self frontDocument] valueForKeyPath:@"tableDumpInstance"] startSQLImportProcessWithFile:filePath];
 							return;
 						}
 					}
@@ -294,46 +326,60 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			}
 
 			// Attempt to open the file into a string.
+			NSStringEncoding sqlEncoding;
 			NSString *sqlString = nil;
 			
 			// If the user came from an openPanel use the chosen encoding
 			if (encodingPopUp) {
-				NSError *error = nil;
-				sqlString = [NSString stringWithContentsOfFile:filename encoding:[[encodingPopUp selectedItem] tag] error:&error];
-				if(error != nil) {
-					NSAlert *errorAlert = [NSAlert alertWithError:error];
-					[errorAlert runModal];
-					return;
-				}
-			
-			// Otherwise, read while attempting to autodetect the encoding
-			} else {
-				sqlString = [self contentOfFile:filename];
+				sqlEncoding = [[encodingPopUp selectedItem] tag];
+
+			// Otherwise, attempt to autodetect the encoding
+			}
+			else {
+				sqlEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filePath];
+			}
+
+			NSError *error = nil;
+
+			sqlString = [NSString stringWithContentsOfFile:filePath encoding:sqlEncoding error:&error];
+
+			if (error != nil) {
+				NSAlert *errorAlert = [NSAlert alertWithError:error];
+				[errorAlert runModal];
+
+				return;
 			}
 
 			// if encodingPopUp is defined the filename comes from an openPanel and
 			// the encodingPopUp contains the chosen encoding; otherwise autodetect encoding
-			if(encodingPopUp)
+			if (encodingPopUp) {
 				[[NSUserDefaults standardUserDefaults] setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
+			}
 
 			// Check if at least one document exists.  If not, open one.
 			if (![self frontDocument]) {
 				[self newWindow:self];
 				[[self frontDocument] initQueryEditorWithString:sqlString];
-			} else {
-
-				// Pass query to the Query editor of the current document
-				[[self frontDocument] doPerformLoadQueryService:[self contentOfFile:filename]];
 			}
+			else {
+				// Pass query to the Query editor of the current document
+				[[self frontDocument] doPerformLoadQueryService:sqlString];
+			}
+
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
+
+			[[self frontDocument] setSqlFileURL:[NSURL fileURLWithPath:filePath]];
+			[[self frontDocument] setSqlFileEncoding:sqlEncoding];
 
 			break; // open only the first SQL file
 
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPFileExtensionDefault lowercaseString]]) {
+		else if ([[[filePath pathExtension] lowercaseString] isEqualToString:[SPFileExtensionDefault lowercaseString]]) {
 
 			SPWindowController *frontController = nil;
 
-			for (NSWindow *aWindow in [NSApp orderedWindows]) {
+			for (NSWindow *aWindow in [NSApp orderedWindows])
+			{
 				if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
 					frontController = [aWindow windowController];
 					break;
@@ -344,21 +390,23 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
 				[self newWindow:self];
 			// Open the spf file in a new tab if the tab bar is visible
-			} else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
+			}
+			else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
 				if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
 				[frontController addNewConnection:self];
 			}
 
-			[[self frontDocument] setStateFromConnectionFile:filename];
-			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+			[[self frontDocument] setStateFromConnectionFile:filePath];
+
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
+		else if ([[[filePath pathExtension] lowercaseString] isEqualToString:[SPBundleFileExtension lowercaseString]]) {
 
 			NSError *readError = nil;
 			NSString *convError = nil;
 			NSPropertyListFormat format;
 			NSDictionary *spfs = nil;
-			NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", filename] options:NSUncachedRead error:&readError];
+			NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", filePath] options:NSUncachedRead error:&readError];
 
 			spfs = [[NSPropertyListSerialization propertyListFromData:pData 
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
@@ -372,7 +420,9 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
+
 				if (spfs) [spfs release];
+
 				return;
 			}
 
@@ -391,11 +441,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 				// Set global session properties
 				[[NSApp delegate] setSpfSessionDocData:spfsDocData];
-				[[NSApp delegate] setSessionURL:filename];
+				[[NSApp delegate] setSessionURL:[NSURL fileURLWithPath:filePath]];
 
 				// Loop through each defined window in reversed order to reconstruct the last active window
-				for(NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects]) {
-
+				for (NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects])
+				{
 					// Create a new window controller, and set up a new connection view within it.
 					SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
 					NSWindow *newWindow = [newWindowController window];
@@ -409,12 +459,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					// So attempt to set the frame autosave name; this will succeed for the very
 					// first window, and fail for others.
 					BOOL usedAutosave = [newWindow setFrameAutosaveName:@"DBView"];
+
 					if (!usedAutosave) {
 						[newWindow setFrameUsingName:@"DBView"];
 					}
 
-					if([window objectForKey:@"frame"])
+					if ([window objectForKey:@"frame"])
+					{
 						[newWindow setFrame:NSRectFromString([window objectForKey:@"frame"]) display:NO];
+					}
 
 					// Set the window controller as the window's delegate
 					[newWindow setDelegate:newWindowController];
@@ -425,22 +478,23 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					[newWindowController showWindow:self];
 
 					// Loop through all defined tabs for each window
-					for(NSDictionary *tab in [window objectForKey:@"tabs"]) {
-
+					for (NSDictionary *tab in [window objectForKey:@"tabs"])
+					{
 						NSString *fileName = nil;
 						BOOL isBundleFile = NO;
 
 						// If isAbsolutePath then take this path directly
 						// otherwise construct the releative path for the passed spfs file
-						if([[tab objectForKey:@"isAbsolutePath"] boolValue])
+						if ([[tab objectForKey:@"isAbsolutePath"] boolValue]) {
 							fileName = [tab objectForKey:@"path"];
+						}
 						else {
-							fileName = [NSString stringWithFormat:@"%@/Contents/%@", filename, [tab objectForKey:@"path"]];
+							fileName = [NSString stringWithFormat:@"%@/Contents/%@", filePath, [tab objectForKey:@"path"]];
 							isBundleFile = YES;
 						}
 
 						// Security check if file really exists
-						if([fileManager fileExistsAtPath:fileName]) {
+ 						if ([fileManager fileExistsAtPath:fileName]) {
 
 							// Add new the tab
 							if(newWindowController) {
@@ -449,10 +503,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 								[newWindowController addNewConnection:self];
 
 								[[self frontDocument] setIsSavedInBundle:isBundleFile];
-								[[self frontDocument] setStateFromConnectionFile:fileName];
+								if (![[self frontDocument] setStateFromConnectionFile:fileName]) {
+									break;
+								}
 							}
 
-						} else {
+						}
+						else {
 							NSLog(@"Bundle file “%@” does not exists", fileName);
 							NSBeep();
 						}
@@ -462,92 +519,97 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 					[newWindowController selectTabAtIndex:[[window objectForKey:@"selectedTabIndex"] intValue]];
 
 					// Reset setHideForSingleTab
-					if([[NSUserDefaults standardUserDefaults] objectForKey:SPAlwaysShowWindowTabBar])
+					if ([[NSUserDefaults standardUserDefaults] objectForKey:SPAlwaysShowWindowTabBar]) {
 						[newWindowController setHideForSingleTab:[[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]];
-					else
+					}
+					else {
 						[newWindowController setHideForSingleTab:YES];
-
+					}
 				}
-
 			}
 
 			[spfs release];
-			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filename]];
+
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
+		else if ([[[filePath pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) {
 
 			NSFileManager *fm = [NSFileManager defaultManager];
 
 			NSString *themePath = [[NSFileManager defaultManager] applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder error:nil];
 
-			if(!themePath) return;
+			if (!themePath) return;
 
-			if(![fm fileExistsAtPath:themePath isDirectory:nil]) {
-				if(![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+			if (![fm fileExistsAtPath:themePath isDirectory:nil]) {
+				if (![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
 					NSBeep();
 					return;
 				}
 			}
 
-			NSString *newPath = [NSString stringWithFormat:@"%@/%@", themePath, [filename lastPathComponent]];
-			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
-				if(![fm moveItemAtPath:filename toPath:newPath error:nil]) {
+			NSString *newPath = [NSString stringWithFormat:@"%@/%@", themePath, [filePath lastPathComponent]];
+
+			if (![fm fileExistsAtPath:newPath isDirectory:nil]) {
+				if (![fm moveItemAtPath:filePath toPath:newPath error:nil]) {
 					NSBeep();
 					return;
 				}
-			} else {
+			}
+			else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing color theme file", @"error while installing color theme file")]
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The color theme ‘%@’ already exists.", @"the color theme ‘%@’ already exists."), [filename lastPathComponent]]];
+									informativeTextWithFormat:NSLocalizedString(@"The color theme ‘%@’ already exists.", @"the color theme ‘%@’ already exists."), [filePath lastPathComponent]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
+
 				return;
 			}
 		}
-		else if([[[filename pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) {
+		else if ([[[filePath pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) {
 
 			NSFileManager *fm = [NSFileManager defaultManager];
 
 			NSString *bundlePath = [fm applicationSupportDirectoryForSubDirectory:SPBundleSupportFolder error:nil];
 
-			if(!bundlePath) return;
+			if (!bundlePath) return;
 
-			if(![fm fileExistsAtPath:bundlePath isDirectory:nil]) {
-				if(![fm createDirectoryAtPath:bundlePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+			if (![fm fileExistsAtPath:bundlePath isDirectory:nil]) {
+				if (![fm createDirectoryAtPath:bundlePath withIntermediateDirectories:YES attributes:nil error:nil]) {
 					NSBeep();
 					NSLog(@"Couldn't create folder “%@”", bundlePath);
 					return;
 				}
 			}
 
-			NSString *newPath = [NSString stringWithFormat:@"%@/%@", bundlePath, [filename lastPathComponent]];
+			NSString *newPath = [NSString stringWithFormat:@"%@/%@", bundlePath, [filePath lastPathComponent]];
 
 			NSError *readError = nil;
 			NSString *convError = nil;
 			NSPropertyListFormat format;
 			NSDictionary *cmdData = nil;
-			NSString *infoPath = [NSString stringWithFormat:@"%@/%@", filename, SPBundleFileName];
+			NSString *infoPath = [NSString stringWithFormat:@"%@/%@", filePath, SPBundleFileName];
 			NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
 
 			cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
 					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
-			if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSLog(@"“%@/%@” file couldn't be read.", filename, SPBundleFileName);
+			if (!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+				NSLog(@"“%@/%@” file couldn't be read.", filePath, SPBundleFileName);
 				NSBeep();
 				if (cmdData) [cmdData release];
 				return;
-			} else {
+			}
+			else {
 				// Check for installed UUIDs
-				if(![cmdData objectForKey:SPBundleFileUUIDKey]) {
+				if (![cmdData objectForKey:SPBundleFileUUIDKey]) {
 					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing Bundle", @"Open Files : Bundle : UUID : Error dialog title")]
 													 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : UUID : OK button") 
 												   alternateButton:nil 
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.", @"Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file"), [filename lastPathComponent]]];
+										informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ has no UUID which is necessary to identify installed Bundles.", @"Open Files : Bundle: UUID : UUID-Attribute is missing in bundle's command.plist file"), [filePath lastPathComponent]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					[alert runModal];
@@ -556,37 +618,43 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				}
 
 				// Reload Bundles if Sequel Pro didn't run
-				if(![installedBundleUUIDs count])
+				if (![installedBundleUUIDs count]) {
 					[self reloadBundles:self];
+				}
 
-				if([[installedBundleUUIDs allKeys] containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+				if ([[installedBundleUUIDs allKeys] containsObject:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
 					NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Installing Bundle", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog title")]
 													 defaultButton:NSLocalizedString(@"Update", @"Open Files : Bundle : Already-Installed : Update button") 
 												   alternateButton:NSLocalizedString(@"Cancel", @"Open Files : Bundle : Already-Installed : Cancel button")
 													  otherButton:nil 
-										informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A Bundle ‘%@’ is already installed. Do you want to update it?", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog message"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]]];
+										informativeTextWithFormat:NSLocalizedString(@"A Bundle ‘%@’ is already installed. Do you want to update it?", @"Open Files : Bundle : Already-Installed : 'Update Bundle' question dialog message"), [[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"name"]];
 
 					[alert setAlertStyle:NSCriticalAlertStyle];
 					NSInteger answer = [alert runModal];
-					if(answer == NSAlertDefaultReturn) {
+
+					if (answer == NSAlertDefaultReturn) {
 						NSError *error = nil;
 						NSString *removePath = [[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] substringToIndex:([(NSString *)[[installedBundleUUIDs objectForKey:[cmdData objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"] length]-[SPBundleFileName length]-1)];
 						NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", removePath];
-						[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
-						if(error != nil) {
+						
+						[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+						
+						if (error != nil) {
 							alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : Could not delete old bundle before installing new version."), removePath]
 															 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Already-Installed : Delete-Old-Error : OK button") 
 														   alternateButton:nil 
 															  otherButton:nil 
-												informativeTextWithFormat:[error localizedDescription]];
+												informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 							[alert setAlertStyle:NSCriticalAlertStyle];
 							[alert runModal];
 							if (cmdData) [cmdData release];
 							return;
 						}
-					} else {
+					}
+					else {
 						if (cmdData) [cmdData release];
+
 						return;
 					}
 				}
@@ -594,31 +662,36 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 			if (cmdData) [cmdData release];
 
-			if(![fm fileExistsAtPath:newPath isDirectory:nil]) {
-				if(![fm moveItemAtPath:filename toPath:newPath error:nil]) {
+			if (![fm fileExistsAtPath:newPath isDirectory:nil]) {
+				if (![fm moveItemAtPath:filePath toPath:newPath error:nil]) {
 					NSBeep();
-					NSLog(@"Couldn't move “%@” to “%@”", filename, newPath);
+					NSLog(@"Couldn't move “%@” to “%@”", filePath, newPath);
 					return;
 				}
+
 				// Update Bundle Editor if it was already initialized
-				for(id win in [NSApp windows]) {
-					if([[[[win delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
+				for (id win in [NSApp windows])
+				{
+					if ([[[[win delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
 						[[win delegate] reloadBundles:nil];
 						break;
 					}
 				}
+
 				// Update Bundels' menu
 				[self reloadBundles:self];
 
-			} else {
+			}
+			else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while installing Bundle", @"Open Files : Bundle : Install-Error : error dialog title")]
 												 defaultButton:NSLocalizedString(@"OK", @"Open Files : Bundle : Install-Error : OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The Bundle ‘%@’ already exists.", @"Open Files : Bundle : Install-Error : Destination path already exists error dialog message"), [filename lastPathComponent]]];
+									informativeTextWithFormat:NSLocalizedString(@"The Bundle ‘%@’ already exists.", @"Open Files : Bundle : Install-Error : Destination path already exists error dialog message"), [filePath lastPathComponent]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
+
 				return;
 			}
 		}
@@ -640,10 +713,11 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (void)handleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
-
 	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
-	if(url)
+
+	if (url) {
 		[self handleEventWithURL:url];
+	}
 	else {
 		NSBeep();
 		NSLog(@"Error in sequelpro URL scheme");
@@ -737,7 +811,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 		return;
 	}
 
-	NSString *activeProcessID = [[[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
+	NSString *activeProcessID = [[(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
 
 	SPDatabaseDocument *processDocument = nil;
 
@@ -745,7 +819,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// For speed check the front most first otherwise iterate through all
 	if(passedProcessID && [passedProcessID length]) {
 		if([activeProcessID isEqualToString:passedProcessID]) {
-			processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+			processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
 		} else {
 			for (NSWindow *aWindow in [NSApp orderedWindows]) {
 				if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
@@ -764,7 +838,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	// if no processDoc found and no passedProcessID was passed execute
 	// command at front most doc
 	if(!processDocument && !passedProcessID)
-		processDocument = [[[self frontDocumentWindow] delegate] selectedTableDocument];
+		processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
 
 	if(processDocument && command) {
 		if([command isEqualToString:@"passToDoc"]) {
@@ -981,15 +1055,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 				return;
 			}
 
-			NSString *output = [cmd runBashCommandWithEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:self 
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"General", @"general menu item label"), @"scope",
-													uuid, SPBundleFileInternalexecutionUUID,
-													nil]
-											error:&err];
+			NSString *output = [SPBundleCommandRunner runBashCommand:cmd 
+													 withEnvironment:env 
+											  atCurrentDirectoryPath:nil 
+													  callerInstance:self 
+														 contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+																	  ([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+																	  NSLocalizedString(@"General", @"general menu item label"), @"scope",
+																	  uuid, SPBundleFileInternalexecutionUUID, nil]
+															   error:&err];
 
 			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
@@ -1109,14 +1183,14 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 	id firstResponder = [[NSApp keyWindow] firstResponder];
 	if([firstResponder respondsToSelector:@selector(executeBundleItemForInputField:)]) {
-		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"]) ;
+		BOOL selfIsQueryEditor = ([[[firstResponder class] description] isEqualToString:@"SPTextView"] && [[firstResponder delegate] respondsToSelector:@selector(currentQueryRange)]);
 		NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 		currentSelectionRange = [firstResponder selectedRange];
 		currentWordRange = [firstResponder getRangeForCurrentWord];
 		currentLineRange = [[firstResponder string] lineRangeForRange:NSMakeRange([firstResponder selectedRange].location, 0)];
 
 		if(selfIsQueryEditor) {
-			currentQueryRange = [[firstResponder delegate] currentQueryRange];
+			currentQueryRange = [(SPCustomQuery *)[firstResponder delegate] currentQueryRange];
 		} else {
 			currentQueryRange = currentLineRange;
 		}
@@ -1125,8 +1199,8 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
 
-		if(selfIsQueryEditor && [[firstResponder delegate] currentQueryRange].length)
-			[env setObject:[[firstResponder string] substringWithRange:[[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
+		if(selfIsQueryEditor && [(SPCustomQuery *)[firstResponder delegate] currentQueryRange].length)
+			[env setObject:[[firstResponder string] substringWithRange:[(SPCustomQuery *)[firstResponder delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
 
 		if(currentSelectionRange.length)
 			[env setObject:[[firstResponder string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
@@ -1147,7 +1221,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 			NSIndexSet *selectedRows = [firstResponder selectedRowIndexes];
 			NSUInteger rowIndex = [selectedRows firstIndex];
 			while ( rowIndex != NSNotFound ) {
-				[sel addObject:[NSString stringWithFormat:@"%ld", rowIndex]];
+				[sel addObject:[NSString stringWithFormat:@"%ld", (long)rowIndex]];
 				rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
 			}
 			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
@@ -1207,121 +1281,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 - (NSArray*)runningActivities
 {
 	return (NSArray*)runningActivitiesArray;
-}
-
-#pragma mark -
-#pragma mark Window management
-
-/**
- * Create a new window, containing a single tab.
- */
-- (IBAction)newWindow:(id)sender
-{
-	static NSPoint cascadeLocation = {.x = 0, .y = 0};
-
-	// Create a new window controller, and set up a new connection view within it.
-	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
-	NSWindow *newWindow = [newWindowController window];
-
-	// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
-	// and convert to a top left point.
-	NSPoint topLeftPoint = [newWindow frame].origin;
-	topLeftPoint.y += [newWindow frame].size.height;
-
-	// The first window should use autosaving; subsequent windows should cascade.
-	// So attempt to set the frame autosave name; this will succeed for the very
-	// first window, and fail for others.
-	BOOL usedAutosave = [newWindow setFrameAutosaveName:@"DBView"];
-	if (!usedAutosave) {
-		[newWindow setFrameUsingName:@"DBView"];
-	}
-
-	// Add the connection view
-	[newWindowController addNewConnection:self];
-
-	// Cascade according to the statically stored cascade location.
-	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
-
-	// Set the window controller as the window's delegate
-	[newWindow setDelegate:newWindowController];
-
-	// Show the window, and perform frontmost tasks again once the window has drawn
-	[newWindowController showWindow:self];
-	[[newWindowController selectedTableDocument] didBecomeActiveTabInWindow];
-}
-
-/**
- * Create a new tab in the frontmost window.
- */
-- (IBAction)newTab:(id)sender
-{
-	SPWindowController *frontController = nil;
-
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			frontController = [aWindow windowController];
-			break;
-		}
-	}
-
-	// If no window was found, create a new one
-	if (!frontController) {
-		[self newWindow:self];
-	} else {
-		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
-		[frontController addNewConnection:self];
-	}
-}
-
-/**
- * Duplicate the current connection tab
- */
-- (IBAction)duplicateTab:(id)sender
-{
-	SPDatabaseDocument *theFrontDocument = [self frontDocument];
-	if (!theFrontDocument) return [self newTab:sender];
-
-	// Add a new tab to the window
-	if ([[self frontDocumentWindow] isMiniaturized]) [[self frontDocumentWindow] deminiaturize:self];
-	[[[self frontDocumentWindow] windowController] addNewConnection:self];
-
-	// Get the state of the previously-frontmost document
-	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:YES], @"connection",
-										[NSNumber numberWithBool:YES], @"history",
-										[NSNumber numberWithBool:YES], @"session",
-										[NSNumber numberWithBool:YES], @"query",
-										[NSNumber numberWithBool:YES], @"password",
-										nil];
-	NSMutableDictionary *theFrontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
-
-	// Ensure it's set to autoconnect
-	[theFrontState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
-
-	// Set the connection on the new tab
-	[[self frontDocument] setState:theFrontState];
-}
-
-/**
- * Retrieve the frontmost document window; returns nil if not found.
- */
-- (NSWindow *) frontDocumentWindow
-{
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			return aWindow;
-		}
-	}
-
-	return nil;
-}
-
-/**
- * When tab drags start, bring all the windows in front of other applications.
- */
-- (void)tabDragStarted:(id)sender
-{
-	[NSApp arrangeInFront:self];
 }
 
 #pragma mark -
@@ -1561,7 +1520,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Couldn't create Application Support Bundle folder!\nError: %@", @"Couldn't create Application Support Bundle folder!\nError: %@"), [appPathError localizedDescription]]];
+							informativeTextWithFormat:NSLocalizedString(@"Couldn't create Application Support Bundle folder!\nError: %@", @"Couldn't create Application Support Bundle folder!\nError: %@"), [appPathError localizedDescription]];
 
 		[alert runModal];
 		return;
@@ -1655,7 +1614,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 											if([cmdDataOld objectForKey:SPBundleFileDefaultBundleWasModifiedKey]) {
 
 												// Duplicate Bundle, change the UUID and rename the menu label
-												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (NSUInteger)(random() % 35000), SPUserBundleFileExtension];
+												NSString *duplicatedBundle = [NSString stringWithFormat:@"%@/%@_%ld.%@", [bundlePaths objectAtIndex:0], [bundle substringToIndex:([bundle length] - [SPUserBundleFileExtension length] - 1)], (long)(random() % 35000), SPUserBundleFileExtension];
 												if(![[NSFileManager defaultManager] copyItemAtPath:oldBundle toPath:duplicatedBundle error:nil]) {
 													NSLog(@"Couldn't copy “%@” to update it", bundle);
 													NSBeep();
@@ -1668,11 +1627,13 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 												NSData *dData = [NSData dataWithContentsOfFile:duplicatedBundleCommand options:NSUncachedRead error:&readError1];
 												[dupData setDictionary:[NSPropertyListSerialization propertyListFromData:dData 
 														mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError1]];
-												if(!dupData && ![dupData count] || readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+												
+												if ((!dupData && ![dupData count]) || (readError1 != nil || [convError1 length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0))) {
 													NSLog(@"“%@” file couldn't be read.", duplicatedBundleCommand);
 													NSBeep();
 													continue;
 												}
+												
 												[dupData setObject:[NSString stringWithNewUUID] forKey:SPBundleFileUUIDKey];
 												NSString *orgName = [dupData objectForKey:SPBundleFileNameKey];
 												[dupData setObject:[NSString stringWithFormat:@"%@ (user)", orgName] forKey:SPBundleFileNameKey];
@@ -1681,14 +1642,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 												error = nil;
 												NSString *moveToTrashCommand = [NSString stringWithFormat:@"osascript -e 'tell application \"Finder\" to move (POSIX file \"%@\") to the trash'", oldBundle];
-												[moveToTrashCommand runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&error];
+												
+												[SPBundleCommandRunner runBashCommand:moveToTrashCommand withEnvironment:nil atCurrentDirectoryPath:nil error:&error];
 
 												if(error != nil) {
 													NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while moving “%@” to Trash.", @"error while moving “%@” to trash"), [[installedBundleUUIDs objectForKey:[cmdDataOld objectForKey:SPBundleFileUUIDKey]] objectForKey:@"path"]]
 																					 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 																				   alternateButton:nil 
 																					  otherButton:nil 
-																		informativeTextWithFormat:[error localizedDescription]];
+																		informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 													[alert setAlertStyle:NSCriticalAlertStyle];
 													[alert runModal];
@@ -1714,7 +1676,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 									NSString *orgPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:1], bundle];
 									NSString *newPath = [NSString stringWithFormat:@"%@/%@", [bundlePaths objectAtIndex:0], bundle];
 									if([fm fileExistsAtPath:newPath isDirectory:&isDir] && isDir)
-										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (NSUInteger)(random() % 35000)];
+										newPath = [NSString stringWithFormat:@"%@_%ld", newPath, (long)(random() % 35000)];
 									error = nil;
 									[fm copyItemAtPath:orgPath toPath:newPath error:&error];
 									if(error != nil) {
@@ -1833,7 +1795,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The following default Bundles were updated:\n%@\nYour modifications were stored as “(user)”.", @"the following default bundles were updated:\n%@\nyour modifications were stored as “(user)”."), infoAboutUpdatedDefaultBundles]];
+							informativeTextWithFormat:NSLocalizedString(@"The following default Bundles were updated:\n%@\nYour modifications were stored as “(user)”.", @"the following default bundles were updated:\n%@\nyour modifications were stored as “(user)”."), infoAboutUpdatedDefaultBundles];
 
 		[alert runModal];
 		[self reloadBundles:nil];
@@ -2061,41 +2023,25 @@ YY_BUFFER_STATE yy_scan_string (const char *);
  */
 - (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
 {
-	[preferences removeObjectsForKeys:[NSArray arrayWithObjects:@"ContentFilters",
-																@"favorites",
-																@"lastSqlFileName",
-																@"NSNavLastRootDirectory",
-																@"openPath",
-																@"queryFavorites",
-																@"queryHistory",
-																@"tableColumnWidths",
-																@"savePath",
-																@"NSRecentDocumentRecords",
-																nil]];
-
+	[preferences removeObjectsForKeys:
+	 [NSArray arrayWithObjects:
+	  @"ContentFilters",
+	  @"favorites",
+	  @"lastSqlFileName",
+	  @"NSNavLastRootDirectory",
+	  @"openPath",
+	  @"queryFavorites",
+	  @"queryHistory",
+	  @"tableColumnWidths",
+	  @"savePath",
+	  @"NSRecentDocumentRecords",
+	  nil]];
+	
 	return preferences;
 }
 
 #pragma mark -
 #pragma mark Other methods
-
-/**
- * Override the default open-blank-document methods to automatically connect automatically opened windows
- * if the preference is set
- */
-- (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender
-{
-	// Manually open a table document
-	[self newWindow:self];
-
-	// Set autoconnection if appropriate
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
-		[[self frontDocument] connect];
-	}
-
-	// Return NO to the automatic opening
-	return NO;
-}
 
 /**
  * Implement this method to prevent the above being called in the case of a reopen (for example, clicking 
@@ -2111,79 +2057,6 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 	
 	// Return YES to the automatic opening
 	return YES;
-}
-
-/**
- * Insert content of a plain text file for a given path.
- * In addition it tries to figure out the file's text encoding heuristically.
- */
-- (NSString *)contentOfFile:(NSString *)aPath
-{
-	NSError *err = nil;
-	NSStringEncoding enc;
-	NSString *content = nil;
-
-	// Make usage of the UNIX command "file" to get an info
-	// about file type and encoding.
-	NSTask *task=[[NSTask alloc] init];
-	NSPipe *pipe=[[NSPipe alloc] init];
-	NSFileHandle *handle;
-	NSString *result;
-	[task setLaunchPath:@"/usr/bin/file"];
-	[task setArguments:[NSArray arrayWithObjects:aPath, @"-Ib", nil]];
-	[task setStandardOutput:pipe];
-	handle=[pipe fileHandleForReading];
-	[task launch];
-	result=[[NSString alloc] initWithData:[handle readDataToEndOfFile]
-		encoding:NSASCIIStringEncoding];
-
-	[pipe release];
-	[task release];
-
-	// UTF16/32 files are detected as application/octet-stream resp. audio/mpeg
-	if( [result hasPrefix:@"text/plain"] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:SPFileExtensionSQL] 
-		|| [[[aPath pathExtension] lowercaseString] isEqualToString:@"txt"]
-		|| [result hasPrefix:@"audio/mpeg"] 
-		|| [result hasPrefix:@"application/octet-stream"]
-	)
-	{
-		// if UTF16/32 cocoa will try to find the correct encoding
-		if([result hasPrefix:@"application/octet-stream"] || [result hasPrefix:@"audio/mpeg"] || [result rangeOfString:@"utf-16"].length)
-			enc = 0;
-		else if([result rangeOfString:@"utf-8"].length)
-			enc = NSUTF8StringEncoding;
-		else if([result rangeOfString:@"iso-8859-1"].length)
-			enc = NSISOLatin1StringEncoding;
-		else if([result rangeOfString:@"us-ascii"].length)
-			enc = NSASCIIStringEncoding;
-		else 
-			enc = 0;
-
-		if(enc == 0) // cocoa tries to detect the encoding
-			content = [NSString stringWithContentsOfFile:aPath usedEncoding:&enc error:&err];
-		else
-			content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
-
-		if(content)
-		{
-			[result release];
-			return content;
-		}
-		// If UNIX "file" failed try cocoa's encoding detection
-		content = [NSString stringWithContentsOfFile:aPath encoding:enc error:&err];
-		if(content)
-		{
-			[result release];
-			return content;
-		}
-	}
-	
-	[result release];
-
-	NSLog(@"%@ ‘%@’.", NSLocalizedString(@"Couldn't read the file content of", @"Couldn't read the file content of"), aPath);
-	
-	return @"";
 }
 
 - (NSArray *)bundleCategoriesForScope:(NSString*)scope
@@ -2227,64 +2100,143 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 }
 
 /**
- * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller
+ * If Sequel Pro is terminating kill all running BASH scripts and release all HTML output controller.
+ *
+ * TODO: Remove a lot of this duplicate code.
  */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+	BOOL shouldSaveFavorites = NO;
 
-	if(lastBundleBlobFilesDirectory != nil)
+	if (lastBundleBlobFilesDirectory != nil) {
 		[[NSFileManager defaultManager] removeItemAtPath:lastBundleBlobFilesDirectory error:nil];
+	}
 
-	// Kill all registered BASH commands
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			for(SPDatabaseDocument *doc in [[aWindow windowController] documents]) {
-				for(NSDictionary* cmd in [doc runningActivities]) {
-					NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
-					NSTask *killTask = [[NSTask alloc] init];
-					[killTask setLaunchPath:@"/bin/sh"];
-					[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
-					[killTask launch];
-					[killTask waitUntilExit];
-					[killTask release];
-				}
+	// Iterate through each open window
+	for (NSWindow *aWindow in [NSApp orderedWindows]) 
+	{
+		if (![[aWindow windowController] isMemberOfClass:[SPWindowController class]]) continue;
+
+		// Iterate through each document in the window
+		for (SPDatabaseDocument *doc in [[aWindow windowController] documents]) 
+		{
+
+			// Kill any BASH commands which are currently active
+			for (NSDictionary* cmd in [doc runningActivities]) 
+			{
+				NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
+				NSTask *killTask = [[NSTask alloc] init];
+				
+				[killTask setLaunchPath:@"/bin/sh"];
+				[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
+				[killTask launch];
+				[killTask waitUntilExit];
+				[killTask release];
+			}
+
+			// If the connection view is active, mark the favourites for saving
+			if (![doc getConnection]) {
+				shouldSaveFavorites = YES;
 			}
 		}
 	}
-	for(NSDictionary* cmd in [self runningActivities]) {
-		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+	
+	for (NSDictionary* cmd in [self runningActivities]) 
+	{
+		NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
 		NSTask *killTask = [[NSTask alloc] init];
+		
 		[killTask setLaunchPath:@"/bin/sh"];
-		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
 		[killTask launch];
 		[killTask waitUntilExit];
 		[killTask release];
 	}
 
-	for(id c in bundleHTMLOutputController) {
+	for (id c in bundleHTMLOutputController) 
+	{
 		[c release];
+	}
+	
+	// If required, make sure we save any changes made to the connection outline view's state
+	if (shouldSaveFavorites) {
+		[[SPFavoritesController sharedFavoritesController] saveFavoritesSynchronously];
 	}
 
 	return YES;
+}
 
+#pragma mark -
+#pragma mark Private API
+
+/**
+ * Copy default themes, when we start the app.
+ */
+- (void)_copyDefaultThemes
+{
+	NSError *appPathError = nil;
+	NSFileManager *fm = [NSFileManager defaultManager];
+    
+    NSString *defaultThemesPath = [NSString stringWithFormat:@"%@/Contents/SharedSupport/Default Themes", [[NSBundle mainBundle] bundlePath]];
+    NSString *appSupportThemesPath = [fm applicationSupportDirectoryForSubDirectory:SPThemesSupportFolder createIfNotExists:YES error:&appPathError];
+	
+	// If ~/Library/Application Path/Sequel Pro/Themes couldn't be created bail
+	if (appPathError != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button")
+									   alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:NSLocalizedString(@"Couldn't create Application Support Theme folder!\nError: %@", @"Couldn't create Application Support Theme folder!\nError: %@"), [appPathError localizedDescription]];
+        
+		[alert runModal];
+		return;
+	}
+    
+    NSError *error = nil;
+    NSError *copyError = nil;
+    NSArray *defaultThemes = [fm contentsOfDirectoryAtPath:defaultThemesPath error:&error];
+	
+    if (defaultThemes && [defaultThemes count] && error == nil) {
+        for (NSString *defaultTheme in defaultThemes) 
+		{
+            if (![[[defaultTheme pathExtension] lowercaseString] isEqualToString:[SPColorThemeFileExtension lowercaseString]]) continue;
+            
+            NSString *defaultThemeFullPath = [NSString stringWithFormat:@"%@/%@", defaultThemesPath, defaultTheme];
+            NSString *appSupportThemeFullPath = [NSString stringWithFormat:@"%@/%@", appSupportThemesPath, defaultTheme];
+            
+            if ([fm fileExistsAtPath:appSupportThemeFullPath]) continue;
+            
+			[fm copyItemAtPath:defaultThemeFullPath toPath:appSupportThemeFullPath error:&copyError];
+        }
+    }
+    
+    // If Themes could not be copied, show error message
+	if (copyError != nil) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Themes Installation Error", @"themes installation error")
+										 defaultButton:NSLocalizedString(@"OK", @"OK button")
+									   alternateButton:nil
+                                           otherButton:nil
+                             informativeTextWithFormat:NSLocalizedString(@"Couldn't copy default themes to Application Support Theme folder!\nError: %@", @"Couldn't copy default themes to Application Support Theme folder!\nError: %@"), [copyError localizedDescription]];
+        
+		[alert runModal];
+		
+		return;
+	}
 }
 
 #pragma mark -
 
-/**
- * Deallocate
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	if(bundleItems) [bundleItems release];
-	if(bundleUsedScopes) [bundleUsedScopes release];
-	if(bundleHTMLOutputController) [bundleHTMLOutputController release];
-	if(bundleCategories) [bundleCategories release];
-	if(bundleTriggers) [bundleTriggers release];
-	if(bundleKeyEquivalents) [bundleKeyEquivalents release];
-	if(installedBundleUUIDs) [installedBundleUUIDs release];
+	if (bundleItems) [bundleItems release];
+	if (bundleUsedScopes) [bundleUsedScopes release];
+	if (bundleHTMLOutputController) [bundleHTMLOutputController release];
+	if (bundleCategories) [bundleCategories release];
+	if (bundleTriggers) [bundleTriggers release];
+	if (bundleKeyEquivalents) [bundleKeyEquivalents release];
+	if (installedBundleUUIDs) [installedBundleUUIDs release];
 	if (runningActivitiesArray) [runningActivitiesArray release];
 
 	[prefsController release], prefsController = nil;

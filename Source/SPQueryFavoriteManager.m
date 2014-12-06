@@ -1,46 +1,50 @@
 //
-//  $Id$
-//
 //  SPQueryFavoriteManager.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Aug 23, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on Aug 23, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPQueryFavoriteManager.h"
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
+#import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
-#ifndef SP_REFACTOR
-#import <BWToolkitFramework/BWAnchoredButtonBar.h>
-#endif
+#import "SPSplitView.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
 
 #define SP_Int(x) [NSNumber numberWithInteger:x]
 
-@interface SPQueryFavoriteManager (Private)
+@interface SPQueryFavoriteManager ()
 
 - (void)_initWithNoSelection;
 
@@ -49,13 +53,13 @@
 @implementation SPQueryFavoriteManager
 
 /**
- * Initialize the manager with the supplied delegate
+ * Initialize the manager with the supplied delegate.
  */
 - (id)initWithDelegate:(id)managerDelegate
 {
 	if ((self = [super initWithWindowNibName:@"QueryFavoriteManager"])) {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
@@ -63,20 +67,16 @@
 		
 		if(managerDelegate == nil) {
 			NSBeep();
-			NSLog(@"Query Favorite Manger was called without a delegate.");
+			NSLog(@"Query Favorite Manager was called without a delegate.");
 			return nil;
 		}
 		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+#ifndef SP_CODA
 		delegatesFileURL = [tableDocumentInstance fileURL];
+#endif
 	}
 	
 	return self;
-}
-
-- (void)dealloc
-{
-	[favorites release];
-	[super dealloc];
 }
 
 /**
@@ -84,20 +84,23 @@
  */
 - (void)awakeFromNib
 {
+#ifndef SP_CODA
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 			@"Global", @"name", 
 			@"", @"headerOfFileURL",
 			@"", @"query",
 			nil]];
 
-#ifndef SP_REFACTOR
+	// Set up the split view
+	[favoritesSplitView setMinSize:152.f ofSubviewAtIndex:0];
+	[favoritesSplitView setMinSize:385.f ofSubviewAtIndex:1];
+
 	// Build data source for global queryFavorites (as mutable copy! otherwise each
 	// change will be stored in the prefs at once)
 	if([prefs objectForKey:SPQueryFavorites]) {
 		for(id fav in [prefs objectForKey:SPQueryFavorites])
 			[favorites addObject:[[fav mutableCopy] autorelease]];
 	}
-#endif
 
 	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"name", 
@@ -127,10 +130,6 @@
 
 	// Set Remove button state
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
-	
-#ifndef SP_REFACTOR /* split view delegate */
-	// Set the button bar delegate 
-	[splitViewButtonBar setSplitViewDelegate:self];
 #endif
 }
 
@@ -141,6 +140,7 @@
  * Returns the query favorites array for fileURL.
  * fileURL == nil → global favorites
  */
+#ifndef SP_CODA
 - (NSMutableArray *)queryFavoritesForFileURL:(NSURL *)fileURL
 {
 	NSMutableArray *favs = [NSMutableArray array];
@@ -175,6 +175,7 @@
 
 	return favs;
 }
+#endif
 
 /**
  * This method is only implemented to be compatible with SPTextView.
@@ -192,6 +193,7 @@
  */
 - (IBAction)addQueryFavorite:(id)sender
 {
+#ifndef SP_CODA 
 	NSMutableDictionary *favorite;
 	NSUInteger insertIndex;
 
@@ -205,13 +207,25 @@
 	else
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
 	
+	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
 		insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex]+1;
 		[favorites insertObject:favorite atIndex:insertIndex];
 	} 
-	else {
-		[favorites addObject:favorite];
+
+	// If the DatabaseDocument is an on-disk document, add the favourite to the bottom of it
+	else if (![tableDocumentInstance isUntitled]) {
 		insertIndex = [favorites count] - 1;
+		[favorites addObject:favorite];
+	}
+
+	// Otherwise, add to the bottom of the Global array by default
+	else {
+		insertIndex = 1;
+		while (![[favorites objectAtIndex:insertIndex] objectForKey:@"headerOfFileURL"]) {
+			insertIndex++;
+		}
+		[favorites insertObject:favorite atIndex:insertIndex];
 	}
 
 	[favoritesArrayController rearrangeObjects];
@@ -223,6 +237,7 @@
 
 	[removeButton setEnabled:([favoritesTableView numberOfSelectedRows] > 0)];
 	[[self window] makeFirstResponder:favoriteNameTextField];
+#endif
 }
 
 /**
@@ -241,6 +256,10 @@
  */
 - (IBAction)removeQueryFavorite:(id)sender
 {
+
+	// Complete editing in the window
+	[[sender window] makeFirstResponder:[sender window]];
+
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected query favorites?", @"remove selected query favorites message") 
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
@@ -287,7 +306,7 @@
  */
 - (IBAction)saveFavoriteToFile:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
@@ -300,14 +319,19 @@
 	[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 	
 	[encodingPopUp setEnabled:YES];
-	
-	[panel beginSheetForDirectory:nil file:[favoriteNameTextField stringValue] modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"saveQuery"];
+
+	[panel setNameFieldStringValue:[favoriteNameTextField stringValue]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:@"saveQuery"];
+	}];
 #endif
 }
 
 - (IBAction)exportFavorites:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
 	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
@@ -317,27 +341,29 @@
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setCanCreateDirectories:YES];
 
-	[panel beginSheetForDirectory:nil file:nil modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:@"exportFavorites"];
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self savePanelDidEnd:panel returnCode:returnCode contextInfo:@"exportFavorites"];
+	}];
 #endif
 }
 
 - (IBAction)importFavoritesByAdding:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
+
 	[panel setCanSelectHiddenExtension:YES];
 	[panel setDelegate:self];
 	[panel setCanChooseDirectories:NO];
 	[panel setAllowsMultipleSelection:NO];
-	// [panel setResolvesAliases:YES];
-	
-	[panel beginSheetForDirectory:nil 
-						   file:@"" 
-						  types:[NSArray arrayWithObjects:SPFileExtensionDefault, SPFileExtensionSQL, nil] 
-				 modalForWindow:[self window]
-				  modalDelegate:self 
-				 didEndSelector:@selector(importPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:NULL];
+
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault, SPFileExtensionSQL]];
+
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode)
+	{
+		[self importPanelDidEnd:panel returnCode:returnCode contextInfo:NULL];
+	}];
 #endif
 }
 
@@ -351,7 +377,6 @@
  */
 - (IBAction)insertPlaceholder:(id)sender
 {
-
 	// Look up the sender's tag to determine the placeholder to insert.
 	// Note that tag values alter behaviour slightly - see below.
 	NSDictionary *lookupTable = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -423,6 +448,7 @@
  */
 - (IBAction)closeQueryManagerSheet:(id)sender
 {
+#ifndef SP_CODA
 
 	// First check for ESC if pressed while inline editing
 	if(![sender tag] && isTableCellEditing) {
@@ -447,44 +473,24 @@
 		[[SPQueryController sharedQueryController] replaceFavoritesByArray:
 			[self queryFavoritesForFileURL:delegatesFileURL] forFileURL:delegatesFileURL];
 
-#ifndef SP_REFACTOR
 		// Update global preferences' list
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
-#endif
 
 		// Inform all opened documents to update the query favorites list
 		for(id doc in [[NSApp delegate] orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
-
-
 	}
+#endif
 
 }
 
+#ifndef SP_CODA
 - (IBAction)showHelp:(id)sender
 {
 	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
 }
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMax - 240);
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return (proposedMin + 120);
-}
+#endif
 
 #pragma mark -
 #pragma mark TableView datasource methods
@@ -585,7 +591,7 @@
  */
 - (void)tableView:(NSTableView*)tableView didClickTableColumn:(NSTableColumn *)tableColumn
 {
-	// TODO: Not yet implemented
+	// TODO: Implement me
 	return;
 }
 
@@ -809,14 +815,15 @@
  */
 - (void)importPanelDidEnd:(NSOpenPanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if (returnCode == NSOKButton) {
 
-		NSString *filename = [[panel filenames] objectAtIndex:0];
+		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 		NSError *readError = nil;
 		NSString *convError = nil;
 		NSPropertyListFormat format;
+		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
 
@@ -840,19 +847,31 @@
 			}
 
 			if([spf objectForKey:SPQueryFavorites] && [[spf objectForKey:SPQueryFavorites] count]) {
-				// if([favoritesTableView numberOfSelectedRows] > 0) {
-				// 	// Insert imported queries after the last selected favorite
-				// 	NSUInteger insertIndex = [[favoritesTableView selectedRowIndexes] lastIndex] + 1;
-				// 	NSUInteger i;
-				// 	for(i=0; i<[[spf objectForKey:SPQueryFavorites] count]; i++) {
-				// 		[favorites insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertIndex+i];
-				// 	}
-				// } else {
-				// 	// If no selection add them
-				[favorites addObjectsFromArray:[spf objectForKey:SPQueryFavorites]];
-				// }
+
+				// If the DatabaseDocument is an on-disk document, add the favourites to the bottom of it
+				if (![tableDocumentInstance isUntitled]) {
+					insertionIndexStart = [favorites count];
+					[favorites addObjectsFromArray:[spf objectForKey:SPQueryFavorites]];
+					insertionIndexEnd = [favorites count] - 1;
+				}
+
+				// Otherwise, add to the bottom of the Global array
+				else {
+					NSUInteger i, l;
+					insertionIndexStart = 1;
+					while (![[favorites objectAtIndex:insertionIndexStart] objectForKey:@"headerOfFileURL"]) {
+						insertionIndexStart++;
+					}
+					for (i = 0, l = [[spf objectForKey:SPQueryFavorites] count]; i < l; i++) {
+				 		[favorites insertObject:[[spf objectForKey:SPQueryFavorites] objectAtIndex:i] atIndex:insertionIndexStart + i];
+					}
+					insertionIndexEnd = insertionIndexStart + i;
+				}
+
 				[favoritesArrayController rearrangeObjects];
 				[favoritesTableView reloadData];
+				[favoritesTableView selectRowIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertionIndexStart, insertionIndexEnd - insertionIndexStart)] byExtendingSelection:NO];
+				[favoritesTableView scrollRowToVisible:insertionIndexEnd];
 				[spf release];
 			} else {
 				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
@@ -871,13 +890,12 @@
 #endif
 }
 
-
 /**
  * Save panel did end method.
  */
 - (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if([contextInfo isEqualToString:@"saveQuery"]) {
 		if (returnCode == NSOKButton) {
@@ -923,7 +941,7 @@
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:err];
+									informativeTextWithFormat:@"%@", err];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -939,12 +957,24 @@
 #endif
 }
 
+#pragma mark -
+#pragma mark Private API
+
 - (void)_initWithNoSelection
 {
 	[favoritesTableView selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
 	[[favoriteNameTextField cell] setPlaceholderString:SP_NO_SELECTION_PLACEHOLDER_STRING];
 	[favoriteNameTextField setStringValue:@""];
 	[favoriteQueryTextView setString:@""];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[favorites release];
+	
+	[super dealloc];
 }
 
 @end

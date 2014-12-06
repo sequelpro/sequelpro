@@ -1,19 +1,30 @@
 //  DMLocalizedNibBundle.m
 //
 //  Created by William Jon Shipley on 2/13/05.
-//  Copyright © 2005-2009 Golden % Braeburn, LLC. All rights reserved except as below:
-//  This code is provided as-is, with no warranties or anything. You may use it in your projects as you wish, but you must leave this comment block (credits and copyright) intact. That's the only restriction -- Golden % Braeburn otherwise grants you a fully-paid, worldwide, transferrable license to use this code as you see fit, including but not limited to making derivative works.
-
+//  Copyright (c) 2005-2009 Golden % Braeburn, LLC. All rights reserved except as below:
+//
+//  This code is provided as-is, with no warranties or anything. You may use it in your projects as you wish,
+//  but you must leave this comment block (credits and copyright) intact. That's the only restriction 
+//  -- Golden % Braeburn otherwise grants you a fully-paid, worldwide, transferrable license to use this 
+//  code as you see fit, including but not limited to making derivative works.
 
 #import <Cocoa/Cocoa.h>
 #import <objc/runtime.h>
+#import <Availability.h>
 
+//Backwards compatibility
+#ifndef __MAC_10_8
+#define __MAC_10_8 1080
+#endif
 
 @interface NSBundle (DMLocalizedNibBundle)
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_8
+- (BOOL)deliciousLocalizingLoadNibNamed:(NSString *)fileName owner:(id)owner topLevelObjects:(NSArray **)topLevelObjects;
+#endif
 + (BOOL)deliciousLocalizingLoadNibFile:(NSString *)fileName externalNameTable:(NSDictionary *)context withZone:(NSZone *)zone;
 @end
 
-@interface NSBundle ()
+@interface NSBundle (DMLocalizedNibBundle_Private_API)
 + (void)_localizeStringsInObject:(id)object table:(NSString *)table;
 + (NSString *)_localizedStringForString:(NSString *)string table:(NSString *)table;
 // localize particular attributes in objects
@@ -31,11 +42,19 @@ static NSMutableArray *deliciousBindingKeys = nil;
 
 #pragma mark NSObject
 
-+ (void)load;
++ (void)load
 {
     NSAutoreleasePool *autoreleasePool = [[NSAutoreleasePool alloc] init];
     if (self == [NSBundle class]) {
-        method_exchangeImplementations(class_getClassMethod(self, @selector(loadNibFile:externalNameTable:withZone:)), class_getClassMethod(self, @selector(deliciousLocalizingLoadNibFile:externalNameTable:withZone:)));
+		Method oldM,newM;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_8
+        oldM = class_getInstanceMethod(self, @selector(loadNibNamed:owner:topLevelObjects:));
+        newM = class_getInstanceMethod(self, @selector(deliciousLocalizingLoadNibNamed:owner:topLevelObjects:));
+		method_exchangeImplementations(oldM, newM);
+#endif
+		oldM = class_getClassMethod(self, @selector(loadNibFile:externalNameTable:withZone:));
+		newM = class_getClassMethod(self, @selector(deliciousLocalizingLoadNibFile:externalNameTable:withZone:));
+        method_exchangeImplementations(oldM, newM);
         deliciousBindingKeys = [[NSMutableArray alloc] initWithObjects:
                                     NSMultipleValuesPlaceholderBindingOption,
                                     NSNoSelectionPlaceholderBindingOption,
@@ -46,10 +65,31 @@ static NSMutableArray *deliciousBindingKeys = nil;
     [autoreleasePool release];
 }
 
-
 #pragma mark API
 
-+ (BOOL)deliciousLocalizingLoadNibFile:(NSString *)fileName externalNameTable:(NSDictionary *)context withZone:(NSZone *)zone;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_8
+- (BOOL)deliciousLocalizingLoadNibNamed:(NSString *)fileName owner:(id)owner topLevelObjects:(NSArray **)topLevelObjects
+{
+    fileName = [self pathForResource:fileName ofType:@"nib"];
+    NSString *localizedStringsTableName = [[fileName lastPathComponent] stringByDeletingPathExtension];
+    NSString *localizedStringsTablePath = [[NSBundle mainBundle] pathForResource:localizedStringsTableName ofType:@"strings"];
+    if (localizedStringsTablePath && ![[[localizedStringsTablePath stringByDeletingLastPathComponent] lastPathComponent] isEqualToString:@"English.lproj"]) {
+        
+		NSNib *nib = [[NSNib alloc] initWithContentsOfURL:[NSURL fileURLWithPath:fileName]];
+        BOOL success = [nib instantiateWithOwner:owner topLevelObjects:topLevelObjects];
+		NSMutableArray *topLevelObjectsArray = [NSMutableArray arrayWithArray:*topLevelObjects];
+        [[self class] _localizeStringsInObject:topLevelObjectsArray table:localizedStringsTableName];
+		
+        [nib release];
+        return success;
+		
+    } else {
+		return [self deliciousLocalizingLoadNibNamed:localizedStringsTableName owner:owner topLevelObjects:topLevelObjects];
+    }
+}
+#endif
+
++ (BOOL)deliciousLocalizingLoadNibFile:(NSString *)fileName externalNameTable:(NSDictionary *)context withZone:(NSZone *)zone
 {
     NSString *localizedStringsTableName = [[fileName lastPathComponent] stringByDeletingPathExtension];
     NSString *localizedStringsTablePath = [[NSBundle mainBundle] pathForResource:localizedStringsTableName ofType:@"strings"];
@@ -73,11 +113,13 @@ static NSMutableArray *deliciousBindingKeys = nil;
     }
 }
 
-
+@end
 
 #pragma mark Private API
 
-+ (void)_localizeStringsInObject:(id)object table:(NSString *)table;
+@implementation NSBundle (DMLocalizedNibBundle_Private_API)
+
++ (void)_localizeStringsInObject:(id)object table:(NSString *)table
 {
     if ([object isKindOfClass:[NSArray class]]) {
         NSArray *array = object;
@@ -164,7 +206,7 @@ static NSMutableArray *deliciousBindingKeys = nil;
             } else if ([view isKindOfClass:[NSSegmentedControl class]]) {
                 NSSegmentedControl *segmentedControl = (NSSegmentedControl *)control;
                 
-                NSUInteger segmentIndex, segmentCount = [segmentedControl segmentCount];
+                NSInteger segmentIndex, segmentCount = [segmentedControl segmentCount];
                 for (segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
                     NSString *localizedSegmentLabel = [self _localizedStringForString:[segmentedControl labelForSegment:segmentIndex] table:table];
                     if (localizedSegmentLabel)
@@ -222,7 +264,7 @@ static NSMutableArray *deliciousBindingKeys = nil;
     }
 }
 
-+ (NSString *)_localizedStringForString:(NSString *)string table:(NSString *)table;
++ (NSString *)_localizedStringForString:(NSString *)string table:(NSString *)table
 {
     if (![string length])
         return nil;
@@ -234,10 +276,8 @@ static NSMutableArray *deliciousBindingKeys = nil;
     } else { 
 #ifdef BETA_BUILD
         NSLog(@"        not going to localize string %@", string);
-        return string; // [string uppercaseString]
-#else
-        return string;
 #endif
+        return nil;
     }
 }
 

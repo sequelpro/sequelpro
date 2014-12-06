@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLStreamingResult.h
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 @interface SPMySQLStreamingResult : SPMySQLResult {
 
@@ -45,6 +43,8 @@
 	IMP isConnectedPtr;
 	SEL isConnectedSelector;
 }
+
+@property (readonly, assign) BOOL dataDownloaded;
 
 - (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection;
 

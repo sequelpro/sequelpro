@@ -1,6 +1,13 @@
-The SPMySQL Framework is intended to provide a stable MySQL connection framework, with the ability to run text-based queries and rapidly retrieve result sets with conversion from MySQL data types to Cocoa objects.
+The SPMySQL Framework is intended to provide a stable MySQL connection framework, with the ability 
+to run text-based queries and rapidly retrieve result sets with conversion from MySQL data types 
+to Cocoa objects.
 
-SPMySQL.framework has an interface loosely based around that provided by MCPKit by Serge Cohen and Bertrand Mansion (http://mysql-cocoa.sourceforge.net/), and in particular the heavily modified Sequel Pro version (http://www.sequelpro.com/).  It is a full rewrite of the original framework, although it includes code from patches implementing the following Sequel Pro functionality, largely contributed by Hans-Jörg Bibiko, Stuart Connolly, Jakob Egger, and Rowan Beentje:
+SPMySQL.framework has an interface loosely based around that provided by MCPKit by Serge Cohen and 
+Bertrand Mansion (http://mysql-cocoa.sourceforge.net/), and in particular the heavily modified 
+Sequel Pro version (http://www.sequelpro.com/).  It is a full rewrite of the original framework, 
+although it includes code from patches implementing the following Sequel Pro functionality, largely 
+contributed by Hans-Jörg Bibiko, Stuart Connolly, Jakob Egger, and Rowan Beentje:
+
 	- Connection locking (Jakob et al)
 	- Ping & keepalive (Rowan et al)
 	- Query cancellation (Rowan et al)
@@ -19,8 +26,11 @@ SPMySQL.framework has an interface loosely based around that provided by MCPKit 
 
 INTEGRATION
 
-SPMySQL.framework can be added to your project as a standard Cocoa framework, or the entire project can be added as a subproject in Xcode.
+SPMySQL.framework can be added to your project as a standard Cocoa framework, or the entire project 
+can be added as a subproject in Xcode.
+
 To add as a subproject in Xcode:
+
  	1) Add the SPMySQL framework's .xcodeproj to your current project
  	2) Choose an existing target, Get Info, and under direct dependenies add a new dependency.  Choose the SPMySQL.framework target from the sub-project
  	3) Expand the subproject to see its child target - SPMySQL.framework.  Drag this to the "Link Binary With Libraries" build phase of any targets using the framework.
@@ -37,8 +47,23 @@ Copyright (c) 2012 Rowan Beentje (rowan.beent.je) and the Sequel Pro team.
 
 The SPMySQL framework is offered under the MIT license:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPFieldMapperController.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on February 01, 2010
+//  Created by Hans-Jörg Bibiko on February 1, 2010.
+//  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFieldMapperController.h"
 #import "SPTableData.h"
@@ -31,6 +37,7 @@
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 #define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
@@ -43,18 +50,16 @@ static NSString *SPTableViewOperatorColumnID    = @"operator";
 static NSString *SPTableViewValueIndexColumnID  = @"value_index";
 static NSString *SPTableViewGlobalValueColumnID = @"global_value";
 static NSString *SPTableViewSqlColumnID         = @"sql";
-
+static NSUInteger SPSourceColumnTypeText        = 0;
+static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 @implementation SPFieldMapperController
 
 @synthesize sourcePath;
 
 #pragma mark -
-#pragma mark Initialization
+#pragma mark Initialisation
 
-/**
- * Initialize the field mapper
- */
 - (id)initWithDelegate:(id)managerDelegate
 {
 	if ((self = [super initWithWindowNibName:@"DataMigrationDialog"])) {
@@ -95,7 +100,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		tablesListInstance = [theDelegate valueForKeyPath:@"tablesListInstance"];
 		databaseDataInstance = [tablesListInstance valueForKeyPath:@"databaseDataInstance"];
 
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 		if(![prefs objectForKey:SPLastImportIntoNewTableType])
 			[prefs setObject:@"Default" forKey:SPLastImportIntoNewTableType];
 		if(![prefs objectForKey:SPLastImportIntoNewTableEncoding])
@@ -108,7 +113,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)awakeFromNib
 {
-
 	// Set Context Menu
 	[[[fieldMapperTableView menu] itemAtIndex:0] setHidden:YES];
 	[[[fieldMapperTableView menu] itemAtIndex:1] setHidden:YES];
@@ -226,6 +230,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release];
 	if (primaryKeyFields) [primaryKeyFields release];
 	if (toBeEditedRowIndexes) [toBeEditedRowIndexes release];
+	
 	[super dealloc];
 }
 
@@ -388,7 +393,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 {
 	// Only save selection if the user selected 'OK'
 	if ([sender tag]) {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[prefs setObject:[newTableInfoEnginePopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableType];
 		[prefs setObject:[newTableInfoEncodingPopup titleOfSelectedItem] forKey:SPLastImportIntoNewTableEncoding];
 #endif
@@ -423,7 +428,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
-									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new column informative message"), [fieldMappingTableColumnNames objectAtIndex:currentIndex], createString, [mySQLConnection lastErrorMessage]]];
+									 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to add the new column '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new column informative message"), [fieldMappingTableColumnNames objectAtIndex:currentIndex], createString, [mySQLConnection lastErrorMessage]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -447,16 +452,20 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[createString appendFormat:@"CREATE TABLE %@ (\n", [[newTableNameTextField stringValue] backtickQuotedString]];
 		NSInteger columnIndex = 0;
 		NSInteger numberOfColumns = [fieldMappingTableColumnNames count];
+		NSMutableArray *columnDetails = [NSMutableArray array];
 		for(columnIndex = 0; columnIndex < numberOfColumns; columnIndex++) {
-			// add to the new table only those fields which are markes as "Do Import"
-			if([fieldMappingOperatorArray objectAtIndex:columnIndex] == doImport) {
-				[createString appendFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]];
-				if(columnIndex < numberOfColumns-1) [createString appendString:@", \n"];
+
+			// Skip fields which aren't marked as imported
+			if ([fieldMappingOperatorArray objectAtIndex:columnIndex] != doImport) {
+				continue;
 			}
+
+			[columnDetails addObject:[NSString stringWithFormat:@"\t%@ %@", [[fieldMappingTableColumnNames objectAtIndex:columnIndex] backtickQuotedString], [fieldMappingTableTypes objectAtIndex:columnIndex]]];
 		}
+		[createString appendString:[columnDetails componentsJoinedByString:@", \n"]];
 		[createString appendString:@")"];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if(![[prefs objectForKey:SPLastImportIntoNewTableType] isEqualToString:@"Default"])
 			[createString appendFormat:@" ENGINE=%@", [prefs objectForKey:SPLastImportIntoNewTableType]];
 		if(![[prefs objectForKey:SPLastImportIntoNewTableEncoding] isEqualToString:@"Default"]) {
@@ -473,7 +482,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button")
 										   alternateButton:nil
 											   otherButton:nil
-								 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection lastErrorMessage]]];
+								 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to add the new table '%@' by\n\n%@.\n\nMySQL said: %@", @"error adding new table informative message"), [newTableNameTextField stringValue], createString, [mySQLConnection lastErrorMessage]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:nil contextInfo:nil];
@@ -732,7 +741,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	}
 	[fieldMapperTableView reloadData];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Remember last field alignment if not "custom order"
 	if([[alignByPopup selectedItem] tag] != 3)
 		[prefs setInteger:[[alignByPopup selectedItem] tag] forKey:SPCSVFieldImportMappingAlignment];
@@ -762,19 +771,22 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (IBAction)changeHasHeaderCheckbox:(id)sender
 {
+	NSInteger i;
+	NSArray *headerRow;
+
 	[matchingNameMenuItem setEnabled:([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO];
 
 	// In New Table mode reset new field name according to importFieldNamesHeaderSwitch's state
-	if(newTableMode) {
+	if (newTableMode) {
 		[fieldMappingTableColumnNames removeAllObjects];
 		if([importFieldNamesHeaderSwitch state] == NSOnState) {
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:h];
+			headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
+			for (i = 0; i < numberOfImportColumns; i++) {
+				[fieldMappingTableColumnNames addObject:NSArrayObjectAtIndex(headerRow, i)];
 			}
 		} else {
-			NSInteger i = 0;
-			for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
+			for (i = 1; i <= numberOfImportColumns; i++) {
+				[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)i]];
 			}
 		}
 		[fieldMapperTableView reloadData];
@@ -820,102 +832,79 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[newTableButton setHidden:YES];
 	[newTableNameTextField selectText:nil];
 
-	// Check length and type of fieldMappingImportArray 65,535
+	// Check length and type of fieldMappingImportArray values
 	NSInteger maxLengthOfSourceColumns [numberOfImportColumns];
-	NSInteger typeOfSourceColumns [numberOfImportColumns]; // 0=text 1=integer
+	NSUInteger typeOfSourceColumns [numberOfImportColumns];
 	NSInteger columnCounter;
 
-	for(columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+	// Set up initial defaults for the column states
+	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
 		maxLengthOfSourceColumns[columnCounter] = 0;
-		typeOfSourceColumns[columnCounter] = 1;
+		typeOfSourceColumns[columnCounter] = SPSourceColumnTypeInteger;
 	}
 
-	BOOL skipFirstRow = importFieldNamesHeader;
-
-	for(NSArray* row in fieldMappingImportArray) {
-		if(skipFirstRow) {
-			skipFirstRow = NO;
-			continue;
-		}
-		columnCounter = 0;
-		for(id col in row) {
-			if(col && ![col isNSNull]) {
+	// Step through the currently known data and get the types and values
+	NSUInteger i = (importFieldNamesHeader ? 1 : 0);
+	NSArray *row;
+	id col;
+	for ( ; i < [fieldMappingImportArray count]; i++) {
+		row = NSArrayObjectAtIndex(fieldMappingImportArray, i);
+		for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+			col = NSArrayObjectAtIndex(row, columnCounter);
+			if(col && ![col isNSNull] && ![col isSPNotLoaded]) {
 				if([col isKindOfClass:[NSString class]] && maxLengthOfSourceColumns[columnCounter] < (NSInteger)[(NSString*)col length]) {
 					maxLengthOfSourceColumns[columnCounter] = [(NSString*)col length];
 				}
-				if(typeOfSourceColumns[columnCounter] == 1) {
+				if(typeOfSourceColumns[columnCounter] == SPSourceColumnTypeInteger) {
 					if(![[[NSNumber numberWithLongLong:[col longLongValue]] stringValue] isEqualToString:col])
-						typeOfSourceColumns[columnCounter] = 0;
+					typeOfSourceColumns[columnCounter] = SPSourceColumnTypeText;
 				}
 			}
-			columnCounter++;
 		}
 	}
 
-	columnCounter = 0;
+
 	[fieldMappingTableColumnNames removeAllObjects];
 	[fieldMappingTableDefaultValues removeAllObjects];
 	[fieldMappingTableTypes removeAllObjects];
 	
 	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
-	
-	if([importFieldNamesHeaderSwitch state] == NSOnState) {
-		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-			[fieldMappingTableColumnNames addObject:h];
-			[fieldMappingTableDefaultValues addObject:@""];
-			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
-				if(maxLengthOfSourceColumns[columnCounter] < 9)
-					[fieldMappingTableTypes addObject:@"INT(11)"];
-				else
-					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
-			} else {
-				if(serverGreaterThanVersion4) {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
-						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				} else {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				}
-			}
-			columnCounter++;
+	BOOL importFirstRowAsFieldNames = ([importFieldNamesHeaderSwitch state] == NSOnState);
+	NSString *headerName;
+
+	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
+		if (importFirstRowAsFieldNames) {
+			headerName = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), columnCounter);
+			[fieldMappingTableColumnNames addObject:headerName];
+		} else {
+			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)(columnCounter + 1)]];
 		}
-	} else {
-		NSInteger i = 0;
-		for(id h in NSArrayObjectAtIndex(fieldMappingImportArray, 0)) {
-			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", i++]];
-			[fieldMappingTableDefaultValues addObject:@""];
-			if(typeOfSourceColumns[columnCounter] == 1) { // integer type
-				if(maxLengthOfSourceColumns[columnCounter] < 9)
-					[fieldMappingTableTypes addObject:@"INT(11)"];
+
+		[fieldMappingTableDefaultValues addObject:@""];
+
+		if (typeOfSourceColumns[columnCounter] == SPSourceColumnTypeInteger) {
+			if (maxLengthOfSourceColumns[columnCounter] < 9)
+				[fieldMappingTableTypes addObject:@"INT(11)"];
+			else
+				[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+		} else {
+			if (serverGreaterThanVersion4) {
+				if (maxLengthOfSourceColumns[columnCounter] < 256)
+					[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+				else if (maxLengthOfSourceColumns[columnCounter] < 32768)
+					[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
 				else
-					[fieldMappingTableTypes addObject:@"BIGINT(11)"];
+					[fieldMappingTableTypes addObject:@"TEXT"];
 			} else {
-				if(serverGreaterThanVersion4) {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else if(maxLengthOfSourceColumns[columnCounter] < 32768)
-						[fieldMappingTableTypes addObject:@"VARCHAR(32767)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				} else {
-					if(maxLengthOfSourceColumns[columnCounter] < 256)
-						[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
-					else
-						[fieldMappingTableTypes addObject:@"TEXT"];
-				}
+				if (maxLengthOfSourceColumns[columnCounter] < 256)
+					[fieldMappingTableTypes addObject:@"VARCHAR(255)"];
+				else
+					[fieldMappingTableTypes addObject:@"TEXT"];
 			}
-			columnCounter++;
 		}
 	}
 
 	// Update the table view
-	NSUInteger i;
 	fieldMappingCurrentRow = 0;
 	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
 	[self setupFieldMappingArray];
@@ -928,7 +917,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	// Set all operators to doNotImport
 	[fieldMappingOperatorArray removeAllObjects];
-	for(i=0; i < [fieldMappingTableColumnNames count]; i++)
+	for (i=0; i < [fieldMappingTableColumnNames count]; i++)
 		[fieldMappingOperatorArray addObject:doImport];
 
 	[fieldMapperTableView reloadData];
@@ -993,13 +982,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 }
 
-// - (IBAction)editColumn:(id)sender
-// {
-// 	toBeEditedRowIndexes = [fieldMapperTableView selectedRow];
-// 	[fieldMapperTableView reloadData];
-// 	[fieldMapperTableView editColumn:3 row:[fieldMapperTableView selectedRow] withEvent:nil select:YES];
-// }
-
 /*
  * Set all table target field types to that one of the current selected type
  */
@@ -1040,7 +1022,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		[newTableInfoEnginePopup addItemWithTitle:[engine objectForKey:@"Engine"]];
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[newTableInfoEnginePopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableType]];
 #endif
 
@@ -1073,7 +1055,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[newTableInfoEncodingPopup insertItemWithTitle:utf8MenuItemTitle atIndex:2];
 		}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[newTableInfoEncodingPopup selectItemWithTitle:[prefs objectForKey:SPLastImportIntoNewTableEncoding]];
 #endif
 	}
@@ -1102,7 +1084,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	while([insertPullDownButton numberOfItems] > (([[self selectedImportMethod] isEqualToString:@"UPDATE"]) ? 6 : 5))
 		[insertPullDownButton removeItemAtIndex:[insertPullDownButton numberOfItems]-1];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Add recent global value menu
 	if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
 		for(id item in [prefs objectForKey:SPGlobalValueHistory])
@@ -1115,14 +1097,14 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		for(id item in [fieldMappingImportArray objectAtIndex:0]) {
 			i++;
 			if ([item isNSNull]) {
-				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, [prefs objectForKey:SPNullValue]]];
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. <%@>", (long)i, [prefs objectForKey:SPNullValue]]];
 			} else if ([item isSPNotLoaded]) {
-				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. <%@>", i, @"DEFAULT"]];
+				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. <%@>", (long)i, @"DEFAULT"]];
 			} else {
 				if([(NSString*)item length] > 20)
-					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@…", i, [item substringToIndex:20]]];
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. %@…", (long)i, [item substringToIndex:20]]];
 				else
-					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%i. %@", i, item]];
+					[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. %@", (long)i, item]];
 			}
 		}
 	}
@@ -1190,7 +1172,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[globalValuesSheet makeFirstResponder:globalValuesTableView];
 
 		// Replace the current map pair with the last selected global value
-		if ([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
+		if([replaceAfterSavingCheckBox state] == NSOnState && [globalValuesTableView numberOfSelectedRows] == 1) {
 
 			[fieldMappingArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:[NSNumber numberWithInteger:[globalValuesTableView selectedRow]+numberOfImportColumns]];
 
@@ -1301,23 +1283,22 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (IBAction)insertPulldownValue:(id)sender
 {
-
-	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
+	if ([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
 
 	NSInteger selectedIndex = [sender indexOfItem:[sender selectedItem]] - 4;
-	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
-		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", selectedIndex]];
-
+	
+	if ([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)]) {
+		[[[NSApp keyWindow] firstResponder] insertText:[NSString stringWithFormat:@"$%ld", (long)selectedIndex]];
+	}
 }
 
 - (IBAction)insertRecentGlobalValue:(id)sender
 {
+	if ([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
 
-	if([globalValuesTableView numberOfSelectedRows] != 1 || [globalValuesTableView editedRow] < 0) return;
-
-	if([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)])
+	if ([[[NSApp keyWindow] firstResponder] respondsToSelector:@selector(insertText:)]) {
 		[[[NSApp keyWindow] firstResponder] insertText:[sender title]];
-
+	}
 }
 
 #pragma mark -
@@ -1325,7 +1306,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)resizeWindowByHeightDelta:(NSInteger)delta
 {
-#ifndef SP_REFACTOR /* resizeWindowByHeightDelta: */
+#ifndef SP_CODA /* resizeWindowByHeightDelta: */
 	NSUInteger tableMask = [fieldMapperTableScrollView autoresizingMask];
 	NSUInteger headerSwitchMask = [importFieldNamesHeaderSwitch autoresizingMask];
 	NSUInteger alignPopupMask = [alignByPopup autoresizingMask];
@@ -1512,20 +1493,20 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, [prefs objectForKey:SPNullValue]]];
 		else if ([[fieldMappingButtonOptions objectAtIndex:i] isSPNotLoaded])
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. <%@>", i+1, @"DEFAULT"]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, @"DEFAULT"]];
 		else
-			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
+			[fieldMappingButtonOptions replaceObjectAtIndex:i withObject:[NSString stringWithFormat:@"%li. %@", (long)i+1, NSArrayObjectAtIndex(fieldMappingButtonOptions, i)]];
 	}
 
 	// Add global values if any
 	if((NSInteger)[fieldMappingGlobalValues count]>numberOfImportColumns)
 		for( ; i < [fieldMappingGlobalValues count]; i++) {
 			if ([NSArrayObjectAtIndex(fieldMappingGlobalValues, i) isNSNull])
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. <%@>", i+1, [prefs objectForKey:SPNullValue]]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. <%@>", (long)i+1, [prefs objectForKey:SPNullValue]]];
 			else
-				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%i. %@", i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
+				[fieldMappingButtonOptions addObject:[NSString stringWithFormat:@"%li. %@", (long)i+1, NSArrayObjectAtIndex(fieldMappingGlobalValues, i)]];
 		}
 
 	[fieldMapperTableView reloadData];
@@ -1552,7 +1533,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	NSInteger alignment = 0;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs integerForKey:SPCSVFieldImportMappingAlignment]
 			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] >= 0
 			&& [prefs integerForKey:SPCSVFieldImportMappingAlignment] < 4) {
@@ -1576,18 +1557,18 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 {
 	BOOL enableImportButton = YES;
 
-	if(newTableMode) {
-		if(![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
+	if (newTableMode) {
+		if (![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
 			[importButton setEnabled:NO];
 			return;
 		}
-		for(NSString* fieldName in fieldMappingTableColumnNames) {
-			if(![fieldName length]) {
+		for (NSUInteger i = 0; i < [fieldMappingTableColumnNames count]; i++) {
+			if (![[fieldMappingTableColumnNames objectAtIndex:i] length] && [fieldMappingOperatorArray objectAtIndex:i] == doImport) {
 				[importButton setEnabled:NO];
 				return;
 			}
 		}
-		for(NSString* fieldType in fieldMappingTableTypes) {
+		for (NSString* fieldType in fieldMappingTableTypes) {
 			if(![fieldType length]) {
 				[importButton setEnabled:NO];
 				return;
@@ -1595,7 +1576,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 		}
 	}
 
-	if([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
+	if ([[self selectedImportMethod] isEqualToString:@"UPDATE"]) {
 		enableImportButton = NO;
 		for(id op in fieldMappingOperatorArray) {
 			if(op == isEqual) {
@@ -1627,10 +1608,6 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 	else if (!newTableMode && [menuItem action] == @selector(insertNULLValue:)) {
 		return ([[globalValuesTableView selectedRowIndexes] count] == 1) ? YES : NO;
 	}
-	else if (!newTableMode && [menuItem action] == @selector(editColumn:)) {
-		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
-		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableColumnNames objectAtIndex:row]]];
-	}
 	else if (!newTableMode && [menuItem action] == @selector(removeNewColumn:)) {
 		if([toBeEditedRowIndexes containsIndex:row]) {
 			NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
@@ -1661,8 +1638,10 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_REFACTOR
-	[aCell setFont:([prefs boolForKey:SPUseMonospacedFonts]) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+#ifndef SP_CODA
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+	[aCell setFont:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 }
 
@@ -1833,7 +1812,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:SPTableViewValueIndexColumnID]) {
-			return [NSString stringWithFormat:@"%ld.", numberOfImportColumns + rowIndex + 1];
+			return [NSString stringWithFormat:@"%ld.", (long)(numberOfImportColumns + rowIndex + 1)];
 		}
 
 		else if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID]) {
@@ -1961,7 +1940,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 
 			// Store anObject as recent global value if it's new
 			NSMutableArray *recents = [NSMutableArray array];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if([prefs objectForKey:SPGlobalValueHistory] && [[prefs objectForKey:SPGlobalValueHistory] isKindOfClass:[NSArray class]] && [[prefs objectForKey:SPGlobalValueHistory] count])
 				[recents setArray:[prefs objectForKey:SPGlobalValueHistory]];
 #endif
@@ -1970,7 +1949,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 			[recents insertObject:anObject atIndex:0];
 			while([recents count] > 20)
 				[recents removeObjectAtIndex:[recents count]-1];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			if([recents count])
 				[prefs setObject:recents forKey:SPGlobalValueHistory];
 #endif

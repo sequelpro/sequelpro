@@ -1,10 +1,8 @@
 //
-//  $Id$
-//
 //  QKSelectQueryOrderByTests.h
 //  QueryKit
 //
-//  Created by Stuart Connolly (stuconnolly.com) on February 25, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on July 18, 2012
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,12 +26,13 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
+#import "QKTestCase.h"
+
 #import <QueryKit/QueryKit.h>
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface QKSelectQueryOrderByTests : SenTestCase 
-{
-	QKQuery *_query;
-}
+@interface QKSelectQueryOrderByTests : QKTestCase
+
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite;
 
 @end

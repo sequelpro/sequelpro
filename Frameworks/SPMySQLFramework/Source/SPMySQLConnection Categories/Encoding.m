@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Encoding.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 #import "Encoding.h"
@@ -265,11 +263,11 @@
 	} else if (!strcmp(mysqlCharset, "latin7")) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingISOLatin7);
 	} else if (!strcmp(mysqlCharset, "utf8mb4")) {
-		return NSUnicodeStringEncoding;	// Is this correct?
+		return NSUTF8StringEncoding;
 	} else if (!strcmp(mysqlCharset, "cp1251")) {
 		return NSWindowsCP1251StringEncoding;
 	} else if (!strcmp(mysqlCharset, "utf16")) {
-		return NSUnicodeStringEncoding;
+		return NSUTF16BigEndianStringEncoding;
 	} else if (!strcmp(mysqlCharset, "utf16le")) {
 		return NSUTF16LittleEndianStringEncoding;
 	} else if (!strcmp(mysqlCharset, "cp1256")) {

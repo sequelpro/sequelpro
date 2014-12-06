@@ -1,29 +1,33 @@
 //
-//  $Id$
-//
 //  SPDatabaseDocument.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //  
-//  Forked by Abhi Beckert (abhibeckert.com) 2008-04-04
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 // Forward-declare for 10.7 compatibility
 #if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -34,35 +38,39 @@ enum {
 
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
-
-#import <SPMySQL/SPMySQL.h>
+#import "SPConnectionHandler.h"
+#import "SPConnectionControllerInitializer.h"
 
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
-#ifndef SP_REFACTOR /* headers */
+#import "SPDatabaseStructure.h"
+#ifndef SP_CODA /* headers */
 #import "SPFileHandle.h"
 #import "SPKeychain.h"
 #import "SPTableContent.h"
+#import "SPTableContentFilter.h"
 #import "SPCustomQuery.h"
 #import "SPDataImport.h"
 #import "ImageAndTextCell.h"
 #import "SPGrowlController.h"
 #import "SPExportController.h"
+#import "SPSplitView.h"
 #endif
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPWindowController.h"
 #endif
 #import "SPNavigatorController.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #endif
 #import "SPDatabaseData.h"
 #import "SPDatabaseStructure.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
+#import "SPWindowManagement.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
@@ -77,40 +85,52 @@ enum {
 #import "SPTableCopy.h"
 #import "SPDatabaseRename.h"
 #import "SPTableRelations.h"
+#import "SPCopyTable.h"
 #endif
 #import "SPServerSupport.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPTooltip.h"
 #endif
 #import "SPDatabaseViewController.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
 #endif
+#import "SPThreadAdditions.h"
+#import "RegexKitLite.h"
+#import "SPTextView.h"
+#import "SPFavoriteColorSupport.h"
 
-#ifdef SP_REFACTOR /* headers */
+#ifdef SP_CODA /* headers */
 #import "SPAlertSheets.h"
 #import "NSNotificationCenterThreadingAdditions.h"
 #import "SPCustomQuery.h"
 #import "SPDatabaseRename.h"
 #endif
 
+#import "SPCharsetCollationHelper.h"
+#import "SPGotoDatabaseController.h"
+
+#import <SPMySQL/SPMySQL.h>
+
 // Constants
-#ifndef SP_REFACTOR
-static NSString *SPCreateSyntx = @"SPCreateSyntax";
-#endif
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
+static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 @interface SPDatabaseDocument ()
 
 - (void)_addDatabase;
-#ifndef SP_REFACTOR /* method decls */
+- (void)_alterDatabase;
+
+#ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
 #endif
+
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
-#ifndef SP_REFACTOR /* method decls */
+
+#ifndef SP_CODA /* method decls */
 - (void)_processDatabaseChangedBundleTriggerActions;
 #endif
 
@@ -118,18 +138,20 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 @implementation SPDatabaseDocument
 
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
+@synthesize sqlFileURL;
+@synthesize sqlFileEncoding;
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
 #endif
 @synthesize isProcessing;
 @synthesize serverSupport;
 @synthesize databaseStructureRetrieval;
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 @synthesize processID;
 #endif
 
-#ifdef SP_REFACTOR /* ivars */
+#ifdef SP_CODA /* ivars */
 @synthesize allDatabases;
 @synthesize delegate;
 @synthesize tableDataInstance;
@@ -144,12 +166,16 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 @synthesize databaseRenameNameField;
 @synthesize renameDatabaseButton;
 @synthesize chooseDatabaseButton;
+@synthesize structureContentSwitcher;
 #endif
+
+#pragma mark -
 
 - (id)init
 {
 	if ((self = [super init])) {
-#ifndef SP_REFACTOR /* init ivars */
+
+#ifndef SP_CODA /* init ivars */
 
 		_mainNibLoaded = NO;
 #endif
@@ -159,8 +185,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		_supportsEncoding = NO;
 		databaseListIsSelectable = YES;
 		_queryMode = SPInterfaceQueryMode;
+
 		chooseDatabaseButton = nil;
+#ifndef SP_CODA /* init ivars */
 		chooseDatabaseToolbarItem = nil;
+#endif
 		connectionController = nil;
 
 		selectedTableName = nil;
@@ -170,6 +199,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		contentLoaded = NO;
 		statusLoaded = NO;
 		triggersLoaded = NO;
+		relationsLoaded = NO;
 
 		selectedDatabase = nil;
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
@@ -177,13 +207,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		mySQLVersion = nil;
 		allDatabases = nil;
 		allSystemDatabases = nil;
-#ifndef SP_REFACTOR /* init ivars */
+		gotoDatabaseController = nil;
+
+#ifndef SP_CODA /* init ivars */
 		mainToolbar = nil;
 		parentWindow = nil;
 #endif
 		isProcessing = NO;
 
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 		printWebView = [[WebView alloc] init];
 		[printWebView setFrameLoadDelegate:self];
 
@@ -192,13 +224,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 		queryEditorInitString = nil;
 
+#ifndef SP_CODA
+		sqlFileURL = nil;
 		spfFileURL = nil;
 		spfSession = nil;
 		spfPreferences = [[NSMutableDictionary alloc] init];
 		spfDocData = [[NSMutableDictionary alloc] init];
 		runningActivitiesArray = [[NSMutableArray alloc] init];
+#endif
 
 		titleAccessoryView = nil;
+
+#ifndef SP_CODA /* init ivars */
 		taskProgressWindow = nil;
 		taskDisplayIsIndeterminate = YES;
 		taskDisplayLastValue = 0;
@@ -209,9 +246,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		taskCanBeCancelled = NO;
 		taskCancellationCallbackObject = nil;
 		taskCancellationCallbackSelector = NULL;
-
+#endif
+		alterDatabaseCharsetHelper = nil; //init in awakeFromNib
+		addDatabaseCharsetHelper = nil;
+		
 		keyChainID = nil;
-#ifndef SP_REFACTOR /* init ivars */
+
+#ifndef SP_CODA /* init ivars */
 		statusValues = nil;
 		printThread = nil;
 		windowTitleStatusViewIsVisible = NO;
@@ -232,7 +273,116 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return self;
 }
 
-#ifdef SP_REFACTOR /* glue */
+- (void)awakeFromNib
+{
+#ifndef SP_CODA
+	if (_mainNibLoaded) return;
+
+	_mainNibLoaded = YES;
+
+	// Set up the toolbar
+	[self setupToolbar];
+
+	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
+	[contentViewSplitter setCollapsibleSubviewIndex:0];
+
+	// Set up the connection controller
+	connectionController = [[SPConnectionController alloc] initWithDocument:self];
+
+	// Set the connection controller's delegate
+	[connectionController setDelegate:self];
+
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the logging preference changes
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register a second observer for when the logging preference changes so we can tell the current connection about it
+	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+#endif
+
+	// Register for notifications
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
+												 name:@"SMySQLQueryHasBeenPerformed" object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
+												 name:@"NSApplicationWillTerminateNotification" object:nil];
+
+#ifndef SP_CODA
+	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
+	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
+
+	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
+	[tableTabView setTabViewType:NSNoTabsNoBorder];
+
+	// Hide the activity list
+	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+
+	// Load additional nibs, keeping track of the top-level objects to allow correct release
+	NSArray *connectionDialogTopLevelObjects = nil;
+	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
+		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
+	}
+	[nibLoader release];
+
+	// SP_CODA can't use progress indicator because of BWToolkit dependency
+
+	NSArray *progressIndicatorLayerTopLevelObjects = nil;
+	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
+	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
+		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
+	} else {
+		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
+	}
+	[nibLoader release];
+
+	// Retain the icon accessory view to allow it to be added and removed from windows
+	[titleAccessoryView retain];
+#endif
+
+#ifndef SP_CODA
+	// Set up the progress indicator child window and layer - change indicator color and size
+	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
+	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
+	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
+	[progressIndicatorShadow setShadowBlurRadius:1.0f];
+	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
+	[taskProgressIndicator setShadow:progressIndicatorShadow];
+	[progressIndicatorShadow release];
+	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+	[taskProgressWindow setReleasedWhenClosed:NO];
+	[taskProgressWindow setOpaque:NO];
+	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
+	[taskProgressWindow setAlphaValue:0.0f];
+	[taskProgressWindow setContentView:taskProgressLayer];
+
+	[self updateTitlebarStatusVisibilityForcingHide:NO];
+#endif
+
+	alterDatabaseCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseAlterEncodingButton CollationButton:databaseAlterCollationButton];
+	addDatabaseCharsetHelper   = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseEncodingButton CollationButton:databaseCollationButton];
+}
+
+#pragma mark -
+
+#ifdef SP_CODA /* glue */
 - (SPConnectionController*)createConnectionController
 {
 	// Set up the connection controller
@@ -256,103 +406,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 #endif
 
-
-- (void)awakeFromNib
-{
-#ifndef SP_REFACTOR
-	if (_mainNibLoaded) return;
-	_mainNibLoaded = YES;
-
-	// Set up the toolbar
-	[self setupToolbar];
-
-	// Set up the connection controller
-	connectionController = [[SPConnectionController alloc] initWithDocument:self];
-	
-	// Set the connection controller's delegate
-	[connectionController setDelegate:self];
-
-	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
-	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-
-	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register a second observer for when the logging preference changes so we can tell the current connection about it
-	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-#endif
-	// Register for notifications
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
-												 name:@"NSApplicationWillTerminateNotification" object:nil];
-
-#ifndef SP_REFACTOR
-	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
-	selectEncodingMenu = [[[[[NSApp mainMenu] itemWithTag:SPMainMenuDatabase] submenu] itemWithTag:1] submenu];
-
-	// Hide the tabs in the tab view (we only show them to allow switching tabs in interface builder)
-	[tableTabView setTabViewType:NSNoTabsNoBorder];
-
-	// Hide the activity list
-	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
-
-	// Load additional nibs, keeping track of the top-level objects to allow correct release
-	NSArray *connectionDialogTopLevelObjects = nil;
-	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ConnectionErrorDialog" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&connectionDialogTopLevelObjects]) {
-		NSLog(@"Connection error dialog could not be loaded; connection failure handling will not function correctly.");
-	} else {
-		[nibObjectsToRelease addObjectsFromArray:connectionDialogTopLevelObjects];
-	}
-	[nibLoader release];
-	NSArray *progressIndicatorLayerTopLevelObjects = nil;
-	nibLoader = [[NSNib alloc] initWithNibNamed:@"ProgressIndicatorLayer" bundle:[NSBundle mainBundle]];
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&progressIndicatorLayerTopLevelObjects]) {
-		NSLog(@"Progress indicator layer could not be loaded; progress display will not function correctly.");
-	} else {
-		[nibObjectsToRelease addObjectsFromArray:progressIndicatorLayerTopLevelObjects];
-	}
-	[nibLoader release];
-
-	// Retain the icon accessory view to allow it to be added and removed from windows
-	[titleAccessoryView retain];
-
-	// Set up the progress indicator child window and layer - change indicator color and size
-	[taskProgressIndicator setForeColor:[NSColor whiteColor]];
-	NSShadow *progressIndicatorShadow = [[NSShadow alloc] init];
-	[progressIndicatorShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
-	[progressIndicatorShadow setShadowBlurRadius:1.0f];
-	[progressIndicatorShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
-	[taskProgressIndicator setShadow:progressIndicatorShadow];
-	[progressIndicatorShadow release];
-	taskProgressWindow = [[NSWindow alloc] initWithContentRect:[taskProgressLayer bounds] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
-	[taskProgressWindow setReleasedWhenClosed:NO];
-	[taskProgressWindow setOpaque:NO];
-	[taskProgressWindow setBackgroundColor:[NSColor clearColor]];
-	[taskProgressWindow setAlphaValue:0.0f];
-	[taskProgressWindow setContentView:taskProgressLayer];
-
-	[contentViewSplitter setDelegate:self];
-
-	[self updateTitlebarStatusVisibilityForcingHide:NO];
-#endif
-}
-
-#ifndef SP_REFACTOR /* password sheet and history navigation */
+#ifndef SP_CODA /* password sheet and history navigation */
 /**
  * Set the return code for entering the encryption passowrd sheet
  */
@@ -371,7 +425,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)backForwardInHistory:(id)sender
 {
-
 	// Ensure history navigation is permitted - trigger end editing and any required saves
 	if (![self couldCommitCurrentViewActions]) return;
 
@@ -394,6 +447,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 - (void)setConnection:(SPMySQLConnection *)theConnection
 {
+	if ([theConnection userTriggeredDisconnect]) {
+		return;
+	}
+
 	_isConnected = YES;
 	mySQLConnection = [theConnection retain];
 	
@@ -403,7 +460,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 															minor:[mySQLConnection serverMinorVersion] 
 														  release:[mySQLConnection serverReleaseVersion]];
 														  
-#ifndef SP_REFACTOR	
+#ifndef SP_CODA	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
 	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
 	
@@ -418,7 +475,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 		selectedDatabase = [[NSString alloc] initWithString:[connectionController database]];
-#ifndef SP_REFACTOR /* [spHistoryControllerInstance updateHistoryEntries] */
+#ifndef SP_CODA /* [spHistoryControllerInstance updateHistoryEntries] */
 		[spHistoryControllerInstance updateHistoryEntries];
 #endif
 	}
@@ -439,9 +496,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Pass the support class to the data instance
 	[databaseDataInstance setServerSupport:serverSupport];
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 	tablesListInstance = [[SPTablesList alloc] init];
-	[tablesListInstance setDatabaseDocument:self];	
+	[tablesListInstance setDatabaseDocument:self];
 	[tablesListInstance awakeFromNib];
 #endif	
 
@@ -449,7 +506,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// is still UTF8
 	[tablesListInstance setConnection:mySQLConnection];
 
-#ifndef SP_REFACTOR /* set connection encoding from prefs */
+#ifndef SP_CODA /* set connection encoding from prefs */
 	// Set the connection encoding if necessary
 	NSNumber *encodingType = [prefs objectForKey:SPDefaultEncoding];
 	
@@ -458,7 +515,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	} else {
 #endif
 		[[self onMainThread] updateEncodingMenuWithSelectedEncoding:[self encodingTagFromMySQLEncoding:[mySQLConnection encoding]]];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #endif
 
@@ -469,14 +526,16 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[tableTriggersInstance setConnection:mySQLConnection];
 	[customQueryInstance setConnection:mySQLConnection];
 	[tableDumpInstance setConnection:mySQLConnection];
+#ifndef SP_CODA
 	[exportControllerInstance setConnection:mySQLConnection];
+#endif
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
 	
 	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self updateWindowTitle:self];
 	
 	// Connected Growl notification
@@ -514,13 +573,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		queryEditorInitString = nil;
 	}
 
-	// Set focus to table list filter field if visible
-	// otherwise set focus to Table List view
-	if ([[tablesListInstance tables] count] > 20)
-		[parentWindow makeFirstResponder:listFilterField];
-	else
-		[parentWindow makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-
 	if (spfSession != nil) {
 
 		// Restore vertical split view divider for tables' list and right view (Structure, Content, etc.)
@@ -531,7 +583,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
 		
 		if ([NSThread isMainThread])
-			[NSThread detachNewThreadSelector:@selector(restoreSession) toTarget:self withObject:nil];
+			[NSThread detachNewThreadWithName:@"SPDatabaseDocument session load task" target:self selector:@selector(restoreSession) object:nil];
 		else
 			[self restoreSession];
 	} 
@@ -560,8 +612,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	if ([self database]) [self detectDatabaseEncoding];
+
+	// If not on the query view, alter initial focus - set focus to table list filter
+	// field if visible, otherwise set focus to Table List view
+	if (![[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery]) {
+		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	}
+
 #endif
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentDidConnect:)] )
 		[delegate performSelector:@selector(databaseDocumentDidConnect:) withObject:self];
 #endif
@@ -572,7 +631,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  *
  * @return The document's connection
  */
-- (SPMySQLConnection *)getConnection 
+- (SPMySQLConnection *) getConnection 
 {
 	return mySQLConnection;
 }
@@ -593,7 +652,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)setDatabases:(id)sender;
 {
-#ifndef SP_REFACTOR /* ui manipulation */
+#ifndef SP_CODA /* ui manipulation */
 
 	if (!chooseDatabaseButton) return;
 
@@ -622,13 +681,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[databaseName isEqualToString:SPMySQLInformationSchemaDatabase] || 
 			[databaseName isEqualToString:SPMySQLPerformanceSchemaDatabase]) {
  			[allSystemDatabases addObject:databaseName];
- 		}
+		}
 		else {
 			[allDatabases addObject:databaseName];
 		}
 	}
 
-#ifndef SP_REFACTOR /* ui manipulation */
+#ifndef SP_CODA /* ui manipulation */
 	// Add system databases
 	for (NSString *db in allSystemDatabases) 
 	{
@@ -650,7 +709,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 }
 
-#ifndef SP_REFACTOR /* chooseDatabase: */
+#ifndef SP_CODA /* chooseDatabase: */
 
 /**
  * Selects the database choosen by the user, using a child task if necessary,
@@ -663,7 +722,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		return;
 	}
 
-	if ([chooseDatabaseButton indexOfSelectedItem] == 0) {
+	if ( [chooseDatabaseButton indexOfSelectedItem] == 0 ) {
 		if ([self database]) {
 			[chooseDatabaseButton selectItemWithTitle:[self database]];
 		}
@@ -684,17 +743,17 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)selectDatabase:(NSString *)database item:(NSString *)item
 {
-#ifndef SP_REFACTOR /* update navigator controller */
+#ifndef SP_CODA /* update navigator controller */
 	// Do not update the navigator since nothing is changed
 	[[SPNavigatorController sharedNavigatorController] setIgnoreUpdate:NO];
 
 	// If Navigator runs in syncMode let it follow the selection
-	if ([[SPNavigatorController sharedNavigatorController] syncMode]) {
+	if([[SPNavigatorController sharedNavigatorController] syncMode]) {
 		NSMutableString *schemaPath = [NSMutableString string];
 		
 		[schemaPath setString:[self connectionID]];
 		
-		if ([chooseDatabaseButton titleOfSelectedItem] && [[chooseDatabaseButton titleOfSelectedItem] length]) {
+		if([chooseDatabaseButton titleOfSelectedItem] && [[chooseDatabaseButton titleOfSelectedItem] length]) {
 			[schemaPath appendString:SPUniqueSchemaDelimiter];
 			[schemaPath appendString:[chooseDatabaseButton titleOfSelectedItem]];
 		}
@@ -709,7 +768,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:database, @"database", item, @"item", nil];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadSelector:@selector(_selectDatabaseAndItem:) toTarget:self withObject:selectionDetails];
+		[NSThread detachNewThreadWithName:@"SPDatabaseDocument database and table load task" target:self selector:@selector(_selectDatabaseAndItem:) object:selectionDetails];
 	} 
 	else {
 		[self _selectDatabaseAndItem:selectionDetails];
@@ -725,39 +784,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	[databaseNameField setStringValue:@""];
 
-	// Populate the database encoding popup button with a default menu item
-	[databaseEncodingButton removeAllItems];
-	[databaseEncodingButton addItemWithTitle:@"Default"];
-
-	// Retrieve the server-supported encodings and add them to the menu
-	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
-	NSString *utf8MenuItemTitle = nil;
+	NSString *defaultCharset   = [databaseDataInstance getServerDefaultCharacterSet];
+	NSString *defaultCollation = [databaseDataInstance getServerDefaultCollation];
 	
-	[databaseEncodingButton setEnabled:YES];
-	
-	if (([encodings count] > 0) && [serverSupport supportsPost41CharacterSetHandling]) {
-		[[databaseEncodingButton menu] addItem:[NSMenuItem separatorItem]];
-		
-		for (NSDictionary *encoding in encodings) 
-		{
-			NSString *menuItemTitle = (![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]];
-			[databaseEncodingButton addItemWithTitle:menuItemTitle];
-
-			// If the UTF8 entry has been encountered, store the title
-			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:@"utf8"]) {
-				utf8MenuItemTitle = [NSString stringWithString:menuItemTitle];
-			}
-		}
-
-		// If a UTF8 entry was found, promote it to the top of the list
-		if (utf8MenuItemTitle) {
-			[[databaseEncodingButton menu] insertItem:[NSMenuItem separatorItem] atIndex:2];
-			[databaseEncodingButton insertItemWithTitle:utf8MenuItemTitle atIndex:2];
-		}
-	}
-	else {
-		[databaseEncodingButton setEnabled:NO];
-	}
+	// Setup the charset and collation dropdowns
+	[addDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[addDatabaseCharsetHelper setServerSupport:serverSupport];
+	[addDatabaseCharsetHelper setPromoteUTF8:YES];
+	[addDatabaseCharsetHelper setSelectedCharset:nil];
+	[addDatabaseCharsetHelper setSelectedCollation:nil];
+	[addDatabaseCharsetHelper setDefaultCharset:defaultCharset];
+	[addDatabaseCharsetHelper setDefaultCollation:defaultCollation];
+	[addDatabaseCharsetHelper setEnabled:YES];
 	
 	[NSApp beginSheet:databaseSheet
 	   modalForWindow:parentWindow
@@ -767,7 +805,35 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 }
 
 
-#ifndef SP_REFACTOR /* operations on whole databases */
+/**
+ * Show UI for the ALTER DATABASE statement
+ * @warning Make sure this method is only called on mysql 4.1+ servers!
+ */
+- (IBAction)alterDatabase:(id)sender
+{
+	//once the database is created the charset and collation are written
+	//to the db.opt file regardless if they were explicity given or not.
+	//So there is no longer a "Default" option.
+	
+	NSString *currentCharset   = [databaseDataInstance getDatabaseDefaultCharacterSet];
+	NSString *currentCollation = [databaseDataInstance getDatabaseDefaultCollation];
+	
+	// Setup the charset and collation dropdowns
+	[alterDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[alterDatabaseCharsetHelper setServerSupport:serverSupport];
+	[alterDatabaseCharsetHelper setPromoteUTF8:YES];
+	[alterDatabaseCharsetHelper setSelectedCharset:currentCharset];
+	[alterDatabaseCharsetHelper setSelectedCollation:currentCollation];
+	[alterDatabaseCharsetHelper setEnabled:YES];
+	
+	[NSApp beginSheet:databaseAlterSheet
+	   modalForWindow:parentWindow
+		modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+		  contextInfo:SPAlterDatabaseAction];
+}
+
+#ifndef SP_CODA /* operations on whole databases */
 /**
  * opens the copy database sheet and copies the databsae
  */
@@ -808,7 +874,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)removeDatabase:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// No database selected, bail
 	if ([chooseDatabaseButton indexOfSelectedItem] == 0) return;
 #endif
@@ -819,11 +885,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									  otherButton:nil 
-						informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]]];
+						informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
 
 	NSArray *buttons = [alert buttons];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Change the alert's cancel button to have the key equivalent of return
 	[[buttons objectAtIndex:0] setKeyEquivalent:@"d"];
 	[[buttons objectAtIndex:0] setKeyEquivalentModifierMask:NSCommandKeyMask];
@@ -846,7 +912,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[tablesListInstance updateTables:self];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Displays the database server variables sheet.
  */
@@ -908,8 +974,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
-#ifndef SP_REFACTOR
-	if ([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+#ifndef SP_CODA
+	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
 		return;
 	}
@@ -926,7 +992,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		if (returnCode == NSAlertDefaultReturn) {
 			[self _removeDatabase];
 		}
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 		else {
 			// Reset chooseDatabaseButton
 			if ([[self database] length]) {
@@ -934,18 +1000,19 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 			else {
 				[chooseDatabaseButton selectItemAtIndex:0];
-			}
 		}
+	}
 #endif
 	}
 	// Add a new database
 	else if ([contextInfo isEqualToString:@"addDatabase"]) {
+		[addDatabaseCharsetHelper setEnabled:NO];
+
 		if (returnCode == NSOKButton) {
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:databaseStructureRetrieval withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
-
+			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 		} 
 		else {
 			// Reset chooseDatabaseButton
@@ -954,10 +1021,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 			else {
 				[chooseDatabaseButton selectItemAtIndex:0];
-			}
 		}
 	} 
-#ifndef SP_REFACTOR
+	} 
+#ifndef SP_CODA
 	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
 		if (returnCode == NSOKButton) {
 			[self _copyDatabase];		
@@ -968,7 +1035,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		if (returnCode == NSOKButton) {
 			[self _renameDatabase];		
 		}
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 		else {
 			// Reset chooseDatabaseButton
 			if ([[self database] length]) {
@@ -976,11 +1043,17 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 			else {
 				[chooseDatabaseButton selectItemAtIndex:0];
-			}
+		}
 		}
 #endif
 	}
-#ifndef SP_REFACTOR
+	else if([contextInfo isEqualToString:SPAlterDatabaseAction]) {
+		[alterDatabaseCharsetHelper setEnabled:NO];
+		if(returnCode == NSOKButton) {
+			[self _alterDatabase];
+		}
+	}
+#ifndef SP_CODA
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
 		if (statusValues) [statusValues release], statusValues = nil;
@@ -988,7 +1061,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 }
 
-#ifndef SP_REFACTOR /* sheetDidEnd: */
+#ifndef SP_CODA /* sheetDidEnd: */
 /**
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
@@ -1015,22 +1088,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	SPMySQLResult *theResult = [mySQLConnection queryString:@"SELECT DATABASE()"];
 	[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 	if (![mySQLConnection queryErrored]) {
-		for (NSArray *eachRow in theResult) {
+
+		for (NSArray *eachRow in theResult)
+		{
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
+
 		if(![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
 				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-#ifndef SP_REFACTOR /* [self updateWindowTitle:self] */
+#ifndef SP_CODA /* [self updateWindowTitle:self] */
 				[self updateWindowTitle:self];
 #endif
 			}
 		} else {
 			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
 			[chooseDatabaseButton selectItemAtIndex:0];
-#ifndef SP_REFACTOR /* [self updateWindowTitle:self] */
+#ifndef SP_CODA /* [self updateWindowTitle:self] */
 			[self updateWindowTitle:self];
 #endif
 		}
@@ -1040,7 +1116,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:self];
 }
 
-#ifndef SP_REFACTOR /* navigatorSchemaPathExistsForDatabase: */
+#ifndef SP_CODA /* navigatorSchemaPathExistsForDatabase: */
 - (BOOL)navigatorSchemaPathExistsForDatabase:(NSString*)dbname
 {
 	return [[SPNavigatorController sharedNavigatorController] schemaPathExistsForConnection:[self connectionID] andDatabase:dbname];
@@ -1057,7 +1133,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return [[SPNavigatorController sharedNavigatorController] allSchemaKeysForConnection:[self connectionID]];
 }
 
-#ifndef SP_REFACTOR /* console and navigator methods */
+- (IBAction)showGotoDatabase:(id)sender
+{
+	if(!gotoDatabaseController) {
+		gotoDatabaseController = [[SPGotoDatabaseController alloc] init];
+	}
+	
+	NSMutableArray *dbList = [[NSMutableArray alloc] init];
+	[dbList addObjectsFromArray:[self allSystemDatabaseNames]];
+	[dbList addObjectsFromArray:[self allDatabaseNames]];
+	[gotoDatabaseController setDatabaseList:[dbList autorelease]];
+	
+	if([gotoDatabaseController runModal]) {
+		[self selectDatabase:[gotoDatabaseController selectedDatabase] item:nil];
+	}
+}
+
+#ifndef SP_CODA /* console and navigator methods */
 
 #pragma mark -
 #pragma mark Console methods
@@ -1168,6 +1260,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Increment the task level
 	_isWorkingLevel++;
 
+#ifndef SP_CODA 
 	// Reset the progress indicator if necessary
 	if (_isWorkingLevel == 1 || !taskDisplayIsIndeterminate) {
 		taskDisplayIsIndeterminate = YES;
@@ -1175,20 +1268,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskProgressIndicator startAnimation:self];
 		taskDisplayLastValue = 0;
 	}
-
+#endif
+	
 	// If the working level just moved to start a task, set up the interface
 	if (_isWorkingLevel == 1) {
+#ifndef SP_CODA 
 		[taskCancelButton setHidden:YES];
-
+#endif
+		
 		// Set flags and prevent further UI interaction in this window
 		databaseListIsSelectable = NO;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskStartNotification object:self];
+#ifndef SP_CODA
 		[mainToolbar validateVisibleItems];
 		[chooseDatabaseButton setEnabled:NO];
 				
 		// Schedule appearance of the task window in the near future, using a frame timer.
 		taskFadeInStartDate = [[NSDate alloc] init];
 		taskDrawTimer = [[NSTimer scheduledTimerWithTimeInterval:1.0 / 30.0 target:self selector:@selector(fadeInTaskProgressWindow:) userInfo:nil repeats:YES] retain];
+#endif
 	}
 }
 
@@ -1197,6 +1295,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) fadeInTaskProgressWindow:(NSTimer *)theTimer
 {
+#ifndef SP_CODA 
 	double timeSinceFadeInStart = [[NSDate date] timeIntervalSinceDate:taskFadeInStartDate];
 
 	// Keep the window hidden for the first ~0.5 secs
@@ -1217,6 +1316,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
 		[taskFadeInStartDate release], taskFadeInStartDate = nil; 
 	}
+#endif
 }
 
 
@@ -1225,6 +1325,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskDescription:(NSString *)description
 {
+#ifndef SP_CODA 
 	NSShadow *textShadow = [[NSShadow alloc] init];
 	[textShadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0f alpha:0.75f]];
 	[textShadow setShadowOffset:NSMakeSize(1.0f, -1.0f)];
@@ -1241,6 +1342,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[string release];
 	[attributes release];
 	[textShadow release];
+#endif
 }
 
 /**
@@ -1250,6 +1352,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskPercentage:(CGFloat)taskPercentage
 {
+#ifndef SP_CODA 
 
 	// If the task display is currently indeterminate, set it to determinate on the main thread.
 	if (taskDisplayIsIndeterminate) {
@@ -1273,6 +1376,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		}
 		taskDisplayLastValue = taskProgressValue;
 	}
+#endif
 }
 
 /**
@@ -1284,6 +1388,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskProgressToIndeterminateAfterDelay:(BOOL)afterDelay
 {
+#ifndef SP_CODA 
 	if (afterDelay) {
 		[self performSelector:@selector(setTaskProgressToIndeterminateAfterDelay:) withObject:nil afterDelay:0.5];
 		return;
@@ -1295,6 +1400,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskProgressIndicator setIndeterminate:YES];
 	[taskProgressIndicator startAnimation:self];
 	taskDisplayLastValue = 0;
+#endif
 }
 
 /**
@@ -1302,6 +1408,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) endTask
 {
+
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] endTask];
 
@@ -1314,6 +1421,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If all tasks have ended, re-enable the interface
 	if (!_isWorkingLevel) {
 
+#ifndef SP_CODA 
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) {
 			[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
@@ -1325,11 +1433,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[taskProgressWindow setAlphaValue:0.0f];
 		taskDisplayIsIndeterminate = YES;
 		[taskProgressIndicator setIndeterminate:YES];
-
+#endif
+		
 		// Re-enable window interface
 		databaseListIsSelectable = YES;
 		[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentTaskEndNotification object:self];
+#ifndef SP_CODA 
 		[mainToolbar validateVisibleItems];
+#endif
 		[chooseDatabaseButton setEnabled:_isConnected];
 	}
 }
@@ -1340,6 +1451,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) enableTaskCancellationWithTitle:(NSString *)buttonTitle callbackObject:(id)callbackObject callbackFunction:(SEL)callbackFunction
 {
+#ifndef SP_CODA 
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
@@ -1356,6 +1468,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskCancelButton setTitle:buttonTitle];
 	[taskCancelButton setEnabled:YES];
 	[taskCancelButton setHidden:NO];
+#endif
 }
 
 /**
@@ -1363,6 +1476,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) disableTaskCancellation
 {
+#ifndef SP_CODA 
 
 	// If no task is active, return
 	if (!_isWorkingLevel) return;
@@ -1374,6 +1488,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	taskCancellationCallbackObject = nil;
 	taskCancellationCallbackSelector = NULL;
 	[taskCancelButton setHidden:YES];
+#endif
 }
 
 /**
@@ -1381,6 +1496,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction) cancelTask:(id)sender
 {
+#ifndef SP_CODA 
 	if (!taskCanBeCancelled) return;
 
 	[taskCancelButton setEnabled:NO];
@@ -1391,12 +1507,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[mySQLConnection setLastQueryWasCancelled:YES];
 		[[databaseStructureRetrieval connection] killQueryOnThreadID:[mySQLConnection mysqlConnectionThreadId]];
 	} else {
-		[mySQLConnection cancelCurrentQuery];
+	[mySQLConnection cancelCurrentQuery];
 	}
 
 	if (taskCancellationCallbackObject && taskCancellationCallbackSelector) {
 		[taskCancellationCallbackObject performSelector:taskCancellationCallbackSelector];
 	}
+#endif
 }
 
 /**
@@ -1421,6 +1538,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) centerTaskWindow
 {
+#ifndef SP_CODA 
 	NSPoint newBottomLeftPoint;
 	NSRect mainWindowRect = [parentWindow frame];
 	NSRect taskWindowRect = [taskProgressWindow frame];
@@ -1429,6 +1547,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	newBottomLeftPoint.y = roundf(mainWindowRect.origin.y + mainWindowRect.size.height/2 - taskWindowRect.size.height/2);
 
 	[taskProgressWindow setFrameOrigin:newBottomLeftPoint];
+#endif
 }
 
 /**
@@ -1437,11 +1556,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) setTaskIndicatorShouldAnimate:(BOOL)shouldAnimate
 {
+#ifndef SP_CODA 
 	if (shouldAnimate) {
 		[[taskProgressIndicator onMainThread] startAnimation:self];
 	} else {
 		[[taskProgressIndicator onMainThread] stopAnimation:self];
 	}
+#endif
 }
 
 #pragma mark -
@@ -1565,8 +1686,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 									nil];
 	NSString *mysqlEncoding = [translationMap valueForKey:[NSString stringWithFormat:@"%i", [encodingTag intValue]]];
 
-	if (!mysqlEncoding)
-		return @"utf8";
+	if (!mysqlEncoding) return @"utf8";
 
 	return mysqlEncoding;
 }
@@ -1586,30 +1706,21 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)detectDatabaseEncoding
 {
-	SPMySQLResult *charSetResult;
-	NSString *mysqlEncoding = nil;
-
 	_supportsEncoding = YES;
 
-	// MySQL >= 4.1
-	if ([serverSupport supportsCharacterSetDatabaseVar]) {
-		charSetResult = [mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set_database'"];
-		[charSetResult setReturnDataAsStrings:YES];
-		mysqlEncoding = [[charSetResult getRowAsDictionary] objectForKey:@"Value"];
-	} 
-	// MySQL 4.0 or older -> only default character set possible, cannot choose others using "set names xy"
-	else {
-		mysqlEncoding = [[[mySQLConnection queryString:@"SHOW VARIABLES LIKE 'character_set'"] getRowAsDictionary] objectForKey:@"Value"];
-	}
+	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
 
-	[selectedDatabaseEncoding release];
+	[selectedDatabaseEncoding release], selectedDatabaseEncoding = nil;
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
 		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
+		
 		_supportsEncoding = NO;
-	} else {
+	} 
+	else {
 		selectedDatabaseEncoding = [mysqlEncoding retain];
 	}
 }
@@ -1632,7 +1743,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 #pragma mark -
 #pragma mark Table Methods
-#ifndef SP_REFACTOR /* whole table operations */
+#ifndef SP_CODA /* whole table operations */
 
 /**
  * Copies if sender == self or displays or the CREATE TABLE syntax of the selected table(s) to the user .
@@ -1691,7 +1802,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if ([mySQLConnection queryErrored]) {
 			if ([mySQLConnection isConnected]) {
-				NSRunAlertPanel(@"Error", [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"), [mySQLConnection lastErrorMessage]], @"OK", nil, nil);
+				NSRunAlertPanel(@"Error", @"%@", @"OK", nil, nil, [NSString stringWithFormat:NSLocalizedString(@"An error occured while creating table syntax.\n\n: %@", @"Error shown when unable to show create table syntax"), [mySQLConnection lastErrorMessage]]);
 			}
 
 			return;
@@ -1785,6 +1896,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"CHECK TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1797,7 +1909,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to check the %@.\n\nMySQL said:%@",@"an error occurred while trying to check the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1832,7 +1944,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -1861,6 +1973,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"ANALYZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1873,7 +1986,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while analyzing the %@.\n\nMySQL said:%@",@"an error occurred while analyzing the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1893,7 +2006,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	// Process result
-	if ([selectedItems count] == 1) {
+	if([selectedItems count] == 1) {
 		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully analyzed table.",@"analyze table successfully passed message") : NSLocalizedString(@"Analyze table failed.", @"analyze table failed message");
@@ -1908,7 +2021,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -1937,6 +2050,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"OPTIMIZE TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -1949,7 +2063,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while optimzing the %@.\n\nMySQL said:%@",@"an error occurred while trying to optimze the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -1969,7 +2083,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	// Process result
-	if ([selectedItems count] == 1) {
+	if([selectedItems count] == 1) {
 		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully optimized table.",@"optimize table successfully passed message") : NSLocalizedString(@"Optimize table failed.", @"optimize table failed message");
@@ -1984,7 +2098,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2012,6 +2126,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"REPAIR TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2024,7 +2139,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while repairing the %@.\n\nMySQL said:%@",@"an error occurred while trying to repair the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2044,7 +2159,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	// Process result
-	if ([selectedItems count] == 1) {
+	if([selectedItems count] == 1) {
 		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully repaired table.",@"repair table successfully passed message") : NSLocalizedString(@"Repair table failed.", @"repair table failed message");
@@ -2054,12 +2169,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		message = NSLocalizedString(@"Successfully repaired all selected items.",@"successfully repaired all selected items message");
 	}
 
-	if (message) {
+	if(message) {
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Repair %@", @"REPAIR one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2087,6 +2202,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if([selectedItems count] == 0) return;
 
 	SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"FLUSH TABLE %@", [selectedItems componentsJoinedAndBacktickQuoted]]];
+	[theResult setReturnDataAsStrings:YES];
 
 	NSString *what = ([selectedItems count]>1) ? NSLocalizedString(@"selected items", @"selected items") : [NSString stringWithFormat:@"%@ '%@'", NSLocalizedString(@"table", @"table"), [self table]];
 
@@ -2099,7 +2215,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while flushing the %@.\n\nMySQL said:%@",@"an error occurred while trying to flush the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2119,7 +2235,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	// Process result
-	if ([selectedItems count] == 1) {
+	if([selectedItems count] == 1) {
 		NSDictionary *lastresult = [resultStatuses lastObject];
 
 		message = ([[lastresult objectForKey:@"Msg_type"] isEqualToString:@"status"]) ? NSLocalizedString(@"Successfully flushed table.",@"flush table successfully passed message") : NSLocalizedString(@"Flush table failed.", @"flush table failed message");
@@ -2129,12 +2245,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		message = NSLocalizedString(@"Successfully flushed all selected items.",@"successfully flushed all selected items message");
 	}
 
-	if (message) {
+	if(message) {
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Flush %@", @"FLUSH one or more tables - result title"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:message] 
+			 informativeTextWithFormat:@"%@", message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2173,7 +2289,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 							 defaultButton:@"OK" 
 						   alternateButton:nil 
 							   otherButton:nil 
-				 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]] 
+				 informativeTextWithFormat:NSLocalizedString(@"An error occurred while performing the checksum on %@.\n\nMySQL said:%@",@"an error occurred while performing the checksum on the %@.\n\nMySQL said:%@"), what, [mySQLConnection lastErrorMessage]]
 				  beginSheetModalForWindow:parentWindow 
 							 modalDelegate:self 
 							didEndSelector:NULL 
@@ -2185,13 +2301,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	// Process result
 	NSArray *resultStatuses = [theResult getAllRows];
-	if ([selectedItems count] == 1) {
+	if([selectedItems count] == 1) {
 		message = [[resultStatuses lastObject] objectForKey:@"Checksum"];
 		[[NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Checksum %@",@"checksum %@ message"), what] 
 						 defaultButton:@"OK" 
 					   alternateButton:nil 
 						   otherButton:nil 
-			 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]] 
+			 informativeTextWithFormat:NSLocalizedString(@"Table checksum: %@",@"table checksum: %@"), message]
 			  beginSheetModalForWindow:parentWindow 
 						 modalDelegate:self 
 						didEndSelector:NULL 
@@ -2220,7 +2336,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 
-	[panel beginSheetForDirectory:nil file:@"CreateSyntax" modalForWindow:createTableSyntaxWindow modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:SPCreateSyntx];
+    [panel setNameFieldStringValue:[NSString stringWithFormat:@"CreateSyntax-%@", [self table]]];
+    [panel beginSheetModalForWindow:createTableSyntaxWindow completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            NSString *createSyntax = [createTableSyntaxTextView string];
+            
+            if ([createSyntax length] > 0) {
+                NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax];
+
+                [output writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 /**
@@ -2256,11 +2383,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 }
 
 /**
- * Makes the tables list filter field the first responder.
+ * Switches to the content view and makes the advanced filter view the first responder
  */
-- (IBAction)focusOnTableListFilter:(id)sender
+- (IBAction)showFilterTable:(id)sender
 {
-	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
+	[self viewContent:self];
+	
+	[tableContentInstance performSelector:@selector(showFilterTable:) withObject:sender afterDelay:0.1];
+}
+
+/**
+ * Allow Command-F to set the focus to the content view filter if that view is active
+ */
+- (void)performFindPanelAction:(id)sender
+{
+	if ([sender tag] == 1 && [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent]) {
+		[tableContentInstance makeContentFilterHaveFocus];
+	}
 }
 
 /**
@@ -2311,22 +2450,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[[sender window] orderOut:self];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Displays the user account manager.
  */
 - (IBAction)showUserManager:(id)sender
 {	
-    if (!userManagerInstance)
-    {
-        userManagerInstance = [[SPUserManager alloc] init];
+	if (!userManagerInstance)
+	{
+		userManagerInstance = [[SPUserManager alloc] init];
 		
-        [userManagerInstance setConnection:mySQLConnection];
+		[userManagerInstance setDatabaseDocument:self];
+		[userManagerInstance setConnection:mySQLConnection];
 		[userManagerInstance setServerSupport:serverSupport];
-    }
-    
+	}
+
 	// Before displaying the user manager make sure the current user has access to the mysql.user table.
-	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT * FROM `mysql`.`user` ORDER BY `user`"];
+	SPMySQLResult *result = [mySQLConnection queryString:@"SELECT user FROM mysql.user LIMIT 1"];
 	
 	if ([mySQLConnection queryErrored] && ([result numberOfRows] == 0)) {
 		
@@ -2343,16 +2483,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		return;
 	}
 	
-	[NSApp beginSheet:[userManagerInstance window]
-	   modalForWindow:parentWindow 
-		modalDelegate:self 
-	   didEndSelector:@selector(userManagerSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
-}
-
-- (void)userManagerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context
-{
-    [userManagerInstance release], userManagerInstance = nil;
+	[userManagerInstance beginSheetModalForWindow:parentWindow
+								completionHandler:^(){
+		[userManagerInstance release], userManagerInstance = nil;
+	}];
 }
 
 /**
@@ -2414,7 +2548,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[mySQLConnection disconnect];
 	_isConnected = NO;
 
-#ifndef SP_REFACTOR /* growl */
+#ifndef SP_CODA /* growl */
 	// Disconnected Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Disconnected" 
 												   description:[NSString stringWithFormat:NSLocalizedString(@"Disconnected from %@",@"description for disconnected growl notification"), [parentTabViewItem label]]
@@ -2423,7 +2557,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 }
 
-#ifndef SP_REFACTOR /* observeValueForKeyPath: */
+#ifndef SP_CODA /* observeValueForKeyPath: */
 /**
  * This method is called as part of Key Value Observing which is used to watch for prefernce changes which effect the interface.
  */
@@ -2433,7 +2567,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[mySQLConnection setDelegateQueryLogging:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
 	}
 }
-#endif
 
 /**
  * Is current document Untitled?
@@ -2442,6 +2575,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 {
 	return (!_isSavedInBundle && [self fileURL] && [[self fileURL] isFileURL]) ? NO : YES;
 }
+#endif
 
 /**
  * Asks any currently editing views to commit their changes;
@@ -2451,6 +2585,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (BOOL)couldCommitCurrentViewActions
 {
 	[parentWindow endEditingFor:nil];
+#ifndef SP_CODA 
 	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
 
 		// Table structure view
@@ -2464,8 +2599,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		default:
 			break;
 	}
-
+	
 	return YES;
+#else
+	return [tableSourceInstance saveRowOnDeselect] && [tableContentInstance saveRowOnDeselect];
+#endif
 }
 
 #pragma mark -
@@ -2477,9 +2615,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (NSString *)host
 {
 	if ([connectionController type] == SPSocketConnection) return @"localhost";
-	NSString *theHost = [connectionController host];
-	if (!theHost) theHost = @"";
-	return theHost;
+
+	NSString *host = [connectionController host];
+
+	if (!host) host = @"";
+
+	return host;
 }
 
 /**
@@ -2490,9 +2631,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if ([connectionController name] && [[connectionController name] length]) {
 		return [connectionController name];
 	}
+
 	if ([connectionController type] == SPSocketConnection) {
 		return [NSString stringWithFormat:@"%@@localhost", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous"];
 	}
+
 	return [NSString stringWithFormat:@"%@@%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", [connectionController host]?[connectionController host]:@""];
 }
 
@@ -2501,42 +2644,37 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (NSString *)connectionID
 {
+	if (!_isConnected) return @"_";
 
-	if(!_isConnected) return @"_";
+	NSString *port = [[self port] length] ? [NSString stringWithFormat:@":%@", [self port]] : @"";
 
-	NSString *port;
-	if([[self port] length])
-		port = [NSString stringWithFormat:@":%@", [self port]];
-	else
-		port = @"";
-
-	switch([connectionController type]) {
+	switch ([connectionController type])
+	{
 		case SPSocketConnection:
-		return [NSString stringWithFormat:@"%@@localhost%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", port];
-		break;
+			return [NSString stringWithFormat:@"%@@localhost%@", ([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", port];
+			break;
 		case SPTCPIPConnection:
-		return [NSString stringWithFormat:@"%@@%@%@", 
-			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
-			[connectionController host]?[connectionController host]:@"", 
-			port];
-		break;
+			return [NSString stringWithFormat:@"%@@%@%@",
+					([connectionController user] && [[connectionController user] length]) ? [connectionController user] : @"anonymous",
+					 [connectionController host] ? [connectionController host] : @"", port];
+			break;
 		case SPSSHTunnelConnection:
-		return [NSString stringWithFormat:@"%@@%@%@&SSH&%@@%@:%@", 
-			([connectionController user] && [[connectionController user] length])?[connectionController user]:@"anonymous", 
-			[connectionController host]?[connectionController host]:@"", 
-			port,
-			([connectionController sshUser] && [[connectionController sshUser] length])?[connectionController sshUser]:@"anonymous",
-			[connectionController sshHost]?[connectionController sshHost]:@"", 
-			([[connectionController sshPort] length])?[connectionController sshPort]:@"22"];
+			return [NSString stringWithFormat:@"%@@%@%@&SSH&%@@%@:%@",
+					([connectionController user] && [[connectionController user] length]) ? [connectionController user] : @"anonymous",
+					 [connectionController host] ? [connectionController host] : @"", port,
+					([connectionController sshUser] && [[connectionController sshUser] length]) ? [connectionController sshUser] : @"anonymous",
+					 [connectionController sshHost] ? [connectionController sshHost] : @"",
+					([[connectionController sshPort] length]) ? [connectionController sshPort] : @"22"];
 	}
 
 	return @"_";
-
 }
 
 /**
  * Returns the full window title which is mainly used for tab tooltips
  */
+#ifndef SP_CODA
+
 - (NSString *)tabTitleForTooltip
 {
 	NSMutableString *tabTitle;
@@ -2555,7 +2693,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	tabTitle = [NSMutableString string];
 
-#ifndef SP_REFACTOR /* Add the MySQL version to the window title */
+#ifndef SP_CODA /* Add the MySQL version to the window title */
 	// Add the MySQL version to the window title if enabled in prefs
 	if ([prefs boolForKey:SPDisplayServerVersionInWindowTitle]) [tabTitle appendFormat:@"(MySQL %@)\n", [self mySQLVersion]];
 #endif
@@ -2571,6 +2709,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 	return tabTitle;
 }
+
+#endif
+
 /**
  * Returns the currently selected database
  */
@@ -2653,7 +2794,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
-#ifndef SP_REFACTOR /* applicationWillTerminate: */
+#ifndef SP_CODA /* applicationWillTerminate: */
 
 	// Auto-save preferences to spf file based connection
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled])
@@ -2673,14 +2814,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #pragma mark -
 #pragma mark Menu methods
 
-#ifndef SP_REFACTOR 
+#ifndef SP_CODA 
 /**
  * Saves SP session or if Custom Query tab is active the editor's content as SQL file
  * If sender == nil then the call came from [self writeSafelyToURL:ofType:forSaveOperation:error]
  */
 - (IBAction)saveConnectionSheet:(id)sender
 {
-
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	NSString *filename;
 	NSString *contextInfo;
@@ -2688,15 +2828,24 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[panel setAllowsOtherFileTypes:NO];
 	[panel setCanSelectHiddenExtension:YES];
 
-	// Save Query…
-	if( sender != nil && [sender tag] == 1006 ) {
+	// Save Query...
+	if (sender != nil && ([sender tag] == 1006 || [sender tag] == 1008)) {
+
+		// If Save was invoked, check whether the file was previously opened, and if so save without the panel
+		if ([sender tag] == 1006 && [[[self sqlFileURL] path] length]) {
+			NSError *error = nil;
+			NSString *content = [NSString stringWithString:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]];
+			[content writeToURL:sqlFileURL atomically:YES encoding:sqlFileEncoding error:&error];
+			return;
+		}
 
 		// Save the editor's content as SQL file
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
 				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
-		// [panel setMessage:NSLocalizedString(@"Save SQL file", @"Save SQL file")];
+
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
-		if(![prefs stringForKey:@"lastSqlFileName"]) {
+
+		if (![prefs stringForKey:@"lastSqlFileName"]) {
 			[prefs setObject:@"" forKey:@"lastSqlFileName"];
 			[prefs synchronize];
 		}
@@ -2705,7 +2854,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		contextInfo = @"saveSQLfile";
 
 		// If no lastSqlFileEncoding in prefs set it to UTF-8
-		if(![prefs integerForKey:SPLastSQLFileEncoding]) {
+		if (![prefs integerForKey:SPLastSQLFileEncoding]) {
 			[prefs setInteger:4 forKey:SPLastSQLFileEncoding];
 			[prefs synchronize];
 		}
@@ -2713,18 +2862,19 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[encodingPopUp setEnabled:YES];
 
 	// Save As… or Save
-	} else if(sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
+	}
+	else if (sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if(sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
+		if (sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO contextInfo:nil];
 			return;
 		}
 
 		// Load accessory nib each time.
 		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
-		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
+		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
 		}
@@ -2733,18 +2883,24 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionDefault, nil]];
 
 		//Restore accessory view settings if possible
-		if([spfDocData objectForKey:@"save_password"])
+		if ([spfDocData objectForKey:@"save_password"]) {
 			[saveConnectionSavePassword setState:[[spfDocData objectForKey:@"save_password"] boolValue]];
-		if([spfDocData objectForKey:@"auto_connect"])
+		}
+		if ([spfDocData objectForKey:@"auto_connect"]) {
 			[saveConnectionAutoConnect setState:[[spfDocData objectForKey:@"auto_connect"] boolValue]];
-		if([spfDocData objectForKey:@"encrypted"])
+		}
+		if ([spfDocData objectForKey:@"encrypted"]) {
 			[saveConnectionEncrypt setState:[[spfDocData objectForKey:@"encrypted"] boolValue]];
-		if([spfDocData objectForKey:@"include_session"])
+		}
+		if ([spfDocData objectForKey:@"include_session"]) {
 			[saveConnectionIncludeData setState:[[spfDocData objectForKey:@"include_session"] boolValue]];
-		if([[spfDocData objectForKey:@"save_editor_content"] boolValue])
+		}
+		if ([[spfDocData objectForKey:@"save_editor_content"] boolValue]) {
 			[saveConnectionIncludeQuery setState:[[spfDocData objectForKey:@"save_editor_content"] boolValue]];
-		else
+		}
+		else {
 			[saveConnectionIncludeQuery setState:NSOnState];
+		}
 
 		[saveConnectionIncludeQuery setEnabled:([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])];
 
@@ -2757,29 +2913,22 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if([[[self fileURL] path] length])
-			filename = [self displayName];
-		else
-			filename = [NSString stringWithFormat:@"%@", [self name]];
+		filename = ([[[self fileURL] path] length]) ? [self displayName] : [NSString stringWithFormat:@"%@", [self name]];
 
-		if(sender == nil)
-			contextInfo = @"saveSPFfileAndClose";
-		else
-			contextInfo = @"saveSPFfile";
+		contextInfo = sender == nil ? @"saveSPFfileAndClose" : @"saveSPFfile";
 	}
-	// Save Session or Save Session As…
+	// Save Session or Save Session As...
 	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
 	{
-
 		// Save As Session
-		if([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
+		if ([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
 			[self saveConnectionPanelDidEnd:panel returnCode:1 contextInfo:@"saveAsSession"];
 			return;
 		}
 
 		// Load accessory nib each time.
 		// Note that the top-level objects aren't released automatically, but are released when the panel ends.
-		if(![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
+		if (![NSBundle loadNibNamed:@"SaveSPFAccessory" owner:self]) {
 			NSLog(@"SaveSPFAccessory accessory dialog could not be loaded.");
 			return;
 		}
@@ -2788,19 +2937,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 		NSDictionary *spfSessionData = [[NSApp delegate] spfSessionDocData];
 
-		//Restore accessory view settings if possible
-		if([spfSessionData objectForKey:@"save_password"])
+		// Restore accessory view settings if possible
+		if ([spfSessionData objectForKey:@"save_password"]) {
 			[saveConnectionSavePassword setState:[[spfSessionData objectForKey:@"save_password"] boolValue]];
-		if([spfSessionData objectForKey:@"auto_connect"])
+		}
+		if ([spfSessionData objectForKey:@"auto_connect"]) {
 			[saveConnectionAutoConnect setState:[[spfSessionData objectForKey:@"auto_connect"] boolValue]];
-		if([spfSessionData objectForKey:@"encrypted"])
+		}
+		if ([spfSessionData objectForKey:@"encrypted"]) {
 			[saveConnectionEncrypt setState:[[spfSessionData objectForKey:@"encrypted"] boolValue]];
-		if([spfSessionData objectForKey:@"include_session"])
+		}
+		if ([spfSessionData objectForKey:@"include_session"]) {
 			[saveConnectionIncludeData setState:[[spfSessionData objectForKey:@"include_session"] boolValue]];
-		if([[spfSessionData objectForKey:@"save_editor_content"] boolValue])
+		}
+		if ([[spfSessionData objectForKey:@"save_editor_content"] boolValue]) {
 			[saveConnectionIncludeQuery setState:[[spfSessionData objectForKey:@"save_editor_content"] boolValue]];
-		else
+		}
+		else {
 			[saveConnectionIncludeQuery setState:YES];
+		}
 
 		// Update accessory button states
 		[self validateSaveConnectionAccessory:nil];
@@ -2812,7 +2967,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if([[NSApp delegate] sessionURL])
+		if ([[NSApp delegate] sessionURL])
 			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
 		else
 			filename = [NSString stringWithFormat:NSLocalizedString(@"Session",@"Initial filename for 'Save session' file")];
@@ -2823,38 +2978,35 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		return;
 	}
 
-	[panel beginSheetForDirectory:nil 
-						   file:filename 
-				 modalForWindow:parentWindow 
-				  modalDelegate:self 
-				 didEndSelector:@selector(saveConnectionPanelDidEnd:returnCode:contextInfo:) 
-					contextInfo:contextInfo];
+	[panel setNameFieldStringValue:filename];
+
+	[panel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger returnCode) {
+		[self saveConnectionPanelDidEnd:panel returnCode:returnCode contextInfo:contextInfo];
+	}];
 }
 /**
  * Control the save connection panel's accessory view
  */
 - (IBAction)validateSaveConnectionAccessory:(id)sender
 {
-
 	// [saveConnectionAutoConnect setEnabled:([saveConnectionSavePassword state] == NSOnState)];
 	[saveConnectionSavePasswordAlert setHidden:([saveConnectionSavePassword state] == NSOffState)];
 
 	// If user checks the Encrypt check box set focus to password field
-	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
+	if (sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOnState)
 		[saveConnectionEncryptString selectText:sender];
 
 	// Unfocus saveConnectionEncryptString
-	if(sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
+	if (sender == saveConnectionEncrypt && [saveConnectionEncrypt state] == NSOffState) {
 		// [saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
 		// TODO how can one make it better ?
 		[[saveConnectionEncryptString window] makeFirstResponder:[[saveConnectionEncryptString window] initialFirstResponder]];
 	}
-
 }
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if ( returnCode ) {
+	if (returnCode) {
 
 		NSString *fileName = [[panel URL] path];
 		NSError *error = nil;
@@ -3021,7 +3173,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
 												  otherButton:nil 
-									informativeTextWithFormat:err];
+									informativeTextWithFormat:@"%@", err];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
@@ -3044,8 +3196,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 			// Register spfs bundle in Recent Files
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
-			
-
 		}
 	}
 }
@@ -3103,15 +3253,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
-			SPBeginWaitingAlertSheet(@"title",
-				NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Ignore", @"ignore button"), nil,
-				NSCriticalAlertStyle, parentWindow, self,
-				@selector(sheetDidEnd:returnCode:contextInfo:),
-				@"saveDocPrefSheetStatus",
-				[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")],
-				[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]],
-				&saveDocPrefSheetStatus
-			);
+			[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
+			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
+			                                   otherButton:nil
+			                                    alertStyle:NSCriticalAlertStyle
+			                                     docWindow:parentWindow
+			                                 modalDelegate:self
+			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+			                                   contextInfo:@"saveDocPrefSheetStatus"
+			                                           msg:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
+			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
+			                                    returnCode:&saveDocPrefSheetStatus];
 
 			if (spf) [spf release];
 			if(saveDocPrefSheetStatus == NSAlertAlternateReturn)
@@ -3144,7 +3297,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
 											  otherButton:nil 
-								informativeTextWithFormat:err];
+								informativeTextWithFormat:@"%@", err];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
@@ -3210,6 +3363,18 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Determine whether to use encryption when adding the data
 	[spfStructure setObject:[spfDocData_temp objectForKey:@"encrypted"] forKey:@"encrypted"];
 	if (![[spfDocData_temp objectForKey:@"encrypted"] boolValue]) {
+
+		// Convert the content selection to encoded data
+		if ([[spfData objectForKey:@"session"] objectForKey:@"contentSelection"]) {
+			NSMutableDictionary *sessionInfo = [NSMutableDictionary dictionaryWithDictionary:[spfData objectForKey:@"session"]];
+			NSMutableData *dataToEncode = [[[NSMutableData alloc] init] autorelease];
+			NSKeyedArchiver *archiver = [[[NSKeyedArchiver alloc] initForWritingWithMutableData:dataToEncode] autorelease];
+			[archiver encodeObject:[sessionInfo objectForKey:@"contentSelection"] forKey:@"data"];
+			[archiver finishEncoding];
+			[sessionInfo setObject:dataToEncode forKey:@"contentSelection"];
+			[spfData setObject:sessionInfo forKey:@"session"];
+		}
+
 		[spfStructure setObject:spfData forKey:@"data"];
 	} else {
 		NSMutableData *dataToEncrypt = [[[NSMutableData alloc] init] autorelease];
@@ -3230,7 +3395,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:err];
+							 informativeTextWithFormat:@"%@", err];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -3322,38 +3487,54 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
 	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
 }
+#endif
+
+/**
+ * Forwards a responder request to set the focus to the table list filter area or table list
+ */
+- (IBAction) makeTableListFilterHaveFocus:(id)sender
+{
+	[tablesListInstance performSelector:@selector(makeTableListFilterHaveFocus) withObject:nil afterDelay:0.1];
+}
 
 /**
  * Menu item validation.
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
+	SEL action = [menuItem action];
+	
 	if ([menuItem menu] == chooseDatabaseButton) {
 		return (_isConnected && databaseListIsSelectable);
 	}
 
 	if (!_isConnected || _isWorkingLevel) {
-		return ([menuItem action] == @selector(newWindow:) || [menuItem action] == @selector(terminate:) || [menuItem action] == @selector(closeTab:));
+		return (action == @selector(newWindow:) || 
+				action == @selector(terminate:) || 
+				action == @selector(closeTab:));
 	}
 
-	if ([menuItem action] == @selector(openCurrentConnectionInNewWindow:))
+#ifndef SP_CODA
+	if (action == @selector(openCurrentConnectionInNewWindow:))
 	{
-		if([self isUntitled]) {
+		if ([self isUntitled]) {
 			[menuItem setTitle:NSLocalizedString(@"Open in New Window", @"menu item open in new window")];
 			return NO;
-		} else {
+		} 
+		else {
 			[menuItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Open “%@” in New Window", @"menu item open “%@” in new window"), [self displayName]]];
 			return YES;
 		}
 	}
+#endif
 	
 	// Data export
-	if ([menuItem action] == @selector(export:)) {
+	if (action == @selector(export:)) {
 		return (([self database] != nil) && ([[tablesListInstance tables] count] > 1));
 	}
 	
 	// Selected tables data export
-	if ([menuItem action] == @selector(exportSelectedTablesAs:)) {
+	if (action == @selector(exportSelectedTablesAs:)) {
 		
 		NSInteger tag = [menuItem tag];
 		NSInteger type = [tablesListInstance tableType];
@@ -3379,110 +3560,131 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			return (enable && (tag == SPSQLExport));
 		}
 	}
-
-	if ([menuItem action] == @selector(import:)				  ||
-		[menuItem action] == @selector(removeDatabase:)		  ||
-		[menuItem action] == @selector(copyDatabase:)		  ||
-		[menuItem action] == @selector(renameDatabase:)		  ||
-		[menuItem action] == @selector(openDatabaseInNewTab:) ||
-		[menuItem action] == @selector(refreshTables:))
-	{
-		return ([self database] != nil);
+	
+	// Can only be enabled on mysql 4.1+
+	if (action == @selector(alterDatabase:)) {
+		return (([self database] != nil) && [serverSupport supportsPost41CharacterSetHandling]);
 	}
 	
-	if ([menuItem action] == @selector(importFromClipboard:))
+	// Table specific actions
+	if (action == @selector(viewStructure:) ||
+		action == @selector(viewContent:)   ||
+		action == @selector(viewRelations:) ||
+		action == @selector(viewStatus:)    ||
+		action == @selector(viewTriggers:))
 	{
-		return ([self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]]) ? YES : NO;
+		return [self database] != nil && [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 		
+	}
+
+	// Database specific actions
+	if (action == @selector(import:)               ||
+		action == @selector(removeDatabase:)       ||
+		action == @selector(copyDatabase:)         ||
+		action == @selector(renameDatabase:)       ||
+		action == @selector(openDatabaseInNewTab:) ||
+		action == @selector(refreshTables:))
+	{
+		return [self database] != nil;
+	}
+	
+	if (action == @selector(importFromClipboard:)){
+		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]];
 	}
 	
 	// Change "Save Query/Queries" menu item title dynamically
 	// and disable it if no query in the editor
-	if ([menuItem action] == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
-		if([customQueryInstance numberOfQueries] < 1) {
+	if (action == @selector(saveConnectionSheet:) && [menuItem tag] == 0) {
+		if ([customQueryInstance numberOfQueries] < 1) {
 			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
+			
 			return NO;
 		}
-		else if([customQueryInstance numberOfQueries] == 1)
-			[menuItem setTitle:NSLocalizedString(@"Save Query…", @"Save Query…")];
-		else
-			[menuItem setTitle:NSLocalizedString(@"Save Queries…", @"Save Queries…")];
+		else {
+			[menuItem setTitle:[customQueryInstance numberOfQueries] == 1 ? 
+			 NSLocalizedString(@"Save Query…", @"Save Query…") : 
+			 NSLocalizedString(@"Save Queries…", @"Save Queries…")];
+		}
 
 		return YES;
 	}
 
-	if ([menuItem action] == @selector(printDocument:)) {
+#ifndef SP_CODA
+	if (action == @selector(printDocument:)) {
 		return (([self database] != nil && [[tablesListInstance valueForKeyPath:@"tablesListView"] numberOfSelectedRows] == 1) ||
 			// If Custom Query Tab is active the textView will handle printDocument by itself
 			// if it is first responder; otherwise allow to print the Query Result table even 
 			// if no db/table is selected
 			[tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2);
 	}
+#endif
 
-	if ([menuItem action] == @selector(chooseEncoding:)) {
+	if (action == @selector(chooseEncoding:)) {
 		return [self supportsEncoding];
 	}
 
-	if ([menuItem action] == @selector(analyzeTable:) || 
-		[menuItem action] == @selector(optimizeTable:) || 
-		[menuItem action] == @selector(repairTable:) || 
-		[menuItem action] == @selector(flushTable:) ||
-		[menuItem action] == @selector(checkTable:) ||
-		[menuItem action] == @selector(checksumTable:) ||
-		[menuItem action] == @selector(showCreateTableSyntax:) ||
-		[menuItem action] == @selector(copyCreateTableSyntax:))
+	// Table actions and view switching
+	if (action == @selector(analyzeTable:) || 
+		action == @selector(optimizeTable:) || 
+		action == @selector(repairTable:) || 
+		action == @selector(flushTable:) ||
+		action == @selector(checkTable:) ||
+		action == @selector(checksumTable:) ||
+		action == @selector(showCreateTableSyntax:) ||
+		action == @selector(copyCreateTableSyntax:))
 	{
-		return ([[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count]) ? YES:NO;
+		return [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 	}
 
-	if ([menuItem action] == @selector(addConnectionToFavorites:)) {
-		return ([connectionController selectedFavorite] ? NO : YES);
+#ifndef SP_CODA
+	if (action == @selector(addConnectionToFavorites:)) {
+		return ![connectionController selectedFavorite] || [connectionController isEditingConnection];
 	}
 
 	// Backward in history menu item
-	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
+	if ((action == @selector(backForwardInHistory:)) && ([menuItem tag] == 0)) {
 		return (([[spHistoryControllerInstance history] count]) && ([spHistoryControllerInstance historyPosition] > 0));
 	}
 
 	// Forward in history menu item
-	if (([menuItem action] == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
+	if ((action == @selector(backForwardInHistory:)) && ([menuItem tag] == 1)) {
 		return (([[spHistoryControllerInstance history] count]) && (([spHistoryControllerInstance historyPosition] + 1) < [[spHistoryControllerInstance history] count]));
 	}
+#endif
 	
 	// Show/hide console
-	if ([menuItem action] == @selector(toggleConsole:)) {
+	if (action == @selector(toggleConsole:)) {
 		[menuItem setTitle:([[[SPQueryController sharedQueryController] window] isVisible] && [[[NSApp keyWindow] windowController] isKindOfClass:[SPQueryController class]]) ? NSLocalizedString(@"Hide Console", @"hide console") : NSLocalizedString(@"Show Console", @"show console")];
 	}
 	
 	// Clear console
-	if ([menuItem action] == @selector(clearConsole:)) {
+	if (action == @selector(clearConsole:)) {
 		return ([[SPQueryController sharedQueryController] consoleMessageCount] > 0);
 	}
 	
 	// Show/hide console
-	if ([menuItem action] == @selector(toggleNavigator:)) {
+	if (action == @selector(toggleNavigator:)) {
 		[menuItem setTitle:([[[SPNavigatorController sharedNavigatorController] window] isVisible]) ? NSLocalizedString(@"Hide Navigator", @"hide navigator") : NSLocalizedString(@"Show Navigator", @"show navigator")];
 	}
 	
 	// Focus on table content filter
-	if ([menuItem action] == @selector(focusOnTableContentFilter:)) {
+	if (action == @selector(focusOnTableContentFilter:) || [menuItem action] == @selector(showFilterTable:)) {
 		return ([self table] != nil && [[self table] isNotEqualTo:@""]); 
 	}
 
 	// Focus on table list or filter resp.
-	if ([menuItem action] == @selector(focusOnTableListFilter:)) {
+	if (action == @selector(makeTableListFilterHaveFocus:)) {
 		
-		if([[tablesListInstance valueForKeyPath:@"tables"] count] > 20)
-			[menuItem setTitle:NSLocalizedString(@"Filter Tables", @"filter tables menu item")];
-		else
-			[menuItem setTitle:NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
+		[menuItem setTitle:[[tablesListInstance valueForKeyPath:@"tables"] count] > 20 ? 
+		 NSLocalizedString(@"Filter Tables", @"filter tables menu item") : 
+		 NSLocalizedString(@"Change Focus to Table List", @"change focus to table list menu item")];
 			
-		return ([[tablesListInstance valueForKeyPath:@"tables"] count] > 1); 
+		return [[tablesListInstance valueForKeyPath:@"tables"] count] > 1; 
 	}
 	
 	// If validation for the sort favorites tableview items reaches here then the preferences window isn't
 	// open return NO.
-	if (([menuItem action] == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseFavoritesSortOrder:))) {
+	if ((action == @selector(sortFavorites:)) || ([menuItem action] == @selector(reverseSortFavorites:))) {
 		return NO;
 	}
 
@@ -3495,13 +3697,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (IBAction)addConnectionToFavorites:(id)sender
 {
+#ifndef SP_CODA
 	// Obviously don't add if it already exists. We shouldn't really need this as the menu item validation
 	// enables or disables the menu item based on the same method. Although to be safe do the check anyway
 	// as we don't know what's calling this method.
-	if ([connectionController selectedFavorite]) return;
+	if ([connectionController selectedFavorite] && ![connectionController isEditingConnection]) return;
 
 	// Request the connection controller to add its details to favorites
-	[connectionController addFavorite:self];
+	[connectionController addFavoriteUsingCurrentDetails:self];
+#endif
 }
 
 /**
@@ -3509,26 +3713,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (BOOL)isCustomQuerySelected
 {
+#ifndef SP_CODA
 	return [[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarCustomQuery];
-}
-
-/**
- * Called when the NSSavePanel sheet ends. Writes the server variables to the selected file if required.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if ([contextInfo isEqualToString:SPCreateSyntx]) {
-
-			NSString *createSyntax = [createTableSyntaxTextView string];
-
-			if ([createSyntax length] > 0) {
-				NSString *output = [NSString stringWithFormat:@"-- %@ '%@'\n\n%@\n", NSLocalizedString(@"Create syntax for", @"create syntax for table comment"), [self table], createSyntax]; 
-
-				[output writeToURL:[sheet URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
-			}
-		}
-	}
+#else
+	return ([structureContentSwitcher selectedSegment] == 2);
+#endif
 }
 
 /**
@@ -3547,12 +3736,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void) updateWindowTitle:(id)sender
 {
+#ifndef SP_CODA
 	// Ensure a call on the main thread
 	if (![NSThread isMainThread]) return [[self onMainThread] updateWindowTitle:sender];
 
 	NSMutableString *tabTitle;
 	NSMutableString *windowTitle;
 	SPDatabaseDocument *frontTableDocument = [parentWindowController selectedTableDocument];
+	
+	NSColor *tabColor = nil;
 
 	// Determine name details
 	NSString *pathName = @"";
@@ -3569,6 +3761,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		tabTitle = windowTitle;
 	} 
 	else {
+		tabColor = [[SPFavoriteColorSupport sharedInstance] colorForIndex:[connectionController colorIndex]];
+		
 		windowTitle = [NSMutableString string];
 		tabTitle = [NSMutableString string];
 
@@ -3610,6 +3804,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	// Set the titles
 	[parentTabViewItem setLabel:tabTitle];
+	[parentTabViewItem setColor:tabColor];
 	if ([parentWindowController selectedTableDocument] == self) {
 		[parentWindow setTitle:windowTitle];
 	}
@@ -3617,6 +3812,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// If the sender wasn't the window controller, update other tabs in this window
 	// for shared pathname updates
 	if ([sender class] != [SPWindowController class]) [parentWindowController updateAllTabTitles:self];
+#endif
 }
 
 /**
@@ -3624,17 +3820,21 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)setStatusIconToImageWithName:(NSString *)imageName
 {
+#ifndef SP_CODA
 	NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:@"png"];
 	if (!imagePath) return;
 
 	NSImage *image = [[[NSImage alloc] initByReferencingFile:imagePath] autorelease];
 	[titleImageView setImage:image];
+#endif
 }
 
 - (void)setTitlebarStatus:(NSString *)status
 {
+#ifndef SP_CODA
 	[self clearStatusIcon];
 	[titleStringView setStringValue:status];
+#endif
 }
 
 /**
@@ -3642,7 +3842,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)clearStatusIcon
 {
+#ifndef SP_CODA
 	[titleImageView setImage:nil];
+#endif
 }
 
 /**
@@ -3651,6 +3853,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)updateTitlebarStatusVisibilityForcingHide:(BOOL)forceHide
 {
+#ifndef SP_CODA
 	BOOL newIsVisible = !forceHide;
 	if (newIsVisible && [parentWindow styleMask] & NSFullScreenWindowMask) newIsVisible = NO;
 	if (newIsVisible && [parentWindowController selectedTableDocument] != self) newIsVisible = NO;
@@ -3671,17 +3874,20 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 
 	windowTitleStatusViewIsVisible = newIsVisible;
+#endif
 }
 
 #pragma mark -
 #pragma mark Toolbar Methods
+
+#ifndef SP_CODA
 
 /**
  * set up the standard toolbar
  */
 - (void)setupToolbar
 {
-	// create a new toolbar instance, and attach it to our document window 
+	// create a new toolbar instance, and attach it to our document window
 	mainToolbar = [[NSToolbar alloc] initWithIdentifier:@"TableWindowToolbar"];
 
 	// set up toolbar properties
@@ -3869,6 +4075,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			SPMainToolbarTableStructure,
 			SPMainToolbarTableContent,
 			SPMainToolbarTableRelations,
+			SPMainToolbarTableTriggers,
 			SPMainToolbarTableInfo,
 			SPMainToolbarCustomQuery,
 			NSToolbarFlexibleSpaceItemIdentifier,
@@ -3930,6 +4137,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return YES;
 }
 
+#endif
+
+
 #pragma mark -
 #pragma mark Tab methods
 
@@ -3940,7 +4150,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 - (void)makeKeyDocument
 {
 	[[[self parentWindow] onMainThread] makeKeyAndOrderFront:self];
+#ifndef SP_CODA
 	[[[[self parentTabViewItem] onMainThread] tabView] selectTabViewItemWithIdentifier:self];
+#endif
 }
 
 /**
@@ -3959,20 +4171,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// edits in progress in various views.
 	if ( ![tablesListInstance selectionShouldChangeInTableView:nil] ) return NO;
 
-	// Auto-save spf file based connection and return whether the save was successful
+#ifndef SP_CODA
+	// Auto-save spf file based connection and return if the save was not successful
 	if([self fileURL] && [[[self fileURL] path] length] && ![self isUntitled]) {
 		BOOL isSaved = [self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:YES contextInfo:nil];
-		if(isSaved)
+		if (isSaved) {
 			[[SPQueryController sharedQueryController] removeRegisteredDocumentWithFileURL:[self fileURL]];
-		return isSaved;
+		} else {
+			return NO;
+		}
 	}
 
 	// Terminate all running BASH commands
 	for(NSDictionary* cmd in [self runningActivities]) {
-		NSInteger pid = [[cmd objectForKey:@"pid"] intValue];
+		NSInteger pid = [[cmd objectForKey:@"pid"] integerValue];
 		NSTask *killTask = [[NSTask alloc] init];
 		[killTask setLaunchPath:@"/bin/sh"];
-		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", pid], nil]];
+		[killTask setArguments:[NSArray arrayWithObjects:@"-c", [NSString stringWithFormat:@"kill -9 -%ld", (long)pid], nil]];
 		[killTask launch];
 		[killTask waitUntilExit];
 		[killTask release];
@@ -3983,25 +4198,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Note that this call does not need to be removed in release builds as leaks analysis output is only
 	// dumped if [[SPLogger logger] setDumpLeaksOnTermination]; has been called first.
 	[[SPLogger logger] dumpLeaks];
-
+#endif
 	// Return YES by default
 	return YES;
 }
-#endif
+
 
 /**
  * Invoked when the parent tab is about to close
  */
 - (void)parentTabDidClose
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Cancel autocompletion trigger
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
-		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
+		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"]
 								selector:@selector(doAutoCompletion) 
 								object:nil];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:[customQueryInstance valueForKeyPath:@"textView"] 
@@ -4010,18 +4225,21 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 
 	[mySQLConnection setDelegate:nil];
-	if (_isConnected) [self closeConnection];
-	else [connectionController cancelConnection];
-#ifndef SP_REFACTOR
+	if (_isConnected) {
+		[self closeConnection];
+	} else {
+		[connectionController cancelConnection:self];
+	}
+#ifndef SP_CODA
 	if ([[[SPQueryController sharedQueryController] window] isVisible]) [self toggleConsole:self];
-#endif
 	[createTableSyntaxWindow orderOut:nil];
+#endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self setParentWindow:nil];
 
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Invoked when the parent tab is currently the active tab in the
  * window, but is being switched away from, to allow cleaning up
@@ -4060,6 +4278,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	// Add the progress window to this window
 	[self centerTaskWindow];	
 	[parentWindow addChildWindow:taskProgressWindow ordered:NSWindowAbove];
+
+#ifndef SP_CODA
+	// If not connected, update the favorite selection
+	if (!_isConnected) {
+		[connectionController updateFavoriteNextKeyView];
+	}
+#endif
 }
 
 /**
@@ -4089,7 +4314,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)tabDidResize
 {
-
+	// Coax the main split view into actually checking its constraints
+	[contentViewSplitter setPosition:[[[contentViewSplitter subviews] objectAtIndex:0] bounds].size.width ofDividerAtIndex:0];
 	// If the task interface is visible, and this tab is frontmost, re-center the task child window
 	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
@@ -4100,13 +4326,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)setParentWindow:(NSWindow *)aWindow
 {
+#ifndef SP_CODA
 	// If the window is being set for the first time - connection controller is visible - update focus
 	if (!parentWindow && !mySQLConnection) {
-#ifndef SP_REFACTOR
-		[aWindow makeFirstResponder:[connectionController valueForKey:@"favoritesTable"]];
-#endif
-		[connectionController performSelector:@selector(updateFavoriteSelection:) withObject:self afterDelay:0.0];
+		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
 	}
+#endif
 
 	parentWindow = aWindow;
 	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
@@ -4121,7 +4346,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return parentWindow;
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 #pragma mark -
 #pragma mark NSDocument compatibility
 
@@ -4144,12 +4369,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 /**
  * Retrieve the NSURL for the .spf file for this connection instance (if any)
  */
+#ifndef SP_CODA
 - (NSURL *)fileURL
 {
 	return [[spfFileURL copy] autorelease];
 }
+#endif
 
-#ifndef SP_REFACTOR /* writeSafelyToURL: */
+#ifndef SP_CODA /* writeSafelyToURL: */
 /**
  * Invoked if user chose "Save" from 'Do you want save changes you made...' sheet
  * which is called automatically if [self isDocumentEdited] == YES and user wanted to close an Untitled doc.
@@ -4176,7 +4403,6 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		|| [[[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] objectForKey:@"string"] count])
 		);
 }
-#endif
 
 /**
  * The window title for this document.
@@ -4191,15 +4417,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	return [[[self fileURL] path] lastPathComponent];
 }
 
-#ifndef SP_REFACTOR
 - (NSUndoManager *)undoManager
 {
 	return undoManager;
 }
-#endif
 
-
-#ifndef SP_REFACTOR /* state saving and setting */
 #pragma mark -
 #pragma mark State saving and setting
 
@@ -4244,7 +4466,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 				connectionType = @"SPSSHTunnelConnection";
 				[connection setObject:[connectionController sshHost] forKey:@"ssh_host"];
 				[connection setObject:[connectionController sshUser] forKey:@"ssh_user"];
-				[connection setObject:[NSNumber numberWithInt:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
+				[connection setObject:[NSNumber numberWithInteger:[connectionController sshKeyLocationEnabled]] forKey:@"ssh_keyLocationEnabled"];
 				if ([connectionController sshKeyLocation])
 					[connection setObject:[connectionController sshKeyLocation] forKey:@"ssh_keyLocation"];
 				if ([connectionController sshPort] && [[connectionController sshPort] length])
@@ -4259,6 +4481,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[connection setObject:[self name] forKey:@"name"];
 		[connection setObject:[self host] forKey:@"host"];
 		[connection setObject:[self user] forKey:@"user"];
+		if([connectionController colorIndex])
+			[connection setObject:[NSNumber numberWithInteger:[connectionController colorIndex]] forKey:SPFavoriteColorIndexKey];
 		if([connectionController port] && [[connectionController port] length])
 			[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
 		if([[self database] length])
@@ -4279,12 +4503,12 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			}
 		}
 
-		[connection setObject:[NSNumber numberWithInt:[connectionController useSSL]] forKey:@"useSSL"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController useSSL]] forKey:@"useSSL"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslKeyFileLocationEnabled]] forKey:@"sslKeyFileLocationEnabled"];
 		if ([connectionController sslKeyFileLocation]) [connection setObject:[connectionController sslKeyFileLocation] forKey:@"sslKeyFileLocation"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslCertificateFileLocationEnabled]] forKey:@"sslCertificateFileLocationEnabled"];
 		if ([connectionController sslCertificateFileLocation]) [connection setObject:[connectionController sslCertificateFileLocation] forKey:@"sslCertificateFileLocation"];
-		[connection setObject:[NSNumber numberWithInt:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
+		[connection setObject:[NSNumber numberWithInteger:[connectionController sslCACertFileLocationEnabled]] forKey:@"sslCACertFileLocationEnabled"];
 		if ([connectionController sslCACertFileLocation]) [connection setObject:[connectionController sslCACertFileLocation] forKey:@"sslCACertFileLocation"];
 
 		[stateDetails setObject:[NSDictionary dictionaryWithDictionary:connection] forKey:@"connection"];
@@ -4389,39 +4613,15 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller
-	[[connectionController valueForKeyPath:@"favoritesTable"] deselectAll:connectionController];
+	// Deselect all favorites on the connection controller,
+	// and clear and reset the connection state.
+	[[connectionController favoritesOutlineView] deselectAll:connectionController];
+	[connectionController updateFavoriteSelection:self];
 
 	// Suppress the possibility to choose an other connection from the favorites
 	// if a connection should initialized by SPF file. Otherwise it could happen
 	// that the SPF file runs out of sync.
-	[[connectionController valueForKeyPath:@"favoritesTable"] setEnabled:NO];
-
-	// Ensure the connection controller is set to a blank slate
-	[connectionController setName:@""];
-	[connectionController setUser:@""];
-	[connectionController setHost:@""];
-	[connectionController setPort:@""];
-	[connectionController setSocket:@""];
-	[connectionController setUseSSL:NSOffState];
-	[connectionController setSslKeyFileLocationEnabled:NSOffState];
-	[connectionController setSslKeyFileLocation:nil];
-	[connectionController setSslCertificateFileLocationEnabled:NSOffState];
-	[connectionController setSslCertificateFileLocation:nil];
-	[connectionController setSslCACertFileLocationEnabled:NSOffState];
-	[connectionController setSslCACertFileLocation:nil];
-	[connectionController setSshHost:@""];
-	[connectionController setSshUser:@""];
-	[connectionController setSshKeyLocationEnabled:NSOffState];
-	[connectionController setSshKeyLocation:nil];
-	[connectionController setSshPort:@""];
-	[connectionController setDatabase:@""];
-	[connectionController setPassword:nil];
-	[connectionController setConnectionKeychainItemName:nil];
-	[connectionController setConnectionKeychainItemAccount:nil];
-	[connectionController setSshPassword:nil];
-	[connectionController setConnectionSSHKeychainItemName:nil];
-	[connectionController setConnectionSSHKeychainItemAccount:nil];
+	[[connectionController favoritesOutlineView] setEnabled:NO];
 
 	// Set the correct connection type
 	if ([connection objectForKey:@"type"]) {
@@ -4447,6 +4647,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[connectionController setHost:[connection objectForKey:@"host"]];
 	if ([connection objectForKey:@"port"])
 		[connectionController setPort:[NSString stringWithFormat:@"%ld", (long)[[connection objectForKey:@"port"] integerValue]]];
+	if ([connection objectForKey:SPFavoriteColorIndexKey])
+		[connectionController setColorIndex:[(NSNumber *)[connection objectForKey:SPFavoriteColorIndexKey] integerValue]];
 
 	// Set SSL details
 	if ([connection objectForKey:@"useSSL"])
@@ -4540,8 +4742,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 /**
  * Initialise the document with the connection file at the supplied path.
+ * Returns whether the document was initialised successfully.
  */
-- (void)setStateFromConnectionFile:(NSString *)path
+- (BOOL)setStateFromConnectionFile:(NSString *)path
 {
 	NSError *readError = nil;
 	NSString *convError = nil;
@@ -4569,7 +4772,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[alert runModal];
 		if (spf) [spf release];
 		[self closeAndDisconnect];
-		return;
+		return NO;
 	}
 
 	// If the .spf format is unhandled, error.
@@ -4578,13 +4781,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]]];
+							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]];
 
 		[alert setAlertStyle:NSWarningAlertStyle];
 		[spf release];
 		[self closeAndDisconnect];
 		[alert runModal];
-		return;
+		return NO;
 	}
 
 	// Error if the expected data source wasn't present in the file
@@ -4599,7 +4802,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		[alert runModal];
 		[spf release];
 		[self closeAndDisconnect];
-		return;
+		return NO;
 	}
 
 	// Ask for a password if SPF file passwords were encrypted, via a sheet
@@ -4647,13 +4850,23 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			} else {
 				[self closeAndDisconnect];
 				[spf release];
-				return;
+				return NO;
 			}
 		}
 	}
 
 	if ([[spf objectForKey:@"data"] isKindOfClass:[NSDictionary class]])
 		data = [NSMutableDictionary dictionaryWithDictionary:[spf objectForKey:@"data"]];
+
+		// If a content selection data key exists in the session, decode it
+		if ([[[data objectForKey:@"session"] objectForKey:@"contentSelection"] isKindOfClass:[NSData class]]) {
+			NSMutableDictionary *sessionInfo = [NSMutableDictionary dictionaryWithDictionary:[data objectForKey:@"session"]];
+			NSKeyedUnarchiver *unarchiver = [[[NSKeyedUnarchiver alloc] initForReadingWithData:[sessionInfo objectForKey:@"contentSelection"]] autorelease];
+			[sessionInfo setObject:[unarchiver decodeObjectForKey:@"data"] forKey:@"contentSelection"];
+			[unarchiver finishDecoding];
+			[data setObject:sessionInfo forKey:@"session"];
+		}
+
 	else if ([[spf objectForKey:@"data"] isKindOfClass:[NSData class]]) {
 		NSData *decryptdata = nil;
 		decryptdata = [[[NSMutableData alloc] initWithData:[(NSData *)[spf objectForKey:@"data"] dataDecryptedWithPassword:encryptpw]] autorelease];
@@ -4673,7 +4886,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[alert runModal];
 			[self closeAndDisconnect];
 			[spf release];
-			return;
+			return NO;
 		}
 	}
 
@@ -4689,13 +4902,13 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:informativeText];
+							informativeTextWithFormat:@"%@", informativeText];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		[self closeAndDisconnect];
 		[spf release];
-		return;
+		return NO;
 	}
 
 	// Move favourites and history into the data dictionary to pass to setState:
@@ -4733,6 +4946,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[self setState:data];
 
 	[spf release];
+
+	return YES;
 }
 
 /**
@@ -4816,7 +5031,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)connectionControllerInitiatingConnection:(id)controller
 {
-#ifndef SP_REFACTOR /* ui manipulation */
+#ifndef SP_CODA /* ui manipulation */
 	// Update the window title to indicate that we are trying to establish a connection
 	[parentTabViewItem setLabel:NSLocalizedString(@"Connecting…", @"window title string indicating that sp is connecting")];
 	
@@ -4831,14 +5046,34 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
  */
 - (void)connectionControllerConnectAttemptFailed:(id)controller
 {
-#ifndef SP_REFACTOR /* updateWindowTitle: */
+#ifdef SP_CODA /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )
+		[delegate performSelector:@selector(databaseDocumentConnectionFailed:) withObject:self];
+#endif
+
+#ifndef SP_CODA /* updateWindowTitle: */
 	// Reset the window title
 	[self updateWindowTitle:self];
 #endif
 }
 
 
-#ifndef SP_REFACTOR /* scheme scripting methods */
+#ifdef SP_CODA
+
+- (SPConnectionController*)connectionController
+{
+	return connectionController;
+}
+
+- (void)databaseDocumentConnectionFailed:(id)sender
+{
+	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )
+		[delegate performSelector:@selector(databaseDocumentConnectionFailed:) withObject:self];
+}
+#endif
+
+
+#ifndef SP_CODA /* scheme scripting methods */
 
 #pragma mark -
 #pragma mark Scheme scripting methods
@@ -5217,7 +5452,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 						[fh writeData:[[[theResult fieldNames] componentsJoinedAsCSV] dataUsingEncoding:NSUTF8StringEncoding]];
 					else
 						[fh writeData:[[[theResult fieldNames] componentsJoinedByString:@"\t"] dataUsingEncoding:NSUTF8StringEncoding]];
-					[fh writeData:[[NSString stringWithString:@"\n"] dataUsingEncoding:NSUTF8StringEncoding]];
+					[fh writeData:[@"\n" dataUsingEncoding:NSUTF8StringEncoding]];
 
 					NSArray *columnDefinition = [theResult fieldDefinitions];
 
@@ -5247,7 +5482,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 					NSUInteger i, j;
 					NSArray *theRow;
 					NSMutableString *result = [NSMutableString string];
-					if (writeAsCsv) {
+					if(writeAsCsv) {
 						for ( i = 0 ; i < [theResult numberOfRows] ; i++ ) {
 							[result setString:@""];
 							theRow = [theResult getRowAsArray];
@@ -5473,21 +5708,24 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (object == databaseNameField) {
 		[addDatabaseButton setEnabled:([[databaseNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseNameField stringValue]])]; 
 	}
+#ifndef SP_CODA
 	else if (object == databaseCopyNameField) {
 		[copyDatabaseButton setEnabled:([[databaseCopyNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseCopyNameField stringValue]])]; 
 	}
+#endif
 	else if (object == databaseRenameNameField) {
 		[renameDatabaseButton setEnabled:([[databaseRenameNameField stringValue] length] > 0 && ![allDatabases containsObject: [databaseRenameNameField stringValue]])]; 
 	}
+#ifndef SP_CODA
 	else if (object == saveConnectionEncryptString) {
 		[saveConnectionEncryptString setStringValue:[saveConnectionEncryptString stringValue]];
 	}
-
+#endif
 }
 
 #pragma mark -
 #pragma mark General sheet delegate methods
-#ifndef SP_REFACTOR /* window:willPositionSheet:usingRect: */
+#ifndef SP_CODA /* window:willPositionSheet:usingRect: */
 
 - (NSRect)window:(NSWindow *)window willPositionSheet:(NSWindow *)sheet usingRect:(NSRect)rect {
 
@@ -5515,31 +5753,29 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 
 #pragma mark -
 #pragma mark SplitView delegate methods
-#ifndef SP_REFACTOR /* SplitView delegate methods */
-/**
- * tells the splitView that it can collapse views
- */
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
-{
-	return subview == [[tableInfoTable superview] superview];
-}
+#ifndef SP_CODA /* SplitView delegate methods */
 
 - (void)splitViewDidResizeSubviews:(NSNotification *)notification
 {
-	// Fix tablesList search field frame after collapsing the tablesList
-	[listFilterField setFrameSize:NSMakeSize([[[contentViewSplitter subviews] objectAtIndex:0] frame].size.width - 8, [listFilterField frame].size.height)];
-
 	[self updateChooseDatabaseToolbarItemWidth];
-
+	[connectionController updateSplitViewSize];
 }
 
-- (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex
 {
-	if (splitView == contentViewSplitter && sidebarGrabber != nil) {
-		return [sidebarGrabber splitView:splitView additionalEffectiveRectOfDividerAtIndex:dividerIndex];
-	} else {
-		return NSZeroRect;
+	if (dividerIndex == 0 && proposedMinimumPosition < 40) {
+		return 40;
 	}
+	return proposedMinimumPosition;
+}
+
+- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex
+{
+	//the right side of the SP window must be at least 505px wide or the UI will break!
+	if(dividerIndex == 0) {
+		return proposedMaximumPosition - 505;
+	}
+	return proposedMaximumPosition;
 }
 
 - (void)updateChooseDatabaseToolbarItemWidth
@@ -5646,89 +5882,9 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 #endif
 
 #pragma mark -
+#pragma mark Private API
 
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-#ifndef SP_REFACTOR /* Unregister observers */
-	// Unregister observers
-	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
-	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
-	
-	if (processListController) [prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	if (serverVariablesController) [prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
-#endif
-	
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-#ifndef SP_REFACTOR /* release nib objects */
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	
-	[nibObjectsToRelease release];
-
-#endif
-
-	[databaseStructureRetrieval destroy];
-	[databaseStructureRetrieval release];
-
-	[allDatabases release];
-	[allSystemDatabases release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	[undoManager release];
-	[printWebView release];
-#endif
-	[selectedDatabaseEncoding release];
-	[taskProgressWindow close];
-	
-	if (selectedTableName) [selectedTableName release];
-	if (connectionController) [connectionController release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	if (processListController) [processListController release];
-	if (serverVariablesController) [serverVariablesController release];
-#endif
-	if (mySQLConnection) [mySQLConnection release];
-	if (selectedDatabase) [selectedDatabase release];
-	if (mySQLVersion) [mySQLVersion release];
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
-	if (taskFadeInStartDate) [taskFadeInStartDate release];
-	if (queryEditorInitString) [queryEditorInitString release];
-	if (spfFileURL) [spfFileURL release];
-	if (spfPreferences) [spfPreferences release];
-	if (spfSession) [spfSession release];
-	if (spfDocData) [spfDocData release];
-	if (keyChainID) [keyChainID release];
-	if (mainToolbar) [mainToolbar release];
-	if (titleAccessoryView) [titleAccessoryView release];
-	if (taskProgressWindow) [taskProgressWindow release];
-	if (serverSupport) [serverSupport release];
-#ifndef SP_REFACTOR /* dealloc ivars */
-	if (processID) [processID release];
-#endif
-	if (runningActivitiesArray) [runningActivitiesArray release];
-	
-#ifdef SP_REFACTOR 
-	if ( tablesListInstance ) [tablesListInstance release];
-	if ( customQueryInstance ) [customQueryInstance release];
-#endif
-	
-	[super dealloc];
-}
-
-#pragma mark -
-
-#ifndef SP_REFACTOR /* whole database operations */
+#ifndef SP_CODA /* whole database operations */
 
 - (void)_copyDatabase 
 {
@@ -5771,6 +5927,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	
 	SPDatabaseRename *dbActionRename = [[SPDatabaseRename alloc] init];
 	
+	[dbActionRename setTablesList:tablesListInstance];
 	[dbActionRename setConnection:[self getConnection]];
 	[dbActionRename setMessageWindow:parentWindow];
 	
@@ -5785,8 +5942,8 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	}
 	
 	[dbActionRename release];
-
-#ifdef SP_REFACTOR
+	
+#ifdef SP_CODA
 	if (delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)]) {
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
 	}
@@ -5817,9 +5974,14 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
 	
 	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
-	if ([databaseEncodingButton indexOfSelectedItem] > 0) {
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [[self mysqlEncodingFromEncodingTag:[NSNumber numberWithInteger:[databaseEncodingButton tag]]] backtickQuotedString]];
-	}
+	NSString *encodingName = [addDatabaseCharsetHelper selectedCharset];
+	if (encodingName)		
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [encodingName backtickQuotedString]];
+	
+	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
+	NSString *collationName = [addDatabaseCharsetHelper selectedCollation];
+	if (collationName)		
+		createStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@", createStatement, [collationName backtickQuotedString]];
 	
 	// Create the database
 	[mySQLConnection queryString:createStatement];
@@ -5830,41 +5992,47 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		
 		return;
 	}
+
+	[self setDatabases:self];
+#ifdef SP_CODA /* glue */
+	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
+		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
+#endif
+
+	// Select the database
+	[self selectDatabase:[databaseNameField stringValue] item:nil];
+}
+
+/**
+ * Run ALTER statement against current db. This is the callback to alterDatabase:
+ * @warning Make sure this method is only called on mysql 4.1+ servers!
+ */
+- (void)_alterDatabase
+{
+	//we'll always run the alter statement, even if old == new because after all that is what the user requested
 	
-	// Error while selecting the new database (is this even possible?)
-	if (![mySQLConnection selectDatabase:[databaseNameField stringValue]] ) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to connect to database %@.\nBe sure that you have the necessary privileges.", @"message of panel when connection to db failed after selecting from popupbutton"), [databaseNameField stringValue]]);
-		
-		[self setDatabases:self];
-		
+	NSString *newCharset   = [alterDatabaseCharsetHelper selectedCharset];
+	NSString *newCollation = [alterDatabaseCharsetHelper selectedCollation];
+	
+	NSString *alterStatement = [NSString stringWithFormat:@"ALTER DATABASE %@ DEFAULT CHARACTER SET %@", [[self database] backtickQuotedString],[newCharset backtickQuotedString]];
+
+	//technically there is an issue here: If a user had a non-default collation and now wants to switch to the default collation this cannot be specidifed (default == nil).
+	//However if you just do an ALTER with CHARACTER SET == oldCharset MySQL will still reset the collation therefore doing exactly what we want.
+	if(newCollation) {
+		alterStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@",alterStatement,[newCollation backtickQuotedString]];
+	}
+	
+	//run alter
+	[mySQLConnection queryString:alterStatement];
+	
+	if ([mySQLConnection queryErrored]) {
+		// An error occurred
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
 		return;
 	}
 	
-	// Select the new database
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-	
-	
-	selectedDatabase = [[NSString alloc] initWithString:[databaseNameField stringValue]];
-	[self setDatabases:self];
-	
-	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
-	
-#ifndef SP_REFACTOR
-	[self updateWindowTitle:self];
-#endif
-#ifdef SP_REFACTOR /* glue */
-	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
-		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
-
-	if ( delegate && [delegate respondsToSelector:@selector(selectDatabaseInPopup:)] )
-	{
-		if ( [allDatabases count] > 0 )
-		{
-			[delegate performSelector:@selector(selectDatabaseInPopup:) withObject:selectedDatabase];
-		}
-	}
-#endif
+	//invalidate old cache values
+	[databaseDataInstance resetAllData];
 }
 
 /**
@@ -5901,13 +6069,11 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[self setDatabases:self];
 	
 	[tablesListInstance setConnection:mySQLConnection];
-	[tableDumpInstance setConnection:mySQLConnection];
 	
-#ifndef SP_REFACTOR /* ui */
+#ifndef SP_CODA
 	[self updateWindowTitle:self];
 #endif
-	
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(refreshDatabasePopup)] )
 		[delegate performSelector:@selector(refreshDatabasePopup) withObject:nil];
 		
@@ -5929,7 +6095,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 {
 	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
 	NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
-#ifndef SP_REFACTOR /* update history controller */
+#ifndef SP_CODA /* update history controller */
 	NSString *targetItemName = [selectionDetails objectForKey:@"item"];
 
 	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
@@ -5944,10 +6110,10 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	if (![targetDatabaseName isEqualToString:selectedDatabase]) {
 
 		// Attempt to select the specified database, and abort on failure
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
-		if (![mySQLConnection selectDatabase:targetDatabaseName])
+		if ( ![mySQLConnection selectDatabase:targetDatabaseName] )
 #endif
 		{
 			// End the task first to ensure the database dropdown can be reselected
@@ -5965,34 +6131,25 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			return;
 		}
 
-#ifndef SP_REFACTOR /* chooseDatabaseButton selectItemWithTitle: */
+#ifndef SP_CODA /* chooseDatabaseButton selectItemWithTitle: */
 		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
 #endif
 		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
-#ifndef SP_REFACTOR /* patch */
-		selectedDatabase = [[NSString alloc] initWithString:[chooseDatabaseButton titleOfSelectedItem]];
-#else
 		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
-#endif
 
-#ifndef SP_REFACTOR /* clear SPTablesList selection */
-		// If the item has changed, clear the item selection for cleaner loading
-		if (![targetItemName isEqualToString:[self table]]) {
-			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
-			[[tablesListInstance onMainThread] setTableListSelectability:NO];
-		}
+		[databaseDataInstance resetAllData];
+
+#ifndef SP_CODA /* update database encoding */
 
 		// Update the stored database encoding, used for views, "default" table encodings, and to allow
 		// or disallow use of the "View using encoding" menu
 		[self detectDatabaseEncoding];
 #endif
 		
-		// Set the connection of SPTablesList and TablesDump to reload tables in db
+		// Set the connection of SPTablesList to reload tables in db
 		[tablesListInstance setConnection:mySQLConnection];
-		[tableDumpInstance setConnection:mySQLConnection];
 
-#ifndef SP_REFACTOR /* update history controller and ui manip */
+#ifndef SP_CODA /* update history controller and ui manip */
 		// Update the window title
 		[self updateWindowTitle:self];
 
@@ -6001,37 +6158,35 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			[spHistoryControllerInstance setModifyingState:NO];
 			[spHistoryControllerInstance updateHistoryEntries];
 		}
-
-		// Set focus to table list filter field if visible
-		// otherwise set focus to Table List view
-		if ([[tablesListInstance tables] count] > 20) {
-			[[parentWindow onMainThread] makeFirstResponder:listFilterField];
-		}
-		else {
-			[[parentWindow onMainThread] makeFirstResponder:[tablesListInstance valueForKeyPath:@"tablesListView"]];
-		}
 #endif
 	}
 
-#ifndef SP_REFACTOR /* update selected table in SPTablesList */
+#ifndef SP_CODA /* update selected table in SPTablesList */
+
+	BOOL focusOnFilter = YES;
+	if (targetItemName) focusOnFilter = NO;
+
 	// If a the table has changed, update the selection
-	if (![targetItemName isEqualToString:[self table]]) {
-		if (targetItemName) {
-			[tablesListInstance selectItemWithName:targetItemName];
+	if (![targetItemName isEqualToString:[self table]] && targetItemName) {
+		focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
 		} 
-		else {
+
+	// Ensure the window focus is on the table list or the filter as appropriate
 			[[tablesListInstance onMainThread] setTableListSelectability:YES];
-			[[[tablesListInstance valueForKey:@"tablesListView"] onMainThread] deselectAll:self];
-			[[tablesListInstance onMainThread] setTableListSelectability:NO];
-		}
+	if (focusOnFilter) {
+		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
+	} else {
+		[[tablesListInstance onMainThread] makeTableListHaveFocus];
 	}
+			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+
 #endif
 	[self endTask];
-#ifndef SP_REFACTOR /* triggered commands */
+#ifndef SP_CODA /* triggered commands */
 	[self _processDatabaseChangedBundleTriggerActions];
 #endif
 
-#ifdef SP_REFACTOR /* glue */
+#ifdef SP_CODA /* glue */
 	if (delegate && [delegate respondsToSelector:@selector(databaseDidChange:)]) {
 		[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
 	}
@@ -6040,7 +6195,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 	[taskPool drain];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 - (void)_processDatabaseChangedBundleTriggerActions
 {
 	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
@@ -6052,7 +6207,7 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 		
 		[aMenuItem setTag:0];
 		[aMenuItem setToolTip:[data objectAtIndex:0]];
-		
+
 		// For HTML output check if corresponding window already exists
 		BOOL stopTrigger = NO;
 		
@@ -6062,33 +6217,133 @@ static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 			
 			for (id win in [NSApp windows]) 
 			{
-				if ([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
-					if ([[[win delegate] windowUUID] isEqualToString:uuid]) {
+				if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
+					if([[[win delegate] windowUUID] isEqualToString:uuid]) {
 						correspondingWindowFound = YES;
 						break;
 					}
 				}
 			}
 			
-			if (!correspondingWindowFound) stopTrigger = YES;
+			if(!correspondingWindowFound) stopTrigger = YES;
 		}
-		if (!stopTrigger) {
-			if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+		if(!stopTrigger) {
+			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
 				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
 			}
-			else if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {
 					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
-				}
 			}
-			else if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+			}
+			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
 				if ([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]]) {
 					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
-				}
 			}
 		}
 	}
+	}
 }
 #endif
+
+#pragma mark -
+
+- (void)dealloc
+{
+#ifndef SP_CODA /* Unregister observers */
+	// Unregister observers
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	
+	if (processListController) {
+		[processListController close];
+		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
+	
+	if (serverVariablesController) {
+		[prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
+#endif
+	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	
+#ifndef SP_CODA /* release nib objects */
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
+	
+	[nibObjectsToRelease release];
+#endif
+	
+	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
+	
+	[databaseStructureRetrieval release];
+	
+	[allDatabases release];
+	[allSystemDatabases release];
+	[gotoDatabaseController release];
+#ifndef SP_CODA /* dealloc ivars */
+	[undoManager release];
+	[printWebView release];
+#endif
+	[selectedDatabaseEncoding release];
+#ifndef SP_CODA
+	[taskProgressWindow close];
+#endif
+	
+	if (selectedTableName) [selectedTableName release];
+	if (connectionController) [connectionController release];
+#ifndef SP_CODA /* dealloc ivars */
+	if (processListController) [processListController release];
+	if (serverVariablesController) [serverVariablesController release];
+#endif
+	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
+	if (selectedDatabase) [selectedDatabase release];
+	if (mySQLVersion) [mySQLVersion release];
+#ifndef SP_CODA
+	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
+	if (taskFadeInStartDate) [taskFadeInStartDate release];
+#endif
+	if (queryEditorInitString) [queryEditorInitString release];
+#ifndef SP_CODA
+	if (sqlFileURL) [sqlFileURL release];
+	if (spfFileURL) [spfFileURL release];
+	if (spfPreferences) [spfPreferences release];
+	if (spfSession) [spfSession release];
+	if (spfDocData) [spfDocData release];
+#endif
+	if (keyChainID) [keyChainID release];
+#ifndef SP_CODA
+	if (mainToolbar) [mainToolbar release];
+#endif
+	if (titleAccessoryView) [titleAccessoryView release];
+#ifndef SP_CODA
+	if (taskProgressWindow) [taskProgressWindow release];
+#endif
+	if (serverSupport) [serverSupport release];
+#ifndef SP_CODA /* dealloc ivars */
+	if (processID) [processID release];
+	if (runningActivitiesArray) [runningActivitiesArray release];
+#endif
+	
+#ifdef SP_CODA 
+	if (tablesListInstance) [tablesListInstance release];
+	if (customQueryInstance) [customQueryInstance release];
+#endif
+	
+	if (alterDatabaseCharsetHelper) [alterDatabaseCharsetHelper release];
+	if (addDatabaseCharsetHelper) [addDatabaseCharsetHelper release];
+	
+	[super dealloc];
+}
 
 @end

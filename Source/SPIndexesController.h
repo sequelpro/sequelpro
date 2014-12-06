@@ -1,36 +1,42 @@
 //
-//  $Id$
-//
 //  SPIndexesController.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on June 13, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on June 13, 2010.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-#ifndef SP_REFACTOR
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, BWAnchoredButtonBar, SPTableView;
-#else
-@class SPDatabaseDocument, SPTablesList, SPTableData, SPTableStructure, SPMySQLConnection, SPTableView;
-#endif
+@class SPDatabaseDocument;
+@class SPTablesList;
+@class SPTableData;
+@class SPTableStructure;
+@class SPMySQLConnection;
+@class SPTableView;
 
 @interface SPIndexesController : NSWindowController 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 <NSTableViewDelegate, NSTableViewDataSource>
 #endif
 {
@@ -56,8 +62,8 @@
 	IBOutlet NSButton *addIndexedColumnButton;
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
-#ifndef SP_REFACTOR
-	IBOutlet BWAnchoredButtonBar *anchoredButtonBar;
+#ifndef SP_CODA
+	IBOutlet NSBox *anchoredButtonBar;
 	
 	// Advanced options view
 	IBOutlet NSButton *indexAdvancedOptionsViewButton;
@@ -68,18 +74,19 @@
 #endif
 		
 	BOOL _mainNibLoaded;
+	BOOL isMyISAMTale;
 	NSString *table;
 	
 	NSMutableArray *fields, *indexes, *indexedFields;
 	NSArray *supportsLength, *requiresLength;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
 #endif
 	
 	SPMySQLConnection *connection;
 	
-#ifndef SP_REFACTOR /* ivars */
+#ifndef SP_CODA /* ivars */
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
@@ -88,7 +95,7 @@
 #endif
 }
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @property (assign) SPTableView* indexesTableView;
 @property (assign) SPTableStructure* tableStructure;
 @property (assign) NSButton* addIndexButton;

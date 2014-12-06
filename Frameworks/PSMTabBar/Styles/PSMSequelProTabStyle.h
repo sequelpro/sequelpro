@@ -20,13 +20,14 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Cocoa/Cocoa.h>
 #import "PSMTabStyle.h"
 
 @interface PSMSequelProTabStyle : NSObject <PSMTabStyle> {
-	SInt32 systemVersion;
+	BOOL systemVersionIsAtLeast10_7_0;
+	BOOL systemVersionIsAtLeast10_10_0;
 
     NSImage *sequelProCloseButton;
     NSImage *sequelProCloseButtonDown;

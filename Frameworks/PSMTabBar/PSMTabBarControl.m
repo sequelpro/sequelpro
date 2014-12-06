@@ -118,6 +118,10 @@
     _cells = [[NSMutableArray alloc] initWithCapacity:10];
 	_controller = [[PSMTabBarController alloc] initWithTabBarControl:self];
     _animationTimer = nil;
+	_lastWindowIsMainCheck = NO;
+	_lastAttachedWindowIsMainCheck = NO;
+	_lastAppIsActiveCheck = NO;
+	_lastMouseDownEvent = nil;
 	
     // default config
 	_currentStep = kPSMIsNotBeingResized;
@@ -244,8 +248,8 @@
 - (void)viewWillMoveToWindow:(NSWindow *)aWindow {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 	
-	[center removeObserver:self name:NSWindowDidBecomeKeyNotification object:nil];
-	[center removeObserver:self name:NSWindowDidResignKeyNotification object:nil];
+	[center removeObserver:self name:NSWindowDidBecomeMainNotification object:nil];
+	[center removeObserver:self name:NSWindowDidResignMainNotification object:nil];
 	[center removeObserver:self name:NSWindowDidUpdateNotification object:nil];
 	[center removeObserver:self name:NSWindowDidMoveNotification object:nil];
 	
@@ -262,6 +266,9 @@
     }
 }
 
+/**
+ * Allow a window to be redrawn in response to changes in position or focus level.
+ */
 - (void)windowStatusDidChange:(NSNotification *)notification
 {
 	[self setNeedsDisplay:YES];
@@ -360,22 +367,23 @@
 {
     id <PSMTabStyle> newStyle;
 	
-	if ([name isEqualToString:@"Aqua"]) {
-		//newStyle = [[PSMAquaTabStyle alloc] init];
+/*	if ([name isEqualToString:@"Aqua"]) {
+		newStyle = [[PSMAquaTabStyle alloc] init];
 		
 	} else if ([name isEqualToString:@"Unified"]) {
-		//newStyle = [[PSMUnifiedTabStyle alloc] init];
+		newStyle = [[PSMUnifiedTabStyle alloc] init];
 		
 	} else if ([name isEqualToString:@"Adium"]) {
-		//newStyle = [[PSMAdiumTabStyle alloc] init];
+		newStyle = [[PSMAdiumTabStyle alloc] init];
 	
 	} else if ([name isEqualToString:@"Card"]) {
-		//newStyle = [[PSMCardTabStyle alloc] init]; 
+		newStyle = [[PSMCardTabStyle alloc] init];
 	
 	} else if ([name isEqualToString:@"Metal"]) {
-		//newStyle = [[PSMMetalTabStyle alloc] init];
+		newStyle = [[PSMMetalTabStyle alloc] init];
 
-	} else if ([name isEqualToString:@"SequelPro"]) {
+	} else */
+    if ([name isEqualToString:@"SequelPro"]) {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
 
 	} else {
@@ -1747,7 +1755,8 @@
 {
     // hide? must readjust things if I'm not supposed to be showing
     // this block of code only runs when the app launches
-    if ([self hideForSingleTab] && ([_cells count] <= 1) && !_awakenedFromNib) {
+    if (!_awakenedFromNib && [self hideForSingleTab] && ([_cells count] <= 1)) {
+
         // must adjust frames now before display
         NSRect myFrame = [self frame];
 		if ([self orientation] == PSMTabBarHorizontalOrientation) {
@@ -1800,13 +1809,23 @@
 		if ([[self delegate] respondsToSelector:@selector(tabView:tabBarDidHide:)]) {
 			[[self delegate] tabView:[self tabView] tabBarDidHide:self];
 		}
+
+		// The above tasks only needs to be run once, so set a flag to ensure that
+		_awakenedFromNib = YES;
     }
-	
-	_awakenedFromNib = YES;
-	[self setNeedsDisplay:YES];
-	
-	//we only need to do this once
-	[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidUpdateNotification object:nil];
+
+	// Determine whether a draw update in response to window state change might be required
+	BOOL isMainWindow = [[self window] isMainWindow];
+	BOOL attachedWindowIsMainWindow = [[[self window] attachedSheet] isMainWindow];
+	BOOL isActiveApplication = [NSApp isActive];
+	if (_lastWindowIsMainCheck != isMainWindow || _lastAttachedWindowIsMainCheck != attachedWindowIsMainWindow || _lastAppIsActiveCheck != isActiveApplication) {
+		_lastWindowIsMainCheck = isMainWindow;
+		_lastAttachedWindowIsMainCheck = attachedWindowIsMainWindow;
+		_lastAppIsActiveCheck = isActiveApplication;
+
+		// Allow the tab bar to redraw itself in result to window ordering/sheet/etc changes
+		[self setNeedsDisplay:YES];
+	}
 }
 
 #pragma mark -
@@ -2106,6 +2125,7 @@
     
     // bind my string value to the label on the represented tab
     [cell bind:@"title" toObject:item withKeyPath:@"label" options:nil];
+	[cell bind:@"backgroundColor" toObject:item withKeyPath:@"color" options:nil];
 }
 
 - (NSMutableArray *)representedTabViewItems

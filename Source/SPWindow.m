@@ -1,29 +1,39 @@
 //
-//  $Id$
-//
 //  SPWindow.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on January 23, 2011
+//  Created by Rowan Beentje on January 23, 2011.
+//  Copyright (c) 2011 Rowan Beentje. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPWindow.h"
 #import "SPWindowController.h"
+
+@interface NSWindow (LionPlusMethods)
+- (void)toggleFullScreen:(id)sender;
+@end
 
 @implementation SPWindow
 
@@ -155,6 +165,56 @@
 	}
 
 	return [super canBecomeMainWindow];
+}
+
+/**
+ * Override the standard toolbar show/hide, adding a notification that can be
+ * used to update state.
+ */
+- (void)toggleToolbarShown:(id)sender
+{
+	[super toggleToolbarShown:sender];
+
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPWindowToolbarDidToggleNotification object:nil];
+}
+
+/**
+ * On 10.7+, allow the window to go fullscreen; do nothing on <10.7.
+ */
+- (void)toggleFullScreen:(id)sender
+{
+	if ([NSWindow instancesRespondToSelector:@selector(toggleFullScreen:)]) {
+		[super toggleFullScreen:sender];
+	}
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+
+	// If the item is the Show/Hide Toolbar menu item, override the text to allow correct translation
+	if ([menuItem action] == @selector(toggleToolbarShown:)) {
+		BOOL theResponse = [super validateMenuItem:menuItem];
+		if ([[self toolbar] isVisible] || [menuItem state] == NSOnState) {
+			[menuItem setTitle:NSLocalizedString(@"Hide Toolbar", @"Hide Toolbar menu item")];
+		} else {
+			[menuItem setTitle:NSLocalizedString(@"Show Toolbar", @"Show Toolbar menu item")];
+		}
+		return theResponse;
+	}
+
+	// On systems which don't support fullscreen windows, disable the fullscreen menu item
+	if ([menuItem action] == @selector(toggleFullScreen:)) {
+		if (![NSWindow instancesRespondToSelector:@selector(toggleFullScreen:)]) {
+			return NO;
+		}
+	}
+
+	// Allow the superclass to perform validation otherwise (if possible)
+	if ([super respondsToSelector:@selector(validateMenuItem:)]) {
+		return [super validateMenuItem:menuItem];
+	}
+
+	return YES;
 }
 
 @end

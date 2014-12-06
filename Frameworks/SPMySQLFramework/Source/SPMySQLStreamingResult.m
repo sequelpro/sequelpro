@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  SPMySQLStreamingResult.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPMySQLStreamingResult.h"
 #import "SPMySQL Private APIs.h"
@@ -43,6 +41,10 @@
  */
 
 @implementation SPMySQLStreamingResult
+
+#pragma mark - Synthesized properties
+
+@synthesize dataDownloaded;
 
 #pragma mark -
 

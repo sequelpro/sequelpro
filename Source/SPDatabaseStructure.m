@@ -1,34 +1,40 @@
 //
-//  $Id$
-//
 //  SPDatabaseStructure.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on March 25, 2010
+//  Created by Hans-Jörg Bibiko on March 25, 2010.
 //  Copyright (c) 2010 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
 #import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
-#import <SPMySQL/SPMySQL.h>
+#import "SPThreadAdditions.h"
+
 #import <pthread.h>
 
 @interface SPDatabaseStructure (Private_API)
@@ -74,6 +80,11 @@
 		structure = [[NSMutableDictionary alloc] initWithCapacity:1];
 		allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:20];
 
+		[[NSNotificationCenter defaultCenter] addObserver:self
+												 selector:@selector(destroy:) 
+													 name:SPDocumentWillCloseNotification 
+												   object:delegate];
+
 		// Set up the connection, thread management and data locks
 		pthread_mutex_init(&threadManagementLock, NULL);
 		pthread_mutex_init(&dataLock, NULL);
@@ -90,48 +101,39 @@
  */
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection
 {
-
 	// Perform the task in a background thread to avoid blocking the UI
-	[NSThread detachNewThreadSelector:@selector(_cloneConnectionFromConnection:) toTarget:self withObject:aConnection];
+	[NSThread detachNewThreadWithName:@"SPDatabaseStructure clone connection task" 
+							   target:self 
+							 selector:@selector(_cloneConnectionFromConnection:) 
+							   object:aConnection];
 }
 
 /**
  * Ensure that processing is completed.
  */
-- (void)destroy
+- (void)destroy:(NSNotification *)notification
 {
 	delegate = nil;
 
 	// Ensure all the retrieval threads have ended
 	pthread_mutex_lock(&threadManagementLock);
+	
 	if ([structureRetrievalThreads count]) {
-		for (NSThread *eachThread in structureRetrievalThreads) {
+		for (NSThread *eachThread in structureRetrievalThreads) 
+		{
 			[eachThread cancel];
 		}
-		while ([structureRetrievalThreads count]) {
+		
+		while ([structureRetrievalThreads count]) 
+		{
 			pthread_mutex_unlock(&threadManagementLock);
 			usleep(100000);
 			pthread_mutex_lock(&threadManagementLock);
 		}
 	}
+	
 	pthread_mutex_unlock(&threadManagementLock);
 
-}
-
-- (void)dealloc
-{
-	[self destroy];
-	[structureRetrievalThreads release];
-
-	pthread_mutex_destroy(&threadManagementLock);
-	pthread_mutex_destroy(&dataLock);
-	pthread_mutex_destroy(&connectionCheckLock);
-
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (structure) [structure release], structure = nil;
-	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
-
-	[super dealloc];
 }
 
 #pragma mark -
@@ -150,7 +152,7 @@
  * executed on the helper connection.
  * Should always be executed on a background thread.
  */
-- (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo
+- (void)queryDbStructureWithUserInfo:(NSDictionary *)userInfo
 {
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 	BOOL structureWasUpdated = NO;
@@ -465,19 +467,19 @@
 			return;
 		}
 
-		// Retrieve the column details
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM `information_schema`.`ROUTINES` WHERE `information_schema`.`ROUTINES`.`ROUTINE_SCHEMA` = '%@'", [currentDatabase stringByReplacingOccurrencesOfString:@"'" withString:@"\\'"]]];
+		// Retrieve the column details (only those we need so we don't fetch the whole function body which might be huge)
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT SPECIFIC_NAME, ROUTINE_TYPE, DTD_IDENTIFIER, IS_DETERMINISTIC, SQL_DATA_ACCESS, SECURITY_TYPE, DEFINER FROM `information_schema`.`ROUTINES` WHERE `ROUTINE_SCHEMA` = %@", [currentDatabase tickQuotedString]]];
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
 
 		// Loop through the rows and extract the function details
 		for (NSArray *row in theResult) {
-			NSString *fname = [row objectAtIndex:0];
-			NSString *type = ([[row objectAtIndex:4] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
-			NSString *dtd = [row objectAtIndex:5];
-			NSString *det = [row objectAtIndex:11];
-			NSString *dataaccess = [row objectAtIndex:12];
-			NSString *security_type = [row objectAtIndex:14];
-			NSString *definer = [row objectAtIndex:19];
+			NSString *fname         =   [row objectAtIndex:0];
+			NSString *type          = ([[row objectAtIndex:1] isEqualToString:@"FUNCTION"]) ? @"3" : @"2";
+			NSString *dtd           =   [row objectAtIndex:2];
+			NSString *det           =   [row objectAtIndex:3];
+			NSString *dataaccess    =   [row objectAtIndex:4];
+			NSString *security_type =   [row objectAtIndex:5];
+			NSString *definer       =   [row objectAtIndex:6];
 
 			// Generate "table" and "field" names and add to structure key store
 			NSString *table_id = [NSString stringWithFormat:@"%@%@%@", db_id, SPUniqueSchemaDelimiter, fname];
@@ -556,6 +558,26 @@
 - (NSString *)keychainPasswordForConnection:(id)connection
 {
 	return [delegate keychainPasswordForConnection:connection];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[self destroy:nil];
+	[structureRetrievalThreads release];
+	
+	pthread_mutex_destroy(&threadManagementLock);
+	pthread_mutex_destroy(&dataLock);
+	pthread_mutex_destroy(&connectionCheckLock);
+	
+	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
+	if (structure) [structure release], structure = nil;
+	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
+	
+	[super dealloc];
 }
 
 @end

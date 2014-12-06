@@ -1,35 +1,46 @@
 //
-//  $Id$
-//
 //  SPProcessListController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 12, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on November 12, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPProcessListController.h"
 #import "SPDatabaseDocument.h"
 #import "SPAlertSheets.h"
 #import "SPAppController.h"
+#import "SPDataCellFormatter.h"
+#import "SPThreadAdditions.h"
+
 #import <SPMySQL/SPMySQL.h>
 
-static const NSString *SPTableViewIDColumnIdentifier = @"Id";
+// Constants
+static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
+static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
+static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 @interface SPProcessListController (PrivateAPI)
 
@@ -40,8 +51,8 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (void)_updateSelectedAutoRefreshIntervalInterface;
 - (void)_startAutoRefreshTimerWithInterval:(NSTimeInterval)interval;
 - (void)_getDatabaseProcessListInBackground:(id)object;
-- (void)_killProcessQueryWithId:(NSUInteger)processId;
-- (void)_killProcessConnectionWithId:(NSUInteger)processId;
+- (void)_killProcessQueryWithId:(long long)processId;
+- (void)_killProcessConnectionWithId:(long long)processId;
 - (void)_updateServerProcessesFilterForFilterString:(NSString *)filterString;
 
 @end
@@ -53,15 +64,14 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Initialisation
- */
 - (id)init
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseProcessList"])) {
 		
 		autoRefreshTimer = nil;
 		processListThreadRunning = NO;
+		
+		showFullProcessList = [prefs boolForKey:SPProcessListShowFullProcessList];
 		
 		processes = [[NSMutableArray alloc] init];
 		
@@ -73,9 +83,6 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	return self;
 }
 
-/**
- * Interface initialisation
- */
 - (void)awakeFromNib
 {	
 	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
@@ -90,10 +97,14 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-	
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	for (NSTableColumn *column in [processListTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+
+		// Add a formatter for linebreak display
+		[[column dataCell] setFormatter:[[SPDataCellFormatter new] autorelease]];
 	
 		// Also, if available restore the table's column widths
 		NSNumber *columnWidth = [[prefs objectForKey:SPProcessListTableColumnWidths] objectForKey:[[column headerCell] stringValue]];
@@ -115,7 +126,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 }
 
 #pragma mark -
-#pragma mark IBAction methods
+#pragma mark IB action methods
 
 /**
  * Copies the currently selected process(es) to the pasteboard.
@@ -209,7 +220,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	processListThreadRunning = YES;
 		
 	// Get the processes list on a background thread
-	[NSThread detachNewThreadSelector:@selector(_getDatabaseProcessListInBackground:) toTarget:self withObject:nil];
+	[NSThread detachNewThreadWithName:@"SPProcessListController retrieving process list" target:self selector:@selector(_getDatabaseProcessListInBackground:) object:nil];
 }
 
 /**
@@ -223,7 +234,32 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	[panel setAllowsOtherFileTypes:YES];
 	[panel setCanSelectHiddenExtension:YES];
 	
-	[panel beginSheetForDirectory:nil file:@"ServerProcesses" modalForWindow:[self window] modalDelegate:self didEndSelector:@selector(savePanelDidEnd:returnCode:contextInfo:) contextInfo:nil];
+    [panel setNameFieldStringValue:@"ServerProcesses"];
+    [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+        if (returnCode == NSOKButton) {
+            if ([processesFiltered count] > 0) {
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
+                
+                for (NSDictionary *process in processesFiltered)
+                {
+                    NSString *stringTmp = [NSString stringWithFormat:@"%@ %@ %@ %@ %@ %@ %@ %@",
+                                           [process objectForKey:@"Id"],
+                                           [process objectForKey:@"User"],
+                                           [process objectForKey:@"Host"],
+                                           [process objectForKey:@"db"],
+                                           [process objectForKey:@"Command"],
+                                           [process objectForKey:@"Time"],
+                                           [process objectForKey:@"State"],
+                                           [process objectForKey:@"Info"]];
+                    
+                    [processesString appendString:stringTmp];
+                    [processesString appendString:@"\n"];
+                }
+                
+                [processesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+            }
+        }
+    }];
 }
 
 /**
@@ -234,13 +270,13 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 		
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill query?", @"kill query message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lu?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), (unsigned long)processId]];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to kill the current query executing on connection ID %lld?\n\nPlease be aware that continuing to kill this query may result in data corruption. Please proceed with caution.", @"kill query informative message"), processId];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -262,13 +298,13 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// No process selected. Interface validation should prevent this.
 	if ([processListTableView numberOfSelectedRows] != 1) return;
 	
-	NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+	long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 	
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Kill connection?", @"kill connection message")
 									 defaultButton:NSLocalizedString(@"Kill", @"kill button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
 									   otherButton:nil 
-						 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lu?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), (unsigned long)processId]];
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to kill connection ID %lld?\n\nPlease be aware that continuing to kill this connection may result in data corruption. Please proceed with caution.", @"kill connection informative message"), processId];
 	
 	NSArray *buttons = [alert buttons];
 	
@@ -370,7 +406,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
 		}
 		else {
-			NSUInteger processId = [[[processes objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] integerValue];
+			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
 			
 			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
@@ -378,36 +414,6 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
 				[self _killProcessConnectionWithId:processId];
 			}
-		}
-	}
-}
-
-/**
- * Invoked when the save panel is dismissed.
- */
-- (void)savePanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-	if (returnCode == NSOKButton) {
-		if ([processesFiltered count] > 0) {
-			NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
-			
-			for (NSDictionary *process in processesFiltered)
-			{
-				NSString *stringTmp = [NSString stringWithFormat:@"%@ %@ %@ %@ %@ %@ %@ %@",
-									   [process objectForKey:@"Id"],
-									   [process objectForKey:@"User"],
-									   [process objectForKey:@"Host"],
-									   [process objectForKey:@"db"],
-									   [process objectForKey:@"Command"],
-									   [process objectForKey:@"Time"],
-									   [process objectForKey:@"State"],
-									   [process objectForKey:@"Info"]];
-				
-				[processesString appendString:stringTmp];
-				[processesString appendString:@"\n"];
-			}
-			
-			[processesString writeToURL:[panel URL] atomically:YES encoding:NSUTF8StringEncoding error:NULL];
 		}
 	}
 }
@@ -455,69 +461,16 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 		
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
-		
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 		for (NSTableColumn *column in [processListTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 		
 		[processListTableView reloadData];
 	}
 }
-
-#pragma mark -
-#pragma mark Tableview delegate methods
-
-/**
- * Table view delegate method. Returns the number of rows in the table veiw.
- */
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
-{
-	return [processesFiltered count];
-}
-
-/**
- * Table view delegate method. Returns the specific object for the request column and row.
- */
-- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
-{	
-	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
-		
-	return (![object isNSNull]) ? object : [prefs stringForKey:SPNullValue];
-}
-
-/**
- * Table view delegate method. Called when the user changes the sort by column.
- */
-- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
-{
-    [processesFiltered sortUsingDescriptors:[tableView sortDescriptors]];
-    
-	[tableView reloadData];
-}
-
-/**
- * Table view delegate method. Called whenever the user changes a column width.
- */
-- (void)tableViewColumnDidResize:(NSNotification *)notification
-{
-	NSTableColumn *column = [[notification userInfo] objectForKey:@"NSTableColumn"];
-			
-	// Get the existing table column widths dictionary if it exists
-	NSMutableDictionary *tableColumnWidths = ([prefs objectForKey:SPProcessListTableColumnWidths]) ?
-											  [NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPProcessListTableColumnWidths]] :
-											  [NSMutableDictionary dictionary];
-	
-	// Save column size
-	NSString *columnName = [[column headerCell] stringValue];
-	
-	if (columnName) {
-		[tableColumnWidths setObject:[NSNumber numberWithDouble:[column width]] forKey:columnName];
-		
-		[prefs setObject:tableColumnWidths forKey:SPProcessListTableColumnWidths];
-	}
-}
-
 
 #pragma mark -
 #pragma mark Text field delegate methods
@@ -552,24 +505,6 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	// Kill the auto refresh timer if running
 	[self _killAutoRefreshTimer];	
-}
-
-#pragma mark -
-
-/**
- * Dealloc
- */
-- (void)dealloc
-{
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
-
-	processListThreadRunning = NO;
-	
-	[processes release], processes = nil;
-	
-	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
-	
-	[super dealloc];
 }
 
 #pragma mark -
@@ -698,17 +633,17 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 		{
 			//SPMySQL.framewokr currently returns numbers as NSString, which will break sorting of numbers in this case.
 			NSMutableDictionary *rowsFixed = [[processList getRowAsDictionary] mutableCopy];
-			
+
+			// The ID can be a 64-bit value on 64-bit servers
 			id idColumn = [rowsFixed objectForKey:@"Id"];
-			//Id is a signed int(11) - this is a signed 32 bit int value
-			if(idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
-				int numRaw = [(NSString *)idColumn intValue];
-				NSNumber *num = [NSNumber numberWithInt:numRaw];
+			if (idColumn != nil && [idColumn isKindOfClass:[NSString class]]) {
+				long long numRaw = [(NSString *)idColumn longLongValue];
+				NSNumber *num = [NSNumber numberWithLongLong:numRaw];
 				[rowsFixed setObject:num forKey:@"Id"];
 			}
 
+			// Time is a signed int(7) - this is a 32 bit int value
 			id timeColumn = [rowsFixed objectForKey:@"Time"];
-			//Time is a signed int(7) - this is the same 32 bit int value
 			if(timeColumn != nil && [timeColumn isKindOfClass:[NSString class]]) {
 				int numRaw = [(NSString *)timeColumn intValue];
 				NSNumber *num = [NSNumber numberWithInt:numRaw];
@@ -730,15 +665,15 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Attempts to kill the query executing on the connection associate with the supplied ID.
  */
-- (void)_killProcessQueryWithId:(NSUInteger)processId
+- (void)_killProcessQueryWithId:(long long)processId
 {
 	// Kill the query
-	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lu", (unsigned long)processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL QUERY %lld", processId]];
 	
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -748,15 +683,15 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Attempts the kill the connection associated with the supplied ID.
  */
-- (void)_killProcessConnectionWithId:(NSUInteger)processId
+- (void)_killProcessConnectionWithId:(long long)processId
 {
 	// Kill the connection
-	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lu", (unsigned long)processId]];
+	[connection queryString:[NSString stringWithFormat:@"KILL CONNECTION %lld", processId]];
 	
 	// Check for errors
 	if ([connection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lu.\n\nMySQL said: %@", @"error killing query informative message"), (unsigned long)processId, [connection lastErrorMessage]]);
+						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
 	}
 	
 	// Refresh the process list
@@ -801,7 +736,7 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 			([[process objectForKey:@"Host"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
 			((![[process objectForKey:@"db"] isNSNull]) && ([[process objectForKey:@"db"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			([[process objectForKey:@"Command"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
-			([[[process objectForKey:@"Time"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound) ||
+			((![[process objectForKey:@"Time"] isNSNull]) && ([[[process objectForKey:@"Time"] stringValue] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			((![[process objectForKey:@"State"] isNSNull]) && ([[process objectForKey:@"State"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)) ||
 			((![[process objectForKey:@"Info"] isNSNull]) && ([[process objectForKey:@"Info"] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)))
 		{
@@ -818,6 +753,21 @@ static const NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[saveProcessesButton setEnabled:YES];
 	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	
+	processListThreadRunning = NO;
+	
+	[processes release], processes = nil;
+	
+	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
+	
+	[super dealloc];
 }
 
 @end

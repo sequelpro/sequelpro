@@ -1,39 +1,47 @@
 //
-//  $Id$
-//
 //  SPIndexesController.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on June 13, 2010
+//  Created by Stuart Connolly (stuconnolly.com) on June 13, 2010.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPIndexesController.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
-#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"
 #import "SPTableView.h"
 #import "SPDatabaseViewController.h"
 #import "SPTableStructure.h"
+#import "SPTableStructureLoading.h"
+#import "SPThreadAdditions.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 // Constants
 static const NSString *SPNewIndexIndexName      = @"IndexName";
@@ -44,6 +52,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 @interface SPIndexesController (PrivateAPI)
 
+- (void)_addAdditionalIndexTypes;
 - (void)_reloadIndexedColumnsTableData;
 
 - (void)_addIndexUsingDetails:(NSDictionary *)indexDetails;
@@ -58,7 +67,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 @synthesize table;
 @synthesize connection;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize indexesTableView;
 @synthesize tableStructure;
 @synthesize addIndexButton;
@@ -67,12 +76,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 #pragma mark -
 
-/**
- * Init.
- */
 - (id)init
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSString* nibName = @"IndexesView";
 #else
 	NSString* nibName = @"SQLIndexes";
@@ -86,7 +92,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		indexes = [[NSMutableArray alloc] init];
 		indexedFields = [[NSMutableArray alloc] init];
 
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 		prefs = [NSUserDefaults standardUserDefaults];
 
 		showAdvancedView = NO;
@@ -110,17 +116,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	return self;
 }
 
-/**
- * Nib awakening.
- */
 - (void)awakeFromNib
 {
-
 	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
 	if (_mainNibLoaded) return;
 	_mainNibLoaded = YES;
 
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	// Set the index tables view's vertical gridlines if required
 	[indexesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
@@ -130,26 +132,28 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	BOOL useMonospacedFont = NO;
 #endif
 
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	// Set the double-click action in blank areas of the table to create new rows
 	[indexesTableView setEmptyDoubleClickAction:@selector(addIndex:)];
 
 	for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 	{
-		[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
 	for (NSTableColumn *fieldColumn in [indexedColumnsTableView tableColumns])
 	{
-		[[fieldColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[fieldColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
-#ifndef SP_REFACTOR /* patch */
+#ifndef SP_CODA /* patch */
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 #endif
 }
 
 #pragma mark -
-#pragma mark IBAction methods
+#pragma mark IB action methods
 
 /**
  * Opens the add new index sheet.
@@ -161,6 +165,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
+
+	isMyISAMTale = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
 	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
@@ -170,19 +176,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexNameTextField setEnabled:NO];
 	[indexNameTextField setStringValue:@"PRIMARY"];
 
-	// Remove any existing SPATIAL menu item
-	if ([indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag] != -1)
-		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag]];
-
-	// If the table is of type MyISAM and Spatial extension support is available, (re-)add the SPATIAL type
-	NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
-	
-	if ([engine isEqualToString:@"MyISAM"] && [[dbDocument serverSupport] supportsSpatialExtensions]) {
-		NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
-		[spatialMenuItem setTitle:NSLocalizedString(@"SPATIAL", @"Spatial index menu item title")];
-		[spatialMenuItem setTag:SPSpatialMenuTag];
-		[[indexTypePopUpButton menu] addItem:spatialMenuItem];
-	}
+	[self _addAdditionalIndexTypes];
 	
 	// Check to see whether a primary key already exists for the table, and if so select INDEX instead
 	for (NSDictionary *field in fields)
@@ -235,14 +229,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// initial key has a required size
 	[indexSizeTableColumn setHidden:![requiresLength containsObject:[[initialField objectForKey:@"type"] uppercaseString]]];
 
-	[indexedColumnsTableView reloadData];
+	[self _reloadIndexedColumnsTableData];
 
 	[addIndexedColumnButton setEnabled:([indexedFields count] < [fields count])];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
-	[indexStorageTypePopUpButton setEnabled:(!([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"]))];
+	[indexStorageTypePopUpButton setEnabled:(!(isMyISAMTale || [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"]))];
 
 	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
 	// if it's not supported.
@@ -298,7 +292,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 									   otherButton:nil
-						 informativeTextWithFormat:(hasForeignKey) ? [NSString stringWithFormat:NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName] : [NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName]];
+						 informativeTextWithFormat:hasForeignKey ? NSLocalizedString(@"The foreign key relationship '%@' has a dependency on this index. This relationship must be removed before the index can be deleted.\n\nAre you sure you want to continue to delete the relationship and the index? This action cannot be undone.", @"delete index and foreign key informative message"), constraintName : NSLocalizedString(@"Are you sure you want to delete the index '%@'? This action cannot be undone.", @"delete index informative message"), keyName];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -322,7 +316,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	if (indexType == SPPrimaryKeyMenuTag) {
 		[indexNameTextField setEnabled:NO];
 		[indexNameTextField setStringValue:@"PRIMARY"];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		[indexStorageTypePopUpButton setEnabled:NO];
 #endif
 	}
@@ -333,13 +327,16 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			[indexNameTextField setStringValue:@""];
 		}
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
 		
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
-		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !([engine isEqualToString:@"MyISAM"] || [engine isEqualToString:@"InnoDB"])];
+		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !(isMyISAMTale || [engine isEqualToString:@"InnoDB"])];
 #endif
 	}
+	
+	[indexSizeTableColumn setHidden:[[indexTypePopUpButton selectedItem] tag] == SPFullTextMenuTag];
+	[indexesTableView reloadData];
 }
 
 /**
@@ -347,7 +344,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)closeSheet:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Close the advanced options view if it's open
 	[indexAdvancedOptionsView setHidden:YES];
 	[indexAdvancedOptionsViewButton setState:NSOffState];
@@ -362,7 +359,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[NSApp endSheet:[sender window] returnCode:[sender tag]];
 	[[sender window] orderOut:self];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Clear the index key block size field
 	[indexKeyBlockSizeTextField setStringValue:@""];
 #endif
@@ -414,7 +411,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
  */
 - (IBAction)toggleAdvancedIndexOptionsView:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	showAdvancedView = (!showAdvancedView);
 
 	[indexAdvancedOptionsViewButton setState:showAdvancedView];
@@ -423,11 +420,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// When hiding the advanced options, the size column would normally be hidden as well
 	// - unless any of the ndexes fields have a required key size.
 	BOOL hideSizesColumn = !showAdvancedView;
+	
 	if (hideSizesColumn) {
-		for (NSDictionary *aField in indexedFields) {
+		for (NSDictionary *aField in indexedFields) 
+		{
 			if ([requiresLength containsObject:[[aField objectForKey:@"type"] uppercaseString]]) hideSizesColumn = NO;
 		}
 	}
+	
 	[indexSizeTableColumn setHidden:hideSizesColumn];
 
 	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([indexAdvancedOptionsView frame].size.height + 10) : 0];
@@ -450,9 +450,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	}
 	else {
 		id object = [[indexedFields objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+		
 		if ([[tableColumn identifier] isEqualToString:@"Size"] && object) {
 			object = [NSNumber numberWithLongLong:[object longLongValue]];
 		}
+		
 		return object;
 	}
 }
@@ -478,9 +480,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		if ([object isKindOfClass:[NSNumber class]]) {
 			object = [NSString stringWithFormat:@"%llu", [object unsignedLongLongValue]];
 		}
+		
 		if (object) {
 			[[indexedFields objectAtIndex:rowIndex] setObject:object forKey:[tableColumn identifier]];
-		} else {
+		} 
+		else {
 			[[indexedFields objectAtIndex:rowIndex] removeObjectForKey:[tableColumn identifier]];
 		}
 	}
@@ -493,8 +497,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	if ([[tableColumn identifier] isEqualToString:@"Size"]) {
 
 		// If the field is of type TEXT or BLOB then a index prefix length is required so change the default
-		// placeholder of 'optional' to 'required'.
-		[cell setPlaceholderString:([requiresLength containsObject:[[[indexedFields objectAtIndex:rowIndex] objectForKey:@"type"] uppercaseString]]) ? NSLocalizedString(@"required", @"required placeholder string") : NSLocalizedString(@"optional", @"optional placeholder string")];
+		// placeholder of 'optional' to 'required', BUT only if the index type is not FULLTEXT.
+		BOOL isFullTextType = [[indexTypePopUpButton selectedItem] tag] == SPFullTextMenuTag;
+		
+		[cell setPlaceholderString:([requiresLength containsObject:[[[indexedFields objectAtIndex:rowIndex] objectForKey:@"type"] uppercaseString]] && !isFullTextType) ? NSLocalizedString(@"required", @"required placeholder string") : NSLocalizedString(@"optional", @"optional placeholder string")];
 	}
 }
 
@@ -518,7 +524,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	
 	[availableFields removeObjectsInArray:indexedFields];
 	
-	return [[availableFields objectAtIndex:index] objectForKey:@"name"];
+	NSString *name = [[availableFields objectAtIndex:index] objectForKey:@"name"];
+	
+	[availableFields release];
+	
+	return name;
 }
 
 #pragma mark -
@@ -570,6 +580,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexes setArray:tableIndexes];
 }
 
+#ifdef SP_CODA
+- (void)setDatabaseDocument:(SPDatabaseDocument*)db
+{
+	dbDocument = db;
+}
+#endif
+
 #pragma mark -
 #pragma mark Other methods
 
@@ -609,7 +626,9 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		[indexDetails setObject:indexedFields forKey:SPNewIndexIndexedColumns];
 		[indexDetails setObject:[indexNameTextField stringValue] forKey:SPNewIndexIndexName];
-		switch ([[indexTypePopUpButton selectedItem] tag]) {
+		
+		switch ([[indexTypePopUpButton selectedItem] tag]) 
+		{
 			case SPPrimaryKeyMenuTag:
 				[indexDetails setObject:@"PRIMARY KEY" forKey:SPNewIndexIndexType];
 				break;
@@ -627,7 +646,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 				break;
 		}
 		
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// If there is a key block size set it means the database version supports it
 		if ([[indexKeyBlockSizeTextField stringValue] length]) {
 			[indexDetails setObject:[NSNumber numberWithInteger:[indexKeyBlockSizeTextField integerValue]] forKey:SPNewIndexKeyBlockSize];
@@ -639,7 +658,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #endif
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_addIndexUsingDetails:) toTarget:self withObject:indexDetails];
+			[NSThread detachNewThreadWithName:@"SPIndexesController index creation thread" target:self selector:@selector(_addIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
@@ -667,7 +686,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[indexDetails setObject:[NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadSelector:@selector(_removeIndexUsingDetails:) toTarget:self withObject:indexDetails];
+			[NSThread detachNewThreadWithName:@"SPIndexesController index removal thread" target:self selector:@selector(_removeIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
@@ -690,18 +709,20 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 		for (NSTableColumn *indexColumn in [indexesTableView tableColumns])
 		{
-			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		for (NSTableColumn *indexColumn in [indexedColumnsTableView tableColumns])
 		{
-			[[indexColumn dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[indexColumn dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		[indexesTableView reloadData];
+
 		[self _reloadIndexedColumnsTableData];
 	}
 }
@@ -735,6 +756,39 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #pragma mark Private API methods
 
 /**
+ * Adds any additional index types depending on the table type.
+ */
+- (void)_addAdditionalIndexTypes
+{	
+	if ([indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag] > -1) {
+		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPSpatialMenuTag]];
+	}
+	
+	if ([indexTypePopUpButton indexOfItemWithTag:SPFullTextMenuTag] > -1) {
+		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPFullTextMenuTag]];
+	}
+	
+	// FULLTEXT and SPATIAL index types are only available using the MyISAM engine
+	if (isMyISAMTale) {
+		if ([[dbDocument serverSupport] supportsSpatialExtensions]) {
+			NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
+			
+			[spatialMenuItem setTitle:NSLocalizedString(@"SPATIAL", @"spatial index menu item title")];
+			[spatialMenuItem setTag:SPSpatialMenuTag];
+			
+			[[indexTypePopUpButton menu] addItem:spatialMenuItem];
+		}
+	
+		NSMenuItem *fullTextMenuItem = [[[NSMenuItem alloc] init] autorelease];
+		
+		[fullTextMenuItem setTitle:NSLocalizedString(@"FULLTEXT", @"full text index menu item title")];
+		[fullTextMenuItem setTag:SPFullTextMenuTag];
+		
+		[[indexTypePopUpButton menu] addItem:fullTextMenuItem];
+	}
+}
+
+/**
  * Reloads the indexed columns table view data and displays the size column if required.
  */
 - (void)_reloadIndexedColumnsTableData
@@ -742,22 +796,25 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	NSUInteger sizeRequiredFieldAndNotYetSet = 0;
 	NSUInteger sizeRequired = 0;
 
-	for (NSDictionary *field in indexedFields) {
+	for (NSDictionary *field in indexedFields) 
+	{
 		if ([requiresLength containsObject:[[field objectForKey:@"type"] uppercaseString]]) {
 			sizeRequired++;
 			sizeRequiredFieldAndNotYetSet++;
-			if([field objectForKey:@"Size"] && [(NSString *)[field objectForKey:@"Size"] length])
+			
+			if ([field objectForKey:@"Size"] && [(NSString *)[field objectForKey:@"Size"] length]) {
 				sizeRequiredFieldAndNotYetSet--;
 		}
 	}
+	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Only toggle the sizes column if the advanced view is hidden and at least one field requires a size
-	if (!showAdvancedView) [indexSizeTableColumn setHidden:(!sizeRequired)];
+	if (!showAdvancedView) [indexSizeTableColumn setHidden:!sizeRequired];
 #endif
 
 	// Validate Add Button
-	[confirmAddIndexButton setEnabled:(!sizeRequiredFieldAndNotYetSet)];
+	[confirmAddIndexButton setEnabled:!sizeRequiredFieldAndNotYetSet];
 
 	[indexedColumnsTableView reloadData];
 }
@@ -802,11 +859,13 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 			if ((![columnName length]) || (![columnType length])) continue;
 
+			BOOL isFullTextType = [indexType isEqualToString:@"FULLTEXT"];
+			
 			// If this field type requires a length and one hasn't been specified (interface validation
 			// should ensure this doesn't happen), then skip it.
-			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length])) continue;
+			if ([requiresLength containsObject:[columnType uppercaseString]] && (![(NSString *)[column objectForKey:@"Size"] length]) && !isFullTextType) continue;
 
-			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType]) {
+			if ([column objectForKey:@"Size"] && [supportsLength containsObject:columnType] && !isFullTextType) {
 
 				[tempIndexedColumns addObject:[NSString stringWithFormat:@"%@ (%@)", [columnName backtickQuotedString], [column objectForKey:@"Size"]]];
 			}
@@ -837,7 +896,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		
 		// If supplied specify the index's key block size
 		if (indexKeyBlockSize) {
-			[query appendFormat:@" KEY_BLOCK_SIZE = %d", [indexKeyBlockSize integerValue]];
+			[query appendFormat:@" KEY_BLOCK_SIZE = %ld", (long)[indexKeyBlockSize integerValue]];
 		}
 
 		// Execute the query
@@ -953,14 +1012,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	NSUInteger popUpMask        = [indexTypePopUpButton autoresizingMask];
 	NSUInteger nameFieldMask    = [indexNameTextField autoresizingMask];
 	NSUInteger scrollMask       = [indexedColumnsScrollView autoresizingMask];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger buttonMask       = [indexAdvancedOptionsViewButton autoresizingMask];
 	NSUInteger textFieldMask    = [indexAdvancedOptionsViewLabelButton autoresizingMask];
 	NSUInteger advancedViewMask = [indexAdvancedOptionsView autoresizingMask];
 #endif
 	NSUInteger typeLabelMask    = [indexTypeLabel autoresizingMask];
 	NSUInteger nameLabelMask    = [indexNameLabel autoresizingMask];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSUInteger buttonBarMask    = [(NSView*)anchoredButtonBar autoresizingMask];
 
 	NSRect frame = [[self window] frame];
@@ -976,14 +1035,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexTypePopUpButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameTextField setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexedColumnsScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[indexAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 #endif
 	[indexTypeLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[indexNameLabel setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[(NSView*)anchoredButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 
 	NSInteger newMinHeight = (windowMinHeigth - heightOffset + delta < windowMinHeigth) ? windowMinHeigth : windowMinHeigth - heightOffset + delta;
@@ -991,7 +1050,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[[self window] setMinSize:NSMakeSize(windowMinWidth, newMinHeight)];
 #endif
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	frame.origin.y += heightOffset;
 	frame.size.height -= heightOffset;
 
@@ -1006,23 +1065,20 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	[indexTypePopUpButton setAutoresizingMask:popUpMask];
 	[indexNameTextField setAutoresizingMask:nameFieldMask];
 	[indexedColumnsScrollView setAutoresizingMask:scrollMask];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[indexAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
 	[indexAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
 	[indexAdvancedOptionsView setAutoresizingMask:advancedViewMask];
 #endif
 	[indexTypeLabel setAutoresizingMask:typeLabelMask];
 	[indexNameLabel setAutoresizingMask:nameLabelMask];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[(NSView*)anchoredButtonBar setAutoresizingMask:buttonBarMask];
 #endif
 }
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {
 	[table release], table = nil;
@@ -1034,20 +1090,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 	if (indexedFields) [indexedFields release], indexedFields = nil;
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
 #endif
 
 	[super dealloc];
 }
-
-
-#ifdef SP_REFACTOR
-- (void)setDatabaseDocument:(SPDatabaseDocument*)db
-{
-	dbDocument = db;
-}
-#endif
-
 
 @end

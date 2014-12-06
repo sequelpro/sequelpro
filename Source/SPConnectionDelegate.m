@@ -1,33 +1,39 @@
 //
-//  $Id$
-//
 //  SPConnectionDelegate.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 13, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on November 13, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPConnectionDelegate.h"
 #import "SPConnectionController.h"
 #import "SPQueryController.h"
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
+
 #import <SPMySQL/SPMySQLConstants.h>
 
 @implementation SPDatabaseDocument (SPConnectionDelegate)
@@ -40,13 +46,13 @@
  */
 - (void)willQueryString:(NSString *)query connection:(id)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging]) {
-		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging])
-			|| (_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging])
-			|| (_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
+		if ((_queryMode == SPInterfaceQueryMode && [prefs boolForKey:SPConsoleEnableInterfaceLogging]) ||
+			(_queryMode == SPCustomQueryQueryMode && [prefs boolForKey:SPConsoleEnableCustomQueryLogging]) ||
+			(_queryMode == SPImportExportQueryMode && [prefs boolForKey:SPConsoleEnableImportExportLogging]))
 		{
-			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name]];
+			[[SPQueryController sharedQueryController] showMessageInConsole:query connection:[self name] database:[self database]];
 		}
 	}
 #endif
@@ -57,9 +63,9 @@
  */
 - (void)queryGaveError:(NSString *)error connection:(id)connection
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPConsoleEnableLogging] && [prefs boolForKey:SPConsoleEnableErrorLogging]) {
-		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name]];
+		[[SPQueryController sharedQueryController] showErrorInConsole:error connection:[self name] database:[self database]];
 	}
 #endif
 }
@@ -69,7 +75,6 @@
  */
 - (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection
 {
-	
 	// If no keychain item is available, return an empty password
 	if (![connectionController connectionKeychainItemName]) return nil;
 	
@@ -90,23 +95,26 @@
  */
 - (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection
 {
-
 	// If no keychain item is available, return an empty password
 	if (![connectionController connectionKeychainItemName]) return @"";
 
 	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];
+
 	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
 	NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
-	NSString *sshpw = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-	if (!sshpw || ![sshpw length])
-		sshpw = @"";
+	NSString *sshPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 
-	if(connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-	if(connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+	if (!sshPassword || ![sshPassword length]) {
+		sshPassword = @"";
+	}
+
+	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
+	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+
 	[keychain release];
 	
-	return sshpw;
+	return sshPassword;
 }
 
 /**
@@ -115,7 +123,17 @@
  */
 - (void)noConnectionAvailable:(id)connection
 {	
-	SPBeginAlertSheet(NSLocalizedString(@"No connection available", @"no connection available message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil, NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message"));
+	SPBeginAlertSheet(
+		NSLocalizedString(@"No connection available", @"no connection available message"),
+		NSLocalizedString(@"OK", @"OK button"),
+		nil,
+		nil,
+		[self parentWindow],
+		self,
+		nil,
+		nil,
+		NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message")
+	);
 }
 
 /**
@@ -123,7 +141,7 @@
  */
 - (SPMySQLConnectionLostDecision)connectionLost:(id)connection
 {
-	NSInteger connectionErrorCode = SPMySQLConnectionLostDisconnect;
+	SPMySQLConnectionLostDecision connectionErrorCode = SPMySQLConnectionLostDisconnect;
 	
 	// Only display the reconnect dialog if the window is visible
 	if ([self parentWindow] && [[self parentWindow] isVisible]) {
@@ -131,14 +149,14 @@
 		// Ensure the window isn't miniaturized
 		if ([[self parentWindow] isMiniaturized]) [[self parentWindow] deminiaturize:self];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Ensure the window and tab are frontmost
 		[self makeKeyDocument];
 #endif
 		
 		// Display the connection error dialog and wait for the return code
 		[NSApp beginSheet:connectionErrorDialog modalForWindow:[self parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-		connectionErrorCode = [NSApp runModalForWindow:connectionErrorDialog];
+		connectionErrorCode = (SPMySQLConnectionLostDecision)[NSApp runModalForWindow:connectionErrorDialog];
 		
 		[NSApp endSheet:connectionErrorDialog];
 		[connectionErrorDialog orderOut:nil];
@@ -175,17 +193,21 @@
  */
 - (void) closeAndDisconnect
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSWindow *theParentWindow = [self parentWindow];
+	
 	_isConnected = NO;
+	
 	if ([[[self parentTabViewItem] tabView] numberOfTabViewItems] == 1) {
 		[theParentWindow orderOut:self];
 		[theParentWindow setAlphaValue:0.0f];
 		[theParentWindow performSelector:@selector(close) withObject:nil afterDelay:1.0];
-	} else {
+	} 
+	else {
 		[[[self parentTabViewItem] tabView] performSelector:@selector(removeTabViewItem:) withObject:[self parentTabViewItem] afterDelay:0.5];
 		[theParentWindow performSelector:@selector(makeKeyAndOrderFront:) withObject:nil afterDelay:0.6];
 	}
+	
 	[self parentTabDidClose];	
 #endif
 }

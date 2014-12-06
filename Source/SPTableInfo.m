@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPTableInfo.m
 //  sequel-pro
 //
-//  Created by Ben Perry on Jun 6, 2008
+//  Created by Ben Perry on Jun 6, 2008.
+//  Copyright (c) 2008 Ben Perry. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableInfo.h"
 #import "ImageAndTextCell.h"
@@ -38,11 +44,15 @@
 
 @implementation SPTableInfo
 
+#pragma mark -
+#pragma mark Initialisation
+
 - (id)init
 {
 	if ((self = [super init])) {
 		info       = [[NSMutableArray alloc] init];
 		activities = [[NSMutableArray alloc] init];
+		
 		_activitiesWillBeUpdated = NO;
 	}
 
@@ -51,10 +61,13 @@
 
 - (void)awakeFromNib
 {
-
 	[[NSNotificationCenter defaultCenter] addObserver:self
 		selector:@selector(tableChanged:)
 		name:SPTableChangedNotification
+		object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+		selector:@selector(tableChanged:)
+		name:SPTableInfoChangedNotification
 		object:tableDocumentInstance];
 
 	// Register activities update notifications for add/remove BASH commands etc.
@@ -72,15 +85,7 @@
 	[infoTable reloadData];
 }
 
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[info release];
-	[activities release];
-
-	[super dealloc];
-}
+#pragma mark -
 
 /**
  * Remove an activity directly from the list since an update will be performer in the background
@@ -88,25 +93,32 @@
  */
 - (void)removeActivity:(NSInteger)pid
 {
-	for(id cmd in activities) {
-		if([[cmd objectForKey:@"pid"] integerValue] == pid) {
+	for (id cmd in activities) 
+	{
+		if ([[cmd objectForKey:@"pid"] integerValue] == pid) {
 			[activities removeObject:cmd];
 			break;
 		}
 	}
+	
 	[activitiesTable reloadData];
 }
 
 - (void)updateActivities
 {
 	NSMutableArray *acts = [NSMutableArray array];
+	
 	[acts removeAllObjects];
 	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
 	[acts addObjectsFromArray:[tableDocumentInstance runningActivities]];
 	[acts addObjectsFromArray:[[NSApp delegate] runningActivities]];
+	
 	_activitiesWillBeUpdated = YES;
+	
 	[activities setArray:acts];
+	
 	_activitiesWillBeUpdated = NO;
+	
 	[activitiesTable reloadData];
 	[infoTable deselectAll:nil];
 	[activitiesTable deselectAll:nil];
@@ -128,9 +140,11 @@
 
 	if (![tableListInstance tableName]) {
 		[info addObject:NSLocalizedString(@"INFORMATION", @"header for blank info pane")];
+		
 		if ([[tableListInstance selectedTableItems] count]) {
 			[info addObject:NSLocalizedString(@"multiple selection", @"multiple selection")];
 		}
+		
 		[infoTable reloadData];
 		return;
 	}
@@ -164,6 +178,11 @@
 				// Add the update date to the infoTable
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"updated: %@", @"updated: %@"), [self _getUserDefinedDateStringFromMySQLDate:[tableStatus objectForKey:@"Update_time"]]]];
 			}
+			
+			// Check for 'Engine' == NULL - should not happen (at least not with MySQL)
+			if (![[tableStatus objectForKey:@"Engine"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"engine: %@", @"Table Info Section : Table Engine"), [tableStatus objectForKey:@"Engine"]]];
+			}
 
 			// Check for 'Rows' == NULL - information_schema database doesn't report row count for it's tables
 			if (![[tableStatus objectForKey:@"Rows"] isNSNull]) {
@@ -181,7 +200,6 @@
 
 		}
 	}
-
 	// Get PROC/FUNC information
 	else if ([tableListInstance tableType] == SPTableTypeProc || [tableListInstance tableType] == SPTableTypeFunc) {
 
@@ -285,59 +303,63 @@
 				if (![[tableStatus objectForKey:@"COLLATION_CONNECTION"] isNSNull]) {
 					[info addObject:[NSString stringWithFormat:NSLocalizedString(@"collation connection: %@", @"collation connection: %@"), [tableStatus objectForKey:@"COLLATION_CONNECTION"]]];
 				}
-
 			}
 		}
 
 	}
 
 	[infoTable reloadData];
-
 }
 
 #pragma mark -
 #pragma mark TableView datasource methods
 
-- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-	if(aTableView == infoTable) {
-		return [info count];
-	} else {
-		return [activities count];
-	}
+	return (tableView == infoTable) ? [info count] : [activities count];
 }
 
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	if(aTableView == infoTable) {
+	if (tableView == infoTable) {
 		return [info objectAtIndex:rowIndex];
-	} else {
-		if(rowIndex == 0)
-		{
+	} 
+	else {
+		if (rowIndex == 0) {
 			SPTableTextFieldCell *c = [[[SPTableTextFieldCell alloc] initTextCell:NSLocalizedString(@"ACTIVITIES", @"header for activities pane")] autorelease];
-			[aTableColumn setDataCell:c];
+			
+			[tableColumn setDataCell:c];
+			
 			return NSLocalizedString(@"ACTIVITIES", @"header for activities pane");
 		}
-		else if(!_activitiesWillBeUpdated && rowIndex > 0 && rowIndex < (NSInteger)[activities count]) {
+		else if (!_activitiesWillBeUpdated && rowIndex > 0 && rowIndex < (NSInteger)[activities count]) {
 			NSDictionary *dict = NSArrayObjectAtIndex(activities,rowIndex);
 			SPActivityTextFieldCell *c = [[[SPActivityTextFieldCell alloc] init] autorelease];
+			
 			[c setActivityName:[[dict objectForKey:@"contextInfo"] objectForKey:@"name"]];
-			if([dict objectForKey:@"type"] && [[dict objectForKey:@"type"] isEqualToString:@"bashcommand"]) {
+			
+			if ([dict objectForKey:@"type"] && [[dict objectForKey:@"type"] isEqualToString:@"bashcommand"]) {
 				[c setContextInfo:[NSDictionary dictionaryWithObjectsAndKeys:[dict objectForKey:@"type"], @"type", [dict objectForKey:@"pid"], @"pid", nil]];
 				[c setActivityInfo:[NSString stringWithFormat:@"[%@] %@: %@", [[dict objectForKey:@"contextInfo"] objectForKey:@"scope"], NSLocalizedString(@"started", @"started"), [dict objectForKey:@"starttime"]]];
 			} 
 			else {
 				[c setActivityInfo:@"..."];
 			}
-			[aTableColumn setDataCell:c];
+			
+			[tableColumn setDataCell:c];
+			
 			return [dict objectForKey:@"name"];
-		} else {
+		} 
+		else {
 			SPActivityTextFieldCell *c = [[[SPActivityTextFieldCell alloc] init] autorelease];
+			
 			[c setActivityName:@"..."];
 			[c setActivityInfo:@""];
-			[aTableColumn setDataCell:c];
+			[tableColumn setDataCell:c];
+			
 			return @"...";
 		}
+		
 		return @"";
 	}
 }
@@ -349,23 +371,27 @@
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	if(rowIndex == 0) return YES;
-	if(aTableView == infoTable) {
+	if (rowIndex == 0) return YES;
+	
+	if (aTableView == infoTable) {
 		return NO;
-	} else {
+	} 
+	else {
 		return YES;
 	}
+	
 	return NO;
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(rowIndex > 0) return NO;
+	if (rowIndex > 0) return NO;
 
-	if(![tableInfoScrollView isHidden]) {
+	if (![tableInfoScrollView isHidden]) {
 		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:0]];
 		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
-	} else {
+	} 
+	else {
 		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:1]];
 		[[NSApp mainWindow] makeFirstResponder:infoTable];
 	}
@@ -373,20 +399,28 @@
 	[infoTable deselectAll:nil];
 	[activitiesTable deselectAll:nil];
 	[self updateActivities];
+	
 	return NO;
 }
 
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(NSCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
-	if(aTableView == activitiesTable) {
-		if(rowIndex == 0) return @"";
-		if(mouseLocation.x > rect->origin.x + rect->size.width - 30)
+	if (aTableView == activitiesTable) {
+		if (rowIndex == 0) return @"";
+		
+		if (mouseLocation.x > rect->origin.x + rect->size.width - 30) {
 			return NSLocalizedString(@"Cancel", @"cancel");
+		}
+
 		NSDictionary *dict = NSArrayObjectAtIndex(activities,rowIndex);
-		if([[dict objectForKey:@"contextInfo"] objectForKey:@"name"])
+		
+		if ([[dict objectForKey:@"contextInfo"] objectForKey:@"name"]) {
 			return [[dict objectForKey:@"contextInfo"] objectForKey:@"name"];
+		}
+		
 		return @"";
 	}
+	
 	return nil;
 }
 
@@ -398,25 +432,24 @@
 
 - (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	if(aTableView == infoTable) {
-		if ((rowIndex > 0) && [[aTableColumn identifier] isEqualToString:@"info"]) {
+	if (aTableView == infoTable) {
+		if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"info"]) {
 			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
 			[(ImageAndTextCell*)aCell setIndentationLevel:1];
 			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
-		} else {
+		} 
+		else {
 			[(ImageAndTextCell*)aCell setImage:nil];
 			[(ImageAndTextCell*)aCell setIndentationLevel:0];
 		}
 	}
 }
 
-@end
-
-@implementation SPTableInfo (PrivateAPI)
+#pragma mark -
+#pragma mark Private API
 
 - (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate
 {
-	// Setup our data formatter
 	NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
 
 	[dateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
@@ -424,10 +457,22 @@
 	[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 
-	// Convert our string date from the result to an NSDate.
+	// Convert our string date from the result to an NSDate
 	NSDate *updateDate = [NSDate dateWithNaturalLanguageString:mysqlDate];
 
 	return [dateFormatter stringFromDate:updateDate];
+}
+
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	
+	[info release];
+	[activities release];
+	
+	[super dealloc];
 }
 
 @end

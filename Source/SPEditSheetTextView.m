@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPEditSheetTextView.m
 //  sequel-pro
 //
-//  Created by Hans-Jörg Bibiko on June 15, 2009
+//  Created by Hans-Jörg Bibiko on June 15, 2009.
+//  Copyright (c) 2009 Hans-Jörg Bibiko. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPEditSheetTextView.h"
 #import "SPTextViewAdditions.h"
@@ -39,38 +45,50 @@
 - (IBAction)undo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] undo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat undo.
-	if(!textWasChanged) [[self undoManager] undo];
-	if(!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
+	if (!textWasChanged) [[self undoManager] undo];
 }
 
 - (IBAction)redo:(id)sender
 {
 	textWasChanged = NO;
+	
 	[[self undoManager] redo];
+	
 	// Due to the undoManager implementation it could happen that
 	// an action will be recoreded which actually didn't change the
 	// text buffer. That's why repeat redo.
-	if(!textWasChanged) [[self undoManager] redo];
-	if(!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
+	if (!textWasChanged) [[self undoManager] redo];
 }
 
 - (IBAction)paste:(id)sender
 {
+#ifndef SP_CODA
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPFieldEditorController *)[self delegate] setWasCutPaste];
+	}
+#endif
+	
 	[super paste:sender];
 }
 
 - (IBAction)cut:(id)sender
 {
+#ifndef SP_CODA
 	// Try to create an undo group
-	if([[self delegate] respondsToSelector:@selector(setWasCutPaste)])
-		[[self delegate] setWasCutPaste];
+	if ([[self delegate] respondsToSelector:@selector(setWasCutPaste)]) {
+		[(SPFieldEditorController *)[self delegate] setWasCutPaste];
+	}
+#endif
+	
 	[super cut:sender];
 }
 
@@ -96,15 +114,13 @@
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-
 	long allFlags = (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask);
 	
 	// Check if user pressed ⌥ to allow composing of accented characters.
 	// e.g. for US keyboard "⌥u a" to insert ä
 	// or for non-US keyboards to allow to enter dead keys
 	// e.g. for German keyboard ` is a dead key, press space to enter `
-	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0)
-	{
+	if (([theEvent modifierFlags] & allFlags) == NSAlternateKeyMask || [[theEvent characters] length] == 0) {
 		[super keyDown: theEvent];
 		return;
 	}
@@ -112,20 +128,22 @@
 	NSString *charactersIgnMod = [theEvent charactersIgnoringModifiers];
 	long curFlags = ([theEvent modifierFlags] & allFlags);
 
-	if(curFlags & NSCommandKeyMask) {
-		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
+	if (curFlags & NSCommandKeyMask) {
+		if ([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+ and numpad +
 		{
 			[self makeTextSizeLarger];
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
+		
+		if ([charactersIgnMod isEqualToString:@"-"]) // decrease text size by 1; ⌘- and numpad -
 		{
 			[self makeTextSizeSmaller];
 			[self saveChangedFontInUserDefaults];
 			return;
 		}
-		if([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size; ⌘0
+		
+		if ([charactersIgnMod isEqualToString:@"0"]) // return the text size to the default size; ⌘0
 		{
 			[self makeTextStandardSize];
 			[self saveChangedFontInUserDefaults];
@@ -133,17 +151,18 @@
 		}
 	}
 
+#ifndef SP_CODA
 	// Allow undo grouping if user typed a ' ' (for word level undo)
 	// or a RETURN but not for each char due to writing speed
-	if([charactersIgnMod isEqualToString:@" "]
-		|| [theEvent keyCode] == 36
-		|| [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)
-		) {
-		[[self delegate] setDoGroupDueToChars];
+	if ([charactersIgnMod isEqualToString:@" "] ||
+	    [theEvent keyCode] == 36 ||
+	    [theEvent modifierFlags] & (NSCommandKeyMask|NSControlKeyMask|NSAlternateKeyMask)) 
+	{
+		[(SPFieldEditorController *)[self delegate] setDoGroupDueToChars];
 	}
-
+#endif
+	
 	[super keyDown: theEvent];
-
 }
 
 /*
@@ -183,11 +202,13 @@
 		}
 
 		// Check size and NSFileType
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
+		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
+		
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];
 			NSString *filetype = [attr objectForKey:NSFileType];
+			
 			if(filetype == NSFileTypeRegular && filesize)
 			{
 				// Ask for confirmation if file content is larger than 1MB

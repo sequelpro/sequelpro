@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Server Info.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 
 #import "Server Info.h"
@@ -142,6 +140,7 @@
 
 	// Get the process list
 	MYSQL_RES *mysqlResult = mysql_list_processes(mySQLConnection);
+	lastConnectionUsedTime = mach_absolute_time();
 
 	// Convert to SPMySQLResult
 	SPMySQLResult *theResult = [[SPMySQLResult alloc] initWithMySQLResult:mysqlResult stringEncoding:stringEncoding];

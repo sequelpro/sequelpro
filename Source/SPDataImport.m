@@ -1,33 +1,40 @@
 //
-//  $Id$
-//
 //  SPDataImport.m
 //  sequel-pro
 //
-//  Created by lorenz textor (lorenz@textor.ch) on Wed May 01 2002.
+//  Created by Lorenz Textor (lorenz@textor.ch) on Wed May 1, 2002.
 //  Copyright (c) 2002-2003 Lorenz Textor. All rights reserved.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDataImport.h"
 #import "SPDatabaseDocument.h"
 #import "SPDatabaseViewController.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
+#import "SPDatabaseStructure.h"
 #import "SPTableContent.h"
 #import "SPCustomQuery.h"
 #import "SPGrowlController.h"
@@ -39,9 +46,9 @@
 #import "SPFieldMapperController.h"
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQL.h>
-#import <UniversalDetector/UniversalDetector.h>
 
 #define SP_FILE_READ_ERROR_STRING NSLocalizedString(@"File read error", @"File read error title (Import Dialog)")
 
@@ -57,9 +64,6 @@
 #pragma mark -
 #pragma mark Initialisation
 
-/**
- * Init.
- */
 - (id)init
 {
 	if ((self = [super init])) {
@@ -96,9 +100,6 @@
 	return self;
 }
 
-/**
- * UI setup.
- */
 - (void)awakeFromNib
 {
 	if (_mainNibLoaded) return;
@@ -255,8 +256,8 @@
 
 	if (importFileName == nil) return;
 
-	// begin import process
-	[NSThread detachNewThreadSelector:@selector(_importBackgroundProcess:) toTarget:self withObject:importFileName];
+	// Begin import process
+	[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
 }
 
 
@@ -277,56 +278,51 @@
 
 	[openPanel setAccessoryView:importView];
 	[openPanel setDelegate:self];
+	
 	if ([prefs valueForKey:@"importFormatPopupValue"]) {
 		[importFormatPopup selectItemWithTitle:[prefs valueForKey:@"importFormatPopupValue"]];
 		[self changeFormat:self];
 	}
-	
-	// Show openPanel
-	[openPanel beginSheetForDirectory:[prefs objectForKey:@"openPath"]
-								 file:[lastFilename lastPathComponent]
-					   modalForWindow:[tableDocumentInstance parentWindow]
-						modalDelegate:self
-					   didEndSelector:@selector(importFileSheetDidEnd:returnCode:contextInfo:)
-						  contextInfo:nil];
-}
 
-/**
- * Callback for when the import sheet is closed
- */
-- (void)importFileSheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-
-	// Ensure text inputs are completed, preventing dead character entry
-	[sheet makeFirstResponder:nil];
-
-	// Save values to preferences
-	[prefs setObject:[(NSOpenPanel*)sheet directory] forKey:@"openPath"];
-	[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
-	
-	// Close NSOpenPanel sheet
-	[sheet orderOut:self];
-
-	// Check if the user canceled
-	if (returnCode != NSOKButton)
-		return;
-
-	// Reset progress cancelled from any previous runs
-	progressCancelled = NO;
-
-	if(lastFilename) [lastFilename release]; lastFilename = nil;
-	lastFilename = [[NSString stringWithString:[[(NSOpenPanel*)sheet URL] path]] retain];
-
-	NSString *importFileName = [NSString stringWithString:lastFilename];
-	if (lastFilename == nil || ![lastFilename length]) {
-		NSBeep();
-		return;
+	if (lastFilename && [lastFilename lastPathComponent]) {
+		[openPanel setNameFieldStringValue:[lastFilename lastPathComponent]];
 	}
 
-	if (importFileName == nil) return;
+	[openPanel setDirectoryURL:[NSURL URLWithString:[prefs objectForKey:@"openPath"]]];
 
-	// Begin the import process
-	[NSThread detachNewThreadSelector:@selector(_importBackgroundProcess:) toTarget:self withObject:importFileName];
+	[openPanel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
+		// Ensure text inputs are completed, preventing dead character entry
+		[openPanel makeFirstResponder:nil];
+
+		// Save values to preferences
+		[prefs setObject:[[openPanel directoryURL] path] forKey:@"openPath"];
+		[prefs setObject:[[importFormatPopup selectedItem] title] forKey:@"importFormatPopupValue"];
+
+		// Close NSOpenPanel sheet
+		[openPanel orderOut:self];
+
+		// Check if the user canceled
+		if (returnCode != NSOKButton) return;
+
+		// Reset progress cancelled from any previous runs
+		progressCancelled = NO;
+
+		if (lastFilename) [lastFilename release]; lastFilename = nil;
+
+		lastFilename = [[NSString stringWithString:[[openPanel URL] path]] retain];
+
+		NSString *importFileName = [NSString stringWithString:lastFilename];
+
+		if (lastFilename == nil || ![lastFilename length]) {
+			NSBeep();
+			return;
+		}
+
+		if (importFileName == nil) return;
+
+		// Begin the import process
+		[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+	}];
 }
 
 /**
@@ -335,7 +331,7 @@
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
 	[importFormatPopup selectItemWithTitle:@"SQL"];
-	[NSThread detachNewThreadSelector:@selector(_importBackgroundProcess:) toTarget:self withObject:filename];
+	[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:filename];
 }
 
 #pragma mark -
@@ -416,18 +412,12 @@
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
-	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	// this is selected, attempt to detect the encoding of the file
 	if (![importEncodingPopup indexOfSelectedItem]) {
-		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
-		if (detectorFileHandle) {
-			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
-			sqlEncoding = [fileEncodingDetector encoding];
-			[fileEncodingDetector release];
-			if ([SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]) {
-				connectionEncodingToRestore = [mySQLConnection encoding];
-				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]]];
-			}
+		sqlEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filename];
+		if ([SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]) {
+			connectionEncodingToRestore = [mySQLConnection encoding];
+			[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", [SPMySQLConnection mySQLCharsetForStringEncoding:sqlEncoding]]];
 		}
 
 	// Otherwise, get the encoding to use from the menu
@@ -672,7 +662,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -778,15 +768,9 @@
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
 	// Determine the file encoding.  The first item in the encoding menu is "Autodetect"; if
-	// this is selected, attempt to detect the encoding of the file (using first 2.5MB).
+	// this is selected, attempt to detect the encoding of the file.
 	if (![importEncodingPopup indexOfSelectedItem]) {
-		SPFileHandle *detectorFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
-		if (detectorFileHandle) {
-			UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-			[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:2500000]];
-			csvEncoding = [fileEncodingDetector encoding];
-			[fileEncodingDetector release];
-		}
+		csvEncoding = [[NSFileManager defaultManager] detectEncodingforFileAtPath:filename];
 
 	// Otherwise, get the encoding to use from the menu
 	} else {
@@ -1194,7 +1178,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadSelector:@selector(queryDbStructureWithUserInfo:) toTarget:[tableDocumentInstance databaseStructureRetrieval] withObject:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];
@@ -1257,7 +1241,7 @@
 	fieldMappingArrayHasGlobalVariables = NO;
 
 	// Init the field mapper controller
-	fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+	fieldMapperController = [(SPFieldMapperController *)[SPFieldMapperController alloc] initWithDelegate:self];
 	[fieldMapperController setConnection:mySQLConnection];
 	[fieldMapperController setSourcePath:filename];
 	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
@@ -1650,12 +1634,10 @@
 	[switchButton setButtonType:NSSwitchButton];
 	[switchButton setControlSize:NSSmallControlSize];
 	[switchButton release];
-	
-	if ([prefs boolForKey:SPUseMonospacedFonts]) {
-		[errorsView setFont:[NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]]];
-	} else {
-		[errorsView setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-	}
+
+	CGFloat monospacedFontSize = [[NSUserDefaults standardUserDefaults] floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
+	[errorsView setFont:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 }
 
 /**
@@ -1706,6 +1688,7 @@
  */
 - (void)_importBackgroundProcess:(NSString *)filename
 {
+    [[NSThread currentThread] setName:@"Sequel Pro Background Importer"];
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSString *fileType = [[importFormatPopup selectedItem] title];
 	
@@ -1734,9 +1717,6 @@
 
 #pragma mark -
 
-/**
- * Dealloc.
- */
 - (void)dealloc
 {	
 	if (fieldMappingImportArray) [fieldMappingImportArray release];

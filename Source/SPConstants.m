@@ -1,36 +1,37 @@
 //
-//  $Id$
-//
 //  SPConstants.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 16, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on October 16, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPConstants.h"
 
 // Narrow down completion max rows
 const NSUInteger SPNarrowDownCompletionMaxRows   = 15;
-
-// Kill mode constants
-NSString *SPKillProcessQueryMode                 = @"SPKillProcessQueryMode";
-NSString *SPKillProcessConnectionMode            = @"SPKillProcessConnectionMode";
 
 // Default monospaced font name
 NSString *SPDefaultMonospacedFontName            = @"Monaco";
@@ -65,11 +66,16 @@ NSString *SPThemesSupportFolder                  = @"Themes";
 NSString *SPBundleSupportFolder                  = @"Bundles";
 NSString *SPDataSupportFolder                    = @"Data";
 
+// Table filter
+NSString *SPTableContentFilterKey                = @"filter";
+
 // Preference key constants
+NSString *SPFirstRun                             = @"SPFirstRun";
+
 // General Prefpane
 NSString *SPDefaultFavorite                      = @"DefaultFavorite";
 NSString *SPSelectLastFavoriteUsed               = @"SelectLastFavoriteUsed";
-NSString *SPLastFavoriteIndex                    = @"LastFavoriteIndex";
+NSString *SPLastFavoriteID                       = @"SPLastFavoriteID";
 NSString *SPAutoConnectToDefault                 = @"AutoConnectToDefault";
 NSString *SPDefaultViewMode                      = @"DefaultViewMode";
 NSString *SPLastViewMode                         = @"LastViewMode";
@@ -86,7 +92,7 @@ NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
 NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
 NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";
 NSString *SPNullValue                            = @"NullValue";
@@ -112,7 +118,7 @@ NSString *SPConsoleEnableImportExportLogging     = @"ConsoleEnableImportExportLo
 NSString *SPConsoleEnableErrorLogging            = @"ConsoleEnableErrorLogging";
 
 // Network Prefpane
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 NSString *SPConnectionTimeoutValue               = @"ConnectionTimeoutValue";
 NSString *SPUseKeepAlive                         = @"UseKeepAlive";
 NSString *SPKeepAliveInterval                    = @"KeepAliveInterval";
@@ -142,6 +148,7 @@ NSString *SPCustomQueryUpdateAutoHelp            = @"CustomQueryUpdateAutoHelp";
 NSString *SPCustomQueryAutoHelpDelay             = @"CustomQueryAutoHelpDelay";
 NSString *SPCustomQueryHighlightCurrentQuery     = @"CustomQueryHighlightCurrentQuery";
 NSString *SPCustomQueryEditorTabStopWidth        = @"CustomQueryEditorTabStopWidth";
+NSString *SPCustomQueryEditorCompleteWithBackticks = @"SPCustomQueryEditorCompleteWithBackticks";
 NSString *SPCustomQueryAutoComplete              = @"CustomQueryAutoComplete";
 NSString *SPCustomQueryAutoCompleteDelay         = @"CustomQueryAutoCompleteDelay";
 NSString *SPCustomQueryFunctionCompletionInsertsArguments = @"CustomQueryFunctionCompletionInsertsArguments";
@@ -157,6 +164,7 @@ NSString *SPConsoleShowHelps                     = @"ConsoleShowHelps";
 NSString *SPConsoleShowSelectsAndShows           = @"ConsoleShowSelectsAndShows";
 NSString *SPConsoleShowTimestamps                = @"ConsoleShowTimestamps";
 NSString *SPConsoleShowConnections               = @"ConsoleShowConnections";
+NSString *SPConsoleShowDatabases                 = @"ConsoleShowDatabases";
 NSString *SPEditInSheetEnabled                   = @"EditInSheetEnabled";
 NSString *SPTableInformationPanelCollapsed       = @"TableInformationPanelCollapsed";
 NSString *SPTableColumnWidths                    = @"tableColumnWidths";
@@ -169,6 +177,9 @@ NSString *SPFavoritesSortedBy                    = @"FavoritesSortedBy";
 NSString *SPFavoritesSortedInReverse             = @"FavoritesSortedInReverse";
 NSString *SPAlwaysShowWindowTabBar               = @"WindowAlwaysShowTabBar";
 NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfterDeletionOfAllRows";
+NSString *SPFavoriteColorList                    = @"FavoriteColorList";
+NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
+NSString *SPMonospacedFontSize                   = @"MonospacedFontSize";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
@@ -193,7 +204,9 @@ NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
 NSString *SPContentFilters                       = @"ContentFilters";
 NSString *SPDocumentTaskEndNotification          = @"DocumentTaskEnded";
 NSString *SPDocumentTaskStartNotification        = @"DocumentTaskStarted";
+NSString *SPDocumentWillCloseNotification        = @"DocumentWillClose";
 NSString *SPActivitiesUpdateNotification         = @"ActivitiesUpdateNotification";
+NSString *SPWindowToolbarDidToggleNotification   = @"WindowToolbarWasToggledNotification";
 NSString *SPFieldEditorSheetFont                 = @"FieldEditorSheetFont";
 NSString *SPLastSQLFileEncoding                  = @"lastSqlFileEncoding";
 NSString *SPPrintBackground                      = @"PrintBackground";
@@ -202,8 +215,10 @@ NSString *SPQueryFavorites                       = @"queryFavorites";
 NSString *SPQueryFavoriteReplacesContent         = @"QueryFavoriteReplacesContent";
 NSString *SPQueryHistory                         = @"queryHistory";
 NSString *SPQueryHistoryReplacesContent          = @"QueryHistoryReplacesContent";
+NSString *SPQueryPrimaryControlRunsAll           = @"QueryPrimaryControlRunsAll";
 NSString *SPQuickLookTypes                       = @"QuickLookTypes";
 NSString *SPTableChangedNotification             = @"SPTableSelectionChanged";
+NSString *SPTableInfoChangedNotification         = @"SPTableInformationChanged";
 NSString *SPBlobTextEditorSpellCheckingEnabled   = @"BlobTextEditorSpellCheckingEnabled";
 NSString *SPUniqueSchemaDelimiter                = @"￸"; // U+FFF8
 NSString *SPLastImportIntoNewTableEncoding       = @"LastImportIntoNewTableEncoding";
@@ -213,6 +228,7 @@ NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
 NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexSet";
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
+NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";
@@ -259,12 +275,14 @@ NSString *SPPreferenceToolbarShortcuts           = @"SPPreferenceToolbarShortcut
 NSString *SPFavoritesRootKey                             = @"Favorites Root";
 NSString *SPFavoriteChildrenKey                          = @"Children";
 NSString *SPFavoritesGroupNameKey                        = @"Name";
+NSString *SPFavoritesGroupIsExpandedKey                  = @"IsExpanded";
 NSString *SPFavoriteIDKey                                = @"id";
 NSString *SPFavoriteNameKey                              = @"name";
 NSString *SPFavoriteDatabaseKey                          = @"database";
 NSString *SPFavoriteHostKey                              = @"host";
 NSString *SPFavoritePortKey                              = @"port";
 NSString *SPFavoriteUserKey                              = @"user";
+NSString *SPFavoriteColorIndexKey                        = @"colorIndex";
 NSString *SPFavoriteTypeKey                              = @"type";
 NSString *SPFavoriteSocketKey                            = @"socket";
 NSString *SPFavoriteSSHHostKey                           = @"sshHost";
@@ -279,6 +297,10 @@ NSString *SPFavoriteSSLCertificateFileLocationEnabledKey = @"sslCertificateFileL
 NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileLocation";
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
+NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
+
+// Favorites import/export
+NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";
 
 // Bundle Files and Bundle Editor
 NSString *SPBundleScopeQueryEditor                          = @"editor";

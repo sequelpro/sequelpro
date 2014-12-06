@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  QKSelectQueryTests.m
 //  QueryKit
 //
@@ -22,38 +20,61 @@
 //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 //  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 //  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  ;. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
 //  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKSelectQueryTests.h"
-
-static NSString *QKTestTableName = @"test_table";
-
-static NSString *QKTestFieldOne   = @"test_field1";
-static NSString *QKTestFieldTwo   = @"test_field2";
-static NSString *QKTestFieldThree = @"test_field3";
-static NSString *QKTestFieldFour  = @"test_field4";
-
-static NSUInteger QKTestParameterOne = 10;
+#import "QKTestConstants.h"
 
 @implementation QKSelectQueryTests
 
 #pragma mark -
-#pragma mark Setup & tear down
+#pragma mark Initialisation
+
++ (id)defaultTestSuite
+{
+    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:NSStringFromClass(self)];
+	
+	[self addTestForDatabase:QKDatabaseUnknown withIdentifierQuote:EMPTY_STRING toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabaseMySQL withIdentifierQuote:QKMySQLIdentifierQuote toTestSuite:testSuite];
+	[self addTestForDatabase:QKDatabasePostgreSQL withIdentifierQuote:QKPostgreSQLIdentifierQuote toTestSuite:testSuite];
+	
+    return [testSuite autorelease];
+}
+
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite
+{		
+    for (NSInvocation *invocation in [self testInvocations]) 
+	{
+		SenTestCase *test = [[QKSelectQueryTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
+		
+		[testSuite addTest:test];
+		
+        [test release];
+    }
+}
+
+#pragma mark -
+#pragma mark Setup
 
 - (void)setUp
 {
-	_query = [QKQuery selectQueryFromTable:QKTestTableName];
+	QKQuery *query = [QKQuery selectQueryFromTable:QKTestTableName];
 	
-	[_query addField:QKTestFieldOne];
-	[_query addField:QKTestFieldTwo];
-	[_query addField:QKTestFieldThree];
-	[_query addField:QKTestFieldFour];
+	[query setQueryDatabase:[self database]];
+	[query setUseQuotedIdentifiers:[self identifierQuote] && [[self identifierQuote] length] > 0];
 	
-	[_query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	[query addField:QKTestFieldOne];
+	[query addField:QKTestFieldTwo];
+	[query addField:QKTestFieldThree];
+	[query addField:QKTestFieldFour];
+	
+	[query addParameter:QKTestFieldOne operator:QKEqualityOperator value:[NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+	
+	[self setQuery:query];
 }
 
 #pragma mark -
@@ -61,21 +82,37 @@ static NSUInteger QKTestParameterOne = 10;
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	STAssertTrue([[_query query] hasPrefix:@"SELECT"], @"query type");
+	STAssertTrue([[[self query] query] hasPrefix:@"SELECT"], nil);
 }
 
-- (void)testSelectQueryFieldsAreCorrect
+- (void)testSelectQueryFieldIsCorrect
+{	
+	NSString *query = [NSString stringWithFormat:@"SELECT %1$@%2$@%1$@", [self identifierQuote], QKTestFieldOne];
+			
+	STAssertTrue([[[self query] query] hasPrefix:query], nil);
+}
+
+- (void)testSelectQueryFromDatabaseAndTableIsCorrect
+{	
+	[[self query] setDatabase:QKTestDatabaseName];
+	
+	NSString *query = [NSString stringWithFormat:@"FROM %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
+			
+	STAssertTrue([[[self query] query] rangeOfString:query].location != NSNotFound, nil);
+}
+
+- (void)testSelectQueryMultipleFieldsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"SELECT %@, %@, %@, %@", QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
-				
-	STAssertTrue([[_query query] hasPrefix:query], @"query fields");
+	NSString *query = [NSString stringWithFormat:@"SELECT %1$@%2$@%1$@, %1$@%3$@%1$@, %1$@%4$@%1$@, %1$@%5$@%1$@", [self identifierQuote], QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
+	
+	STAssertTrue([[[self query] query] hasPrefix:query], nil);
 }
 
 - (void)testSelectQueryConstraintsAreCorrect
 {
-	NSString *query = [NSString stringWithFormat:@"WHERE %@ %@ %@", QKTestFieldOne, [QKQueryUtilities operatorRepresentationForType:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
-	
-	STAssertTrue(([[_query query] rangeOfString:query].location != NSNotFound), @"query constraints");
+	NSString *query = [NSString stringWithFormat:@"WHERE %1$@%2$@%1$@ %3$@ %4$@", [self identifierQuote], QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
+			
+	STAssertTrue(([[[self query] query] rangeOfString:query].location != NSNotFound), nil);
 }
 
 @end

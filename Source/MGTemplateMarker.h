@@ -1,10 +1,8 @@
-/*
- *  MGTemplateMarker.h
- *
- *  Created by Matt Gemmell on 12/05/2008.
- *  Copyright 2008 Instinctive Code. All rights reserved.
- *
- */
+//
+//  MGTemplateMarker.h
+//
+//  Created by Matt Gemmell on 12/05/2008.
+//  Copyright 2008 Instinctive Code. All rights reserved.
 
 #import "MGTemplateEngine.h"
 

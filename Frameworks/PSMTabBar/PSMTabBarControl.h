@@ -111,7 +111,12 @@ enum {
 	BOOL					_awakenedFromNib;
 	NSInteger				_tabBarWidth;
 	NSTimer					*_showHideAnimationTimer;
-	
+
+	// Tracking last window state for update draws
+	BOOL					_lastWindowIsMainCheck;
+	BOOL					_lastAttachedWindowIsMainCheck;
+	BOOL					_lastAppIsActiveCheck;
+
 	// drag and drop
 	NSEvent					*_lastMouseDownEvent;	    // keep this for dragging reference
 	BOOL					_didDrag;

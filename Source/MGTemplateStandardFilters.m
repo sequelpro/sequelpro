@@ -3,10 +3,8 @@
 //
 //  Created by Matt Gemmell on 13/05/2008.
 //  Copyright 2008 Instinctive Code. All rights reserved.
-//
 
 #import "MGTemplateStandardFilters.h"
-
 
 #define UPPERCASE		@"uppercase"
 #define LOWERCASE		@"lowercase"
@@ -14,9 +12,7 @@
 #define DATE_FORMAT		@"date_format"
 #define COLOR_FORMAT	@"color_format"
 
-
 @implementation MGTemplateStandardFilters
-
 
 - (NSArray *)filters
 {
@@ -25,7 +21,6 @@
 			DATE_FORMAT, COLOR_FORMAT, 
 			nil];
 }
-
 
 - (NSObject *)filterInvoked:(NSString *)filter withArguments:(NSArray *)args onValue:(NSObject *)value
 {
@@ -68,7 +63,7 @@
                     return @"000000";
                 
                 const CGFloat *components = CGColorGetComponents(color);
-#warning 64BIT: Check formatting arguments
+
                 NSString *colorHex = [NSString stringWithFormat:@"%02x%02x%02x",
                                       (NSInteger)(components[0] * 255),
                                       (NSInteger)(components[1] * 255),
@@ -93,6 +88,5 @@
 	
 	return value;
 }
-
 
 @end

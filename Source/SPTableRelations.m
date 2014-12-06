@@ -1,27 +1,32 @@
 //
-//  $Id$
-//
-//  SPTableRelations.h
+//  SPTableRelations.m
 //  sequel-pro
 //
-//  Created by J Knight on 13/05/09.
-//  Copyright 2009 J Knight. All rights reserved.
+//  Created by Jim Knight on May 12, 2009.
+//  Copyright (c) 2009 Jim Knight. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableRelations.h"
 #import "SPDatabaseDocument.h"
@@ -30,16 +35,18 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+
 #import <SPMySQL/SPMySQL.h>
 
 static NSString *SPRemoveRelation = @"SPRemoveRelation";
 
-static NSString *SPRelationNameKey      = @"name";
-static NSString *SPRelationColumnsKey   = @"columns";
-static NSString *SPRelationFKTableKey   = @"fk_table";
-static NSString *SPRelationFKColumnsKey = @"fk_columns";
-static NSString *SPRelationOnUpdateKey  = @"on_update";
-static NSString *SPRelationOnDeleteKey  = @"on_delete";
+static NSString *SPRelationNameKey       = @"name";
+static NSString *SPRelationColumnsKey    = @"columns";
+static NSString *SPRelationFKDatabaseKey = @"fk_database";
+static NSString *SPRelationFKTableKey    = @"fk_table";
+static NSString *SPRelationFKColumnsKey  = @"fk_columns";
+static NSString *SPRelationOnUpdateKey   = @"on_update";
+static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 @interface SPTableRelations ()
 
@@ -54,9 +61,9 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 @synthesize connection;
 @synthesize relationData;
 
-/**
- * init
- */
+#pragma mark -
+#pragma mark Initialisation
+
 - (id)init
 {
 	if ((self = [super init])) {
@@ -81,10 +88,11 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 
 	// Set the strutcture and index view's font
 	BOOL useMonospacedFont = [[NSUserDefaults standardUserDefaults] boolForKey:SPUseMonospacedFonts];
-	
+	CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+
 	for (NSTableColumn *column in [relationsTableView tableColumns])
 	{
-		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	
 	// Register as an observer for the when the UseMonospacedFonts preference changes
@@ -423,7 +431,6 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
  */
 - (void)endDocumentTaskForTab:(NSNotification *)aNotification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
 
@@ -530,10 +537,11 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 	else if ([keyPath isEqualToString:SPUseMonospacedFonts]) {
 
 		BOOL useMonospacedFont = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+		CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
 
 		for (NSTableColumn *column in [relationsTableView tableColumns])
 		{
-			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:[NSFont smallSystemFontSize]] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+			[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 		}
 
 		[relationsTableView reloadData];
@@ -578,15 +586,17 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 		NSArray *constraints = [tableDataInstance getConstraints];
 		
 		for (NSDictionary *constraint in constraints) 
-		{
+		{			
 			[relationData addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									 [constraint objectForKey:SPRelationNameKey], SPRelationNameKey,
-									 [[constraint objectForKey:SPRelationColumnsKey] objectAtIndex:0], SPRelationColumnsKey,
+									 [[constraint objectForKey:SPRelationColumnsKey] componentsJoinedByCommas], SPRelationColumnsKey,
+									 [constraint objectForKey:@"ref_database"] ? [constraint objectForKey:@"ref_database"] : [tableDocumentInstance database], SPRelationFKDatabaseKey,
 									 [constraint objectForKey:@"ref_table"], SPRelationFKTableKey,
-									 [constraint objectForKey:@"ref_columns"], SPRelationFKColumnsKey,
+									 [[constraint objectForKey:@"ref_columns"] componentsJoinedByCommas], SPRelationFKColumnsKey,
 									 ([constraint objectForKey:@"update"] ? [constraint objectForKey:@"update"] : @""), SPRelationOnUpdateKey,
 									 ([constraint objectForKey:@"delete"] ? [constraint objectForKey:@"delete"] : @""), SPRelationOnDeleteKey,
 									 nil]];
+			
 			[takenConstraintNames addObject:[[constraint objectForKey:SPRelationNameKey] lowercaseString]];			
 		}
 	} 
@@ -616,7 +626,7 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 	[tableDataInstance resetAllData];
 	NSDictionary *tableInfo = [tableDataInstance informationForTable:table];
 	
-	NSArray *columns = [tableInfo objectForKey:SPRelationColumnsKey];
+	NSArray *columns = [tableInfo objectForKey:@"columns"];
 	
 	NSMutableArray *validColumns = [NSMutableArray array];
 	
@@ -651,9 +661,6 @@ static NSString *SPRelationOnDeleteKey  = @"on_delete";
 
 #pragma mark -
 
-/*
- * Dealloc.
- */
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];

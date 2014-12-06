@@ -34,6 +34,8 @@
     NSInteger                 _count;
 	NSColor				*_countColor;
     BOOL                _isEdited;
+	NSColor             *_backgroundColor;
+	id _customControlView;
 }
 
 // creation/destruction
@@ -42,8 +44,8 @@
 - (void)dealloc;
 
 // accessors
-- (id)controlView;
-- (void)setControlView:(id)view;
+- (id)customControlView;
+- (void)setCustomControlView:(id)view;
 - (NSTrackingRectTag)closeButtonTrackingTag;
 - (void)setCloseButtonTrackingTag:(NSTrackingRectTag)tag;
 - (NSTrackingRectTag)cellTrackingTag;
@@ -81,6 +83,8 @@
 - (void)setCurrentStep:(NSInteger)value;
 - (BOOL)isEdited;
 - (void)setIsEdited:(BOOL)value;
+- (void)setBackgroundColor:(NSColor *)aColor;
+- (NSColor *)backgroundColor;
 
 // component attributes
 - (NSRect)indicatorRectForFrame:(NSRect)cellFrame;

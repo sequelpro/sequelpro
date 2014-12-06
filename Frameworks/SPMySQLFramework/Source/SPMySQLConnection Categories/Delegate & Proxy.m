@@ -1,6 +1,4 @@
 //
-//  $Id$
-//
 //  Delegate & Proxy.m
 //  SPMySQLFramework
 //
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "Delegate & Proxy.h"
 #import "SPMySQL Private APIs.h"
@@ -95,6 +93,7 @@
  */
 - (void)_proxyStateChange:(NSObject <SPMySQLConnectionProxy> *)aProxy
 {
+	NSThread *reconnectionThread;
 
 	// Perform no actions if this isn't the current connection proxy, or if notifications
 	// are currently set to be ignored
@@ -109,8 +108,23 @@
 		// Clear the state change selector on the proxy until a connection is re-established
 		proxyStateChangeNotificationsIgnored = YES;
 
-		// Trigger a reconnect
-		[NSThread detachNewThreadSelector:@selector(reconnect) toTarget:self withObject:nil];
+		// Trigger a reconnect depending on connection usage recently.  If the connection has
+		// actively been used in the last couple of minutes, trigger a full reconnection attempt.
+		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 2) {
+			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAllowingRetries:) object:[NSNumber numberWithBool:YES]] autorelease];
+			[reconnectionThread setName:@"SPMySQL reconnection thread (full)"];
+			[reconnectionThread start];
+
+		// If used within the last fifteen minutes, trigger a background/single reconnection attempt
+		} else if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
+			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAfterBackgroundConnectionLoss) object:nil] autorelease];
+			[reconnectionThread setName:@"SPMySQL reconnection thread (limited)"];
+			[reconnectionThread start];
+
+		// Otherwise set the state to connection lost for automatic reconnect on next use
+		} else {
+			state = SPMySQLConnectionLostInBackground;
+		}
 	}
 
 	// Update the state record

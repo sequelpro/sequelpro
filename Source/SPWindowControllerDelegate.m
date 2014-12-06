@@ -1,10 +1,8 @@
 //
-//  $Id$
+//  SPWindowControllerDelegate.m
+//  sequel-pro
 //
-//  SPWindowControllerDelegate.h
-//  Sequel Pro
-//
-//  Created by Stuart Connolly (stuconnolly.com) on April 9, 2012
+//  Created by Stuart Connolly (stuconnolly.com) on April 9, 2012.
 //  Copyright (c) 2012 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,7 +26,7 @@
 //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPWindowControllerDelegate.h"
 #import "PSMTabDragAssistant.h"
@@ -42,6 +40,7 @@
 @interface SPWindowController (SPDeclaredAPI)
 
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
+- (void)_updateLineHidingViewState;
 
 @end
 
@@ -113,6 +112,7 @@
  */
 - (void)windowDidResignKey:(NSNotification *)notification
 {
+
 	// Disable the "Close tab" menu item
 	[closeTabMenuItem setEnabled:NO];
 	[closeTabMenuItem setKeyEquivalent:@""];
@@ -120,6 +120,21 @@
 	// Update the "Close window" item to show only "Close"
 	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close", @"Close menu item")];
 	[closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+}
+
+/**
+ * Observe changes in main window status to update drawing state to match
+ */
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+	[self _updateLineHidingViewState];
+}
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+	[self _updateLineHidingViewState];
+
+	// Update the state again after a short delay to catch attached sheets being main
+	[self performSelector:@selector(_updateLineHidingViewState) withObject:nil afterDelay:0.1];
 }
 
 /**
@@ -141,6 +156,7 @@
 - (void)windowWillEnterFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:YES];
+	[self _updateLineHidingViewState];
 }
 
 /**
@@ -149,6 +165,7 @@
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:NO];
+	[self _updateLineHidingViewState];
 }
 
 #pragma mark -
@@ -171,9 +188,9 @@
 	
 	selectedTableDocument = [tabViewItem identifier];
 	[selectedTableDocument didBecomeActiveTabInWindow];
-	
+
 	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];
-	
+
 	[self updateAllTabTitles:self];
 }
 
@@ -367,6 +384,7 @@
 	// Capture an image of the entire window
 	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, (unsigned int)[[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
 	NSBitmapImageRep *viewRep = [[NSBitmapImageRep alloc] initWithCGImage:windowImage];
+	[viewRep setSize:[[self window] frame].size];
 	[viewImage addRepresentation:viewRep];
 	[viewRep release];
 	
@@ -388,10 +406,13 @@
 	
 	// Draw the background flipped, which is actually the right way up
 	NSAffineTransform *transform = [NSAffineTransform transform];
+	
 	[transform translateXBy:0.0f yBy:[[[self window] contentView] frame].size.height];
 	[transform scaleXBy:1.0f yBy:-1.0f];
+	
 	[transform concat];
-	[(id <PSMTabStyle>)[[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+	[(id <PSMTabStyle>)[(PSMTabBarControl *)[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+	
 	[viewImage unlockFocus];
 	
 	return [viewImage autorelease];

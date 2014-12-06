@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPTextView.m
 //  sequel-pro
 //
 //  Created by Carsten Blüm.
+//  Copyright (c) 2012 Sequel Pro Team. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTextView.h"
 #import "SPCustomQuery.h"
@@ -33,28 +39,21 @@
 #import "SPNavigatorController.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPDatabaseViewController.h"
-#ifndef SP_REFACTOR /* headers */
+#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
-#import <SPMySQL/SPMySQL.h>
 #import "SPDatabaseStructure.h"
-
-#pragma mark -
-#pragma mark lex init
-
-/**
- * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
- */
+#import "SPBundleCommandRunner.h"
+#import "NoodleLineNumberView.h"
+#import "SPCopyTable.h"
 #import "SPEditorTokens.h"
-extern NSUInteger yylex();
-extern NSUInteger yyuoffset, yyuleng;
-typedef struct yy_buffer_state *YY_BUFFER_STATE;
-void yy_switch_to_buffer(YY_BUFFER_STATE);
-YY_BUFFER_STATE yy_scan_string (const char *);
+#import "SPSyntaxParser.h"
+
+#import <SPMySQL/SPMySQL.h>
 
 #pragma mark -
 #pragma mark attribute definition 
@@ -71,7 +70,7 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 #define kBTQuoteValue  @"isBTQuoted"
 
 #pragma mark -
-#pragma mark constant definitions
+#pragma mark Constant definitions
 
 #define SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG 1000
 #define SP_CQ_COPY_AS_RTF_MENU_ITEM_TAG          1001
@@ -82,7 +81,15 @@ YY_BUFFER_STATE yy_scan_string (const char *);
 
 #pragma mark -
 
+@interface SPTextView (Private_API)
+
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
+#ifndef SP_CODA
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
+#endif
+- (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
+
+@end
 
 // some helper functions for handling rectangles and points
 // needed in roundedBezierPathAroundRange:
@@ -109,24 +116,16 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 @synthesize completionIsOpen;
 @synthesize completionWasReinvokedAutomatically;
 
-#ifdef SP_REFACTOR
+#ifdef SP_CODA
 @synthesize tableDocumentInstance;
 @synthesize tablesListInstance;
 @synthesize customQueryInstance;
 @synthesize mySQLConnection;
 #endif
 
-/**
- * Sort function (mainly used to sort the words in the textView)
- */
-NSInteger _alphabeticSort(id string1, id string2, void *reverse)
-{
-	return [string1 localizedCaseInsensitiveCompare:string2];
-}
-
 - (void) awakeFromNib
 {
-#ifndef SP_REFACTOR /* init ivars */
+#ifndef SP_CODA /* init ivars */
 	prefs = [[NSUserDefaults standardUserDefaults] retain];
 	[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 #endif
@@ -139,7 +138,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	autopairEnabled = YES;
 	autoindentIgnoresEnter = NO;
 	autouppercaseKeywordsEnabled = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	autohelpEnabled = NO;
 #endif
 	delBackwardsWasPressed = NO;
@@ -159,19 +158,19 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[scrollView setRulersVisible:YES];
 	[self setAllowsDocumentBackgroundColorChange:YES];
 	[self setContinuousSpellCheckingEnabled:NO];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setAutoindent:[prefs boolForKey:SPCustomQueryAutoIndent]];
 #else
 	[self setAutoindent:YES];
 #endif
 	[self setAutoindentIgnoresEnter:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
 	[self setAutohelp:[prefs boolForKey:SPCustomQueryUpdateAutoHelp]];
 	[self setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
 #else
-	[self setAutopair:YES];
-	[self setAutouppercaseKeywords:YES];
+	[self setAutopair:YES]; 
+	//[self setAutouppercaseKeywords:YES]; // #18925
 #endif
 	[self setCompletionWasReinvokedAutomatically:NO];
 
@@ -185,7 +184,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[scrollView setPostsBoundsChangedNotifications:YES];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
 	NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
 	[self setQueryEditorBackgroundColor:backgroundColor];
@@ -200,7 +199,11 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[self setTextColor:otherTextColor];
 	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
 	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
-	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]], NSBackgroundColorAttributeName, nil]];
+
+	[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
+
+	[self setAutomaticDashSubstitutionEnabled:NO];  // prevents -- from becoming —, the em dash.
+	[self setAutomaticQuoteSubstitutionEnabled:NO]; // prevents ' and " from becoming ‘, ’ and “, ” respectively.
 
 	// Register observers for the when editor background colors preference changes
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSelectionColor options:NSKeyValueObservingOptionNew context:NULL];
@@ -247,11 +250,12 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([keyPath isEqualToString:SPCustomQueryEditorBackgroundColor]) {
 		NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 		[self setQueryEditorBackgroundColor:backgroundColor];
 		[self setBackgroundColor:backgroundColor];
+		[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorFont]) {
 		[self setFont:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
@@ -263,7 +267,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]]];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryEditorSelectionColor]) {
-		[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]], NSBackgroundColorAttributeName, nil]];
+		[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]] onBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 		[self setNeedsDisplayInRect:[self bounds]];
 	} else if ([keyPath isEqualToString:SPCustomQueryHighlightCurrentQuery]) {
 		[self setShouldHiliteQuery:[[change objectForKey:NSKeyValueChangeNewKey] boolValue]];
@@ -317,7 +321,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	NSMutableArray *possibleCompletions = [[NSMutableArray alloc] initWithCapacity:32];
-	if(currentWord == nil) currentWord = [NSString stringWithString:@""];
+	if(currentWord == nil) currentWord = @"";
+
 	// If caret is not inside backticks add keywords and all words coming from the view.
 	if(!dbBrowseMode)
 	{
@@ -584,7 +589,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	if(completionIsOpen || !self || ![self delegate]) return;
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -628,7 +633,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -823,7 +828,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Cancel autocompletion trigger again if user typed something in while parsing
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -902,17 +907,10 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	completionParseRangeLocation = parseRange.location;
 
-	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(completionRange.location,1) actualCharacterRange:NULL];
-	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect:boundingRect toView:nil];
-	NSPoint pos = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-	pos.y -= [[self font] pointSize]*1.25f;
-	[completionPopup setCaretPos:pos];
+	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:completionRange.location];
 
 	[completionPopup orderFront:self];
 	[completionPopup insertAutocompletePlaceholder];
-
 }
 
 
@@ -1075,7 +1073,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[self performSelector:@selector(doSyntaxHighlighting) withObject:nil afterDelay:0.01];
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Search for the current selection or current word in the MySQL Help 
  */
@@ -1108,7 +1106,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[self setSelectedRange:innerSelectionRange];
 
 	// If autopair is enabled mark last autopair character as autopair-linked
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoPairCharacters])
 #endif
 		[[self textStorage] addAttribute:kAPlinked value:kAPval range:NSMakeRange(NSMaxRange(innerSelectionRange), 1)];
@@ -1192,7 +1190,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	if (selectedRange.location == NSNotFound || ![self isEditable]) return NO;
 
 	NSString *indentString = @"\t";
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 		NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 		if(numberOfSpaces < 1) numberOfSpaces = 1;
@@ -1283,7 +1281,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		// Check for soft indention
 		NSUInteger indentStringLength = 1;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 			NSUInteger numberOfSpaces = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 			if(numberOfSpaces < 1) numberOfSpaces = 1;
@@ -1298,7 +1296,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		} else {
 #endif
 			replaceRange = NSMakeRange(currentLineRange.location, indentStringLength);
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		}
 #endif
 
@@ -1323,7 +1321,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Check for soft or hard indention
 	NSString *indentString = @"\t";
 	NSUInteger indentStringLength = 1;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQuerySoftIndent]) {
 		indentStringLength = [prefs integerForKey:SPCustomQuerySoftIndentWidth];
 		if(indentStringLength < 1) indentStringLength = 1;
@@ -1388,7 +1386,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -1482,7 +1480,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@@%%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							[NSString stringWithFormat:@"%@%@%@", currentTable, SPUniqueSchemaDelimiter, currentDb], @"path",
 							t, @"type", 
 							lst, @"list", 
 							@"", @"isRef", 
@@ -1491,7 +1489,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 						[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:
 							field, @"display", 
 							@"field-small-square", @"image", 
-							[NSString stringWithFormat:@"%@%@%@",currentTable,currentDb], @"path", SPUniqueSchemaDelimiter,
+							[NSString stringWithFormat:@"%@%@%@", currentTable, SPUniqueSchemaDelimiter, currentDb], @"path",
 							typ, @"type", 
 							@"", @"isRef", 
 							nil]];
@@ -1537,16 +1535,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 					alias:nil
 					withDBStructureRetriever:nil];
 
-	//Get the NSPoint of the first character of the current word
-	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aRange.location,1) actualCharacterRange:NULL];
-	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-	boundingRect = [self convertRect: boundingRect toView: NULL];
-	NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-	// Adjust list location to be under the current word or insertion point
-	pos.y -= [[self font] pointSize]*1.25f;
-	[completionPopup setCaretPos:pos];
-	[completionPopup orderFront:self];
+	[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:aRange.location];
 
+	[completionPopup orderFront:self];
 }
 
 /**
@@ -1694,14 +1685,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 											alias:nil
 											withDBStructureRetriever:nil];
 
-							//Get the NSPoint of the first character of the current word
-							NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(r2.location,1) actualCharacterRange:NULL];
-							NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
-							boundingRect = [self convertRect: boundingRect toView: NULL];
-							NSPoint pos = [[self window] convertBaseToScreen: NSMakePoint(boundingRect.origin.x + boundingRect.size.width,boundingRect.origin.y + boundingRect.size.height)];
-							// Adjust list location to be under the current word or insertion point
-							pos.y -= [[self font] pointSize]*1.25f;
-							[completionPopup setCaretPos:pos];
+							[self _positionCompletionPopup:completionPopup relativeToTextAtLocation:r2.location];
+
 							[completionPopup orderFront:self];
 						}
 					}
@@ -1802,16 +1787,17 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 				if (tablesListInstance && [tablesListInstance selectedDatabase])
 					currentDb = [tablesListInstance selectedDatabase];
 
-#ifndef SP_REFACTOR
-				while([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) {
+#ifndef SP_CODA
+				while ([theHintString isMatchedByRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"]) 
+				{
 					r = [theHintString rangeOfRegex:@"(?<!\\\\)\\$SP_SELECTED_TABLES"];
-					if(r.length) {
-						NSArray *selTables = [[[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
-						if([selTables count])
-							[theHintString replaceCharactersInRange:r withString:[selTables componentsJoinedAndBacktickQuoted]];
-						else
-							[theHintString replaceCharactersInRange:r withString:@"$SP_SELECTED_TABLE"];
+					
+					if (r.length) {
+						NSArray *selTables = [[(NSObject *)[self delegate] valueForKeyPath:@"tablesListInstance"] selectedTableNames];
+						
+						[theHintString replaceCharactersInRange:r withString:[selTables count] ? [selTables componentsJoinedAndBacktickQuoted] : @"$SP_SELECTED_TABLE"];	
 					}
+					
 					[theHintString flushCachedRegexData];
 				}
 #endif
@@ -1843,7 +1829,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 			[theHintString replaceOccurrencesOfRegex:@"\\\\(\\$\\(|\\}|\\$SP_)" withString:@"$1"];
 			[theHintString flushCachedRegexData];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			// If inside the snippet hint $(…) is defined run … as BASH command
 			// and replace $(…) by the return string of that command. Please note
 			// only one $(…) statement is allowed within one ${…} snippet environment.
@@ -1853,7 +1839,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 				NSRange cmdRange = [theHintString rangeOfRegex:@"(?s)(?<!\\\\)\\$\\(\\s*(.*)\\s*\\)" capture:1L];
 				if(cmdRange.length) {
 					NSError *err = nil;
-					NSString *cmdResult = [[theHintString substringWithRange:cmdRange] runBashCommandWithEnvironment:nil atCurrentDirectoryPath:nil error:&err];
+					NSString *cmdResult = [SPBundleCommandRunner runBashCommand:[theHintString substringWithRange:cmdRange] withEnvironment:nil atCurrentDirectoryPath:nil error:&err];
 					if(err == nil) {
 						[theHintString replaceCharactersInRange:tagRange withString:cmdResult];
 					} else if([err code] != 9) { // Suppress an error message if command was killed
@@ -1973,7 +1959,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		// If autopair is enabled check whether snip begins with ( and ends with ), if so mark ) as pair-linked
 		if (
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 				[prefs boolForKey:SPCustomQueryAutoPairCharacters] &&
 #else
 #endif
@@ -2096,7 +2082,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 {
 
 	// Cancel autoHelp timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 									selector:@selector(autoHelp) 
@@ -2104,7 +2090,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #endif
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2113,7 +2099,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	[super mouseDown:theEvent];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Start autoHelp timer
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp])
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
@@ -2125,7 +2111,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
  */
 - (void) keyDown:(NSEvent *)theEvent
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp]) {// restart autoHelp timer
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2137,7 +2123,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #endif
 
 	// Cancel auto-completion timer
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2167,7 +2153,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[self setCompletionWasReinvokedAutomatically:NO];
 		completionWasRefreshed = NO;
 		// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 			[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -2189,7 +2175,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Check for {SHIFT}TAB to try to insert query favorite via TAB trigger if SPTextView belongs to SPCustomQuery
 	// and TAB as soft indention
 	if ([theEvent keyCode] == 48 && [self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]){
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		NSRange targetRange = [self getRangeForCurrentWord];
 		NSString *tabTrigger = [[self string] substringWithRange:targetRange];
 #endif
@@ -2235,7 +2221,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		// Check if tab trigger is defined; if so insert it, otherwise pass through event
 		if(snippetControlCounter < 0 && [tabTrigger length] && [tableDocumentInstance fileURL]) {
 			NSArray *snippets = [[SPQueryController sharedQueryController] queryFavoritesForFileURL:[tableDocumentInstance fileURL] andTabTrigger:tabTrigger includeGlobals:YES];
@@ -2252,16 +2238,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 #endif
 	}
-
-#ifndef SP_REFACTOR
-	// Note: switch(insertedCharacter) {} does not work instead use charactersIgnoringModifiers
-	if([charactersIgnMod isEqualToString:@"h"]) // ^H show MySQL Help
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self showMySQLHelpForCurrentWord:self];
-			return;
-		}
-#endif
+  
 	if([charactersIgnMod isEqualToString:@"y"]) // ^Y select current query
 		if(curFlags==(NSControlKeyMask))
 		{
@@ -2282,7 +2259,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		if([charactersIgnMod isEqualToString:@"0"]) { // reset font to default
 			BOOL editableStatus = [self isEditable];
 			[self setEditable:YES];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 			[self setFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 #endif
 			[self setEditable:editableStatus];
@@ -2291,7 +2268,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Only process for character autopairing if autopairing is enabled and a single character is being added.
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([prefs boolForKey:SPCustomQueryAutoPairCharacters] && characters && [characters length] == 1) {
 #else
 	if (characters && [characters length] == 1) {
@@ -2430,7 +2407,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 // Let Xcode 3 match braces correctly...
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	}
 #else
 	}
@@ -2506,7 +2483,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Remove soft indent if active and left from caret are only white spaces
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		else if ([prefs boolForKey:SPCustomQuerySoftIndent] && [self isCaretAtIndentPositionIgnoreLineStart:NO])
 #else
 		else if ([self isCaretAtIndentPositionIgnoreLineStart:NO])
@@ -2532,7 +2509,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Handle newlines, adding any indentation found on the current line to the new line - ignoring the enter key if appropriate
     if (aSelector == @selector(insertNewline:)
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 		&& [prefs boolForKey:SPCustomQueryAutoIndent]
 #endif
 		&& (!autoindentIgnoresEnter || [[NSApp currentEvent] keyCode] != 0x4C))
@@ -2572,7 +2549,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	}
 
 	// Remove soft indent if active and left from caret are only white spaces
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (aSelector == @selector(deleteForward:)
 		&& ![self selectedRange].length
 		&& [prefs boolForKey:SPCustomQuerySoftIndent]
@@ -2636,7 +2613,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	return autopairEnabled;
 }
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 /**
  * Set whether MySQL Help should be automatically invoked while typing.
  */
@@ -2678,7 +2655,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 - (void)autoHelp
 {
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if(![prefs boolForKey:SPCustomQueryUpdateAutoHelp] || ![[self string] length]) return;
 #else
 	if(![[self string] length]) return;
@@ -2910,7 +2887,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 - (void) setTabStops
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSFont *tvFont = [self font];
 #else
 	NSFont* tvFont = [NSFont userFixedPitchFontOfSize:10.0];
@@ -2923,14 +2900,14 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	BOOL oldEditableStatus = [self isEditable];
 	[self setEditable:YES];
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	NSInteger tabStopWidth = [prefs integerForKey:SPCustomQueryEditorTabStopWidth];
 #else
 	NSInteger tabStopWidth = 4;
 #endif
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-	float tabWidth = NSSizeToCGSize([[NSString stringWithString:@" "] sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;
@@ -2965,19 +2942,20 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	[paragraphStyle release];
 }
 
-- (void)drawRect:(NSRect)rect {
+- (void)drawViewBackgroundInRect:(NSRect)rect {
+	[super drawViewBackgroundInRect:rect];
 
-
-	// Draw background only for screen display but not while printing
-	if([NSGraphicsContext currentContextDrawingToScreen]) {
+	// Draw background only for screen display but not while printing, and only if view
+	// background drawing is enabled.
+	if([NSGraphicsContext currentContextDrawingToScreen] && [self drawsBackground]) {
 
 		// Draw textview's background since due to the snippet highlighting we're responsible for it.
 		[[self queryEditorBackgroundColor] setFill];
-		NSRectFill(rect);
+		NSRectFillUsingOperation(rect, NSCompositeSourceOver);
 
 		if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
 
-			// Highlightes the current query if set in the Pref and no snippet session
+			// Highlights the current query if set in the Pref and no snippet session
 			// and if nothing is selected in the text view
 			if ([self shouldHiliteQuery] && snippetControlCounter<=-1 && ![self selectedRange].length && [[self string] length] < SP_MAX_TEXT_SIZE_FOR_SYNTAX_HIGHLIGHTING) {
 				NSUInteger rectCount;
@@ -3016,8 +2994,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 		}
 	}
-
-	[super drawRect:rect];
 }
 
 - (NSBezierPath*)roundedBezierPathAroundRange:(NSRange)aRange
@@ -3094,7 +3070,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
  */
 - (NSMenu *)menuForEvent:(NSEvent *)event 
 {	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	// Set title of the menu item
 	if([self selectedRange].length)
 		showMySQLHelpFor = NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection");
@@ -3109,7 +3085,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// if it doesn't yet exist
 	NSMenu *menu = [[self class] defaultMenu];
 	
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SEARCH_IN_MYSQL_HELP_MENU_ITEM_TAG] == nil)
 	{
 		[menu insertItem:[NSMenuItem separatorItem] atIndex:3];
@@ -3148,7 +3124,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		[[menu itemAtIndex:6] setHidden:YES];
 	}
 
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[[NSApp delegate] reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
@@ -3229,6 +3205,12 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
+    if ([self selectedRange].length > 0) {
+      [menuItem setTitle:NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection")];
+    } else {
+      [menuItem setTitle: NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word")];
+    }
+    
 		NSUInteger stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
@@ -3250,6 +3232,29 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	return YES;
 }
 
+/**
+ * Selection range changes
+ * Listen to selection range change events and use changes of state between selection and no
+ * selection to redraw the hilight state
+ */
+- (NSRange)selectionRangeForProposedRange:(NSRange)proposedSelRange granularity:(NSSelectionGranularity)granularity
+{
+	NSUInteger currentSelectionLength = [self selectedRange].length;
+
+	// If selection started/ended, redraw the background in the current query area
+	if ([self shouldHiliteQuery] && ((currentSelectionLength && !proposedSelRange.length) || (!currentSelectionLength && proposedSelRange.length))) {
+		NSUInteger i = 0, rectCount = 0;
+		NSRect* rectsToUpdate = [[self layoutManager] rectArrayForCharacterRange:[self queryRange]
+		                                                withinSelectedCharacterRange:[self queryRange]
+		                                                             inTextContainer:[self textContainer]
+		                                                                   rectCount:&rectCount];
+		for (i = 0; i < rectCount; i++) {
+			[self setNeedsDisplayInRect:rectsToUpdate[i]];
+		}
+	}
+
+	return [super selectionRangeForProposedRange:proposedSelRange granularity:granularity];
+}
 
 #pragma mark -
 #pragma mark delegates
@@ -3287,7 +3292,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	if (textStore!=[self textStorage]) return;
 
 	// Cancel autocompletion trigger
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryAutoComplete])
 #endif
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -3303,14 +3308,14 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 	NSInteger editedMask = [textStore editedMask];
 
 	// Start autohelp only if the user really changed the text (not e.g. for setting a background color)
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([prefs boolForKey:SPCustomQueryUpdateAutoHelp] && editedMask != 1) {
 		[self performSelector:@selector(autoHelp) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoHelpDelay] doubleValue]];
 	}
 #endif
 
 	// Start autocompletion if enabled
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if([[NSApp keyWindow] firstResponder] == self && [prefs boolForKey:SPCustomQueryAutoComplete] && !completionIsOpen && editedMask != 1 && [textStore changeInLength] == 1)
 		[self performSelector:@selector(doAutoCompletion) withObject:nil afterDelay:[[prefs valueForKey:SPCustomQueryAutoCompleteDelay] doubleValue]];
 #else
@@ -3445,11 +3450,8 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 		}
 
 		// Check size and NSFileType
-#ifndef SP_REFACTOR
-		NSDictionary *attr = [[NSFileManager defaultManager] fileAttributesAtPath:filepath traverseLink:YES];
-#else
 		NSDictionary *attr = [[NSFileManager defaultManager] attributesOfItemAtPath:filepath error:nil];
-#endif
+
 		if(attr)
 		{
 			NSNumber *filesize = [attr objectForKey:NSFileSize];
@@ -3641,7 +3643,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 - (void)changeFont:(id)sender
 {
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	if (prefs && [self font] != nil) {
 		[prefs setObject:[NSArchiver archivedDataWithRootObject:[self font]] forKey:SPCustomQueryEditorFont];
 		NSFont *nf = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
@@ -3657,9 +3659,6 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 #pragma mark -
 
-
-#pragma mark -
-
 - (void) dealloc
 {
 
@@ -3668,7 +3667,9 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Remove observers
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorSelectionColor];
+	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorCaretColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorFont];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorBackgroundColor];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorHighlightQueryColor];
@@ -3685,7 +3686,7 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 #endif
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
-#ifndef SP_REFACTOR
+#ifndef SP_CODA
 	[prefs release];
 #endif
 	[lineNumberView release];
@@ -3702,3 +3703,68 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 }
 
 @end
+
+#pragma mark -
+#pragma mark Private API
+
+@implementation SPTextView (Private_API)
+
+/**
+ * Sort function (mainly used to sort the words in the textView)
+ */
+NSInteger _alphabeticSort(id string1, id string2, void *reverse)
+{
+	return [string1 localizedCaseInsensitiveCompare:string2];
+}
+
+#ifndef SP_CODA
+/**
+ * Take a supplied text selection colour, and if it contains an alpha component,
+ * pre-multiply it by the background colour before setting it to avoid drawing problems.
+ */
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor
+{
+
+	// If the selection colour has an alpha component, modify it
+	if ([newSelectionColor alphaComponent] < 1.f) {
+		NSColorSpace *rgbColorSpace = [NSColorSpace genericRGBColorSpace];
+
+		newSelectionColor = [newSelectionColor colorUsingColorSpace:rgbColorSpace];
+		NSColor *backgroundColor = [[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]] colorUsingColorSpace:rgbColorSpace];
+
+		CGFloat modifiedRedComponent = ([backgroundColor redComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor redComponent] * [newSelectionColor alphaComponent]);
+		CGFloat modifiedGreenComponent = ([backgroundColor greenComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor greenComponent] * [newSelectionColor alphaComponent]);
+		CGFloat modifiedBlueComponent = ([backgroundColor blueComponent] * (1.f - [newSelectionColor alphaComponent])) + ([newSelectionColor blueComponent] * [newSelectionColor alphaComponent]);
+		newSelectionColor = [NSColor colorWithDeviceRed:modifiedRedComponent green:modifiedGreenComponent blue:modifiedBlueComponent alpha:1.f];
+	}
+
+	// Set the selection colour
+	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
+}
+#endif
+
+/**
+ * Take a supplied autocompletion popup, and position it to the correct position
+ * for the text at the supplied text range location.
+ */
+- (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation
+{
+
+	// Get the range of glyphs generated from the character at the supplied location
+	NSRange glyphRange = [[self layoutManager] glyphRangeForCharacterRange:NSMakeRange(aLocation, 1) actualCharacterRange:NULL];
+
+	// Convert to a bounding rectangle in the window base coordinate system
+	NSRect boundingRect = [[self layoutManager] boundingRectForGlyphRange:glyphRange inTextContainer:[self textContainer]];
+	boundingRect = [self convertRect:boundingRect toView:nil];
+
+	// Convert the window position to a screen position
+	NSPoint screenPosition = [[self window] convertBaseToScreen:NSMakePoint(boundingRect.origin.x, boundingRect.origin.y)];
+
+	// Adjust the popup x location to compensate for horizontal padding and icon
+	screenPosition.x -= 26;
+
+	[aPopup setCaretPos:screenPosition];
+}
+
+@end
+

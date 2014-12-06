@@ -1,26 +1,32 @@
 //
-//  $Id$
-//
 //  SPUserManagerDelegate.m
 //  sequel-pro
 //
-//  Created by Mark Townsend on Jan 01, 2009
+//  Created by Mark Townsend on Jan 1, 2009.
+//  Copyright (c) 2009 Mark Townsend. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPUserManagerDelegate.h"
 #import "SPUserMO.h"
@@ -32,9 +38,8 @@ static NSString *SPGlobalPrivilegesTabIdentifier = @"Global Privileges";
 static NSString *SPResourcesTabIdentifier = @"Resources";
 static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 
-@interface SPUserManager (SPDeclaredAPI)
+@interface SPUserManager (DeclaredAPI)
 
-- (void)_initializeSchemaPrivs;
 - (void)_initializeAvailablePrivs;
 - (void)_selectParentFromSelection;
 - (void)_selectFirstChildOfParentNode;
@@ -44,27 +49,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 
 @end
 
-
 @implementation SPUserManager (SPUserManagerDelegate)
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-/**
- * Return the maximum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return proposedMax - 620;
-}
-
-/**
- * Return the minimum possible size of the splitview.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return proposedMin + 120;
-}
 
 #pragma mark -
 #pragma mark TableView Delegate Methods
@@ -76,15 +61,15 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	if (object == schemasTableView) {
 		[grantedSchemaPrivs removeAllObjects];
 		[grantedTableView reloadData];
-		
+
 		[self _initializeAvailablePrivs];
-		
-		if ([[treeController selectedObjects] count] > 0 && [[schemaController selectedObjects] count] > 0) {
+
+		if ([[treeController selectedObjects] count] > 0 && [[schemasTableView selectedRowIndexes] count] > 0) {
 			NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
 			
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
-				NSString *selectedSchema = [[schemaController selectedObjects] objectAtIndex:0];
+				NSString *selectedSchema = [schemas objectAtIndex:[schemasTableView selectedRow]];
 				
 				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
                                                       schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
@@ -128,6 +113,43 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	}		
 }
 
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if (tableView == schemasTableView) {
+		NSString *schemaName = [schemas objectAtIndex:rowIndex];
+
+		// Gray out the "all database" entries
+		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
+			[cell setTextColor:[NSColor lightGrayColor]];
+		} else {
+			[cell setTextColor:[NSColor blackColor]];
+		}
+
+		// If the schema has permissions set, highlight with a yellow background
+		BOOL enabledPermissions = NO;
+		NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
+		NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
+		                                      schema:[schemaName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+		                                        host:[user valueForKey:@"host"]];
+		if ([results count]) {
+			NSManagedObject *schemaPrivs = [results objectAtIndex:0];
+			for (NSString *itemKey in [[[schemaPrivs entity] attributesByName] allKeys]) {
+				if ([itemKey hasSuffix:@"_priv"] && [[schemaPrivs valueForKey:itemKey] boolValue]) {
+					enabledPermissions = YES;
+					break;
+				}
+			}
+		}
+
+		if (enabledPermissions) {
+			[cell setDrawsBackground:YES];
+			[cell setBackgroundColor:[NSColor colorWithDeviceRed:1.f green:1.f blue:0.f alpha:0.2]];
+		} else {
+			[cell setDrawsBackground:NO];
+		}
+	}
+}
+
 #pragma mark -
 #pragma mark Tab View Delegate methods
 
@@ -136,7 +158,11 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
     BOOL retVal = YES;
 	
     if ([[treeController selectedObjects] count] == 0) return NO;
-    
+
+	if (![treeController commitEditing]) {
+		return NO;
+	}
+
     // Currently selected object in tree
     id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
     
@@ -199,13 +225,6 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	}
 }
 
-- (void)tabView:(NSTabView *)usersTabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
-{
-	if ([[tabViewItem identifier] isEqualToString:SPSchemaPrivilegesTabIdentifier]) {
-		[self _initializeSchemaPrivs];
-	}
-}
-
 #pragma mark -
 #pragma mark Outline view Delegate Methods
 
@@ -260,6 +279,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	}
 	
 	[schemasTableView deselectAll:nil];
+	[schemasTableView setNeedsDisplay:YES];
 	[grantedTableView deselectAll:nil];
 	[availableTableView deselectAll:nil];
 }
@@ -281,7 +301,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
 												   otherButton:nil
-									 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name]];
+									 informativeTextWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name];
 				[alert runModal];
 				
 				return NO;
@@ -300,7 +320,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 													 defaultButton:NSLocalizedString(@"OK", @"OK button")
 												   alternateButton:nil
 													   otherButton:nil
-										 informativeTextWithFormat:[NSString stringWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host]];
+										 informativeTextWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host];
 					
 					[alert runModal];
 					

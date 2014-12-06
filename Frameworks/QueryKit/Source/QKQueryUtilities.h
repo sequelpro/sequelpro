@@ -29,6 +29,7 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import "QKQueryOperators.h"
+#import "QKQueryDatabases.h"
 
 /**
  * @class QKQueryUtilities QKQueryUtilities.h
@@ -39,6 +40,7 @@
  */
 @interface QKQueryUtilities : NSObject 
 
-+ (NSString *)operatorRepresentationForType:(QKQueryOperator)operator;
++ (NSString *)identifierQuoteCharacterForDatabase:(QKQueryDatabase)database;
++ (NSString *)stringRepresentationOfQueryOperator:(QKQueryOperator)operator;
 
 @end

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 45;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,17 @@
 		1719E47D151E8CA7003F98C5 /* QKQueryUpdateParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1719E47B151E8CA7003F98C5 /* QKQueryUpdateParameter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1719E47E151E8CA7003F98C5 /* QKQueryUpdateParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1719E47C151E8CA7003F98C5 /* QKQueryUpdateParameter.m */; };
 		1719E4BD151F51F1003F98C5 /* QKUpdateQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */; };
+		1726972915AAF6CE009586E1 /* QKQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1726972815AAF6CE009586E1 /* QKQueryTests.m */; };
+		1726976715AC3DD2009586E1 /* QKQueryDatabases.h in Headers */ = {isa = PBXBuildFile; fileRef = 1726976515AC3DD2009586E1 /* QKQueryDatabases.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1726979515AEE939009586E1 /* QKQueryStringAdditions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1726979315AEE939009586E1 /* QKQueryStringAdditions.h */; };
+		1726979615AEE939009586E1 /* QKQueryStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1726979415AEE939009586E1 /* QKQueryStringAdditions.m */; };
+		173F094A15B5720A00371974 /* QKQueryConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173F094915B5720A00371974 /* QKQueryConstants.m */; };
+		17577F6715A98FEA00CDF67A /* QKTestConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 17577F6615A98FEA00CDF67A /* QKTestConstants.m */; };
+		17577FC615A99AC000CDF67A /* QKQueryConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 17577FC415A99AC000CDF67A /* QKQueryConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1757801E15A9A14400CDF67A /* QKQueryGenericParameter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1757801C15A9A14400CDF67A /* QKQueryGenericParameter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1757801F15A9A14400CDF67A /* QKQueryGenericParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1757801D15A9A14400CDF67A /* QKQueryGenericParameter.m */; };
+		179FEECA15B6CE50009B34F0 /* QKTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 179FEEC915B6CE50009B34F0 /* QKTestCase.m */; };
+		179FEF8E15BA7EB0009B34F0 /* QKDeleteQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 179FEF8D15BA7EB0009B34F0 /* QKDeleteQueryTests.m */; };
 		17E5951F14F301DF0054EE08 /* QKQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5951614F301DF0054EE08 /* QKQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E5952014F301DF0054EE08 /* QKQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E5951714F301DF0054EE08 /* QKQuery.m */; };
 		17E5952114F301DF0054EE08 /* QKQueryOperators.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E5951814F301DF0054EE08 /* QKQueryOperators.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -24,6 +35,10 @@
 		17E595F214F3058F0054EE08 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E595F114F3058F0054EE08 /* Foundation.framework */; };
 		17E596A814F308160054EE08 /* QKSelectQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E5969814F307B70054EE08 /* QKSelectQueryTests.m */; };
 		17E596A914F308250054EE08 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17E595F114F3058F0054EE08 /* Foundation.framework */; };
+		17F48BA815B27F6400C6455B /* QKQueryOrderBy.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F48BA615B27F6400C6455B /* QKQueryOrderBy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17F48BA915B27F6500C6455B /* QKQueryOrderBy.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F48BA715B27F6400C6455B /* QKQueryOrderBy.m */; };
+		17F48BC315B289C100C6455B /* QKQueryConstruct.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F48BC115B289C100C6455B /* QKQueryConstruct.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		17F48BC415B289C100C6455B /* QKQueryConstruct.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F48BC215B289C100C6455B /* QKQueryConstruct.m */; };
 		17F620BE14F961C1003E7290 /* QueryKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* QueryKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -38,14 +53,29 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryOrderByTests.h; sourceTree = "<group>"; };
 		1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryOrderByTests.m; sourceTree = "<group>"; };
-		1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryGroupByTests.h; sourceTree = "<group>"; };
 		1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryGroupByTests.m; sourceTree = "<group>"; };
 		1719E47B151E8CA7003F98C5 /* QKQueryUpdateParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryUpdateParameter.h; sourceTree = "<group>"; };
 		1719E47C151E8CA7003F98C5 /* QKQueryUpdateParameter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryUpdateParameter.m; sourceTree = "<group>"; };
-		1719E4B9151F51EA003F98C5 /* QKUpdateQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKUpdateQueryTests.h; sourceTree = "<group>"; };
 		1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKUpdateQueryTests.m; sourceTree = "<group>"; };
+		1726972815AAF6CE009586E1 /* QKQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryTests.m; sourceTree = "<group>"; };
+		1726976515AC3DD2009586E1 /* QKQueryDatabases.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryDatabases.h; sourceTree = "<group>"; };
+		1726979315AEE939009586E1 /* QKQueryStringAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryStringAdditions.h; sourceTree = "<group>"; };
+		1726979415AEE939009586E1 /* QKQueryStringAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryStringAdditions.m; sourceTree = "<group>"; };
+		173F093115B56E3400371974 /* QKSelectQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryTests.h; sourceTree = "<group>"; };
+		173F094915B5720A00371974 /* QKQueryConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryConstants.m; sourceTree = "<group>"; };
+		173F096315B5774400371974 /* QKUpdateQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKUpdateQueryTests.h; sourceTree = "<group>"; };
+		17577F6515A98FEA00CDF67A /* QKTestConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKTestConstants.h; sourceTree = "<group>"; };
+		17577F6615A98FEA00CDF67A /* QKTestConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKTestConstants.m; sourceTree = "<group>"; };
+		17577FC415A99AC000CDF67A /* QKQueryConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryConstants.h; sourceTree = "<group>"; };
+		1757801C15A9A14400CDF67A /* QKQueryGenericParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryGenericParameter.h; sourceTree = "<group>"; };
+		1757801D15A9A14400CDF67A /* QKQueryGenericParameter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryGenericParameter.m; sourceTree = "<group>"; };
+		179FEEB915B6CC0C009B34F0 /* QKSelectQueryOrderByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryOrderByTests.h; sourceTree = "<group>"; };
+		179FEEC515B6CD55009B34F0 /* QKSelectQueryGroupByTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryGroupByTests.h; sourceTree = "<group>"; };
+		179FEEC815B6CE50009B34F0 /* QKTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKTestCase.h; sourceTree = "<group>"; };
+		179FEEC915B6CE50009B34F0 /* QKTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKTestCase.m; sourceTree = "<group>"; };
+		179FEF8C15BA7EB0009B34F0 /* QKDeleteQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKDeleteQueryTests.h; sourceTree = "<group>"; };
+		179FEF8D15BA7EB0009B34F0 /* QKDeleteQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKDeleteQueryTests.m; sourceTree = "<group>"; };
 		17E5951614F301DF0054EE08 /* QKQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQuery.h; sourceTree = "<group>"; };
 		17E5951714F301DF0054EE08 /* QKQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQuery.m; sourceTree = "<group>"; };
 		17E5951814F301DF0054EE08 /* QKQueryOperators.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryOperators.h; sourceTree = "<group>"; };
@@ -56,10 +86,13 @@
 		17E5951D14F301DF0054EE08 /* QKQueryUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryUtilities.m; sourceTree = "<group>"; };
 		17E5951E14F301DF0054EE08 /* QueryKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QueryKit.h; sourceTree = "<group>"; };
 		17E595F114F3058F0054EE08 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		17E5969714F307B70054EE08 /* QKSelectQueryTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKSelectQueryTests.h; sourceTree = "<group>"; };
 		17E5969814F307B70054EE08 /* QKSelectQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKSelectQueryTests.m; sourceTree = "<group>"; };
 		17E5969E14F307CE0054EE08 /* Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		17E5969F14F307CE0054EE08 /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Tests-Info.plist"; path = "Resources/Tests-Info.plist"; sourceTree = "<group>"; };
+		17F48BA615B27F6400C6455B /* QKQueryOrderBy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryOrderBy.h; sourceTree = "<group>"; };
+		17F48BA715B27F6400C6455B /* QKQueryOrderBy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryOrderBy.m; sourceTree = "<group>"; };
+		17F48BC115B289C100C6455B /* QKQueryConstruct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QKQueryConstruct.h; sourceTree = "<group>"; };
+		17F48BC215B289C100C6455B /* QKQueryConstruct.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QKQueryConstruct.m; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* QueryKit-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "QueryKit-Prefix.pch"; path = "Source/QueryKit-Prefix.pch"; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* QueryKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QueryKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -135,6 +168,7 @@
 				17E5951D14F301DF0054EE08 /* QKQueryUtilities.m */,
 				1719E47A151E8C87003F98C5 /* Model */,
 				17E5952814F301F40054EE08 /* Constants */,
+				17577FC315A99AA500CDF67A /* Other */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -142,6 +176,9 @@
 		1719E47A151E8C87003F98C5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				17F48BC515B28A4D00C6455B /* Common */,
+				17F48BA615B27F6400C6455B /* QKQueryOrderBy.h */,
+				17F48BA715B27F6400C6455B /* QKQueryOrderBy.m */,
 				17E5951914F301DF0054EE08 /* QKQueryParameter.h */,
 				17E5951A14F301DF0054EE08 /* QKQueryParameter.m */,
 				1719E47B151E8CA7003F98C5 /* QKQueryUpdateParameter.h */,
@@ -153,11 +190,11 @@
 		17322A7214FA645300F0CF9B /* SELECT Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17E5969714F307B70054EE08 /* QKSelectQueryTests.h */,
+				173F093115B56E3400371974 /* QKSelectQueryTests.h */,
 				17E5969814F307B70054EE08 /* QKSelectQueryTests.m */,
-				1713ECAE14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.h */,
+				179FEEB915B6CC0C009B34F0 /* QKSelectQueryOrderByTests.h */,
 				1713ECAF14F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m */,
-				1713ECD614F970BB0013C4F0 /* QKSelectQueryGroupByTests.h */,
+				179FEEC515B6CD55009B34F0 /* QKSelectQueryGroupByTests.h */,
 				1713ECD714F970BB0013C4F0 /* QKSelectQueryGroupByTests.m */,
 			);
 			name = "SELECT Tests";
@@ -166,7 +203,7 @@
 		17322A7414FA646000F0CF9B /* UPDATE Tests */ = {
 			isa = PBXGroup;
 			children = (
-				1719E4B9151F51EA003F98C5 /* QKUpdateQueryTests.h */,
+				173F096315B5774400371974 /* QKUpdateQueryTests.h */,
 				1719E4BA151F51EA003F98C5 /* QKUpdateQueryTests.m */,
 			);
 			name = "UPDATE Tests";
@@ -175,6 +212,8 @@
 		17322A7514FA647200F0CF9B /* DELETE Tests */ = {
 			isa = PBXGroup;
 			children = (
+				179FEF8C15BA7EB0009B34F0 /* QKDeleteQueryTests.h */,
+				179FEF8D15BA7EB0009B34F0 /* QKDeleteQueryTests.m */,
 			);
 			name = "DELETE Tests";
 			sourceTree = "<group>";
@@ -186,11 +225,31 @@
 			name = "INSERT Tests";
 			sourceTree = "<group>";
 		};
+		17577FA015A994EB00CDF67A /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				1726972815AAF6CE009586E1 /* QKQueryTests.m */,
+			);
+			name = Common;
+			sourceTree = "<group>";
+		};
+		17577FC315A99AA500CDF67A /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				1726979315AEE939009586E1 /* QKQueryStringAdditions.h */,
+				1726979415AEE939009586E1 /* QKQueryStringAdditions.m */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
 		17E5952814F301F40054EE08 /* Constants */ = {
 			isa = PBXGroup;
 			children = (
 				17E5951B14F301DF0054EE08 /* QKQueryTypes.h */,
 				17E5951814F301DF0054EE08 /* QKQueryOperators.h */,
+				1726976515AC3DD2009586E1 /* QKQueryDatabases.h */,
+				17577FC415A99AC000CDF67A /* QKQueryConstants.h */,
+				173F094915B5720A00371974 /* QKQueryConstants.m */,
 			);
 			name = Constants;
 			sourceTree = "<group>";
@@ -198,12 +257,36 @@
 		17E5969614F3079E0054EE08 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				17322A7614FA648100F0CF9B /* INSERT Tests */,
-				17322A7514FA647200F0CF9B /* DELETE Tests */,
+				17F48D1415B2DCA900C6455B /* Other */,
+				17577FA015A994EB00CDF67A /* Common */,
 				17322A7414FA646000F0CF9B /* UPDATE Tests */,
 				17322A7214FA645300F0CF9B /* SELECT Tests */,
+				17322A7514FA647200F0CF9B /* DELETE Tests */,
+				17322A7614FA648100F0CF9B /* INSERT Tests */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		17F48BC515B28A4D00C6455B /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				17F48BC115B289C100C6455B /* QKQueryConstruct.h */,
+				17F48BC215B289C100C6455B /* QKQueryConstruct.m */,
+				1757801C15A9A14400CDF67A /* QKQueryGenericParameter.h */,
+				1757801D15A9A14400CDF67A /* QKQueryGenericParameter.m */,
+			);
+			name = Common;
+			sourceTree = "<group>";
+		};
+		17F48D1415B2DCA900C6455B /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				179FEEC815B6CE50009B34F0 /* QKTestCase.h */,
+				179FEEC915B6CE50009B34F0 /* QKTestCase.m */,
+				17577F6515A98FEA00CDF67A /* QKTestConstants.h */,
+				17577F6615A98FEA00CDF67A /* QKTestConstants.m */,
+			);
+			name = Other;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -220,6 +303,12 @@
 				17E5952514F301DF0054EE08 /* QKQueryUtilities.h in Headers */,
 				17E5952714F301DF0054EE08 /* QueryKit.h in Headers */,
 				1719E47D151E8CA7003F98C5 /* QKQueryUpdateParameter.h in Headers */,
+				17577FC615A99AC000CDF67A /* QKQueryConstants.h in Headers */,
+				1757801E15A9A14400CDF67A /* QKQueryGenericParameter.h in Headers */,
+				1726976715AC3DD2009586E1 /* QKQueryDatabases.h in Headers */,
+				1726979515AEE939009586E1 /* QKQueryStringAdditions.h in Headers */,
+				17F48BA815B27F6400C6455B /* QKQueryOrderBy.h in Headers */,
+				17F48BC315B289C100C6455B /* QKQueryConstruct.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,10 +319,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 17E596A614F307CE0054EE08 /* Build configuration list for PBXNativeTarget "Tests" */;
 			buildPhases = (
-				17E5969914F307CE0054EE08 /* Resources */,
 				17E5969A14F307CE0054EE08 /* Sources */,
 				17E5969B14F307CE0054EE08 /* Frameworks */,
-				17E5969C14F307CE0054EE08 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -269,8 +356,11 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "QueryKit" */;
-			compatibilityVersion = "Xcode 3.1";
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
@@ -291,13 +381,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		17E5969914F307CE0054EE08 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8DC2EF520486A6940098B216 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -306,22 +389,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		17E5969C14F307CE0054EE08 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		17E5969A14F307CE0054EE08 /* Sources */ = {
@@ -332,6 +399,10 @@
 				1713ECB014F96A5C0013C4F0 /* QKSelectQueryOrderByTests.m in Sources */,
 				1713ECD814F970BB0013C4F0 /* QKSelectQueryGroupByTests.m in Sources */,
 				1719E4BD151F51F1003F98C5 /* QKUpdateQueryTests.m in Sources */,
+				17577F6715A98FEA00CDF67A /* QKTestConstants.m in Sources */,
+				1726972915AAF6CE009586E1 /* QKQueryTests.m in Sources */,
+				179FEECA15B6CE50009B34F0 /* QKTestCase.m in Sources */,
+				179FEF8E15BA7EB0009B34F0 /* QKDeleteQueryTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +414,11 @@
 				17E5952314F301DF0054EE08 /* QKQueryParameter.m in Sources */,
 				17E5952614F301DF0054EE08 /* QKQueryUtilities.m in Sources */,
 				1719E47E151E8CA7003F98C5 /* QKQueryUpdateParameter.m in Sources */,
+				1757801F15A9A14400CDF67A /* QKQueryGenericParameter.m in Sources */,
+				1726979615AEE939009586E1 /* QKQueryStringAdditions.m in Sources */,
+				17F48BA915B27F6500C6455B /* QKQueryOrderBy.m in Sources */,
+				17F48BC415B289C100C6455B /* QKQueryConstruct.m in Sources */,
+				173F094A15B5720A00371974 /* QKQueryConstants.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,16 +437,27 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/QueryKit-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_PREFIX_HEADER = "";
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Distribution;
@@ -379,6 +466,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_VERSION = A;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -395,20 +483,24 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
-				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = NO;
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
+				GCC_WARN_PROTOTYPE_CONVERSION = NO;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = QueryKit;
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wmost";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Distribution;
@@ -417,10 +509,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -434,8 +526,8 @@
 					"-framework",
 					SenTestingKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
@@ -444,10 +536,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -460,8 +552,8 @@
 					"-framework",
 					SenTestingKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 				ZERO_LINK = NO;
 			};
@@ -471,8 +563,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -485,8 +577,8 @@
 					"-framework",
 					SenTestingKit,
 				);
-				PREBINDING = NO;
 				PRODUCT_NAME = Tests;
+				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;
@@ -495,17 +587,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/QueryKit-Prefix.pch";
-				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO = YES;
@@ -518,19 +609,22 @@
 				GCC_WARN_MISSING_PARENTHESES = YES;
 				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
+				GCC_WARN_PROTOTYPE_CONVERSION = NO;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GENERATE_PKGINFO_FILE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = QueryKit;
+				SKIP_INSTALL = YES;
 				WARNING_CFLAGS = "-Wmost";
 				WRAPPER_EXTENSION = framework;
 			};
@@ -540,6 +634,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_VERSION = A;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -556,20 +651,24 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = YES;
 				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
-				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = NO;
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
-				GCC_WARN_PROTOTYPE_CONVERSION = YES;
+				GCC_WARN_PROTOTYPE_CONVERSION = NO;
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
+				GCC_WARN_STRICT_SELECTOR_MATCH = NO;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
 				GCC_WARN_UNUSED_VALUE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = QueryKit;
+				SKIP_INSTALL = YES;
+				WARNING_CFLAGS = "-Wmost";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -578,18 +677,29 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/QueryKit-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_PREFIX_HEADER = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
@@ -598,16 +708,27 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_LINK_OBJC_RUNTIME = NO;
+				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Source/QueryKit-Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INFOPLIST_PREFIX_HEADER = "";
-				PREBINDING = NO;
-				SDKROOT = macosx10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Release;

@@ -1,34 +1,39 @@
 //
-//  $Id$
-//
 //  SPStringAdditions.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on Jan 28, 2009
+//  Created by Stuart Connolly (stuconnolly.com) on January 28, 2009.
 //  Copyright (c) 2009 Stuart Connolly. All rights reserved.
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License as published by
-//  the Free Software Foundation; either version 2 of the License, or
-//  (at your option) any later version.
+//  Permission is hereby granted, free of charge, to any person
+//  obtaining a copy of this software and associated documentation
+//  files (the "Software"), to deal in the Software without
+//  restriction, including without limitation the rights to use,
+//  copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the
+//  Software is furnished to do so, subject to the following
+//  conditions:
 //
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
+//  The above copyright notice and this permission notice shall be
+//  included in all copies or substantial portions of the Software.
 //
-//  You should have received a copy of the GNU General Public License
-//  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+//  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+//  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+//  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+//  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+//  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+//  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+//  OTHER DEALINGS IN THE SOFTWARE.
 //
-//  More info at <http://code.google.com/p/sequel-pro/>
+//  More info at <https://github.com/sequelpro/sequelpro>
 
-/*
+/**
  * NSStringUTF8String(@"a String") function can be used to speed up
  * the convertion from a NSString to NSData or const char* resp.
  * NSData *d = [aStr UTF8String];  :== NSData *d = NSStringUTF8String(aStr);
  */
-static inline const char* NSStringUTF8String(NSString* self) 
+static inline const char *NSStringUTF8String(NSString *self) 
 {
 	typedef const char* (*SPUTF8StringMethodPtr)(NSString*, SEL);
 	static SPUTF8StringMethodPtr SPNSStringGetUTF8String;
@@ -37,7 +42,7 @@ static inline const char* NSStringUTF8String(NSString* self)
 	return to_return;
 }
 
-static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAttributedString* self, NSString* aStr, id aValue, NSRange aRange) 
+static inline void NSMutableAttributedStringAddAttributeValueRange(NSMutableAttributedString *self, NSString *aStr, id aValue, NSRange aRange) 
 {
 	typedef void (*SPMutableAttributedStringAddAttributeValueRangeMethodPtr)(NSMutableAttributedString*, SEL, NSString*, id, NSRange);
 	static SPMutableAttributedStringAddAttributeValueRangeMethodPtr SPMutableAttributedStringAddAttributeValueRange;
@@ -46,7 +51,7 @@ static inline void NSMutableAttributedStringAddAttributeValueRange (NSMutableAtt
 	return;
 }
 
-static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedString* self, NSString* aStr, NSUInteger anIndex, NSRangePointer aRange) 
+static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedString *self, NSString *aStr, NSUInteger anIndex, NSRangePointer aRange) 
 {
 	typedef id (*SPMutableAttributedStringAttributeAtIndexMethodPtr)(NSMutableAttributedString*, SEL, NSString*, NSUInteger, NSRangePointer);
 	static SPMutableAttributedStringAttributeAtIndexMethodPtr SPMutableAttributedStringAttributeAtIndex;
@@ -59,8 +64,7 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 
 + (NSString *)stringForByteSize:(long long)byteSize;
 + (NSString *)stringForTimeInterval:(double)timeInterval;
-+ (NSString*)stringWithNewUUID;
-
++ (NSString *)stringWithNewUUID;
 
 - (NSString *)rot13;
 - (NSString *)HTMLEscapeString;
@@ -70,16 +74,11 @@ static inline id NSMutableAttributedStringAttributeAtIndex (NSMutableAttributedS
 - (NSArray *)lineRangesForRange:(NSRange)aRange;
 - (NSString *)createViewSyntaxPrettifier;
 
-- (NSString*)getGeomFromTextString;
+- (NSString *)getGeomFromTextString;
 
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet options:(NSUInteger)mask;
-- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet*)charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet;
+- (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet options:(NSUInteger)mask;
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
-
-#ifndef SP_REFACTOR /* run self as bash commands */
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path callerInstance:(id)caller contextInfo:(NSDictionary*)contextInfo error:(NSError**)theError;
-- (NSString *)runBashCommandWithEnvironment:(NSDictionary*)shellEnvironment atCurrentDirectoryPath:(NSString*)path error:(NSError**)theError;
-#endif
 
 @end
