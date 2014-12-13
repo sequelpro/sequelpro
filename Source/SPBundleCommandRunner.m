@@ -30,6 +30,7 @@
 
 #import "SPBundleCommandRunner.h"
 #import "SPDatabaseDocument.h"
+#import "SPAppController.h"
 
 // Defined to suppress warnings
 @interface NSObject (SPBundleMethods)
@@ -91,11 +92,11 @@
 	
 	[fm removeItemAtPath:scriptFilePath error:nil];
 	[fm removeItemAtPath:stdoutFilePath error:nil];
-	if([[NSApp delegate] lastBundleBlobFilesDirectory] != nil)
-		[fm removeItemAtPath:[[NSApp delegate] lastBundleBlobFilesDirectory] error:nil];
+	if([SPAppDelegate lastBundleBlobFilesDirectory] != nil)
+		[fm removeItemAtPath:[SPAppDelegate lastBundleBlobFilesDirectory] error:nil];
 	
 	if([shellEnvironment objectForKey:SPBundleShellVariableBlobFileDirectory])
-		[[NSApp delegate] setLastBundleBlobFilesDirectory:[shellEnvironment objectForKey:SPBundleShellVariableBlobFileDirectory]];
+		[SPAppDelegate setLastBundleBlobFilesDirectory:[shellEnvironment objectForKey:SPBundleShellVariableBlobFileDirectory]];
 	
 	// Parse first line for magic header #! ; if found save the script content and run the command after #! with that file.
 	// This allows to write perl, ruby, osascript scripts natively.

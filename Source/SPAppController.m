@@ -440,8 +440,8 @@
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
 
 				// Set global session properties
-				[[NSApp delegate] setSpfSessionDocData:spfsDocData];
-				[[NSApp delegate] setSessionURL:[NSURL fileURLWithPath:filePath]];
+				[SPAppDelegate setSpfSessionDocData:spfsDocData];
+				[SPAppDelegate setSessionURL:[NSURL fileURLWithPath:filePath]];
 
 				// Loop through each defined window in reversed order to reconstruct the last active window
 				for (NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects])
@@ -993,7 +993,7 @@
 {
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];
+	NSArray *scopeBundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeGeneral];
 	if(idx >=0 && idx < (NSInteger)[scopeBundleItems count]) {
 		infoPath = [[scopeBundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
@@ -1137,7 +1137,7 @@
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c setDocUUID:uuid];
 							[c displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:c];
+							[SPAppDelegate addHTMLOutputController:c];
 						}
 					}
 				}
@@ -1830,8 +1830,8 @@
 	BOOL bundleOtherThanGeneralFound = NO;
 	for(NSString* scope in scopes) {
 
-		NSArray *scopeBundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
-		NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:scope];
+		NSArray *scopeBundleCategories = [SPAppDelegate bundleCategoriesForScope:scope];
+		NSArray *scopeBundleItems = [SPAppDelegate bundleItemsForScope:scope];
 
 		if(![scopeBundleItems count]) {
 			k++;

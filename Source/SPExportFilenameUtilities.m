@@ -242,7 +242,7 @@
 											   isARepeat:NO 
 												 keyCode:0x24];
 	
-	[[NSApplication sharedApplication] postEvent:tokenizingEvent atStart:NO];
+	[NSApp postEvent:tokenizingEvent atStart:NO];
 
 	// Update the filename preview
 	[self updateDisplayedExportFilename];

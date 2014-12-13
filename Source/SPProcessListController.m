@@ -85,7 +85,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
+	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[SPAppDelegate frontDocument] name]]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
@@ -238,7 +238,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([processesFiltered count] > 0) {
-                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *process in processesFiltered)
                 {

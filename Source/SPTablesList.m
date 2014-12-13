@@ -717,13 +717,13 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[documentState setObject:@YES forKey:@"auto_connect"];
 	
 	// Set the connection on the new tab
-	[[[NSApp delegate] frontDocument] setState:documentState];
+	[[SPAppDelegate frontDocument] setState:documentState];
 }
 
 - (IBAction)openTableInNewWindow:(id)sender
 {
 	//create new window
-	[(SPAppController *)[NSApp delegate] newWindow:self];
+	[SPAppDelegate newWindow:self];
 	
 	[self _duplicateConnectionToFrontTab];
 }
@@ -2653,7 +2653,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// check if the name really changed
 	if ([oldTableName isEqualToString:newTableName]) return;
 
-	// check if only the case changed - then we have to do two renames, see http://code.google.com/p/sequel-pro/issues/detail?id=484
+	// check if only the case changed - then we have to do two renames, see issue #484
 	if ([[oldTableName lowercaseString] isEqualToString:[newTableName lowercaseString]])
 	{
 		// first try finding an unused temporary name

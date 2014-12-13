@@ -312,8 +312,8 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		// Detect if more than one connection windows with the connectionID are open.
 		// If so, don't remove it.
-		if ([[NSApp delegate] frontDocument]) {
-			for(id doc in [[NSApp delegate] orderedDocuments]) {
+		if ([SPAppDelegate frontDocument]) {
+			for(id doc in [SPAppDelegate orderedDocuments]) {
 				if([[doc connectionID] isEqualToString:connectionID])
 					docCounter++;
 				if(docCounter > 1) break;
@@ -322,7 +322,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 		if(docCounter > 1) return;
 
-		if(schemaData && [schemaData objectForKey:connectionID] && [[NSApp delegate] frontDocument] && [[[NSApp delegate] orderedDocuments] count])
+		if(schemaData && [schemaData objectForKey:connectionID] && [SPAppDelegate frontDocument] && [[SPAppDelegate orderedDocuments] count])
 			[self saveSelectedItems];
 
 		if(schemaDataFiltered)
@@ -374,7 +374,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		NSArray *pathArray = [[[parentKeys objectAtIndex:0] description] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([pathArray count] > 1) {
 
-			SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
+			SPDatabaseDocument *doc = [SPAppDelegate frontDocument];
 			if([doc isWorking]) {
 				[SPTooltip showWithObject:NSLocalizedString(@"Active connection window is busy. Please wait and try again.", @"active connection window is busy. please wait and try again. tooltip") 
 						atLocation:pos 
@@ -590,7 +590,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 {
 
 	// Reset everything for current active doc connection
-	SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
+	SPDatabaseDocument *doc = [SPAppDelegate frontDocument];
 	if(!doc) return;
 	NSString *connectionID = [doc connectionID];
 	if(!connectionID || [connectionID length] < 2) return;
@@ -750,7 +750,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			[searchField setStringValue:@""];
 		}
 
-		SPDatabaseDocument *doc = [[NSApp delegate] frontDocument];
+		SPDatabaseDocument *doc = [SPAppDelegate frontDocument];
 		if (doc) {
 			NSMutableString *key = [NSMutableString string];
 			[key setString:[doc connectionID]];

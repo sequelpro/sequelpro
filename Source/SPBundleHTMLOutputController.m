@@ -260,7 +260,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 	[c displayHTMLContent:[NSString stringWithFormat:@"<pre>%@</pre>", [sourceCode HTMLEscapeString]] withOptions:nil];
 
-	[[NSApp delegate] addHTMLOutputController:c];
+	[SPAppDelegate addHTMLOutputController:c];
 }
 
 - (void)saveDocument
@@ -294,7 +294,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 	windowUUID = @"";
 	docUUID = @"";
 
-	[[NSApp delegate] removeHTMLOutputController:self];
+	[SPAppDelegate removeHTMLOutputController:self];
 
 	[self release];
 }
@@ -332,7 +332,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 	if(request != nil) {
 		SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 		[c displayURLString:[[request URL] absoluteString] withOptions:nil];
-		[[NSApp delegate] addHTMLOutputController:c];
+		[SPAppDelegate addHTMLOutputController:c];
 		return [c webView];
 	}
 	return nil;
@@ -351,7 +351,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 	// sequelpro:// handler
 	if([[[request URL] scheme] isEqualToString:@"sequelpro"] && navigationType == WebNavigationTypeLinkClicked) {
-		[[NSApp delegate] handleEventWithURL:[request URL]];
+		[SPAppDelegate handleEventWithURL:[request URL]];
 		[listener ignore];
 	}
 	// sp-reveal-file://a_file_path reveals the file in Finder
@@ -571,7 +571,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
  */
 - (NSString *)getShellEnvironmentForName:(NSString*)keyName
 {
-	return [[[NSApp delegate] shellEnvironmentForDocument:nil] objectForKey:keyName];
+	return [[SPAppDelegate shellEnvironmentForDocument:nil] objectForKey:keyName];
 }
 
 /**
@@ -691,7 +691,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		output = [SPBundleCommandRunner runBashCommand:command withEnvironment:nil atCurrentDirectoryPath:nil error:&err];
 	else {
 		NSMutableDictionary *theEnv = [NSMutableDictionary dictionary];
-		[theEnv addEntriesFromDictionary:[[NSApp delegate] shellEnvironmentForDocument:nil]];
+		[theEnv addEntriesFromDictionary:[SPAppDelegate shellEnvironmentForDocument:nil]];
 		[theEnv setObject:uuid forKey:SPBundleShellVariableProcessID];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryInputPathHeader, uuid] forKey:SPBundleShellVariableQueryFile];
 		[theEnv setObject:[NSString stringWithFormat:@"%@%@", SPURLSchemeQueryResultPathHeader, uuid] forKey:SPBundleShellVariableQueryResultFile];
@@ -701,7 +701,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		output = [SPBundleCommandRunner runBashCommand:command 
 									   withEnvironment:theEnv 
 								atCurrentDirectoryPath:nil 
-										callerInstance:[NSApp delegate] 
+										callerInstance:SPAppDelegate
 										   contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 														@"JavaScript", @"name",
 														NSLocalizedString(@"General", @"general menu item label"), @"scope",

@@ -136,7 +136,7 @@
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([variablesFiltered count] > 0) {
-                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
+                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *variable in variablesFiltered)
                 {

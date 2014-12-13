@@ -2541,7 +2541,7 @@
 	if ([aNotification object] != customQueryView) return;
 	
 #ifndef SP_CODA /* triggered commands */
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
+	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
 	for(NSString* cmdPath in triggeredCommands) {
 		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
 		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
@@ -2565,7 +2565,7 @@
 		}
 		if(!stopTrigger) {
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"])
@@ -3894,7 +3894,7 @@
 				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
 			else
 				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
-			[[NSApplication sharedApplication] postEvent:arrowEvent atStart:NO];
+			[NSApp postEvent:arrowEvent atStart:NO];
 			return YES;
 
 		}

@@ -35,6 +35,7 @@
 #import "SPTableData.h"
 #import "SPActivityTextFieldCell.h"
 #import "SPTableTextFieldCell.h"
+#import "SPAppController.h"
 
 @interface SPTableInfo (PrivateAPI)
 
@@ -111,7 +112,7 @@
 	[acts removeAllObjects];
 	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
 	[acts addObjectsFromArray:[tableDocumentInstance runningActivities]];
-	[acts addObjectsFromArray:[[NSApp delegate] runningActivities]];
+	[acts addObjectsFromArray:[SPAppDelegate runningActivities]];
 	
 	_activitiesWillBeUpdated = YES;
 	

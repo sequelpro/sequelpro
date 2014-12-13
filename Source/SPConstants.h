@@ -607,3 +607,5 @@ extern NSString *SPURLSchemeQueryInputPathHeader;
 extern NSString *SPURLSchemeQueryResultPathHeader;
 extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
+
+#define SPAppDelegate ((SPAppController *)[NSApp delegate])

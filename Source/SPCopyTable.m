@@ -885,7 +885,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 	if(![[self delegate] isKindOfClass:[SPCustomQuery class]] && ![[self delegate] isKindOfClass:[SPTableContent class]]) return menu;
 
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
 	NSMenuItem *bItem = [menu itemWithTag:10000000];
@@ -895,8 +895,8 @@ static const NSInteger kBlobAsImageFile = 4;
 		[menu removeItem:bItem];
 	}
 
-	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeDataTable];
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
+	NSArray *bundleCategories = [SPAppDelegate bundleCategoriesForScope:SPBundleScopeDataTable];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeDataTable];
 
 	// Add 'Bundles' sub menu
 	if(bundleItems && [bundleItems count]) {
@@ -1246,7 +1246,7 @@ static const NSInteger kBlobAsImageFile = 4;
 #ifndef SP_CODA /* executeBundleItemForDataTable: */
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeDataTable];
 	if(idx >=0 && idx < (NSInteger)[bundleItems count]) {
 		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
@@ -1432,7 +1432,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
 											atCurrentDirectoryPath:nil 
-											callerInstance:[[NSApp delegate] frontDocument] 
+											callerInstance:[SPAppDelegate frontDocument]
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
@@ -1509,7 +1509,7 @@ static const NSInteger kBlobAsImageFile = 4;
 							SPBundleHTMLOutputController *bundleController = [[SPBundleHTMLOutputController alloc] init];
 							[bundleController setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[bundleController displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:bundleController];
+							[SPAppDelegate addHTMLOutputController:bundleController];
 						}
 					}
 				}

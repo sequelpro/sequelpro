@@ -424,7 +424,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
  
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
  
-	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
+	[[[SPAppDelegate preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
  
 	// Update the selection to account for rearranged faourites
 	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];

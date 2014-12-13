@@ -2526,8 +2526,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender
 {
-	[[NSApp delegate] newWindow:self];
-	SPDatabaseDocument *newTableDocument = [[NSApp delegate] frontDocument];
+	[SPAppDelegate newWindow:self];
+	SPDatabaseDocument *newTableDocument = [SPAppDelegate frontDocument];
 	[newTableDocument setStateFromConnectionFile:[[self fileURL] path]];
 }
 
@@ -2921,7 +2921,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
 	{
 		// Save As Session
-		if ([sender tag] == 1020 && [[NSApp delegate] sessionURL]) {
+		if ([sender tag] == 1020 && [SPAppDelegate sessionURL]) {
 			[self saveConnectionPanelDidEnd:panel returnCode:1 contextInfo:@"saveAsSession"];
 			return;
 		}
@@ -2935,7 +2935,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPBundleFileExtension, nil]];
 
-		NSDictionary *spfSessionData = [[NSApp delegate] spfSessionDocData];
+		NSDictionary *spfSessionData = [SPAppDelegate spfSessionDocData];
 
 		// Restore accessory view settings if possible
 		if ([spfSessionData objectForKey:@"save_password"]) {
@@ -2967,8 +2967,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[panel setAccessoryView:saveConnectionAccessory];
 
 		// Set file name
-		if ([[NSApp delegate] sessionURL])
-			filename = [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent];
+		if ([SPAppDelegate sessionURL])
+			filename = [[[SPAppDelegate sessionURL] absoluteString] lastPathComponent];
 		else
 			filename = [NSString stringWithFormat:NSLocalizedString(@"Session",@"Initial filename for 'Save session' file")];
 
@@ -3055,8 +3055,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			// info.plist will contain the opened structure (windows and tabs for each window). Each connection
 			// is linked to a saved spf file either in 'Contents' for unTitled ones or already saved spf files.
 
-			if(contextInfo == @"saveAsSession" && [[NSApp delegate] sessionURL])
-				fileName = [[[NSApp delegate] sessionURL] path];
+			if(contextInfo == @"saveAsSession" && [SPAppDelegate sessionURL])
+				fileName = [[SPAppDelegate sessionURL] path];
 
 			if(!fileName || ![fileName length]) return;
 
@@ -3094,7 +3094,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			// retrieve save panel data for passing them to each doc
 			NSMutableDictionary *spfDocData_temp = [NSMutableDictionary dictionary];
 			if(contextInfo == @"saveAsSession") {
-				[spfDocData_temp addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
+				[spfDocData_temp addEntriesFromDictionary:[SPAppDelegate spfSessionDocData]];
 			} else {
 				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionEncrypt state]==NSOnState) ? YES : NO ] forKey:@"encrypted"];
 				if([[spfDocData_temp objectForKey:@"encrypted"] boolValue])
@@ -3105,7 +3105,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
 
 				// Save the session's accessory view settings
-				[[NSApp delegate] setSpfSessionDocData:spfDocData_temp];
+				[SPAppDelegate setSpfSessionDocData:spfDocData_temp];
 
 			}
 
@@ -3118,7 +3118,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[info setObject:@"connection bundle" forKey:@"format"];
 
 			// Loop through all windows
-			for(NSWindow *window in [[NSApp delegate] orderedDatabaseConnectionWindows]) {
+			for(NSWindow *window in [SPAppDelegate orderedDatabaseConnectionWindows]) {
 
 				// First window is always the currently key window
 
@@ -3192,7 +3192,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				return;
 			}
 
-			[[NSApp delegate] setSessionURL:fileName];
+			[SPAppDelegate setSessionURL:fileName];
 
 			// Register spfs bundle in Recent Files
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
@@ -3459,7 +3459,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[currentState setObject:sessionDict forKey:@"session"];
 
 	// Set the connection on the new tab
-	[[[NSApp delegate] frontDocument] setState:currentState];
+	[[SPAppDelegate frontDocument] setState:currentState];
 }
 
 /**
@@ -4807,11 +4807,11 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Ask for a password if SPF file passwords were encrypted, via a sheet
 	if ([spf objectForKey:@"encrypted"] && [[spf valueForKey:@"encrypted"] boolValue]) {
-		if([self isSaveInBundle] && [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"]) {
-			encryptpw = [[[NSApp delegate] spfSessionDocData] objectForKey:@"e_string"];
+		if([self isSaveInBundle] && [[SPAppDelegate spfSessionDocData] objectForKey:@"e_string"]) {
+			encryptpw = [[SPAppDelegate spfSessionDocData] objectForKey:@"e_string"];
 		} else {
 			[inputTextWindowHeader setStringValue:NSLocalizedString(@"Connection file is encrypted", @"Connection file is encrypted")];
-			[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), ([self isSaveInBundle]) ? [[[[NSApp delegate] sessionURL] absoluteString] lastPathComponent] : [path lastPathComponent]]];
+			[inputTextWindowMessage setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Please enter the password for ‘%@’:", @"Please enter the password"), ([self isSaveInBundle]) ? [[[SPAppDelegate sessionURL] absoluteString] lastPathComponent] : [path lastPathComponent]]];
 			[inputTextWindowSecureTextField setStringValue:@""];
 			[inputTextWindowSecureTextField selectText:nil];
 
@@ -4843,9 +4843,9 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				encryptpw = [inputTextWindowSecureTextField stringValue];
 				if ([self isSaveInBundle]) {
 					NSMutableDictionary *spfSessionData = [NSMutableDictionary dictionary];
-					[spfSessionData addEntriesFromDictionary:[[NSApp delegate] spfSessionDocData]];
+					[spfSessionData addEntriesFromDictionary:[SPAppDelegate spfSessionDocData]];
 					[spfSessionData setObject:encryptpw forKey:@"e_string"];
-					[[NSApp delegate] setSpfSessionDocData:spfSessionData];
+					[SPAppDelegate setSpfSessionDocData:spfSessionData];
 				}
 			} else {
 				[self closeAndDisconnect];
@@ -5379,7 +5379,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						return;
 					}
 					if(doSyntaxHighlighting) {
-						[result appendFormat:@"%@<br>", [[NSApp delegate] doSQLSyntaxHighlightForString:[syntaxString createViewSyntaxPrettifier] cssLike:doSyntaxHighlightingViaCSS]];
+						[result appendFormat:@"%@<br>", [SPAppDelegate doSQLSyntaxHighlightForString:[syntaxString createViewSyntaxPrettifier] cssLike:doSyntaxHighlightingViaCSS]];
 					} else {
 						[result appendFormat:@"%@\n", [syntaxString createViewSyntaxPrettifier]];
 					}
@@ -5591,7 +5591,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 
-	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+	if([runningActivitiesArray count] || [[SPAppDelegate runningActivities] count])
 		[self performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 	else {
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -5612,7 +5612,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		}
 	}
 
-	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
+	if([runningActivitiesArray count] || [[SPAppDelegate runningActivities] count])
 		[self performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 	else {
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
@@ -6198,7 +6198,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #ifndef SP_CODA
 - (void)_processDatabaseChangedBundleTriggerActions
 {
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
+	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionDatabaseChanged];
 	
 	for (NSString* cmdPath in triggeredCommands) 
 	{
@@ -6229,7 +6229,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		}
 		if(!stopTrigger) {
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {

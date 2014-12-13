@@ -38,6 +38,7 @@
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
@@ -477,7 +478,7 @@
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSApp delegate] orderedDocuments])
+		for(id doc in [SPAppDelegate orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
 	}

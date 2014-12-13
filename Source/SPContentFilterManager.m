@@ -37,6 +37,7 @@
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 static NSString *SPExportFilterAction = @"SPExportFilter";
 
@@ -404,7 +405,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 		[cf release];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSApp delegate] orderedDocuments])
+		for(id doc in [SPAppDelegate orderedDocuments])
 			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
 				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
 #endif

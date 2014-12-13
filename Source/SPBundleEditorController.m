@@ -34,6 +34,7 @@
 #import "SPOutlineView.h"
 #import "SPBundleCommandTextView.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
@@ -880,7 +881,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[[self window] performClose:self];
 	}
 
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
 }
 
@@ -1083,7 +1084,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[undeleteTableView reloadData];
 			[[NSUserDefaults standardUserDefaults] setObject:stillUndeletedBundles forKey:SPBundleDeletedDefaultBundlesKey];
 			[[NSUserDefaults standardUserDefaults] synchronize];
-			[[NSApp delegate] reloadBundles:nil];
+			[SPAppDelegate reloadBundles:nil];
 			[self reloadBundles:self];
 
 		}

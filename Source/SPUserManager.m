@@ -281,7 +281,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		[[self managedObjectContext] save:&error];
 		
 		if (error != nil) {
-			[[NSApplication sharedApplication] presentError:error];
+			[NSApp presentError:error];
 		}
 		
 		[parentResults release];
@@ -443,7 +443,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
 	
     if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]) {
-        [[NSApplication sharedApplication] presentError:error];
+        [NSApp presentError:error];
     }    
 	
     return persistentStoreCoordinator;
@@ -1261,7 +1261,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSArray *array = [moc executeFetchRequest:request error:&error];
 	
 	if (error != nil) {
-		[[NSApplication sharedApplication] presentError:error];
+		[NSApp presentError:error];
 	}
 	
 	return array;
@@ -1297,7 +1297,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSArray *array = [moc executeFetchRequest:request error:&error];
 	
 	if (error != nil) {
-		[[NSApplication sharedApplication] presentError:error];
+		[NSApp presentError:error];
 	}
 	
 	return array;

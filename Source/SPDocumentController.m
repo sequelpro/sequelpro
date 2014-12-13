@@ -40,7 +40,7 @@
 /**
  * Add a dummy implementation of readFromData:ofType:error:, which appears to
  * be called by the OS in certain situations despite non-document use.
- * (See http://code.google.com/p/sequel-pro/issues/detail?id=1411 )
+ * (See issue #1411 )
  */
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError
 {

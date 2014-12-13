@@ -30,6 +30,7 @@
 
 #import "SPQueryDocumentsController.h"
 #import "SPCustomQuery.h"
+#import "SPAppController.h"
 
 @implementation SPQueryController (SPQueryDocumentsController)
 
@@ -122,7 +123,7 @@
 #ifndef SP_CODA
 	// Check for multiple instance of the same document.
 	// Remove it if only one instance was registerd.
-	NSArray *allDocs = [[NSApp delegate] orderedDocuments];
+	NSArray *allDocs = [SPAppDelegate orderedDocuments];
 	NSMutableArray *allURLs = [NSMutableArray array];
 	
 	for (id doc in allDocs) 
@@ -202,7 +203,7 @@
 	}
 	
 	// Inform all opened documents to update the history list
-	for (id doc in [[NSApp delegate] orderedDocuments])
+	for (id doc in [SPAppDelegate orderedDocuments])
 	{
 		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)]) {
 			[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];

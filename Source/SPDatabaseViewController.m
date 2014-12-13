@@ -589,7 +589,7 @@
 	[self endTask];
 
 #ifndef SP_CODA /* triggered commands */
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
 	
 	for(NSString* cmdPath in triggeredCommands) 
 	{
@@ -615,7 +615,7 @@
 		}
 		if(!stopTrigger) {
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"])
