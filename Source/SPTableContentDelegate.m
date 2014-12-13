@@ -367,10 +367,11 @@
 		else {
 			tmp = [tableContentView draggedRowsAsTabString];
 		}
-		
+
+#warning code inside "if" is unreachable
 		if (!tmp && [tmp length])
 		{
-			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, NSStringPboardType, nil] owner:nil];
+			[pboard declareTypes:@[NSTabularTextPboardType, NSStringPboardType] owner:nil];
 			
 			[pboard setString:tmp forType:NSStringPboardType];
 			[pboard setString:tmp forType:NSTabularTextPboardType];
