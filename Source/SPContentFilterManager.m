@@ -89,12 +89,12 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	[contentFilterSplitView setMaxSize:245.f ofSubviewAtIndex:0];
 
 	// Add global group row to contentFilters
-	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			NSLocalizedString(@"Global",@"Content Filter Manager : Filter Entry List: 'Global' Header"), @"MenuLabel",
-			@"", @"headerOfFileURL",
-			@"", @"Clause",
-			@"", @"ConjunctionLabel",
-			nil]];
+	[contentFilters addObject:@{
+			@"MenuLabel"        : NSLocalizedString(@"Global", @"Content Filter Manager : Filter Entry List: 'Global' Header"),
+			@"headerOfFileURL"  : @"",
+			@"Clause"           : @"",
+			@"ConjunctionLabel" : @""
+	}];
 
 #ifndef SP_CODA /* prefs access */
 	// Build data source for global content filter (as mutable copy! otherwise each
@@ -240,10 +240,10 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// Duplicate a selected filter if sender == self
 	if(sender == self)
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy",@"Content Filter Manager : Initial name of copied filter"),[contentFilterNameTextField stringValue]], [contentFilterTextView string], nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy",@"Content Filter Manager : Initial name of copied filter"),[contentFilterNameTextField stringValue]], [contentFilterTextView string], nil] forKeys:@[@"MenuLabel", @"Clause"]];
 	// Add a new filter
 	else
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:@[NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @""] forKeys:@[@"MenuLabel", @"Clause", @"ConjunctionLabel"]];
 
 	// If a favourite is currently selected, add the new favourite next to it
 	if([contentFilterTableView numberOfSelectedRows] > 0) {

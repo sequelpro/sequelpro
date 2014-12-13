@@ -91,41 +91,41 @@
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
 {
-    return [NSArray arrayWithObjects:
-			SPPreferenceToolbarGeneral, 
-			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarNotifications, 
-			SPPreferenceToolbarEditor, 
-			SPPreferenceToolbarShortcuts, 
-			SPPreferenceToolbarAutoUpdate, 
-			SPPreferenceToolbarNetwork, 
-			nil];
+    return @[
+			SPPreferenceToolbarGeneral,
+			SPPreferenceToolbarTables,
+			SPPreferenceToolbarNotifications,
+			SPPreferenceToolbarEditor,
+			SPPreferenceToolbarShortcuts,
+			SPPreferenceToolbarAutoUpdate,
+			SPPreferenceToolbarNetwork
+	];
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:
-			SPPreferenceToolbarGeneral, 
-			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarNotifications, 
-			SPPreferenceToolbarEditor, 
-			SPPreferenceToolbarShortcuts, 
-			SPPreferenceToolbarAutoUpdate, 
-			SPPreferenceToolbarNetwork, 
-			nil];
+	return @[
+			SPPreferenceToolbarGeneral,
+			SPPreferenceToolbarTables,
+			SPPreferenceToolbarNotifications,
+			SPPreferenceToolbarEditor,
+			SPPreferenceToolbarShortcuts,
+			SPPreferenceToolbarAutoUpdate,
+			SPPreferenceToolbarNetwork
+	];
 }
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:
-			SPPreferenceToolbarGeneral, 
-			SPPreferenceToolbarTables, 
-			SPPreferenceToolbarNotifications, 
-			SPPreferenceToolbarEditor, 
-			SPPreferenceToolbarShortcuts, 
-			SPPreferenceToolbarAutoUpdate, 
-			SPPreferenceToolbarNetwork, 
-			nil];
+	return @[
+			SPPreferenceToolbarGeneral,
+			SPPreferenceToolbarTables,
+			SPPreferenceToolbarNotifications,
+			SPPreferenceToolbarEditor,
+			SPPreferenceToolbarShortcuts,
+			SPPreferenceToolbarAutoUpdate,
+			SPPreferenceToolbarNetwork
+	];
 }
 
 @end

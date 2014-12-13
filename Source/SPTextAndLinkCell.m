@@ -176,7 +176,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Allow hit tracking for link functionality
  */
-- (NSUInteger) hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
+- (NSCellHitResult) hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
 {
 
 	// Fast case for no link - make entire cell editable click area

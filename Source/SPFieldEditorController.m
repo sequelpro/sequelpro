@@ -143,7 +143,7 @@
 			}
 		}
 
-		qlTypes = [[NSDictionary dictionaryWithObject:qlTypesItems forKey:SPQuickLookTypes] retain];
+		qlTypes = [@{SPQuickLookTypes : qlTypesItems} retain];
 		[qlTypesItems release];
 #endif
 

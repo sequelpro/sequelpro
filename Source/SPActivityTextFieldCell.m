@@ -206,7 +206,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Allow hit tracking for cancel functionality
  */
-- (NSUInteger)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
+- (NSCellHitResult)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
 {
 	return NSCellHitContentArea | NSCellHitTrackableArea;
 }

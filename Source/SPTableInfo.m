@@ -78,7 +78,7 @@
 		object:nil];
 
 	// Add activities header
-	[activities addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[activities addObject:@{@"name" : NSLocalizedString(@"ACTIVITIES", @"header for activities pane")}];
 	[activitiesTable reloadData];
 
 	// Add Information header
@@ -110,7 +110,7 @@
 	NSMutableArray *acts = [NSMutableArray array];
 	
 	[acts removeAllObjects];
-	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[acts addObject:@{@"name" : NSLocalizedString(@"ACTIVITIES", @"header for activities pane")}];
 	[acts addObjectsFromArray:[tableDocumentInstance runningActivities]];
 	[acts addObjectsFromArray:[SPAppDelegate runningActivities]];
 	

@@ -162,7 +162,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	}
 
-	[defaultFieldTypesForComboBox setArray:[NSArray arrayWithObjects:
+	[defaultFieldTypesForComboBox setArray:@[
 			@"VARCHAR(255)",
 			@"CHAR(63)",
 			@"TEXT",
@@ -172,9 +172,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 			@"DATE",
 			@"DATETIME",
 			@"TIME",
-			@"TIMESTAMP",
-			nil
-		]];
+			@"TIMESTAMP"
+	]];
 
 	[importFieldNamesHeaderSwitch setState:importFieldNamesHeader];
 

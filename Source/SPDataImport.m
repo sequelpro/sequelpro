@@ -662,7 +662,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -1178,7 +1178,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];

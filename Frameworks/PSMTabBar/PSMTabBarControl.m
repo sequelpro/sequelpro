@@ -193,7 +193,7 @@
     if (self) {
         // Initialization
         [self initAddedProperties];
-        [self registerForDraggedTypes:[NSArray arrayWithObjects:@"PSMTabBarControlItemPBType", nil]];
+        [self registerForDraggedTypes:@[@"PSMTabBarControlItemPBType"]];
 		
 		// resize
 		[self setPostsFrameChangedNotifications:YES];
@@ -1990,7 +1990,7 @@
 
             // Initialization
         [self initAddedProperties];
-        [self registerForDraggedTypes:[NSArray arrayWithObjects:@"PSMTabBarControlItemPBType", nil]];
+        [self registerForDraggedTypes:@[@"PSMTabBarControlItemPBType"]];
     
         if ([aDecoder allowsKeyedCoding]) {
             _cells = [[aDecoder decodeObjectForKey:@"PSMcells"] retain];

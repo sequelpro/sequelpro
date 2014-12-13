@@ -136,7 +136,7 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
 		}
 	}
 	
-	return errorDescription ? [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:[NSDictionary dictionaryWithObject:errorDescription forKey:NSLocalizedDescriptionKey]] : nil;
+	return errorDescription ? [NSError errorWithDomain:NSCocoaErrorDomain code:1 userInfo:@{NSLocalizedDescriptionKey : errorDescription}] : nil;
 }
 
 @end

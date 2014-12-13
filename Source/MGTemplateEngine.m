@@ -189,10 +189,9 @@
 
 		SEL selector = @selector(templateEngine:encounteredError:isContinuing:);
 		if ([(NSObject *)delegate respondsToSelector:selector]) {
-			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN 
-												 code:code 
-											 userInfo:[NSDictionary dictionaryWithObject:errStr 
-																				  forKey:NSLocalizedDescriptionKey]];
+			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN
+												 code:code
+											 userInfo:@{NSLocalizedDescriptionKey : errStr}];
 			[(NSObject <MGTemplateEngineDelegate> *)delegate templateEngine:self 
 														   encounteredError:error 
 															   isContinuing:continuing];

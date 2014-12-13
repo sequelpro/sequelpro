@@ -66,7 +66,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 		
 		editorColors = 
-		[[NSArray arrayWithObjects:
+		[@[
 		  SPCustomQueryEditorTextColor,
 		  SPCustomQueryEditorBackgroundColor,
 		  SPCustomQueryEditorCaretColor,
@@ -77,11 +77,11 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		  SPCustomQueryEditorBacktickColor,
 		  SPCustomQueryEditorVariableColor,
 		  SPCustomQueryEditorHighlightQueryColor,
-		  SPCustomQueryEditorSelectionColor,
-		  nil] retain];
+		  SPCustomQueryEditorSelectionColor
+		] retain];
 		
 		editorNameForColors = 
-		[[NSArray arrayWithObjects:
+		[@[
 		  NSLocalizedString(@"Text", @"text label for color table (Prefs > Editor)"),
 		  NSLocalizedString(@"Background", @"background label for color table (Prefs > Editor)"),
 		  NSLocalizedString(@"Caret", @"caret label for color table (Prefs > Editor)"),
@@ -92,8 +92,8 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		  NSLocalizedString(@"Backtick Quote", @"backtick quote label for color table (Prefs > Editor)"),
 		  NSLocalizedString(@"Variable", @"variable label for color table (Prefs > Editor)"),
 		  NSLocalizedString(@"Query Background", @"query background label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Selection", @"selection label for color table (Prefs > Editor)"),
-		  nil] retain];
+		  NSLocalizedString(@"Selection", @"selection label for color table (Prefs > Editor)")
+		] retain];
 	}
 	
 	return self;

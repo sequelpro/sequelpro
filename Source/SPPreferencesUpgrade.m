@@ -130,22 +130,22 @@ void SPApplyRevisionChanges(void)
 	if (recordedVersionNumber < 561) {
 		NSEnumerator *keyEnumerator;
 		NSString *oldKey, *newKey;
-		NSDictionary *keysToUpgrade = [NSDictionary dictionaryWithObjectsAndKeys:
-									   @"encoding", SPDefaultEncoding,
-									   @"useMonospacedFonts", SPUseMonospacedFonts,
-									   @"reloadAfterAdding", SPReloadAfterAddingRow,
-									   @"reloadAfterEditing", SPReloadAfterEditingRow,
-									   @"reloadAfterRemoving", SPReloadAfterRemovingRow,
-									   @"dontShowBlob", SPLoadBlobsAsNeeded,
-									   @"fetchRowCount", @"FetchCorrectRowCount",
-									   @"limitRows", SPLimitResults,
-									   @"limitRowsValue", SPLimitResultsValue,
-									   @"nullValue", SPNullValue,
-									   @"showError", SPShowNoAffectedRowsError,
-									   @"connectionTimeout", SPConnectionTimeoutValue,
-									   @"keepAliveInterval", SPKeepAliveInterval,
-									   @"lastFavoriteIndex", SPLastFavoriteID,
-									   nil];
+		NSDictionary *keysToUpgrade = @{
+				SPDefaultEncoding         : @"encoding",
+				SPUseMonospacedFonts      : @"useMonospacedFonts",
+				SPReloadAfterAddingRow    : @"reloadAfterAdding",
+				SPReloadAfterEditingRow   : @"reloadAfterEditing",
+				SPReloadAfterRemovingRow  : @"reloadAfterRemoving",
+				SPLoadBlobsAsNeeded       : @"dontShowBlob",
+				@"FetchCorrectRowCount"   : @"fetchRowCount",
+				SPLimitResults            : @"limitRows",
+				SPLimitResultsValue       : @"limitRowsValue",
+				SPNullValue               : @"nullValue",
+				SPShowNoAffectedRowsError : @"showError",
+				SPConnectionTimeoutValue  : @"connectionTimeout",
+				SPKeepAliveInterval       : @"keepAliveInterval",
+				SPLastFavoriteID          : @"lastFavoriteIndex"
+		};
 		
 		keyEnumerator = [keysToUpgrade keyEnumerator];
 		
@@ -255,7 +255,7 @@ void SPApplyRevisionChanges(void)
 			if (([favorite isKindOfClass:[NSDictionary class]]) && ([favorite objectForKey:@"name"]) && ([favorite objectForKey:@"query"])) {
 				NSMutableString *favoriteName = [NSMutableString stringWithString:[favorite objectForKey:@"name"]];
 				[favoriteName replaceOccurrencesOfString:@"\n" withString:@" " options:NSLiteralSearch range:NSMakeRange(0, [favoriteName length])];
-				[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], [favorite objectForKey:@"query"], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+				[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], [favorite objectForKey:@"query"], nil] forKeys:@[@"name", @"query"]]];
 				continue;
 			}
 			
@@ -268,7 +268,7 @@ void SPApplyRevisionChanges(void)
 				[favoriteName appendString:@"..."];
 			}
 			
-			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], favorite, nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+			[queryFavoritesArray replaceObjectAtIndex:i withObject:[NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithString:favoriteName], favorite, nil] forKeys:@[@"name", @"query"]]];
 		}
 		
 		[prefs setObject:queryFavoritesArray forKey:SPQueryFavorites];
@@ -287,27 +287,27 @@ void SPApplyRevisionChanges(void)
 	
 	// For versions prior to 2325 (<0.9.9), convert the old encoding pref string into the new localizable constant
 	if  (recordedVersionNumber < 2325 && [prefs objectForKey:SPOldDefaultEncodingKey] && [[prefs objectForKey:SPOldDefaultEncodingKey] isKindOfClass:[NSString class]]) {
-		NSDictionary *encodingMap = [NSDictionary dictionaryWithObjectsAndKeys:
-									 [NSNumber numberWithInt:SPEncodingAutodetect], @"Autodetect",
-									 [NSNumber numberWithInt:SPEncodingUCS2], @"UCS-2 Unicode (ucs2)",
-									 [NSNumber numberWithInt:SPEncodingUTF8], @"UTF-8 Unicode (utf8)",
-									 [NSNumber numberWithInt:SPEncodingUTF8viaLatin1], @"UTF-8 Unicode via Latin 1",
-									 [NSNumber numberWithInt:SPEncodingASCII], @"US ASCII (ascii)",
-									 [NSNumber numberWithInt:SPEncodingLatin1], @"ISO Latin 1 (latin1)",
-									 [NSNumber numberWithInt:SPEncodingMacRoman], @"Mac Roman (macroman)",
-									 [NSNumber numberWithInt:SPEncodingCP1250Latin2], @"Windows Latin 2 (cp1250)",
-									 [NSNumber numberWithInt:SPEncodingISOLatin2], @"ISO Latin 2 (latin2)",
-									 [NSNumber numberWithInt:SPEncodingCP1256Arabic], @"Windows Arabic (cp1256)",
-									 [NSNumber numberWithInt:SPEncodingGreek], @"ISO Greek (greek)",
-									 [NSNumber numberWithInt:SPEncodingHebrew], @"ISO Hebrew (hebrew)",
-									 [NSNumber numberWithInt:SPEncodingLatin5Turkish], @"ISO Turkish (latin5)",
-									 [NSNumber numberWithInt:SPEncodingCP1257WinBaltic], @"Windows Baltic (cp1257)",
-									 [NSNumber numberWithInt:SPEncodingCP1251WinCyrillic], @"Windows Cyrillic (cp1251)",
-									 [NSNumber numberWithInt:SPEncodingBig5Chinese], @"Big5 Traditional Chinese (big5)",
-									 [NSNumber numberWithInt:SPEncodingShiftJISJapanese], @"Shift-JIS Japanese (sjis)",
-									 [NSNumber numberWithInt:SPEncodingEUCJPJapanese], @"EUC-JP Japanese (ujis)",
-									 [NSNumber numberWithInt:SPEncodingEUCKRKorean], @"EUC-KR Korean (euckr)",
-									 nil];
+		NSDictionary *encodingMap = @{
+				@"Autodetect"                      : @(SPEncodingAutodetect),
+				@"UCS-2 Unicode (ucs2)"            : @(SPEncodingUCS2),
+				@"UTF-8 Unicode (utf8)"            : @(SPEncodingUTF8),
+				@"UTF-8 Unicode via Latin 1"       : @(SPEncodingUTF8viaLatin1),
+				@"US ASCII (ascii)"                : @(SPEncodingASCII),
+				@"ISO Latin 1 (latin1)"            : @(SPEncodingLatin1),
+				@"Mac Roman (macroman)"            : @(SPEncodingMacRoman),
+				@"Windows Latin 2 (cp1250)"        : @(SPEncodingCP1250Latin2),
+				@"ISO Latin 2 (latin2)"            : @(SPEncodingISOLatin2),
+				@"Windows Arabic (cp1256)"         : @(SPEncodingCP1256Arabic),
+				@"ISO Greek (greek)"               : @(SPEncodingGreek),
+				@"ISO Hebrew (hebrew)"             : @(SPEncodingHebrew),
+				@"ISO Turkish (latin5)"            : @(SPEncodingLatin5Turkish),
+				@"Windows Baltic (cp1257)"         : @(SPEncodingCP1257WinBaltic),
+				@"Windows Cyrillic (cp1251)"       : @(SPEncodingCP1251WinCyrillic),
+				@"Big5 Traditional Chinese (big5)" : @(SPEncodingBig5Chinese),
+				@"Shift-JIS Japanese (sjis)"       : @(SPEncodingShiftJISJapanese),
+				@"EUC-JP Japanese (ujis)"          : @(SPEncodingEUCJPJapanese),
+				@"EUC-KR Korean (euckr)"           : @(SPEncodingEUCKRKorean)
+		};
 		
 		NSNumber *newMappedValue = [encodingMap valueForKey:[prefs objectForKey:SPOldDefaultEncodingKey]];
 		
@@ -394,7 +394,7 @@ void SPMigrateConnectionFavoritesData(void)
 		[prefs removeObjectForKey:@"LastFavoriteIndex"];
 	}
 
-	NSDictionary *newFavorites = [NSDictionary dictionaryWithObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+	NSDictionary *newFavorites = @{SPFavoritesRootKey : [NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil]};
 	
 	error = nil;
 	NSString *errorString = nil;

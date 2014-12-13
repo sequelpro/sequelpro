@@ -116,13 +116,13 @@
 	[[[self frontDocumentWindow] windowController] addNewConnection:self];
 	
 	// Get the state of the previously-frontmost document
-	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									 @YES, @"connection",
-									 @YES, @"history",
-									 @YES, @"session",
-									 @YES, @"query",
-									 @YES, @"password",
-									 nil];
+	NSDictionary *allStateDetails = @{
+			@"connection" : @YES,
+			@"history"    : @YES,
+			@"session"    : @YES,
+			@"query"      : @YES,
+			@"password"   : @YES
+	};
 	
 	NSMutableDictionary *frontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
 	

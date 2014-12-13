@@ -96,7 +96,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 + (void)showWithObject:(id)content atLocation:(NSPoint)point
 {
-	[self showWithObject:content atLocation:point ofType:@"text" displayOptions:[NSDictionary dictionary]];
+	[self showWithObject:content atLocation:point ofType:@"text" displayOptions:@{}];
 }
 
 + (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type

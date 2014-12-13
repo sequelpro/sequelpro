@@ -116,12 +116,11 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 
-	extraFieldSuggestions = [[NSArray arrayWithObjects:
-		@"None",
-		@"auto_increment",
-		@"on update CURRENT_TIMESTAMP",
-		@"SERIAL DEFAULT VALUE",
-		nil
+	extraFieldSuggestions = [@[
+			@"None",
+			@"auto_increment",
+			@"on update CURRENT_TIMESTAMP",
+			@"SERIAL DEFAULT VALUE"
 	] retain];
 
 	// Note that changing the contents or ordering of this array will affect the implementation of 
@@ -254,7 +253,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	
 	[tableFields insertObject:[NSMutableDictionary
 							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", @0, @0, nil]
-							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
+							   forKeys:@[@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation"]]
 					  atIndex:insertIndex];
 #else
 	[tableFields insertObject:[NSMutableDictionary
@@ -1208,7 +1207,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[indexesController setConnection:mySQLConnection];
 	
 	// Set up tableView
-	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:SPDefaultPasteboardDragType, nil]];
+	[tableSourceView registerForDraggedTypes:@[SPDefaultPasteboardDragType]];
 }
 
 /**

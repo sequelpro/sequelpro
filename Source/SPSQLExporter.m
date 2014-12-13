@@ -614,7 +614,7 @@
 	}
 	
 	// Export procedures and functions
-	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) 
+	for (NSString *procedureType in @[@"PROCEDURE", @"FUNCTION"])
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {

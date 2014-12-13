@@ -377,20 +377,20 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 {
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
-	NSArray *possibleSocketLocations = [NSArray arrayWithObjects:
-										@"/tmp/mysql.sock",							// Default
-										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
-										@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
-										@"/var/mysql/mysql.sock",					// Mac OS X Server default
-										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
-										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
-										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
-										@"/usr/local/zend/mysql/tmp/mysql.sock",	// Zend Server CE (see Issue #1251)
-										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
-										@"/var/tmp/mysql.sock",						// As used on FreeBSD
-										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
-										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
-										nil];
+	NSArray *possibleSocketLocations = @[
+			@"/tmp/mysql.sock",                                     // Default
+			@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
+			@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
+			@"/var/mysql/mysql.sock",                               // Mac OS X Server default
+			@"/opt/local/var/run/mysqld/mysqld.sock",               // Darwinports MySQL
+			@"/opt/local/var/run/mysql4/mysqld.sock",               // Darwinports MySQL 4
+			@"/opt/local/var/run/mysql5/mysqld.sock",               // Darwinports MySQL 5
+			@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
+			@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
+			@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
+			@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
+			@"/opt/local/lib/mysql/mysql.sock"
+	];
 
 	for (NSUInteger i = 0; i < [possibleSocketLocations count]; i++) {
 		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])

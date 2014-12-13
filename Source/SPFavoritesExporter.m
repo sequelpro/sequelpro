@@ -77,7 +77,7 @@
 		[favorites addObject:[node dictionaryRepresentation]];
 	}
 	
-	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:favorites forKey:SPFavoritesDataRootKey];
+	NSDictionary *dictionary = @{SPFavoritesDataRootKey : favorites};
 	
 	[favorites release];
 	

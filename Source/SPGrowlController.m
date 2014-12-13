@@ -98,7 +98,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	[notificationDictionary setObject:description forKey:@"description"];
 	[notificationDictionary setObject:document forKey:@"document"];
 	[notificationDictionary setObject:name forKey:@"name"];
-	[notificationDictionary setObject:[NSDictionary dictionaryWithObject:[NSNumber numberWithUnsignedInteger:[document hash]] forKey:@"notificationDocumentHash"] forKey:@"clickContext"];
+	[notificationDictionary setObject:@{@"notificationDocumentHash" : @([document hash])} forKey:@"clickContext"];
 
 	[self performSelector:@selector(notifyWithObject:) withObject:notificationDictionary afterDelay:0.1];
 }

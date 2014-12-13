@@ -1012,8 +1012,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
-		} 
+			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+		}
 		else {
 			// Reset chooseDatabaseButton
 			if ([[self database] length]) {
@@ -1631,30 +1631,30 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (NSNumber *)encodingTagFromMySQLEncoding:(NSString *)mysqlEncoding
 {
-	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
-									[NSNumber numberWithInt:SPEncodingUCS2], @"ucs2",
-									[NSNumber numberWithInt:SPEncodingUTF8], @"utf8",
-									[NSNumber numberWithInt:SPEncodingUTF8viaLatin1], @"utf8-",
-									[NSNumber numberWithInt:SPEncodingASCII], @"ascii",
-									[NSNumber numberWithInt:SPEncodingLatin1], @"latin1",
-									[NSNumber numberWithInt:SPEncodingMacRoman], @"macroman",
-									[NSNumber numberWithInt:SPEncodingCP1250Latin2], @"cp1250",
-									[NSNumber numberWithInt:SPEncodingISOLatin2], @"latin2",
-									[NSNumber numberWithInt:SPEncodingCP1256Arabic], @"cp1256",
-									[NSNumber numberWithInt:SPEncodingGreek], @"greek",
-									[NSNumber numberWithInt:SPEncodingHebrew], @"hebrew",
-									[NSNumber numberWithInt:SPEncodingLatin5Turkish], @"latin5",
-									[NSNumber numberWithInt:SPEncodingCP1257WinBaltic], @"cp1257",
-									[NSNumber numberWithInt:SPEncodingCP1251WinCyrillic], @"cp1251",
-									[NSNumber numberWithInt:SPEncodingBig5Chinese], @"big5",
-									[NSNumber numberWithInt:SPEncodingShiftJISJapanese], @"sjis",
-									[NSNumber numberWithInt:SPEncodingEUCJPJapanese], @"ujis",
-									[NSNumber numberWithInt:SPEncodingEUCKRKorean], @"euckr",
-									nil];
+	NSDictionary *translationMap = @{
+			@"ucs2"     : @(SPEncodingUCS2),
+			@"utf8"     : @(SPEncodingUTF8),
+			@"utf8-"    : @(SPEncodingUTF8viaLatin1),
+			@"ascii"    : @(SPEncodingASCII),
+			@"latin1"   : @(SPEncodingLatin1),
+			@"macroman" : @(SPEncodingMacRoman),
+			@"cp1250"   : @(SPEncodingCP1250Latin2),
+			@"latin2"   : @(SPEncodingISOLatin2),
+			@"cp1256"   : @(SPEncodingCP1256Arabic),
+			@"greek"    : @(SPEncodingGreek),
+			@"hebrew"   : @(SPEncodingHebrew),
+			@"latin5"   : @(SPEncodingLatin5Turkish),
+			@"cp1257"   : @(SPEncodingCP1257WinBaltic),
+			@"cp1251"   : @(SPEncodingCP1251WinCyrillic),
+			@"big5"     : @(SPEncodingBig5Chinese),
+			@"sjis"     : @(SPEncodingShiftJISJapanese),
+			@"ujis"     : @(SPEncodingEUCJPJapanese),
+			@"euckr"    : @(SPEncodingEUCKRKorean)
+	};
 	NSNumber *encodingTag = [translationMap valueForKey:mysqlEncoding];
 
 	if (!encodingTag)
-		return [NSNumber numberWithInt:SPEncodingAutodetect];
+		return @(SPEncodingAutodetect);
 
 	return encodingTag;
 }
@@ -2843,7 +2843,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[panel setAccessoryView:[SPEncodingPopupAccessory encodingAccessory:[prefs integerForKey:SPLastSQLFileEncoding] 
 				includeDefaultEntry:NO encodingPopUp:&encodingPopUp]];
 
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionSQL, nil]];
+		[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 
 		if (![prefs stringForKey:@"lastSqlFileName"]) {
 			[prefs setObject:@"" forKey:@"lastSqlFileName"];
@@ -2880,7 +2880,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		}
 
 		// Save current session (open connection windows as SPF file)
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPFileExtensionDefault, nil]];
+		[panel setAllowedFileTypes:@[SPFileExtensionDefault]];
 
 		//Restore accessory view settings if possible
 		if ([spfDocData objectForKey:@"save_password"]) {
@@ -2933,7 +2933,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			return;
 		}
 
-		[panel setAllowedFileTypes:[NSArray arrayWithObjects:SPBundleFileExtension, nil]];
+		[panel setAllowedFileTypes:@[SPBundleFileExtension]];
 
 		NSDictionary *spfSessionData = [SPAppDelegate spfSessionDocData];
 
@@ -3357,7 +3357,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[spfStructure setObject:[stateDetails objectForKey:SPQueryFavorites] forKey:SPQueryFavorites];
 	[spfStructure setObject:[stateDetails objectForKey:SPQueryHistory] forKey:SPQueryHistory];
 	[spfStructure setObject:[stateDetails objectForKey:SPContentFilters] forKey:SPContentFilters];
-	[stateDetails removeObjectsForKeys:[NSArray arrayWithObjects:SPQueryFavorites, SPQueryHistory, SPContentFilters, nil]];
+	[stateDetails removeObjectsForKeys:@[SPQueryFavorites, SPQueryHistory, SPContentFilters]];
 	[spfData addEntriesFromDictionary:stateDetails];
 
 	// Determine whether to use encryption when adding the data
@@ -3443,13 +3443,13 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[[parentWindow windowController] addNewConnection:self];
 
 	// Get the current state
-	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										@YES, @"connection",
-										@YES, @"history",
-										@YES, @"session",
-										@YES, @"query",
-										@YES, @"password",
-										nil];
+	NSDictionary *allStateDetails = @{
+			@"connection" : @YES,
+			@"history"    : @YES,
+			@"session"    : @YES,
+			@"query"      : @YES,
+			@"password"   : @YES
+	};
 	NSMutableDictionary *currentState = [NSMutableDictionary dictionaryWithDictionary:[self stateIncludingDetails:allStateDetails]];
 
 	// Ensure it's set to autoconnect, and clear the table
@@ -3589,7 +3589,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	}
 	
 	if (action == @selector(importFromClipboard:)){
-		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:[NSArray arrayWithObjects:NSStringPboardType, nil]];
+		return [self database] && [[NSPasteboard generalPasteboard] availableTypeFromArray:@[NSStringPboardType]];
 	}
 	
 	// Change "Save Query/Queries" menu item title dynamically
@@ -4046,7 +4046,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar*)toolbar
 {
-	return [NSArray arrayWithObjects:
+	return @[
 			SPMainToolbarDatabaseSelection,
 			SPMainToolbarHistoryNavigation,
 			SPMainToolbarShowConsole,
@@ -4061,8 +4061,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			NSToolbarCustomizeToolbarItemIdentifier,
 			NSToolbarFlexibleSpaceItemIdentifier,
 			NSToolbarSpaceItemIdentifier,
-			NSToolbarSeparatorItemIdentifier,
-			nil];
+			NSToolbarSeparatorItemIdentifier
+	];
 }
 
 /**
@@ -4070,7 +4070,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar
 {
-	return [NSArray arrayWithObjects:
+	return @[
 			SPMainToolbarDatabaseSelection,
 			SPMainToolbarTableStructure,
 			SPMainToolbarTableContent,
@@ -4081,8 +4081,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			NSToolbarFlexibleSpaceItemIdentifier,
 			SPMainToolbarHistoryNavigation,
 			SPMainToolbarUserManager,
-			SPMainToolbarShowConsole,
-			nil];
+			SPMainToolbarShowConsole
+	];
 }
 
 /**
@@ -4090,14 +4090,14 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
 {
-	return [NSArray arrayWithObjects:
+	return @[
 			SPMainToolbarTableStructure,
 			SPMainToolbarTableContent,
 			SPMainToolbarCustomQuery,
 			SPMainToolbarTableInfo,
 			SPMainToolbarTableRelations,
-			SPMainToolbarTableTriggers,
-			nil];
+			SPMainToolbarTableTriggers
+	];
 
 }
 
@@ -5643,7 +5643,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 - (NSDictionary*)shellVariables
 {
 
-	if(!_isConnected) return [NSDictionary dictionary];
+	if(!_isConnected) return @{};
 
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
 
@@ -5865,9 +5865,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	{
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	
-		[pb declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, 
-			NSStringPboardType, nil]
-				   owner:nil];
+		[pb declareTypes:@[NSTabularTextPboardType, NSStringPboardType] owner:nil];
 	
 		[pb setString:tmp forType:NSStringPboardType];
 		[pb setString:tmp forType:NSTabularTextPboardType];

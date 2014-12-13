@@ -155,7 +155,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	[schemaStatusSplitView setMinSize:16.f ofSubviewAtIndex:1];
 
 	[self setWindowFrameAutosaveName:@"SPNavigator"];
-	[outlineSchema2 registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil]];
+	[outlineSchema2 registerForDraggedTypes:@[SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType]];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:YES];
 	[outlineSchema2 setDraggingSourceOperationMask:NSDragOperationEvery forLocal:NO];
 
@@ -466,7 +466,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 			if(a)
 				[allSchemaKeys setObject:a forKey:connectionName];
 		} else {
-			[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
+			[schemaData setObject:@{} forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
 			[allSchemaKeys setObject:@[] forKey:connectionName];
 		}
 
@@ -547,12 +547,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		}
 	}
 
-	if([result count] < 1 ) return [NSArray arrayWithObjects:@0, @"", nil];
+	if([result count] < 1 ) return @[@0, @""];
 	if([result count] == 1) {
 		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([split count] == 2 ) return [NSArray arrayWithObjects:@1, [split lastObject], nil];
 		if([split count] == 3 ) return [NSArray arrayWithObjects:@2, [split lastObject], nil];
-		return [NSArray arrayWithObjects:@0, @"", nil];
+		return @[@0, @""];
 	}
 	// case if field is equal to a table or db name
 	NSMutableArray *arr = [NSMutableArray array];
@@ -560,14 +560,14 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
 			[arr addObject:item];
 	}
-	if([arr count] < 1 ) [NSArray arrayWithObjects:@0, @"", nil];
+	if([arr count] < 1 ) @[@0, @""];
 	if([arr count] == 1) {
 		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([split count] == 2 ) [NSArray arrayWithObjects:@1, [split lastObject], nil];
 		if([split count] == 3 ) [NSArray arrayWithObjects:@2, [split lastObject], nil];
-		return [NSArray arrayWithObjects:@0, @"", nil];
+		return @[@0, @""];
 	}
-	return [NSArray arrayWithObjects:@0, @"", nil];
+	return @[@0, @""];
 }
 
 #ifndef SP_CODA
@@ -611,7 +611,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if (![[doc getConnection] isConnected]) return;
 
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 }
 
 - (IBAction)outlineViewAction:(id)sender
@@ -1113,7 +1113,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
 {
 	// Provide data for our custom type, and simple NSStrings.
-	[pboard declareTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType, nil] owner:self];
+	[pboard declareTypes:@[SPNavigatorTableDataPasteboardDragType, SPNavigatorPasteboardDragType, NSStringPboardType] owner:self];
 
 	// Collect the actual schema paths without leading connection ID
 	NSMutableArray *draggedItems = [NSMutableArray array];

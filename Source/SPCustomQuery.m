@@ -1664,7 +1664,7 @@
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
-	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+	[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 
 	// If there are no table columns to add, return
 	if (!cqColumnDefinition || ![cqColumnDefinition count]) return;
@@ -1808,7 +1808,7 @@
 	NSDictionary *columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[customQueryView tableColumns] objectAtIndex:columnIndex] identifier] integerValue]]];
 
 	if(!columnDefinition)
-		return [NSArray arrayWithObjects:@(-2), @"", nil];
+		return @[@(-2), @""];
 
 	// Resolve the original table name for current column if AS was used
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -1819,13 +1819,13 @@
 	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
 	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
 	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
-		return [NSArray arrayWithObjects:@(-1), @"", nil];
+		return @[@(-1), @""];
 
 	// if table and database name are given check if field can be identified unambiguously
 	// first without blob data
 	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:NO];
 	if(!fieldIDQueryStr)
-		return [NSArray arrayWithObjects:@(-1), @"", nil];
+		return @[@(-1), @""];
 
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
@@ -1837,7 +1837,7 @@
 
 	if ([mySQLConnection queryErrored]) {
 		[tableDocumentInstance endTask];
-		return [NSArray arrayWithObjects:@(-1), @"", nil];
+		return @[@(-1), @""];
 	}
 
 	NSArray *tempRow = [tempResult getRowAsArray];
@@ -1847,7 +1847,7 @@
 		fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:YES];
 		if(!fieldIDQueryStr) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:@(-1), @"", nil];
+			return @[@(-1), @""];
 		}
 
 		tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
@@ -1857,14 +1857,14 @@
 
 		if ([mySQLConnection queryErrored]) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:@(-1), @"", nil];
+			return @[@(-1), @""];
 		}
 
 		tempRow = [tempResult getRowAsArray];
 
 		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:@(-1), @"", nil];
+			return @[@(-1), @""];
 		}
 	}
 
@@ -2290,9 +2290,7 @@
 		NSString *tmp = [customQueryView draggedRowsAsTabString];
 		if ( nil != tmp )
 		{
-			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType,
-				NSStringPboardType, nil]
-						   owner:nil];
+			[pboard declareTypes:@[NSTabularTextPboardType, NSStringPboardType] owner:nil];
 			[pboard setString:tmp forType:NSStringPboardType];
 			[pboard setString:tmp forType:NSTabularTextPboardType];
 			return YES;
@@ -3394,7 +3392,7 @@
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
+		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
@@ -3420,7 +3418,7 @@
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
+		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
 			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
 			    attributes:attributes] autorelease];
@@ -3540,11 +3538,7 @@
 	// Result Table Font preference changed
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
-#ifndef SP_CODA
-		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
-#else
-		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
-#endif
+		[customQueryView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 		[customQueryView setFont:tableFont];
 		[customQueryView reloadData];
 	}
@@ -3596,13 +3590,13 @@
 			if([saveQueryFavoriteGlobal state] == NSOnState) {
 				[favorites addObject:[NSMutableDictionary dictionaryWithObjects:
 					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], queryToBeAddded, nil]
-							forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]]];
+							forKeys:@[@"name", @"query"]]];
 
 				[prefs setObject:favorites forKey:SPQueryFavorites];
 			} else {
 				[[SPQueryController sharedQueryController] addFavorite:[NSMutableDictionary dictionaryWithObjects:
 					[NSArray arrayWithObjects:[queryFavoriteNameTextField stringValue], [[queryToBeAddded mutableCopy] autorelease], nil]
-						forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]] forFileURL:[tableDocumentInstance fileURL]];
+						forKeys:@[@"name", @"query"]] forFileURL:[tableDocumentInstance fileURL]];
 			}
 
 			[saveQueryFavoriteGlobal setState:NSOffState];

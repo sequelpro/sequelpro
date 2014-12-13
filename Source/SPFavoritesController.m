@@ -377,7 +377,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	// from the current favourites tree and convert it to a dictionary representation
 	// to create the plist data.  This is done before file changes as it can sometimes
 	// be terminated during shutdown.
-	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:data forKey:SPFavoritesRootKey];
+	NSDictionary *dictionary = @{SPFavoritesRootKey : data};
 	
 	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
 																   format:NSPropertyListXMLFormat_v1_0

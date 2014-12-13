@@ -168,7 +168,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 											   object:tableDocumentInstance];
 	
 #ifndef SP_CODA
-	[tablesListView registerForDraggedTypes:[NSArray arrayWithObjects:SPNavigatorTableDataPasteboardDragType, nil]];
+	[tablesListView registerForDraggedTypes:@[SPNavigatorTableDataPasteboardDragType]];
 #endif
 	
 	//create the charset helper
@@ -360,7 +360,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", @YES, @"cancelQuerying", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
 }
 
 /**
@@ -704,13 +704,13 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)_duplicateConnectionToFrontTab
 {
 	// Get the state of the document
-	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									 @YES, @"connection",
-									 @YES, @"history",
-									 @YES, @"session",
-									 @YES, @"query",
-									 @YES, @"password",
-									 nil];
+	NSDictionary *allStateDetails = @{
+			@"connection" : @YES,
+			@"history"    : @YES,
+			@"session"    : @YES,
+			@"query"      : @YES,
+			@"password"   : @YES
+	};
 	NSMutableDictionary *documentState = [NSMutableDictionary dictionaryWithDictionary:[tableDocumentInstance stateIncludingDetails:allStateDetails]];
 	
 	// Ensure it's set to autoconnect
@@ -1621,7 +1621,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA
@@ -2276,10 +2276,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" 
-							   target:[tableDocumentInstance databaseStructureRetrieval] 
-							 selector:@selector(queryDbStructureWithUserInfo:) 
-							   object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
+							   target:[tableDocumentInstance databaseStructureRetrieval]
+							 selector:@selector(queryDbStructureWithUserInfo:)
+							   object:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA /* operations performed on whole tables */
@@ -2428,9 +2428,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 		// Query the structure of all databases in the background (mainly for completion)
 		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
-		                           target:[tableDocumentInstance databaseStructureRetrieval]
+								   target:[tableDocumentInstance databaseStructureRetrieval]
 								 selector:@selector(queryDbStructureWithUserInfo:)
-								   object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+								   object:@{@"forceUpdate" : @YES}];
 	}
 	else {
 		// Error while creating new table
@@ -2637,7 +2637,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 		}
 	}
 }

@@ -130,17 +130,17 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	triggerGeneralPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	withBlobDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 
-	inputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, nil] retain];
-	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
-	inputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert, nil] retain];
-	outputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	outputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	inputFallbackInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent, nil] retain];
-	triggerInputFieldArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, nil] retain];
-	triggerDataTableArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged, nil] retain];
-	triggerGeneralArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, nil] retain];
-	withBlobDataTableArray = [[NSArray arrayWithObjects:SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference, nil] retain];
+	inputGeneralScopeArray = [@[SPBundleInputSourceNone] retain];
+	inputInputFieldScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent] retain];
+	inputDataTableScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert] retain];
+	outputInputFieldScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	outputGeneralScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	outputDataTableScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	inputFallbackInputFieldScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent] retain];
+	triggerInputFieldArray = [@[SPBundleTriggerActionNone] retain];
+	triggerDataTableArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged] retain];
+	triggerGeneralArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged] retain];
+	withBlobDataTableArray = [@[SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference] retain];
 
 	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
 	[allPopupScopeItems addObjectsFromArray:inputGeneralScopeArray];
@@ -155,65 +155,65 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
 	[allPopupScopeItems addObjectsFromArray:withBlobDataTableArray];
 
-	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
-						[NSArray arrayWithObjects:
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
-						 NSLocalizedString(@"Selected Text",           @"Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item"),
-						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item"),
-						 NSLocalizedString(@"Selected Rows (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item"),
-						 NSLocalizedString(@"Selected Rows (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item"),
-						 NSLocalizedString(@"Selected Rows (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item"),
-						 NSLocalizedString(@"Table Content (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item"),
-						 NSLocalizedString(@"Table Content (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item"),
-						 NSLocalizedString(@"Table Content (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Insert as Text",          @"Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item"),
-						 NSLocalizedString(@"Insert as Snippet",       @"Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item"),
-						 NSLocalizedString(@"Replace Selection",       @"Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item"),
-						 NSLocalizedString(@"Replace Entire Content",  @"Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Field : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=General : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Fallback Input source dropdown : 'none' item"),
-						 NSLocalizedString(@"Current Word",            @"Bundle Editor : Fallback Input source dropdown : 'current word' item"),
-						 NSLocalizedString(@"Current Line",            @"Bundle Editor : Fallback Input source dropdown : 'current line' item"),
-						 NSLocalizedString(@"Current Query",           @"Bundle Editor : Fallback Input source dropdown : 'current query' item"),
-						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Fallback Input source dropdown : 'entire content' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Trigger dropdown : 'none' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item"),
-						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item"),
-						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item"),
-						 NSLocalizedString(@"Table Row changed",       @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Trigger dropdown : 'none' item"),
-						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item"),
-						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item"),
-						 
-						 NSLocalizedString(@"exclude BLOB",            @"Bundle Editor : BLOB dropdown : 'exclude BLOB' item"),
-						 NSLocalizedString(@"include BLOB",            @"Bundle Editor : BLOB dropdown : 'include BLOB' item"),
-						 NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
-						 NSLocalizedString(@"save BLOB as dat file",   @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
+	NSDictionary *menuItemTitles = @{
+			allPopupScopeItems : @[
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
 
-						nil]
-					forKeys:allPopupScopeItems];
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
+					NSLocalizedString(@"Selected Text", @"Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item"),
+					NSLocalizedString(@"Entire Content", @"Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item"),
+					NSLocalizedString(@"Selected Rows (TSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item"),
+					NSLocalizedString(@"Selected Rows (CSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item"),
+					NSLocalizedString(@"Selected Rows (SQL)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item"),
+					NSLocalizedString(@"Table Content (TSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item"),
+					NSLocalizedString(@"Table Content (CSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item"),
+					NSLocalizedString(@"Table Content (SQL)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Insert as Text", @"Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item"),
+					NSLocalizedString(@"Insert as Snippet", @"Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item"),
+					NSLocalizedString(@"Replace Selection", @"Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item"),
+					NSLocalizedString(@"Replace Entire Content", @"Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=Field : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=General : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Fallback Input source dropdown : 'none' item"),
+					NSLocalizedString(@"Current Word", @"Bundle Editor : Fallback Input source dropdown : 'current word' item"),
+					NSLocalizedString(@"Current Line", @"Bundle Editor : Fallback Input source dropdown : 'current line' item"),
+					NSLocalizedString(@"Current Query", @"Bundle Editor : Fallback Input source dropdown : 'current query' item"),
+					NSLocalizedString(@"Entire Content", @"Bundle Editor : Fallback Input source dropdown : 'entire content' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Trigger dropdown : 'none' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item"),
+					NSLocalizedString(@"Database changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item"),
+					NSLocalizedString(@"Table changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item"),
+					NSLocalizedString(@"Table Row changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Trigger dropdown : 'none' item"),
+					NSLocalizedString(@"Database changed", @"Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item"),
+					NSLocalizedString(@"Table changed", @"Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item"),
+
+					NSLocalizedString(@"exclude BLOB", @"Bundle Editor : BLOB dropdown : 'exclude BLOB' item"),
+					NSLocalizedString(@"include BLOB", @"Bundle Editor : BLOB dropdown : 'include BLOB' item"),
+					NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
+					NSLocalizedString(@"save BLOB as dat file", @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
+
+			]
+	};
 
 	NSMenuItem *anItem;
 	for(NSString* title in inputGeneralScopeArray) {
@@ -294,52 +294,51 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	[commandBundleTreeController setSortDescriptors:[NSArray arrayWithObjects:sortDescriptor, nil]];
 
-	shellVariableSuggestions = [[NSArray arrayWithObjects:
-		SPBundleShellVariableAllDatabases,
-		SPBundleShellVariableAllFunctions,
-		SPBundleShellVariableAllProcedures,
-		SPBundleShellVariableAllTables,
-		SPBundleShellVariableAllViews,
-		SPBundleShellVariableAppResourcesDirectory,
-		SPBundleShellVariableBlobFileDirectory,
-		SPBundleShellVariableExitInsertAsSnippet,
-		SPBundleShellVariableExitInsertAsText,
-		SPBundleShellVariableExitNone,
-		SPBundleShellVariableExitReplaceContent,
-		SPBundleShellVariableExitReplaceSelection,
-		SPBundleShellVariableExitShowAsHTML,
-		SPBundleShellVariableExitShowAsHTMLTooltip,
-		SPBundleShellVariableExitShowAsTextTooltip,
-		SPBundleShellVariableInputFilePath,
-		SPBundleShellVariableInputTableMetaData,
-		SPBundleShellVariableBundlePath,
-		SPBundleShellVariableBundleScope,
-		SPBundleShellVariableCurrentEditedColumnName,
-		SPBundleShellVariableCurrentEditedTable,
-		SPBundleShellVariableCurrentHost,
-		SPBundleShellVariableCurrentLine,
-		SPBundleShellVariableCurrentPort,
-		SPBundleShellVariableCurrentQuery,
-		SPBundleShellVariableCurrentUser,
-		SPBundleShellVariableCurrentWord,
-		SPBundleShellVariableDataTableSource,
-		SPBundleShellVariableDatabaseEncoding,
-		SPBundleShellVariableIconFile,
-		SPBundleShellVariableProcessID,
-		SPBundleShellVariableQueryFile,
-		SPBundleShellVariableQueryResultFile,
-		SPBundleShellVariableQueryResultMetaFile,
-		SPBundleShellVariableQueryResultStatusFile,
-		SPBundleShellVariableRDBMSType,
-		SPBundleShellVariableRDBMSVersion,
-		SPBundleShellVariableSelectedDatabase,
-		SPBundleShellVariableSelectedRowIndices,
-		SPBundleShellVariableSelectedTable,
-		SPBundleShellVariableSelectedTables,
-		SPBundleShellVariableSelectedText,
-		SPBundleShellVariableSelectedTextRange,
-		SPBundleShellVariableUsedQueryForTable,
-		nil
+	shellVariableSuggestions = [@[
+			SPBundleShellVariableAllDatabases,
+			SPBundleShellVariableAllFunctions,
+			SPBundleShellVariableAllProcedures,
+			SPBundleShellVariableAllTables,
+			SPBundleShellVariableAllViews,
+			SPBundleShellVariableAppResourcesDirectory,
+			SPBundleShellVariableBlobFileDirectory,
+			SPBundleShellVariableExitInsertAsSnippet,
+			SPBundleShellVariableExitInsertAsText,
+			SPBundleShellVariableExitNone,
+			SPBundleShellVariableExitReplaceContent,
+			SPBundleShellVariableExitReplaceSelection,
+			SPBundleShellVariableExitShowAsHTML,
+			SPBundleShellVariableExitShowAsHTMLTooltip,
+			SPBundleShellVariableExitShowAsTextTooltip,
+			SPBundleShellVariableInputFilePath,
+			SPBundleShellVariableInputTableMetaData,
+			SPBundleShellVariableBundlePath,
+			SPBundleShellVariableBundleScope,
+			SPBundleShellVariableCurrentEditedColumnName,
+			SPBundleShellVariableCurrentEditedTable,
+			SPBundleShellVariableCurrentHost,
+			SPBundleShellVariableCurrentLine,
+			SPBundleShellVariableCurrentPort,
+			SPBundleShellVariableCurrentQuery,
+			SPBundleShellVariableCurrentUser,
+			SPBundleShellVariableCurrentWord,
+			SPBundleShellVariableDataTableSource,
+			SPBundleShellVariableDatabaseEncoding,
+			SPBundleShellVariableIconFile,
+			SPBundleShellVariableProcessID,
+			SPBundleShellVariableQueryFile,
+			SPBundleShellVariableQueryResultFile,
+			SPBundleShellVariableQueryResultMetaFile,
+			SPBundleShellVariableQueryResultStatusFile,
+			SPBundleShellVariableRDBMSType,
+			SPBundleShellVariableRDBMSVersion,
+			SPBundleShellVariableSelectedDatabase,
+			SPBundleShellVariableSelectedRowIndices,
+			SPBundleShellVariableSelectedTable,
+			SPBundleShellVariableSelectedTables,
+			SPBundleShellVariableSelectedText,
+			SPBundleShellVariableSelectedTextRange,
+			SPBundleShellVariableUsedQueryForTable
 	] retain];
 
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
@@ -348,7 +347,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	[self _initTree];
 
-}
+};
 
 #pragma mark -
 
@@ -675,7 +674,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		if(category == nil) category = @"";
 
 		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Bundle",@"Bundle Editor : Default name for new bundle in the list on the left"), NSLocalizedString(@"New Name",@"Bundle Editor : Default name for a new bundle in the menu"), @"", scope, category, newUUID, nil] 
-						forKeys:[NSArray arrayWithObjects:kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey, nil]];
+						forKeys:@[kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey]];
 	}
 
 	if(![touchedBundleArray containsObject:[bundle objectForKey:kBundleNameKey]])
@@ -929,9 +928,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		[saveDict setObject:[[saveDict objectForKey:SPBundleFileContactKey] rot13] forKey:SPBundleFileContactKey];
 
 	// Remove unnecessary keys
-	[saveDict removeObjectsForKeys:[NSArray arrayWithObjects:
-		kBundleNameKey,
-		nil]];
+	[saveDict removeObjectsForKeys:@[kBundleNameKey]];
 
 
 	if(!isNewBundle) {
@@ -1493,7 +1490,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 /**
  * Allow for drag-n-drop out of the application as a copy
  */
-- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationMove;
 }

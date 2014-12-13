@@ -107,29 +107,20 @@
 
 - (NSArray *)markers
 {
-	return [NSArray arrayWithObjects:
-			FOR_START, FOR_END, 
-			SECTION_START, SECTION_END, 
-			IF_START, ELSE, IF_END, 
-			NOW, 
-			COMMENT_START, COMMENT_END, 
-			LOAD, 
-			CYCLE, 
-			SET, 
-			nil];
+	return @[FOR_START, FOR_END, SECTION_START, SECTION_END, IF_START, ELSE, IF_END, NOW, COMMENT_START, COMMENT_END, LOAD, CYCLE, SET];
 }
 
 
 - (NSArray *)endMarkersForMarker:(NSString *)marker
 {
 	if ([marker isEqualToString:FOR_START]) {
-		return [NSArray arrayWithObjects:FOR_END, nil];
+		return @[FOR_END];
 	} else if ([marker isEqualToString:SECTION_START]) {
-		return [NSArray arrayWithObjects:SECTION_END, nil];
+		return @[SECTION_END];
 	} else if ([marker isEqualToString:IF_START]) {
-		return [NSArray arrayWithObjects:IF_END, ELSE, nil];
+		return @[IF_END, ELSE];
 	} else if ([marker isEqualToString:COMMENT_START]) {
-		return [NSArray arrayWithObjects:COMMENT_END, nil];
+		return @[COMMENT_END];
 	}
 	return nil;
 }
@@ -531,8 +522,7 @@
 	} else if ([marker isEqualToString:SET]) {
 		if (args && [args count] == 2 && *outputEnabled) {
 			// Set variable arg1 to value arg2.
-			NSDictionary *newVar = [NSDictionary dictionaryWithObject:[args objectAtIndex:1] 
-															   forKey:[args objectAtIndex:0]];
+			NSDictionary *newVar = @{[args objectAtIndex:0] : [args objectAtIndex:1]};
 			if (newVar) {
 				*newVariables = newVar;
 			}

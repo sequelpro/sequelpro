@@ -294,7 +294,7 @@
 				for(NSUInteger i=0; i<maxLength; i++)
 					[dummy appendString:@" "];
 
-				CGFloat w = NSSizeToCGSize([dummy sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).width + 26.0f;
+				CGFloat w = NSSizeToCGSize([dummy sizeWithAttributes:@{NSFontAttributeName : tableFont}]).width + 26.0f;
 				maxWindowWidth = (w>maxWindowWidth) ? maxWindowWidth : w;
 			} else {
 				maxWindowWidth = 220;
@@ -712,7 +712,7 @@
 				closeMe = YES;
 				return;
 			} else {
-				[newFiltered addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"No item found", @"no item found message"), @"display", @"", @"noCompletion", nil]];
+				[newFiltered addObject:@{@"display" : NSLocalizedString(@"No item found", @"no item found message"), @"noCompletion" : @""}];
 			}
 		}
 	}
@@ -725,7 +725,7 @@
 
 	// if fetching db structure add dummy row for displaying that info on top of the list
 	if(isQueryingDatabaseStructure)
-		[newFiltered insertObject:[NSDictionary dictionaryWithObjectsAndKeys:@"dummy", @"display", @"", @"noCompletion", nil] atIndex:0];
+		[newFiltered insertObject:@{@"display" : @"dummy", @"noCompletion" : @""} atIndex:0];
 
 	NSPoint old = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 

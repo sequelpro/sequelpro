@@ -219,7 +219,7 @@
 		// register command
 		pid = [bashTask processIdentifier];
 		NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:pid], @"pid",
-							  (contextInfo)?:[NSDictionary dictionary], @"contextInfo",
+							  (contextInfo)?: @{}, @"contextInfo",
 							  @"bashcommand", @"type",
 							  [[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:[[NSUserDefaults standardUserDefaults] dictionaryRepresentation]], @"starttime",
 							  nil];

@@ -1821,10 +1821,12 @@
 	// For each scope add a submenu but not for the last one (should be General always)
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu setAutoenablesItems:YES];
-	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral, nil];
-	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Field", @"input field menu item label"), 
-													 NSLocalizedString(@"Data Table", @"data table menu item label"),
-													 NSLocalizedString(@"General", @"general menu item label"),nil];
+	NSArray *scopes = @[SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral];
+	NSArray *scopeTitles = @[
+			NSLocalizedString(@"Input Field", @"input field menu item label"),
+			NSLocalizedString(@"Data Table", @"data table menu item label"),
+			NSLocalizedString(@"General", @"general menu item label")
+	];
 
 	NSUInteger k = 0;
 	BOOL bundleOtherThanGeneralFound = NO;
@@ -2023,19 +2025,18 @@
  */
 - (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
 {
-	[preferences removeObjectsForKeys:
-	 [NSArray arrayWithObjects:
-	  @"ContentFilters",
-	  @"favorites",
-	  @"lastSqlFileName",
-	  @"NSNavLastRootDirectory",
-	  @"openPath",
-	  @"queryFavorites",
-	  @"queryHistory",
-	  @"tableColumnWidths",
-	  @"savePath",
-	  @"NSRecentDocumentRecords",
-	  nil]];
+	[preferences removeObjectsForKeys:@[
+			@"ContentFilters",
+			@"favorites",
+			@"lastSqlFileName",
+			@"NSNavLastRootDirectory",
+			@"openPath",
+			@"queryFavorites",
+			@"queryHistory",
+			@"tableColumnWidths",
+			@"savePath",
+			@"NSRecentDocumentRecords"
+	]];
 	
 	return preferences;
 }

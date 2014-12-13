@@ -288,9 +288,9 @@
 	
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
-	                           target:[tableDocumentInstance databaseStructureRetrieval]
+							   target:[tableDocumentInstance databaseStructureRetrieval]
 							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
+							   object:@{@"forceUpdate" : @YES}];
 	
 	[self loadTable:selectedTable];
 }

@@ -1170,7 +1170,7 @@
  */
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts
 {
-	if (![definitionParts count]) return [NSDictionary dictionary];
+	if (![definitionParts count]) return @{};
 
 	SPSQLParser *detailParser;
 	SPSQLParser *fieldParser = [[SPSQLParser alloc] init];

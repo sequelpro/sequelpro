@@ -779,7 +779,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSNumber *favoriteID = [self _createNewFavoriteID];
 	
-	NSArray *objects = [NSArray arrayWithObjects:
+	NSArray *objects = @[
 						NSLocalizedString(@"New Favorite", @"new favorite name"),
 						@0,
 						@"",
@@ -787,20 +787,20 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 						@"",
 						@(-1),
 						@"",
-						[NSNumber numberWithInt:NSOffState], 
-						[NSNumber numberWithInt:NSOffState], 
-						[NSNumber numberWithInt:NSOffState], 
-						[NSNumber numberWithInt:NSOffState],
+						@(NSOffState),
+						@(NSOffState),
+						@(NSOffState),
+						@(NSOffState),
 						@"",
 						@"",
 						@"",
-						[NSNumber numberWithInt:NSOffState],
+						@(NSOffState),
 						@"",
 						@"",
-						favoriteID,
-						nil];
+						favoriteID
+						];
 	
-	NSArray *keys = [NSArray arrayWithObjects:
+	NSArray *keys = @[
 					 SPFavoriteNameKey, 
 					 SPFavoriteTypeKey, 
 					 SPFavoriteHostKey, 
@@ -818,8 +818,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 					 SPFavoriteSSHKeyLocationEnabledKey, 
 					 SPFavoriteSSHKeyLocationKey, 
 					 SPFavoriteSSHPortKey, 
-					 SPFavoriteIDKey,
-					 nil];
+					 SPFavoriteIDKey
+					 ];
 	
     // Create default favorite
     NSMutableDictionary *favorite = [NSMutableDictionary dictionaryWithObjects:objects forKeys:keys];

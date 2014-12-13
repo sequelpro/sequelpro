@@ -495,7 +495,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
 	}
 
-	[props setObject:[NSDictionary dictionaryWithObject:imgProps forKey:@"icon.tiff"] forKey:(NSString *)kQLPreviewPropertyAttachmentsKey];
+	[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
 	[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
 	[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
 	[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];

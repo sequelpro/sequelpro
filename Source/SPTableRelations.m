@@ -163,7 +163,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 												[thatTable backtickQuotedString],
 												[thatColumn backtickQuotedString]]];
 	
-	NSArray *onActions = [NSArray arrayWithObjects:@"RESTRICT", @"CASCADE", @"SET NULL", @"NO ACTION", nil];
+	NSArray *onActions = @[@"RESTRICT", @"CASCADE", @"SET NULL", @"NO ACTION"];
 	
 	// If required add ON DELETE
 	if ([onDeletePopUpButton selectedTag] >= 0) {
