@@ -3363,6 +3363,9 @@
 	if(numberOfHistoryItems>0)
 		for(id historyMenuItem in [[SPQueryController sharedQueryController] historyMenuItemsForFileURL:[tableDocumentInstance fileURL]])
 			[historyMenu addItem:historyMenuItem];
+
+	// Reapply the filter
+	[self filterQueryHistory:nil];
 }
 
 /**
@@ -3431,6 +3434,9 @@
 		[menu addItem:item];
 		[item release];
 	}
+
+	// Reapply the filter
+	[self filterQueryFavorites:nil];
 }
 #endif
 
