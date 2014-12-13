@@ -488,7 +488,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
 
 	[props setObject:[NSNumber numberWithInteger:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
-	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
+	[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
 
 	if(image) {
 		[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];

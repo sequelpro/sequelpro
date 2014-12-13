@@ -781,11 +781,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	NSArray *objects = [NSArray arrayWithObjects:
 						NSLocalizedString(@"New Favorite", @"new favorite name"),
-						[NSNumber numberWithInteger:0],
+						@0,
 						@"",
 						@"",
 						@"",
-						[NSNumber numberWithInteger:-1],
+						@(-1),
 						@"",
 						[NSNumber numberWithInt:NSOffState], 
 						[NSNumber numberWithInt:NSOffState], 

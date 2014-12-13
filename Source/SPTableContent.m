@@ -3333,7 +3333,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSDictionary *columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[tableContentView tableColumns] objectAtIndex:columnIndex] identifier] integerValue]]];
 
 	if(!columnDefinition)
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-2], @"", nil];
+		return [NSArray arrayWithObjects:@(-2), @"", nil];
 
 	// Resolve the original table name for current column if AS was used
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -3344,13 +3344,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
 	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
 	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return [NSArray arrayWithObjects:@(-1), @"", nil];
 
 	// if table and database name are given check if field can be identified unambiguously
 	// first without blob data
 	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:NO];
 	if(!fieldIDQueryStr)
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return [NSArray arrayWithObjects:@(-1), @"", nil];
 
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
@@ -3362,7 +3362,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if ([mySQLConnection queryErrored]) {
 		[tableDocumentInstance endTask];
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return [NSArray arrayWithObjects:@(-1), @"", nil];
 	}
 
 	NSArray *tempRow = [tempResult getRowAsArray];
@@ -3372,7 +3372,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:YES];
 		if(!fieldIDQueryStr) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return [NSArray arrayWithObjects:@(-1), @"", nil];
 		}
 
 		tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
@@ -3382,14 +3382,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		if ([mySQLConnection queryErrored]) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return [NSArray arrayWithObjects:@(-1), @"", nil];
 		}
 
 		tempRow = [tempResult getRowAsArray];
 
 		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return [NSArray arrayWithObjects:@(-1), @"", nil];
 		}
 
 	}

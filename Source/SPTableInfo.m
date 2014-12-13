@@ -388,11 +388,11 @@
 	if (rowIndex > 0) return NO;
 
 	if (![tableInfoScrollView isHidden]) {
-		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:0]];
+		[tableDocumentInstance setActivityPaneHidden:@0];
 		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
 	} 
 	else {
-		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+		[tableDocumentInstance setActivityPaneHidden:@1];
 		[[NSApp mainWindow] makeFirstResponder:infoTable];
 	}
 

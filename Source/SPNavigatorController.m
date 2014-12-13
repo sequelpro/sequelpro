@@ -547,12 +547,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		}
 	}
 
-	if([result count] < 1 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
+	if([result count] < 1 ) return [NSArray arrayWithObjects:@0, @"", nil];
 	if([result count] == 1) {
 		NSArray *split = [[result objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:1], [split lastObject], nil];
-		if([split count] == 3 ) return [NSArray arrayWithObjects:[NSNumber numberWithInt:2], [split lastObject], nil];
-		return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
+		if([split count] == 2 ) return [NSArray arrayWithObjects:@1, [split lastObject], nil];
+		if([split count] == 3 ) return [NSArray arrayWithObjects:@2, [split lastObject], nil];
+		return [NSArray arrayWithObjects:@0, @"", nil];
 	}
 	// case if field is equal to a table or db name
 	NSMutableArray *arr = [NSMutableArray array];
@@ -560,14 +560,14 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
 			[arr addObject:item];
 	}
-	if([arr count] < 1 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
+	if([arr count] < 1 ) [NSArray arrayWithObjects:@0, @"", nil];
 	if([arr count] == 1) {
 		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
-		if([split count] == 2 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:1], [split lastObject], nil];
-		if([split count] == 3 ) [NSArray arrayWithObjects:[NSNumber numberWithInt:2], [split lastObject], nil];
-		return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
+		if([split count] == 2 ) [NSArray arrayWithObjects:@1, [split lastObject], nil];
+		if([split count] == 3 ) [NSArray arrayWithObjects:@2, [split lastObject], nil];
+		return [NSArray arrayWithObjects:@0, @"", nil];
 	}
-	return [NSArray arrayWithObjects:[NSNumber numberWithInt:0], @"", nil];
+	return [NSArray arrayWithObjects:@0, @"", nil];
 }
 
 #ifndef SP_CODA
@@ -694,7 +694,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 						[[[[schemaData objectForKey:connectionID] objectForKey:db_id] objectForKey:table_id] objectForKey:@"  struct_type  "] forKey:@"  struct_type  "];
 				else
 					[[[[structure valueForKey:connectionID] valueForKey:db_id] valueForKey:table_id] setObject:
-						[NSNumber numberWithInt:0] forKey:@"  struct_type  "];
+						@0 forKey:@"  struct_type  "];
 
 				if([a count] > 3) {
 					NSString *field_id = [NSString stringWithFormat:@"%@%@%@", table_id,SPUniqueSchemaDelimiter,[a objectAtIndex:3]];

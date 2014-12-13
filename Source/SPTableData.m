@@ -743,7 +743,7 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							[theTableColumn setObject:@1 forKey:@"isprimarykey"];
 							break;
 						}
 				}
@@ -761,7 +761,7 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								[theTableColumn setObject:@1 forKey:@"unique"];
 								break;
 							}
 					}

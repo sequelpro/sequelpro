@@ -212,7 +212,7 @@
 
 					// Set BINARY if collation ends with _bin for convenience
 					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {
-						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
+						[theField setObject:@1 forKey:@"binary"];
 					}
 					
 					break;

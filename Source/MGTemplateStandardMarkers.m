@@ -522,7 +522,7 @@
 			} else {
 				// New cycle. Create and output appropriately.
 				cycle = [NSMutableDictionary dictionaryWithCapacity:2];
-				[cycle setObject:[NSNumber numberWithInteger:0] forKey:CYCLE_INDEX];
+				[cycle setObject:@0 forKey:CYCLE_INDEX];
 				[cycle setObject:args forKey:CYCLE_VALUES];
 				[cycles setObject:cycle forKey:rangeKey];
 				return [args objectAtIndex:0];

@@ -330,7 +330,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[tableTabView setTabViewType:NSNoTabsNoBorder];
 
 	// Hide the activity list
-	[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+	[self setActivityPaneHidden:@1];
 
 	// Load additional nibs, keeping track of the top-level objects to allow correct release
 	NSArray *connectionDialogTopLevelObjects = nil;
@@ -3114,7 +3114,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
-			[info setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[info setObject:@1 forKey:@"version"];
 			[info setObject:@"connection bundle" forKey:@"format"];
 
 			// Loop through all windows
@@ -3323,7 +3323,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	NSMutableDictionary *spfData = [NSMutableDictionary dictionary];
 
 	// Add basic details
-	[spfStructure setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+	[spfStructure setObject:@1 forKey:@"version"];
 	[spfStructure setObject:@"connection" forKey:@"format"];
 	[spfStructure setObject:@"mysql" forKey:@"rdbms_type"];
 	if([self mySQLVersion])
@@ -5592,12 +5592,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 
 	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
-		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 	else {
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(setActivityPaneHidden:) 
-								object:[NSNumber numberWithInteger:0]];
-		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+								object:@0];
+		[self setActivityPaneHidden:@1];
 	}
 
 }
@@ -5613,12 +5613,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	}
 
 	if([runningActivitiesArray count] || [[[NSApp delegate] runningActivities] count])
-		[self performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+		[self performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 	else {
 		[NSObject cancelPreviousPerformRequestsWithTarget:self 
 								selector:@selector(setActivityPaneHidden:) 
-								object:[NSNumber numberWithInteger:0]];
-		[self setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+								object:@0];
+		[self setActivityPaneHidden:@1];
 	}
 
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];

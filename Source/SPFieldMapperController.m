@@ -83,11 +83,11 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 		fieldMappingGlobalValuesSQLMarked = [[NSMutableArray alloc] init];
 		fieldMappingArray = nil;
 
-		lastDisabledCSVFieldcolumn = [NSNumber numberWithInteger:0];
+		lastDisabledCSVFieldcolumn = @0;
 
-		doImport          = [NSNumber numberWithInteger:0];
-		doNotImport       = [NSNumber numberWithInteger:1];
-		isEqual           = [NSNumber numberWithInteger:2];
+		doImport          = @0;
+		doNotImport       = @1;
+		isEqual           = @2;
 		doImportString    = @"―";
 		doNotImportString = @" ";
 		isEqualString     = @"=";
@@ -1936,7 +1936,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 			// If anObject contains $1 etc. enable SQL checkbox
 			if([anObject isMatchedByRegex:@"(?<!\\\\)\\$\\d+"])
-				[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:[NSNumber numberWithInteger:1]];
+				[fieldMappingGlobalValuesSQLMarked replaceObjectAtIndex:(numberOfImportColumns + rowIndex) withObject:@1];
 
 			// Store anObject as recent global value if it's new
 			NSMutableArray *recents = [NSMutableArray array];

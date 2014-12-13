@@ -917,7 +917,7 @@
 			NSMutableArray *favoriteData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[spfdata setObject:@1 forKey:@"version"];
 			[spfdata setObject:@"query favorites" forKey:@"format"];
 			[spfdata setObject:@NO forKey:@"encrypted"];
 

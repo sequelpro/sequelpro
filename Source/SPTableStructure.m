@@ -253,12 +253,12 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	BOOL allowNull = [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"] ? NO : [prefs boolForKey:SPNewFieldsAllowNulls];
 	
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", @0, @0, nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 #else
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", @"1", @"", @"NULL", @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", @"1", @"", @"NULL", @"None", @"", @0, @0, nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 #endif

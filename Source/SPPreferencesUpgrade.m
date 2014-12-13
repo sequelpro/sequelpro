@@ -214,17 +214,17 @@ void SPApplyRevisionChanges(void)
 			if ([[favorite objectForKey:@"host"] isEqualToString:@"localhost"]
 				|| ([favorite objectForKey:@"socket"] && [(NSString *)[favorite objectForKey:@"socket"] length]))
 			{
-				[favorite setObject:[NSNumber numberWithInteger:1] forKey:@"type"];
+				[favorite setObject:@1 forKey:@"type"];
 				
 				// If SSH details are set, set to tunnel connection
 			}
 			else if ([favorite objectForKey:@"useSSH"] && [[favorite objectForKey:@"useSSH"] integerValue]) {
-				[favorite setObject:[NSNumber numberWithInteger:2] forKey:@"type"];
+				[favorite setObject:@2 forKey:@"type"];
 				
 				// Default to TCP/IP
 			} 
 			else {
-				[favorite setObject:[NSNumber numberWithInteger:0] forKey:@"type"];
+				[favorite setObject:@0 forKey:@"type"];
 			}
 			
 			// Remove SSH tunnel flag - no longer required
@@ -311,7 +311,7 @@ void SPApplyRevisionChanges(void)
 		
 		NSNumber *newMappedValue = [encodingMap valueForKey:[prefs objectForKey:SPOldDefaultEncodingKey]];
 		
-		if (newMappedValue == nil) newMappedValue = [NSNumber numberWithInt:0];
+		if (newMappedValue == nil) newMappedValue = @0;
 		
 		[prefs setObject:newMappedValue forKey:@"DefaultEncodingTag"];
 	}

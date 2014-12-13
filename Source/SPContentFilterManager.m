@@ -929,7 +929,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			NSMutableArray *filterData = [NSMutableArray array];
 
 
-			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[spfdata setObject:@1 forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
 			[spfdata setObject:@NO forKey:@"encrypted"];
 

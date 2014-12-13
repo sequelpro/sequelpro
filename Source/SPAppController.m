@@ -1243,12 +1243,12 @@
 	SPDatabaseDocument* frontMostDoc = [self frontDocument];
 	if(frontMostDoc) {
 		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
-			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 		else {
 			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
 									selector:@selector(setActivityPaneHidden:) 
-									object:[NSNumber numberWithInteger:0]];
-			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+									object:@0];
+			[frontMostDoc setActivityPaneHidden:@1];
 		}
 	}
 
@@ -1268,12 +1268,12 @@
 	SPDatabaseDocument* frontMostDoc = [self frontDocument];
 	if(frontMostDoc) {
 		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
-			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 		else {
 			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
 									selector:@selector(setActivityPaneHidden:) 
-									object:[NSNumber numberWithInteger:0]];
-			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+									object:@0];
+			[frontMostDoc setActivityPaneHidden:@1];
 		}
 	}
 }

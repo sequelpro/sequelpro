@@ -251,7 +251,7 @@
 		[printData setObject:indexes forKey:@"indexes"];
 		[printData setObject:indexColumns forKey:@"indexColumns"];
 
-		if ([indexes count]) [printData setObject:[NSNumber numberWithInteger:1] forKey:@"hasIndexes"];
+		if ([indexes count]) [printData setObject:@1 forKey:@"hasIndexes"];
 		
 		[rows release];
 		[indexes release];
