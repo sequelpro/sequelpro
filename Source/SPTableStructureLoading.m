@@ -335,8 +335,8 @@
 	if (!selectedTable) {
 		[tableSourceView reloadData];
 		// Empty indexesController's fields and indices explicitly before reloading
-		[indexesController setFields:[NSArray array]];
-		[indexesController setIndexes:[NSArray array]];
+		[indexesController setFields:@[]];
+		[indexesController setIndexes:@[]];
 		[indexesTableView reloadData];
 		
 		return;

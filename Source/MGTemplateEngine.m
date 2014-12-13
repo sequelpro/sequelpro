@@ -542,7 +542,7 @@
 					[frame setObject:endMarkers forKey:BLOCK_END_NAMES_KEY];
 					NSArray *arguments = [matchInfo objectForKey:MARKER_ARGUMENTS_KEY];
 					if (!arguments) {
-						arguments = [NSArray array];
+						arguments = @[];
 					}
 					[frame setObject:arguments forKey:BLOCK_ARGUMENTS_KEY];
 					[frame setObject:[matchInfo objectForKey:MARKER_RANGE_KEY] forKey:BLOCK_START_MARKER_RANGE_KEY];

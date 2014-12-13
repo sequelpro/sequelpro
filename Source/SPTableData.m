@@ -165,7 +165,7 @@
 			[self updateTriggersForCurrentTable];
 		} 
 		else {
-			return [NSArray array];
+			return @[];
 		}
 	}
 

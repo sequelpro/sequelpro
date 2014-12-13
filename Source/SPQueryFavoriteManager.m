@@ -124,7 +124,7 @@
 	[self _initWithNoSelection];
 
 	// Register drag types
-	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
+	[favoritesTableView registerForDraggedTypes:@[SPFavoritesPasteboardDragType]];
 	
 	[favoritesArrayController setContent:favorites];
 	[favoritesTableView reloadData];
@@ -310,7 +310,7 @@
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -335,7 +335,7 @@
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -677,7 +677,7 @@
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
+	NSArray *pboardTypes = @[SPFavoritesPasteboardDragType];
 	NSInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;

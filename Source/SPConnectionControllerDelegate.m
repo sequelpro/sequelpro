@@ -312,7 +312,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		return NO;
 	}
 		
-	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
+	[pboard declareTypes:@[SPFavoritesPasteboardDragType] owner:self];
 
 	BOOL result = [pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
 	

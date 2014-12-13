@@ -1841,7 +1841,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// show syntax(es) in sheet
 	if (sender == self) {
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
-		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+		[pb declareTypes:@[NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
 
 		// Table syntax copied Growl notification
@@ -2330,7 +2330,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -2361,7 +2361,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		// Copy to the clipboard
 		NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-		[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:self];
+		[pb declareTypes:@[NSStringPboardType] owner:self];
 		[pb setString:createSyntax forType:NSStringPboardType];
 
 		// Table syntax copied Growl notification
@@ -5264,7 +5264,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			NSString *query = [NSString stringWithContentsOfFile:queryFileName encoding:NSUTF8StringEncoding error:&inError];
 			[fm removeItemAtPath:queryFileName error:nil];
 			if(inError == nil && query && [query length]) {
-				[customQueryInstance performQueries:[NSArray arrayWithObject:query] withCallback:NULL];
+				[customQueryInstance performQueries:@[query] withCallback:NULL];
 			}
 		}
 		return;

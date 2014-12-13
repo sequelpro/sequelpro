@@ -312,7 +312,7 @@
 	}
 #endif
 	
-	return [NSArray array];
+	return @[];
 }
 
 /**
@@ -355,7 +355,7 @@
 
 - (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals
 {
-	if (![tabTrigger length]) return [NSArray array];
+	if (![tabTrigger length]) return @[];
 	
 	NSMutableArray *result = [[NSMutableArray alloc] init];
 	
@@ -390,7 +390,7 @@
  */
 - (NSArray*)functionList
 {
-	return (completionFunctionList != nil && [completionFunctionList count]) ? completionFunctionList : [NSArray array];
+	return (completionFunctionList != nil && [completionFunctionList count]) ? completionFunctionList : @[];
 }
 
 /**
@@ -398,7 +398,7 @@
  */
 - (NSArray*)keywordList
 {
-	return (completionKeywordList != nil && [completionKeywordList count]) ? completionKeywordList : [NSArray array];
+	return (completionKeywordList != nil && [completionKeywordList count]) ? completionKeywordList : @[];
 }
 
 /**

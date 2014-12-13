@@ -197,7 +197,7 @@
 			NSBeep();
 			return;
 		}
-		queries = [NSArray arrayWithObject:[SPSQLParser normaliseQueryForExecution:query]];
+		queries = @[[SPSQLParser normaliseQueryForExecution:query]];
 
 	// Otherwise, run the selected text.
 	} else {
@@ -470,7 +470,7 @@
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -504,7 +504,7 @@
 {
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-	[pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
+	[pb declareTypes:@[NSStringPboardType] owner:nil];
 	[pb setString:[self buildHistoryString] forType:NSStringPboardType];
 
 }
@@ -2038,7 +2038,7 @@
 		if ([prefs boolForKey:SPReloadAfterEditingRow]) {
 			reloadingExistingResult = YES;
 			[self storeCurrentResultViewForRestoration];
-			[self performQueries:[NSArray arrayWithObject:lastExecutedQuery] withCallback:NULL];
+			[self performQueries:@[lastExecutedQuery] withCallback:NULL];
 		} else {
 #endif
 			// otherwise, just update the data in the data storage
@@ -2264,7 +2264,7 @@
 		sortColumn = tableColumn;
 	else
 		sortColumn = nil;
-	[self performQueries:[NSArray arrayWithObject:queryString] withCallback:@selector(tableSortCallback)];
+	[self performQueries:@[queryString] withCallback:@selector(tableSortCallback)];
 }
 
 - (void)tableSortCallback
@@ -3392,7 +3392,7 @@
 	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
-		[paraStyle setTabStops:[NSArray array]];
+		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]
@@ -3418,7 +3418,7 @@
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
-		[paraStyle setTabStops:[NSArray array]];
+		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:paraStyle, [NSFont systemFontOfSize:11], nil] forKeys:[NSArray arrayWithObjects:NSParagraphStyleAttributeName, NSFontAttributeName, nil]];
 		NSAttributedString *titleString = [[[NSAttributedString alloc]

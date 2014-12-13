@@ -895,8 +895,7 @@
 		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
 
 		[[ql delegate] setDelegate:self];
-		[ql setURLs:[NSArray arrayWithObject:
-					 [NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
+		[ql setURLs:@[[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
 
 		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
 		// unknown image format

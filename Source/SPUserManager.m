@@ -135,7 +135,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 	treeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
 	
-	[self setTreeSortDescriptors:[NSArray arrayWithObject:treeSortDescriptor]];
+	[self setTreeSortDescriptors:@[treeSortDescriptor]];
 		
 	[super windowDidLoad];
 }

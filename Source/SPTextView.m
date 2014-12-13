@@ -381,7 +381,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];
-			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:@[desc]]];
 
 			NSString *currentDb = nil;
 			NSString *currentTable = nil;
@@ -478,7 +478,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 					[sortedTables addObject:aTableName_id];
 				} else {
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
-					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:@[desc]]];
 					if([sortedTables count] > 1 && [sortedTables containsObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]]) {
 						[sortedTables removeObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]];
 						[sortedTables insertObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable] atIndex:0];
@@ -508,7 +508,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 							break;
 						}
 					if(!breakFlag) {
-						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
 								NSString *fieldpath = [field substringFromIndex:[field rangeOfString:SPUniqueSchemaDelimiter].location];
@@ -1127,7 +1127,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	
 	if (rtf)
 	{
-		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
+		[pb declareTypes:@[NSRTFPboardType] owner:self];
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
 }
@@ -1414,7 +1414,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
 		// 	NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
 		// 	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-		// 	NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+		// 	NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:@[desc]];
 		// 	[desc release];
 		// 	for(id table in sortedTables) {
 		// 		NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
@@ -1431,7 +1431,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// } else {
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
@@ -1440,13 +1440,13 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
@@ -1466,7 +1466,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
 			NSArray *allFields = [theTable allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
 			[desc release];
 			for(id field in sortedFields) {
 				if(![field hasPrefix:@"  "]) {
@@ -1499,7 +1499,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		} else {
 			arr = [NSArray arrayWithArray:[[tableDocumentInstance valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 			if(arr == nil) {
-				arr = [NSArray array];
+				arr = @[];
 			}
 			for(id w in arr)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];

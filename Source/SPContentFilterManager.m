@@ -143,7 +143,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	[contentFilterTextView setString:@""];
 
 	// Register drag types
-	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:SPContentFilterPasteboardDragType]];
+	[contentFilterTableView registerForDraggedTypes:@[SPContentFilterPasteboardDragType]];
 
 	[contentFilterArrayController setContent:contentFilters];
 	[contentFilterTableView reloadData];
@@ -333,7 +333,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -556,7 +556,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
+	NSArray *pboardTypes = @[SPContentFilterPasteboardDragType];
 	NSUInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;

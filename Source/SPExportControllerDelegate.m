@@ -155,7 +155,7 @@
 			// Check whether the group of items make up a token
 			groupToken = [self tokenObjectForString:[[processedTokens subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
 			if ([groupToken isKindOfClass:[SPExportFileNameTokenObject class]]) {
-				[processedTokens replaceObjectsInRange:NSMakeRange(k, 1 + i - k) withObjectsFromArray:[NSArray arrayWithObject:groupToken]];
+				[processedTokens replaceObjectsInRange:NSMakeRange(k, 1 + i - k) withObjectsFromArray:@[groupToken]];
 				i = k + 1;
 				break;
 			}

@@ -126,7 +126,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:@"cnf"]];
+	[panel setAllowedFileTypes:@[@"cnf"]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];

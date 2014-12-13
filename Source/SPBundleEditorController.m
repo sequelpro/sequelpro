@@ -741,8 +741,8 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 - (IBAction)saveBundle:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPUserBundleFileExtension]];
+
+	[panel setAllowedFileTypes:@[SPUserBundleFileExtension]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -1536,7 +1536,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Write data to the pasteboard
 	NSArray *fileList = [NSArray arrayWithObjects:draggedFilePath, nil];
 	// NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-	[pboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
+	[pboard declareTypes:@[NSFilenamesPboardType] owner:nil];
 	[pboard setPropertyList:fileList forType:NSFilenamesPboardType];
 
 	// Start the drag operation

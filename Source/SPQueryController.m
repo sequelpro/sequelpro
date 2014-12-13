@@ -226,7 +226,7 @@ static SPQueryController *sharedQueryController = nil;
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];

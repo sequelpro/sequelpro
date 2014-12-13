@@ -467,7 +467,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 				[allSchemaKeys setObject:a forKey:connectionName];
 		} else {
 			[schemaData setObject:[NSDictionary dictionary] forKey:[NSString stringWithFormat:@"%@&DEL&no data loaded yet", connectionName]];
-			[allSchemaKeys setObject:[NSArray array] forKey:connectionName];
+			[allSchemaKeys setObject:@[] forKey:connectionName];
 		}
 
 		[updatingConnections removeObject:connectionName];

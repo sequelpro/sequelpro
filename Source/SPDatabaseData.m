@@ -428,7 +428,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	SPMySQLResult *result = [connection queryString:query];
 	
-	if ([connection queryErrored]) return [NSArray array];
+	if ([connection queryErrored]) return @[];
 	
 	[result setReturnDataAsStrings:YES];
 	

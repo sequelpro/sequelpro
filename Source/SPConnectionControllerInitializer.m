@@ -320,7 +320,7 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 	[favoritesOutlineView setDoubleAction:@selector(nodeDoubleClicked:)];
 	
 	// Register drag types for the favorites outline view
-	[favoritesOutlineView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
+	[favoritesOutlineView registerForDraggedTypes:@[SPFavoritesPasteboardDragType]];
 	[favoritesOutlineView setDraggingSourceOperationMask:NSDragOperationMove forLocal:YES];	
 }
 

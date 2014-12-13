@@ -74,7 +74,7 @@
 		else {
 			// If the structure has loaded (not still loading!) and the table encoding
 			// is set, use the appropriate collations.
-			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : [NSArray array];
+			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : @[];
 		}
 		
 		[[tableColumn dataCell] removeAllItems];
@@ -254,7 +254,7 @@
 	if (![self saveRowOnDeselect]) return NO;
 	
 	if ([rows count] == 1) {
-		[pboard declareTypes:[NSArray arrayWithObject:SPDefaultPasteboardDragType] owner:nil];
+		[pboard declareTypes:@[SPDefaultPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
 		
 		return YES;

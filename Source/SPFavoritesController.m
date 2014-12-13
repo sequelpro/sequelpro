@@ -237,7 +237,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		favoritesData = [[NSMutableDictionary alloc] initWithContentsOfFile:favoritesFile];
 	}
 	else {
-		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [NSArray array], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, @[], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 		
 		error = nil;
 		NSString *errorString = nil;

@@ -131,7 +131,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPColorThemeFileExtension]];
+	[panel setAllowedFileTypes:@[SPColorThemeFileExtension]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -770,7 +770,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	if ([fm fileExistsAtPath:themePath isDirectory:nil]) {
 		NSArray *allItemsRaw = [fm contentsOfDirectoryAtPath:themePath error:NULL];
 		
-		if(!allItemsRaw) return [NSArray array];
+		if(!allItemsRaw) return @[];
 		
 		// Filter out all themes
 		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH %@", [NSString stringWithFormat:@".%@", SPColorThemeFileExtension]];
@@ -791,7 +791,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		return (NSArray *)allItems;
 	}
 	
-	return [NSArray array];
+	return @[];
 }
 
 - (void)_saveColorThemeAtPath:(NSString *)path

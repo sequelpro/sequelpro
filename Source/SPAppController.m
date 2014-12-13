@@ -738,7 +738,7 @@
 	if([pathComponents count] > 2)
 		parameter = [pathComponents subarrayWithRange:NSMakeRange(2, [pathComponents count]-2)];
 	else
-		parameter = [NSArray array];
+		parameter = @[];
 
 
 	NSFileManager *fm = [NSFileManager defaultManager];
@@ -1533,7 +1533,7 @@
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey])
 		deletedDefaultBundles = [[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey] retain];
 	else
-		deletedDefaultBundles = [[NSArray array] retain];
+		deletedDefaultBundles = [@[] retain];
 
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
 	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
@@ -1775,7 +1775,7 @@
 				// Sort items for menus
 				NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
 				for(NSString* scope in [bundleItems allKeys]) {
-					[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+					[[bundleItems objectForKey:scope] sortUsingDescriptors:@[sortDescriptor]];
 					[[bundleCategories objectForKey:scope] sortUsingSelector:@selector(compare:)];
 				}
 			}
@@ -1949,7 +1949,7 @@
 		// Sort if more than one found
 		if([assignedKeyEquivalents count] > 1) {
 			NSSortDescriptor *aSortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES selector:@selector(caseInsensitiveCompare:)] autorelease];
-			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:[NSArray arrayWithObject:aSortDescriptor]];
+			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:@[aSortDescriptor]];
 			[assignedKeyEquivalents setArray:sorted];
 		}
 	}
