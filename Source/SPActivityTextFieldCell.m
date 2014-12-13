@@ -33,6 +33,11 @@
 
 #define FAVORITE_NAME_FONT_SIZE 12.0f
 
+#ifndef NS_OPTIONS
+// This type is available since 10.5 but only got a "name" in 10.8
+typedef NSUInteger NSCellHitResult;
+#endif
+
 @interface SPActivityTextFieldCell (PrivateAPI)
 
 - (NSAttributedString *)constructSubStringAttributedString;
