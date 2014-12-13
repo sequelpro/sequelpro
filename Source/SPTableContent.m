@@ -70,10 +70,6 @@
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
 #endif
 
-#ifndef __MAC_10_7
-#define __MAC_10_7 1070
-#endif
-
 @interface SPTableContent (SPTableContentDataSource_Private_API)
 
 - (id)_contentValueForTableColumn:(NSUInteger)columnIndex row:(NSUInteger)rowIndex asPreview:(BOOL)asPreview;

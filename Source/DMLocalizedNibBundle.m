@@ -12,11 +12,6 @@
 #import <objc/runtime.h>
 #import <Availability.h>
 
-//Backwards compatibility
-#ifndef __MAC_10_8
-#define __MAC_10_8 1080
-#endif
-
 @interface NSBundle (DMLocalizedNibBundle)
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_8
 - (BOOL)deliciousLocalizingLoadNibNamed:(NSString *)fileName owner:(id)owner topLevelObjects:(NSArray **)topLevelObjects;

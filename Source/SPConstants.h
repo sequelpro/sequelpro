@@ -609,3 +609,19 @@ extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
+
+//Backwards compatibility
+#ifndef __MAC_10_7
+#define __MAC_10_7 1070
+#endif
+#ifndef __MAC_10_8
+#define __MAC_10_8 1080
+#endif
+#ifndef __MAC_10_10
+#define __MAC_10_10 101000
+#endif
+
+// This enum is available since 10.5 but only got a "name" in 10.10
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
+typedef NSUInteger NSCellHitResult;
+#endif

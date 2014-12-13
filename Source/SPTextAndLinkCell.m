@@ -42,10 +42,6 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	return NSMakeRect(inRect.origin.x + inRect.size.width - 15, inRect.origin.y - 1, 12, inRect.size.height);
 }
 
-#ifndef NS_OPTIONS
-// This type is available since 10.5 but only got a "name" in 10.8
-typedef NSUInteger NSCellHitResult;
-#endif
 
 #pragma mark -
 #pragma mark Setup and teardown
