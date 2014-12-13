@@ -964,7 +964,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}
@@ -1059,7 +1059,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	// on the main thread ensures the timer fires on the main thread.
 	if (![errorDictionary objectForKey:@"delayed"]) {
 		NSMutableDictionary *delayedErrorDictionary = [NSMutableDictionary dictionaryWithDictionary:errorDictionary];
-		[delayedErrorDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"delayed"];
+		[delayedErrorDictionary setObject:@YES forKey:@"delayed"];
 		[self performSelector:@selector(showErrorSheetWith:) withObject:delayedErrorDictionary afterDelay:0.3];
 		return;
 	}

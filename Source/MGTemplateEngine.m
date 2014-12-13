@@ -408,12 +408,12 @@
 						  nil], GLOBAL_ENGINE_DELIMITERS, 
 						 nil]
 				 forKey:GLOBAL_ENGINE_GROUP];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"true"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"false"];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"YES"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"NO"];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"yes"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"no"];
+	[_globals setObject:@YES forKey:@"true"];
+	[_globals setObject:@NO forKey:@"false"];
+	[_globals setObject:@YES forKey:@"YES"];
+	[_globals setObject:@NO forKey:@"NO"];
+	[_globals setObject:@YES forKey:@"yes"];
+	[_globals setObject:@NO forKey:@"no"];
 	_outputDisabledCount = 0;
 	[templateContents release];
 	templateContents = [templateString retain];

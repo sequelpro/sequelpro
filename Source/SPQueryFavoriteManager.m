@@ -422,7 +422,7 @@
 		// Identify the tab completion index
 		NSRange snippetNumberRange = [queryString rangeOfRegex:snipRegex options:RKLNoOptions inRange:matchedRange capture:1L error:NULL];
 		NSInteger snippetNumber = [[queryString substringWithRange:snippetNumberRange] integerValue];
-		[snippetNumbers setObject:[NSNumber numberWithBool:YES] forKey:[NSNumber numberWithInteger:snippetNumber]];
+		[snippetNumbers setObject:@YES forKey:[NSNumber numberWithInteger:snippetNumber]];
 
 		rangeStart = matchedRange.location + matchedRange.length;
 	}
@@ -919,7 +919,7 @@
 	
 			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"query favorites" forKey:@"format"];
-			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
 

@@ -552,10 +552,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 											  notificationName:@"Connected"];
 
 	// Init Custom Query editor with the stored queries in a spf file if given.
-	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
+	[spfDocData setObject:@NO forKey:@"save_editor_content"];
 	
 	if (spfSession != nil && [spfSession objectForKey:@"queries"]) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"save_editor_content"];
+		[spfDocData setObject:@YES forKey:@"save_editor_content"];
 		if ([[spfSession objectForKey:@"queries"] isKindOfClass:[NSData class]]) {
 			NSString *q = [[NSString alloc] initWithData:[[spfSession objectForKey:@"queries"] decompress] encoding:NSUTF8StringEncoding];
 			[self initQueryEditorWithString:q];
@@ -1012,7 +1012,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
 		} 
 		else {
 			// Reset chooseDatabaseButton
@@ -3072,7 +3072,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				}
 			}
 
-			[fileManager createDirectoryAtPath:fileName withIntermediateDirectories:TRUE attributes:nil error:&error];
+			[fileManager createDirectoryAtPath:fileName withIntermediateDirectories:YES attributes:nil error:&error];
 
 			if(error != nil) {
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
@@ -3080,7 +3080,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				return;
 			}
 
-			[fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@/Contents", fileName] withIntermediateDirectories:TRUE attributes:nil error:&error];
+			[fileManager createDirectoryAtPath:[NSString stringWithFormat:@"%@/Contents", fileName] withIntermediateDirectories:YES attributes:nil error:&error];
 
 			if(error != nil) {
 				NSAlert *errorAlert = [NSAlert alertWithError:error];
@@ -3142,12 +3142,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						// save it as temporary spf file inside the bundle with save panel options spfDocData_temp
 						[doc saveDocumentWithFilePath:filePath inBackground:NO onlyPreferences:NO contextInfo:[NSDictionary dictionaryWithDictionary:spfDocData_temp]];
 						[doc setIsSavedInBundle:YES];
-						[tabData setObject:[NSNumber numberWithBool:NO] forKey:@"isAbsolutePath"];
+						[tabData setObject:@NO forKey:@"isAbsolutePath"];
 						[tabData setObject:newName forKey:@"path"];
 					} else {
 						// save it to the original location and take the file's spfDocData
 						[doc saveDocumentWithFilePath:[[doc fileURL] path] inBackground:YES onlyPreferences:NO contextInfo:nil];
-						[tabData setObject:[NSNumber numberWithBool:YES] forKey:@"isAbsolutePath"];
+						[tabData setObject:@YES forKey:@"isAbsolutePath"];
 						[tabData setObject:[[doc fileURL] path] forKey:@"path"];
 					}
 					[tabs addObject:tabData];
@@ -3219,7 +3219,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionAutoConnect state]==NSOnState) ? YES : NO ] forKey:@"auto_connect"];
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionSavePassword state]==NSOnState) ? YES : NO ] forKey:@"save_password"];
 		[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeData state]==NSOnState) ? YES : NO ] forKey:@"include_session"];
-		[spfDocData_temp setObject:[NSNumber numberWithBool:NO] forKey:@"save_editor_content"];
+		[spfDocData_temp setObject:@NO forKey:@"save_editor_content"];
 		if([[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string] length])
 			[spfDocData_temp setObject:[NSNumber numberWithBool:([saveConnectionIncludeQuery state]==NSOnState) ? YES : NO ] forKey:@"save_editor_content"];
 
@@ -3334,23 +3334,23 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Set up the document details to store
 	NSMutableDictionary *stateDetailsToSave = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-												[NSNumber numberWithBool:YES], @"connection",
-												[NSNumber numberWithBool:YES], @"history",
+												@YES, @"connection",
+												@YES, @"history",
 												nil];
 
 	// Include session data like selected table, view etc. ?
 	if ([[spfDocData_temp objectForKey:@"include_session"] boolValue])
-		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"session"];
+		[stateDetailsToSave setObject:@YES forKey:@"session"];
 
 	// Include the query editor contents if asked to
 	if ([[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]) {
-		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"query"];
-		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"enablecompression"];
+		[stateDetailsToSave setObject:@YES forKey:@"query"];
+		[stateDetailsToSave setObject:@YES forKey:@"enablecompression"];
 	}
 
 	// Add passwords if asked to
 	if ([[spfDocData_temp objectForKey:@"save_password"] boolValue])
-		[stateDetailsToSave setObject:[NSNumber numberWithBool:YES] forKey:@"password"];
+		[stateDetailsToSave setObject:@YES forKey:@"password"];
 
 	// Retrieve details and add to the appropriate dictionaries
 	NSMutableDictionary *stateDetails = [NSMutableDictionary dictionaryWithDictionary:[self stateIncludingDetails:stateDetailsToSave]];
@@ -3444,16 +3444,16 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Get the current state
 	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:YES], @"connection",
-										[NSNumber numberWithBool:YES], @"history",
-										[NSNumber numberWithBool:YES], @"session",
-										[NSNumber numberWithBool:YES], @"query",
-										[NSNumber numberWithBool:YES], @"password",
+										@YES, @"connection",
+										@YES, @"history",
+										@YES, @"session",
+										@YES, @"query",
+										@YES, @"password",
 										nil];
 	NSMutableDictionary *currentState = [NSMutableDictionary dictionaryWithDictionary:[self stateIncludingDetails:allStateDetails]];
 
 	// Ensure it's set to autoconnect, and clear the table
-	[currentState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+	[currentState setObject:@YES forKey:@"auto_connect"];
 	NSMutableDictionary *sessionDict = [NSMutableDictionary dictionaryWithDictionary:[currentState objectForKey:@"session"]];
 	[sessionDict removeObjectForKey:@"table"];
 	[currentState setObject:sessionDict forKey:@"session"];
@@ -4917,16 +4917,16 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[data setObject:[spf objectForKey:SPContentFilters] forKey:SPContentFilters];
 
 	// Ensure the encryption status is stored in the spfDocData store for future saves
-	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+	[spfDocData setObject:@NO forKey:@"encrypted"];
 	if (encryptpw != nil) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"encrypted"];
+		[spfDocData setObject:@YES forKey:@"encrypted"];
 		[spfDocData setObject:encryptpw forKey:@"e_string"];
 	}
 	encryptpw = nil;
 
 	// If session data is available, ensure it is marked for save
 	if ([data objectForKey:@"session"]) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"include_session"];
+		[spfDocData setObject:@YES forKey:@"include_session"];
 	}
 
 	if (![self isSaveInBundle]) {
@@ -4935,11 +4935,11 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	[spfDocData setObject:[NSNumber numberWithBool:([[data objectForKey:@"connection"] objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
 
-	[spfDocData setObject:[NSNumber numberWithBool:NO] forKey:@"auto_connect"];
+	[spfDocData setObject:@NO forKey:@"auto_connect"];
 
 	if([spf objectForKey:@"auto_connect"] && [[spf valueForKey:@"auto_connect"] boolValue]) {
-		[spfDocData setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
-		[data setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+		[spfDocData setObject:@YES forKey:@"auto_connect"];
+		[data setObject:@YES forKey:@"auto_connect"];
 	}
 
 	// Set the state dictionary, triggering an autoconnect if appropriate

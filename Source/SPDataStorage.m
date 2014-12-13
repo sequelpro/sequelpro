@@ -391,7 +391,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	if (columnIndex >= numberOfColumns) {
 		[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 	}
-	unloadedColumns[columnIndex] = true;
+	unloadedColumns[columnIndex] = YES;
 }
 
 #pragma mark - Basic information

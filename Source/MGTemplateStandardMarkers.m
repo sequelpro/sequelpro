@@ -231,7 +231,7 @@
 				// Disable output for this block.
 				*blockStarted = YES;
 				NSMutableDictionary *stackFrame = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-												   [NSNumber numberWithBool:YES], FOR_STACK_DISABLED_OUTPUT, 
+												   @YES, FOR_STACK_DISABLED_OUTPUT,
 												   [NSValue valueWithRange:markerRange], STACK_START_MARKER_RANGE, 
 												   [NSValue valueWithRange:*nextRange], STACK_START_REMAINING_RANGE, 
 												   nil];
@@ -426,7 +426,7 @@
 				}
 				
 				// Note that we've now seen the else marker.
-				[frame setObject:[NSNumber numberWithBool:YES] forKey:IF_ELSE_SEEN];
+				[frame setObject:@YES forKey:IF_ELSE_SEEN];
 			}
 		}
 		

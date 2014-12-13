@@ -951,7 +951,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			if([[saveDict description] isEqualToString:[cmdData description]])
 				return YES;
 			if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
-				[saveDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDefaultBundleWasModifiedKey];
+				[saveDict setObject:@YES forKey:SPBundleFileDefaultBundleWasModifiedKey];
 		}
 		if (cmdData) [cmdData release];
 	}
@@ -1357,9 +1357,9 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		//abort editing
 		[control abortEditing];
 		[[NSApp mainWindow] makeFirstResponder:commandsOutlineView];
-		return TRUE;
+		return YES;
 	} else{
-		return FALSE;
+		return NO;
 	}
 }
 

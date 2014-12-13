@@ -1120,7 +1120,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 - (IBAction)addGlobalValue:(id)sender
 {
 	[fieldMappingGlobalValues addObject:@""];
-	[fieldMappingGlobalValuesSQLMarked addObject:[NSNumber numberWithBool:NO]];
+	[fieldMappingGlobalValuesSQLMarked addObject:@NO];
 	[globalValuesTableView reloadData];
 	[globalValuesTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:[fieldMappingGlobalValues count]-1-numberOfImportColumns] byExtendingSelection:NO];
 	[globalValuesTableView editColumn:1 row:[fieldMappingGlobalValues count]-1-numberOfImportColumns withEvent:nil select:YES];
@@ -1432,7 +1432,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	}
 
 	// Sort the matrix according distance
-	NSSortDescriptor *sortByDistance = [[[NSSortDescriptor alloc] initWithKey:@"dist" ascending:TRUE] autorelease];
+	NSSortDescriptor *sortByDistance = [[[NSSortDescriptor alloc] initWithKey:@"dist" ascending:YES] autorelease];
 	[distMatrix sortUsingDescriptors:[NSArray arrayWithObjects:sortByDistance, nil]];
 
 	NSMutableArray *matchedFile  = [NSMutableArray array];
@@ -2091,10 +2091,10 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 		// Preserve the focus
 		[[fieldMapperTableView window] makeFirstResponder:fieldMapperTableView];
 
-		return TRUE;
+		return YES;
 	}
 
-	return FALSE;
+	return NO;
 
 }
 

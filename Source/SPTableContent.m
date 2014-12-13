@@ -3851,7 +3851,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 
 			NSMutableDictionary *selectedRowLookupTable = [NSMutableDictionary dictionaryWithCapacity:indexCount];
-			NSNumber *trueNumber = [NSNumber numberWithBool:YES];
+			NSNumber *trueNumber = @YES;
 			for (NSUInteger i = 0; i < indexCount; i++) {
 
 				// For single-column primary keys, use the cell value as a dictionary key for fast lookups

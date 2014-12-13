@@ -290,7 +290,7 @@
 	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
 	                           target:[tableDocumentInstance databaseStructureRetrieval]
 							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+							   object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
 	
 	[self loadTable:selectedTable];
 }

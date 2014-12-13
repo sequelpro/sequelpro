@@ -116,7 +116,7 @@
 	delegate = theDelegate;
 	stateChangeSelector = theStateChangeSelector;
 
-	return true;
+	return YES;
 }
 
 /*

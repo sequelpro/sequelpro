@@ -183,7 +183,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
 			
-			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:privKey];
+			[[self privsSupportedByServer] setValue:@YES forKey:privKey];
 		}
 	} 
 	// If that fails, base privilege support on the mysql.users columns
@@ -200,7 +200,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			
 			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
 			
-			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
+			[[self privsSupportedByServer] setValue:@YES forKey:[privKey lowercaseString]];
 		}
 	}
 
@@ -580,7 +580,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		NS_DURING
-			[selectedUser setValue:[NSNumber numberWithBool:YES] forKey:key];
+			[selectedUser setValue:@YES forKey:key];
 		NS_HANDLER
 		NS_ENDHANDLER
 	}
@@ -600,7 +600,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		NS_DURING
-			[selectedUser setValue:[NSNumber numberWithBool:NO] forKey:key];
+			[selectedUser setValue:@NO forKey:key];
 		NS_HANDLER
 		NS_ENDHANDLER
 	}

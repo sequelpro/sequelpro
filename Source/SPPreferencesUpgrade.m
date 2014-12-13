@@ -76,7 +76,7 @@ void SPApplyRevisionChanges(void)
 	}
 
 	// Inform SPAppController to check installed default Bundles for available updates
-	[prefs setObject:[NSNumber numberWithBool:YES] forKey:@"doBundleUpdate"];
+	[prefs setObject:@YES forKey:@"doBundleUpdate"];
 
 	// For versions prior to r336 (0.9.4), where column widths have been saved, walk through them and remove
 	// any table widths set to 15 or less (fix for mangled columns caused by Issue #140)

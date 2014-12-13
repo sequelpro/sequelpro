@@ -679,10 +679,10 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			[contentFilterNameTextField setStringValue:
 				[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] objectForKey:@"MenuLabel"]];
 
-		return TRUE;
+		return YES;
 	}
 
-	return FALSE;
+	return NO;
 }
 
 /**
@@ -931,7 +931,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
-			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 

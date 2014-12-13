@@ -611,7 +611,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if (![[doc getConnection] isConnected]) return;
 
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
 }
 
 - (IBAction)outlineViewAction:(id)sender

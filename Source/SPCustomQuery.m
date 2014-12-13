@@ -3918,7 +3918,7 @@
 			// Preserve the focus
 			[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
 
-			return TRUE;
+			return YES;
 		}
 	}
 

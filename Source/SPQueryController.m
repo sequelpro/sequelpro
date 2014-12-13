@@ -458,7 +458,7 @@ static SPQueryController *sharedQueryController = nil;
 	[progressIndicator startAnimation:self];
 
 	// Don't allow clearing the console while filtering its content
-	[self _allowFilterClearOrSave:[NSNumber numberWithBool:NO]];
+	[self _allowFilterClearOrSave:@NO];
 
 	[messagesFilteredSet removeAllObjects];
 
@@ -470,7 +470,7 @@ static SPQueryController *sharedQueryController = nil;
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
-		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
+		[self _allowFilterClearOrSave:@YES];
 
 		[saveConsoleButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 
@@ -502,7 +502,7 @@ static SPQueryController *sharedQueryController = nil;
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
 	if ([messagesVisibleSet count] > 0) {
-		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
+		[self _allowFilterClearOrSave:@YES];
 	}
 
 	[saveConsoleButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
@@ -623,7 +623,7 @@ static SPQueryController *sharedQueryController = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
-		[self performSelectorOnMainThread:@selector(_allowFilterClearOrSave:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:NO];
+		[self performSelectorOnMainThread:@selector(_allowFilterClearOrSave:) withObject:@YES waitUntilDone:NO];
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)

@@ -117,17 +117,17 @@
 	
 	// Get the state of the previously-frontmost document
 	NSDictionary *allStateDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									 [NSNumber numberWithBool:YES], @"connection",
-									 [NSNumber numberWithBool:YES], @"history",
-									 [NSNumber numberWithBool:YES], @"session",
-									 [NSNumber numberWithBool:YES], @"query",
-									 [NSNumber numberWithBool:YES], @"password",
+									 @YES, @"connection",
+									 @YES, @"history",
+									 @YES, @"session",
+									 @YES, @"query",
+									 @YES, @"password",
 									 nil];
 	
 	NSMutableDictionary *frontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
 	
 	// Ensure it's set to autoconnect
-	[frontState setObject:[NSNumber numberWithBool:YES] forKey:@"auto_connect"];
+	[frontState setObject:@YES forKey:@"auto_connect"];
 	
 	// Set the connection on the new tab
 	[[self frontDocument] setState:frontState];

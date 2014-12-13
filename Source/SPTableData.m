@@ -390,7 +390,7 @@
 		// The table information fetch may have already unlocked the data lock.
 		pthread_mutex_trylock(&dataProcessingLock);
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	[columns addObjectsFromArray:[tableData objectForKey:@"columns"]];
@@ -408,7 +408,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -431,7 +431,7 @@
 		[columnNames removeAllObjects];
 		[constraints removeAllObjects];
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	[columns addObjectsFromArray:[viewData objectForKey:@"columns"]];
@@ -448,7 +448,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -915,9 +915,9 @@
 		// If there's a null column, use the details from it
 		if ([resultRow objectForKey:@"Null"]) {
 			if ([[[resultRow objectForKey:@"Null"] uppercaseString] isEqualToString:@"NO"]) {
-				[tableColumn setValue:[NSNumber numberWithBool:NO] forKey:@"null"];
+				[tableColumn setValue:@NO forKey:@"null"];
 			} else {
-				[tableColumn setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
+				[tableColumn setValue:@YES forKey:@"null"];
 			}
 		}
 
@@ -957,7 +957,7 @@
 	// Catch unselected tables and return false
 	if (![tableListInstance tableName]) {
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	// Ensure queries are run as UTF8
@@ -1004,7 +1004,7 @@
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	// Retrieve the status as a dictionary and set as the cache
@@ -1022,7 +1022,7 @@
 			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 			pthread_mutex_unlock(&dataProcessingLock);
-			return FALSE;
+			return NO;
 		}
 
 		// Add a note for whether the row count is accurate or not - only for MyISAM
@@ -1058,7 +1058,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -1267,16 +1267,13 @@
 	[detailString release];
 
 
-	NSNumber *boolYES = [NSNumber numberWithBool:YES];
-	NSNumber *boolNO  = [NSNumber numberWithBool:NO];
-
 	// Set up some column defaults for all columns
-	[fieldDetails setValue:boolYES forKey:@"null"];
-	[fieldDetails setValue:boolNO forKey:@"unsigned"];
-	[fieldDetails setValue:boolNO forKey:@"binary"];
-	[fieldDetails setValue:boolNO forKey:@"zerofill"];
-	[fieldDetails setValue:boolNO forKey:@"autoincrement"];
-	[fieldDetails setValue:boolNO forKey:@"onupdatetimestamp"];
+	[fieldDetails setValue:@YES forKey:@"null"];
+	[fieldDetails setValue:@NO forKey:@"unsigned"];
+	[fieldDetails setValue:@NO forKey:@"binary"];
+	[fieldDetails setValue:@NO forKey:@"zerofill"];
+	[fieldDetails setValue:@NO forKey:@"autoincrement"];
+	[fieldDetails setValue:@NO forKey:@"onupdatetimestamp"];
 	[fieldDetails setValue:@"" forKey:@"comment"];
 	[fieldDetails setValue:[NSMutableString string] forKey:@"unparsed"];
 
@@ -1288,15 +1285,15 @@
 
 		// Whether numeric fields are unsigned
 		if ([detailString isEqualToString:@"UNSIGNED"]) {
-			[fieldDetails setValue:boolYES forKey:@"unsigned"];
+			[fieldDetails setValue:@YES forKey:@"unsigned"];
 
 		// Whether numeric fields are zerofill
 		} else if ([detailString isEqualToString:@"ZEROFILL"]) {
-			[fieldDetails setValue:boolYES forKey:@"zerofill"];
+			[fieldDetails setValue:@YES forKey:@"zerofill"];
 
 		// Whether text types are binary
 		} else if ([detailString isEqualToString:@"BINARY"]) {
-			[fieldDetails setValue:boolYES forKey:@"binary"];
+			[fieldDetails setValue:@YES forKey:@"binary"];
 
 		// Whether text types have a different encoding to the table
 		} else if ([detailString isEqualToString:@"CHARSET"] && (definitionPartsIndex + 1 < partsArrayLength)) {
@@ -1321,16 +1318,16 @@
 		// Whether fields are NOT NULL
 		} else if ([detailString isEqualToString:@"NOT"] && (definitionPartsIndex + 1 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:boolNO forKey:@"null"];
+			[fieldDetails setValue:@NO forKey:@"null"];
 			definitionPartsIndex++;
 
 		// Whether fields are NULL
 		} else if ([detailString isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:boolYES forKey:@"null"];
+			[fieldDetails setValue:@YES forKey:@"null"];
 
 		// Whether fields should auto-increment
 		} else if ([detailString isEqualToString:@"AUTO_INCREMENT"]) {
-			[fieldDetails setValue:boolYES forKey:@"autoincrement"];
+			[fieldDetails setValue:@YES forKey:@"autoincrement"];
 			tableHasAutoIncrementField = YES;
 
 		// Field defaults
@@ -1347,7 +1344,7 @@
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-			[fieldDetails setValue:boolYES forKey:@"onupdatetimestamp"];
+			[fieldDetails setValue:@YES forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
 
 		// Column comments

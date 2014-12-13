@@ -191,9 +191,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		// Disable all tables
 		for (NSMutableArray *table in tables)
 		{
-			[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
-			[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
-			[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+			[table replaceObjectAtIndex:1 withObject:@NO];
+			[table replaceObjectAtIndex:2 withObject:@NO];
+			[table replaceObjectAtIndex:3 withObject:@NO];
 		}
 		
 		// Select the supplied tables
@@ -202,9 +202,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 			for (NSString *exportTable in exportTables)
 			{
 				if ([exportTable isEqualToString:[table objectAtIndex:0]]) {
-					[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:YES]];
-					[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:YES]];
-					[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:YES]];
+					[table replaceObjectAtIndex:1 withObject:@YES];
+					[table replaceObjectAtIndex:2 withObject:@YES];
+					[table replaceObjectAtIndex:3 withObject:@YES];
 				}
 			}
 		}
@@ -436,9 +436,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	for (id itemName in tablesAndViews) {
 		[tables addObject:[NSMutableArray arrayWithObjects:
 						   itemName, 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
+						   @YES,
+						   @YES,
+						   @YES,
 						   [NSNumber numberWithInt:SPTableTypeTable], 
 						   nil]];
 	}
@@ -451,9 +451,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		{
 			[tables addObject:[NSMutableArray arrayWithObjects:
 							   procName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
+							   @YES,
+							   @YES,
+							   @YES,
 							   [NSNumber numberWithInt:SPTableTypeProc], 
 							   nil]];
 		}
@@ -464,9 +464,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		{
 			[tables addObject:[NSMutableArray arrayWithObjects:
 							   funcName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
+							   @YES,
+							   @YES,
+							   @YES,
 							   [NSNumber numberWithInt:SPTableTypeFunc], 
 							   nil]];
 		}	

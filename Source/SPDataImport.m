@@ -662,7 +662,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -1178,7 +1178,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", nil]];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];
@@ -1215,7 +1215,7 @@
 						  nil, nil,
 						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 						  );
-		return FALSE;
+		return YES;
 	}
 
 	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
@@ -1228,7 +1228,7 @@
 						  nil, nil,
 						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 						  );
-		return FALSE;
+		return NO;
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
 
@@ -1262,7 +1262,7 @@
 	// If the mapping was cancelled, abort the import
 	if (fieldMapperSheetStatus == SPFieldMapperCancelled) {
 		if (fieldMapperController) [fieldMapperController release];
-		return FALSE;
+		return NO;
 	}
 
 	// Get mapping settings and preset some global variables
@@ -1290,7 +1290,7 @@
 	{
 		if(fieldMapperController) [fieldMapperController release];
 		NSBeep();
-		return FALSE;
+		return NO;
 	}
 
 	// Store target table definitions

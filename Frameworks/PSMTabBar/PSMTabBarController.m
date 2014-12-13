@@ -633,7 +633,7 @@ static NSInteger potentialMinimumForArray(NSArray *array, NSInteger minimum)
 		}
 	}
 	
-	return TRUE;
+	return YES;
 }
 
 - (NSInteger)numberOfItemsInMenu:(NSMenu *)menu
