@@ -412,16 +412,6 @@ NSString *SPBundleShellVariableSelectedText                 = @"SP_SELECTED_TEXT
 NSString *SPBundleShellVariableSelectedTextRange            = @"SP_SELECTED_TEXT_RANGE";
 NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
 
-const NSInteger SPBundleRedirectActionNone                 = 200;
-const NSInteger SPBundleRedirectActionReplaceSection       = 201;
-const NSInteger SPBundleRedirectActionReplaceContent       = 202;
-const NSInteger SPBundleRedirectActionInsertAsText         = 203;
-const NSInteger SPBundleRedirectActionInsertAsSnippet      = 204;
-const NSInteger SPBundleRedirectActionShowAsHTML           = 205;
-const NSInteger SPBundleRedirectActionShowAsTextTooltip    = 207;
-const NSInteger SPBundleRedirectActionShowAsHTMLTooltip    = 208;
-const NSInteger SPBundleRedirectActionLastCode             = 208;
-
 // URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
 NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";

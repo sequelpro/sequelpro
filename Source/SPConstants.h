@@ -46,23 +46,21 @@ typedef enum {
 } SPViewMode;
 
 // Query modes
-enum {
+typedef NS_ENUM(NSUInteger, SPQueryMode) {
 	SPInterfaceQueryMode    = 0,
 	SPCustomQueryQueryMode  = 1,
 	SPImportExportQueryMode = 2
 };
-typedef NSUInteger SPQueryMode;
 
 // Connection types
-enum {
+typedef NS_ENUM(NSUInteger, SPConnectionType) {
 	SPTCPIPConnection     = 0,
 	SPSocketConnection    = 1,
 	SPSSHTunnelConnection = 2
-}; 
-typedef NSUInteger SPConnectionType;
+};
 
 // Export type constants
-enum {
+typedef NS_ENUM(NSUInteger, SPExportType) {
 	SPSQLExport   = 0,
 	SPCSVExport   = 1,
 	SPXMLExport   = 2,
@@ -71,29 +69,25 @@ enum {
 	SPHTMLExport  = 5,
 	SPExcelExport = 6
 };
-typedef NSUInteger SPExportType;
 
 // Export source constants
-enum {
+typedef NS_ENUM(NSUInteger, SPExportSource) {
 	SPFilteredExport = 0,
 	SPQueryExport    = 1,
 	SPTableExport    = 2
 };
-typedef NSUInteger SPExportSource;
 
 // SQL export INSERT statment divider constants
-enum {
+typedef NS_ENUM(NSUInteger , SPSQLExportInsertDivider) {
 	SPSQLInsertEveryNDataBytes = 0,
 	SPSQLInsertEveryNRows      = 1
 };
-typedef NSUInteger SPSQLExportInsertDivider;
 
 // XML export formats
-enum {
+typedef NS_ENUM(NSUInteger, SPXMLExportFormat) {
 	SPXMLExportMySQLFormat = 0,
 	SPXMLExportPlainFormat = 1
 };
-typedef NSUInteger SPXMLExportFormat;
 
 // Table row count query usage levels
 typedef enum {
@@ -214,6 +208,7 @@ typedef enum
 // Export file handle creation 
 typedef enum
 {
+	SPExportFileHandleInvalid = -1,
 	SPExportFileHandleCreated = 0,
 	SPExportFileHandleFailed  = 1,
 	SPExportFileHandleExists  = 2
@@ -595,15 +590,17 @@ extern NSString *SPBundleShellVariableAllFunctions;
 extern NSString *SPBundleShellVariableAllViews;
 extern NSString *SPBundleShellVariableAllTables;
 
-extern const NSInteger SPBundleRedirectActionNone;
-extern const NSInteger SPBundleRedirectActionReplaceSection;
-extern const NSInteger SPBundleRedirectActionReplaceContent;
-extern const NSInteger SPBundleRedirectActionInsertAsText;
-extern const NSInteger SPBundleRedirectActionInsertAsSnippet;
-extern const NSInteger SPBundleRedirectActionShowAsHTML;
-extern const NSInteger SPBundleRedirectActionShowAsTextTooltip;
-extern const NSInteger SPBundleRedirectActionShowAsHTMLTooltip;
-extern const NSInteger SPBundleRedirectActionLastCode;
+typedef NS_ENUM(NSInteger, SPBundleRedirectAction) {
+	SPBundleRedirectActionNone                 = 200,
+	SPBundleRedirectActionReplaceSection       = 201,
+	SPBundleRedirectActionReplaceContent       = 202,
+	SPBundleRedirectActionInsertAsText         = 203,
+	SPBundleRedirectActionInsertAsSnippet      = 204,
+	SPBundleRedirectActionShowAsHTML           = 205,
+	SPBundleRedirectActionShowAsTextTooltip    = 207,
+	SPBundleRedirectActionShowAsHTMLTooltip    = 208,
+	SPBundleRedirectActionLastCode             = 208
+};
 
 // URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;
