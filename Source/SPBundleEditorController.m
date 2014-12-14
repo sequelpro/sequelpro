@@ -155,8 +155,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
 	[allPopupScopeItems addObjectsFromArray:withBlobDataTableArray];
 
-	NSDictionary *menuItemTitles = @{
-			allPopupScopeItems : @[
+	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:@[
 					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
 
 					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
@@ -212,8 +211,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 					NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
 					NSLocalizedString(@"save BLOB as dat file", @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
 
-			]
-	};
+			] forKeys:allPopupScopeItems];
 
 	NSMenuItem *anItem;
 	for(NSString* title in inputGeneralScopeArray) {
@@ -2112,6 +2110,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[triggerInputFieldPopUpMenu release];
 	[triggerDataTablePopUpMenu release];
 	[triggerGeneralPopUpMenu release];
+	[withBlobDataTablePopUpMenu release];
 	[inputNonePopUpMenu release];
 	
 	[inputGeneralScopeArray release];
