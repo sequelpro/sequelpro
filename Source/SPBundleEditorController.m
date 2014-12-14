@@ -120,7 +120,6 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
-	inputNonePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -129,6 +128,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	triggerDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	triggerGeneralPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	withBlobDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputNonePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 
 	inputGeneralScopeArray = [@[SPBundleInputSourceNone] retain];
 	inputInputFieldScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent] retain];
@@ -141,6 +141,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	triggerDataTableArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged] retain];
 	triggerGeneralArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged] retain];
 	withBlobDataTableArray = [@[SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference] retain];
+	NSArray *inputNoneArray = @[SPBundleInputSourceNone]; //we only need that once to construct the menu
 
 	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
 	[allPopupScopeItems addObjectsFromArray:inputGeneralScopeArray];
@@ -154,6 +155,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[allPopupScopeItems addObjectsFromArray:triggerDataTableArray];
 	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
 	[allPopupScopeItems addObjectsFromArray:withBlobDataTableArray];
+	[allPopupScopeItems addObjectsFromArray:inputNoneArray];
 
 	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:@[
 					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
@@ -211,68 +213,40 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 					NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
 					NSLocalizedString(@"save BLOB as dat file", @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
 
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=? : ? dropdown: 'None' item")
 			] forKeys:allPopupScopeItems];
 
-	NSMenuItem *anItem;
-	for(NSString* title in inputGeneralScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputGeneralScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputDataTableScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputDataTableScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputGeneralScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputGeneralScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputDataTableScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputDataTableScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputFallbackInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputFallbackPopupButtonChanged:) keyEquivalent:@""];
-		[inputFallbackInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerInputFieldArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerInputFieldPopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerDataTableArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerDataTablePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerGeneralArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerGeneralPopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in withBlobDataTableArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(withBlobButtonChanged:) keyEquivalent:@""];
-		[withBlobDataTablePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:SPBundleInputSourceNone] action:nil keyEquivalent:@""];
-	[inputNonePopUpMenu addItem:anItem];
-	[anItem release];
+	struct _menuItemMap {
+		NSArray *items;
+		NSMenu *menu;
+		SEL action;
+	};
 
+	struct _menuItemMap menus[] = {
+			{inputGeneralScopeArray,            inputGeneralScopePopUpMenu,            @selector(inputPopupButtonChanged:)},
+			{inputInputFieldScopeArray,         inputInputFieldScopePopUpMenu,         @selector(inputPopupButtonChanged:)},
+			{inputDataTableScopeArray,          inputDataTableScopePopUpMenu,          @selector(inputPopupButtonChanged:)},
+			{outputGeneralScopeArray,           outputGeneralScopePopUpMenu,           @selector(outputPopupButtonChanged:)},
+			{outputInputFieldScopeArray,        outputInputFieldScopePopUpMenu,        @selector(outputPopupButtonChanged:)},
+			{outputDataTableScopeArray,         outputDataTableScopePopUpMenu,         @selector(outputPopupButtonChanged:)},
+			{inputFallbackInputFieldScopeArray, inputFallbackInputFieldScopePopUpMenu, @selector(inputFallbackPopupButtonChanged:)},
+			{triggerInputFieldArray,            triggerInputFieldPopUpMenu,            @selector(triggerButtonChanged:)},
+			{triggerDataTableArray,             triggerDataTablePopUpMenu,             @selector(triggerButtonChanged:)},
+			{triggerGeneralArray,               triggerGeneralPopUpMenu,               @selector(triggerButtonChanged:)},
+			{withBlobDataTableArray,            withBlobDataTablePopUpMenu,            @selector(withBlobButtonChanged:)},
+			{inputNoneArray,                    inputNonePopUpMenu,                    NULL}
+	};
+
+	for(unsigned int i=0;i<(sizeof(menus)/sizeof(struct _menuItemMap));i++) {
+		struct _menuItemMap *menu = &menus[i];
+		for(NSString* title in menu->items) {
+			NSMenuItem *anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:menu->action keyEquivalent:@""];
+			[menu->menu addItem:anItem];
+			[anItem release];
+		}
+	}
+
+	NSMenuItem *anItem;
 	[inputGeneralScopePopUpMenu compatibleRemoveAllItems];
 	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kGeneralScopeArrayIndex];
