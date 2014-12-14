@@ -269,7 +269,20 @@ SPExportErrorChoice;
 	[NSApp endSheet:exportProgressWindow returnCode:0];
 	[exportProgressWindow orderOut:self];
 	
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:files];
+	// Get the current OS version
+	NSProcessInfo *pInfo = [NSProcessInfo processInfo];
+	NSOperatingSystemVersion version = [pInfo operatingSystemVersion];
+
+	// This will be executed just in OSX prior to 10.9 (Mavericks)
+	if (version.majorVersion == 10 && version.minorVersion < 9) {
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:files];
+
+	// This is going to be executed in all new versions
+	} else {
+		[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSModalResponse returnCode) {
+			[self alertDidEnd:alert returnCode:returnCode contextInfo:files];
+		}];
+	}
 }
 
 /**
