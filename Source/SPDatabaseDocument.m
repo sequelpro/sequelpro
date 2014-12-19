@@ -1649,7 +1649,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			@"big5"     : @(SPEncodingBig5Chinese),
 			@"sjis"     : @(SPEncodingShiftJISJapanese),
 			@"ujis"     : @(SPEncodingEUCJPJapanese),
-			@"euckr"    : @(SPEncodingEUCKRKorean)
+			@"euckr"    : @(SPEncodingEUCKRKorean),
+			@"utf8mb4"  : @(SPEncodingUTF8MB4)
 	};
 	NSNumber *encodingTag = [translationMap valueForKey:mysqlEncoding];
 
@@ -1665,24 +1666,25 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 - (NSString *)mysqlEncodingFromEncodingTag:(NSNumber *)encodingTag
 {
 	NSDictionary *translationMap = [NSDictionary dictionaryWithObjectsAndKeys:
-									@"ucs2", [NSString stringWithFormat:@"%i", SPEncodingUCS2],
-									@"utf8", [NSString stringWithFormat:@"%i", SPEncodingUTF8],
-									@"utf8-", [NSString stringWithFormat:@"%i", SPEncodingUTF8viaLatin1],
-									@"ascii", [NSString stringWithFormat:@"%i", SPEncodingASCII],
-									@"latin1", [NSString stringWithFormat:@"%i", SPEncodingLatin1],
+									@"ucs2",     [NSString stringWithFormat:@"%i", SPEncodingUCS2],
+									@"utf8",     [NSString stringWithFormat:@"%i", SPEncodingUTF8],
+									@"utf8-",    [NSString stringWithFormat:@"%i", SPEncodingUTF8viaLatin1],
+									@"ascii",    [NSString stringWithFormat:@"%i", SPEncodingASCII],
+									@"latin1",   [NSString stringWithFormat:@"%i", SPEncodingLatin1],
 									@"macroman", [NSString stringWithFormat:@"%i", SPEncodingMacRoman],
-									@"cp1250", [NSString stringWithFormat:@"%i", SPEncodingCP1250Latin2],
-									@"latin2", [NSString stringWithFormat:@"%i", SPEncodingISOLatin2],
-									@"cp1256", [NSString stringWithFormat:@"%i", SPEncodingCP1256Arabic],
-									@"greek", [NSString stringWithFormat:@"%i", SPEncodingGreek],
-									@"hebrew", [NSString stringWithFormat:@"%i", SPEncodingHebrew],
-									@"latin5", [NSString stringWithFormat:@"%i", SPEncodingLatin5Turkish],
-									@"cp1257", [NSString stringWithFormat:@"%i", SPEncodingCP1257WinBaltic],
-									@"cp1251", [NSString stringWithFormat:@"%i", SPEncodingCP1251WinCyrillic],
-									@"big5", [NSString stringWithFormat:@"%i", SPEncodingBig5Chinese],
-									@"sjis", [NSString stringWithFormat:@"%i", SPEncodingShiftJISJapanese],
-									@"ujis", [NSString stringWithFormat:@"%i", SPEncodingEUCJPJapanese],
-									@"euckr", [NSString stringWithFormat:@"%i", SPEncodingEUCKRKorean],
+									@"cp1250",   [NSString stringWithFormat:@"%i", SPEncodingCP1250Latin2],
+									@"latin2",   [NSString stringWithFormat:@"%i", SPEncodingISOLatin2],
+									@"cp1256",   [NSString stringWithFormat:@"%i", SPEncodingCP1256Arabic],
+									@"greek",    [NSString stringWithFormat:@"%i", SPEncodingGreek],
+									@"hebrew",   [NSString stringWithFormat:@"%i", SPEncodingHebrew],
+									@"latin5",   [NSString stringWithFormat:@"%i", SPEncodingLatin5Turkish],
+									@"cp1257",   [NSString stringWithFormat:@"%i", SPEncodingCP1257WinBaltic],
+									@"cp1251",   [NSString stringWithFormat:@"%i", SPEncodingCP1251WinCyrillic],
+									@"big5",     [NSString stringWithFormat:@"%i", SPEncodingBig5Chinese],
+									@"sjis",     [NSString stringWithFormat:@"%i", SPEncodingShiftJISJapanese],
+									@"ujis",     [NSString stringWithFormat:@"%i", SPEncodingEUCJPJapanese],
+									@"euckr",    [NSString stringWithFormat:@"%i", SPEncodingEUCKRKorean],
+									@"utf8mb4",  [NSString stringWithFormat:@"%i", SPEncodingUTF8MB4],
 									nil];
 	NSString *mysqlEncoding = [translationMap valueForKey:[NSString stringWithFormat:@"%i", [encodingTag intValue]]];
 

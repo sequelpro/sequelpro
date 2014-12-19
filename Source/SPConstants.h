@@ -177,7 +177,8 @@ typedef enum
 	SPEncodingBig5Chinese		= 150,
 	SPEncodingShiftJISJapanese	= 160,
 	SPEncodingEUCJPJapanese		= 170,
-	SPEncodingEUCKRKorean		= 180
+	SPEncodingEUCKRKorean		= 180,
+	SPEncodingUTF8MB4           = 190
 } SPEncodingTypes;
 
 // Table index type menu tags
