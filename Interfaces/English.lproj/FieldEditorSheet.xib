@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13B3116</string>
-		<string key="IBDocument.InterfaceBuilderVersion">4514</string>
-		<string key="IBDocument.AppKitVersion">1265</string>
-		<string key="IBDocument.HIToolboxVersion">696.00</string>
+		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.InterfaceBuilderVersion">6254</string>
+		<string key="IBDocument.AppKitVersion">1265.21</string>
+		<string key="IBDocument.HIToolboxVersion">698.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">4514</string>
+			<string key="NS.object.0">6254</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSBox</string>
@@ -60,7 +60,7 @@
 				<nil key="NSViewClass"/>
 				<nil key="NSUserInterfaceItemIdentifier"/>
 				<object class="NSView" key="NSWindowView" id="74424767">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">4370</int>
 					<array class="NSMutableArray" key="NSSubviews">
 						<object class="NSBox" id="326830185">
@@ -69,6 +69,7 @@
 							<array class="NSMutableArray" key="NSSubviews"/>
 							<string key="NSFrame">{{0, 48}, {667, 5}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -76,7 +77,7 @@
 								<int key="NSCellFlags2">134217728</int>
 								<string key="NSContents">Box</string>
 								<object class="NSFont" key="NSSupport" id="1059423532">
-									<string key="NSName">.LucidaGrandeUI</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">13</double>
 									<int key="NSfFlags">1044</int>
 								</object>
@@ -104,6 +105,7 @@
 							<int key="NSvFlags">257</int>
 							<string key="NSFrame">{{581, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -112,7 +114,7 @@
 								<int key="NSCellFlags2">134348800</int>
 								<string key="NSContents">OK</string>
 								<object class="NSFont" key="NSSupport" id="26">
-									<string key="NSName">.LucidaGrandeUI</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">11</double>
 									<int key="NSfFlags">3100</int>
 								</object>
@@ -137,6 +139,7 @@
 							<int key="NSvFlags">-2147483391</int>
 							<string key="NSFrame">{{581, 13}, {66, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<int key="NSTag">1</int>
 							<bool key="NSEnabled">YES</bool>
@@ -162,6 +165,7 @@
 							<int key="NSvFlags">257</int>
 							<string key="NSFrame">{{498, 13}, {75, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="377140862">
@@ -185,6 +189,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{102, 13}, {82, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="894489903">
@@ -208,6 +213,7 @@
 							<int key="NSvFlags">256</int>
 							<string key="NSFrame">{{12, 13}, {82, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="619671673">
@@ -231,6 +237,7 @@
 							<int key="NSvFlags">292</int>
 							<string key="NSFrame">{{401, 12}, {48, 25}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="131025635">
 								<int key="NSCellFlags">71303232</int>
@@ -285,9 +292,10 @@
 							<int key="NSvFlags">292</int>
 							<string key="NSFrame">{{230, 15}, {163, 19}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSegmentedCell" key="NSCell" id="623590172">
-								<int key="NSCellFlags">-2080374784</int>
+								<int key="NSCellFlags">-2071986176</int>
 								<int key="NSCellFlags2">131072</int>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="687654837"/>
@@ -331,6 +339,7 @@
 											<int key="NSvFlags">2322</int>
 											<string key="NSFrameSize">{667, 349}</string>
 											<reference key="NSSuperview" ref="741882800"/>
+											<reference key="NSWindow"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="57504100">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -350,7 +359,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">67111781</int>
+												<int key="NSFlags">2917</int>
 												<int key="NSTextCheckingTypes">0</int>
 												<nil key="NSMarkedAttributes"/>
 												<reference key="NSBackgroundColor" ref="763803775"/>
@@ -397,6 +406,7 @@
 									</array>
 									<string key="NSFrameSize">{667, 349}</string>
 									<reference key="NSSuperview" ref="681995991"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="132416365"/>
 									<reference key="NSDocView" ref="132416365"/>
 									<reference key="NSBGColor" ref="763803775"/>
@@ -411,6 +421,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{-100, -100}, {87, 18}}</string>
 									<reference key="NSSuperview" ref="681995991"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="681995991"/>
@@ -422,6 +433,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{220, 1}, {11, 141}}</string>
 									<reference key="NSSuperview" ref="681995991"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">256</int>
 									<reference key="NSTarget" ref="681995991"/>
@@ -430,6 +442,7 @@
 							</array>
 							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="741882800"/>
 							<int key="NSsFlags">133648</int>
 							<reference key="NSVScroller" ref="493624509"/>
@@ -452,6 +465,7 @@
 							</set>
 							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSImageCell" key="NSCell" id="72799805">
 								<int key="NSCellFlags">270532609</int>
@@ -475,8 +489,28 @@
 										<object class="NSTextView" id="834935958">
 											<reference key="NSNextResponder" ref="97539994"/>
 											<int key="NSvFlags">2322</int>
+											<set class="NSMutableSet" key="NSDragTypes">
+												<string>Apple HTML pasteboard type</string>
+												<string>Apple PDF pasteboard type</string>
+												<string>Apple PICT pasteboard type</string>
+												<string>Apple PNG pasteboard type</string>
+												<string>Apple URL pasteboard type</string>
+												<string>CorePasteboardFlavorType 0x6D6F6F76</string>
+												<string>NSColor pasteboard type</string>
+												<string>NSFilenamesPboardType</string>
+												<string>NSStringPboardType</string>
+												<string>NeXT Encapsulated PostScript v1.2 pasteboard type</string>
+												<string>NeXT RTFD pasteboard type</string>
+												<string>NeXT Rich Text Format v1.0 pasteboard type</string>
+												<string>NeXT TIFF v4.0 pasteboard type</string>
+												<string>NeXT font pasteboard type</string>
+												<string>NeXT ruler pasteboard type</string>
+												<string>WebURLsWithTitlesPboardType</string>
+												<string>public.url</string>
+											</set>
 											<string key="NSFrameSize">{667, 349}</string>
 											<reference key="NSSuperview" ref="97539994"/>
+											<reference key="NSWindow"/>
 											<object class="NSTextContainer" key="NSTextContainer" id="222726972">
 												<object class="NSLayoutManager" key="NSLayoutManager">
 													<object class="NSTextStorage" key="NSTextStorage">
@@ -496,7 +530,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">67121123</int>
+												<int key="NSFlags">12259</int>
 												<int key="NSTextCheckingTypes">0</int>
 												<nil key="NSMarkedAttributes"/>
 												<reference key="NSBackgroundColor" ref="763803775"/>
@@ -521,6 +555,7 @@
 									</array>
 									<string key="NSFrameSize">{667, 349}</string>
 									<reference key="NSSuperview" ref="790604124"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="834935958"/>
 									<reference key="NSDocView" ref="834935958"/>
 									<reference key="NSBGColor" ref="763803775"/>
@@ -532,6 +567,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{-100, -100}, {87, 18}}</string>
 									<reference key="NSSuperview" ref="790604124"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="790604124"/>
@@ -543,6 +579,7 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{639, 2}, {11, 359}}</string>
 									<reference key="NSSuperview" ref="790604124"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">256</int>
 									<reference key="NSTarget" ref="790604124"/>
@@ -551,6 +588,7 @@
 							</array>
 							<string key="NSFrame">{{0, 51}, {667, 349}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="97539994"/>
 							<int key="NSsFlags">133648</int>
 							<reference key="NSVScroller" ref="990500102"/>
@@ -565,6 +603,7 @@
 							<int key="NSvFlags">301</int>
 							<string key="NSFrame">{{325, 232}, {32, 32}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{750, 750}</string>
 							<int key="NSpiFlags">28686</int>
 							<double key="NSMinValue">16</double>
@@ -576,6 +615,7 @@
 							<array class="NSMutableArray" key="NSSubviews"/>
 							<string key="NSFrame">{{0, 398}, {667, 5}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<string key="NSOffsets">{0, 0}</string>
 							<object class="NSTextFieldCell" key="NSTitleCell">
@@ -599,6 +639,7 @@
 							<int key="NSvFlags">266</int>
 							<string key="NSFrame">{{9, 408}, {459, 14}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="6880799">
 								<int key="NSCellFlags">67108928</int>
@@ -627,6 +668,7 @@
 							<int key="NSvFlags">265</int>
 							<string key="NSFrame">{{470, 406}, {185, 18}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="213875702">
 								<int key="NSCellFlags">67108864</int>
@@ -652,6 +694,8 @@
 						</object>
 					</array>
 					<string key="NSFrameSize">{667, 428}</string>
+					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMaxSize">{10000000000000, 10000000000000}</string>
@@ -685,7 +729,7 @@
 								<int key="NSCellFlags2">134479872</int>
 								<string key="NSContents"/>
 								<object class="NSFont" key="NSSupport" id="22">
-									<string key="NSName">.LucidaGrandeUI</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">9</double>
 									<int key="NSfFlags">3614</int>
 								</object>
@@ -2907,7 +2951,7 @@
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<bool key="usesAutoincrementingIDs">NO</bool>
-			<array class="NSMutableArray" key="connectionRecords">
+			<array key="connectionRecords">
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">bitSheet</string>
@@ -7345,14 +7389,858 @@
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPEditSheetTextView</string>
+					<string key="superclassName">NSTextView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPEditSheetTextView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPEditSheetTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="cut:">id</string>
+						<string key="paste:">id</string>
+						<string key="redo:">id</string>
+						<string key="undo:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="cut:">
+							<string key="name">cut:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="paste:">
+							<string key="name">paste:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="redo:">
+							<string key="name">redo:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="undo:">
+							<string key="name">undo:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPEditSheetTextView.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPFieldEditorController</string>
+					<string key="superclassName">NSWindowController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="bitSheetBitButtonWasClicked:">id</string>
+						<string key="bitSheetOperatorButtonWasClicked:">id</string>
+						<string key="bitSheetSelectBit0:">id</string>
+						<string key="closeEditSheet:">id</string>
+						<string key="dropImage:">id</string>
+						<string key="openEditSheet:">id</string>
+						<string key="quickLookFormatButton:">id</string>
+						<string key="saveEditSheet:">id</string>
+						<string key="segmentControllerChanged:">id</string>
+						<string key="setToNull:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="bitSheetBitButtonWasClicked:">
+							<string key="name">bitSheetBitButtonWasClicked:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="bitSheetOperatorButtonWasClicked:">
+							<string key="name">bitSheetOperatorButtonWasClicked:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="bitSheetSelectBit0:">
+							<string key="name">bitSheetSelectBit0:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeEditSheet:">
+							<string key="name">closeEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="dropImage:">
+							<string key="name">dropImage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openEditSheet:">
+							<string key="name">openEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="quickLookFormatButton:">
+							<string key="name">quickLookFormatButton:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveEditSheet:">
+							<string key="name">saveEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="segmentControllerChanged:">
+							<string key="name">segmentControllerChanged:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setToNull:">
+							<string key="name">setToNull:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="bitSheet">id</string>
+						<string key="bitSheetBitButton0">NSButton</string>
+						<string key="bitSheetBitButton1">NSButton</string>
+						<string key="bitSheetBitButton10">NSButton</string>
+						<string key="bitSheetBitButton11">NSButton</string>
+						<string key="bitSheetBitButton12">NSButton</string>
+						<string key="bitSheetBitButton13">NSButton</string>
+						<string key="bitSheetBitButton14">NSButton</string>
+						<string key="bitSheetBitButton15">NSButton</string>
+						<string key="bitSheetBitButton16">NSButton</string>
+						<string key="bitSheetBitButton17">NSButton</string>
+						<string key="bitSheetBitButton18">NSButton</string>
+						<string key="bitSheetBitButton19">NSButton</string>
+						<string key="bitSheetBitButton2">NSButton</string>
+						<string key="bitSheetBitButton20">NSButton</string>
+						<string key="bitSheetBitButton21">NSButton</string>
+						<string key="bitSheetBitButton22">NSButton</string>
+						<string key="bitSheetBitButton23">NSButton</string>
+						<string key="bitSheetBitButton24">NSButton</string>
+						<string key="bitSheetBitButton25">NSButton</string>
+						<string key="bitSheetBitButton26">NSButton</string>
+						<string key="bitSheetBitButton27">NSButton</string>
+						<string key="bitSheetBitButton28">NSButton</string>
+						<string key="bitSheetBitButton29">NSButton</string>
+						<string key="bitSheetBitButton3">NSButton</string>
+						<string key="bitSheetBitButton30">NSButton</string>
+						<string key="bitSheetBitButton31">NSButton</string>
+						<string key="bitSheetBitButton32">NSButton</string>
+						<string key="bitSheetBitButton33">NSButton</string>
+						<string key="bitSheetBitButton34">NSButton</string>
+						<string key="bitSheetBitButton35">NSButton</string>
+						<string key="bitSheetBitButton36">NSButton</string>
+						<string key="bitSheetBitButton37">NSButton</string>
+						<string key="bitSheetBitButton38">NSButton</string>
+						<string key="bitSheetBitButton39">NSButton</string>
+						<string key="bitSheetBitButton4">NSButton</string>
+						<string key="bitSheetBitButton40">NSButton</string>
+						<string key="bitSheetBitButton41">NSButton</string>
+						<string key="bitSheetBitButton42">NSButton</string>
+						<string key="bitSheetBitButton43">NSButton</string>
+						<string key="bitSheetBitButton44">NSButton</string>
+						<string key="bitSheetBitButton45">NSButton</string>
+						<string key="bitSheetBitButton46">NSButton</string>
+						<string key="bitSheetBitButton47">NSButton</string>
+						<string key="bitSheetBitButton48">NSButton</string>
+						<string key="bitSheetBitButton49">NSButton</string>
+						<string key="bitSheetBitButton5">NSButton</string>
+						<string key="bitSheetBitButton50">NSButton</string>
+						<string key="bitSheetBitButton51">NSButton</string>
+						<string key="bitSheetBitButton52">NSButton</string>
+						<string key="bitSheetBitButton53">NSButton</string>
+						<string key="bitSheetBitButton54">NSButton</string>
+						<string key="bitSheetBitButton55">NSButton</string>
+						<string key="bitSheetBitButton56">NSButton</string>
+						<string key="bitSheetBitButton57">NSButton</string>
+						<string key="bitSheetBitButton58">NSButton</string>
+						<string key="bitSheetBitButton59">NSButton</string>
+						<string key="bitSheetBitButton6">NSButton</string>
+						<string key="bitSheetBitButton60">NSButton</string>
+						<string key="bitSheetBitButton61">NSButton</string>
+						<string key="bitSheetBitButton62">NSButton</string>
+						<string key="bitSheetBitButton63">NSButton</string>
+						<string key="bitSheetBitButton7">NSButton</string>
+						<string key="bitSheetBitButton8">NSButton</string>
+						<string key="bitSheetBitButton9">NSButton</string>
+						<string key="bitSheetBitLabel0">NSTextField</string>
+						<string key="bitSheetBitLabel16">NSTextField</string>
+						<string key="bitSheetBitLabel24">NSTextField</string>
+						<string key="bitSheetBitLabel32">NSTextField</string>
+						<string key="bitSheetBitLabel40">NSTextField</string>
+						<string key="bitSheetBitLabel48">NSTextField</string>
+						<string key="bitSheetBitLabel56">NSTextField</string>
+						<string key="bitSheetBitLabel8">NSTextField</string>
+						<string key="bitSheetCloseButton">NSButton</string>
+						<string key="bitSheetFieldName">NSTextField</string>
+						<string key="bitSheetHexTextField">NSTextField</string>
+						<string key="bitSheetIntegerTextField">NSTextField</string>
+						<string key="bitSheetNULLButton">NSButton</string>
+						<string key="bitSheetOctalTextField">NSTextField</string>
+						<string key="bitSheetOkButton">NSButton</string>
+						<string key="editImage">id</string>
+						<string key="editSheet">SPWindow</string>
+						<string key="editSheetCancelButton">id</string>
+						<string key="editSheetFieldName">id</string>
+						<string key="editSheetIsNotEditableCancelButton">id</string>
+						<string key="editSheetOkButton">id</string>
+						<string key="editSheetOpenButton">id</string>
+						<string key="editSheetProgressBar">id</string>
+						<string key="editSheetQuickLookButton">id</string>
+						<string key="editSheetSegmentControl">id</string>
+						<string key="editTextScrollView">id</string>
+						<string key="editTextView">id</string>
+						<string key="hexTextScrollView">id</string>
+						<string key="hexTextView">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="bitSheet">
+							<string key="name">bitSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton0">
+							<string key="name">bitSheetBitButton0</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton1">
+							<string key="name">bitSheetBitButton1</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton10">
+							<string key="name">bitSheetBitButton10</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton11">
+							<string key="name">bitSheetBitButton11</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton12">
+							<string key="name">bitSheetBitButton12</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton13">
+							<string key="name">bitSheetBitButton13</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton14">
+							<string key="name">bitSheetBitButton14</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton15">
+							<string key="name">bitSheetBitButton15</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton16">
+							<string key="name">bitSheetBitButton16</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton17">
+							<string key="name">bitSheetBitButton17</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton18">
+							<string key="name">bitSheetBitButton18</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton19">
+							<string key="name">bitSheetBitButton19</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton2">
+							<string key="name">bitSheetBitButton2</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton20">
+							<string key="name">bitSheetBitButton20</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton21">
+							<string key="name">bitSheetBitButton21</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton22">
+							<string key="name">bitSheetBitButton22</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton23">
+							<string key="name">bitSheetBitButton23</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton24">
+							<string key="name">bitSheetBitButton24</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton25">
+							<string key="name">bitSheetBitButton25</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton26">
+							<string key="name">bitSheetBitButton26</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton27">
+							<string key="name">bitSheetBitButton27</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton28">
+							<string key="name">bitSheetBitButton28</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton29">
+							<string key="name">bitSheetBitButton29</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton3">
+							<string key="name">bitSheetBitButton3</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton30">
+							<string key="name">bitSheetBitButton30</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton31">
+							<string key="name">bitSheetBitButton31</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton32">
+							<string key="name">bitSheetBitButton32</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton33">
+							<string key="name">bitSheetBitButton33</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton34">
+							<string key="name">bitSheetBitButton34</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton35">
+							<string key="name">bitSheetBitButton35</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton36">
+							<string key="name">bitSheetBitButton36</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton37">
+							<string key="name">bitSheetBitButton37</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton38">
+							<string key="name">bitSheetBitButton38</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton39">
+							<string key="name">bitSheetBitButton39</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton4">
+							<string key="name">bitSheetBitButton4</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton40">
+							<string key="name">bitSheetBitButton40</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton41">
+							<string key="name">bitSheetBitButton41</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton42">
+							<string key="name">bitSheetBitButton42</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton43">
+							<string key="name">bitSheetBitButton43</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton44">
+							<string key="name">bitSheetBitButton44</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton45">
+							<string key="name">bitSheetBitButton45</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton46">
+							<string key="name">bitSheetBitButton46</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton47">
+							<string key="name">bitSheetBitButton47</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton48">
+							<string key="name">bitSheetBitButton48</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton49">
+							<string key="name">bitSheetBitButton49</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton5">
+							<string key="name">bitSheetBitButton5</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton50">
+							<string key="name">bitSheetBitButton50</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton51">
+							<string key="name">bitSheetBitButton51</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton52">
+							<string key="name">bitSheetBitButton52</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton53">
+							<string key="name">bitSheetBitButton53</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton54">
+							<string key="name">bitSheetBitButton54</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton55">
+							<string key="name">bitSheetBitButton55</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton56">
+							<string key="name">bitSheetBitButton56</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton57">
+							<string key="name">bitSheetBitButton57</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton58">
+							<string key="name">bitSheetBitButton58</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton59">
+							<string key="name">bitSheetBitButton59</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton6">
+							<string key="name">bitSheetBitButton6</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton60">
+							<string key="name">bitSheetBitButton60</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton61">
+							<string key="name">bitSheetBitButton61</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton62">
+							<string key="name">bitSheetBitButton62</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton63">
+							<string key="name">bitSheetBitButton63</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton7">
+							<string key="name">bitSheetBitButton7</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton8">
+							<string key="name">bitSheetBitButton8</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitButton9">
+							<string key="name">bitSheetBitButton9</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel0">
+							<string key="name">bitSheetBitLabel0</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel16">
+							<string key="name">bitSheetBitLabel16</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel24">
+							<string key="name">bitSheetBitLabel24</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel32">
+							<string key="name">bitSheetBitLabel32</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel40">
+							<string key="name">bitSheetBitLabel40</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel48">
+							<string key="name">bitSheetBitLabel48</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel56">
+							<string key="name">bitSheetBitLabel56</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetBitLabel8">
+							<string key="name">bitSheetBitLabel8</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetCloseButton">
+							<string key="name">bitSheetCloseButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetFieldName">
+							<string key="name">bitSheetFieldName</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetHexTextField">
+							<string key="name">bitSheetHexTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetIntegerTextField">
+							<string key="name">bitSheetIntegerTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetNULLButton">
+							<string key="name">bitSheetNULLButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetOctalTextField">
+							<string key="name">bitSheetOctalTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="bitSheetOkButton">
+							<string key="name">bitSheetOkButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editImage">
+							<string key="name">editImage</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheet">
+							<string key="name">editSheet</string>
+							<string key="candidateClassName">SPWindow</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetCancelButton">
+							<string key="name">editSheetCancelButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetFieldName">
+							<string key="name">editSheetFieldName</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetIsNotEditableCancelButton">
+							<string key="name">editSheetIsNotEditableCancelButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetOkButton">
+							<string key="name">editSheetOkButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetOpenButton">
+							<string key="name">editSheetOpenButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetProgressBar">
+							<string key="name">editSheetProgressBar</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetQuickLookButton">
+							<string key="name">editSheetQuickLookButton</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editSheetSegmentControl">
+							<string key="name">editSheetSegmentControl</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editTextScrollView">
+							<string key="name">editTextScrollView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="editTextView">
+							<string key="name">editTextView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="hexTextScrollView">
+							<string key="name">hexTextScrollView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="hexTextView">
+							<string key="name">hexTextView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPFieldEditorController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPFieldEditorController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="bitSheetBitButtonWasClicked:">id</string>
+						<string key="bitSheetOperatorButtonWasClicked:">id</string>
+						<string key="bitSheetSelectBit0:">id</string>
+						<string key="closeEditSheet:">id</string>
+						<string key="dropImage:">id</string>
+						<string key="openEditSheet:">id</string>
+						<string key="quickLookFormatButton:">id</string>
+						<string key="saveEditSheet:">id</string>
+						<string key="segmentControllerChanged:">id</string>
+						<string key="setToNull:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="bitSheetBitButtonWasClicked:">
+							<string key="name">bitSheetBitButtonWasClicked:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="bitSheetOperatorButtonWasClicked:">
+							<string key="name">bitSheetOperatorButtonWasClicked:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="bitSheetSelectBit0:">
+							<string key="name">bitSheetSelectBit0:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeEditSheet:">
+							<string key="name">closeEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="dropImage:">
+							<string key="name">dropImage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openEditSheet:">
+							<string key="name">openEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="quickLookFormatButton:">
+							<string key="name">quickLookFormatButton:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveEditSheet:">
+							<string key="name">saveEditSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="segmentControllerChanged:">
+							<string key="name">segmentControllerChanged:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setToNull:">
+							<string key="name">setToNull:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPFieldEditorController.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPImageView</string>
+					<string key="superclassName">NSImageView</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">delegate</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">delegate</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">delegate</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPImageView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPWindow</string>
+					<string key="superclassName">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPWindow.h</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<real value="1060" key="NS.object.0"/>
-		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
 			<integer value="4600" key="NS.object.0"/>

@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13B3116</string>
-		<string key="IBDocument.InterfaceBuilderVersion">4514</string>
-		<string key="IBDocument.AppKitVersion">1265</string>
-		<string key="IBDocument.HIToolboxVersion">696.00</string>
+		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.InterfaceBuilderVersion">6254</string>
+		<string key="IBDocument.AppKitVersion">1265.21</string>
+		<string key="IBDocument.HIToolboxVersion">698.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">4514</string>
+			<string key="NS.object.0">6254</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSBox</string>
@@ -136,7 +136,7 @@
 							</array>
 							<reference key="NSSelectedTabViewItem" ref="397902451"/>
 							<object class="NSFont" key="NSFont" id="695505032">
-								<string key="NSName">.LucidaGrandeUI</string>
+								<bool key="IBIsSystemFont">YES</bool>
 								<double key="NSSize">13</double>
 								<int key="NSfFlags">1044</int>
 							</object>
@@ -215,7 +215,7 @@
 														<int key="NSCellFlags2">131072</int>
 														<string key="NSContents">Low memory export (may block server)</string>
 														<object class="NSFont" key="NSSupport" id="26">
-															<string key="NSName">.LucidaGrandeUI</string>
+															<bool key="IBIsSystemFont">YES</bool>
 															<double key="NSSize">11</double>
 															<int key="NSfFlags">3100</int>
 														</object>
@@ -571,7 +571,7 @@
 								<int key="NSCellFlags2">4196352</int>
 								<string key="NSContents">Doing Stuff…</string>
 								<object class="NSFont" key="NSSupport">
-									<string key="NSName">.LucidaGrandeUI-Bold</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">13</double>
 									<int key="NSfFlags">2072</int>
 								</object>
@@ -646,7 +646,7 @@
 								<int key="NSCellFlags2">4194304</int>
 								<string key="NSContents">The following export errors occurred:</string>
 								<object class="NSFont" key="NSSupport">
-									<string key="NSName">.LucidaGrandeUI-Bold</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">11</double>
 									<int key="NSfFlags">3357</int>
 								</object>
@@ -689,7 +689,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">67111169</int>
+												<int key="NSFlags">2305</int>
 												<int key="NSTextCheckingTypes">0</int>
 												<nil key="NSMarkedAttributes"/>
 												<reference key="NSBackgroundColor" ref="628696263"/>
@@ -3026,7 +3026,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<bool key="usesAutoincrementingIDs">NO</bool>
-			<array class="NSMutableArray" key="connectionRecords">
+			<array key="connectionRecords">
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">exportProgressWindow</string>
@@ -5556,11 +5556,9 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="insertNULLvalue:">id</string>
 						<string key="moveSelectionLineDown:">id</string>
 						<string key="moveSelectionLineUp:">id</string>
-						<string key="orderFrontSharingServicePicker:">id</string>
 						<string key="selectCurrentLine:">id</string>
 						<string key="selectCurrentWord:">id</string>
 						<string key="selectEnclosingBrackets:">id</string>
-						<string key="toggleQuickLookPreviewPanel:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
@@ -5615,8 +5613,95 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">moveSelectionLineUp:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="orderFrontSharingServicePicker:">
-							<string key="name">orderFrontSharingServicePicker:</string>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="selectCurrentLine:">
@@ -5631,14 +5716,10 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">selectEnclosingBrackets:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="toggleQuickLookPreviewPanel:">
-							<string key="name">toggleQuickLookPreviewPanel:</string>
-							<string key="candidateClassName">id</string>
-						</object>
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/NSTextView.h</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -5657,7 +5738,25 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPCopyTable.h</string>
+						<string key="minorKey">../Source/SPCopyTable.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPCopyTable</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">executeBundleItemForDataTable:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">executeBundleItemForDataTable:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">executeBundleItemForDataTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPCopyTable.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -5684,11 +5783,9 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="runSecondaryQueryAction:">id</string>
 						<string key="runSelectedQueries:">id</string>
 						<string key="saveQueryHistory:">id</string>
-						<string key="searchInDocForWebViewSelection:">id</string>
 						<string key="showCompletionList:">id</string>
 						<string key="showHelpForCurrentWord:">id</string>
 						<string key="showHelpForSearchString:">id</string>
-						<string key="showHelpForWebViewSelection:">id</string>
 						<string key="switchDefaultQueryAction:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
@@ -5772,10 +5869,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">saveQueryHistory:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="searchInDocForWebViewSelection:">
-							<string key="name">searchInDocForWebViewSelection:</string>
-							<string key="candidateClassName">id</string>
-						</object>
 						<object class="IBActionInfo" key="showCompletionList:">
 							<string key="name">showCompletionList:</string>
 							<string key="candidateClassName">id</string>
@@ -5786,10 +5879,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						</object>
 						<object class="IBActionInfo" key="showHelpForSearchString:">
 							<string key="name">showHelpForSearchString:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="showHelpForWebViewSelection:">
-							<string key="name">showHelpForWebViewSelection:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="switchDefaultQueryAction:">
@@ -6078,7 +6167,148 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPCustomQuery.h</string>
+						<string key="minorKey">../Source/SPCustomQuery.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPCustomQuery</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="chooseQueryFavorite:">id</string>
+						<string key="chooseQueryHistory:">id</string>
+						<string key="clearQueryHistory:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyQueryHistory:">id</string>
+						<string key="filterQueryFavorites:">id</string>
+						<string key="filterQueryHistory:">id</string>
+						<string key="gearMenuItemSelected:">id</string>
+						<string key="helpSearchFindNextInPage:">id</string>
+						<string key="helpSearchFindPreviousInPage:">id</string>
+						<string key="helpSegmentDispatcher:">id</string>
+						<string key="helpSelectHelpTargetMySQL:">id</string>
+						<string key="helpSelectHelpTargetPage:">id</string>
+						<string key="helpSelectHelpTargetWeb:">id</string>
+						<string key="helpTargetDispatcher:">id</string>
+						<string key="runAllQueries:">id</string>
+						<string key="runPrimaryQueryAction:">id</string>
+						<string key="runSecondaryQueryAction:">id</string>
+						<string key="runSelectedQueries:">id</string>
+						<string key="saveQueryHistory:">id</string>
+						<string key="searchInDocForWebViewSelection:">id</string>
+						<string key="showCompletionList:">id</string>
+						<string key="showHelpForCurrentWord:">id</string>
+						<string key="showHelpForSearchString:">id</string>
+						<string key="showHelpForWebViewSelection:">id</string>
+						<string key="switchDefaultQueryAction:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="chooseQueryFavorite:">
+							<string key="name">chooseQueryFavorite:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseQueryHistory:">
+							<string key="name">chooseQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="clearQueryHistory:">
+							<string key="name">clearQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyQueryHistory:">
+							<string key="name">copyQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterQueryFavorites:">
+							<string key="name">filterQueryFavorites:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterQueryHistory:">
+							<string key="name">filterQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="gearMenuItemSelected:">
+							<string key="name">gearMenuItemSelected:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSearchFindNextInPage:">
+							<string key="name">helpSearchFindNextInPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSearchFindPreviousInPage:">
+							<string key="name">helpSearchFindPreviousInPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSegmentDispatcher:">
+							<string key="name">helpSegmentDispatcher:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetMySQL:">
+							<string key="name">helpSelectHelpTargetMySQL:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetPage:">
+							<string key="name">helpSelectHelpTargetPage:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpSelectHelpTargetWeb:">
+							<string key="name">helpSelectHelpTargetWeb:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="helpTargetDispatcher:">
+							<string key="name">helpTargetDispatcher:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runAllQueries:">
+							<string key="name">runAllQueries:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runPrimaryQueryAction:">
+							<string key="name">runPrimaryQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runSecondaryQueryAction:">
+							<string key="name">runSecondaryQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="runSelectedQueries:">
+							<string key="name">runSelectedQueries:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveQueryHistory:">
+							<string key="name">saveQueryHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="searchInDocForWebViewSelection:">
+							<string key="name">searchInDocForWebViewSelection:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showCompletionList:">
+							<string key="name">showCompletionList:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForCurrentWord:">
+							<string key="name">showHelpForCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForSearchString:">
+							<string key="name">showHelpForSearchString:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showHelpForWebViewSelection:">
+							<string key="name">showHelpForWebViewSelection:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="switchDefaultQueryAction:">
+							<string key="name">switchDefaultQueryAction:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPCustomQuery.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -6086,7 +6316,25 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					<string key="superclassName">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPDatabaseData.h</string>
+						<string key="minorKey">../Source/SPDatabaseData.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">closeErrorConnectionSheet:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">closeErrorConnectionSheet:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">closeErrorConnectionSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPConnectionDelegate.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -6129,6 +6377,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="setDatabases:">id</string>
 						<string key="showCreateTableSyntax:">id</string>
 						<string key="showFilterTable:">id</string>
+						<string key="showGotoDatabase:">id</string>
 						<string key="showMySQLHelp:">id</string>
 						<string key="showNavigator:">id</string>
 						<string key="showServerProcesses:">id</string>
@@ -6136,12 +6385,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="showUserManager:">id</string>
 						<string key="toggleNavigator:">id</string>
 						<string key="validateSaveConnectionAccessory:">id</string>
-						<string key="viewContent:">id</string>
-						<string key="viewQuery:">id</string>
-						<string key="viewRelations:">id</string>
-						<string key="viewStatus:">id</string>
-						<string key="viewStructure:">id</string>
-						<string key="viewTriggers:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="addConnectionToFavorites:">
@@ -6288,6 +6531,10 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">showFilterTable:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="showGotoDatabase:">
+							<string key="name">showGotoDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 						<object class="IBActionInfo" key="showMySQLHelp:">
 							<string key="name">showMySQLHelp:</string>
 							<string key="candidateClassName">id</string>
@@ -6314,30 +6561,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						</object>
 						<object class="IBActionInfo" key="validateSaveConnectionAccessory:">
 							<string key="name">validateSaveConnectionAccessory:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewContent:">
-							<string key="name">viewContent:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewQuery:">
-							<string key="name">viewQuery:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewRelations:">
-							<string key="name">viewRelations:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewStatus:">
-							<string key="name">viewStatus:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewStructure:">
-							<string key="name">viewStructure:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="viewTriggers:">
-							<string key="name">viewTriggers:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 					</dictionary>
@@ -6692,7 +6915,338 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPDatabaseDocument.h</string>
+						<string key="minorKey">../Source/SPDatabaseDocument.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addConnectionToFavorites:">id</string>
+						<string key="addDatabase:">id</string>
+						<string key="alterDatabase:">id</string>
+						<string key="analyzeTable:">id</string>
+						<string key="backForwardInHistory:">id</string>
+						<string key="cancelTask:">id</string>
+						<string key="checkTable:">id</string>
+						<string key="checksumTable:">id</string>
+						<string key="chooseDatabase:">id</string>
+						<string key="chooseEncoding:">id</string>
+						<string key="closePanelSheet:">id</string>
+						<string key="closePasswordSheet:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyChecksumFromSheet:">id</string>
+						<string key="copyCreateTableSyntax:">id</string>
+						<string key="copyCreateTableSyntaxFromSheet:">id</string>
+						<string key="copyDatabase:">id</string>
+						<string key="export:">id</string>
+						<string key="exportSelectedTablesAs:">id</string>
+						<string key="flushTable:">id</string>
+						<string key="focusOnTableContentFilter:">id</string>
+						<string key="import:">id</string>
+						<string key="importFromClipboard:">id</string>
+						<string key="makeTableListFilterHaveFocus:">id</string>
+						<string key="openCurrentConnectionInNewWindow:">id</string>
+						<string key="openDatabaseInNewTab:">id</string>
+						<string key="optimizeTable:">id</string>
+						<string key="refreshTables:">id</string>
+						<string key="removeDatabase:">id</string>
+						<string key="renameDatabase:">id</string>
+						<string key="repairTable:">id</string>
+						<string key="saveConnectionSheet:">id</string>
+						<string key="saveCreateSyntax:">id</string>
+						<string key="setDatabases:">id</string>
+						<string key="showCreateTableSyntax:">id</string>
+						<string key="showFilterTable:">id</string>
+						<string key="showGotoDatabase:">id</string>
+						<string key="showMySQLHelp:">id</string>
+						<string key="showNavigator:">id</string>
+						<string key="showServerProcesses:">id</string>
+						<string key="showServerVariables:">id</string>
+						<string key="showUserManager:">id</string>
+						<string key="toggleNavigator:">id</string>
+						<string key="validateSaveConnectionAccessory:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addConnectionToFavorites:">
+							<string key="name">addConnectionToFavorites:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="addDatabase:">
+							<string key="name">addDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="alterDatabase:">
+							<string key="name">alterDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="analyzeTable:">
+							<string key="name">analyzeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="backForwardInHistory:">
+							<string key="name">backForwardInHistory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="cancelTask:">
+							<string key="name">cancelTask:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="checkTable:">
+							<string key="name">checkTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="checksumTable:">
+							<string key="name">checksumTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseDatabase:">
+							<string key="name">chooseDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseEncoding:">
+							<string key="name">chooseEncoding:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closePanelSheet:">
+							<string key="name">closePanelSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closePasswordSheet:">
+							<string key="name">closePasswordSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyChecksumFromSheet:">
+							<string key="name">copyChecksumFromSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyCreateTableSyntax:">
+							<string key="name">copyCreateTableSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyCreateTableSyntaxFromSheet:">
+							<string key="name">copyCreateTableSyntaxFromSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyDatabase:">
+							<string key="name">copyDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="export:">
+							<string key="name">export:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="exportSelectedTablesAs:">
+							<string key="name">exportSelectedTablesAs:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="flushTable:">
+							<string key="name">flushTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="focusOnTableContentFilter:">
+							<string key="name">focusOnTableContentFilter:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="import:">
+							<string key="name">import:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="importFromClipboard:">
+							<string key="name">importFromClipboard:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="makeTableListFilterHaveFocus:">
+							<string key="name">makeTableListFilterHaveFocus:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openCurrentConnectionInNewWindow:">
+							<string key="name">openCurrentConnectionInNewWindow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openDatabaseInNewTab:">
+							<string key="name">openDatabaseInNewTab:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="optimizeTable:">
+							<string key="name">optimizeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="refreshTables:">
+							<string key="name">refreshTables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeDatabase:">
+							<string key="name">removeDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="renameDatabase:">
+							<string key="name">renameDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="repairTable:">
+							<string key="name">repairTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveConnectionSheet:">
+							<string key="name">saveConnectionSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveCreateSyntax:">
+							<string key="name">saveCreateSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setDatabases:">
+							<string key="name">setDatabases:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showCreateTableSyntax:">
+							<string key="name">showCreateTableSyntax:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showFilterTable:">
+							<string key="name">showFilterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showGotoDatabase:">
+							<string key="name">showGotoDatabase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showMySQLHelp:">
+							<string key="name">showMySQLHelp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showNavigator:">
+							<string key="name">showNavigator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showServerProcesses:">
+							<string key="name">showServerProcesses:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showServerVariables:">
+							<string key="name">showServerVariables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showUserManager:">
+							<string key="name">showUserManager:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleNavigator:">
+							<string key="name">toggleNavigator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="validateSaveConnectionAccessory:">
+							<string key="name">validateSaveConnectionAccessory:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPDatabaseDocument.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="viewContent:">id</string>
+						<string key="viewQuery:">id</string>
+						<string key="viewRelations:">id</string>
+						<string key="viewStatus:">id</string>
+						<string key="viewStructure:">id</string>
+						<string key="viewTriggers:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="viewContent:">
+							<string key="name">viewContent:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewQuery:">
+							<string key="name">viewQuery:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewRelations:">
+							<string key="name">viewRelations:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStatus:">
+							<string key="name">viewStatus:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStructure:">
+							<string key="name">viewStructure:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewTriggers:">
+							<string key="name">viewTriggers:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPDatabaseViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="viewContent:">id</string>
+						<string key="viewQuery:">id</string>
+						<string key="viewRelations:">id</string>
+						<string key="viewStatus:">id</string>
+						<string key="viewStructure:">id</string>
+						<string key="viewTriggers:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="viewContent:">
+							<string key="name">viewContent:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewQuery:">
+							<string key="name">viewQuery:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewRelations:">
+							<string key="name">viewRelations:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStatus:">
+							<string key="name">viewStatus:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewStructure:">
+							<string key="name">viewStructure:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="viewTriggers:">
+							<string key="name">viewTriggers:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPDatabaseViewController.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDatabaseDocument</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">printDocument:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">printDocument:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">printDocument:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPPrintController.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7068,7 +7622,98 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPExportController.h</string>
+						<string key="minorKey">../Source/SPExportController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="cancelExport:">id</string>
+						<string key="changeExportCompressionFormat:">id</string>
+						<string key="changeExportOutputPath:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="export:">id</string>
+						<string key="exportCustomQueryResultAsFormat:">id</string>
+						<string key="refreshTableList:">id</string>
+						<string key="selectDeselectAllTables:">id</string>
+						<string key="switchInput:">id</string>
+						<string key="toggleAdvancedExportOptionsView:">id</string>
+						<string key="toggleCustomFilenameFormatView:">id</string>
+						<string key="toggleNewFilePerTable:">NSButton</string>
+						<string key="toggleSQLIncludeContent:">NSButton</string>
+						<string key="toggleSQLIncludeDropSyntax:">NSButton</string>
+						<string key="toggleSQLIncludeStructure:">NSButton</string>
+						<string key="toggleXMLOutputFormat:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="cancelExport:">
+							<string key="name">cancelExport:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="changeExportCompressionFormat:">
+							<string key="name">changeExportCompressionFormat:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="changeExportOutputPath:">
+							<string key="name">changeExportOutputPath:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="export:">
+							<string key="name">export:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="exportCustomQueryResultAsFormat:">
+							<string key="name">exportCustomQueryResultAsFormat:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="refreshTableList:">
+							<string key="name">refreshTableList:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectDeselectAllTables:">
+							<string key="name">selectDeselectAllTables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="switchInput:">
+							<string key="name">switchInput:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleAdvancedExportOptionsView:">
+							<string key="name">toggleAdvancedExportOptionsView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleCustomFilenameFormatView:">
+							<string key="name">toggleCustomFilenameFormatView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleNewFilePerTable:">
+							<string key="name">toggleNewFilePerTable:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBActionInfo" key="toggleSQLIncludeContent:">
+							<string key="name">toggleSQLIncludeContent:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBActionInfo" key="toggleSQLIncludeDropSyntax:">
+							<string key="name">toggleSQLIncludeDropSyntax:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBActionInfo" key="toggleSQLIncludeStructure:">
+							<string key="name">toggleSQLIncludeStructure:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBActionInfo" key="toggleXMLOutputFormat:">
+							<string key="name">toggleXMLOutputFormat:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPExportController.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7219,7 +7864,48 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPExtendedTableInfo.h</string>
+						<string key="minorKey">../Source/SPExtendedTableInfo.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExtendedTableInfo</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="reloadTable:">id</string>
+						<string key="resetAutoIncrement:">id</string>
+						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="updateTableCollation:">id</string>
+						<string key="updateTableEncoding:">id</string>
+						<string key="updateTableType:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="reloadTable:">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrement:">
+							<string key="name">resetAutoIncrement:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
+							<string key="name">resetAutoIncrementValueWasEdited:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableCollation:">
+							<string key="name">updateTableCollation:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableEncoding:">
+							<string key="name">updateTableEncoding:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTableType:">
+							<string key="name">updateTableType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPExtendedTableInfo.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7252,7 +7938,25 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPHistoryController.h</string>
+						<string key="minorKey">../Source/SPHistoryController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPHistoryController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">historyControlClicked:</string>
+						<string key="NS.object.0">NSSegmentedControl</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">historyControlClicked:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">historyControlClicked:</string>
+							<string key="candidateClassName">NSSegmentedControl</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPHistoryController.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7418,7 +8122,53 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPIndexesController.h</string>
+						<string key="minorKey">../Source/SPIndexesController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPIndexesController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addIndex:">id</string>
+						<string key="addIndexedField:">id</string>
+						<string key="chooseIndexType:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="removeIndex:">id</string>
+						<string key="removeIndexedField:">id</string>
+						<string key="toggleAdvancedIndexOptionsView:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addIndex:">
+							<string key="name">addIndex:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="addIndexedField:">
+							<string key="name">addIndexedField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="chooseIndexType:">
+							<string key="name">chooseIndexType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeIndex:">
+							<string key="name">removeIndex:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeIndexedField:">
+							<string key="name">removeIndexedField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleAdvancedIndexOptionsView:">
+							<string key="name">toggleAdvancedIndexOptionsView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPIndexesController.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7451,7 +8201,25 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPSplitView.h</string>
+						<string key="minorKey">../Source/SPSplitView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPSplitView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">toggleCollapse:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">toggleCollapse:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPSplitView.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7575,6 +8343,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="limitRowsField">id</string>
 						<string key="limitRowsStepper">id</string>
 						<string key="multipleLineEditingButton">NSButton</string>
+						<string key="paginationBox">NSBox</string>
 						<string key="paginationButton">NSButton</string>
 						<string key="paginationGoButton">NSButton</string>
 						<string key="paginationNextButton">NSButton</string>
@@ -7582,6 +8351,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="paginationPageStepper">NSStepper</string>
 						<string key="paginationPreviousButton">NSButton</string>
 						<string key="paginationView">NSView</string>
+						<string key="paginationViewController">NSViewController</string>
 						<string key="reloadButton">id</string>
 						<string key="removeButton">id</string>
 						<string key="secondBetweenField">id</string>
@@ -7706,6 +8476,10 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">multipleLineEditingButton</string>
 							<string key="candidateClassName">NSButton</string>
 						</object>
+						<object class="IBToOneOutletInfo" key="paginationBox">
+							<string key="name">paginationBox</string>
+							<string key="candidateClassName">NSBox</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="paginationButton">
 							<string key="name">paginationButton</string>
 							<string key="candidateClassName">NSButton</string>
@@ -7733,6 +8507,10 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<object class="IBToOneOutletInfo" key="paginationView">
 							<string key="name">paginationView</string>
 							<string key="candidateClassName">NSView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="paginationViewController">
+							<string key="name">paginationViewController</string>
+							<string key="candidateClassName">NSViewController</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="reloadButton">
 							<string key="name">reloadButton</string>
@@ -7777,7 +8555,103 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTableContent.h</string>
+						<string key="minorKey">../Source/SPTableContent.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableContent</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addRow:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="duplicateRow:">id</string>
+						<string key="filterTable:">id</string>
+						<string key="navigatePaginationFromButton:">id</string>
+						<string key="reloadTable:">id</string>
+						<string key="removeRow:">id</string>
+						<string key="setCompareTypes:">id</string>
+						<string key="setDefaultOperator:">id</string>
+						<string key="showDefaultOperaterHelp:">id</string>
+						<string key="showFilterTable:">id</string>
+						<string key="tableFilterClear:">id</string>
+						<string key="toggleDistinctSelect:">id</string>
+						<string key="toggleFilterField:">id</string>
+						<string key="toggleLookAllFieldsMode:">id</string>
+						<string key="toggleNegateClause:">id</string>
+						<string key="togglePagination:">NSButton</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addRow:">
+							<string key="name">addRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="duplicateRow:">
+							<string key="name">duplicateRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="filterTable:">
+							<string key="name">filterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="navigatePaginationFromButton:">
+							<string key="name">navigatePaginationFromButton:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="reloadTable:">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeRow:">
+							<string key="name">removeRow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setCompareTypes:">
+							<string key="name">setCompareTypes:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="setDefaultOperator:">
+							<string key="name">setDefaultOperator:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showDefaultOperaterHelp:">
+							<string key="name">showDefaultOperaterHelp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showFilterTable:">
+							<string key="name">showFilterTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="tableFilterClear:">
+							<string key="name">tableFilterClear:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleDistinctSelect:">
+							<string key="name">toggleDistinctSelect:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleFilterField:">
+							<string key="name">toggleFilterField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleLookAllFieldsMode:">
+							<string key="name">toggleLookAllFieldsMode:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleNegateClause:">
+							<string key="name">toggleNegateClause:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="togglePagination:">
+							<string key="name">togglePagination:</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTableContent.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7799,7 +8673,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTableData.h</string>
+						<string key="minorKey">../Source/SPTableData.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7846,7 +8720,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTableInfo.h</string>
+						<string key="minorKey">../Source/SPTableInfo.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -7856,7 +8730,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="addField:">id</string>
 						<string key="closeSheet:">id</string>
 						<string key="duplicateField:">id</string>
-						<string key="reloadTable:">id</string>
 						<string key="removeField:">id</string>
 						<string key="resetAutoIncrement:">id</string>
 						<string key="showOptimizedFieldType:">id</string>
@@ -7874,10 +8747,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						</object>
 						<object class="IBActionInfo" key="duplicateField:">
 							<string key="name">duplicateField:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="reloadTable:">
-							<string key="name">reloadTable:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="removeField:">
@@ -8042,7 +8911,94 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTableStructure.h</string>
+						<string key="minorKey">../Source/SPTableStructure.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableStructure</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addField:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="duplicateField:">id</string>
+						<string key="removeField:">id</string>
+						<string key="resetAutoIncrement:">id</string>
+						<string key="showOptimizedFieldType:">id</string>
+						<string key="toggleColumnView:">NSMenuItem</string>
+						<string key="unhideIndexesView:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addField:">
+							<string key="name">addField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="duplicateField:">
+							<string key="name">duplicateField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeField:">
+							<string key="name">removeField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="resetAutoIncrement:">
+							<string key="name">resetAutoIncrement:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showOptimizedFieldType:">
+							<string key="name">showOptimizedFieldType:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="toggleColumnView:">
+							<string key="name">toggleColumnView:</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBActionInfo" key="unhideIndexesView:">
+							<string key="name">unhideIndexesView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTableStructure.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableStructure</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">reloadTable:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">reloadTable:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTableStructureLoading.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTableStructure</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">reloadTable:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">reloadTable:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">reloadTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTableStructureLoading.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -8050,7 +9006,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					<string key="superclassName">NSTableView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTableView.h</string>
+						<string key="minorKey">../Source/SPTableView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -8061,6 +9017,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="closeSheet:">id</string>
 						<string key="copyTable:">id</string>
 						<string key="openTableInNewTab:">id</string>
+						<string key="openTableInNewWindow:">id</string>
 						<string key="removeTable:">id</string>
 						<string key="renameTable:">id</string>
 						<string key="togglePaneCollapse:">id</string>
@@ -8083,6 +9040,10 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						</object>
 						<object class="IBActionInfo" key="openTableInNewTab:">
 							<string key="name">openTableInNewTab:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openTableInNewWindow:">
+							<string key="name">openTableInNewWindow:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="removeTable:">
@@ -8127,6 +9088,8 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="listFilterField">NSSearchField</string>
 						<string key="openTableInNewTabContextMenuItem">NSMenuItem</string>
 						<string key="openTableInNewTabMenuItem">NSMenuItem</string>
+						<string key="openTableInNewWindowContextMenuItem">NSMenuItem</string>
+						<string key="openTableInNewWindowMenuItem">NSMenuItem</string>
 						<string key="removeTableContextMenuItem">NSMenuItem</string>
 						<string key="removeTableMenuItem">NSMenuItem</string>
 						<string key="renameTableContextMenuItem">NSMenuItem</string>
@@ -8224,6 +9187,14 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						</object>
 						<object class="IBToOneOutletInfo" key="openTableInNewTabMenuItem">
 							<string key="name">openTableInNewTabMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewWindowContextMenuItem">
+							<string key="name">openTableInNewWindowContextMenuItem</string>
+							<string key="candidateClassName">NSMenuItem</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="openTableInNewWindowMenuItem">
+							<string key="name">openTableInNewWindowMenuItem</string>
 							<string key="candidateClassName">NSMenuItem</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="removeTableContextMenuItem">
@@ -8361,7 +9332,78 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTablesList.h</string>
+						<string key="minorKey">../Source/SPTablesList.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTablesList</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="addTable:">id</string>
+						<string key="closeSheet:">id</string>
+						<string key="copyTable:">id</string>
+						<string key="openTableInNewTab:">id</string>
+						<string key="openTableInNewWindow:">id</string>
+						<string key="removeTable:">id</string>
+						<string key="renameTable:">id</string>
+						<string key="tableEncodingButtonChanged:">id</string>
+						<string key="togglePaneCollapse:">id</string>
+						<string key="truncateTable:">id</string>
+						<string key="updateFilter:">id</string>
+						<string key="updateTables:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="addTable:">
+							<string key="name">addTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyTable:">
+							<string key="name">copyTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openTableInNewTab:">
+							<string key="name">openTableInNewTab:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="openTableInNewWindow:">
+							<string key="name">openTableInNewWindow:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="removeTable:">
+							<string key="name">removeTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="renameTable:">
+							<string key="name">renameTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="tableEncodingButtonChanged:">
+							<string key="name">tableEncodingButtonChanged:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="togglePaneCollapse:">
+							<string key="name">togglePaneCollapse:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="truncateTable:">
+							<string key="name">truncateTable:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateFilter:">
+							<string key="name">updateFilter:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="updateTables:">
+							<string key="name">updateTables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTablesList.m</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -8404,7 +9446,28 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</dictionary>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/SPTextView.h</string>
+						<string key="minorKey">../Source/SPTextView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="printDocument:">id</string>
+						<string key="showMySQLHelpForCurrentWord:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="printDocument:">
+							<string key="name">printDocument:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="showMySQLHelpForCurrentWord:">
+							<string key="name">showMySQLHelpForCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextView.m</string>
 					</object>
 				</object>
 			</array>
@@ -8412,10 +9475,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<integer value="1060" key="NS.object.0"/>
-		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
 			<integer value="4600" key="NS.object.0"/>
