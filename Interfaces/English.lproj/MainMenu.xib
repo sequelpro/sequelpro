@@ -1420,6 +1420,16 @@
 												<reference key="NSMixedImage" ref="674471825"/>
 												<int key="NSTag">20</int>
 											</object>
+											<object class="NSMenuItem" id="383065474">
+												<reference key="NSMenu" ref="315159986"/>
+												<string key="NSTitle">4-Byte UTF-8 Unicode (utf8mb4)</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSKeyEquivModMask">1048576</int>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="325032718"/>
+												<reference key="NSMixedImage" ref="674471825"/>
+												<int key="NSTag">190</int>
+											</object>
 											<object class="NSMenuItem" id="162776781">
 												<reference key="NSMenu" ref="315159986"/>
 												<string key="NSTitle">UTF-8 Unicode via Latin 1</string>
@@ -3178,6 +3188,14 @@
 					<string key="id">jS0-aP-Y7o</string>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">chooseEncoding:</string>
+						<reference key="source" ref="1005713010"/>
+						<reference key="destination" ref="383065474"/>
+					</object>
+					<string key="id">KxK-Oo-Rsq</string>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="524643114"/>
@@ -4288,6 +4306,7 @@
 							<reference ref="175960689"/>
 							<reference ref="267577241"/>
 							<reference ref="204188122"/>
+							<reference ref="383065474"/>
 						</array>
 						<reference key="parent" ref="683120971"/>
 					</object>
@@ -4771,6 +4790,11 @@
 						<string key="id">Yzp-Qk-v7Y</string>
 						<reference key="object" ref="346403677"/>
 						<reference key="parent" ref="762880388"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">JtW-Ko-SuZ</string>
+						<reference key="object" ref="383065474"/>
+						<reference key="parent" ref="315159986"/>
 					</object>
 				</array>
 			</object>
@@ -5402,6 +5426,7 @@
 				</object>
 				<string key="998.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="998.showNotes"/>
+				<string key="JtW-Ko-SuZ.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="Yzp-Qk-v7Y.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="nXE-rI-RyI.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
