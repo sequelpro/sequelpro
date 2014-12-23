@@ -5,6 +5,17 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SPTableContentFilterController : NSObject
+@class SPSplitView;
+@class SPTableData;
+@class SPDatabaseDocument;
+@class SPTablesList;
+
+@interface SPTableContentFilterController : NSObject {
+	    IBOutlet SPSplitView *contentSplitView;
+	    IBOutlet NSRuleEditor *filterRuleEditor;
+	    IBOutlet SPTableData *tableDataInstance;
+	    IBOutlet SPDatabaseDocument *tableDocumentInstance;
+		IBOutlet SPTablesList *tablesListInstance;
+}
 
 @end
