@@ -754,7 +754,7 @@
 	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
 	// Reset progress interface
-	[errorsView setString:@""];
+	[[errorsView onMainThread] setString:@""];
 	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
 	[[singleProgressBar onMainThread] setIndeterminate:YES];
@@ -1240,29 +1240,33 @@
 	fieldMapperSheetStatus = SPFieldMapperInProgress;
 	fieldMappingArrayHasGlobalVariables = NO;
 
-	// Init the field mapper controller
-	fieldMapperController = [(SPFieldMapperController *)[SPFieldMapperController alloc] initWithDelegate:self];
-	[fieldMapperController setConnection:mySQLConnection];
-	[fieldMapperController setSourcePath:filename];
-	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
-
-	// Show field mapper sheet and set the focus to it
-	[[NSApp onMainThread] beginSheet:[fieldMapperController window]
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
-		  contextInfo:nil];
-
-	[[[fieldMapperController window] onMainThread] makeKeyWindow];
+	//the field mapper is an UI object and must not be caught in the background thread's autoreleasepool
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Init the field mapper controller
+		fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+		[fieldMapperController setConnection:mySQLConnection];
+		[fieldMapperController setSourcePath:filename];
+		[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
+		
+		// Show field mapper sheet and set the focus to it
+		[NSApp beginSheet:[fieldMapperController window]
+						  modalForWindow:[tableDocumentInstance parentWindow]
+						   modalDelegate:self
+						  didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
+							 contextInfo:nil];
+		
+		[[fieldMapperController window] makeKeyWindow];
+	});
 
 	// Wait for field mapper sheet
 	while (fieldMapperSheetStatus == SPFieldMapperInProgress)
 		usleep(100000);
+	
+	BOOL success = NO;
 
 	// If the mapping was cancelled, abort the import
 	if (fieldMapperSheetStatus == SPFieldMapperCancelled) {
-		if (fieldMapperController) [fieldMapperController release];
-		return NO;
+		goto cleanup;
 	}
 
 	// Get mapping settings and preset some global variables
@@ -1288,9 +1292,8 @@
 		|| ![selectedTableTarget length]
 		|| ![csvImportHeaderString length])
 	{
-		if(fieldMapperController) [fieldMapperController release];
 		NSBeep();
-		return NO;
+		goto cleanup;
 	}
 
 	// Store target table definitions
@@ -1312,13 +1315,14 @@
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
+	success = YES;
+	
+cleanup:
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if(fieldMapperController) [fieldMapperController release], fieldMapperController = nil;
+	});
 
-	if(fieldMapperController) [fieldMapperController release];
-
-	if(fieldMapperSheetStatus == SPFieldMapperCompleted)
-		return YES;
-	else
-		return NO;
+	return success;
 }
 
 /**
