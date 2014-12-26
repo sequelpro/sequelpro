@@ -33,7 +33,7 @@
 @class SPTablesList;
 @class SPMySQLConnection;
 
-@interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate>
+@interface SPFieldMapperController : NSWindowController <NSTokenFieldCellDelegate, NSMenuDelegate>
 {
 	IBOutlet SPTableView *fieldMapperTableView;
 	IBOutlet NSScrollView *fieldMapperTableScrollView;
@@ -110,9 +110,9 @@
 	NSMutableArray *fieldMappingTableDefaultValues;
 	NSMutableArray *defaultFieldTypesForComboBox;
 
-	NSNumber *doImport;
-	NSNumber *doNotImport;
-	NSNumber *isEqual;
+	NSNumber *doImportKey;
+	NSNumber *doNotImportKey;
+	NSNumber *isEqualKey;
 	NSString *doImportString;
 	NSString *doNotImportString;
 	NSString *isEqualString;
@@ -135,6 +135,7 @@
 	NSUInteger windowMinHeigth;
 	NSInteger numberOfImportColumns;
 	NSInteger fieldMappingCurrentRow;
+	NSInteger firstDefaultItemOffset;
 	
 	BOOL fieldMappingImportArrayIsPreview;
 	BOOL importFieldNamesHeader;
