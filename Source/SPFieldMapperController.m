@@ -1189,12 +1189,14 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 			if(![isEqualKey isEqualToNumber:[fieldMappingOperatorArray objectAtIndex:[fieldMapperTableView selectedRow]]])
 				[fieldMappingOperatorArray replaceObjectAtIndex:[fieldMapperTableView selectedRow] withObject:doImportKey];
 
-			[fieldMapperTableView reloadData];
-
 			// Set alignment popup to "custom order"
 			[alignByPopup selectItemWithTag:3];
 
 		}
+
+	// This must happen before orderOut:nil as that might cause the tableview to redraw which would in turn invalidate
+	// a newly added globalValue when updateFieldMappingButtonCell has not been run before.
+	[self updateFieldMappingButtonCell];
 
 	[NSApp endSheet:globalValuesSheet returnCode:[sender tag]];
 }
@@ -1378,7 +1380,6 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	if (sheet == globalValuesSheet) {
 		addGlobalSheetIsOpen = NO;
-		[self updateFieldMappingButtonCell];
 	}
 }
 
@@ -1682,27 +1683,29 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	if(aTableView == fieldMapperTableView) {
 
-		if ([doNotImportKey isEqual:[fieldMappingOperatorArray objectAtIndex:rowIndex]]) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
+		if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID]) {
 
-		if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOnState) {
+			if ([doNotImportKey isEqual:[fieldMappingOperatorArray objectAtIndex:rowIndex]]) return [NSString stringWithFormat:@"DEFAULT: %@", [fieldMappingTableDefaultValues objectAtIndex:rowIndex]];
 
-			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
-				return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"User-defined value", @"user-defined value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
+			if([importFieldNamesHeaderSwitch state] == NSOnState) {
+				if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
+					return [NSString stringWithFormat:@"%@: %@", NSLocalizedString(@"User-defined value", @"user-defined value"), NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue])];
 
-			if(fieldMappingCurrentRow)
-				return [NSString stringWithFormat:@"%@: %@",
-					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description],
-					[NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description]];
-			else
-				return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
+				if(fieldMappingCurrentRow)
+					return [NSString stringWithFormat:@"%@: %@",
+													  [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description],
+													  [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description]];
+				else
+					return [NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]) description];
 
-		}
+			}
+			else if([importFieldNamesHeaderSwitch state] == NSOffState) {
+				if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
+					return NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
+				else
+					return NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
 
-		else if([[aTableColumn identifier] isEqualToString:SPTableViewImportValueColumnID] && [importFieldNamesHeaderSwitch state] == NSOffState) {
-			if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
-				return NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
-			else
-				return NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
+			}
 		}
 
 		else if([[aTableColumn identifier] isEqualToString:SPTableViewOperatorColumnID]) {
@@ -1712,12 +1715,11 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 				return NSLocalizedString(@"Ignore field", @"ignore field label");
 			else if([isEqualKey isEqual:[aCell objectValue]])
 				return NSLocalizedString(@"Do UPDATE where field contents match", @"do update operator tooltip");
-			else
-				return @"";
 		}
 
-		else if([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID])
+		else if([[aTableColumn identifier] isEqualToString:SPTableViewTargetFieldColumnID]) {
 			return [fieldMappingTableColumnNames objectAtIndex:rowIndex];
+		}
 	}
 	else if(aTableView == globalValuesTableView) {
 		if ([[aTableColumn identifier] isEqualToString:SPTableViewGlobalValueColumnID])
