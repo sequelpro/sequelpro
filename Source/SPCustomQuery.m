@@ -916,7 +916,7 @@
 		return;
 	}
 
-	[customQueryView reloadData];
+	[[customQueryView onMainThread] reloadData];
 
 	// Restore the result view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
