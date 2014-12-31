@@ -79,4 +79,9 @@
  */
 - (BOOL)preferencePaneAllowsResizing;
 
+/**
+ * Called shortly before the preference pane will be made visible
+ */
+- (void)preferencePaneWillBeShown;
+
 @end

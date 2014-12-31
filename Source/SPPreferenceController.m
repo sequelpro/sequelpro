@@ -105,40 +105,9 @@
 	
 	[toolbar setSelectedItemIdentifier:[preferencePane preferencePaneIdentifier]];
 	
+	[preferencePane preferencePaneWillBeShown];
+	
 	[self _resizeWindowForContentView:[preferencePane preferencePaneView]];
-}
-
-/**
- * Displays the table preferences pane.
- */
-- (IBAction)displayTablePreferences:(id)sender
-{
-	[[self window] setMinSize:NSMakeSize(0, 0)];
-	[[self window] setShowsResizeIndicator:[tablesPreferencePane preferencePaneAllowsResizing]];
-	
-	[toolbar setSelectedItemIdentifier:[tablesPreferencePane preferencePaneIdentifier]];
-	
-	[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
-	
-	[self _resizeWindowForContentView:[tablesPreferencePane preferencePaneView]];
-}
-
-/**
- * Displays the editor preferences pane.
- */
-- (IBAction)displayEditorPreferences:(id)sender
-{
-	[(SPEditorPreferencePane *)editorPreferencePane updateColorSchemeSelectionMenu];
-	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayColorThemeName];
-	
-	[[self window] setMinSize:NSMakeSize(0, 0)];
-	[[self window] setShowsResizeIndicator:[editorPreferencePane preferencePaneAllowsResizing]];
-	
-	[toolbar setSelectedItemIdentifier:[editorPreferencePane preferencePaneIdentifier]];
-	
-	[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
-	
-	[self _resizeWindowForContentView:[editorPreferencePane preferencePaneView]];
 }
 
 #pragma mark -
@@ -198,7 +167,7 @@
 	[tablesItem setLabel:[tablesPreferencePane preferencePaneName]];
 	[tablesItem setImage:[tablesPreferencePane preferencePaneIcon]];
 	[tablesItem setTarget:self];
-	[tablesItem setAction:@selector(displayTablePreferences:)];
+	[tablesItem setAction:@selector(displayPreferencePane:)];
 
 	// Notification preferences
 	notificationsItem = [[NSToolbarItem alloc] initWithItemIdentifier:[notificationsPreferencePane preferencePaneIdentifier]];
@@ -214,7 +183,7 @@
 	[editorItem setLabel:[editorPreferencePane preferencePaneName]];
 	[editorItem setImage:[editorPreferencePane preferencePaneIcon]];
 	[editorItem setTarget:self];
-	[editorItem setAction:@selector(displayEditorPreferences:)];
+	[editorItem setAction:@selector(displayPreferencePane:)];
 	
 	// AutoUpdate preferences
 	autoUpdateItem = [[NSToolbarItem alloc] initWithItemIdentifier:[autoUpdatePreferencePane preferencePaneIdentifier]];

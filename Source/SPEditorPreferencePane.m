@@ -732,6 +732,14 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	return NO;
 }
 
+- (void)preferencePaneWillBeShown
+{
+	[self updateColorSchemeSelectionMenu];
+	[self updateDisplayColorThemeName];
+	
+	[self updateDisplayedEditorFontName];
+}
+
 #pragma mark -
 #pragma mark Private API
 

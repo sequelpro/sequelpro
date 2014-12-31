@@ -84,8 +84,6 @@
 
 // Toolbar item IBAction methods
 - (IBAction)displayPreferencePane:(id)sender;
-- (IBAction)displayTablePreferences:(id)sender;
-- (IBAction)displayEditorPreferences:(id)sender;
 
 - (void)changeFont:(id)sender;
 
