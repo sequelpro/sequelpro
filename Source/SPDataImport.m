@@ -288,7 +288,12 @@
 		[openPanel setNameFieldStringValue:[lastFilename lastPathComponent]];
 	}
 
-	[openPanel setDirectoryURL:[NSURL URLWithString:[prefs objectForKey:@"openPath"]]];
+	NSString *openPath;
+	if((openPath = [prefs objectForKey:@"openPath"])) {
+		// Doc says calling +[NSURL URLWithString:] with nil is fine,
+		// but at least on 10.6 this will cause an exception
+		[openPanel setDirectoryURL:[NSURL URLWithString:openPath]];
+	}
 
 	[openPanel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
 		// Ensure text inputs are completed, preventing dead character entry
