@@ -180,6 +180,7 @@
 - (NSArray *)allViewNames;
 - (NSArray *)allFunctionNames;
 - (NSArray *)allProcedureNames;
+- (NSArray *)allEventNames;
 - (NSArray *)allDatabaseNames;
 - (NSArray *)allSystemDatabaseNames;
 - (NSString *)selectedDatabase;

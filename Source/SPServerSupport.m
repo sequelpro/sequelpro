@@ -69,6 +69,7 @@
 @synthesize supportsArchiveStorageEngine;
 @synthesize supportsCSVStorageEngine;
 @synthesize supportsTriggers;
+@synthesize supportsEvents;
 @synthesize supportsIndexKeyBlockSize;
 @synthesize supportsQuotingEngineTypeInCreateSyntax;
 @synthesize supportsFractionalSeconds;
@@ -185,6 +186,9 @@
 	
 	// Support for triggers wasn't added until MySQL 5.0.2
 	supportsTriggers = [self isEqualToOrGreaterThanMajorVersion:5 minor:0 release:2];
+
+	// Support for events wasn't added until MySQL 5.1.6
+	supportsEvents = [self isEqualToOrGreaterThanMajorVersion:5 minor:1 release:6];
 	
 	// Support for specifying an index's key block size wasn't added until MySQL 5.1.10
 	supportsIndexKeyBlockSize = [self isEqualToOrGreaterThanMajorVersion:5 minor:1 release:10];
@@ -280,6 +284,7 @@
 	supportsArchiveStorageEngine            = NO;
 	supportsCSVStorageEngine                = NO;
 	supportsTriggers                        = NO;
+	supportsEvents                          = NO;
 	supportsIndexKeyBlockSize               = NO;
 	supportsQuotingEngineTypeInCreateSyntax = NO;
 	supportsFractionalSeconds               = NO;

@@ -85,6 +85,9 @@
 	
 	// Indexes
 	BOOL supportsIndexKeyBlockSize;
+
+	// Events
+	BOOL supportsEvents;
 	
 	// Data types
 	BOOL supportsFractionalSeconds;
@@ -228,6 +231,11 @@
  * @property supportsTriggers Indicates if the server supports table triggers
  */
 @property (readonly) BOOL supportsTriggers;
+
+/**
+* @property supportsEvents Indicates if the server supports scheduled events
+*/
+@property (readonly) BOOL supportsEvents;
 
 /**
  * @property supportsIndexKeyBlockSize Indicates if the server supports specifying an index's key block size

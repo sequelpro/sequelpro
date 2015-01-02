@@ -91,6 +91,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 - (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 - (void)_duplicateConnectionToFrontTab;
+- (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type;
 @end
 
 @implementation SPTablesList
@@ -1286,47 +1287,37 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 - (NSArray *)allTableNames
 {
-	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
-	NSInteger cnt = [[self tables] count];
-	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeTable)
-			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
-	}
-	return returnArray;
+	return [self _allSchemaObjectsOfType:SPTableTypeTable];
 }
 
 - (NSArray *)allViewNames
 {
-	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
-	NSInteger cnt = [[self tables] count];
-	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeView)
-			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
-	}
+	NSMutableArray *returnArray = [self _allSchemaObjectsOfType:SPTableTypeView];
 	[returnArray sortUsingSelector:@selector(compare:)];
 	return returnArray;
 }
 
 - (NSArray *)allProcedureNames
 {
-	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
-	NSInteger cnt = [[self tables] count];
-	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeProc)
-			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
-	}
-	return returnArray;
+	return [self _allSchemaObjectsOfType:SPTableTypeProc];
 }
 - (NSArray *)allFunctionNames
 {
+	return [self _allSchemaObjectsOfType:SPTableTypeFunc];
+}
+
+- (NSArray *)allEventNames
+{
+	return  [self _allSchemaObjectsOfType:SPTableTypeEvent];
+}
+
+- (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type
+{
 	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
+	NSUInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeFunc)
+		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == type)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;

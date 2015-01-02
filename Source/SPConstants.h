@@ -103,7 +103,8 @@ typedef enum
 	SPTableTypeTable = 0,
 	SPTableTypeView  = 1,
 	SPTableTypeProc  = 2,
-	SPTableTypeFunc  = 3
+	SPTableTypeFunc  = 3,
+	SPTableTypeEvent = 4
 } SPTableType;
 
 // History views
