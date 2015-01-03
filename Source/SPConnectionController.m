@@ -1615,6 +1615,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[progressIndicator display];
 	[progressIndicatorText setHidden:YES];
 	[progressIndicatorText display];
+	[dbDocument setTitlebarStatus:@""];
 
 	// If not testing a connection, Update the password fields, restoring passwords that may have
 	// been bulleted out during connection
