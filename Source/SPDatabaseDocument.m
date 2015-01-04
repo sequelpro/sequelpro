@@ -2831,10 +2831,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[panel setCanSelectHiddenExtension:YES];
 
 	// Save Query...
-	if (sender != nil && ([sender tag] == 1006 || [sender tag] == 1008)) {
+	if (sender != nil && ([sender tag] == SPMainMenuFileSaveQuery || [sender tag] == SPMainMenuFileSaveQueryAs)) {
 
 		// If Save was invoked, check whether the file was previously opened, and if so save without the panel
-		if ([sender tag] == 1006 && [[[self sqlFileURL] path] length]) {
+		if ([sender tag] == SPMainMenuFileSaveQuery && [[[self sqlFileURL] path] length]) {
 			NSError *error = nil;
 			NSString *content = [NSString stringWithString:[[[customQueryInstance valueForKeyPath:@"textView"] textStorage] string]];
 			[content writeToURL:sqlFileURL atomically:YES encoding:sqlFileEncoding error:&error];
@@ -2865,11 +2865,11 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Save As… or Save
 	}
-	else if (sender == nil || [sender tag] == 1005 || [sender tag] == 1004) {
+	else if (sender == nil || [sender tag] == SPMainMenuFileSaveConnection || [sender tag] == SPMainMenuFileSaveConnectionAs) {
 
 		// If Save was invoked check for fileURL and Untitled docs and save the spf file without save panel
 		// otherwise ask for file name
-		if (sender != nil && [sender tag] == 1004 && [[[self fileURL] path] length] && ![self isUntitled]) {
+		if (sender != nil && [sender tag] == SPMainMenuFileSaveConnection && [[[self fileURL] path] length] && ![self isUntitled]) {
 			[self saveDocumentWithFilePath:nil inBackground:YES onlyPreferences:NO contextInfo:nil];
 			return;
 		}
@@ -2920,10 +2920,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		contextInfo = sender == nil ? @"saveSPFfileAndClose" : @"saveSPFfile";
 	}
 	// Save Session or Save Session As...
-	else if (sender == nil || [sender tag] == 1020 || [sender tag] == 1021)
+	else if (sender == nil || [sender tag] == SPMainMenuFileSaveSession || [sender tag] == SPMainMenuFileSaveSessionAs)
 	{
 		// Save As Session
-		if ([sender tag] == 1020 && [SPAppDelegate sessionURL]) {
+		if ([sender tag] == SPMainMenuFileSaveSession && [SPAppDelegate sessionURL]) {
 			[self saveConnectionPanelDidEnd:panel returnCode:1 contextInfo:@"saveAsSession"];
 			return;
 		}
