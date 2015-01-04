@@ -58,7 +58,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 {
 	NSUInteger i;
 	editedRowCount = 0;
-	[editedRows release], editedRows = nil;
+	SPClear(editedRows);
 	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
 
 	if (dataStorage) {
@@ -68,7 +68,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			[newDataStorage replaceExistingResultStore:dataStorage];
 		}
 
-		[dataStorage release], dataStorage = nil;
+		SPClear(dataStorage);
 	}
 
 	dataStorage = [newDataStorage retain];
@@ -449,8 +449,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 }
 
 - (void) dealloc {
-	[dataStorage release], dataStorage = nil;
-	[editedRows release], editedRows = nil;
+	SPClear(dataStorage);
+	SPClear(editedRows);
 	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
 
 	[super dealloc];

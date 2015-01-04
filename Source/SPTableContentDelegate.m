@@ -295,7 +295,7 @@
 					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 				}
 				
-				if (fieldEditor) [fieldEditor release], fieldEditor = nil;
+				if (fieldEditor) SPClear(fieldEditor);
 				
 				fieldEditor = [[SPFieldEditorController alloc] init];
 				

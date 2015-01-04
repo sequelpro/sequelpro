@@ -1479,7 +1479,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[typeSuggestions release];
 	[extraFieldSuggestions release];
 
-	[fieldValidation release], fieldValidation = nil;
+	SPClear(fieldValidation);
 
 	if (defaultValues) [defaultValues release];
 	if (selectedTable) [selectedTable release];

@@ -126,8 +126,8 @@
 {
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
-	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
-	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
+	if (sshQuestionDialog) SPClear(sshQuestionDialog);
+	if (sshPasswordDialog) SPClear(sshPasswordDialog);
 
 	parentWindow = theWindow;
 	if (![NSBundle loadNibNamed:@"SSHQuestionDialog" owner:self]) {
@@ -167,7 +167,7 @@
  */
 - (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
 {
-	if (password) [password release], password = nil;
+	if (password) SPClear(password);
 
 	passwordInKeychain = YES;
 	keychainName = [[NSString alloc] initWithString:theName];
@@ -420,8 +420,8 @@
 	[task waitUntilExit];
 
 	// On tunnel close, clean up, ready for re-use if the delegate reconnects.
-	[task release], task = nil;
-	[standardError release], standardError = nil;
+	SPClear(task);
+	SPClear(standardError);
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:@"NSFileHandleDataAvailableNotification"
 												  object:nil];
@@ -438,8 +438,8 @@
 	// Run the run loop for a short time to ensure all task/pipe callbacks are dealt with
 	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 
-	[taskEnvironment release], taskEnvironment = nil;
-	[taskArguments release], taskArguments = nil;
+	SPClear(taskEnvironment);
+	SPClear(taskArguments);
 
 	[pool release];
 }
@@ -647,7 +647,7 @@
 	NSString *thePassword = nil;
     if (requestedPassphrase) {
         thePassword = [NSString stringWithString:requestedPassphrase];
-        [requestedPassphrase release], requestedPassphrase = nil;
+        SPClear(requestedPassphrase);
     }
     
     // Unlock the lock again
@@ -747,8 +747,8 @@
 	if (identityFilePath) [identityFilePath release];
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
-	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
-	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
+	if (sshQuestionDialog) SPClear(sshQuestionDialog);
+	if (sshPasswordDialog) SPClear(sshPasswordDialog);
 	
 	[super dealloc];
 }

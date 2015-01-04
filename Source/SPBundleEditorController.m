@@ -1093,7 +1093,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		[draggedFilePath release];
 		draggedFilePath = nil;
 	}
-	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+	if(oldBundleName) SPClear(oldBundleName);
 }
 
 #pragma mark -
@@ -1234,13 +1234,13 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	// Remember selected bundle name to reset the name if the user cancelled
 	// the editing of the bundle name
-	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+	if(oldBundleName) SPClear(oldBundleName);
 	if(![[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
 		[self _enableBundleDataInput:YES bundleEnabled:![[[self _currentSelectedObject] objectForKey:@"disabled"] boolValue]];
 	} else {
 		[self _enableBundleDataInput:NO bundleEnabled:NO];
-		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+		if(oldBundleName) SPClear(oldBundleName);
 	}
 
 	// Remember the selected bundle name in touchedBundleArray to save only those 
@@ -1386,7 +1386,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[commandBundleTreeController rearrangeObjects];
 			[commandsOutlineView reloadData];
 
-			if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+			if(oldBundleName) SPClear(oldBundleName);
 			oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
 			if(oldBundleName != nil && ![touchedBundleArray containsObject:oldBundleName])
 				[touchedBundleArray addObject:oldBundleName];
@@ -2102,11 +2102,11 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[shellVariableSuggestions release];
 	[deletedDefaultBundles release];
 	
-	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if (bundlePath) [bundlePath release], bundlePath = nil;
-	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
+	if (touchedBundleArray) SPClear(touchedBundleArray);
+	if (commandBundleTree) SPClear(commandBundleTree);
+	if (sortDescriptor) SPClear(sortDescriptor);
+	if (bundlePath) SPClear(bundlePath);
+	if (esUndoManager) SPClear(esUndoManager);
 	
 	[super dealloc];
 }

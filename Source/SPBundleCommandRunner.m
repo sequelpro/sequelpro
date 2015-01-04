@@ -297,7 +297,7 @@
 	// Read STDOUT saved to file 
 	if([fm fileExistsAtPath:stdoutFilePath isDirectory:nil]) {
 		NSString *stdoutContent = [NSString stringWithContentsOfFile:stdoutFilePath encoding:NSUTF8StringEncoding error:nil];
-		if(bashTask) [bashTask release], bashTask = nil;
+		if(bashTask) SPClear(bashTask);
 		[fm removeItemAtPath:stdoutFilePath error:nil];
 		if(stdoutContent != nil) {
 			if (status == 0) {

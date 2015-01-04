@@ -206,7 +206,7 @@
 				[stateTimer invalidate];
 				[stateTimer release];
 				stateTimer = nil;
-				if(syncArrowImages) [syncArrowImages release], syncArrowImages = nil;
+				if(syncArrowImages) SPClear(syncArrowImages);
 				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
 				closeMe = YES;
 				return;

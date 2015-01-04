@@ -208,9 +208,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			// Tidy up
 			isConnecting = NO;
 			
-			if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+			if (sshTunnel) [sshTunnel disconnect], SPClear(sshTunnel);
 			
-			[mySQLConnection release], mySQLConnection = nil;
+			SPClear(mySQLConnection);
 #ifndef SP_CODA
 			if (!cancellingConnection) [self _restoreConnectionInterface];
 #endif
@@ -229,9 +229,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			// Tidy up
 			isConnecting = NO;
 			
-			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			if (sshTunnel) SPClear(sshTunnel);
 			
-			[mySQLConnection release], mySQLConnection = nil;
+			SPClear(mySQLConnection);
 			[self _restoreConnectionInterface];
 			if (isTestingConnection) {
 				[self _showConnectionTestResult:NSLocalizedString(@"Invalid database", @"Invalid database very short status message")];
@@ -352,7 +352,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 #endif
 	
 	// Release the tunnel if set - will now be retained by the connection
-	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+	if (sshTunnel) SPClear(sshTunnel);
 	
 	// Pass the connection to the document and clean up the interface
 	[self addConnectionToDocument];
@@ -436,7 +436,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	// Release as appropriate
 	if (sshTunnel) {
-		[sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+		[sshTunnel disconnect], SPClear(sshTunnel);
 		
 		// If the SSH tunnel connection failed because the port it was trying to bind to was already in use take note
 		// of it so we can give the user the option of connecting via standard connection and use the existing tunnel. 

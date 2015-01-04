@@ -256,8 +256,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[[sshPasswordField undoManager] removeAllActionsWithTarget:sshPasswordField];
 		} 
 		else {
-			[connectionKeychainItemName release], connectionKeychainItemName = nil;
-			[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
+			SPClear(connectionKeychainItemName);
+			SPClear(connectionKeychainItemAccount);
 		}
 	}
 	
@@ -267,8 +267,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[[sshSSHPasswordField undoManager] removeAllActionsWithTarget:sshSSHPasswordField];
 		} 
 		else {
-			[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
-			[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
+			SPClear(connectionSSHKeychainItemName);
+			SPClear(connectionSSHKeychainItemAccount);
 		}
 	}
 #endif
@@ -608,11 +608,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #ifndef SP_CODA
 
 	// Clear the keychain referral items as appropriate
-	if (connectionKeychainID) [connectionKeychainID release], connectionKeychainID = nil;
-	if (connectionKeychainItemName) [connectionKeychainItemName release], connectionKeychainItemName = nil;
-	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
-	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
-	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
+	if (connectionKeychainID) SPClear(connectionKeychainID);
+	if (connectionKeychainItemName) SPClear(connectionKeychainItemName);
+	if (connectionKeychainItemAccount) SPClear(connectionKeychainItemAccount);
+	if (connectionSSHKeychainItemName) SPClear(connectionSSHKeychainItemName);
+	if (connectionSSHKeychainItemAccount) SPClear(connectionSSHKeychainItemAccount);
 
 	SPTreeNode *node = [self selectedFavoriteNode];
 	if ([node isGroup]) node = nil;
@@ -621,7 +621,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSDictionary *fav = [[node representedObject] nodeFavorite];
 	
 	// Keep a copy of the favorite as it currently stands
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+	if (currentFavorite) SPClear(currentFavorite);
 	currentFavorite = [fav copy];
 	
 	[connectionResizeContainer setHidden:NO];
@@ -669,8 +669,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	if (![[self password] length]) {
 		[self setPassword:nil];
-		[connectionKeychainItemName release], connectionKeychainItemName = nil;
-		[connectionKeychainItemAccount release], connectionKeychainItemAccount = nil;
+		SPClear(connectionKeychainItemName);
+		SPClear(connectionKeychainItemAccount);
 	}
 
 	// Store the selected favorite ID for use with the document on connection
@@ -684,8 +684,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	if (![[self sshPassword] length]) {
 		[self setSshPassword:nil];
-		[connectionSSHKeychainItemName release], connectionSSHKeychainItemName = nil;
-		[connectionSSHKeychainItemAccount release], connectionSSHKeychainItemAccount = nil;
+		SPClear(connectionSSHKeychainItemName);
+		SPClear(connectionSSHKeychainItemAccount);
 	}
 
 	[prefs setInteger:[[fav objectForKey:SPFavoriteIDKey] integerValue] forKey:SPLastFavoriteID];
@@ -1365,7 +1365,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 		[self _stopEditingConnection];
 
-		if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+		if (currentFavorite) SPClear(currentFavorite);
 		currentFavorite = [theFavorite copy];
 
 		[self _sortFavorites];
@@ -1888,9 +1888,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[prefs release];
 
 #ifndef SP_CODA
-	[folderImage release], folderImage = nil;
-	[quickConnectItem release], quickConnectItem = nil;
-	[quickConnectCell release], quickConnectCell = nil;
+	SPClear(folderImage);
+	SPClear(quickConnectItem);
+	SPClear(quickConnectCell);
 #endif
     
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
@@ -1904,7 +1904,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
 
 #ifndef SP_CODA
-	if (currentFavorite) [currentFavorite release], currentFavorite = nil;
+	if (currentFavorite) SPClear(currentFavorite);
 #endif
 	
 	[super dealloc];

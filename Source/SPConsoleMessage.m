@@ -65,10 +65,10 @@
 
 - (void)dealloc
 {
-	[message release], message = nil;
-	[messageDate release], messageDate = nil;
-	[messageDatabase release], messageDatabase = nil;
-	[messageConnection release], messageConnection = nil;
+	SPClear(message);
+	SPClear(messageDate);
+	SPClear(messageDatabase);
+	SPClear(messageConnection);
 	
 	[super dealloc];
 }

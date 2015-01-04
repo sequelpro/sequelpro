@@ -232,7 +232,7 @@
 
 - (void)dealloc
 {
-	[preferencePanes release], preferencePanes = nil;
+	SPClear(preferencePanes);
 	
 	[super dealloc];
 }

@@ -143,7 +143,7 @@ static SPGrowlController *sharedGrowlController = nil;
 			postNotification = YES;
 		}
 		
-		[timingNotificationName release], timingNotificationName = nil;
+		SPClear(timingNotificationName);
 	}
 
     // Post notification only if preference is set and visibility has been confirmed
@@ -192,7 +192,7 @@ static SPGrowlController *sharedGrowlController = nil;
 - (void)setVisibilityForNotificationName:(NSString *)name
 {
 	if (timingNotificationName) {
-		[timingNotificationName release], timingNotificationName = nil;
+		SPClear(timingNotificationName);
 	}
 	
 	timingNotificationName = [[NSString alloc] initWithString:name];

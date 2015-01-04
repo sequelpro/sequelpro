@@ -219,7 +219,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// If no initial field has been selected yet - all fields are indexed - add the first field.
 	if (!initialField) initialField = [fields objectAtIndex:0];
 	
-	if (indexedFieldNames) [indexedFieldNames release], indexedFieldNames = nil;
+	if (indexedFieldNames) SPClear(indexedFieldNames);
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
@@ -1081,14 +1081,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 - (void)dealloc
 {
-	[table release], table = nil;
-	[indexes release], indexes = nil;
-	[fields release], fields = nil;
+	SPClear(table);
+	SPClear(indexes);
+	SPClear(fields);
 
-	[supportsLength release], supportsLength = nil;
-	[requiresLength release], requiresLength = nil;
+	SPClear(supportsLength);
+	SPClear(requiresLength);
 
-	if (indexedFields) [indexedFields release], indexedFields = nil;
+	if (indexedFields) SPClear(indexedFields);
 
 #ifndef SP_CODA
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];

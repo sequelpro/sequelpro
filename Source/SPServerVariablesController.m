@@ -115,7 +115,7 @@
 	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
+		SPClear(variablesFiltered);
 	}		
 }
 
@@ -292,7 +292,7 @@
 	// If the filtered array is allocated and its not a reference to the variables array
 	// relase it to prevent memory leaks upon the next allocation.
 	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
+		SPClear(variablesFiltered);
 	}
 	
 	variablesFiltered = [[NSMutableArray alloc] init];
@@ -381,7 +381,7 @@
 {
 	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
-	[variables release], variables = nil;
+	SPClear(variables);
 	
 	[super dealloc];
 }

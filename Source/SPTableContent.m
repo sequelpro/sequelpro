@@ -407,7 +407,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 
 	// Reset table key store for use in argumentForRow:
-	if (keys) [keys release], keys = nil;
+	if (keys) SPClear(keys);
 
 	// Reset data column store
 	[dataColumns removeAllObjects];
@@ -425,7 +425,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Otherwise store the newly selected table name and reset the data
 	} else {
-		if (selectedTable) [selectedTable release], selectedTable = nil;
+		if (selectedTable) SPClear(selectedTable);
 		if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 		previousTableRowsCount = 0;
 		contentPage = 1;
@@ -1509,7 +1509,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// If a string was supplied, use a custom query from that URL scheme
 	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
-		if(schemeFilter) [schemeFilter release], schemeFilter = nil;
+		if(schemeFilter) SPClear(schemeFilter);
 		schemeFilter = [sender retain];
 		activeFilter = 2;
 	}
@@ -3942,7 +3942,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending
 {
-	if (sortColumnToRestore) [sortColumnToRestore release], sortColumnToRestore = nil;
+	if (sortColumnToRestore) SPClear(sortColumnToRestore);
 
 	if (theSortColumnName) {
 		sortColumnToRestore = [[NSString alloc] initWithString:theSortColumnName];
@@ -3963,7 +3963,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setSelectionToRestore:(NSDictionary *)theSelection
 {
-	if (selectionToRestore) [selectionToRestore release], selectionToRestore = nil;
+	if (selectionToRestore) SPClear(selectionToRestore);
 
 	if (theSelection) selectionToRestore = [theSelection copy];
 }
@@ -3981,11 +3981,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings
 {
-	if (filterFieldToRestore) [filterFieldToRestore release], filterFieldToRestore = nil;
-	if (filterComparisonToRestore) [filterComparisonToRestore release], filterComparisonToRestore = nil;
-	if (filterValueToRestore) [filterValueToRestore release], filterValueToRestore = nil;
-	if (firstBetweenValueToRestore) [firstBetweenValueToRestore release], firstBetweenValueToRestore = nil;
-	if (secondBetweenValueToRestore) [secondBetweenValueToRestore release], secondBetweenValueToRestore = nil;
+	if (filterFieldToRestore) SPClear(filterFieldToRestore);
+	if (filterComparisonToRestore) SPClear(filterComparisonToRestore);
+	if (filterValueToRestore) SPClear(filterValueToRestore);
+	if (firstBetweenValueToRestore) SPClear(firstBetweenValueToRestore);
+	if (secondBetweenValueToRestore) SPClear(secondBetweenValueToRestore);
 
 	if (filterSettings) {
 		if ([filterSettings objectForKey:@"filterField"])
@@ -4311,7 +4311,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:tableContentView];
 
-	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+	if(fieldEditor) SPClear(fieldEditor);
 
 	[self clearTableLoadTimer];
 	[tableLoadingCondition release];

@@ -154,7 +154,7 @@ static NSMutableDictionary *deliciousNibNames = nil;
 {
 	if (deliciousNibNames) {
 		[deliciousNibNames removeObjectForKey:[NSValue valueWithPointer:self]];
-		if (![deliciousNibNames count]) [deliciousNibNames release], deliciousNibNames = nil;
+		if (![deliciousNibNames count]) SPClear(deliciousNibNames);
 	}
 	[self deliciousDealloc];
 }

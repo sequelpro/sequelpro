@@ -219,20 +219,20 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 - (void)dealloc
 {
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (sourcePath) [sourcePath release], sourcePath = nil;
-	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-	if (defaultFieldTypesForComboBox) [defaultFieldTypesForComboBox release], defaultFieldTypesForComboBox = nil;
-	if (fieldMappingTableTypes) [fieldMappingTableTypes release], fieldMappingTableTypes = nil;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	if (fieldMappingButtonOptions) [fieldMappingButtonOptions release], fieldMappingButtonOptions = nil;
-	if (fieldMappingOperatorOptions) [fieldMappingOperatorOptions release], fieldMappingOperatorOptions = nil;
-	if (fieldMappingOperatorArray) [fieldMappingOperatorArray release], fieldMappingOperatorArray = nil;
-	if (fieldMappingGlobalValues) [fieldMappingGlobalValues release], fieldMappingGlobalValues = nil;
-	if (fieldMappingGlobalValuesSQLMarked) [fieldMappingGlobalValuesSQLMarked release], fieldMappingGlobalValuesSQLMarked = nil;
-	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-	if (primaryKeyFields) [primaryKeyFields release], primaryKeyFields = nil;
-	if (toBeEditedRowIndexes) [toBeEditedRowIndexes release], toBeEditedRowIndexes = nil;
+	if (mySQLConnection) SPClear(mySQLConnection);
+	if (sourcePath) SPClear(sourcePath);
+	if (fieldMappingTableColumnNames) SPClear(fieldMappingTableColumnNames);
+	if (defaultFieldTypesForComboBox) SPClear(defaultFieldTypesForComboBox);
+	if (fieldMappingTableTypes) SPClear(fieldMappingTableTypes);
+	if (fieldMappingArray) SPClear(fieldMappingArray);
+	if (fieldMappingButtonOptions) SPClear(fieldMappingButtonOptions);
+	if (fieldMappingOperatorOptions) SPClear(fieldMappingOperatorOptions);
+	if (fieldMappingOperatorArray) SPClear(fieldMappingOperatorArray);
+	if (fieldMappingGlobalValues) SPClear(fieldMappingGlobalValues);
+	if (fieldMappingGlobalValuesSQLMarked) SPClear(fieldMappingGlobalValuesSQLMarked);
+	if (fieldMappingTableDefaultValues) SPClear(fieldMappingTableDefaultValues);
+	if (primaryKeyFields) SPClear(primaryKeyFields);
+	if (toBeEditedRowIndexes) SPClear(toBeEditedRowIndexes);
 	
 	[super dealloc];
 }
@@ -605,7 +605,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	// Update the table view
 	fieldMappingCurrentRow = 0;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	if (fieldMappingArray) SPClear(fieldMappingArray);
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
@@ -912,7 +912,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	// Update the table view
 	fieldMappingCurrentRow = 0;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
+	if (fieldMappingArray) SPClear(fieldMappingArray);
 	[self setupFieldMappingArray];
 	[rowDownButton setEnabled:NO];
 	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];

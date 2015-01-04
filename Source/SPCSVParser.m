@@ -469,7 +469,7 @@
  */
 - (void) setNullReplacementString:(NSString *)nullString
 {
-	if (nullReplacementString) [nullReplacementString release], nullReplacementString = nil;
+	if (nullReplacementString) SPClear(nullReplacementString);
 
 	if (nullString) nullReplacementString = [[NSString alloc] initWithString:nullString];
 }
@@ -576,7 +576,7 @@
 {
 	NSMutableString *charactersToSkip;
 
-	if (skipCharacterSet) [skipCharacterSet release], skipCharacterSet = nil;
+	if (skipCharacterSet) SPClear(skipCharacterSet);
 
 	charactersToSkip = [[NSMutableString alloc] init];
 	if (![fieldEndString isEqualToString:@" "] && ![fieldQuoteString isEqualToString:@" "] && ![escapeString isEqualToString:@" "] && ![lineEndString isEqualToString:@" "])

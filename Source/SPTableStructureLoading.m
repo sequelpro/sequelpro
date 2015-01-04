@@ -312,7 +312,7 @@
 	![tableDocumentInstance isWorking];
 	
 	// Update the selected table name
-	if (selectedTable) [selectedTable release], selectedTable = nil;
+	if (selectedTable) SPClear(selectedTable);
 	if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 	
 	[indexesController setTable:selectedTable];
@@ -348,7 +348,7 @@
 	[indexesController setFields:tableFields];
 	[indexesController setIndexes:[tableDetails objectForKey:@"tableIndexes"]];
 	
-	if (defaultValues) [defaultValues release], defaultValues = nil;
+	if (defaultValues) SPClear(defaultValues);
 	
 	newDefaultValues = [NSMutableDictionary dictionaryWithCapacity:[tableFields count]];
 	

@@ -209,7 +209,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	if (![fm fileExistsAtPath:selectedPath isDirectory:nil]) {
 		if ([fm copyItemAtPath:[NSString stringWithFormat:@"%@/%@.%@", themePath, [editThemeListItems objectAtIndex:[editThemeListTable selectedRow]], SPColorThemeFileExtension] toPath:selectedPath error:nil]) {
 			
-			if (editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+			if (editThemeListItems) SPClear(editThemeListItems);
 			
 			editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 			
@@ -243,7 +243,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 				[prefs setObject:SPCustomColorSchemeName forKey:SPCustomQueryEditorThemeName];
 			}
 			
-			if (editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+			if (editThemeListItems) SPClear(editThemeListItems);
 			
 			editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 			
@@ -313,7 +313,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 {
 	[[NSColorPanel sharedColorPanel] close];
 	
-	if (editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+	if (editThemeListItems) SPClear(editThemeListItems);
 	
 	editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 	
@@ -595,7 +595,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		}
 		
 		// Reload everything needed
-		if (editThemeListItems) [editThemeListItems release], editThemeListItems = nil;
+		if (editThemeListItems) SPClear(editThemeListItems);
 		editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 		
 		[editThemeListTable reloadData];
@@ -1029,10 +1029,10 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
  */
 - (void)dealloc
 {
-	if (themePath)           [themePath release], themePath = nil;
-	if (editThemeListItems)  [editThemeListItems release], editThemeListItems = nil;
-	if (editorColors)        [editorColors release], editorColors = nil;
-	if (editorNameForColors) [editorNameForColors release], editorNameForColors = nil;
+	if (themePath)           SPClear(themePath);
+	if (editThemeListItems)  SPClear(editThemeListItems);
+	if (editorColors)        SPClear(editorColors);
+	if (editorNameForColors) SPClear(editorNameForColors);
 	
 	[super dealloc];
 }

@@ -1039,13 +1039,13 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 - (void)dealloc
 {	
-    [tables release], tables = nil;
-	[exporters release], exporters = nil;
-	[exportFiles release], exportFiles = nil;
-	[operationQueue release], operationQueue = nil;
-	[exportFilename release], exportFilename = nil;
+    SPClear(tables);
+	SPClear(exporters);
+	SPClear(exportFiles);
+	SPClear(operationQueue);
+	SPClear(exportFilename);
 	
-	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
 	
 	[super dealloc];
 }

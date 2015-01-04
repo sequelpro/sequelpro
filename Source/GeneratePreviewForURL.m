@@ -78,8 +78,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			if(spf) [spf release], spf = nil;
-			if(pool) [pool release], pool = nil;
+			if(spf) SPClear(spf);
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -89,8 +89,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 
@@ -146,8 +146,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 			// compose the html
@@ -162,8 +162,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 			// compose the html
@@ -182,7 +182,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -190,7 +190,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -205,8 +205,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			if(spf) [spf release], spf = nil;
-			if(pool) [pool release], pool = nil;
+			if(spf) SPClear(spf);
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -323,7 +323,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -418,10 +418,10 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
 
 					if (QLPreviewRequestIsCancelled(preview)) {
-						if(sqlHTML) [sqlHTML release], sqlHTML = nil;
+						if(sqlHTML) SPClear(sqlHTML);
 						if(truncatedString) [truncatedString release], sqlHTML = nil;
 						if(sqlText) [sqlText release], sqlHTML = nil;
-						if(pool) [pool release], pool = nil;
+						if(pool) SPClear(pool);
 						[loopPool release];
 						return noErr;
 					}
@@ -457,7 +457,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		} else {
 
 			// No file attributes were read, bail for safety reasons
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 
 		}

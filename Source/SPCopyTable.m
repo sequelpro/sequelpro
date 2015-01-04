@@ -219,7 +219,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
 							[d writeToFile:fp atomically:NO];
-							if(d) [d release], d = nil;
+							if(d) SPClear(d);
 							[image release];
 						} else {
 							NSString *noData = @"";
@@ -242,7 +242,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						} else {
 							[result appendFormat:@"%@\t", [cellData wktString]];
 						}
-						if(v) [v release], v = nil;
+						if(v) SPClear(v);
 					} else {
 						[result appendFormat:@"%@\t", [cellData wktString]];
 					}
@@ -358,7 +358,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
 							[d writeToFile:fp atomically:NO];
-							if(d) [d release], d = nil;
+							if(d) SPClear(d);
 							[image release];
 						} else {
 							NSString *noData = @"";
@@ -381,7 +381,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						} else {
 							[result appendFormat:@"\"%@\",", [cellData wktString]];
 						}
-						if(v) [v release], v = nil;
+						if(v) SPClear(v);
 					} else {
 						[result appendFormat:@"\"%@\",", [cellData wktString]];
 					}
@@ -698,7 +698,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	tableInstance     = anInstance;
 	tableStorage	  = theTableStorage;
 
-	if (columnDefinitions) [columnDefinitions release], columnDefinitions = nil;
+	if (columnDefinitions) SPClear(columnDefinitions);
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
 

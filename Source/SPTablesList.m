@@ -1314,7 +1314,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	NSUInteger i;
+	NSInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
 		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == type)
@@ -1680,7 +1680,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			[tableInfoInstance tableChanged:nil];
 		}
 		
-		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 		
 		selectedTableType = SPTableTypeNone;
 		
@@ -1703,7 +1703,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Save existing scroll position and details
 	[spHistoryControllerInstance updateHistoryEntries];
 
-	if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+	if (selectedTableName) SPClear(selectedTableName);
 	
 	selectedTableName = [[NSString alloc] initWithString:newName];
 	selectedTableType = newType;
@@ -1957,7 +1957,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Don't try and maintain selections of multiple rows through filtering
 	if ([tablesListView numberOfSelectedRows] > 1) {
 		[tablesListView deselectAll:self];
-		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 	}
 
 #ifndef SP_CODA

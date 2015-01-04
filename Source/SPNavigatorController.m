@@ -560,7 +560,6 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		if([[item componentsSeparatedByString:SPUniqueSchemaDelimiter] count] < 4)
 			[arr addObject:item];
 	}
-	if([arr count] < 1 ) @[@0, @""];
 	if([arr count] == 1) {
 		NSArray *split = [[arr objectAtIndex:0] componentsSeparatedByString:SPUniqueSchemaDelimiter];
 		if([split count] == 2 ) [NSArray arrayWithObjects:@1, [split lastObject], nil];

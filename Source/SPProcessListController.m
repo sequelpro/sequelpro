@@ -500,7 +500,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 {	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((processesFiltered) && (processesFiltered != processes)) {
-		[processesFiltered release], processesFiltered = nil;
+		SPClear(processesFiltered);
 	}
 	
 	// Kill the auto refresh timer if running
@@ -554,7 +554,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// If the auto refresh timer is running, kill it
 	if (autoRefreshTimer && [autoRefreshTimer isValid]) {		
 		[autoRefreshTimer invalidate];
-		[autoRefreshTimer release], autoRefreshTimer = nil;
+		SPClear(autoRefreshTimer);
 	}
 }
 
@@ -710,7 +710,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// If the filtered array is allocated and its not a reference to the processes array,
 	// relase it to prevent memory leaks upon the next allocation.
 	if ((processesFiltered) && (processesFiltered != processes)) {
-		[processesFiltered release], processesFiltered = nil;
+		SPClear(processesFiltered);
 	}
 	
 	processesFiltered = [[NSMutableArray alloc] init];
@@ -763,9 +763,9 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	processListThreadRunning = NO;
 	
-	[processes release], processes = nil;
+	SPClear(processes);
 	
-	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
+	if (autoRefreshTimer) SPClear(autoRefreshTimer);
 	
 	[super dealloc];
 }

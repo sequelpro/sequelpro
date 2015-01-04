@@ -141,7 +141,7 @@
 	// Re-init sort order
 	isDesc = NO;
 	sortColumn = nil;
-	if(sortField) [sortField release], sortField = nil;
+	if(sortField) SPClear(sortField);
 
 	// Retrieve the custom query string and split it into separate SQL queries
 	queryParser = [[SPSQLParser alloc] initWithString:[textView string]];
@@ -185,7 +185,7 @@
 	// Re-init sort order
 	isDesc = NO;
 	sortColumn = nil;
-	if(sortField) [sortField release], sortField = nil;
+	if(sortField) SPClear(sortField);
 
 	// If the current selection is a single caret position, run the current query.
 	if (selectedRange.length == 0) {
@@ -628,7 +628,7 @@
 
 	// Remove all the columns if not reloading the table
 	if(!reloadingExistingResult) {
-		if (cqColumnDefinition) [cqColumnDefinition release], cqColumnDefinition = nil;
+		if (cqColumnDefinition) SPClear(cqColumnDefinition);
 		[[self onMainThread] updateTableView];
 	}
 
@@ -1736,7 +1736,7 @@
  */
 - (void)setResultSelectedRowIndexesToRestore:(NSIndexSet *)theIndexSet
 {
-	if (selectionIndexToRestore) [selectionIndexToRestore release], selectionIndexToRestore = nil;
+	if (selectionIndexToRestore) SPClear(selectionIndexToRestore);
 
 	if (theIndexSet) selectionIndexToRestore = [[NSIndexSet alloc] initWithIndexSet:theIndexSet];
 }
@@ -2273,7 +2273,7 @@
 
 	if ([mySQLConnection queryErrored]) {
 		sortColumn = nil;
-		if(sortField) [sortField release], sortField = nil;
+		if(sortField) SPClear(sortField);
 		return;
 	}
 
@@ -2449,7 +2449,7 @@
 		// Open the editing sheet if required
 		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL])
 		{
-			if (fieldEditor) [fieldEditor release], fieldEditor = nil;
+			if (fieldEditor) SPClear(fieldEditor);
 			fieldEditor = [[SPFieldEditorController alloc] init];
 
 			// Remember edited row for reselecting and setting the scroll view after reload
@@ -4042,7 +4042,7 @@
 	[resultData release];
 	[favoritesManager release];
 
-	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+	if(fieldEditor) SPClear(fieldEditor);
 
 #ifndef SP_CODA
 	if (helpHTMLTemplate) [helpHTMLTemplate release];

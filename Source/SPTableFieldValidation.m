@@ -136,7 +136,7 @@
 
 - (void)dealloc
 {
-	[fieldTypes release], fieldTypes = nil;
+	SPClear(fieldTypes);
 	
 	[super dealloc];
 }

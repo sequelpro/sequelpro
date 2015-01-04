@@ -910,12 +910,12 @@
 
 - (void)dealloc
 {
-	[sqlExportTables release], sqlExportTables = nil;
-	[sqlDatabaseHost release], sqlDatabaseHost = nil;
-	[sqlDatabaseName release], sqlDatabaseName = nil;
-	[sqlExportCurrentTable release], sqlExportCurrentTable = nil;
-	[sqlDatabaseVersion release], sqlDatabaseVersion = nil;
-	[sqlExportErrors release], sqlExportErrors = nil;
+	SPClear(sqlExportTables);
+	SPClear(sqlDatabaseHost);
+	SPClear(sqlDatabaseName);
+	SPClear(sqlExportCurrentTable);
+	SPClear(sqlDatabaseVersion);
+	SPClear(sqlExportErrors);
 	
 	[super dealloc];
 }

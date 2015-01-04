@@ -1324,7 +1324,7 @@
 	
 cleanup:
 	dispatch_async(dispatch_get_main_queue(), ^{
-		if(fieldMapperController) [fieldMapperController release], fieldMapperController = nil;
+		if(fieldMapperController) SPClear(fieldMapperController);
 	});
 
 	return success;
@@ -1715,13 +1715,13 @@ cleanup:
  */
 - (void)_resetFieldMappingGlobals
 {
-	if (csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-	if (csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	if (fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-	if (fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+	if (csvImportTailString) SPClear(csvImportTailString);
+	if (csvImportHeaderString) SPClear(csvImportHeaderString);
+	if (fieldMappingArray) SPClear(fieldMappingArray);
+	if (fieldMappingGlobalValueArray) SPClear(fieldMappingGlobalValueArray);
+	if (fieldMappingTableColumnNames) SPClear(fieldMappingTableColumnNames);
+	if (fieldMappingTableDefaultValues) SPClear(fieldMappingTableDefaultValues);
+	if (fieldMapperOperator) SPClear(fieldMapperOperator);
 }
 
 #pragma mark -

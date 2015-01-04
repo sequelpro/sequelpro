@@ -645,20 +645,20 @@ static SPQueryController *sharedQueryController = nil;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 #ifndef SP_CODA
-	[dateFormatter release], dateFormatter = nil;
+	SPClear(dateFormatter);
 
-	[messagesFullSet release], messagesFullSet = nil;
-	[messagesFilteredSet release], messagesFilteredSet = nil;
-	[activeFilterString release], activeFilterString = nil;
+	SPClear(messagesFullSet);
+	SPClear(messagesFilteredSet);
+	SPClear(activeFilterString);
 
-	[favoritesContainer release], favoritesContainer = nil;
-	[historyContainer release], historyContainer = nil;
-	[contentFilterContainer release], contentFilterContainer = nil;
+	SPClear(favoritesContainer);
+	SPClear(historyContainer);
+	SPClear(contentFilterContainer);
 #endif
 
-	if (completionKeywordList) [completionKeywordList release], completionKeywordList = nil;
-	if (completionFunctionList) [completionFunctionList release], completionFunctionList = nil; 
-	if (functionArgumentSnippets) [functionArgumentSnippets release], functionArgumentSnippets = nil;
+	if (completionKeywordList) SPClear(completionKeywordList);
+	if (completionFunctionList) SPClear(completionFunctionList);
+	if (functionArgumentSnippets) SPClear(functionArgumentSnippets);
 	
 #ifndef SP_CODA
 	pthread_mutex_destroy(&consoleLock);

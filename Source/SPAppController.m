@@ -1355,7 +1355,7 @@
  */
 - (void)setSessionURL:(NSString *)urlString
 {
-	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
+	if(_sessionURL) SPClear(_sessionURL);
 	if(urlString)
 		_sessionURL = [[NSURL fileURLWithPath:urlString] retain];
 }
@@ -2240,13 +2240,13 @@
 	if (installedBundleUUIDs) [installedBundleUUIDs release];
 	if (runningActivitiesArray) [runningActivitiesArray release];
 
-	[prefsController release], prefsController = nil;
+	SPClear(prefsController);
 
-	if (aboutController) [aboutController release], aboutController = nil;
-	if (bundleEditorController) [bundleEditorController release], bundleEditorController = nil;
+	if (aboutController) SPClear(aboutController);
+	if (bundleEditorController) SPClear(bundleEditorController);
 
-	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
-	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
+	if (_sessionURL) SPClear(_sessionURL);
+	if (_spfSessionDocData) SPClear(_spfSessionDocData);
 
 	[super dealloc];
 }

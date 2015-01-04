@@ -720,7 +720,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[connection release], connection = nil;
+	SPClear(connection);
 	
 	[super dealloc];
 }

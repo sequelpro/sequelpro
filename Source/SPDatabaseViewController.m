@@ -332,7 +332,7 @@
 	if (!aTable) {
 		
 		// Update the selected table name and type
-		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 		
 		selectedTableType = SPTableTypeNone;
 

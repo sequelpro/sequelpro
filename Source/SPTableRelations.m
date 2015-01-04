@@ -666,8 +666,8 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[[NSUserDefaults standardUserDefaults] removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
-	[relationData release], relationData = nil;
-	[takenConstraintNames release], takenConstraintNames = nil;
+	SPClear(relationData);
+	SPClear(takenConstraintNames);
 
 	[super dealloc];
 }

@@ -417,3 +417,7 @@ NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
 NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
 NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";
 NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
+
+void inline _SPClear(id *addr) {
+	[*addr release], *addr = nil;
+}

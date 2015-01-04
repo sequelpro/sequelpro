@@ -88,9 +88,9 @@
 
 - (void)dealloc
 {
-	[object release], object = nil;
+	SPClear(object);
 	selector = NULL;
-	[name release], name = nil;
+	SPClear(name);
 	[super dealloc];
 }
 

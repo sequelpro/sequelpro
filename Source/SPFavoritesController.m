@@ -218,7 +218,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	NSError *error = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
-	if (favoritesData) [favoritesData release], favoritesData = nil;
+	if (favoritesData) SPClear(favoritesData);
 	
 	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
 	
@@ -468,8 +468,8 @@ static SPFavoritesController *sharedFavoritesController = nil;
 
 - (void)dealloc
 {
-	if (favoritesTree) [favoritesTree release], favoritesTree = nil;
-	if (favoritesData) [favoritesData release], favoritesData = nil;
+	if (favoritesTree) SPClear(favoritesTree);
+	if (favoritesData) SPClear(favoritesData);
 	
 	pthread_mutex_destroy(&writeLock);
 	pthread_mutex_destroy(&favoritesLock);

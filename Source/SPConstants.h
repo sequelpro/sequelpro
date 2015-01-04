@@ -612,6 +612,13 @@ extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
 
+// Provides a standard method for our "[x release], x = nil;" convention.
+// Yes, this could have been done with a preprocessor macro alone, however
+// a function works more nicely in the debugger and in production code
+// the optimizer will most likely remove all overhead by inlining anyway :)
+void _SPClear(id *addr);
+#define SPClear(x) _SPClear(&x)
+
 //Backwards compatibility
 #ifndef __MAC_10_7
 #define __MAC_10_7 1070

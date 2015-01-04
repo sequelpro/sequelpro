@@ -848,7 +848,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)_clearData
 {
 	[managedObjectContext reset];
-	[managedObjectContext release], managedObjectContext = nil;
+	SPClear(managedObjectContext);
 }
 
 /**
@@ -1458,18 +1458,20 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-    [managedObjectContext release];
-    [persistentStoreCoordinator release];
-    [managedObjectModel release];
-	[privColumnToGrantMap release];
-	[connection release];
-	[privsSupportedByServer release];
-	[schemas release];
-	[availablePrivs release];
-	[grantedSchemaPrivs release];
-	[treeSortDescriptor release];
-	[serverSupport release];
+
+
+    SPClear(managedObjectContext);
+    SPClear(persistentStoreCoordinator);
+    SPClear(managedObjectModel);
+	SPClear(privColumnToGrantMap);
+	SPClear(connection);
+	SPClear(privsSupportedByServer);
+	SPClear(schemas);
+	SPClear(availablePrivs);
+	SPClear(grantedSchemaPrivs);
+	SPClear(treeSortDescriptor);
+	SPClear(treeSortDescriptors);
+	SPClear(serverSupport);
 	
 	[super dealloc];
 }

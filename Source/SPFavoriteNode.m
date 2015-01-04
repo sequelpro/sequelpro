@@ -103,7 +103,7 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (void)dealloc
 {
-	if (nodeFavorite) [nodeFavorite release], nodeFavorite = nil;
+	if (nodeFavorite) SPClear(nodeFavorite);
 	
 	[super dealloc];
 }

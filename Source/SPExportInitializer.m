@@ -99,7 +99,7 @@
 	NSArray *dataArray = nil;
 	
 	// Get rid of the cached connection encoding
-	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
 	
 	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
 	

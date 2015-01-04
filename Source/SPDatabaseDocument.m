@@ -473,7 +473,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// Update the selected database if appropriate
 	if ([connectionController database] && ![[connectionController database] isEqualToString:@""]) {
-		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+		if (selectedDatabase) SPClear(selectedDatabase);
 		selectedDatabase = [[NSString alloc] initWithString:[connectionController database]];
 #ifndef SP_CODA /* [spHistoryControllerInstance updateHistoryEntries] */
 		[spHistoryControllerInstance updateHistoryEntries];
@@ -665,8 +665,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[[chooseDatabaseButton menu] addItem:[NSMenuItem separatorItem]];
 #endif
 
-	if (allDatabases) [allDatabases release];
-	if (allSystemDatabases) [allSystemDatabases release];
+	if (allDatabases) SPClear(allDatabases);
+	if (allSystemDatabases) SPClear(allSystemDatabases);
 	
 	NSArray *theDatabaseList = [mySQLConnection databases];
 
@@ -1056,7 +1056,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #ifndef SP_CODA
 	// Close error status sheet for OPTIMIZE, CHECK, REPAIR etc.
 	else if ([contextInfo isEqualToString:@"statusError"]) {
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 	}
 #endif
 }
@@ -1096,7 +1096,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 		if(![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
-				if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+				if (selectedDatabase) SPClear(selectedDatabase);
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
 				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
 #ifndef SP_CODA /* [self updateWindowTitle:self] */
@@ -1104,7 +1104,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #endif
 			}
 		} else {
-			if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+			if (selectedDatabase) SPClear(selectedDatabase);
 			[chooseDatabaseButton selectItemAtIndex:0];
 #ifndef SP_CODA /* [self updateWindowTitle:self] */
 			[self updateWindowTitle:self];
@@ -1313,8 +1313,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	// If the window has been fully faded in, clean up the timer.
 	if (alphaValue == 1.0) {
-		[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
-		[taskFadeInStartDate release], taskFadeInStartDate = nil; 
+		[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+		SPClear(taskFadeInStartDate);
 	}
 #endif
 }
@@ -1424,8 +1424,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #ifndef SP_CODA 
 		// Cancel the draw timer if it exists
 		if (taskDrawTimer) {
-			[taskDrawTimer invalidate], [taskDrawTimer release], taskDrawTimer = nil;
-			[taskFadeInStartDate release], taskFadeInStartDate = nil; 
+			[taskDrawTimer invalidate], SPClear(taskDrawTimer);
+			SPClear(taskFadeInStartDate);
 		}
 
 		// Hide the task interface and reset to indeterminate
@@ -1712,7 +1712,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
 
-	[selectedDatabaseEncoding release], selectedDatabaseEncoding = nil;
+	SPClear(selectedDatabaseEncoding);
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
@@ -1953,7 +1953,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2030,7 +2030,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2107,7 +2107,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2183,7 +2183,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2259,7 +2259,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						   contextInfo:NULL];
 	} else {
 		message = NSLocalizedString(@"MySQL said:",@"mysql said message");
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:message];
@@ -2315,7 +2315,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 						didEndSelector:NULL 
 						   contextInfo:NULL];
 	} else {
-		if (statusValues) [statusValues release], statusValues = nil;
+		if (statusValues) SPClear(statusValues);
 		statusValues = [resultStatuses retain];
 		NSAlert *alert = [[NSAlert new] autorelease];
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Checksums of %@",@"Checksums of %@ message"), what]];
@@ -2487,7 +2487,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	[userManagerInstance beginSheetModalForWindow:parentWindow
 								completionHandler:^(){
-		[userManagerInstance release], userManagerInstance = nil;
+		SPClear(userManagerInstance);
 	}];
 }
 
@@ -3044,7 +3044,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO contextInfo:nil];
 
 			// Manually loaded nibs don't have their top-level objects released automatically - do that here.
-			[saveConnectionAccessory release];
+			SPClear(saveConnectionAccessory);
 
 			if(contextInfo == @"saveSPFfileAndClose")
 				[self closeAndDisconnect];
@@ -4357,7 +4357,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
  */
 - (void)setFileURL:(NSURL *)theURL
 {
-	if (spfFileURL) [spfFileURL release], spfFileURL = nil;
+	if (spfFileURL) SPClear(spfFileURL);
 	spfFileURL  = [theURL retain];
 	if ([parentWindowController selectedTableDocument] == self) {
 		if (spfFileURL && [spfFileURL isFileURL])
@@ -5016,8 +5016,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[self updateWindowTitle:self];
 
 	// dealloc spfSession data
-	[spfSession release];
-	spfSession = nil;
+	SPClear(spfSession);
 
 	// End the task
 	[self endTask];
@@ -6064,7 +6063,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// that's why we can run this on main thread
 	[databaseStructureRetrieval queryDbStructureWithUserInfo:nil];
 
-	if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+	if (selectedDatabase) SPClear(selectedDatabase);
 	
 	[self setDatabases:self];
 	
@@ -6134,7 +6133,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #ifndef SP_CODA /* chooseDatabaseButton selectItemWithTitle: */
 		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
 #endif
-		if (selectedDatabase) [selectedDatabase release], selectedDatabase = nil;
+		if (selectedDatabase) SPClear(selectedDatabase);
 		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
 
 		[databaseDataInstance resetAllData];
@@ -6280,59 +6279,59 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 #ifndef SP_CODA /* release nib objects */
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
-	[nibObjectsToRelease release];
+	SPClear(nibObjectsToRelease);
 #endif
 	
 	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
 	
-	[databaseStructureRetrieval release];
+	SPClear(databaseStructureRetrieval);
 	
-	[allDatabases release];
-	[allSystemDatabases release];
-	[gotoDatabaseController release];
+	SPClear(allDatabases);
+	SPClear(allSystemDatabases);
+	SPClear(gotoDatabaseController);
 #ifndef SP_CODA /* dealloc ivars */
-	[undoManager release];
-	[printWebView release];
+	SPClear(undoManager);
+	SPClear(printWebView);
 #endif
-	[selectedDatabaseEncoding release];
+	SPClear(selectedDatabaseEncoding);
 #ifndef SP_CODA
 	[taskProgressWindow close];
 #endif
 	
-	if (selectedTableName) [selectedTableName release];
-	if (connectionController) [connectionController release];
+	if (selectedTableName) SPClear(selectedTableName);
+	if (connectionController) SPClear(connectionController);
 #ifndef SP_CODA /* dealloc ivars */
-	if (processListController) [processListController release];
-	if (serverVariablesController) [serverVariablesController release];
+	if (processListController) SPClear(processListController);
+	if (serverVariablesController) SPClear(serverVariablesController);
 #endif
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (selectedDatabase) [selectedDatabase release];
-	if (mySQLVersion) [mySQLVersion release];
+	if (mySQLConnection) SPClear(mySQLConnection);
+	if (selectedDatabase) SPClear(selectedDatabase);
+	if (mySQLVersion) SPClear(mySQLVersion);
 #ifndef SP_CODA
-	if (taskDrawTimer) [taskDrawTimer invalidate], [taskDrawTimer release];
-	if (taskFadeInStartDate) [taskFadeInStartDate release];
+	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
+	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
 #endif
-	if (queryEditorInitString) [queryEditorInitString release];
+	if (queryEditorInitString) SPClear(queryEditorInitString);
 #ifndef SP_CODA
-	if (sqlFileURL) [sqlFileURL release];
-	if (spfFileURL) [spfFileURL release];
-	if (spfPreferences) [spfPreferences release];
-	if (spfSession) [spfSession release];
-	if (spfDocData) [spfDocData release];
+	if (sqlFileURL) SPClear(sqlFileURL);
+	if (spfFileURL) SPClear(spfFileURL);
+	if (spfPreferences) SPClear(spfPreferences);
+	if (spfSession) SPClear(spfSession);
+	if (spfDocData) SPClear(spfDocData);
 #endif
-	if (keyChainID) [keyChainID release];
+	if (keyChainID) SPClear(keyChainID);
 #ifndef SP_CODA
-	if (mainToolbar) [mainToolbar release];
+	if (mainToolbar) SPClear(mainToolbar);
 #endif
-	if (titleAccessoryView) [titleAccessoryView release];
+	if (titleAccessoryView) SPClear(titleAccessoryView);
 #ifndef SP_CODA
-	if (taskProgressWindow) [taskProgressWindow release];
+	if (taskProgressWindow) SPClear(taskProgressWindow);
 #endif
-	if (serverSupport) [serverSupport release];
+	if (serverSupport) SPClear(serverSupport);
 #ifndef SP_CODA /* dealloc ivars */
-	if (processID) [processID release];
-	if (runningActivitiesArray) [runningActivitiesArray release];
+	if (processID) SPClear(processID);
+	if (runningActivitiesArray) SPClear(runningActivitiesArray);
 #endif
 	
 #ifdef SP_CODA 
@@ -6340,8 +6339,8 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	if (customQueryInstance) [customQueryInstance release];
 #endif
 	
-	if (alterDatabaseCharsetHelper) [alterDatabaseCharsetHelper release];
-	if (addDatabaseCharsetHelper) [addDatabaseCharsetHelper release];
+	if (alterDatabaseCharsetHelper) SPClear(alterDatabaseCharsetHelper);
+	if (addDatabaseCharsetHelper) SPClear(addDatabaseCharsetHelper);
 	
 	[super dealloc];
 }

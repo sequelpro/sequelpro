@@ -226,7 +226,7 @@
 
 - (void)dealloc
 {
-	if (exportFileHandle) [exportFileHandle release], exportFileHandle = nil;
+	if (exportFileHandle) SPClear(exportFileHandle);
 	
 	[super dealloc];
 }

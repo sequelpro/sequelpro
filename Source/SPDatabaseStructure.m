@@ -573,9 +573,9 @@
 	pthread_mutex_destroy(&dataLock);
 	pthread_mutex_destroy(&connectionCheckLock);
 	
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (structure) [structure release], structure = nil;
-	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
+	if (mySQLConnection) SPClear(mySQLConnection);
+	if (structure) SPClear(structure);
+	if (allKeysofDbStructure) SPClear(allKeysofDbStructure);
 	
 	[super dealloc];
 }

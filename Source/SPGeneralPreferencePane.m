@@ -208,7 +208,7 @@ static NSString *SPDatabaseImage = @"database-small";
 
 - (void)dealloc
 {
-	[folderImage release], folderImage = nil;
+	SPClear(folderImage);
 	
 	[super dealloc];
 }

@@ -477,7 +477,7 @@
 			[usedSheet makeFirstResponder:image == nil || _isGeometry ? editTextView : editImage];
 		}
 		
-		if (stringValue) [stringValue release], stringValue = nil;
+		if (stringValue) SPClear(stringValue);
 
 		editSheetWillBeInitialized = NO;
 

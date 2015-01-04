@@ -108,7 +108,7 @@ static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 
 - (void)dealloc
 {
-	if (nodeName) [nodeName release], nodeName = nil;
+	if (nodeName) SPClear(nodeName);
 	
 	[super dealloc];
 }

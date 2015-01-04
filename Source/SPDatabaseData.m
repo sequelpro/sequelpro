@@ -82,11 +82,11 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (void)resetAllData
 {
-	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil;
-	if (defaultCollation != nil) [defaultCollation release], defaultCollation = nil;
-	if (defaultCharacterSetEncoding != nil) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
-	if (serverDefaultCharacterSetEncoding) [serverDefaultCharacterSetEncoding release], serverDefaultCharacterSetEncoding = nil;
-	if (serverDefaultCollation) [serverDefaultCollation release], serverDefaultCollation = nil;
+	if (characterSetEncoding != nil) SPClear(characterSetEncoding);
+	if (defaultCollation != nil) SPClear(defaultCollation);
+	if (defaultCharacterSetEncoding != nil) SPClear(defaultCharacterSetEncoding);
+	if (serverDefaultCharacterSetEncoding) SPClear(serverDefaultCharacterSetEncoding);
+	if (serverDefaultCollation) SPClear(serverDefaultCollation);
 	
 	[collations removeAllObjects];
 	[characterSetCollations removeAllObjects];
@@ -489,11 +489,11 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	[self resetAllData];
 	
-	[collations release], collations = nil;
-	[characterSetCollations release], characterSetCollations = nil;
-	[storageEngines release], storageEngines = nil;
-	[characterSetEncodings release], characterSetEncodings = nil;
-	[cachedCollationsByEncoding release], cachedCollationsByEncoding = nil;
+	SPClear(collations);
+	SPClear(characterSetCollations);
+	SPClear(storageEngines);
+	SPClear(characterSetEncodings);
+	SPClear(cachedCollationsByEncoding);
 	
 	[super dealloc];
 }

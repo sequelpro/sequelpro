@@ -1021,7 +1021,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 }
 - (void) setString:(NSString *)aString {
 	[string setString:aString];
-	if (delimiter) [delimiter release], delimiter = nil;
+	if (delimiter) SPClear(delimiter);
 	delimiterLengthMinusOne = 0;
 	lastMatchIsDelimiter = NO;
 	[self _clearCharCache];

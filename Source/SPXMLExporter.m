@@ -358,9 +358,9 @@
 
 - (void)dealloc
 {
-	if (xmlDataArray) [xmlDataArray release], xmlDataArray = nil;
-	if (xmlTableName) [xmlTableName release], xmlTableName = nil;
-	if (xmlNULLString) [xmlNULLString release], xmlNULLString = nil;
+	if (xmlDataArray) SPClear(xmlDataArray);
+	if (xmlTableName) SPClear(xmlTableName);
+	if (xmlNULLString) SPClear(xmlNULLString);
 	
 	[super dealloc];
 }

@@ -415,15 +415,15 @@
 
 - (void)dealloc
 {
-	if (csvDataArray) [csvDataArray release], csvDataArray = nil;
-	if (csvTableName) [csvTableName release], csvTableName = nil;
+	if (csvDataArray) SPClear(csvDataArray);
+	if (csvTableName) SPClear(csvTableName);
 	
-	[csvFieldSeparatorString release], csvFieldSeparatorString = nil;
-	[csvEnclosingCharacterString release], csvEnclosingCharacterString = nil;
-	[csvEscapeString release], csvEscapeString = nil;
-	[csvLineEndingString release], csvLineEndingString = nil;
-	[csvNULLString release], csvNULLString = nil;
-	[csvTableData release], csvTableData = nil;
+	SPClear(csvFieldSeparatorString);
+	SPClear(csvEnclosingCharacterString);
+	SPClear(csvEscapeString);
+	SPClear(csvLineEndingString);
+	SPClear(csvNULLString);
+	SPClear(csvTableData);
 	
 	[super dealloc];
 }

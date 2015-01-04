@@ -265,8 +265,8 @@
 
 - (void)dealloc
 {
-    [unfilteredList release], unfilteredList = nil;
-	[filteredList release], filteredList = nil;
+    SPClear(unfilteredList);
+	SPClear(filteredList);
 
 	[super dealloc];
 }

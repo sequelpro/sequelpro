@@ -520,7 +520,7 @@
 	// connection reconnect dialog to appear and the user chose to close the connection.
 	if (!syntaxResult) return nil;
 
-	if (tableCreateSyntax != nil) [tableCreateSyntax release], tableCreateSyntax = nil;
+	if (tableCreateSyntax != nil) SPClear(tableCreateSyntax);
 
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
@@ -864,7 +864,7 @@
 	}
 
 	// Retrieve the table syntax string
-	if (tableCreateSyntax) [tableCreateSyntax release], tableCreateSyntax = nil;
+	if (tableCreateSyntax) SPClear(tableCreateSyntax);
 	NSString *syntaxString = [[theResult getRowAsArray] objectAtIndex:1];
 
 	// A NULL value indicates that the user does not have permission to view the syntax
@@ -1086,7 +1086,7 @@
 							  nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							  [tableListInstance tableName], [mySQLConnection lastErrorMessage]]);
-			if (triggers) [triggers release], triggers = nil;
+			if (triggers) SPClear(triggers);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
