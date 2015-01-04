@@ -327,7 +327,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	if(activityName) SPClear(activityName);
 	if(activityInfo) SPClear(activityInfo);
 	if(contextInfo) SPClear(contextInfo);
-	if(cancelButton) [cancelButton release];
+	if(cancelButton) SPClear(cancelButton);
 
 	[super dealloc];
 }

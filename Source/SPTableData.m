@@ -329,18 +329,15 @@
 	[status removeAllObjects];
 
 	if (triggers != nil) {
-		[triggers release];
-		triggers = nil;
+		SPClear(triggers);
 	}
 
 	if (tableEncoding != nil) {
-		[tableEncoding release];
-		tableEncoding = nil;
+		SPClear(tableEncoding);
 	}
 
 	if (tableCreateSyntax != nil) {
-		[tableCreateSyntax release];
-		tableCreateSyntax = nil;
+		SPClear(tableCreateSyntax);
 	}
 }
 
@@ -1395,16 +1392,16 @@
  */
 - (void)dealloc
 {
-	[columns release];
-	[columnNames release];
-	[constraints release];
-	[status release];
-	[primaryKeyColumns release];
+	SPClear(columns);
+	SPClear(columnNames);
+	SPClear(constraints);
+	SPClear(status);
+	SPClear(primaryKeyColumns);
 
-	if (triggers) [triggers release];
-	if (tableEncoding) [tableEncoding release];
-	if (tableCreateSyntax) [tableCreateSyntax release];
-	if (mySQLConnection) [mySQLConnection release];
+	if (triggers)          SPClear(triggers);
+	if (tableEncoding)     SPClear(tableEncoding);
+	if (tableCreateSyntax) SPClear(tableCreateSyntax);
+	if (mySQLConnection)   SPClear(mySQLConnection);
 
 	pthread_mutex_destroy(&dataProcessingLock);
 

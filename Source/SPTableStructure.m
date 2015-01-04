@@ -1473,16 +1473,16 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
 #endif
 
-	[tableFields release];
-	[oldRow release];
-	[enumFields release];
-	[typeSuggestions release];
-	[extraFieldSuggestions release];
+	SPClear(tableFields);
+	SPClear(oldRow);
+	SPClear(enumFields);
+	SPClear(typeSuggestions);
+	SPClear(extraFieldSuggestions);
 
 	SPClear(fieldValidation);
 
-	if (defaultValues) [defaultValues release];
-	if (selectedTable) [selectedTable release];
+	if (defaultValues) SPClear(defaultValues);
+	if (selectedTable) SPClear(selectedTable);
 
 	[super dealloc];
 }

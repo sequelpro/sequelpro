@@ -470,8 +470,8 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[info release];
-	[activities release];
+	SPClear(info);
+	SPClear(activities);
 	
 	[super dealloc];
 }

@@ -711,8 +711,7 @@
             SPKeychain *keychain = [[SPKeychain alloc] init];
             [keychain addPassword:thePassword forName:@"SSH" account:currentKeyName withLabel:[NSString stringWithFormat:@"SSH: %@", currentKeyName]];
             [keychain release];
-            [currentKeyName release];
-            currentKeyName = nil;
+            SPClear(currentKeyName);
         }
     }
 	
@@ -729,22 +728,22 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	if (connectionState != SPMySQLProxyIdle) [self disconnect];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	[sshHost release];
-	[sshLogin release];
-	[remoteHost release];
-	[tunnelConnectionName release];
-	[tunnelConnectionVerifyHash release];
+	SPClear(sshHost);
+	SPClear(sshLogin);
+	SPClear(remoteHost);
+	SPClear(tunnelConnectionName);
+	SPClear(tunnelConnectionVerifyHash);
 	[tunnelConnection invalidate];
-	[tunnelConnection release];
-	[debugMessages release];
-	[debugMessagesLock release];
+	SPClear(tunnelConnection);
+	SPClear(debugMessages);
+	SPClear(debugMessagesLock);
 	[answerAvailableLock tryLock];
 	[answerAvailableLock unlock];
-	[answerAvailableLock release];
-	if (password) [password release];
-	if (keychainName) [keychainName release];
-	if (keychainAccount) [keychainAccount release];
-	if (identityFilePath) [identityFilePath release];
+	SPClear(answerAvailableLock);
+	if (password)         SPClear(password);
+	if (keychainName)     SPClear(keychainName);
+	if (keychainAccount)  SPClear(keychainAccount);
+	if (identityFilePath) SPClear(identityFilePath);
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
 	if (sshQuestionDialog) SPClear(sshQuestionDialog);

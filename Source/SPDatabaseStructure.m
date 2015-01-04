@@ -567,7 +567,7 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[self destroy:nil];
-	[structureRetrievalThreads release];
+	SPClear(structureRetrievalThreads);
 	
 	pthread_mutex_destroy(&threadManagementLock);
 	pthread_mutex_destroy(&dataLock);
@@ -630,8 +630,7 @@
 		}
 		pthread_mutex_unlock(&threadManagementLock);
 
-		[mySQLConnection release];
-		mySQLConnection = nil;
+		SPClear(mySQLConnection);
 	}
 
 	// Create a copy of the supplied connection

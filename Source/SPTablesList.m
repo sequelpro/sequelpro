@@ -328,8 +328,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		selectedTableType = (SPTableType)[[tableTypes objectAtIndex:itemToReselect] integerValue];
 	} 
 	else {
-		if (selectedTableName) [selectedTableName release];
-		selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 		selectedTableType = SPTableTypeNone;
 	}
 
@@ -860,8 +859,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 #endif
 		// Update the selected table name and type
-		if (selectedTableName) [selectedTableName release];
-		selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 
 #ifndef SP_CODA /* ui manipulation */
 
@@ -2729,15 +2727,15 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[tables release];
-	[tableTypes release];
+	SPClear(tables);
+	SPClear(tableTypes);
 #ifndef SP_CODA
-	if (isTableListFiltered && filteredTables) [filteredTables release];
-	if (isTableListFiltered && filteredTableTypes) [filteredTableTypes release];
+	if (isTableListFiltered && filteredTables)     SPClear(filteredTables);
+	if (isTableListFiltered && filteredTableTypes) SPClear(filteredTableTypes);
 #endif
-	if (selectedTableName) [selectedTableName release];
+	if (selectedTableName)                         SPClear(selectedTableName);
 	
-	if (addTableCharsetHelper) [addTableCharsetHelper release];
+	if (addTableCharsetHelper)                     SPClear(addTableCharsetHelper);
 	
 	[super dealloc];
 }

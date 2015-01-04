@@ -1465,8 +1465,7 @@
 {
 	if (queryLoadTimer) {
 		[queryLoadTimer invalidate];
-		[queryLoadTimer release];
-		queryLoadTimer = nil;
+		SPClear(queryLoadTimer);
 	}
 }
 
@@ -2153,8 +2152,7 @@
         
         // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
         if (isDesc != invert) {
-			[sortField release];
-			sortField = nil;
+			SPClear(sortField);
 		} else {
 			isDesc = !isDesc;
 		}
@@ -3681,8 +3679,7 @@
 	}
 
 	if(fieldEditor) {
-		[fieldEditor release];
-		fieldEditor = nil;
+		SPClear(fieldEditor);
 	}
 
 	// Preserve focus and restore selection indexes if appropriate
@@ -4036,22 +4033,22 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
-	[resultLoadingCondition release];
-	[usedQuery release];
-	[lastExecutedQuery release];
-	[resultData release];
-	[favoritesManager release];
+	SPClear(resultLoadingCondition);
+	SPClear(usedQuery);
+	SPClear(lastExecutedQuery);
+	SPClear(resultData);
+	SPClear(favoritesManager);
 
 	if(fieldEditor) SPClear(fieldEditor);
 
 #ifndef SP_CODA
-	if (helpHTMLTemplate) [helpHTMLTemplate release];
+	if (helpHTMLTemplate)        SPClear(helpHTMLTemplate);
 #endif
-	if (mySQLversion) [mySQLversion release];
-	if (sortField) [sortField release];
-	if (cqColumnDefinition) [cqColumnDefinition release];
-	if (selectionIndexToRestore) [selectionIndexToRestore release];
-	if (currentQueryRanges) [currentQueryRanges release];
+	if (mySQLversion)            SPClear(mySQLversion);
+	if (sortField)               SPClear(sortField);
+	if (cqColumnDefinition)      SPClear(cqColumnDefinition);
+	if (selectionIndexToRestore) SPClear(selectionIndexToRestore);
+	if (currentQueryRanges)      SPClear(currentQueryRanges);
 
 	[super dealloc];
 }

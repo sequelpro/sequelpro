@@ -2231,14 +2231,14 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	if (bundleItems) [bundleItems release];
-	if (bundleUsedScopes) [bundleUsedScopes release];
-	if (bundleHTMLOutputController) [bundleHTMLOutputController release];
-	if (bundleCategories) [bundleCategories release];
-	if (bundleTriggers) [bundleTriggers release];
-	if (bundleKeyEquivalents) [bundleKeyEquivalents release];
-	if (installedBundleUUIDs) [installedBundleUUIDs release];
-	if (runningActivitiesArray) [runningActivitiesArray release];
+	if (bundleItems)                SPClear(bundleItems);
+	if (bundleUsedScopes)           SPClear(bundleUsedScopes);
+	if (bundleHTMLOutputController) SPClear(bundleHTMLOutputController);
+	if (bundleCategories)           SPClear(bundleCategories);
+	if (bundleTriggers)             SPClear(bundleTriggers);
+	if (bundleKeyEquivalents)       SPClear(bundleKeyEquivalents);
+	if (installedBundleUUIDs)       SPClear(installedBundleUUIDs);
+	if (runningActivitiesArray)     SPClear(runningActivitiesArray);
 
 	SPClear(prefsController);
 

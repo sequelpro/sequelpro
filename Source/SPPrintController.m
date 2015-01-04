@@ -193,7 +193,7 @@
 {
 	[[printWebView mainFrame] loadHTMLString:HTMLString baseURL:nil];
 
-	if (printThread) [printThread release];
+	if (printThread) SPClear(printThread);
 }
 
 /**

@@ -555,12 +555,12 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		   didEndSelector:NULL 
 			  contextInfo:nil];
 		
-		[errorsString release];
+		SPClear(errorsString);
 		
 		return;
 	}
 	
-	[errorsString release];
+	SPClear(errorsString);
 
 	// Otherwise, close the sheet
 	[NSApp endSheet:[self window] returnCode:0];

@@ -71,8 +71,8 @@
 - (void) dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[tableContentStates release];
-	[history release];
+	SPClear(tableContentStates);
+	SPClear(history);
 	[super dealloc];
 }
 

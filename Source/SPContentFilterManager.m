@@ -975,7 +975,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 - (void)dealloc
 {
-	[contentFilters release];
+	SPClear(contentFilters);
 	
 	[super dealloc];
 }

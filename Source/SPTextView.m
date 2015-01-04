@@ -3687,18 +3687,18 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 #ifndef SP_CODA
-	[prefs release];
+	SPClear(prefs);
 #endif
-	[lineNumberView release];
-	if(queryHiliteColor) [queryHiliteColor release];
-	if(queryEditorBackgroundColor) [queryEditorBackgroundColor release];
-	if(commentColor) [commentColor release];
-	if(quoteColor) [quoteColor release];
-	if(keywordColor) [keywordColor release];
-	if(backtickColor) [backtickColor release];
-	if(numericColor) [numericColor release];
-	if(variableColor) [variableColor release];
-	if(otherTextColor) [otherTextColor release];
+	SPClear(lineNumberView);
+	if(queryHiliteColor)           SPClear(queryHiliteColor);
+	if(queryEditorBackgroundColor) SPClear(queryEditorBackgroundColor);
+	if(commentColor)               SPClear(commentColor);
+	if(quoteColor)                 SPClear(quoteColor);
+	if(keywordColor)               SPClear(keywordColor);
+	if(backtickColor)              SPClear(backtickColor);
+	if(numericColor)               SPClear(numericColor);
+	if(variableColor)              SPClear(variableColor);
+	if(otherTextColor)             SPClear(otherTextColor);
 	[super dealloc];
 }
 

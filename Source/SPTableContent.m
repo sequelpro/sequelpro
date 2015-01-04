@@ -462,7 +462,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 
 		// Reset sort column
-		if (sortCol) [sortCol release]; sortCol = nil;
+		if (sortCol) SPClear(sortCol);
 		isDesc = NO;
 
 		// Empty and disable filter options
@@ -697,8 +697,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Otherwise, clear sorting
 	} else {
 		if (sortCol) {
-			[sortCol release];
-			sortCol = nil;
+			SPClear(sortCol);
 		}
 		isDesc = NO;
 	}
@@ -1372,8 +1371,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 	if (tableLoadTimer) {
 		[tableLoadTimer invalidate];
-		[tableLoadTimer release];
-		tableLoadTimer = nil;
+		SPClear(tableLoadTimer);
 	}
 }
 
@@ -1678,8 +1676,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
         
         // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
         if (isDesc != invert) {
-			[sortCol release];
-			sortCol = nil;
+			SPClear(sortCol);
 		} 
 		else {
 			isDesc = !isDesc;
@@ -3494,8 +3491,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	if(fieldEditor) {
-		[fieldEditor release];
-		fieldEditor = nil;
+		SPClear(fieldEditor);
 	}
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
@@ -4314,34 +4310,35 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if(fieldEditor) SPClear(fieldEditor);
 
 	[self clearTableLoadTimer];
-	[tableLoadingCondition release];
-	[tableValues release];
+	SPClear(tableLoadingCondition);
+	SPClear(tableValues);
 	pthread_mutex_destroy(&tableValuesLock);
-	[dataColumns release];
-	[oldRow release];
+	SPClear(dataColumns);
+	SPClear(oldRow);
 #ifndef SP_CODA
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];	
-	[nibObjectsToRelease release];
-	[paginationPopover release];
+	SPClear(nibObjectsToRelease);
+	SPClear(paginationPopover);
 
-	[filterTableData release];
-	if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];
-	if (filterTableDefaultOperator) [filterTableDefaultOperator release];
+	SPClear(filterTableData);
+	if (lastEditedFilterTableValue) SPClear(lastEditedFilterTableValue);
+	if (filterTableDefaultOperator) SPClear(filterTableDefaultOperator);
 #endif
-	if (selectedTable) [selectedTable release];
-	if (contentFilters) [contentFilters release];
-	if (numberOfDefaultFilters) [numberOfDefaultFilters release];
-	if (keys) [keys release];
-	if (sortCol) [sortCol release];
-	[usedQuery release];
-	if (sortColumnToRestore) [sortColumnToRestore release];
-	if (selectionToRestore) [selectionToRestore release];
+	if (selectedTable)          SPClear(selectedTable);
+	if (contentFilters)         SPClear(contentFilters);
+	if (numberOfDefaultFilters) SPClear(numberOfDefaultFilters);
+	if (keys)                   SPClear(keys);
+	if (sortCol)                SPClear(sortCol);
+	SPClear(usedQuery);
+	if (sortColumnToRestore)    SPClear(sortColumnToRestore);
+	if (selectionToRestore)     SPClear(selectionToRestore);
+	if (cqColumnDefinition)     SPClear(cqColumnDefinition);
+
 	if (filterFieldToRestore) filterFieldToRestore = nil;
 	if (filterComparisonToRestore) filterComparisonToRestore = nil;
 	if (filterValueToRestore) filterValueToRestore = nil;
 	if (firstBetweenValueToRestore) firstBetweenValueToRestore = nil;
 	if (secondBetweenValueToRestore) secondBetweenValueToRestore = nil;
-	if (cqColumnDefinition) [cqColumnDefinition release];
 
 	[super dealloc];
 }

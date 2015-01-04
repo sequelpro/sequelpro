@@ -537,7 +537,7 @@ enum {
 	// Tear down the animations on the tab bar to stop redraws
 	[tabBar destroyAnimations];
 	
-	[managedDatabaseConnections release];
+	SPClear(managedDatabaseConnections);
 	
 	[super dealloc];
 }

@@ -971,7 +971,7 @@
 
 - (void)dealloc
 {
-	[favorites release];
+	SPClear(favorites);
 	
 	[super dealloc];
 }

@@ -126,7 +126,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 - (void)dealloc
 {
-	if(webPreferences) [webPreferences release];
+	if(webPreferences) SPClear(webPreferences);
 	[super dealloc];
 }
 

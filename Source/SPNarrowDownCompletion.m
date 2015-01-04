@@ -159,18 +159,16 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	if(stateTimer != nil) {
 		[stateTimer invalidate];
-		[stateTimer release];
-		stateTimer = nil;
+		SPClear(stateTimer);
 	}
-	if (staticPrefix) [staticPrefix release];
-	[mutablePrefix release];
-	[textualInputCharacters release];
-	[originalFilterString release];
-	if(syncArrowImages) [syncArrowImages release];
-	if(suggestions) [suggestions release];
-
-	if (filtered) [filtered release];
-	if (databaseStructureRetrieval) [databaseStructureRetrieval release];
+	SPClear(mutablePrefix);
+	SPClear(textualInputCharacters);
+	SPClear(originalFilterString);
+	if (staticPrefix)               SPClear(staticPrefix);
+	if (syncArrowImages)            SPClear(syncArrowImages);
+	if (suggestions)                SPClear(suggestions);
+	if (filtered)                   SPClear(filtered);
+	if (databaseStructureRetrieval) SPClear(databaseStructureRetrieval);
 
 	[super dealloc];
 }
@@ -181,8 +179,7 @@
 	// Invalidate the timer now to prevent retain cycles preventing deallocation
 	if (stateTimer != nil) {
 		[stateTimer invalidate];
-		[stateTimer release];
-		stateTimer = nil;
+		SPClear(stateTimer);
 	}
 
 	closeMe = YES;
@@ -204,8 +201,7 @@
 			isQueryingDatabaseStructure = NO;
 			if(stateTimer) {
 				[stateTimer invalidate];
-				[stateTimer release];
-				stateTimer = nil;
+				SPClear(stateTimer);
 				if(syncArrowImages) SPClear(syncArrowImages);
 				[self performSelectorOnMainThread:@selector(reInvokeCompletion) withObject:nil waitUntilDone:YES];
 				closeMe = YES;
@@ -222,8 +218,7 @@
 {
 	if(stateTimer) {
 		[stateTimer invalidate];
-		[stateTimer release];
-		stateTimer = nil;
+		SPClear(stateTimer);
 	}
 	[theView setCompletionIsOpen:NO];
 	[self close];

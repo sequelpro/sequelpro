@@ -1090,8 +1090,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Remove temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
-		[draggedFilePath release];
-		draggedFilePath = nil;
+		SPClear(draggedFilePath);
 	}
 	if(oldBundleName) SPClear(oldBundleName);
 }
@@ -1478,8 +1477,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Remove old temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
-		[draggedFilePath release];
-		draggedFilePath = nil;
+		SPClear(draggedFilePath);
 	}
 
 	NSImage *dragImage;
@@ -2074,33 +2072,33 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 - (void)dealloc
 {
-	[inputGeneralScopePopUpMenu release];
-	[inputInputFieldScopePopUpMenu release];
-	[inputDataTableScopePopUpMenu release];
-	[outputGeneralScopePopUpMenu release];
-	[outputInputFieldScopePopUpMenu release];
-	[outputDataTableScopePopUpMenu release];
-	[inputFallbackInputFieldScopePopUpMenu release];
-	[triggerInputFieldPopUpMenu release];
-	[triggerDataTablePopUpMenu release];
-	[triggerGeneralPopUpMenu release];
-	[withBlobDataTablePopUpMenu release];
-	[inputNonePopUpMenu release];
+	SPClear(inputGeneralScopePopUpMenu);
+	SPClear(inputInputFieldScopePopUpMenu);
+	SPClear(inputDataTableScopePopUpMenu);
+	SPClear(outputGeneralScopePopUpMenu);
+	SPClear(outputInputFieldScopePopUpMenu);
+	SPClear(outputDataTableScopePopUpMenu);
+	SPClear(inputFallbackInputFieldScopePopUpMenu);
+	SPClear(triggerInputFieldPopUpMenu);
+	SPClear(triggerDataTablePopUpMenu);
+	SPClear(triggerGeneralPopUpMenu);
+	SPClear(withBlobDataTablePopUpMenu);
+	SPClear(inputNonePopUpMenu);
 	
-	[inputGeneralScopeArray release];
-	[inputInputFieldScopeArray release];
-	[inputDataTableScopeArray release];
-	[outputGeneralScopeArray release];
-	[outputInputFieldScopeArray release];
-	[outputDataTableScopeArray release];
-	[inputFallbackInputFieldScopeArray release];
-	[triggerInputFieldArray release];
-	[triggerDataTableArray release];
-	[triggerGeneralArray release];
-	[withBlobDataTableArray release];
+	SPClear(inputGeneralScopeArray);
+	SPClear(inputInputFieldScopeArray);
+	SPClear(inputDataTableScopeArray);
+	SPClear(outputGeneralScopeArray);
+	SPClear(outputInputFieldScopeArray);
+	SPClear(outputDataTableScopeArray);
+	SPClear(inputFallbackInputFieldScopeArray);
+	SPClear(triggerInputFieldArray);
+	SPClear(triggerDataTableArray);
+	SPClear(triggerGeneralArray);
+	SPClear(withBlobDataTableArray);
 	
-	[shellVariableSuggestions release];
-	[deletedDefaultBundles release];
+	SPClear(shellVariableSuggestions);
+	SPClear(deletedDefaultBundles);
 	
 	if (touchedBundleArray) SPClear(touchedBundleArray);
 	if (commandBundleTree) SPClear(commandBundleTree);

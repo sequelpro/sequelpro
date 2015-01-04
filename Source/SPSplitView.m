@@ -105,8 +105,8 @@
 
 - (void)dealloc
 {
-	[viewMinimumSizes release];
-	[viewMaximumSizes release];
+	SPClear(viewMinimumSizes);
+	SPClear(viewMaximumSizes);
 
 	if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
 	if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);

@@ -317,8 +317,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Cancel the SSH tunnel if present
 	if (sshTunnel) {
 		[sshTunnel disconnect];
-		[sshTunnel release];
-		sshTunnel = nil;
+		SPClear(sshTunnel);
 	}
 
 #ifndef SP_CODA
@@ -1848,7 +1847,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		mySQLConnection = nil;
 		}
 	
-	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], [sshTunnel disconnect], [sshTunnel release];
+	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], SPClear(sshTunnel);
 	}
 
 #pragma mark -
@@ -1883,9 +1882,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #endif
 	
 #ifndef SP_CODA
-	[keychain release];
+	SPClear(keychain);
 #endif
-	[prefs release];
+	SPClear(prefs);
 
 #ifndef SP_CODA
 	SPClear(folderImage);
@@ -1895,13 +1894,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
     
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 
-	[nibObjectsToRelease release];
+	SPClear(nibObjectsToRelease);
 
-	if (connectionKeychainID) [connectionKeychainID release];
-	if (connectionKeychainItemName) [connectionKeychainItemName release];
-	if (connectionKeychainItemAccount) [connectionKeychainItemAccount release];
-	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
+	if (connectionKeychainID)             SPClear(connectionKeychainID);
+	if (connectionKeychainItemName)       SPClear(connectionKeychainItemName);
+	if (connectionKeychainItemAccount)    SPClear(connectionKeychainItemAccount);
+	if (connectionSSHKeychainItemName)    SPClear(connectionSSHKeychainItemName);
+	if (connectionSSHKeychainItemAccount) SPClear(connectionSSHKeychainItemAccount);
 
 #ifndef SP_CODA
 	if (currentFavorite) SPClear(currentFavorite);

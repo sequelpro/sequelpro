@@ -569,8 +569,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	if (queryEditorInitString && [queryEditorInitString length]) {
 		[self viewQuery:self];
 		[customQueryInstance doPerformLoadQueryService:queryEditorInitString];
-		[queryEditorInitString release];
-		queryEditorInitString = nil;
+		SPClear(queryEditorInitString);
 	}
 
 	if (spfSession != nil) {

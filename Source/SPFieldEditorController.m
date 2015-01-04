@@ -169,14 +169,14 @@
 	}
 #endif
 
-	if ( sheetEditData ) [sheetEditData release];
+	if ( sheetEditData ) SPClear(sheetEditData);
 #ifndef SP_CODA
-	if ( qlTypes ) [qlTypes release];
+	if ( qlTypes )       SPClear(qlTypes);
 #endif
-	if ( tmpFileName ) [tmpFileName release];
-	if ( tmpDirPath ) [tmpDirPath release];
-	if ( esUndoManager ) [esUndoManager release];
-	if ( contextInfo ) [contextInfo release];
+	if ( tmpFileName )   SPClear(tmpFileName);
+	if ( tmpDirPath )    SPClear(tmpDirPath);
+	if ( esUndoManager ) SPClear(esUndoManager);
+	if ( contextInfo )   SPClear(contextInfo);
 	
 	[super dealloc];
 }
@@ -1077,8 +1077,6 @@
 
 	image = [[[NSImage alloc] initWithPasteboard:[NSPasteboard generalPasteboard]] autorelease];
 	if (image) {
-
-		if (nil != sheetEditData) [sheetEditData release];
 
 		[editImage setImage:image];
 

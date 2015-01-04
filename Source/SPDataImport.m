@@ -312,7 +312,7 @@
 		// Reset progress cancelled from any previous runs
 		progressCancelled = NO;
 
-		if (lastFilename) [lastFilename release]; lastFilename = nil;
+		if (lastFilename) SPClear(lastFilename);
 
 		lastFilename = [[NSString stringWithString:[[openPanel URL] path]] retain];
 
@@ -1728,21 +1728,20 @@ cleanup:
 
 - (void)dealloc
 {	
-	if (fieldMappingImportArray) [fieldMappingImportArray release];
-	if (geometryFields) [geometryFields release];
-	if (geometryFieldsMapIndex) [geometryFieldsMapIndex release];
-	if (bitFields) [bitFields release];
-	if (nullableNumericFields) [nullableNumericFields release];
-	if (bitFieldsMapIndex) [bitFieldsMapIndex release];
-	if (nullableNumericFieldsMapIndex) [nullableNumericFieldsMapIndex release];
-
-	if (lastFilename) [lastFilename release];
-	if (prefs) [prefs release];
-	if(selectedTableTarget) [selectedTableTarget release];
+	if (fieldMappingImportArray)       SPClear(fieldMappingImportArray);
+	if (geometryFields)                SPClear(geometryFields);
+	if (geometryFieldsMapIndex)        SPClear(geometryFieldsMapIndex);
+	if (bitFields)                     SPClear(bitFields);
+	if (nullableNumericFields)         SPClear(nullableNumericFields);
+	if (bitFieldsMapIndex)             SPClear(bitFieldsMapIndex);
+	if (nullableNumericFieldsMapIndex) SPClear(nullableNumericFieldsMapIndex);
+	if (lastFilename)                  SPClear(lastFilename);
+	if (prefs)                         SPClear(prefs);
+	if (selectedTableTarget)           SPClear(selectedTableTarget);
 	
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
-	[nibObjectsToRelease release];
+	SPClear(nibObjectsToRelease);
 	
 	[super dealloc];
 }

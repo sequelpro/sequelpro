@@ -40,8 +40,8 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[prefs removeObserver:self forKeyPath:SPCustomQueryEditorTabStopWidth];
-	[prefs release];
-	[lineNumberView release];
+	SPClear(prefs);
+	SPClear(lineNumberView);
 	[super dealloc];
 }
 

@@ -174,7 +174,7 @@
 
 - (void)dealloc
 {
-	[dummyTextView release];
+	SPClear(dummyTextView);
 	
 	[super dealloc];
 }

@@ -1539,9 +1539,9 @@ static const NSInteger kBlobAsImageFile = 4;
 
 - (void)dealloc
 {
-	if (columnDefinitions) [columnDefinitions release];
+	if (columnDefinitions) SPClear(columnDefinitions);
 #ifndef SP_CODA
-	[prefs release];
+	SPClear(prefs);
 #endif
 
 	[super dealloc];

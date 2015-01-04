@@ -109,21 +109,21 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	if(schemaDataFiltered) [schemaDataFiltered release];
-	if(allSchemaKeys) [allSchemaKeys release];
-	if(schemaData) [schemaData release];
-	if(infoArray)  [infoArray release];
-	if(updatingConnections)  [updatingConnections release];
-	if(expandStatus2) [expandStatus2 release];
-	if(cachedSortedKeys) [cachedSortedKeys release];
+	if(schemaDataFiltered)  SPClear(schemaDataFiltered);
+	if(allSchemaKeys)       SPClear(allSchemaKeys);
+	if(schemaData)          SPClear(schemaData);
+	if(infoArray)           SPClear(infoArray);
+	if(updatingConnections) SPClear(updatingConnections);
+	if(expandStatus2)       SPClear(expandStatus2);
+	if(cachedSortedKeys)    SPClear(cachedSortedKeys);
 #ifndef SP_CODA /* dealloc ivars */
-	[connectionIcon release];
-	[databaseIcon release];
-	[tableIcon release];
-	[viewIcon release];
-	[procedureIcon release];
-	[functionIcon release];
-	[fieldIcon release];
+	SPClear(connectionIcon);
+	SPClear(databaseIcon);
+	SPClear(tableIcon);
+	SPClear(viewIcon);
+	SPClear(procedureIcon);
+	SPClear(functionIcon);
+	SPClear(fieldIcon);
 #endif
 
 	[super dealloc];

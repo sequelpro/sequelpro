@@ -650,17 +650,17 @@
 	return self;
 }
 - (void) dealloc {
-	[csvString release];
-	[fieldEndString release];
-	[lineEndString release];
-	[fieldQuoteString release];
-	[escapeString release];
-	[escapedFieldEndString release];
-	[escapedLineEndString release];
-	[escapedFieldQuoteString release];
-	[escapedEscapeString release];
-	if (nullReplacementString) [nullReplacementString release];
-	if (skipCharacterSet) [skipCharacterSet release];
+	SPClear(csvString);
+	SPClear(fieldEndString);
+	SPClear(lineEndString);
+	SPClear(fieldQuoteString);
+	SPClear(escapeString);
+	SPClear(escapedFieldEndString);
+	SPClear(escapedLineEndString);
+	SPClear(escapedFieldQuoteString);
+	SPClear(escapedEscapeString);
+	if (nullReplacementString) SPClear(nullReplacementString);
+	if (skipCharacterSet)      SPClear(skipCharacterSet);
 	[super dealloc];
 }
 
