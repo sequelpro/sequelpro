@@ -2495,140 +2495,141 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
 						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
 
-    } else {
-		//insert new table name in create syntax and create new table
-		NSScanner *scanner;
-		NSString *scanString;
+		return;
+    }
 
-		if(tblType == SPTableTypeView){
-			scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create View"]];
-			[scanner scanUpToString:@"AS" intoString:nil];
-			[scanner scanUpToString:@"" intoString:&scanString];
-			[scanner release];
-			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+	//insert new table name in create syntax and create new table
+	NSScanner *scanner;
+	NSString *scanString;
+
+	if(tblType == SPTableTypeView){
+		scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create View"]];
+		[scanner scanUpToString:@"AS" intoString:nil];
+		[scanner scanUpToString:@"" intoString:&scanString];
+		[scanner release];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE VIEW %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+	}
+	else if(tblType == SPTableTypeTable){
+		scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create Table"]];
+		[scanner scanUpToString:@"(" intoString:nil];
+		[scanner scanUpToString:@"" intoString:&scanString];
+		[scanner release];
+
+		// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique.
+		// MySQL will generate the new names based on the new table name.
+		scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"CONSTRAINT `[^`]+` "] withString:@""];
+
+		// If we're not copying the tables content as well then we need to strip out any AUTO_INCREMENT presets.
+		if (!copyTableContent) {
+			scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"AUTO_INCREMENT=[0-9]+ "] withString:@""];
 		}
-		else if(tblType == SPTableTypeTable){
-			scanner = [[NSScanner alloc] initWithString:[[queryResult getRowAsDictionary] objectForKey:@"Create Table"]];
-			[scanner scanUpToString:@"(" intoString:nil];
-			[scanner scanUpToString:@"" intoString:&scanString];
-			[scanner release];
 
-			// If there are any InnoDB referencial constraints we need to strip out the names as they must be unique.
-			// MySQL will generate the new names based on the new table name.
-			scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"CONSTRAINT `[^`]+` "] withString:@""];
+		[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
+	}
+	else if(tblType == SPTableTypeFunc || tblType == SPTableTypeProc)
+	{
+		// get the create syntax
+		SPMySQLResult *theResult;
 
-			// If we're not copying the tables content as well then we need to strip out any AUTO_INCREMENT presets.
-			if (!copyTableContent) {
-				scanString = [scanString stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"AUTO_INCREMENT=[0-9]+ "] withString:@""];
-			}
+		if(selectedTableType == SPTableTypeProc)
+			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
+		else if([self tableType] == SPTableTypeFunc)
+			theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [selectedTableName backtickQuotedString]]];
+		else
+			return;
 
-			[mySQLConnection queryString:[NSString stringWithFormat:@"CREATE TABLE %@ %@", [[copyTableNameField stringValue] backtickQuotedString], scanString]];
-		}
-		else if(tblType == SPTableTypeFunc || tblType == SPTableTypeProc)
-		{
-			// get the create syntax
-			SPMySQLResult *theResult;
-			
-			if(selectedTableType == SPTableTypeProc)
-				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE PROCEDURE %@", [selectedTableName backtickQuotedString]]];
-			else if([self tableType] == SPTableTypeFunc)
-				theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW CREATE FUNCTION %@", [selectedTableName backtickQuotedString]]];
-			else
-				return;
-
-			// Check for errors, only displaying if the connection hasn't been terminated
-			if ([mySQLConnection queryErrored]) {
-				if ([mySQLConnection isConnected]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]);
-				}
-				return;
-			}
-
-			[theResult setReturnDataAsStrings:YES];
-			NSString *tableSyntax = [[theResult getRowAsArray] objectAtIndex:2];
-
-			// replace the old name by the new one and drop the old one
-			[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
-
-			if ([mySQLConnection queryErrored]) {
+		// Check for errors, only displaying if the connection hasn't been terminated
+		if ([mySQLConnection queryErrored]) {
+			if ([mySQLConnection isConnected]) {
 				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]);
 			}
-
+			return;
 		}
 
-        if ([mySQLConnection queryErrored]) {
-			//error while creating new table
+		[theResult setReturnDataAsStrings:YES];
+		NSString *tableSyntax = [[theResult getRowAsArray] objectAtIndex:2];
+
+		// replace the old name by the new one and drop the old one
+		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
+
+		if ([mySQLConnection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
-        } else {
+							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+		}
 
-            if (copyTableContent) {
-				//copy table content
-                [mySQLConnection queryString:[NSString stringWithFormat:
-											  @"INSERT INTO %@ SELECT * FROM %@",
-											  [[copyTableNameField stringValue] backtickQuotedString],
-											  [selectedTableName backtickQuotedString]
-											  ]];
+	}
 
-                if ([mySQLConnection queryErrored]) {
-                    SPBeginAlertSheet(
-									  NSLocalizedString(@"Warning", @"warning"),
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil,
-									  nil,
-									  [tableDocumentInstance parentWindow],
-									  self,
-									  nil,
-									  nil,
-									  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
-									  );
-                }
-            }
+	if ([mySQLConnection queryErrored]) {
+		//error while creating new table
+		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
+						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+		return;
+	}
 
-			// Insert the new item into the tables list and select it.
-			NSInteger addItemAtIndex = NSNotFound;
-			for (NSUInteger i = 0; i < [tables count]; i++) {
-				NSInteger theTableType = [[tableTypes objectAtIndex:i] integerValue];
-				if (theTableType == SPTableTypeNone) continue;
-				if ((theTableType == SPTableTypeView || theTableType == SPTableTypeTable)
-					&& (tblType == SPTableTypeProc || tblType == SPTableTypeFunc)) {
-					continue;
-				}
-				if ((theTableType == SPTableTypeProc || theTableType == SPTableTypeFunc)
-					&& (tblType == SPTableTypeView || tblType == SPTableTypeTable)) {
-					addItemAtIndex = i - 1;
-					break;
-				}
-				if ([[copyTableNameField stringValue] localizedCompare:[tables objectAtIndex:i]] == NSOrderedAscending) {
-					addItemAtIndex = i;
-					break;
-				}
-			}
-			if (addItemAtIndex == NSNotFound) {
-				[tables addObject:[copyTableNameField stringValue]];
-				[tableTypes addObject:[NSNumber numberWithInteger:tblType]];
-			} else {
-				[tables insertObject:[copyTableNameField stringValue] atIndex:addItemAtIndex];
-				[tableTypes insertObject:[NSNumber numberWithInteger:tblType] atIndex:addItemAtIndex];
-			}
+	if (copyTableContent) {
+		//copy table content
+		[mySQLConnection queryString:[NSString stringWithFormat:
+									  @"INSERT INTO %@ SELECT * FROM %@",
+									  [[copyTableNameField stringValue] backtickQuotedString],
+									  [selectedTableName backtickQuotedString]
+									  ]];
 
-			// Set the selected table name and type, and use updateFilter to update the filter list and selection
-			if (selectedTableName) [selectedTableName release];
-			
-			selectedTableName = [[NSString alloc] initWithString:[copyTableNameField stringValue]];
-			selectedTableType = tblType;
-			
-			[self updateFilter:self];
-			
-			[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
-			[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
-
-			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+		if ([mySQLConnection queryErrored]) {
+			SPBeginAlertSheet(
+							  NSLocalizedString(@"Warning", @"warning"),
+							  NSLocalizedString(@"OK", @"OK button"),
+							  nil,
+							  nil,
+							  [tableDocumentInstance parentWindow],
+							  self,
+							  nil,
+							  nil,
+							  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
+							  );
 		}
 	}
+
+	// Insert the new item into the tables list and select it.
+	NSInteger addItemAtIndex = NSNotFound;
+	for (NSUInteger i = 0; i < [tables count]; i++) {
+		NSInteger theTableType = [[tableTypes objectAtIndex:i] integerValue];
+		if (theTableType == SPTableTypeNone) continue;
+		if ((theTableType == SPTableTypeView || theTableType == SPTableTypeTable)
+			&& (tblType == SPTableTypeProc || tblType == SPTableTypeFunc)) {
+			continue;
+		}
+		if ((theTableType == SPTableTypeProc || theTableType == SPTableTypeFunc)
+			&& (tblType == SPTableTypeView || tblType == SPTableTypeTable)) {
+			addItemAtIndex = i - 1;
+			break;
+		}
+		if ([[copyTableNameField stringValue] localizedCompare:[tables objectAtIndex:i]] == NSOrderedAscending) {
+			addItemAtIndex = i;
+			break;
+		}
+	}
+	if (addItemAtIndex == NSNotFound) {
+		[tables addObject:[copyTableNameField stringValue]];
+		[tableTypes addObject:[NSNumber numberWithInteger:tblType]];
+	} else {
+		[tables insertObject:[copyTableNameField stringValue] atIndex:addItemAtIndex];
+		[tableTypes insertObject:[NSNumber numberWithInteger:tblType] atIndex:addItemAtIndex];
+	}
+
+	// Set the selected table name and type, and use updateFilter to update the filter list and selection
+	if (selectedTableName) [selectedTableName release];
+
+	selectedTableName = [[NSString alloc] initWithString:[copyTableNameField stringValue]];
+	selectedTableType = tblType;
+
+	[self updateFilter:self];
+
+	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
+	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
+
+	// Query the structure of all databases in the background (mainly for completion)
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 }
 #endif
 
