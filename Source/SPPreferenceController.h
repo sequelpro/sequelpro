@@ -61,7 +61,6 @@
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
-	NSToolbarItem *favoritesItem;
 	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;

@@ -128,14 +128,14 @@
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPGlobalResultTableFont];
 			
-			[(SPTablesPreferencePane *)tablesPreferencePane updateDisplayedTableFontName];
+			[tablesPreferencePane updateDisplayedTableFontName];
 			break;
 		case SPPrefFontChangeTargetEditor:
 			font = [[NSFontPanel sharedFontPanel] panelConvertFont:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorFont]]];
 			
 			[prefs setObject:[NSArchiver archivedDataWithRootObject:font] forKey:SPCustomQueryEditorFont];
 			
-			[(SPEditorPreferencePane *)editorPreferencePane updateDisplayedEditorFontName];
+			[editorPreferencePane updateDisplayedEditorFontName];
 			break;
 	}
 }
@@ -231,6 +231,12 @@
 - (void)dealloc
 {
 	SPClear(preferencePanes);
+	SPClear(generalItem);
+	SPClear(tablesItem);
+	SPClear(notificationsItem);
+	SPClear(editorItem);
+	SPClear(autoUpdateItem);
+	SPClear(networkItem);
 	
 	[super dealloc];
 }

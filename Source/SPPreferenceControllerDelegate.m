@@ -62,7 +62,7 @@
 #pragma mark -
 #pragma mark Toolbar delegate methods
 
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
+- (NSToolbarItem *)toolbar:(NSToolbar *)aToolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag
 {		
     if ([itemIdentifier isEqualToString:SPPreferenceToolbarGeneral]) {
         return generalItem;
@@ -89,7 +89,7 @@
     return [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
 }
 
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)aToolbar
 {
     return @[
 			SPPreferenceToolbarGeneral,
@@ -102,7 +102,7 @@
 	];
 }
 
-- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)aToolbar
 {
 	return @[
 			SPPreferenceToolbarGeneral,
@@ -115,7 +115,7 @@
 	];
 }
 
-- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar
+- (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)aToolbar
 {
 	return @[
 			SPPreferenceToolbarGeneral,
