@@ -5312,9 +5312,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				}
 
 				NSInteger itemType = SPTableTypeNone;
-				NSString *itemTypeStr = @"TABLE";
 				NSUInteger i;
-				NSInteger queryCol = 1;
 
 				// Loop through the unfiltered tables/views to find the desired item
 				for (i = 0; i < [availableItems count]; i++) {
@@ -5327,19 +5325,26 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				// If no match found, continue
 				if (itemType == SPTableTypeNone) continue;
 
+				NSString *itemTypeStr;
+				NSInteger queryCol;
+
 				switch(itemType) {
 					case SPTableTypeTable:
 					case SPTableTypeView:
-					itemTypeStr = @"TABLE";
-					break;
+						itemTypeStr = @"TABLE";
+						queryCol = 1;
+						break;
 					case SPTableTypeProc:
-					itemTypeStr = @"PROCEDURE";
-					queryCol = 2;
-					break;
+						itemTypeStr = @"PROCEDURE";
+						queryCol = 2;
+						break;
 					case SPTableTypeFunc:
-					itemTypeStr = @"FUNCTION";
-					queryCol = 2;
-					break;
+						itemTypeStr = @"FUNCTION";
+						queryCol = 2;
+						break;
+					default:
+						NSLog(@"%s: Unhandled SPTableType=%ld for item=%@ (skipping)", __func__, itemType, item);
+						continue;
 				}
 
 				// Ensure that queries are made in UTF8

@@ -431,45 +431,50 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[tables removeAllObjects];
 	
 	// For all modes, retrieve table and view names
-	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-	
-	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   itemName, 
-						   @YES,
-						   @YES,
-						   @YES,
-						   [NSNumber numberWithInt:SPTableTypeTable], 
-						   nil]];
-	}
+	{
+		NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
+
+		for (id itemName in tablesAndViews) {
+			[tables addObject:[NSMutableArray arrayWithObjects:
+					            itemName,
+			                    @YES,
+			                    @YES,
+			                    @YES,
+			                    [NSNumber numberWithInt:SPTableTypeTable],
+			                    nil]];
+		}
+	} // The purpose of this extra { } is to limit visibility and thus catch copy&paste errors
 	
 	// For SQL only, add procedures and functions
 	if (exportType == SPSQLExport) {
-		NSArray *procedures = [tablesListInstance allProcedureNames];
-		
-		for (id procName in procedures) 
+		// Procedures
 		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   procName,
-							   @YES,
-							   @YES,
-							   @YES,
-							   [NSNumber numberWithInt:SPTableTypeProc], 
-							   nil]];
+			NSArray *procedures = [tablesListInstance allProcedureNames];
+
+			for (id procName in procedures) {
+				[tables addObject:[NSMutableArray arrayWithObjects:
+				                    procName,
+				                    @YES,
+				                    @YES,
+				                    @YES,
+				                    [NSNumber numberWithInt:SPTableTypeProc],
+				                    nil]];
+			}
 		}
-		
-		NSArray *functions = [tablesListInstance allFunctionNames];
-		
-		for (id funcName in functions) 
+		// Functions
 		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   funcName,
-							   @YES,
-							   @YES,
-							   @YES,
-							   [NSNumber numberWithInt:SPTableTypeFunc], 
-							   nil]];
-		}	
+			NSArray *functions = [tablesListInstance allFunctionNames];
+
+			for (id funcName in functions) {
+				[tables addObject:[NSMutableArray arrayWithObjects:
+				                    funcName,
+				                    @YES,
+				                    @YES,
+				                    @YES,
+				                    [NSNumber numberWithInt:SPTableTypeFunc],
+				                    nil]];
+			}
+		}
 	}
 	
 	if (sender) {

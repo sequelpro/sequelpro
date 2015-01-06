@@ -273,13 +273,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				[tables addObject:NSLocalizedString(@"PROCS & FUNCS",@"header for procs & funcs list")];
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 
-					for (NSArray *eachRow in theResult) {
-						[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
-						if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
-						} else {
-							[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
-						}
+				for (NSArray *eachRow in theResult) {
+					[tables addObject:NSArrayObjectAtIndex(eachRow, 3)];
+					if ([NSArrayObjectAtIndex(eachRow, 4) isEqualToString:@"PROCEDURE"]) {
+						[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeProc]];
+					} else {
+						[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeFunc]];
 					}
 				}
 			}
@@ -885,31 +884,31 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				switch (lastType) 
 				{
 					case SPTableTypeTable:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
-					[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
-					[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
-					[truncateTableButton setHidden:NO];
-					[truncateTableContextMenuItem setHidden:NO];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+						[truncateTableButton setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Tables", @"delete tables menu title")];
+						[truncateTableContextMenuItem setTitle:NSLocalizedString(@"Truncate Tables", @"truncate tables menu item")];
+						[truncateTableButton setHidden:NO];
+						[truncateTableContextMenuItem setHidden:NO];
+						break;
 					case SPTableTypeView:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Views", @"delete views menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 					case SPTableTypeProc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Procedures", @"delete procedures menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 					case SPTableTypeFunc:
-					[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
-					[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
-					[truncateTableButton setHidden:YES];
-					[truncateTableContextMenuItem setHidden:YES];
-					break;
+						[removeTableMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+						[removeTableContextMenuItem setTitle:NSLocalizedString(@"Delete Functions", @"delete functions menu title")];
+						[truncateTableButton setHidden:YES];
+						[truncateTableContextMenuItem setHidden:YES];
+						break;
 				}
 
 			} else {
@@ -1274,10 +1273,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (NSArray *)allTableAndViewNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
+	NSUInteger i;
 	NSInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeTable || [NSArrayObjectAtIndex([self tableTypes],i) integerValue] == SPTableTypeView)
+		SPTableType tt = (SPTableType)[NSArrayObjectAtIndex([self tableTypes],i) integerValue];
+		if(tt == SPTableTypeTable || tt == SPTableTypeView)
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
 	}
 	return returnArray;
@@ -1497,9 +1497,9 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			similarTables = [self allFunctionNames];
 			break;
 		default:
-		// if some other table type is given, just return yes
-		// better a mysql error than not being able to change something at all
-		return YES;
+			// if some other table type is given, just return yes
+			// better a mysql error than not being able to change something at all
+			return YES;
 	}
 
 	for(id table in similarTables) {
@@ -1783,32 +1783,32 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 		switch([NSArrayObjectAtIndex(filteredTableTypes, rowIndex) integerValue]) {
 			case SPTableTypeView:
-			[aCell setImage:[NSImage imageNamed:@"table-view-small"]];
-			[aCell setIndentationLevel:1];
-			[aCell setFont:smallSystemFont];
-			break;
+				[aCell setImage:[NSImage imageNamed:@"table-view-small"]];
+				[aCell setIndentationLevel:1];
+				[aCell setFont:smallSystemFont];
+				break;
 			case SPTableTypeTable:
-			[aCell setImage:[NSImage imageNamed:@"table-small"]];
-			[aCell setIndentationLevel:1];
-			[aCell setFont:smallSystemFont];
-			break;
+				[aCell setImage:[NSImage imageNamed:@"table-small"]];
+				[aCell setIndentationLevel:1];
+				[aCell setFont:smallSystemFont];
+				break;
 			case SPTableTypeProc:
-			[aCell setImage:[NSImage imageNamed:@"proc-small"]];
-			[aCell setIndentationLevel:1];
-			[aCell setFont:smallSystemFont];
-			break;
+				[aCell setImage:[NSImage imageNamed:@"proc-small"]];
+				[aCell setIndentationLevel:1];
+				[aCell setFont:smallSystemFont];
+				break;
 			case SPTableTypeFunc:
-			[aCell setImage:[NSImage imageNamed:@"func-small"]];
-			[aCell setIndentationLevel:1];
-			[aCell setFont:smallSystemFont];
-			break;
+				[aCell setImage:[NSImage imageNamed:@"func-small"]];
+				[aCell setIndentationLevel:1];
+				[aCell setFont:smallSystemFont];
+				break;
 			case SPTableTypeNone:
-			[aCell setImage:nil];
-			[aCell setIndentationLevel:0];
-			break;
+				[aCell setImage:nil];
+				[aCell setIndentationLevel:0];
+				break;
 			default:
-			[aCell setIndentationLevel:1];
-			[aCell setFont:smallSystemFont];
+				[aCell setIndentationLevel:1];
+				[aCell setFont:smallSystemFont];
 		}
 
 	} 
