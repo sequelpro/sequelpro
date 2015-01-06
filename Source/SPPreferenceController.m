@@ -68,8 +68,6 @@
 {		
 	[self _setupToolbar];
 
-	[(SPGeneralPreferencePane *)generalPreferencePane updateDefaultFavoritePopup];
-	
 	preferencePanes = [[NSArray alloc] initWithObjects:
 					   generalPreferencePane,
 					   tablesPreferencePane,

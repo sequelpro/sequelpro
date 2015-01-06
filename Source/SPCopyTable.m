@@ -56,7 +56,7 @@
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
-NSInteger SPEditCopyAsSQL           = 2003;
+NSInteger SPEditMenuCopyAsSQL       = 2003;
 
 static const NSInteger kBlobExclude     = 1;
 static const NSInteger kBlobInclude     = 2;
@@ -102,7 +102,7 @@ static const NSInteger kBlobAsImageFile = 4;
 #ifndef SP_CODA /* copy table rows */
 	NSString *tmp = nil;
 
-	if ([sender tag] == SPEditCopyAsSQL) {
+	if ([sender tag] == SPEditMenuCopyAsSQL) {
 		tmp = [self rowsAsSqlInsertsOnlySelectedRows:YES];
 		
 		if (tmp != nil){
@@ -607,7 +607,7 @@ static const NSInteger kBlobAsImageFile = 4;
 /**
  * Allow for drag-n-drop out of the application as a copy
  */
-- (NSUInteger) draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationCopy;
 }
@@ -991,7 +991,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Don't validate anything other than the copy commands
-	if (menuItemTag != SPEditMenuCopy && menuItemTag != SPEditMenuCopyWithColumns && menuItemTag != SPEditCopyAsSQL) {
+	if (menuItemTag != SPEditMenuCopy && menuItemTag != SPEditMenuCopyWithColumns && menuItemTag != SPEditMenuCopyAsSQL) {
 		return YES;
 	}
 
@@ -1006,7 +1006,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Enable the Copy as SQL commands if rows are selected and column definitions are available
-	if (menuItemTag == SPEditCopyAsSQL) {
+	if (menuItemTag == SPEditMenuCopyAsSQL) {
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
@@ -1189,15 +1189,14 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex checkWithLock:(pthread_mutex_t *)dataLock
 {
-	// Retrieve the column definition
-	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-
-	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
-
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
 #ifndef SP_CODA
 	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
 #endif
+	
+	// Retrieve the column definition
+	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// If the column is a BLOB or TEXT column, and not an enum, trigger sheet editing
 	BOOL isBlob = ([columnType isEqualToString:@"textdata"] || [columnType isEqualToString:@"blobdata"]);

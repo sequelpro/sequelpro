@@ -204,6 +204,12 @@ static NSString *SPDatabaseImage = @"database-small";
 	return NO;
 }
 
+- (void)preferencePaneWillBeShown
+{
+	[self updateDefaultFavoritePopup];
+}
+
+
 #pragma mark -
 
 - (void)dealloc
