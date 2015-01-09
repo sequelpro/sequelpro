@@ -1934,20 +1934,22 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 
 		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
-		NSString *ure = @"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
-		while([snip isMatchedByRegex:ure]) {
-			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
-			[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
-			NSInteger loc = escapeRange.location + targetRange.location;
-			[snip flushCachedRegexData];
-			for(i=0; i<=snippetControlMax; i++)
-				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
-					snippetControlArray[i][0]--;
-			// Adjust mirrored snippets
-			if(mirroredCounter > -1)
-				for(i=0; i<=mirroredCounter; i++)
-					if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
-						snippetMirroredControlArray[i][1]--;
+		// unescape escaped mirrored snippets and re-adjust successive snippet locations : \$1 → $1
+		for (NSString *regex in @[@"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}",@"(?s)\\\\\\$(1?\\d)(?=\\D)"]) {
+			while([snip isMatchedByRegex:regex]) {
+				NSRange escapeRange = [snip rangeOfRegex:regex capture:0L];
+				[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
+				NSInteger loc = escapeRange.location + targetRange.location;
+				[snip flushCachedRegexData];
+				for(i=0; i<=snippetControlMax; i++)
+					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
+						snippetControlArray[i][0]--;
+				// Adjust mirrored snippets
+				if(mirroredCounter > -1)
+					for(i=0; i<=mirroredCounter; i++)
+						if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
+							snippetMirroredControlArray[i][1]--;
+			}
 		}
 
 		// Insert favorite query by selecting the tab trigger if any
