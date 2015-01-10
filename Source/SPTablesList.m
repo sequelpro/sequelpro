@@ -282,6 +282,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 					}
 				}
 			}
+		}
 #endif
 
 		// Restore encoding if appropriate
