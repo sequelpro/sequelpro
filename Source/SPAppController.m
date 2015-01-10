@@ -670,10 +670,10 @@
 				}
 
 				// Update Bundle Editor if it was already initialized
-				for (id win in [NSApp windows])
+				for (NSWindow *win in [NSApp windows])
 				{
-					if ([[[[win delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
-						[[win delegate] reloadBundles:nil];
+					if ([[win delegate] class] == [SPBundleEditorController class]) {
+						[((SPBundleEditorController *)[win delegate]) reloadBundles:nil];
 						break;
 					}
 				}
