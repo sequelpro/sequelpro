@@ -6264,6 +6264,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
 	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
 	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
 	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
 	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
 	
