@@ -371,8 +371,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #ifndef SP_CODA
 	NSString *directoryPath = nil;
 	NSString *filePath = nil;
-	keySelectionPanel = [NSOpenPanel openPanel];
-	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
+	NSView *accessoryView = nil;
 
 	// If the button was toggled off, ensure editing is ended
 	if ([sender state] == NSOffState) {
@@ -395,7 +394,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			directoryPath = [sshKeyLocation stringByDeletingLastPathComponent];
 		}
 
-		[keySelectionPanel setAccessoryView:sshKeyLocationHelp];
+		accessoryView = sshKeyLocationHelp;
 	}
 	// SSL key file location:
 	else if (sender == standardSSLKeyFileButton || sender == socketSSLKeyFileButton || sender == sslOverSSHKeyFileButton) {
@@ -404,7 +403,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			return;
 		}
 		
-		[keySelectionPanel setAccessoryView:sslKeyFileLocationHelp];
+		accessoryView = sslKeyFileLocationHelp;
 	}
 	// SSL certificate file location:
 	else if (sender == standardSSLCertificateButton || sender == socketSSLCertificateButton || sender == sslOverSSHCertificateButton) {
@@ -413,7 +412,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			return;
 		}
 		
-		[keySelectionPanel setAccessoryView:sslCertificateLocationHelp];
+		accessoryView = sslCertificateLocationHelp;
 	}
 	// SSL CA certificate file location:
 	else if (sender == standardSSLCACertButton || sender == socketSSLCACertButton || sender == sslOverSSHCACertButton) {
@@ -422,12 +421,21 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			return;
 		}
 		
-		[keySelectionPanel setAccessoryView:sslCACertLocationHelp];
+		accessoryView = sslCACertLocationHelp;
 	}
+	
+	keySelectionPanel = [[NSOpenPanel openPanel] retain]; // retain/release needed on OS X ≤ 10.6 according to Apple doc
+	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
+	[keySelectionPanel setAccessoryView:accessoryView];
 
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
 		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
+		
+		//delay the release so it won't happen while this block is still executing.
+		dispatch_async(dispatch_get_current_queue(), ^{
+			SPClear(keySelectionPanel);
+		});
 
 		// SSH key file selection
 		if (sender == sshSSHKeyButton) {
