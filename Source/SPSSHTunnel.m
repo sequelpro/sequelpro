@@ -373,10 +373,10 @@
 		[taskArguments addObject:sshHost];
 	}
 	if (useHostFallback) {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/127.0.0.1/%ld", (long)localPort, (long)remotePort]];
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
 	} else {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPort, remoteHost, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]];
 	}
 
 	[task setArguments:taskArguments];
