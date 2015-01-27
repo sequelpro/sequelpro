@@ -184,6 +184,8 @@
 		50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */; };
 		50D3C3521A77135F00B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
 		50D3C3541A7715E600B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
+		50D3C35C1A771C4C00B5429C /* SPParserUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C35B1A771C4C00B5429C /* SPParserUtilsTest.m */; };
+		50D3C35D1A77217800B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
 		50E217B318174246009D3580 /* SPColorSelectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B218174246009D3580 /* SPColorSelectorView.m */; };
 		50E217B618174280009D3580 /* SPFavoriteColorSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B518174280009D3580 /* SPFavoriteColorSupport.m */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
@@ -891,6 +893,7 @@
 		50D3C34A1A75B8A800B5429C /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/GotoDatabaseDialog.xib; sourceTree = "<group>"; };
 		50D3C3501A77135F00B5429C /* SPParserUtils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SPParserUtils.c; sourceTree = "<group>"; };
 		50D3C3511A77135F00B5429C /* SPParserUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPParserUtils.h; sourceTree = "<group>"; };
+		50D3C35B1A771C4C00B5429C /* SPParserUtilsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPParserUtilsTest.m; sourceTree = "<group>"; };
 		50E217B118174246009D3580 /* SPColorSelectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPColorSelectorView.h; sourceTree = "<group>"; };
 		50E217B218174246009D3580 /* SPColorSelectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorSelectorView.m; sourceTree = "<group>"; };
 		50E217B418174280009D3580 /* SPFavoriteColorSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteColorSupport.h; sourceTree = "<group>"; };
@@ -2345,11 +2348,20 @@
 		380F4EF20FC0B67A00B0BFD7 /* Unit Tests */ = {
 			isa = PBXGroup;
 			children = (
+				50D3C3591A771C2300B5429C /* Other */,
 				1198F5B41174EDDE00670590 /* Database Actions */,
 				17DC886A126B378A00E9AAEC /* Category Additions */,
 			);
 			name = "Unit Tests";
 			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		50D3C3591A771C2300B5429C /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				50D3C35B1A771C4C00B5429C /* SPParserUtilsTest.m */,
+			);
+			name = Other;
 			sourceTree = "<group>";
 		};
 		583CE39511722B70008F148E /* File Compression */ = {
@@ -3027,6 +3039,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50D3C35D1A77217800B5429C /* SPParserUtils.c in Sources */,
 				380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTests.m in Sources */,
 				1760599F1336199D0098E162 /* SPMenuAdditionsTests.m in Sources */,
 				1798F1C4155018E2004B0AB8 /* SPMutableArrayAdditionsTests.m in Sources */,
@@ -3034,6 +3047,7 @@
 				17DB5F4A1555CA810046834B /* SPMenuAdditions.m in Sources */,
 				1717F9661557E0450065C036 /* SPStringAdditions.m in Sources */,
 				1717FA401558313A0065C036 /* RegexKitLite.m in Sources */,
+				50D3C35C1A771C4C00B5429C /* SPParserUtilsTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
