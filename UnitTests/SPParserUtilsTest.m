@@ -44,6 +44,9 @@
 @implementation SPParserUtilsTest
 
 - (void)testUtf8strlen {
+	// NOTE!!: Those test do not verify that the utf8strlen() function works according to spec,
+	//         but whether it produces the same results as NSString for the same input.
+	
 	const char *empty = "";
 	NSString *emptyString = [NSString stringWithCString:empty encoding:NSUTF8StringEncoding];
 	STAssertEquals(utf8strlen(empty),[emptyString length], @"empty string");
@@ -52,8 +55,8 @@
 	// If any of those conditions fail, all of the following assumptions are moot.
 	const char *charSeq = "\xF0\x9F\x8D\x8F"; //🍏
 	NSString *charString = [NSString stringWithCString:charSeq encoding:NSUTF8StringEncoding];
-	STAssertEquals(strlen(charSeq),     4, @"assumption about storage for binary C string");
-	STAssertEquals([charString length], 2, @"assumption about NSString internal storage of string");
+	STAssertEquals(strlen(charSeq),     (size_t)4, @"assumption about storage for binary C string");
+	STAssertEquals([charString length], (NSUInteger)2, @"assumption about NSString internal storage of string");
 	
 	const char *singleByteSeq = "Hello World!";
 	NSString *singleByteString = [NSString stringWithCString:singleByteSeq encoding:NSUTF8StringEncoding];
