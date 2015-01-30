@@ -261,14 +261,6 @@
 										<string key="NSClassName">NSImage</string>
 										<string key="NSResourceName">NSQuickLookTemplate</string>
 									</object>
-									<object class="NSCustomResource" key="NSOnImage">
-										<string key="NSClassName">NSImage</string>
-										<string key="NSResourceName">0DC49F39-0140-4712-A530-2E252E2A7E0C</string>
-									</object>
-									<object class="NSCustomResource" key="NSMixedImage">
-										<string key="NSClassName">NSImage</string>
-										<string key="NSResourceName">C9E4BFB5-33F9-4FBA-8F09-BD08CCB0F9CA</string>
-									</object>
 									<string key="NSAction">_popUpItemAction:</string>
 									<reference key="NSTarget" ref="131025635"/>
 								</object>
@@ -8248,8 +8240,6 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="0DC49F39-0140-4712-A530-2E252E2A7E0C">{128, 128}</string>
-			<string key="C9E4BFB5-33F9-4FBA-8F09-BD08CCB0F9CA">{128, 128}</string>
 			<string key="NSQuickLookTemplate">{21, 16}</string>
 			<string key="NSSwitch">{15, 15}</string>
 		</dictionary>
