@@ -640,7 +640,7 @@
 									</object>
 									<object class="NSMenuItem" id="658105746">
 										<reference key="NSMenu" ref="1035849972"/>
-										<string key="NSTitle">UTF-8 Unicode (utf8)</string>
+										<string key="NSTitle">UTF-8 Unicode BMP (utf8)</string>
 										<string key="NSKeyEquiv"/>
 										<int key="NSKeyEquivModMask">1048576</int>
 										<int key="NSMnemonicLoc">2147483647</int>
@@ -652,7 +652,7 @@
 									</object>
 									<object class="NSMenuItem" id="89605484">
 										<reference key="NSMenu" ref="1035849972"/>
-										<string key="NSTitle">4-Byte UTF-8 Unicode (utf8mb4)</string>
+										<string key="NSTitle">UTF-8 Full Unicode (utf8mb4)</string>
 										<string key="NSKeyEquiv"/>
 										<int key="NSKeyEquivModMask">1048576</int>
 										<int key="NSMnemonicLoc">2147483647</int>
