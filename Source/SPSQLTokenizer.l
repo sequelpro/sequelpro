@@ -50,7 +50,7 @@ size_t yyuoffset, yyuleng;
 s			[ \t\n\r]
 dkey		"delimiter"
 scol		";"
-dval		[!-ﾟ]
+dval		[!-\x7E\x80-\xEF]
 compstart	"begin"{s}
 compend		{s}"end"
 %x comment
