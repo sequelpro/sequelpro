@@ -80,7 +80,7 @@ keywords	(X(OR|509|A)|S(MALLINT|SL|H(OW({s}(E(NGINE(S)?|RRORS)|M(ASTER|UTEX)|BIN
 
 \"([^"\\]|\\(.|[\n\r]))*\"?			{ return SPT_DOUBLE_QUOTED_TEXT;   }      /* double quoted strings          */
 '([^'\\]|\\(.|[\n\r]))*'?			{ return SPT_SINGLE_QUOTED_TEXT;   }      /* single quoted strings          */
-`[^`]*`?							{ return SPT_BACKTICK_QUOTED_TEXT; }      /* backtick quoted string         */
+`(``|[^`])*`?						{ return SPT_BACKTICK_QUOTED_TEXT; }      /* backtick quoted string         */
 
 "/*"								{ BEGIN(comment); return SPT_COMMENT; }   /* beginning of a c style comment */
 <comment>[^*]* 						{ return SPT_COMMENT; }                   /* anything except * in a c cmnt  */
