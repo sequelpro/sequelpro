@@ -298,6 +298,12 @@
 		case SPDotExport:
 			extension = @"dot";
 			break;
+		case SPPDFExport:
+		case SPHTMLExport:
+		case SPExcelExport:
+		default:
+			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
+			return nil;
 	}
 	
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {

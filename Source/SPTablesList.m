@@ -1275,7 +1275,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
 	NSUInteger i;
-	NSInteger cnt = [[self tables] count];
+	NSUInteger cnt = [[self tables] count];
 	for(i=0; i<cnt; i++) {
 		SPTableType tt = (SPTableType)[NSArrayObjectAtIndex([self tableTypes],i) integerValue];
 		if(tt == SPTableTypeTable || tt == SPTableTypeView)

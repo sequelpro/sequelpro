@@ -168,6 +168,12 @@
 		case SPDotExport:
 			exportTypeLabel = @"Dot";
 			break;
+		case SPPDFExport:
+		case SPHTMLExport:
+		case SPExcelExport:
+		default:
+			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
+			return;
 	}
 		
 	// Begin the export based on the source

@@ -41,6 +41,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPThreadAdditions.h"
 #import "SPCustomQuery.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>
 

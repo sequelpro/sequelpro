@@ -36,6 +36,7 @@
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
 #import "SPTableContentDelegate.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -48,10 +49,7 @@ typedef enum
 SPExportErrorChoice;
 
 @interface SPExportController (SPExportFileUtilitiesPrivateAPI)
-
 - (void)_reopenExportSheet;
-- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
-
 @end
 
 @implementation SPExportController (SPExportFileUtilitiesPrivateAPI)
