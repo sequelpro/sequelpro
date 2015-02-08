@@ -90,6 +90,12 @@ enum {
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:PSMTabDragDidEndNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateLineHidingViewState) name:SPWindowToolbarDidToggleNotification object:nil];
+
+	// Because we are a document-based app we automatically adopt window restoration on 10.7+.
+	// However that causes a race condition with our own window setup code.
+	// Remove this when we actually support restoration.
+	if([[self window] respondsToSelector:@selector(setRestorable:)])
+		[[self window] setRestorable:NO];
 }
 
 #pragma mark -
