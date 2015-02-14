@@ -1,9 +1,9 @@
 //
-//  SPFavoritesOutlineView.h
+//  SPOSInfo.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 10, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 14.02.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,14 +28,23 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPOSInfo.h"
+#import <Foundation/Foundation.h>
 
-@interface SPFavoritesOutlineView : NSOutlineView
-{
-	BOOL isOSVersionAtLeast10_7_0;
-	BOOL justGainedFocus;
-}
+typedef struct {
+	NSInteger major;
+	NSInteger minor;
+	NSInteger patch;
+} SPOSVersion;
 
-@property (assign) BOOL justGainedFocus;
+/**
+ * Compare two OS versions similar to strcmp()
+ * @param left One operand
+ * @param right The other operand
+ * @return A negative value if left < right, 0 is both are equal, a postive value if left > right
+ */
+int SPOSVersionCompare(SPOSVersion left, SPOSVersion right);
 
+@interface SPOSInfo : NSObject
++ (SPOSVersion)osVersion;
++ (BOOL)isOSVersionAtLeastMajor:(NSInteger)major minor:(NSInteger)minor patch:(NSInteger)patch;
 @end

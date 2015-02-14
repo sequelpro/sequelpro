@@ -63,11 +63,8 @@ enum {
 
 - (void)awakeFromNib
 {
-	systemVersion = 0;
 	selectedTableDocument = nil;
 	
-	Gestalt(gestaltSystemVersion, &systemVersion);
-
 	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
 
 	// Add a line to the window to hide the line below the title bar when the toolbar is collapsed
@@ -517,10 +514,10 @@ enum {
 {
 	// Set the background colour to match the titlebar window state
 	if ((([[self window] isMainWindow] || [[[self window] attachedSheet] isMainWindow]) && [NSApp isActive])) {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070) ? 0.66f : 0.63f alpha:1.0]];	
+		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.66f : 0.63f alpha:1.0]];
 	} 
 	else {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(systemVersion >= 0x1070) ? 0.87f : 0.84f alpha:1.0]];
+		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.87f : 0.84f alpha:1.0]];
 	}
 
 	// If the window is fullscreen or the toolbar is showing, hide the view; otherwise show it

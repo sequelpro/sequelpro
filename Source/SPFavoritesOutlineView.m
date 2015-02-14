@@ -39,8 +39,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 - (void)awakeFromNib
 {
-	systemVersion = 0;
-	Gestalt(gestaltSystemVersion, &systemVersion);
+	isOSVersionAtLeast10_7_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 }
 
 - (BOOL)acceptsFirstResponder
@@ -129,7 +128,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	NSRect superFrame = [super frameOfCellAtColumn:columnIndex row:rowIndex];
 
 	// On system versions lower than Lion, don't alter padding
-	if (systemVersion < 0x1070) {
+	if (!isOSVersionAtLeast10_7_0) {
 		return superFrame;
 	}
 
@@ -159,7 +158,7 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 	}
 
 	// On versions of Lion or above, amend the padding appropriately
-	if (systemVersion >= 0x1070) {
+	if (isOSVersionAtLeast10_7_0) {
 		return NSMakeRect(superFrame.origin.x + SPFavoritesOutlineViewUnindent, superFrame.origin.y, superFrame.size.width, superFrame.size.height);
 	}
 

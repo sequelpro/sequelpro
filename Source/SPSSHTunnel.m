@@ -35,6 +35,7 @@
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
 #import "SPThreadAdditions.h"
+#import "SPOSInfo.h"
 
 #import <netinet/in.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -55,8 +56,7 @@
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
-		SInt32 systemVersion = 0;
-		Gestalt(gestaltSystemVersion, &systemVersion);
+		BOOL isOSVersionAtLeast10_7_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -74,7 +74,7 @@
 
 		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
 		// muxing causes connection instability for a large number of users (see Issue #1457)
-		connectionMuxingEnabled = (systemVersion >= 0x1070) && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
+		connectionMuxingEnabled = isOSVersionAtLeast10_7_0 && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
 		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];

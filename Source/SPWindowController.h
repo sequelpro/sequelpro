@@ -37,7 +37,7 @@
 	IBOutlet NSTabView *tabView;
 
 	NSClipView *titleBarLineHidingView;
-	SInt32 systemVersion;
+	BOOL isOSVersionAtLeast10_7_0;
 
 	NSMenuItem *closeWindowMenuItem;
 	NSMenuItem *closeTabMenuItem;

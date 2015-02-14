@@ -188,6 +188,7 @@
 		50D3C35D1A77217800B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
 		50E217B318174246009D3580 /* SPColorSelectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B218174246009D3580 /* SPColorSelectorView.m */; };
 		50E217B618174280009D3580 /* SPFavoriteColorSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 50E217B518174280009D3580 /* SPFavoriteColorSupport.m */; };
+		50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
 		580E8DB711EA774B000D8427 /* SequelProTabClose_Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */; };
 		580E8DB811EA774B000D8427 /* SequelProTabClose_Rollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAC11EA772C000D8427 /* SequelProTabClose_Rollover.png */; };
@@ -899,6 +900,8 @@
 		50E217B218174246009D3580 /* SPColorSelectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPColorSelectorView.m; sourceTree = "<group>"; };
 		50E217B418174280009D3580 /* SPFavoriteColorSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteColorSupport.h; sourceTree = "<group>"; };
 		50E217B518174280009D3580 /* SPFavoriteColorSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteColorSupport.m; sourceTree = "<group>"; };
+		50EAB5B61A8FBB08008F627A /* SPOSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPOSInfo.h; sourceTree = "<group>"; };
+		50EAB5B71A8FBB08008F627A /* SPOSInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPOSInfo.m; sourceTree = "<group>"; };
 		5806B76211A991EC00813A88 /* SPDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDocumentController.h; sourceTree = "<group>"; };
 		5806B76311A991EC00813A88 /* SPDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDocumentController.m; sourceTree = "<group>"; };
 		580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SequelProTabClose_Pressed.png; sourceTree = "<group>"; };
@@ -2535,6 +2538,8 @@
 				50E217B518174280009D3580 /* SPFavoriteColorSupport.m */,
 				58DA8861103E15B5000B98DF /* SPLogger.h */,
 				58DA8862103E15B5000B98DF /* SPLogger.m */,
+				50EAB5B61A8FBB08008F627A /* SPOSInfo.h */,
+				50EAB5B71A8FBB08008F627A /* SPOSInfo.m */,
 			);
 			name = "Debugging & Support";
 			sourceTree = "<group>";
@@ -3171,6 +3176,7 @@
 				BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */,
 				58DA8863103E15B5000B98DF /* SPLogger.m in Sources */,
 				BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */,
+				50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */,
 				173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */,
 				173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */,
 				17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */,
