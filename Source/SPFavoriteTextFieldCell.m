@@ -78,22 +78,22 @@ extern BOOL isOSAtLeast10_10_0(void);
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	if([self labelColor]) {
+	if(labelColor) {
 		CGFloat round = (cellFrame.size.height/2);
 		NSBezierPath *bg = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:round yRadius:round];
 		
 		if(isOSAtLeast10_10_0()) {
 			CGFloat h,s,b,a;
-			[[self labelColor] getHue:&h saturation:&s brightness:&b alpha:&a];
+			[labelColor getHue:&h saturation:&s brightness:&b alpha:&a];
 			
 			[[NSColor colorWithCalibratedHue:h saturation:s*1.21 brightness:b*1.1 alpha:a] set];
 			[bg fill];
 		}
 		else {
 			NSGradient * gradient = [[NSGradient alloc] initWithColorsAndLocations:
-									 [[self labelColor] highlightWithLevel:0.33], 0.0,
-									 [self labelColor], 0.5,
-									 [[self labelColor] shadowWithLevel:0.15], 1.0, nil];
+									 [labelColor highlightWithLevel:0.33], 0.0,
+									  labelColor, 0.5,
+									 [labelColor shadowWithLevel:0.15], 1.0, nil];
 			[gradient drawInBezierPath:bg angle:90.0];
 			[gradient release];
 		}

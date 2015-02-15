@@ -33,6 +33,7 @@
 @interface SPFavoriteTextFieldCell : ImageAndTextCell
 {
 	BOOL drawsDividerUnderCell;
+	NSColor *labelColor;
 }
 
 - (BOOL)drawsDividerUnderCell;
