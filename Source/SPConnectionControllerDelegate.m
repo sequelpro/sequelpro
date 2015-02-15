@@ -32,6 +32,7 @@
 #ifndef SP_CODA
 #import "SPFavoritesController.h"
 #import "SPTableTextFieldCell.h"
+#import "SPFavoriteTextFieldCell.h"
 #import "SPPreferenceController.h"
 #import "SPGeneralPreferencePane.h"
 #import "SPAppController.h"
@@ -39,6 +40,7 @@
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 #import "SPFavoritesOutlineView.h"
+#import "SPFavoriteColorSupport.h"
 #endif
 
 #ifndef SP_CODA
@@ -171,6 +173,12 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		} 
 		else {
 			[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPDatabaseImage]];
+			NSColor *bgColor = nil;
+			NSNumber *colorIndexObj = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteColorIndexKey];
+			if(colorIndexObj != nil) {
+				bgColor = [[SPFavoriteColorSupport sharedInstance] colorForIndex:[colorIndexObj integerValue]];
+			}
+			[(SPFavoriteTextFieldCell *)cell setLabelColor:bgColor];
 		}
 	}
 

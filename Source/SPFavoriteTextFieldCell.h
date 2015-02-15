@@ -38,4 +38,6 @@
 - (BOOL)drawsDividerUnderCell;
 - (void)setDrawsDividerUnderCell:(BOOL)drawsDivider;
 
+@property(copy)NSColor *labelColor;
+
 @end
