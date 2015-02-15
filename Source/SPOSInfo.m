@@ -33,9 +33,9 @@
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
 // This code is available since 10.8 but public only since 10.10
 typedef struct {
-	NSInteger major;
-	NSInteger minor;
-	NSInteger patch;
+	NSInteger majorVersion;
+	NSInteger minorVersion;
+	NSInteger patchVersion;
 } NSOperatingSystemVersion;
 
 @interface NSProcessInfo ()
