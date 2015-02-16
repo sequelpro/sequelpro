@@ -247,9 +247,9 @@ static inline NSString * _convertStringData(const void *dataBytes, NSUInteger da
 {
 
 	// Fast case - if not using a preview length, or if the data length is shorter, return the requested data.
-	if (previewLength == NSNotFound || dataLength <= previewLength) {
-		return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
-	}
+    if (previewLength == NSNotFound || dataLength <= previewLength) {
+        return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
+    }
 
 	NSUInteger i = 0, characterLength = 0, byteLength = previewLength;
 	uint16_t continuationStart, continuationEnd;
@@ -394,7 +394,7 @@ static inline NSString * _convertStringData(const void *dataBytes, NSUInteger da
 
 	// If returning the full string, use a fast path
 	if (byteLength >= dataLength) {
-		return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
+		return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
 	}
 
 	// Get a string using the calculated details
