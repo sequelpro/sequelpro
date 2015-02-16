@@ -239,17 +239,6 @@ static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger lengt
 	return returnString;
 }
 
-static inline NSString * _convertStringDataSafely(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding)
-{
-    NSString * result = [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
-
-    if (result == nil) {
-        return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:NSASCIIStringEncoding] autorelease];
-    }
-
-    return result;
-}
-
 /**
  * Converts stored string data - which may contain nul bytes - to a native
  * Objective-C string, using the current class encoding.
@@ -259,7 +248,7 @@ static inline NSString * _convertStringData(const void *dataBytes, NSUInteger da
 
 	// Fast case - if not using a preview length, or if the data length is shorter, return the requested data.
     if (previewLength == NSNotFound || dataLength <= previewLength) {
-		return _convertStringDataSafely(dataBytes, dataLength, aStringEncoding);
+        return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
     }
 
 	NSUInteger i = 0, characterLength = 0, byteLength = previewLength;
@@ -405,7 +394,7 @@ static inline NSString * _convertStringData(const void *dataBytes, NSUInteger da
 
 	// If returning the full string, use a fast path
 	if (byteLength >= dataLength) {
-		return _convertStringDataSafely(dataBytes, dataLength, aStringEncoding);
+		return [NSString stringForDataBytes:dataBytes length:dataLength encoding:aStringEncoding];
 	}
 
 	// Get a string using the calculated details
