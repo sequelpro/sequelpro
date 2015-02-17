@@ -52,4 +52,18 @@
 	return [NSString stringWithFormat: @"'%@'", [self stringByReplacingOccurrencesOfString:@"'" withString:@"''"]];
 }
 
+/**
+ * Returns the string for the bytes according to the encoding, decode in ASCII if failed
+ */
++ (NSString *) stringForDataBytes:(const void *)dataBytes length:(NSUInteger)dataLength encoding:(NSStringEncoding)aStringEncoding
+{
+    NSString * string = [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:aStringEncoding] autorelease];
+    
+    if (string == nil) {
+        return [[[NSString alloc] initWithBytes:dataBytes length:dataLength encoding:NSASCIIStringEncoding] autorelease];
+    }
+    
+    return string;
+}
+
 @end
