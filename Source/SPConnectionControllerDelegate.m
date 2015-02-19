@@ -147,38 +147,41 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	SPTreeNode *node = (SPTreeNode *)item;
+	SPTreeNode              *node         = (SPTreeNode *)item;
+	SPFavoriteTextFieldCell *favoriteCell = (SPFavoriteTextFieldCell *)cell;
 	
 	// Draw entries with the small system font by default
-	[(SPTableTextFieldCell *)cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
 	// Set an image as appropriate; the quick connect image for that entry, no image for other
 	// top-level items, the folder image for group nodes, or the database image for other nodes.
 	if (![[node parentNode] parentNode]) {
 		if (node == quickConnectItem) {
 			if ([outlineView rowForItem:item] == [outlineView selectedRow]) {
-				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImageWhite]];
+				[favoriteCell setImage:[NSImage imageNamed:SPQuickConnectImageWhite]];
 			} 
 			else {
-				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImage]];
+				[favoriteCell setImage:[NSImage imageNamed:SPQuickConnectImage]];
 			}
 		} 
 		else {
-			[(SPTableTextFieldCell *)cell setImage:nil];
+			[favoriteCell setImage:nil];
 		}
+		[favoriteCell setLabelColor:nil];
 	} 
 	else {
 		if ([node isGroup]) {
-			[(SPTableTextFieldCell *)cell setImage:folderImage];
+			[favoriteCell setImage:folderImage];
+			[favoriteCell setLabelColor:nil];
 		} 
 		else {
-			[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPDatabaseImage]];
+			[favoriteCell setImage:[NSImage imageNamed:SPDatabaseImage]];
 			NSColor *bgColor = nil;
 			NSNumber *colorIndexObj = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteColorIndexKey];
 			if(colorIndexObj != nil) {
 				bgColor = [[SPFavoriteColorSupport sharedInstance] colorForIndex:[colorIndexObj integerValue]];
 			}
-			[(SPFavoriteTextFieldCell *)cell setLabelColor:bgColor];
+			[favoriteCell setLabelColor:bgColor];
 		}
 	}
 

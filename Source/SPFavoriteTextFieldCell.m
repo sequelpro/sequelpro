@@ -49,7 +49,7 @@ extern BOOL isOSAtLeast10_10_0(void);
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
 
 	cell->drawsDividerUnderCell = drawsDividerUnderCell;
-	cell->labelColor            = nil; //TODO copying the color sometimes causes a drawing bug
+	cell->labelColor            = [labelColor copyWithZone:zone];
     
 	return cell;
 }
