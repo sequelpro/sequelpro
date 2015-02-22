@@ -7,40 +7,20 @@
 	<key>category</key>
 	<string>Format</string>
 	<key>command</key>
-	<string>DATA=$(cat)
+	<string>#!/usr/bin/python
+import sys
+import json
+from collections import OrderedDict
 
-FORMAT=$(echo "$DATA" | head -n 1 | perl -e '$l=&lt;&gt;;if($l=~m/^\s*\{\s*$/) {print "1";} else {print "2";}')
-
-# if FORMAT == 1 then serialize JSON data otherwise pretty print them
-if [ "$FORMAT" -eq "1" ]; then
-
-	DATA=$(echo "$DATA" | php -r '
-	$jsonData = "";
-	$inputStream = fopen("php://stdin", "r");
-	while($d = fgets($inputStream)) { $jsonData .= $d; }
-	print json_encode(json_decode($jsonData));
-	')
-  	if [ "$DATA" == "null" ]; then
-		echo "&lt;font&gt;An error occured while serializing JSON data!&lt;/font&gt;"
-		exit $SP_BUNDLE_EXIT_SHOW_AS_HTML_TOOLTIP
-  	fi
-
-else
-
-	DATA=$(echo "$DATA" | python -mjson.tool)
-
-fi
-
-# if there's a need to preserve Unicode characters remove the first to characters of the following line 
-# DATA=$(echo "$DATA"  | perl -Xpe 'binmode STDIN,":utf8";binmode STDOUT,":utf8";s/\\u([0-9A-F]{4})/chr(hex($1))/ieg')
-
-printf "%b" "$DATA"</string>
+try:
+  data = json.load(sys.stdin, object_hook=OrderedDict, object_pairs_hook=OrderedDict)
+  json.dump(data, sys.stdout, indent=2, sort_keys=False)
+except Exception as e:
+  sys.exit(e.message)</string>
 	<key>contact</key>
 	<string>znvy@ovovxb.qr</string>
 	<key>description</key>
-	<string>If the first line of the selection or the entire content of the current text input field only contains a "{" then serialize the JSON data otherwise the JSON data will be pretty printed. If there's a need to preserve the Unicode characters you can uncomment the line 22.
-
-Version 1.0</string>
+	<string>Version 2.0</string>
 	<key>input</key>
 	<string>selectedtext</string>
 	<key>input_fallback</key>
