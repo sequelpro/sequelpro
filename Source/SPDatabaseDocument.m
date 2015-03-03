@@ -4441,9 +4441,9 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 {
 	BOOL returnConnection = [[detailsToReturn objectForKey:@"connection"] boolValue];
 	BOOL includePasswords = [[detailsToReturn objectForKey:@"password"] boolValue];
-	BOOL returnSession = [[detailsToReturn objectForKey:@"session"] boolValue];
-	BOOL returnHistory = [[detailsToReturn objectForKey:@"history"] boolValue];
-	BOOL returnQuery = [[detailsToReturn objectForKey:@"query"] boolValue];
+	BOOL returnSession    = [[detailsToReturn objectForKey:@"session"] boolValue];
+	BOOL returnHistory    = [[detailsToReturn objectForKey:@"history"] boolValue];
+	BOOL returnQuery      = [[detailsToReturn objectForKey:@"query"] boolValue];
 
 	if (!returnConnection && !returnSession && !returnHistory && !returnQuery) return nil;
 	NSMutableDictionary *stateDetails = [NSMutableDictionary dictionary];
@@ -4482,7 +4482,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[connection setObject:[self name] forKey:@"name"];
 		[connection setObject:[self host] forKey:@"host"];
 		[connection setObject:[self user] forKey:@"user"];
-		if([connectionController colorIndex])
+		if([connectionController colorIndex] >= 0)
 			[connection setObject:[NSNumber numberWithInteger:[connectionController colorIndex]] forKey:SPFavoriteColorIndexKey];
 		if([connectionController port] && [[connectionController port] length])
 			[connection setObject:[NSNumber numberWithInteger:[[connectionController port] integerValue]] forKey:@"port"];
