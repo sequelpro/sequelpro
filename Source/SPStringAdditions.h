@@ -81,4 +81,23 @@ static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedSt
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 
+/**
+ * Checks if the string other is contained in self on a per-character basis.
+ * In regex-speak that would mean "abc" is matched as /a.*b.*c/ (not anchored).
+ * This is a SEARCH function, NOT a MATCHING function! 
+ * Namely the following options will be applied when matching: 
+ *   NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSDiacriticInsensitiveSearch
+ * Additionaly this method might match even when it should not.
+ *
+ * @param other      String to match against self
+ * @param submatches Pass the pointer to a variable that will be set to an NSArray *
+ *                   of NSNumber *s of NSRanges. This will only be the case if
+ *                   the method also returns YES. The variable will not be modified
+ *                   otherwise.
+ *                   Pass NULL if you don't care for the ranges.
+ *                   The object will be set to autorelase.
+ * @return YES if self contains all characters from other in the order given in other
+ * @warning This method is NOT thread-safe (probably), NOT constant-time and DOES NOT check binary equivalence
+ */
+- (BOOL)nonConsecutivelySearchString:(NSString *)other matchingRanges:(NSArray **)submatches;
 @end

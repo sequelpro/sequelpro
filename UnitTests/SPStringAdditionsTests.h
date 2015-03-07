@@ -35,5 +35,6 @@
 - (void)testStringByRemovingCharactersInSet;
 - (void)testStringWithNewUUID;
 - (void)testCreateViewSyntaxPrettifier;
+- (void)testNonConsecutivelySearchStringMatchingRanges;
 
 @end
