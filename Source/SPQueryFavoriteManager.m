@@ -413,7 +413,7 @@
 		// Check whether the selection range lies within the snippet
 		if (selRange.location != NSNotFound
 			&& selRange.location > matchedRange.location + 1
-			&& selRange.location + selRange.length < matchedRange.location + matchedRange.length)
+			&& NSMaxRange(selRange) < NSMaxRange(matchedRange))
 		{
 			selectionInsideSnippet = YES;
 		}
@@ -423,7 +423,7 @@
 		NSInteger snippetNumber = [[queryString substringWithRange:snippetNumberRange] integerValue];
 		[snippetNumbers setObject:@YES forKey:[NSNumber numberWithInteger:snippetNumber]];
 
-		rangeStart = matchedRange.location + matchedRange.length;
+		rangeStart = NSMaxRange(matchedRange);
 	}
 
 	// If the selection is not inside a snippet, wrap it inside the snippet syntax.

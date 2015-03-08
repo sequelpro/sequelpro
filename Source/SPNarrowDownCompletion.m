@@ -1025,7 +1025,7 @@
 				if (scanPosition + attributeResultRange.length == currentLength) break;
 
 				// A match was found - retrieve the location
-				NSUInteger matchStart = attributeResultRange.location+attributeResultRange.length;
+				NSUInteger matchStart = NSMaxRange(attributeResultRange);
 				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, currentLength - matchStart)]) {
 					[theView shouldChangeTextInRange:attributeResultRange replacementString:@""];
 					[[theView textStorage] deleteCharactersInRange:attributeResultRange];

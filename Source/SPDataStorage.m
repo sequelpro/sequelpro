@@ -357,12 +357,12 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 {
 
 	// Throw an exception if the range is out of bounds
-	if (rangeToRemove.location + rangeToRemove.length > SPMySQLResultStoreGetRowCount(dataStorage)) {
-		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(rangeToRemove.location + rangeToRemove.length), SPMySQLResultStoreGetRowCount(dataStorage)];
+	if (NSMaxRange(rangeToRemove) > SPMySQLResultStoreGetRowCount(dataStorage)) {
+		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), SPMySQLResultStoreGetRowCount(dataStorage)];
 	}
 
 	// Remove the rows from the edited list and underlying storage
-	NSUInteger i = MIN(editedRowCount, rangeToRemove.location + rangeToRemove.length);
+	NSUInteger i = MIN(editedRowCount, NSMaxRange(rangeToRemove));
 	while (--i >= rangeToRemove.location) {
 		editedRowCount--;
 		[editedRows removePointerAtIndex:i];

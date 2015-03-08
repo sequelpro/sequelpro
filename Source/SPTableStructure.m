@@ -912,7 +912,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 				// UNSIGNED keyword.
 				NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
 				
-				NSInteger insertionIndex = (range.location + range.length);
+				NSInteger insertionIndex = NSMaxRange(range);
 				
 				// If the field definition's data type includes the length then we must take this into
 				// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the

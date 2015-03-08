@@ -772,8 +772,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				backtickMode+=1;
 				leftBacktick = YES;
 			}
-			if([[self string] length] > parseRange.location+parseRange.length) {
-				if([[self string] characterAtIndex:parseRange.location+parseRange.length] == '`') {
+			if([[self string] length] > NSMaxRange(parseRange)) {
+				if([[self string] characterAtIndex:NSMaxRange(parseRange)] == '`') {
 					backtickMode+=2;
 					parseRange.length++; // adjust parse string for right `
 					rightBacktick = YES;

@@ -780,7 +780,7 @@
 		charsetDefinitionRange = [createTableParser rangeOfString:@"CHARACTER SET=" options:NSCaseInsensitiveSearch];
 	}
 	if (charsetDefinitionRange.location != NSNotFound) {
-		stringStart = charsetDefinitionRange.location + charsetDefinitionRange.length;
+		stringStart = NSMaxRange(charsetDefinitionRange);
 		for (i = stringStart; i < [createTableParser length]; i++) {
 			if ([createTableParser characterAtIndex:i] == ' ') break;
 		}

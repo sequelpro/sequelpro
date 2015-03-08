@@ -3152,7 +3152,7 @@
 			aRange = NSMakeRange(0,0);
 			NSInteger safeCnt = 0; // safety counter - not more than 200 loops allowed
 			while(1){
-				aRange = [desc rangeOfRegex:@"\\s((https?|ftp|file)://.*?html)" options:RKLNoOptions inRange:NSMakeRange(aRange.location+aRange.length, [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
+				aRange = [desc rangeOfRegex:@"\\s((https?|ftp|file)://.*?html)" options:RKLNoOptions inRange:NSMakeRange(NSMaxRange(aRange), [desc length]-aRange.location-aRange.length) capture:1 error:&err1];
 				if(aRange.location != NSNotFound) {
 					aUrl = [desc substringWithRange:aRange];
 					[desc replaceCharactersInRange:aRange withString:[NSString stringWithFormat:@"<a href='%@'>%@</a>", aUrl, aUrl]];

@@ -322,7 +322,7 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 	NSMutableArray *lineRangesArray = [NSMutableArray array];
 
 	// Check that the range supplied is valid - if not return an empty array.
-	if (aRange.location == NSNotFound || aRange.location + aRange.length > [self length]) {
+	if (aRange.location == NSNotFound || NSMaxRange(aRange) > [self length]) {
 		return lineRangesArray;
 	}
 
@@ -332,9 +332,9 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 	[lineRangesArray addObject:NSStringFromRange(currentLineRange)];
 
 	// Loop through until the line end matches or surpasses the end of the specified range
-	while (currentLineRange.location + currentLineRange.length < aRange.location + aRange.length) 
+	while (NSMaxRange(currentLineRange) < NSMaxRange(aRange))
 	{
-		currentLineRange = [self lineRangeForRange:NSMakeRange(currentLineRange.location + currentLineRange.length, 0)];
+		currentLineRange = [self lineRangeForRange:NSMakeRange(NSMaxRange(currentLineRange), 0)];
 		
 		[lineRangesArray addObject:NSStringFromRange(currentLineRange)];
 	}
@@ -502,7 +502,7 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 			tmpMatchStore[matchCount] = found;
 		matchCount++;
 		//move the next search past the current match
-		searchRange.location = found.location + found.length;
+		searchRange.location = NSMaxRange(found);
 		searchRange.length   = [self length] - searchRange.location;
 	};
 	
@@ -524,7 +524,7 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 			NSRange prev = tmpMatchStore[mergeTarget];
 			NSRange this = tmpMatchStore[i];
 			//if the previous match ends right before this match begins we can merge them
-			if(prev.location + prev.length == this.location) {
+			if(NSMaxRange(prev) == this.location) {
 				NSRange mergedRange = NSMakeRange(prev.location, prev.length+this.length);
 				tmpMatchStore[mergeTarget] = mergedRange;
 			}

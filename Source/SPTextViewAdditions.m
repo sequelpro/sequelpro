@@ -247,7 +247,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -269,7 +269,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -291,7 +291,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -312,7 +312,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 	
 }
@@ -335,7 +335,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
