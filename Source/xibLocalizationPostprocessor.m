@@ -92,29 +92,31 @@ int main(int argc, const char *argv[])
 NSDictionary *load_kv_pairs(NSString *input)
 {
 	NSDictionary *result = [NSMutableDictionary dictionary];
-	__block NSUInteger lineCount = 0;
-	[input enumerateLinesUsingBlock:^(NSString *line, BOOL *stop) {
+	
+	NSUInteger lineCount = 0;
+	//don't try [NSString enumerateLines...] here. It supports some obscure Unicode line breaks!
+	for (NSString *line in [input componentsSeparatedByString:@"\n"]) {
 		lineCount++;
 
 		if (line.length == 0 || [line hasPrefix:@"/*"]) {
-			return;
+			continue;
 		}
 		
 		if ([line hasPrefix:@"\""] && [line hasSuffix:@"\";"]) { // eg: "136.title" = "Quit Library";
 			
 			NSRange quoteEqualsQuoteRange = [line rangeOfString:@"\" = \""];
-			if (quoteEqualsQuoteRange.length && NSMaxRange(quoteEqualsQuoteRange) < line.length - 1) {
+			if (quoteEqualsQuoteRange.location != NSNotFound && quoteEqualsQuoteRange.length && NSMaxRange(quoteEqualsQuoteRange) < line.length - 1) {
 				NSRange keyRange = NSMakeRange(1,quoteEqualsQuoteRange.location - 1); //the first " is always at pos. 0 (we checked that above)
 				NSString *key = [line substringWithRange:keyRange];
 				NSString *value = [line substringFromIndex:NSMaxRange(quoteEqualsQuoteRange)]; // chop off leading: "blah" = "
 				value = [value substringToIndex:[value length] - 2]; // chop off trailing: ";
 				[result setValue:value forKey:key];
-				return;
+				continue;
 			}
 		}
 		
 		NSLog(@"Warning: skipped garbage trans line %lu, contents: \"%@\"", (unsigned long)lineCount, line);
-		
-	}];
+	}
+	
 	return result;
 }
