@@ -2769,6 +2769,17 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	return tablesListInstance;
 }
 
+- (SPCreateDatabaseInfo *)createDatabaseInfo
+{
+	SPCreateDatabaseInfo *dbInfo = [[SPCreateDatabaseInfo alloc] init];
+ 
+	[dbInfo setDatabaseName:[self database]];
+	[dbInfo setDefaultEncoding:[databaseDataInstance getDatabaseDefaultCharacterSet]];
+	[dbInfo setDefaultCollation:[databaseDataInstance getDatabaseDefaultCollation]];
+	
+	return [dbInfo autorelease];
+}
+
 #pragma mark -
 #pragma mark Notification center methods
 
@@ -5903,7 +5914,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	BOOL copyWithContent = [copyDatabaseDataButton state] == NSOnState;
 	
-	if ([dbActionCopy copyDatabaseFrom:[self database] to:[databaseCopyNameField stringValue] withContent:copyWithContent]) {
+	if ([dbActionCopy copyDatabaseFrom:[self createDatabaseInfo] to:[databaseCopyNameField stringValue] withContent:copyWithContent]) {
 		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
 	}
 	else {
@@ -5934,7 +5945,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	[dbActionRename setConnection:[self getConnection]];
 	[dbActionRename setMessageWindow:parentWindow];
 	
-	if ([dbActionRename renameDatabaseFrom:[self database] to:newDatabaseName]) {
+	if ([dbActionRename renameDatabaseFrom:[self createDatabaseInfo] to:newDatabaseName]) {
 		[self setDatabases:self];
 		[self selectDatabase:newDatabaseName item:nil];
 	}
@@ -5974,25 +5985,16 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// As we're amending identifiers, ensure UTF8
 	if (![[mySQLConnection encoding] isEqualToString:@"utf8"]) [mySQLConnection setEncoding:@"utf8"];
 	
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [[databaseNameField stringValue] backtickQuotedString]];
+	SPDatabaseAction *dbAction = [[SPDatabaseAction alloc] init];
+	[dbAction setConnection:mySQLConnection];
+	BOOL res = [dbAction createDatabase:[databaseNameField stringValue]
+						   withEncoding:[addDatabaseCharsetHelper selectedCharset]
+							  collation:[addDatabaseCharsetHelper selectedCollation]];
+	[dbAction release];
 	
-	// If there is an encoding selected other than the default we must specify it in CREATE DATABASE statement
-	NSString *encodingName = [addDatabaseCharsetHelper selectedCharset];
-	if (encodingName)		
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT CHARACTER SET %@", createStatement, [encodingName backtickQuotedString]];
-	
-	// If there is a collation selected other than the default we must specify it in the CREATE DATABASE statement
-	NSString *collationName = [addDatabaseCharsetHelper selectedCollation];
-	if (collationName)		
-		createStatement = [NSString stringWithFormat:@"%@ DEFAULT COLLATE %@", createStatement, [collationName backtickQuotedString]];
-	
-	// Create the database
-	[mySQLConnection queryString:createStatement];
-	
-	if ([mySQLConnection queryErrored]) {
+	if (!res) {
 		// An error occurred
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
-		
 		return;
 	}
 

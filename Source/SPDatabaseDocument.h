@@ -56,6 +56,7 @@
 @class SPMySQLConnection;
 @class SPCharsetCollationHelper;
 @class SPGotoDatabaseController;
+@class SPCreateDatabaseInfo;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -451,6 +452,7 @@
 #endif
 - (NSArray *)allTableNames;
 - (SPTablesList *)tablesListInstance;
+- (SPCreateDatabaseInfo *)createDatabaseInfo;
 
 #ifndef SP_CODA /* method decls */
 // Notification center methods
