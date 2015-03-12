@@ -32,6 +32,11 @@
 @class SPMySQLConnection;
 
 @interface SPCreateDatabaseInfo : NSObject
+{
+	NSString *databaseName;
+	NSString *defaultEncoding;
+	NSString *defaultCollation;
+}
 
 @property (readwrite,retain) NSString *databaseName;
 @property (readwrite,retain) NSString *defaultEncoding;
