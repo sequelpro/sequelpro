@@ -75,7 +75,7 @@
  *
  * @param database  name of the new database to be created
  * @param encoding  charset of the new database (can be nil to skip)
- * @param collation sorting collation of the new database (can be nil. Will be ignored if encoding == nil)
+ * @param collation sorting collation of the new database (can be nil)
  * @return YES on success, otherwise NO
  */
 - (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation;

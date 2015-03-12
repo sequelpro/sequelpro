@@ -71,9 +71,9 @@
 	
 	if([encoding length]) { // [nil length] == 0
 		[query appendFormat:@" DEFAULT CHARACTER SET = %@",[encoding backtickQuotedString]];
-		if([collation length]) {
-			[query appendFormat:@" DEFAULT COLLATE = %@",[collation backtickQuotedString]];
-		}
+	}
+	if([collation length]) {
+		[query appendFormat:@" DEFAULT COLLATE = %@",[collation backtickQuotedString]];
 	}
 	
 	[connection queryString:query];
