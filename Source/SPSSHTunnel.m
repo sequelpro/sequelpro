@@ -309,8 +309,18 @@
 
 	// Set up the NSTask
 	task = [[NSTask alloc] init];
-	[task setLaunchPath: @"/usr/bin/ssh"];
-
+	
+	//check if "/usr/local/bin/ssh" exists
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	if ([fileManager fileExistsAtPath: @"/usr/local/bin/ssh"]){
+		[task setLaunchPath: @"/usr/local/bin/ssh"];
+	}else{
+		// Use default ssh
+		[task setLaunchPath: @"/usr/bin/ssh"];
+	}
+	[fileManager release];
+	
 	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
 
