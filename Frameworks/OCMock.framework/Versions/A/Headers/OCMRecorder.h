@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2014 Erik Doernenburg and contributors
+ *  Copyright (c) 2014 Erik Doernenburg and contributors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use these files except in compliance with the License. You may obtain
@@ -16,11 +16,24 @@
 
 #import <Foundation/Foundation.h>
 
-@class OCObserverMockObject;
+@class OCMockObject;
+@class OCMInvocationMatcher;
 
 
-@interface NSNotificationCenter(OCMAdditions)
+@interface OCMRecorder : NSProxy
+{
+    OCMockObject         *mockObject;
+    OCMInvocationMatcher *invocationMatcher;
+}
 
-- (void)addMockObserver:(OCObserverMockObject *)notificationObserver name:(NSString *)notificationName object:(id)notificationSender;
+- (instancetype)init;
+- (instancetype)initWithMockObject:(OCMockObject *)aMockObject;
+
+- (void)setMockObject:(OCMockObject *)aMockObject;
+
+- (OCMInvocationMatcher *)invocationMatcher;
+
+- (id)classMethod;
+- (id)ignoringNonObjectArgs;
 
 @end

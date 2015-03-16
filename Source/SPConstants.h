@@ -642,3 +642,6 @@ void _SPClear(id *addr);
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
 typedef NSUInteger NSCellHitResult;
 #endif
+
+// Stolen from Stack Overflow: http://stackoverflow.com/questions/969130
+#define SPLog(fmt, ...) NSLog((@"%s:%d: " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)

@@ -65,7 +65,10 @@
 
 - (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation
 {
-	NSParameterAssert(database != nil && [database length] > 0);
+	if(![database length]) {
+		SPLog(@"'database' should not be nil or empty!");
+		return NO;
+	}
 	
 	NSMutableString *query = [NSMutableString stringWithFormat:@"CREATE DATABASE %@", [database backtickQuotedString]];
 	
