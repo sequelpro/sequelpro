@@ -28,8 +28,20 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPMutableArrayAdditionsTests.h"
 #import "SPMutableArrayAdditions.h"
+
+#import <SenTestingKit/SenTestingKit.h>
+
+/**
+ * @class SPMutableArrayAdditionsTest SPMutableArrayAdditionsTest.h
+ *
+ * @author Stuart Connolly http://stuconnolly.com/
+ *
+ * SPMutableArrayAdditions tests class.
+ */
+@interface SPMutableArrayAdditionsTests : SenTestCase
+
+@end
 
 @implementation SPMutableArrayAdditionsTests
 

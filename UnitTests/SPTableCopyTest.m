@@ -29,10 +29,18 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableCopy.h"
-#import "SPTableCopyTest.h"
-
-#import <OCMock/OCMock.h>
 #import <SPMySQL/SPMySQL.h>
+
+#import <SenTestingKit/SenTestingKit.h>
+#import <OCMock/OCMock.h>
+
+#define USE_APPLICATION_UNIT_TEST 1
+
+@interface SPTableCopyTest : SenTestCase
+
+- (void)testCopyTableFromToWithData;
+
+@end
 
 @implementation SPTableCopyTest
 

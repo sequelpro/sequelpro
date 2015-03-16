@@ -28,9 +28,19 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPStringAdditionsTests.h"
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
+
+#import <SenTestingKit/SenTestingKit.h>
+
+@interface SPStringAdditionsTests : SenTestCase
+
+- (void)testStringByRemovingCharactersInSet;
+- (void)testStringWithNewUUID;
+- (void)testCreateViewSyntaxPrettifier;
+- (void)testNonConsecutivelySearchStringMatchingRanges;
+
+@end
 
 @implementation SPStringAdditionsTests
 
