@@ -2656,7 +2656,7 @@
 			name = "Unit Tests";
 			productName = "Unit Tests";
 			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productType = "com.apple.product-type.bundle";
 		};
 		584754C1120A04560057631F /* Sequel Pro QLGenerator */ = {
 			isa = PBXNativeTarget;
