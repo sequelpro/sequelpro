@@ -229,6 +229,7 @@ NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisi
 NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexSet";
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
+NSString *SPSSHClientPath                        = @"SSHClientPath";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";

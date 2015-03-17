@@ -30,6 +30,10 @@
 
 #import "SPNetworkPreferencePane.h"
 
+@interface SPNetworkPreferencePane (Private)
+- (void)updateHiddenFiles;
+@end
+
 @implementation SPNetworkPreferencePane
 
 #pragma mark -
@@ -63,6 +67,68 @@
 - (BOOL)preferencePaneAllowsResizing
 {
 	return NO;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if([SPHiddenKeyFileVisibilityKey isEqualTo:keyPath]) {
+		[self updateHiddenFiles];
+	}
+}
+
+- (void)updateHiddenFiles
+{
+	[_currentFilePanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
+}
+
+- (IBAction)pickSSHClientViaFileBrowser:(id)sender
+{
+	_currentFilePanel = [NSOpenPanel openPanel];
+	[_currentFilePanel setCanChooseFiles:YES];
+	[_currentFilePanel setCanChooseDirectories:NO];
+	[_currentFilePanel setAllowsMultipleSelection:NO];
+	[_currentFilePanel setAccessoryView:hiddenFileView];
+	[self updateHiddenFiles];
+	
+	[prefs addObserver:self
+			forKeyPath:SPHiddenKeyFileVisibilityKey
+	           options:NSKeyValueObservingOptionNew
+			   context:NULL];
+	
+	[_currentFilePanel beginSheetModalForWindow:[_currentAlert window] completionHandler:^(NSInteger result) {
+		if(result == NSFileHandlingPanelOKButton) [sshClientPath setStringValue:[[_currentFilePanel URL] path]];
+		
+		[prefs removeObserver:self forKeyPath:SPHiddenKeyFileVisibilityKey];
+		
+		_currentFilePanel = nil;
+	}];
+}
+
+- (IBAction)pickSSHClient:(id)sender
+{
+	//take value from user defaults
+	NSString *oldPath = [prefs stringForKey:SPSSHClientPath];
+	if([oldPath length]) [sshClientPath setStringValue:oldPath];
+	
+	// set up dialog
+	_currentAlert = [[NSAlert alloc] init]; //needs to be ivar so we can attach the OpenPanel later
+	[_currentAlert setAccessoryView:sshClientPickerView];
+	[_currentAlert setAlertStyle:NSWarningAlertStyle];
+	[_currentAlert setMessageText:NSLocalizedString(@"Unsupported configuration!",@"Preferences : Network : Custom SSH client : warning dialog title")];
+	[_currentAlert setInformativeText:NSLocalizedString(@"Sequel Pro only supports and is tested with the default OpenSSH client versions included with Mac OS X. Using different clients might cause connection issues, security risks or not work at all.\n\nPlease be aware, that we cannot provide support for such configurations.",@"Preferences : Network : Custom SSH client : warning dialog message")];
+	[_currentAlert addButtonWithTitle:NSLocalizedString(@"OK",@"Preferences : Network : Custom SSH client : warning dialog : accept button")];
+	[_currentAlert addButtonWithTitle:NSLocalizedString(@"Cancel",@"Preferences : Network : Custom SSH client : warning dialog : cancel button")];
+	
+	if([_currentAlert runModal] == NSAlertFirstButtonReturn) {
+		//store new value to user defaults
+		NSString *newPath = [sshClientPath stringValue];
+		if(![newPath length])
+			[prefs removeObjectForKey:SPSSHClientPath];
+		else
+			[prefs setObject:newPath forKey:SPSSHClientPath];
+	}
+	
+	SPClear(_currentAlert);
 }
 
 @end

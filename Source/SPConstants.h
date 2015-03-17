@@ -428,6 +428,7 @@ extern NSString *SPHiddenKeyFileVisibilityKey;
 extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
+extern NSString *SPSSHClientPath;
 
 // URLs
 extern NSString *SPDonationsURL;

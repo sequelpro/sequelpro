@@ -309,7 +309,20 @@
 
 	// Set up the NSTask
 	task = [[NSTask alloc] init];
-	[task setLaunchPath: @"/usr/bin/ssh"];
+	NSString *launchPath = @"/usr/bin/ssh";
+	NSString *userSSHPath = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHClientPath];
+
+	if([userSSHPath length]) {
+		launchPath = userSSHPath;
+		// And I'm sure we will get issue reports about it anyway!
+		[debugMessagesLock lock];
+		[debugMessages addObject:@"################################################################"];
+		[debugMessages addObject:[NSString stringWithFormat:@"# %@",NSLocalizedString(@"Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!", @"SSH connection : debug header with user-defined ssh binary")]];
+		[debugMessages addObject:@"################################################################"];
+		[debugMessagesLock unlock];
+	}
+	
+	[task setLaunchPath:launchPath];
 
 	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
@@ -413,11 +426,20 @@
 												object:[standardError fileHandleForReading]];
 	[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 
-	// Launch and run the tunnel
-	[task launch];
-
-	// Listen for output
-	[task waitUntilExit];
+	@try {
+		// Launch and run the tunnel
+		[task launch]; //throws for invalid paths, missing +x permission
+		
+		// Listen for output
+		[task waitUntilExit];
+	}
+	@catch (NSException *e) {
+		connectionState = SPMySQLProxyLaunchFailed;
+		// Log the exception. Could be improved by showing a dedicated alert instead
+		[debugMessagesLock lock];
+		[debugMessages addObject:[NSString stringWithFormat:@"%@: %@\n", [e name], [e reason]]];
+		[debugMessagesLock unlock];
+	}
 
 	// On tunnel close, clean up, ready for re-use if the delegate reconnects.
 	SPClear(task);

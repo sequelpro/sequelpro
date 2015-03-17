@@ -33,11 +33,12 @@
  * Connection proxy state constants.
  */
 typedef enum {
-	SPMySQLProxyIdle				= 0,
-	SPMySQLProxyConnecting			= 1,
-	SPMySQLProxyWaitingForAuth		= 2,
-	SPMySQLProxyConnected			= 3,
-	SPMySQLProxyForwardingFailed	= 4
+	SPMySQLProxyIdle             = 0,
+	SPMySQLProxyConnecting       = 1,
+	SPMySQLProxyWaitingForAuth   = 2,
+	SPMySQLProxyConnected        = 3,
+	SPMySQLProxyForwardingFailed = 4,
+	SPMySQLProxyLaunchFailed     = 5
 } SPMySQLConnectionProxyState;
 
 
