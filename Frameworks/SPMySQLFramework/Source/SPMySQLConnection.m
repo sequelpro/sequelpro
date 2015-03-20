@@ -65,6 +65,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize sslKeyFilePath;
 @synthesize sslCertificatePath;
 @synthesize sslCACertificatePath;
+@synthesize sslCipherList;
 @synthesize timeout;
 @synthesize useKeepAlive;
 @synthesize keepAliveInterval;
@@ -217,6 +218,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		[proxy setConnectionStateChangeSelector:NULL delegate:nil];
 		[proxy release];
 	}
+	
+	[self setSslCipherList:nil];
 
 	// Ensure the query lock is unlocked, thereafter setting to nil in case of pending calls
 	if ([connectionLock condition] != SPMySQLConnectionIdle) {
@@ -546,6 +549,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		const char *theSSLKeyFilePath = NULL;
 		const char *theSSLCertificatePath = NULL;
 		const char *theCACertificatePath = NULL;
+		const char *theSSLCiphers = SPMySQLSSLPermissibleCiphers;
 
 		if (sslKeyFilePath) {
 			theSSLKeyFilePath = [[sslKeyFilePath stringByExpandingTildeInPath] UTF8String];
@@ -556,8 +560,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		if (sslCACertificatePath) {
 			theCACertificatePath = [[sslCACertificatePath stringByExpandingTildeInPath] UTF8String];
 		}
+		if(sslCipherList) {
+			theSSLCiphers = [sslCipherList UTF8String];
+		}
 
-		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, SPMySQLSSLPermissibleCiphers);
+		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, theSSLCiphers);
 	}
 
 	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, SPMySQLConnectionOptions);
