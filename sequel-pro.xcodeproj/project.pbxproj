@@ -195,6 +195,7 @@
 		50EA92681AB23EFC008D3C4F /* SPTableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1141A388117BBFF200126A28 /* SPTableCopy.m */; };
 		50EA926A1AB246B8008D3C4F /* SPDatabaseActionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EA92691AB246B8008D3C4F /* SPDatabaseActionTest.m */; };
 		50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
+		50F530521ABCF66B002F2C1A /* reset.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 50F530511ABCF66B002F2C1A /* reset.pdf */; };
 		5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5806B76311A991EC00813A88 /* SPDocumentController.m */; };
 		580E8DB711EA774B000D8427 /* SequelProTabClose_Pressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */; };
 		580E8DB811EA774B000D8427 /* SequelProTabClose_Rollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 580E8DAC11EA772C000D8427 /* SequelProTabClose_Rollover.png */; };
@@ -904,6 +905,7 @@
 		50EA92691AB246B8008D3C4F /* SPDatabaseActionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseActionTest.m; sourceTree = "<group>"; };
 		50EAB5B61A8FBB08008F627A /* SPOSInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPOSInfo.h; sourceTree = "<group>"; };
 		50EAB5B71A8FBB08008F627A /* SPOSInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPOSInfo.m; sourceTree = "<group>"; };
+		50F530511ABCF66B002F2C1A /* reset.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reset.pdf; sourceTree = "<group>"; };
 		5806B76211A991EC00813A88 /* SPDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDocumentController.h; sourceTree = "<group>"; };
 		5806B76311A991EC00813A88 /* SPDocumentController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDocumentController.m; sourceTree = "<group>"; };
 		580E8DAB11EA772C000D8427 /* SequelProTabClose_Pressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SequelProTabClose_Pressed.png; sourceTree = "<group>"; };
@@ -2161,6 +2163,7 @@
 				384582C60FB9603600DDACB6 /* proc-small.png */,
 				58F48AA2161D03C6008536A1 /* quick-connect-icon.pdf */,
 				58F48B2D161D08C0008536A1 /* quick-connect-icon-white.pdf */,
+				50F530511ABCF66B002F2C1A /* reset.pdf */,
 				582E946F16837DB2003459FD /* showconsole.png */,
 				588B2CC50FE5641E00EC5FC0 /* ssh-connected.png */,
 				588B2CC60FE5641E00EC5FC0 /* ssh-connecting.png */,
@@ -2983,6 +2986,7 @@
 				582E940216829B0A003459FD /* button_bar_handle.png in Resources */,
 				582E940E1682A2AD003459FD /* button_bar_spacer@2x.png in Resources */,
 				582E94161682A463003459FD /* button_clear.png in Resources */,
+				50F530521ABCF66B002F2C1A /* reset.pdf in Resources */,
 				582E94181682A4B4003459FD /* button_duplicate.png in Resources */,
 				582E941F16835DD4003459FD /* button_edit_mode_selected.png in Resources */,
 				582E942016835DD4003459FD /* button_edit_mode.png in Resources */,
