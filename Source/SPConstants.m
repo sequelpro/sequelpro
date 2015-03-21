@@ -230,6 +230,7 @@ NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexS
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 NSString *SPSSHClientPath                        = @"SSHClientPath";
+NSString *SPSSLCipherListKey                     = @"SSLCipherList";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";

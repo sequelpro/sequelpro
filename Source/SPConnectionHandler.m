@@ -145,6 +145,16 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		if ([self sslCACertFileLocationEnabled]) {
 			[mySQLConnection setSslCACertificatePath:[self sslCACertFileLocation]];
 		}
+		
+		NSString *userSSLCipherList = [prefs stringForKey:SPSSLCipherListKey];
+		if(userSSLCipherList) {
+			//strip out disabled ciphers (e.g. in "foo:bar:--:baz")
+			NSRange markerPos = [userSSLCipherList rangeOfRegex:@":?--"];
+			if(markerPos.location != NSNotFound) {
+				userSSLCipherList = [userSSLCipherList substringToIndex:markerPos.location];
+			}
+			[mySQLConnection setSslCipherList:userSSLCipherList];
+		}
 	}
 	
 	// Connection delegate must be set before actual connection attempt is made

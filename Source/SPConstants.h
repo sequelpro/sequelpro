@@ -429,6 +429,7 @@ extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
+extern NSString *SPSSLCipherListKey;
 
 // URLs
 extern NSString *SPDonationsURL;
