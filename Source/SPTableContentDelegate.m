@@ -261,11 +261,12 @@
 				[tableContentView reloadData];
 			}
 			
+			// Retrieve the column definition
+			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
+
 			// Open the editing sheet if required
 			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				
-				// Retrieve the column definition
-				NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
 				BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[tableColumn headerCell] stringValue]];
 				
 				// A table is per definition editable
@@ -318,6 +319,7 @@
 
 				if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
 					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
+					isFieldEditable = NO;
 				}
 				
 				NSInteger editedColumn = 0;
@@ -342,6 +344,13 @@
 											 [NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
 											 nil]];
 				
+				return NO;
+			}
+			
+			// TODO: Fix editing of "Display as Hex" columns and remove this (also see above)
+			if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+				NSBeep();
+				[SPTooltip showWithObject:NSLocalizedString(@"Disable \"Display Binary Data as Hex\" in the View menu to edit this field.",@"Temporary : Tooltip shown when trying to edit a binary field in table content view while it is displayed using HEX conversion")];
 				return NO;
 			}
 			
