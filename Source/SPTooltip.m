@@ -320,8 +320,11 @@ static CGFloat slow_in_out (CGFloat t)
 	NSScreen* candidate;
 	for(candidate in [NSScreen screens])
 	{
-		if(NSMinX([candidate frame]) < pos.x && NSMinX([candidate frame]) > NSMinX(screenFrame))
-			screenFrame = [candidate frame];
+		NSRect cf = [candidate frame];
+		if(NSPointInRect(pos,cf)) {
+			screenFrame = cf;
+			break;
+		}
 	}
 
 	// is contentView a webView calculate actual rendered size via JavaScript
