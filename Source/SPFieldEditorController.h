@@ -28,6 +28,21 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#ifndef SP_CODA
+
+#import <Quartz/Quartz.h> // QuickLookUI
+
+//This is an informal protocol
+@protocol _QLPreviewPanelController
+
+- (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *)panel;
+- (void)beginPreviewPanelControl:(QLPreviewPanel *)panel;
+- (void)endPreviewPanelControl:(QLPreviewPanel *)panel;
+
+@end
+
+#endif
+
 @class SPWindow;
 
 /**
@@ -38,7 +53,11 @@
  * This class offers a sheet for editing different kind of data such as text, blobs (including images) as 
  * editSheet and bit fields as bitSheet. 
  */
-@interface SPFieldEditorController : NSWindowController <NSComboBoxDataSource>
+@interface SPFieldEditorController : NSWindowController <NSComboBoxDataSource
+#ifndef SP_CODA
+, QLPreviewPanelDataSource, QLPreviewPanelDelegate, _QLPreviewPanelController
+#endif
+>
 {
 	IBOutlet id editSheetProgressBar;
 	IBOutlet id editSheetSegmentControl;

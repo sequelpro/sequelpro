@@ -43,7 +43,6 @@
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
 #ifndef SP_CODA
-#import "QLPreviewPanel.h"
 #import "SPSplitView.h"
 #endif
 #import "SPFieldEditorController.h"

@@ -29,9 +29,6 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFieldEditorController.h"
-#ifndef SP_CODA
-#import "QLPreviewPanel.h"
-#endif
 #import "RegexKitLite.h"
 #import "SPTooltip.h"
 #import "SPGeometryDataView.h"
@@ -164,8 +161,8 @@
 #ifndef SP_CODA
 	// On Mac OSX 10.6 QuickLook runs non-modal thus order out the panel
 	// if still visible
-	if ([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
+	if ([[QLPreviewPanel sharedPreviewPanel] isVisible]) {
+		[[QLPreviewPanel sharedPreviewPanel] orderOut:nil];
 	}
 #endif
 
@@ -882,89 +879,34 @@
 - (void)invokeQuickLookOfType:(NSString *)type treatAsText:(BOOL)isText
 {
 #ifndef SP_CODA
-	// Load QL via private framework (SDK 10.5)
-	if([[NSBundle bundleWithPath:@"/System/Library/PrivateFrameworks/QuickLookUI.framework"] load]) {
-
-		[editSheetProgressBar startAnimation:self];
-
-		[self createTemporaryQuickLookFileOfType:type treatAsText:isText];
-
-		counter++;
-
-		// Init QuickLook
-		id ql = [NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel];
-
-		[[ql delegate] setDelegate:self];
-		[ql setURLs:@[[NSURL fileURLWithPath:tmpFileName]] currentIndex:0 preservingDisplayState:YES];
-
-		// TODO: No interaction with iChat and iPhoto due to .scriptSuite warning:
-		// unknown image format
-		[ql setShowsAddToiPhotoButton:NO];
-		[ql setShowsiChatTheaterButton:NO];
-		// Since we are inside of editSheet we have to avoid full-screen zooming
-		// otherwise QuickLook hangs
-		[ql setShowsFullscreenButton:NO];
-		[ql setEnableDragNDrop:NO];
-		// Order out QuickLook with animation effect according to self:previewPanel:frameForURL:
-		[ql makeKeyAndOrderFrontWithEffect:2];   // 1 = fade in
-
-		// quickLookCloseMarker == 1 break the modal session
-		quickLookCloseMarker = 0;
-
-		[editSheetProgressBar stopAnimation:self];
-
-		// Run QuickLook in its own modal seesion for event handling
-		NSModalSession session = [NSApp beginModalSessionForWindow:ql];
-		for (;;) {
-			// Conditions for closing QuickLook
-			if ([NSApp runModalSession:session] != NSRunContinuesResponse
-				|| quickLookCloseMarker == 1
-				|| ![ql isVisible])
-				break;
-			[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-									 beforeDate:[NSDate distantFuture]];
-
-		}
-		[NSApp endModalSession:session];
-
-		// set ql's delegate to nil for dealloc
-		[[ql windowController] setDelegate:nil];
-
-	}
-	// Load QL via framework (SDK 10.5 but SP runs on 10.6)
-	// TODO: This is an hack in order to be able to support QuickLook on Mac OS X 10.5 and 10.6
-	// as long as SP will be compiled against SDK 10.5.
-	// If SP will be compiled against SDK 10.6 we can use the standard way by using
-	// the QuickLookUI which is part of the Quartz.framework. See Developer example "QuickLookDownloader"
+	// See Developer example "QuickLookDownloader"
 	// file:///Developer/Documentation/DocSets/com.apple.adc.documentation.AppleSnowLeopard.CoreReference.docset/Contents/Resources/Documents/samplecode/QuickLookDownloader/index.html#//apple_ref/doc/uid/DTS40009082
-	else if([[NSBundle bundleWithPath:@"/System/Library/Frameworks/Quartz.framework/Frameworks/QuickLookUI.framework"] load]) {
 
-		[editSheetProgressBar startAnimation:self];
+	[editSheetProgressBar startAnimation:self];
 
-		[self createTemporaryQuickLookFileOfType:type treatAsText:isText];
+	[self createTemporaryQuickLookFileOfType:type treatAsText:isText];
 
-		counter++;
+	counter++;
 
-		// TODO: If QL is  visible reload it - but how?
-		// Up to now QL will close and the user has to redo it.
-		if([[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] isVisible]) {
-			[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] orderOut:nil];
-		}
-
-		[[NSClassFromString(@"QLPreviewPanel") sharedPreviewPanel] makeKeyAndOrderFront:nil];
-
-		[editSheetProgressBar stopAnimation:self];
-
-	} else {
-		[SPTooltip showWithObject:[NSString stringWithFormat:@"QuickLook is not available on that platform."]];
+	// TODO: If QL is  visible reload it - but how?
+	// Up to now QL will close and the user has to redo it.
+	if([[QLPreviewPanel sharedPreviewPanel] isVisible]) {
+		[[QLPreviewPanel sharedPreviewPanel] orderOut:nil];
 	}
+
+	[[QLPreviewPanel sharedPreviewPanel] makeKeyAndOrderFront:nil];
+
+	[editSheetProgressBar stopAnimation:self];
+
 #endif
 }
+
+#pragma mark - QLPreviewPanelController methods
 
 /**
  * QuickLook delegate for SDK 10.6. Set the Quicklook delegate to self and suppress setShowsAddToiPhotoButton since the format is unknow.
  */
-- (void)beginPreviewPanelControl:(id)panel
+- (void)beginPreviewPanelControl:(QLPreviewPanel *)panel
 {
 #ifndef SP_CODA
 
@@ -972,15 +914,13 @@
 	[panel setDelegate:self];
 	[panel setDataSource:self];
 
-	// Due to the unknown image format disable image sharing
-	[panel setShowsAddToiPhotoButton:NO];
 #endif
 }
 
 /**
  * QuickLook delegate for SDK 10.6 - not in usage.
  */
-- (void)endPreviewPanelControl:(id)panel
+- (void)endPreviewPanelControl:(QLPreviewPanel *)panel
 {
 	// This document loses its responsisibility on the preview panel
 	// Until the next call to -beginPreviewPanelControl: it must not
@@ -990,22 +930,19 @@
 /**
  * QuickLook delegate for SDK 10.6
  */
-- (BOOL)acceptsPreviewPanelControl:(id)panel;
+- (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *)panel;
 {
 	return YES;
 }
 
-// QuickLook delegates for SDK 10.6
-// - (BOOL)previewPanel:(QLPreviewPanel *)panel handleEvent:(NSEvent *)event
-// {
-// }
+#pragma mark - QLPreviewPanelDataSource methods
 
 /**
  * QuickLook delegate for SDK 10.6.
  *
  * @return It always returns 1.
  */
-- (NSInteger)numberOfPreviewItemsInPreviewPanel:(id)panel
+- (NSInteger)numberOfPreviewItemsInPreviewPanel:(QLPreviewPanel *)panel
 {
 	return 1;
 }
@@ -1015,7 +952,7 @@
  *
  * @return It returns as NSURL the temporarily created file.
  */
-- (id)previewPanel:(id)panel previewItemAtIndex:(NSInteger)anIndex
+- (id)previewPanel:(QLPreviewPanel *)panel previewItemAtIndex:(NSInteger)anIndex
 {
 	if(tmpFileName)
 		return [NSURL fileURLWithPath:tmpFileName];
@@ -1023,33 +960,19 @@
 	return nil;
 }
 
-/**
- * QuickLook delegate for SDK 10.5.
- *
- * @return It returns the frame of the application's middle. If an empty frame is returned then the panel will fade in/out instead.
- */
-- (NSRect)previewPanel:(NSPanel*)panel frameForURL:(NSURL*)URL
-{
+#pragma mark - QLPreviewPanelDelegate methods
 
-	// Close modal session defined in invokeQuickLookOfType:
-	// if user closes the QuickLook view
-	quickLookCloseMarker = 1;
-
-	// Return the App's middle point
-	NSRect mwf = [[NSApp mainWindow] frame];
-	return NSMakeRect(
-					  mwf.origin.x+mwf.size.width/2,
-					  mwf.origin.y+mwf.size.height/2,
-					  5, 5);
-
-}
+// QuickLook delegates for SDK 10.6
+// - (BOOL)previewPanel:(QLPreviewPanel *)panel handleEvent:(NSEvent *)event
+// {
+// }
 
 /**
  * QuickLook delegate for SDK 10.6.
  *
  * @return It returns the frame of the application's middle. If an empty frame is returned then the panel will fade in/out instead.
  */
-- (NSRect)previewPanel:(id)panel sourceFrameOnScreenForPreviewItem:(id)item
+- (NSRect)previewPanel:(QLPreviewPanel *)panel sourceFrameOnScreenForPreviewItem:(id)item
 {
 	// Return the App's middle point
 	NSRect mwf = [[NSApp mainWindow] frame];
@@ -1064,6 +987,8 @@
 // {
 // 	return [NSImage imageNamed:@"database"];
 // }
+
+#pragma mark -
 
 /**
  * Called by (SPImageView) if an image was pasted into the editSheet
