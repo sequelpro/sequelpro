@@ -49,6 +49,10 @@
 @implementation SPFieldEditorController
 
 @synthesize editedFieldInfo;
+@synthesize textMaxLength = maxTextLength;
+@synthesize fieldType;
+@synthesize fieldEncoding;
+@synthesize allowNULL = _allowNULL;
 
 /**
  * Initialise an instance of SPFieldEditorController using the XIB “FieldEditorSheet.xib”. Init the available Quciklook format by reading
@@ -480,46 +484,6 @@
 
 		[editSheetProgressBar stopAnimation:self];
 	}
-}
-
-/**
- * Set the maximum text length of the underlying table field for input validation.
- *
- * @param length The maximum text length
- */
-- (void)setTextMaxLength:(NSUInteger)length
-{
-	maxTextLength = length;
-}
-
-/**
- * Set the field type of the underlying table field for input validation.
- *
- * @param aType The field type which will be used for dispatching which sheet will be shown. If type == BIT the bitSheet will be used otherwise the editSheet.
- */
-- (void)setFieldType:(NSString*)aType
-{
-	fieldType = aType;
-}
-
-/**
- * Set the field encoding of the underlying table field for displaying it to the user.
- *
- * @param aEncoding encoding
- */
-- (void)setFieldEncoding:(NSString*)aEncoding
-{
-	fieldEncoding = aEncoding;
-}
-
-/**
- * Set if underlying table field allows NULL for several validations.
- *
- * @param allowNULL If allowNULL is YES NULL value is allowed for the underlying table field
- */
-- (void)setAllowNULL:(BOOL)allowNULL
-{
-	_allowNULL = allowNULL;
 }
 
 /**
