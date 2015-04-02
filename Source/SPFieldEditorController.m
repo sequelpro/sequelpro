@@ -40,6 +40,12 @@
 
 #import <SPMySQL/SPMySQL.h>
 
+typedef enum {
+	TextSegment = 0,
+	ImageSegment,
+	HexSegment
+} FieldEditorSegment;
+
 @interface SPFieldEditorController (SPFieldEditorControllerDelegate)
 
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
@@ -344,7 +350,7 @@
 		[editSheetQuickLookButton setHidden:((!_isBlob && !isBinary) || _isGeometry)];
 		[editSheetSegmentControl setHidden:(!_isBlob && !isBinary && !_isGeometry)];
 
-		[editSheetSegmentControl setEnabled:YES forSegment:1];
+		[editSheetSegmentControl setEnabled:YES forSegment:ImageSegment];
 
 		// Set window's min size since no segment and quicklook buttons are hidden
 		if (_isBlob || isBinary || _isGeometry) {
@@ -399,7 +405,7 @@
 			[editImage setHidden:YES];
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
-			[editSheetSegmentControl setSelectedSegment:2];
+			[editSheetSegmentControl setSelectedSegment:HexSegment];
 		}
 		else if ([sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 			SPGeometryDataView *v = [[[SPGeometryDataView alloc] initWithCoordinates:[sheetEditData coordinates] targetDimension:2000.0f] autorelease];
@@ -411,8 +417,8 @@
 			[hexTextView setString:@""];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
-			[editSheetSegmentControl setEnabled:NO forSegment:2];
-			[editSheetSegmentControl setSelectedSegment:0];
+			[editSheetSegmentControl setEnabled:NO forSegment:HexSegment];
+			[editSheetSegmentControl setSelectedSegment:TextSegment];
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
 		}
@@ -426,7 +432,7 @@
 			[editImage setHidden:YES];
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
-			[editSheetSegmentControl setSelectedSegment:0];
+			[editSheetSegmentControl setSelectedSegment:TextSegment];
 		}
 
 		if (image) {
@@ -437,7 +443,7 @@
 			if(!_isGeometry) {
 				[editTextView setHidden:YES];
 				[editTextScrollView setHidden:YES];
-				[editSheetSegmentControl setSelectedSegment:1];
+				[editSheetSegmentControl setSelectedSegment:ImageSegment];
 			}
 		}
 		else {
@@ -453,13 +459,13 @@
 					[hexTextScrollView setHidden:YES];
 				}
 				else {
-					[editSheetSegmentControl setEnabled:NO forSegment:1];
+					[editSheetSegmentControl setEnabled:NO forSegment:ImageSegment];
 				}
 
 				[editImage setHidden:YES];
 				[editTextView setHidden:NO];
 				[editTextScrollView setHidden:NO];
-				[editSheetSegmentControl setSelectedSegment:0];
+				[editSheetSegmentControl setSelectedSegment:TextSegment];
 			}
 
 			// Locate the caret in editTextView
@@ -491,8 +497,8 @@
  */
 - (IBAction)segmentControllerChanged:(id)sender
 {
-	switch([sender selectedSegment]){
-		case 0: // text
+	switch((FieldEditorSegment)[sender selectedSegment]){
+		case TextSegment:
 			[editTextView setHidden:NO];
 			[editTextScrollView setHidden:NO];
 			[editImage setHidden:YES];
@@ -503,7 +509,7 @@
 			[[NSApp mainWindow] makeFirstResponder:editTextView];
 #endif
 			break;
-		case 1: // image
+		case ImageSegment:
 			[editTextView setHidden:YES];
 			[editTextScrollView setHidden:YES];
 			[editImage setHidden:NO];
@@ -511,7 +517,7 @@
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editImage];
 			break;
-		case 2: // hex - load on demand
+		case HexSegment:
 			[usedSheet makeFirstResponder:hexTextView];
 			if([[hexTextView string] isEqualToString:@""]) {
 				[editSheetProgressBar startAnimation:self];
@@ -551,7 +557,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	if ([editSheetSegmentControl selectedSegment] == 1 && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
+	if ([editSheetSegmentControl selectedSegment] == ImageSegment && [sheetEditData isKindOfClass:[SPMySQLGeometryData class]]) {
 		[panel setAllowedFileTypes:@[@"pdf"]];
 		[panel setAllowsOtherFileTypes:NO];
 	}
@@ -679,7 +685,7 @@
 
 		// If the image cell now contains a valid image, select the image view
 		if (image) {
-			[editSheetSegmentControl setSelectedSegment:1];
+			[editSheetSegmentControl setSelectedSegment:ImageSegment];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:NO];
@@ -688,7 +694,7 @@
 
 			// Otherwise deselect the image view
 		} else {
-			[editSheetSegmentControl setSelectedSegment:0];
+			[editSheetSegmentControl setSelectedSegment:TextSegment];
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[editImage setHidden:YES];
@@ -722,7 +728,7 @@
 		}
 		else if ( [sheetEditData isKindOfClass:[SPMySQLGeometryData class]] ) {
 
-			if ( [editSheetSegmentControl selectedSegment] == 0 || editImage == nil ) {
+			if ( [editSheetSegmentControl selectedSegment] == TextSegment || editImage == nil ) {
 
 				[[editTextView string] writeToURL:fileURL
 										atomically:YES
