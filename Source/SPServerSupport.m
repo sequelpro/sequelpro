@@ -76,6 +76,7 @@
 @synthesize serverMajorVersion;
 @synthesize serverMinorVersion;
 @synthesize serverReleaseVersion;
+@synthesize supportsFulltextOnInnoDB;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -198,6 +199,7 @@
 	
 	// Fractional second support wasn't added until MySQL 5.6.4
 	supportsFractionalSeconds = [self isEqualToOrGreaterThanMajorVersion:5 minor:6 release:4];
+	supportsFulltextOnInnoDB  = supportsFractionalSeconds; //introduced in 5.6.4 too
 }
 
 /**
@@ -288,6 +290,7 @@
 	supportsIndexKeyBlockSize               = NO;
 	supportsQuotingEngineTypeInCreateSyntax = NO;
 	supportsFractionalSeconds               = NO;
+	supportsFulltextOnInnoDB                = NO;
 }
 
 /**

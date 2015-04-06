@@ -85,6 +85,7 @@
 	
 	// Indexes
 	BOOL supportsIndexKeyBlockSize;
+	BOOL supportsFulltextOnInnoDB;
 
 	// Events
 	BOOL supportsEvents;
@@ -252,6 +253,11 @@
  * @property supportsFractionalSeconds Indicates whether the server supports fractional seconds in date/time data types.
  */
 @property (readonly) BOOL supportsFractionalSeconds;
+
+/**
+ * @property supportsFulltextOnInnoDB Indicates whether the server supports FULLTEXT indexes with the InnoDb engine.
+ */
+@property (readonly) BOOL supportsFulltextOnInnoDB;
 
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion;
 

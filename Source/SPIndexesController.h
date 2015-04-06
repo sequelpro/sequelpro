@@ -74,7 +74,8 @@
 #endif
 		
 	BOOL _mainNibLoaded;
-	BOOL isMyISAMTale;
+	BOOL isMyISAMTable;
+	BOOL isInnoDBTable;
 	NSString *table;
 	
 	NSMutableArray *fields, *indexes, *indexedFields;
