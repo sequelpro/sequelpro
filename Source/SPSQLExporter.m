@@ -729,7 +729,7 @@
 				
 				// A NULL result indicates a permission problem
 				if ([createProcedure isNSNull]) {
-					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permisions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
+					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permissions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
 					[errors appendString:errorString];
 					if ([self sqlOutputIncludeErrors]) {
 						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", errorString] dataUsingEncoding:NSUTF8StringEncoding]];
