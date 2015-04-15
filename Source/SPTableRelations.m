@@ -35,6 +35,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#import "SPServerSupport.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -192,16 +193,19 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 		// most common are 121 (name probably in use) and 150 (types don't exactly match).
 		// Retrieve the InnoDB status and extract the most recent error for more helpful text.
 		if ([connection lastErrorID] == 1005) {
-			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
-			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
-			if (detailErrorString) {
-				errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
-			}
-
-			// Detect name duplication if appropriate
-			if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
-				[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
-				[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
+			SPInnoDBStatusQueryFormat status = [[tableDocumentInstance serverSupport] innoDBStatusQuery];
+			if(status.queryString) {
+				NSString *statusText = [[[connection queryString:status.queryString] getRowAsArray] objectAtIndex:status.columnIndex];
+				NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
+				if (detailErrorString) {
+					errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+				}
+				
+				// Detect name duplication if appropriate
+				if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
+					[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
+					[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
+				}
 			}
 		}
 

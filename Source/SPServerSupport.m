@@ -77,6 +77,7 @@
 @synthesize serverMinorVersion;
 @synthesize serverReleaseVersion;
 @synthesize supportsFulltextOnInnoDB;
+@synthesize supportsShowEngine;
 
 #pragma mark -
 #pragma mark Initialisation
@@ -200,6 +201,28 @@
 	// Fractional second support wasn't added until MySQL 5.6.4
 	supportsFractionalSeconds = [self isEqualToOrGreaterThanMajorVersion:5 minor:6 release:4];
 	supportsFulltextOnInnoDB  = supportsFractionalSeconds; //introduced in 5.6.4 too
+	
+	// The SHOW ENGINE query wasn't added until MySQL 4.1.2
+	supportsShowEngine = [self isEqualToOrGreaterThanMajorVersion:4 minor:1 release:2];
+}
+
+- (SPInnoDBStatusQueryFormat)innoDBStatusQuery
+{
+	SPInnoDBStatusQueryFormat tuple = {nil,0};
+	
+	//if we have SHOW ENGINE go with that
+	if(supportsShowEngine) {
+		tuple.queryString = @"SHOW ENGINE INNODB STATUS";
+		tuple.columnIndex = 2;
+	}
+	//up to mysql 5.5 we could also use the old SHOW INNODB STATUS
+	if([self isEqualToOrGreaterThanMajorVersion:3 minor:23 release:52] &&
+	   ![self isEqualToOrGreaterThanMajorVersion:5 minor:5 release:0]) {
+		tuple.queryString = @"SHOW INNODB STATUS";
+		tuple.columnIndex = 0;
+	}
+	
+	return tuple;
 }
 
 /**
@@ -291,6 +314,7 @@
 	supportsQuotingEngineTypeInCreateSyntax = NO;
 	supportsFractionalSeconds               = NO;
 	supportsFulltextOnInnoDB                = NO;
+	supportsShowEngine                      = NO;
 }
 
 /**

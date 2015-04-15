@@ -28,6 +28,11 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+typedef struct {
+	NSString *queryString;
+	NSUInteger columnIndex;
+} SPInnoDBStatusQueryFormat;
+
 /**
  * @class SPServerSupport SPServerSupport.h
  *
@@ -79,6 +84,7 @@
 	BOOL supportsArchiveStorageEngine;
 	BOOL supportsCSVStorageEngine;
 	BOOL supportsQuotingEngineTypeInCreateSyntax;
+	BOOL supportsShowEngine;
 	
 	// Triggers
 	BOOL supportsTriggers;
@@ -259,9 +265,19 @@
  */
 @property (readonly) BOOL supportsFulltextOnInnoDB;
 
+/**
+ * @property supportsShowEngine Indicates whether the server supports the "SHOW ENGINE x {LOGS|STATUS}" query.
+ */
+@property (readonly) BOOL supportsShowEngine;
+
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion;
 
 - (void)evaluate;
 - (BOOL)isEqualToOrGreaterThanMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion;
 
+/**
+ * @return The correct query to get the InnoDB engine status. queryString is nil for unsupported versions.
+ *         The columnIndex tells the index of the column (starting with 0) in which the status text is returned.
+ */
+- (SPInnoDBStatusQueryFormat)innoDBStatusQuery;
 @end
