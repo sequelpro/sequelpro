@@ -53,7 +53,6 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
-- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -188,6 +187,12 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 		// Retrieve the last connection error message.
 		NSString *errorText = [connection lastErrorMessage];
+		
+		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+		
+		[alert setMessageText:NSLocalizedString(@"Error creating relation", @"error creating relation message")];
+		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"The specified relation could not be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]];
 
 		// An error ID of 1005 indicates a foreign key error.  These are thrown for many reasons, but the two
 		// most common are 121 (name probably in use) and 150 (types don't exactly match).
@@ -198,7 +203,8 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 				NSString *statusText = [[[connection queryString:status.queryString] getRowAsArray] objectAtIndex:status.columnIndex];
 				NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
 				if (detailErrorString) {
-					errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+					[alert setAccessoryView:detailErrorView];
+					[detailErrorText setString:[detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
 				}
 				
 				// Detect name duplication if appropriate
@@ -209,11 +215,10 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 			}
 		}
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], self, @selector(_reopenRelationSheet:returnCode:contextInfo:), nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]);
-	} 
+		[[alert onMainThread] beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSModalResponse returnCode) {
+			[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
+		}];
+	}
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
 	}
@@ -659,14 +664,6 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 	}
 	
 	[columnInfo release];
-}
-
-/**
- * Reopen the add relation sheet, usually after an error message, with the previous content.
- */
-- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
 }
 
 #pragma mark -
