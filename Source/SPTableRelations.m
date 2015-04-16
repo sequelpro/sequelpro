@@ -53,6 +53,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
+- (void)addAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -215,13 +216,16 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 			}
 		}
 
-		[[alert onMainThread] beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSModalResponse returnCode) {
-			[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
-		}];
+		[[alert onMainThread] beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(addAlertDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 	}
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
 	}
+}
+
+- (void)addAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
 }
 
 /**
