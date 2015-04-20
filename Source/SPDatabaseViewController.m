@@ -116,16 +116,17 @@
 #pragma mark -
 #pragma mark Tab view control and delegate methods
 
+//WARNING: Might be called from code in background threads
 - (IBAction)viewStructure:(id)sender
 {
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
+		[[mainToolbar onMainThread] setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
-	[tableTabView selectTabViewItemAtIndex:0];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+	[[tableTabView onMainThread] selectTabViewItemAtIndex:0];
+	[[mainToolbar onMainThread] setSelectedItemIdentifier:SPMainToolbarTableStructure];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPStructureViewMode forKey:SPLastViewMode];

@@ -35,6 +35,7 @@
 #import "SPTableView.h"
 #import "SPAlertSheets.h"
 #import "RegexKitLite.h"
+#import "SPServerSupport.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -52,7 +53,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 - (void)_refreshRelationDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_updateAvailableTableColumns;
-- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)addAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 @end
 
@@ -187,32 +188,44 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 		// Retrieve the last connection error message.
 		NSString *errorText = [connection lastErrorMessage];
+		
+		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+		
+		[alert setMessageText:NSLocalizedString(@"Error creating relation", @"error creating relation message")];
+		[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
+		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"The specified relation could not be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]];
 
 		// An error ID of 1005 indicates a foreign key error.  These are thrown for many reasons, but the two
 		// most common are 121 (name probably in use) and 150 (types don't exactly match).
 		// Retrieve the InnoDB status and extract the most recent error for more helpful text.
 		if ([connection lastErrorID] == 1005) {
-			NSString *statusText = [connection getFirstFieldFromQuery:@"SHOW INNODB STATUS"];
-			NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
-			if (detailErrorString) {
-				errorText = [NSString stringWithFormat:NSLocalizedString(@"%@\n\nDetail: %@", @"Add relation error detail intro"), errorText, [detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
-			}
-
-			// Detect name duplication if appropriate
-			if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
-				[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
-				[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
+			SPInnoDBStatusQueryFormat status = [[tableDocumentInstance serverSupport] innoDBStatusQuery];
+			if(status.queryString) {
+				NSString *statusText = [[[connection queryString:status.queryString] getRowAsArray] objectAtIndex:status.columnIndex];
+				NSString *detailErrorString = [statusText stringByMatching:@"latest foreign key error\\s+-----*\\s+[0-9: ]*(.*?)\\s+-----" options:(RKLCaseless | RKLDotAll) inRange:NSMakeRange(0, [statusText length]) capture:1L error:NULL];
+				if (detailErrorString) {
+					[alert setAccessoryView:detailErrorView];
+					[detailErrorText setString:[detailErrorString stringByReplacingOccurrencesOfString:@"\n" withString:@" "]];
+				}
+				
+				// Detect name duplication if appropriate
+				if ([errorText isMatchedByRegex:@"errno: 121"] && [errorText isMatchedByRegex:@"already exists"]) {
+					[takenConstraintNames addObject:[[constraintName stringValue] lowercaseString]];
+					[self controlTextDidChange:[NSNotification notificationWithName:@"dummy" object:constraintName]];
+				}
 			}
 		}
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error creating relation", @"error creating relation message"), 
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], self, @selector(_reopenRelationSheet:returnCode:contextInfo:), nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"The specified relation was unable to be created.\n\nMySQL said: %@", @"error creating relation informative message"), errorText]);
-	} 
+		[[alert onMainThread] beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(addAlertDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+	}
 	else {
 		[self _refreshRelationDataForcingCacheRefresh:YES];
 	}
+}
+
+- (void)addAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
 }
 
 /**
@@ -376,7 +389,13 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	return [[relationData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	id data = [[relationData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+	//dim the database name if it matches the current database
+	if([[tableColumn identifier] isEqualToString:SPRelationFKDatabaseKey] && [[tableDocumentInstance database] isEqual:data]) {
+		NSDictionary *textAttributes = @{NSForegroundColorAttributeName: [NSColor lightGrayColor]};
+		data = [[[NSAttributedString alloc] initWithString:(NSString *)data attributes:textAttributes] autorelease];
+	}
+	return data;
 }
 
 #pragma mark -
@@ -649,14 +668,6 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 	}
 	
 	[columnInfo release];
-}
-
-/**
- * Reopen the add relation sheet, usually after an error message, with the previous content.
- */
-- (void)_reopenRelationSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
-{
-	[self performSelector:@selector(openRelationSheet:) withObject:self afterDelay:0.0];
 }
 
 #pragma mark -

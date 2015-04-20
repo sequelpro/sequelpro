@@ -752,35 +752,6 @@
 									<int key="NSTitlePosition">0</int>
 									<bool key="NSTransparent">NO</bool>
 								</object>
-								<object class="NSButton" id="226972970">
-									<reference key="NSNextResponder" ref="30022357"/>
-									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{-83, 41}, {100, 18}}</string>
-									<reference key="NSSuperview" ref="30022357"/>
-									<reference key="NSWindow"/>
-									<bool key="NSEnabled">YES</bool>
-									<object class="NSButtonCell" key="NSCell" id="708153532">
-										<int key="NSCellFlags">67108864</int>
-										<int key="NSCellFlags2">131072</int>
-										<string key="NSContents"/>
-										<reference key="NSSupport" ref="26"/>
-										<reference key="NSControlView" ref="226972970"/>
-										<int key="NSButtonFlags">1211912448</int>
-										<int key="NSButtonFlags2">2</int>
-										<object class="NSCustomResource" key="NSNormalImage">
-											<string key="NSClassName">NSImage</string>
-											<string key="NSResourceName">NSSwitch</string>
-										</object>
-										<object class="NSButtonImageSource" key="NSAlternateImage">
-											<string key="NSImageName">NSSwitch</string>
-										</object>
-										<string key="NSAlternateContents"/>
-										<string key="NSKeyEquivalent"/>
-										<int key="NSPeriodicDelay">200</int>
-										<int key="NSPeriodicInterval">25</int>
-									</object>
-									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
-								</object>
 							</array>
 							<string key="NSFrame">{{-2, -30}, {335, 67}}</string>
 							<reference key="NSSuperview" ref="762677578"/>
@@ -1448,7 +1419,6 @@
 						<reference key="object" ref="30022357"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="197030792"/>
-							<reference ref="226972970"/>
 						</array>
 						<reference key="parent" ref="762677578"/>
 						<string key="objectName">Advanced View for INSERT</string>
@@ -1476,19 +1446,6 @@
 							<reference ref="925790600"/>
 						</array>
 						<reference key="parent" ref="30022357"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">68</string>
-						<reference key="object" ref="226972970"/>
-						<array class="NSMutableArray" key="children">
-							<reference ref="708153532"/>
-						</array>
-						<reference key="parent" ref="30022357"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">69</string>
-						<reference key="object" ref="708153532"/>
-						<reference key="parent" ref="226972970"/>
 					</object>
 					<object class="IBObjectRecord">
 						<string key="id">64</string>
@@ -1842,8 +1799,6 @@
 				<string key="65.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="66.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="67.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="68.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<string key="69.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="7.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="80.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="81.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5342,7 +5297,6 @@
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="NSMenuCheckmark">{11, 11}</string>
 			<string key="NSMenuMixedState">{10, 3}</string>
-			<string key="NSSwitch">{15, 15}</string>
 			<string key="button_add">{32, 23}</string>
 			<string key="button_bar_spacer">{10, 23}</string>
 			<string key="button_remove">{32, 23}</string>

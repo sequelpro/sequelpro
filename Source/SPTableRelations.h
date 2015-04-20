@@ -58,7 +58,10 @@
 	IBOutlet NSButton            *confirmAddRelationButton;
 	IBOutlet NSProgressIndicator *dataProgressIndicator;
 	IBOutlet NSTextField         *progressStatusTextField;
-		
+	
+	IBOutlet NSView     *detailErrorView;
+	IBOutlet NSTextView *detailErrorText;
+	
 	SPMySQLConnection *connection;
 
 	NSUserDefaults *prefs;
