@@ -811,7 +811,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			[self fieldListForQuery], [selectedTable backtickQuotedString]];
 
 	// Add a filter string if appropriate
-	filterString = [self tableFilterString];
+	filterString = [[self onMainThread] tableFilterString];
 
 	if (filterString) {
 		[queryString appendFormat:@" WHERE %@", filterString];
@@ -1071,6 +1071,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  * Returns the query string for the current filter settings,
  * ready to be dropped into a WHERE clause, or nil if no filtering
  * is active.
+ *
+ * @warning Uses UI. ONLY call from main thread!
  */
 - (NSString *)tableFilterString
 {
@@ -3912,6 +3914,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 /**
  * Provide a getter for the current filter details
+ *
+ * @warning Uses UI. MUST call from main thread!
  */
 - (NSDictionary *) filterSettings
 {

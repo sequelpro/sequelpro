@@ -4577,8 +4577,9 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[sessionState setObject:[NSNumber numberWithBool:[tableContentInstance sortColumnIsAscending]] forKey:@"contentSortColIsAsc"];
 		[sessionState setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[sessionState setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
-		if ([tableContentInstance filterSettings])
-			[sessionState setObject:[tableContentInstance filterSettings] forKey:@"contentFilter"];
+		NSDictionary *filterSettings = [tableContentInstance filterSettings];
+		if (filterSettings)
+			[sessionState setObject:filterSettings forKey:@"contentFilter"];
 
 		NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
 		if (contentSelectedRows) {

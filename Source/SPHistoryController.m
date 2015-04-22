@@ -276,7 +276,7 @@
 	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
 	NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
 	NSRect contentViewport = [tableContentInstance viewport];
-	NSDictionary *contentFilter = [tableContentInstance filterSettings];
+	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
 	NSData *filterTableData = [tableContentInstance filterTableData];
 	if (!theDatabase) return;
 
