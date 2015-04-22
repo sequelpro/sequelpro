@@ -179,6 +179,7 @@
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
+		503B02CA1AE82C5E0060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
 		503CDBB21ACDC204004F8A2F /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 503CDBB11ACDC204004F8A2F /* Quartz.framework */; };
 		506CE9311A311C6C0039F736 /* SPTableContentFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
@@ -887,6 +888,8 @@
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
+		503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFilterParser.h; sourceTree = "<group>"; };
+		503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFilterParser.m; sourceTree = "<group>"; };
 		503CDBB11ACDC204004F8A2F /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		506CE92F1A311C6C0039F736 /* SPTableContentFilterController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableContentFilterController.h; sourceTree = "<group>"; };
 		506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableContentFilterController.m; sourceTree = "<group>"; };
@@ -2551,6 +2554,8 @@
 				1755A25C16B33BEA00B35787 /* SPSyntaxParser.h */,
 				50D3C3501A77135F00B5429C /* SPParserUtils.c */,
 				50D3C3511A77135F00B5429C /* SPParserUtils.h */,
+				503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */,
+				503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */,
 			);
 			name = Parsing;
 			sourceTree = "<group>";
@@ -3166,6 +3171,7 @@
 				BC9F0881100FCF2C00A80D32 /* SPFieldEditorController.m in Sources */,
 				58D2E229101222670063EF1D /* SPTextAndLinkCell.m in Sources */,
 				BC05F1C5101241DF008A97F8 /* YRKSpinningProgressIndicator.m in Sources */,
+				503B02CA1AE82C5E0060CAB1 /* SPTableFilterParser.m in Sources */,
 				4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */,
 				4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */,
 				4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */,

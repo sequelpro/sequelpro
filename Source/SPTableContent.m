@@ -61,6 +61,7 @@
 #endif
 #import "SPCustomQuery.h"
 #import "SPThreadAdditions.h"
+#import "SPTableFilterParser.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -1104,8 +1105,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
 
-	NSString *filterString;
-
 	if(contentFilters == nil) {
 		NSLog(@"Fatal error while retrieving content filters. No filters found.");
 		NSBeep();
@@ -1133,160 +1132,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		return nil;
 	}
-
-	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] integerValue];
-
-	BOOL suppressLeadingTablePlaceholder = NO;
-	if([filter objectForKey:@"SuppressLeadingFieldPlaceholder"])
-		suppressLeadingTablePlaceholder = YES;
-
-	// argument if Filter requires only one argument
-	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
-
-	// If the filter field is empty and the selected filter does not require
-	// only one argument, then no filtering is required - return nil.
-	if (![argument length] && numberOfArguments == 1) {
-		[argument release];
-		return nil;
-	}
-
-	// arguments if Filter requires two arguments
-	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:[firstBetweenField stringValue]];
-	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:[secondBetweenField stringValue]];
-
-	// If filter requires two arguments and either of the argument fields are empty
-	// return nil.
-	if (numberOfArguments == 2) {
-		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
-			[argument release];
-			[firstBetweenArgument release];
-			[secondBetweenArgument release];
-			return nil;
-		}
-	}
-
-	// Retrieve actual WHERE clause
-	NSMutableString *clause = [[NSMutableString alloc] init];
-	[clause setString:[filter objectForKey:@"Clause"]];
-
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY " withString:(caseSensitive) ? @"BINARY " : @""];
-	[clause flushCachedRegexData];
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:([fieldField titleOfSelectedItem]) ? [[fieldField titleOfSelectedItem] backtickQuotedString] : @""];
-	[clause flushCachedRegexData];
-
-	// Escape % sign for format insertion ie if number of arguments is greater than 0
-	if(numberOfArguments > 0)
-		[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
-	[clause flushCachedRegexData];
-
-	// Replace placeholder ${} by %@
-	NSRange matchedRange;
-	NSString *re = @"(?<!\\\\)\\$\\{.*?\\}";
-	if([clause isMatchedByRegex:re]) {
-		while([clause isMatchedByRegex:re]) {
-			matchedRange = [clause rangeOfRegex:re];
-			[clause replaceCharactersInRange:matchedRange withString:@"%@"];
-			[clause flushCachedRegexData];
-		}
-	}
-
-	// Check number of placeholders and given 'NumberOfArguments'
-	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
-		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
-		NSBeep();
-		[argument release];
-		[firstBetweenArgument release];
-		[secondBetweenArgument release];
-		[clause release];
-		return nil;
-	}
-
-	// Construct the filter string according the required number of arguments
-
-	if(suppressLeadingTablePlaceholder) {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:clause,
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
-					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
-		} else {
-			filterString = [NSString stringWithString:clause];
-				if(numberOfArguments > 2) {
-					NSLog(@"Filter with more than 2 arguments is not yet supported.");
-					NSBeep();
-				}
-		}
-	} else {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString],
-				[NSString stringWithFormat:clause,
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
-					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString],
-				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
-		} else {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString], clause];
-				if(numberOfArguments > 2) {
-					NSLog(@"Filter with more than 2 arguments is not yet supported.");
-					NSBeep();
-				}
-		}
-	}
-
-	[argument release];
-	[firstBetweenArgument release];
-	[secondBetweenArgument release];
-	[clause release];
-
-	// Return the filter string
-	return filterString;
-}
-
-/**
- * Escape argument by looking for used quoting strings in a clause.  Attempt to
- * be smart - use a single escape for most clauses, doubling up for LIKE clauses.
- * Also attempt to not escape what look like common escape sequences - \n, \r, \t.
- *
- * @param argument The to be used filter argument which should be be escaped
- *
- * @param clause The entire WHERE filter clause
- *
- */
-- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause
-{
-	BOOL clauseIsLike = [clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"];
-	NSString *recognizedEscapeSequences, *escapeSequence, *regexTerm;
-	NSMutableString *arg = [argument mutableCopy];
-
-	// Determine the character set not to escape slashes before, and the escape depth
-	if (clauseIsLike) {
-		recognizedEscapeSequences = @"nrt_%";
-		escapeSequence = @"\\\\\\\\\\\\\\\\";
-	} else {
-		recognizedEscapeSequences = @"nrt";
-		escapeSequence = @"\\\\\\\\";
-	}
-	regexTerm = [NSString stringWithFormat:@"(\\\\)(?![%@])", recognizedEscapeSequences];
-
-	// Escape slashes appropriately
-	[arg replaceOccurrencesOfRegex:regexTerm withString:escapeSequence];
-	[arg flushCachedRegexData];
-
-	// Get quote sign for escaping - this should work for 99% of all cases
-	NSString *quoteSign = [clause stringByMatching:@"([\"'])[^\\1]*?%@[^\\1]*?\\1" capture:1L];
-
-	// Escape argument
-	if(quoteSign != nil && [quoteSign length] == 1) {
-		[arg replaceOccurrencesOfRegex:[NSString stringWithFormat:@"(%@)", quoteSign] withString:@"\\\\$1"];
-		[arg flushCachedRegexData];
-	}
-
-	return [arg autorelease];
+	
+	SPTableFilterParser *parser = [[[SPTableFilterParser alloc] initWithFilterClause:[filter objectForKey:@"Clause"] numberOfArguments:[[filter objectForKey:@"NumberOfArguments"] integerValue]] autorelease];
+	[parser setArgument:[argumentField stringValue]];
+	[parser setFirstBetweenArgument:[firstBetweenField stringValue]];
+	[parser setSecondBetweenArgument:[secondBetweenField stringValue]];
+	[parser setSuppressLeadingTablePlaceholder:(!![filter objectForKey:@"SuppressLeadingFieldPlaceholder"])];
+	[parser setCaseSensitive:caseSensitive];
+	[parser setCurrentField:[fieldField titleOfSelectedItem]];
+	
+	return [parser filterString];
 }
 
 /**
