@@ -50,8 +50,10 @@
 {
 	self = [super init];
 	if (self) {
-		numberOfArguments = numArgs;
-		_clause           = [filter copy];
+		numberOfArguments               = numArgs;
+		_clause                         = [filter copy];
+		caseSensitive                   = NO;
+		suppressLeadingTablePlaceholder = NO;
 	}
 	return self;
 }
@@ -73,7 +75,7 @@
 	NSString *filterString;
 	
 	// argument if Filter requires only one argument
-	NSMutableString *argument = [[NSMutableString alloc] initWithString:_argument];
+	NSMutableString *argument = [[NSMutableString alloc] initWithString:(_argument? _argument : @"")];
 
 	// If the filter field is empty and the selected filter does not require
 	// only one argument, then no filtering is required - return nil.
@@ -83,8 +85,8 @@
 	}
 	
 	// arguments if Filter requires two arguments
-	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:_firstBetweenArgument];
-	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:_secondBetweenArgument];
+	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:(_firstBetweenArgument? _firstBetweenArgument : @"")];
+	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:(_secondBetweenArgument? _secondBetweenArgument : @"")];
 	
 	// If filter requires two arguments and either of the argument fields are empty
 	// return nil.
