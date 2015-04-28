@@ -119,6 +119,7 @@ static NSString *SPSSLCipherPboardTypeName = @"SSLCipherPboardType";
 	[_currentFilePanel setCanChooseDirectories:NO];
 	[_currentFilePanel setAllowsMultipleSelection:NO];
 	[_currentFilePanel setAccessoryView:hiddenFileView];
+	[_currentFilePanel setResolvesAliases:NO];
 	[self updateHiddenFiles];
 	
 	[prefs addObserver:self
