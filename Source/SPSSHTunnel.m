@@ -40,6 +40,8 @@
 #import <netinet/in.h>
 #import <CommonCrypto/CommonDigest.h>
 
+static unsigned short getRandomPort();
+
 @implementation SPSSHTunnel
 
 @synthesize passwordPromptCancelled;
@@ -264,36 +266,10 @@
 
 	// If no local port has yet been chosen, choose one
 	if (!localPort) {
-		int tempSocket;
-		struct sockaddr_in tempSocketAddress;
-		size_t addressLength = sizeof(tempSocketAddress);
-		if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
-			memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
-			tempSocketAddress.sin_family = AF_INET;
-			tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-			tempSocketAddress.sin_port = 0;
-			if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
-				if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
-					localPort = ntohs(tempSocketAddress.sin_port);
-				}
-			}
-			close(tempSocket);
-		}
+		localPort = getRandomPort();
 		
 		if (useHostFallback) {
-			if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
-				memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
-				tempSocketAddress.sin_family = AF_INET;
-				tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-				tempSocketAddress.sin_port = 0;
-				if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
-					if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
-						localPortFallback = ntohs(tempSocketAddress.sin_port);
-					}
-				}
-				close(tempSocket);
-			}
-		
+			localPortFallback = getRandomPort();
 		}
 		
 		// Abort if no local free port could be allocated
@@ -748,7 +724,7 @@
 {
 	delegate = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	if (connectionState != SPMySQLProxyIdle) [self disconnect];
+	[self disconnect];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	SPClear(sshHost);
 	SPClear(sshLogin);
@@ -775,3 +751,25 @@
 }
 
 @end
+
+#pragma mark -
+
+unsigned short getRandomPort() {
+	int port = 0;
+	int tempSocket;
+	struct sockaddr_in tempSocketAddress;
+	size_t addressLength = sizeof(tempSocketAddress);
+	if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
+		memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
+		tempSocketAddress.sin_family = AF_INET;
+		tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+		tempSocketAddress.sin_port = 0;
+		if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
+			if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
+				port = ntohs(tempSocketAddress.sin_port);
+			}
+		}
+		close(tempSocket);
+	}
+	return port;
+}

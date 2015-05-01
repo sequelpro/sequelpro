@@ -174,8 +174,12 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if (![mySQLConnection isConnected]) {
 		if (sshTunnel && !cancellingConnection) {
 			
-			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+			// This is a race condition we cannot fix "properly":
+			// For meaningful error handling we need to also consider the debug output from the SSH connection.
+			// The SSH debug output might be sligthly delayed though (flush, delegates, ...) or
+			// there might not even by any output at all (when it is purely a libmysql issue).
+			// TL;DR: No guaranteed events we could wait for, just trying our luck.
+			[NSThread sleepForTimeInterval:0.1]; // 100ms
 			
 			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
 			if ([sshTunnel state] == SPMySQLProxyForwardingFailed) {
@@ -184,7 +188,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 					[mySQLConnection connect];
 					
 					if (![mySQLConnection isConnected]) {
-						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+						[NSThread sleepForTimeInterval:0.1]; //100ms
 					}
 				}
 			}
