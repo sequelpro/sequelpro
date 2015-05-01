@@ -38,7 +38,7 @@
 	NSString *_currentField;
 	NSString *_argument;
 	NSString *_firstBetweenArgument;
-	NSString *_secondsBetweenArgument;
+	NSString *_secondBetweenArgument;
 	
 	BOOL caseSensitive;
 	BOOL suppressLeadingTablePlaceholder;
