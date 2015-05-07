@@ -171,20 +171,23 @@ static SPQueryController *sharedQueryController = nil;
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
-				if (includeTimestamps || includeConnections) [string appendString:@"/* "];
+				if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"/* "];
 				
-				if (includeTimestamps) {
-					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
+				NSDate *date = [message messageDate];
+				if (includeTimestamps && date) {
+					[string appendString:[dateFormatter stringFromDate:date]];
 					[string appendString:@" "];
 				}
 
-				if (includeConnections) {
-					[string appendString:[message messageConnection]];
+				NSString *connection = [message messageConnection];
+				if (includeConnections && connection) {
+					[string appendString:connection];
 					[string appendString:@" "];
 				}
 
-				if (includeDatabases) {
-					[string appendString:[message messageDatabase]];
+				NSString *database = [message messageDatabase];
+				if (includeDatabases && database) {
+					[string appendString:database];
 					[string appendString:@" "];
 				}
 
