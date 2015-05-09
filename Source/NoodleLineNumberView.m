@@ -59,6 +59,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 - (void)invalidateLineIndices;
 - (void)calculateLines;
 - (void)updateGutterThicknessConstants;
+- (void)setRuleThicknessNumber:(NSNumber *)aNum;
 
 @end
 
@@ -112,6 +113,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	if (lineIndices) [lineIndices release];
 	if (textAttributes) [textAttributes release];
@@ -566,15 +568,21 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 			currentRuleThickness = newThickness;
 
 			// Not a good idea to resize the view during calculations (which can happen during
-			// display). Do a delayed perform (using NSInvocation since arg is a float).
-			NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];
-			[invocation setSelector:@selector(setRuleThickness:)];
-			[invocation setTarget:self];
-			[invocation setArgument:&newThickness atIndex:2];
-
-			[invocation performSelector:@selector(invoke) withObject:nil afterDelay:0.0];
+			// display). Do a delayed perform.
+			[self performSelector:@selector(setRuleThicknessNumber:) withObject:[NSNumber numberWithFloat:newThickness] afterDelay:0.0];
 		}
 	}
+}
+
+- (void)setRuleThicknessNumber:(NSNumber *)aNum
+{
+	// We want to do a delayed perform, but setRuleThickness: does take a CGFloat
+	// and not an object. In the past we used NSInvocation to work around that,
+	// however that has one major issue: >>This class does not retain the arguments
+	// for the contained invocation by default.<< (NSInvocation doc).
+	// A perform with delay 0.0 is queued with the run loop, so a dealloc can very
+	// well happen before that!
+	[self setRuleThickness:[aNum floatValue]];
 }
 
 - (void)updateGutterThicknessConstants
