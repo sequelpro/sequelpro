@@ -656,7 +656,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	// Favorites export
 	if (action == @selector(exportFavorites:)) {
 		
-		if ([[favoritesRoot allChildLeafs] count] == 0) {
+		if ([[favoritesRoot allChildLeafs] count] == 0 || selectedRows == 0) {
 			return NO;
 		}
 		else if (selectedRows == 1) {

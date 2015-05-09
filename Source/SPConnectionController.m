@@ -1039,10 +1039,17 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 - (IBAction)exportFavorites:(id)sender
 {
+	// additional empty selection check
+	if(![[self selectedFavoriteNodes] count]) return;
+	
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	
-	NSString *fileName = [[self selectedFavoriteNodes] count] > 1 ? SPExportFavoritesFilename : [[[self selectedFavorite] objectForKey:SPFavoriteNameKey] stringByAppendingPathExtension:@"plist"];
-	
+	// suggest the name of the favorite or a default name for multiple selection
+	NSString *fileName = ([[self selectedFavoriteNodes] count] == 1)? [[[self selectedFavorite] objectForKey:SPFavoriteNameKey] stringByAppendingPathExtension:@"plist"] : nil;
+	// This if() is so we can also catch nil due to favorite corruption (NSSavePanel will @throw if nil is passed in)
+	if(!fileName)
+		fileName = SPExportFavoritesFilename;
+		
 	[savePanel setAccessoryView:exportPanelAccessoryView];
 	[savePanel setNameFieldStringValue:fileName];
 
@@ -1652,7 +1659,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	[favoritesOutlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:[favoritesOutlineView rowForItem:node]] byExtendingSelection:NO];
 	[self _scrollToSelectedNode];
-		}
+}
 
 /**
  * Scroll to the currently selected node.
@@ -1663,7 +1670,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if ([favoritesOutlineView selectedRow] == -1) return;
 
 	[favoritesOutlineView scrollRowToVisible:[favoritesOutlineView selectedRow]];
-	}
+}
 
 /**
  * Removes the supplied tree node.
@@ -1678,9 +1685,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[self _reloadFavoritesViewData];
 
-	// Clear the selection and update the interface to match
-	[favoritesOutlineView selectRowIndexes:nil byExtendingSelection:NO];
-	[self updateFavoriteSelection:self];
+	// Select Quick Connect item to prevent empty selection
+	[self _selectNode:quickConnectItem];
 	
 	[connectionResizeContainer setHidden:NO];
 	[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
