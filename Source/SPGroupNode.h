@@ -28,6 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import "SPNamedNode.h"
 /**
  * @class SPGroupNode SPGroupNode.h
  *
@@ -35,7 +36,7 @@
  *
  * Tree node that represents a group.
  */
-@interface SPGroupNode : NSObject <NSCopying, NSCoding>
+@interface SPGroupNode : NSObject <NSCopying, NSCoding, SPNamedNode>
 {
 	BOOL nodeIsExpanded;
 	
@@ -53,7 +54,9 @@
 @property (readwrite, assign) BOOL nodeIsExpanded;
 
 - (id)initWithName:(NSString *)name;
+- (id)initWithDictionary:(NSDictionary *)dict;
 
 + (SPGroupNode *)groupNodeWithName:(NSString *)name;
++ (SPGroupNode *)groupNodeWithDictionary:(NSDictionary *)dict;
 
 @end

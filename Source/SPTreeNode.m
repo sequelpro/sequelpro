@@ -50,7 +50,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 - (id)initWithRepresentedObject:(id)object
 {
 	if ((self = [super initWithRepresentedObject:object])) {
-		[self setIsGroup:NO];
+		[self setIsGroup:[object isKindOfClass:[SPGroupNode class]]];
 	}
 	
 	return self;
@@ -197,11 +197,12 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 
 /**
  * Returns YES if self is contained anywhere inside the children or children of
- * sub-nodes of the nodes contained inside the supplied array.
+ * sub-nodes of the nodes contained inside the supplied array or is itself a 
+ * member of the array.
  *
  * @param nodes The array of nodes to search
  * 
- * @return A BOOL indicating whether or not it's a descendent
+ * @return A BOOL indicating whether or not it's a descendent or array member
  */
 - (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes
 {	
@@ -218,6 +219,34 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
     }
 	
     return NO;
+}
+
+/**
+ * Returns YES if self is contained anywhere inside the children or children of
+ * sub-nodes of the nodes contained inside the supplied array, but NOT the given
+ * array itself. 
+ * This means, if self is a member of nodes but not a child of any
+ * other node in nodes it will still return NO.
+ *
+ * @param nodes The array of nodes to search
+ *
+ * @return A BOOL indicating whether or not it's a descendent
+ */
+- (BOOL)isDescendantOfNodes:(NSArray *)nodes
+{
+	for (SPTreeNode *node in nodes)
+	{
+		if (node == self) continue;
+		
+		// Check all the sub-nodes
+		if ([node isGroup]) {
+			if ([self isDescendantOfOrOneOfNodes:[node childNodes]]) {
+				return YES;
+			}
+		}
+	}
+	
+	return NO;
 }
 
 /**
@@ -265,6 +294,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
+#warning This is not a valid initializer.
 	[self setIsGroup:[[coder decodeObjectForKey:SPTreeNodeIsGroupKey] boolValue]];
 	
 	return self;

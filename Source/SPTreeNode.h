@@ -55,6 +55,7 @@
 - (SPTreeNode *)parentFromArray:(NSArray *)array;
 
 - (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes;
+- (BOOL)isDescendantOfNodes:(NSArray *)nodes;
 
 - (NSDictionary *)dictionaryRepresentation;
 

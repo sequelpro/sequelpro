@@ -74,7 +74,10 @@
 	// Get a dictionary representation of all favorites
 	for (SPTreeNode *node in [self exportFavorites])
 	{
-		[favorites addObject:[node dictionaryRepresentation]];
+		// The selection could contain a group as well as items in that group.
+		// So we skip those items, as their group will already export them.
+		if(![node isDescendantOfNodes:[self exportFavorites]])
+			[favorites addObject:[node dictionaryRepresentation]];
 	}
 	
 	NSDictionary *dictionary = @{SPFavoritesDataRootKey : favorites};

@@ -51,6 +51,7 @@
 #import "SPFavoritesImporter.h"
 #import "SPThreadAdditions.h"
 #import "SPFavoriteColorSupport.h"
+#import "SPNamedNode.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -738,7 +739,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	SPTreeNode *node = [self selectedFavoriteNode];
 	
-	return (![node isGroup]) ? [[node representedObject] nodeFavorite] : nil;
+	return (![node isGroup]) ? [(SPFavoriteNode *)[node representedObject] nodeFavorite] : nil;
 }
 
 /**
@@ -1045,7 +1046,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSSavePanel *savePanel = [NSSavePanel savePanel];
 	
 	// suggest the name of the favorite or a default name for multiple selection
-	NSString *fileName = ([[self selectedFavoriteNodes] count] == 1)? [[[self selectedFavorite] objectForKey:SPFavoriteNameKey] stringByAppendingPathExtension:@"plist"] : nil;
+	NSString *fileName = ([[self selectedFavoriteNodes] count] == 1)? [[(id<SPNamedNode>)[[self selectedFavoriteNode] representedObject] nodeName] stringByAppendingPathExtension:@"plist"] : nil;
 	// This if() is so we can also catch nil due to favorite corruption (NSSavePanel will @throw if nil is passed in)
 	if(!fileName)
 		fileName = SPExportFavoritesFilename;

@@ -1,9 +1,9 @@
 //
-//  SPFavoriteNode.h
+//  SPNamedNode.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on November 8, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 11.05.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,26 +28,10 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPNamedNode.h"
-/**
- * @class SPFavoriteNode SPFavoriteNode.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * Tree node the represents a connection favorite.
- */
-@interface SPFavoriteNode : NSObject <NSCopying, NSCoding, SPNamedNode>
-{	
-	NSMutableDictionary *nodeFavorite;
-}
+#import <Foundation/Foundation.h>
 
-/**
- * @property nodeFavorite The actual favorite dictionary
- */
-@property (readwrite, retain) NSMutableDictionary *nodeFavorite;
+@protocol SPNamedNode <NSObject>
 
-- (id)initWithDictionary:(NSMutableDictionary *)dictionary;
-
-+ (SPFavoriteNode *)favoriteNodeWithDictionary:(NSMutableDictionary *)dictionary;
+- (NSString *)nodeName;
 
 @end

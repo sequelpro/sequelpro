@@ -891,6 +891,7 @@
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
+		5037F79A1B00148000733564 /* SPNamedNode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPNamedNode.h; sourceTree = "<group>"; };
 		503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFilterParser.h; sourceTree = "<group>"; };
 		503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFilterParser.m; sourceTree = "<group>"; };
 		503B02CE1AE95C2C0060CAB1 /* SPTableFilterParserTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFilterParserTest.m; sourceTree = "<group>"; };
@@ -1756,6 +1757,7 @@
 				1798F1941550181B004B0AB8 /* SPGroupNode.m */,
 				17D3C22012859E070047709F /* SPFavoriteNode.h */,
 				17D3C22112859E070047709F /* SPFavoriteNode.m */,
+				5037F79A1B00148000733564 /* SPNamedNode.h */,
 			);
 			name = "Tree Nodes";
 			sourceTree = "<group>";

@@ -617,8 +617,6 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	
 	SPTreeNode *node = [self selectedFavoriteNode];
 	NSInteger selectedRows = [favoritesOutlineView numberOfSelectedRows];
-	
-	if (node == quickConnectItem) return NO;
 
 	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
 		
@@ -634,7 +632,14 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		if (action == @selector(reverseSortFavorites:)) {
 			[menuItem setState:reverseFavoritesSort];
 		}
+		
+		return YES;
 	}
+	
+	// import does not depend on a selection
+	if(action == @selector(importFavorites:)) return YES;
+	
+	if (node == quickConnectItem) return NO;
 
 	// Remove/rename the selected node
 	if (action == @selector(removeNode:) || action == @selector(renameNode:)) {
@@ -658,9 +663,6 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		
 		if ([[favoritesRoot allChildLeafs] count] == 0 || selectedRows == 0) {
 			return NO;
-		}
-		else if (selectedRows == 1) {
-			return (![[self selectedFavoriteNode] isGroup]);
 		}
 		else if (selectedRows > 1) {
 			[menuItem setTitle:NSLocalizedString(@"Export Selected...", @"export selected favorites menu item")];
