@@ -1545,7 +1545,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
  */
 
 - (void)_favoriteTypeDidChange
-	{
+{
 	NSDictionary *favorite = [self selectedFavorite];
 
 	// If either socket or host is localhost, clear.
@@ -1560,7 +1560,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setName:favoriteName];
 		}
 	}
-	}
+}
 
 /**
  * Convenience method for reloading the outline view, expanding the root item and scrolling to the selected item.
@@ -1768,7 +1768,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	return favoriteNode;
-	}
+}
 #endif
 
 /**
@@ -1780,7 +1780,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSString *result = [subject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 	
 	return [result stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-		}
+}
 
 #ifndef SP_CODA
 /**
@@ -1803,7 +1803,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 
 	return aName;
-	}
+}
 
 		
 /**
@@ -1816,7 +1816,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// If not connecting, hide the connection status text to reflect changes
 	if (!isConnecting) {
 		[progressIndicatorText setHidden:YES];
-		}
+	}
 
 	if (isEditingConnection) return;
 
@@ -1833,13 +1833,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Show the area to allow saving the changes
 	[self setIsEditingConnection:YES];
 	[favoritesOutlineView setNeedsDisplayInRect:[favoritesOutlineView rectOfRow:[favoritesOutlineView selectedRow]]];
-	}
+}
 
 /**
  * If editing is active, mark editing as complete, triggering UI updates to match.
  */
 - (void)_stopEditingConnection
-	{
+{
 	if (!isEditingConnection) return;
 
 	[self setIsEditingConnection:NO];
@@ -1847,7 +1847,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[editButtonsView setHidden:YES];
 	[progressIndicatorText setHidden:YES];
 	[(NSView *)favoritesOutlineView display];
-			}
+}
 #endif
 
 - (void)_documentWillClose:(NSNotification *)notification
@@ -1863,7 +1863,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 	
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], SPClear(sshTunnel);
-	}
+}
 
 #pragma mark -
 
