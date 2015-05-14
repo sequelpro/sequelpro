@@ -563,6 +563,9 @@
 {
 	NSString *taskString;
 	
+	//ensure there is no pending edit, which could be messed up (#2113)
+	[[tableDocumentInstance parentWindow] endEditingFor:nil];
+	
 	if ([queries count] > 1) {
 		taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %i of %lu...", @"Running multiple queries string"), 1, (unsigned long)[queries count]];
 	} 
@@ -3822,27 +3825,31 @@
 	pos.y -= 20;
 	switch(numberOfPossibleUpdateRows) {
 		case -1:
-		[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
-				atLocation:pos
-				ofType:@"text"];
-		shouldBeginEditing = NO;
+			NSBeep();
+			[SPTooltip showWithObject:kCellEditorErrorNoMultiTabDb
+					atLocation:pos
+					ofType:@"text"];
+			shouldBeginEditing = NO;
 		break;
+
 		case 0:
-		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, [columnDefinition objectForKey:@"org_table"]]
-				atLocation:pos
-				ofType:@"text"];
-		shouldBeginEditing = NO;
+			NSBeep();
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorNoMatch, [columnDefinition objectForKey:@"org_table"]]
+					atLocation:pos
+					ofType:@"text"];
+			shouldBeginEditing = NO;
 		break;
 
 		case 1:
-		shouldBeginEditing = YES;
+			shouldBeginEditing = YES;
 		break;
 
 		default:
-		[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
-				atLocation:pos
-				ofType:@"text"];
-		shouldBeginEditing = NO;
+			NSBeep();
+			[SPTooltip showWithObject:[NSString stringWithFormat:kCellEditorErrorTooManyMatches, (long)numberOfPossibleUpdateRows]
+					atLocation:pos
+					ofType:@"text"];
+			shouldBeginEditing = NO;
 	}
 
 	isFieldEditable = shouldBeginEditing;
