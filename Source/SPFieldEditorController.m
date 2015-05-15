@@ -1073,7 +1073,7 @@ typedef enum {
 	}
 	[bitSheetIntegerTextField setStringValue:[[NSNumber numberWithUnsignedLongLong:intValue] stringValue]];
 	[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
-	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (unsigned long long)intValue]];
+	[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llo", (unsigned long long)intValue]];
 	// free old data
 	if ( sheetEditData != nil ) {
 		[sheetEditData release];
@@ -1199,7 +1199,7 @@ typedef enum {
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%lu", i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%lX", (unsigned long)intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", (long long)intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llo", (long long)intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
@@ -1223,7 +1223,7 @@ typedef enum {
 			[[self valueForKeyPath:[NSString stringWithFormat:@"bitSheetBitButton%ld", (long)i]] setState:NSOffState];
 
 		[bitSheetHexTextField setStringValue:[NSString stringWithFormat:@"%qX", intValue]];
-		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llO", intValue]];
+		[bitSheetOctalTextField setStringValue:[NSString stringWithFormat:@"%llo", intValue]];
 
 		i = 0;
 		while( intValue && i < maxBit )
