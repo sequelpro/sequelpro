@@ -139,6 +139,21 @@
  */
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+	NSDictionary *spfDict = nil;
+	NSArray *args = [[NSProcessInfo processInfo] arguments];
+	if (args.count == 5) {
+		if (([[args objectAtIndex:1] isEqualToString:@"--spfData"] && [[args objectAtIndex:3] isEqualToString:@"--dataVersion"] && [[args objectAtIndex:4] isEqualToString:@"1"]) || ([[args objectAtIndex:3] isEqualToString:@"--spfData"] && [[args objectAtIndex:1] isEqualToString:@"--dataVersion"] && [[args objectAtIndex:2] isEqualToString:@"1"])) {
+			NSData* data = [[args objectAtIndex:2] dataUsingEncoding:NSUTF8StringEncoding];
+			NSError *error = nil;
+			spfDict = [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:&error];
+			if (error) {
+				spfDict = nil;
+			}
+		}
+	}
+	
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(externalApplicationWantsToOpenADatabaseConnection:) name:@"ExternalApplicationWantsToOpenADatabaseConnection" object:nil];
+	
 	// Set ourselves as the crash reporter delegate
 	[[FRFeedbackReporter sharedReporter] setDelegate:self];
 
@@ -151,10 +166,45 @@
 	// If no documents are open, open one
 	if (![self frontDocument]) {
 		[self newWindow:self];
-
+		
+		if (spfDict) {
+			[[self frontDocument] setState:spfDict];
+		}
+		
 		// Set autoconnection if appropriate
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
 			[[self frontDocument] connect];
+		}
+	}
+}
+
+
+- (void)externalApplicationWantsToOpenADatabaseConnection:(NSNotification *)notification
+{
+	SPWindowController *frontController = nil;
+	
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
+		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+			frontController = [aWindow windowController];
+			break;
+		}
+	}
+	
+	// If no window was found or the front most window has no tabs, create a new one
+	if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
+		[self newWindow:self];
+		// Open the spf file in a new tab if the tab bar is visible
+	} else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
+		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
+		[frontController addNewConnection:self];
+	}
+	
+	NSDictionary *userInfo = [notification userInfo];
+	NSString *MAMP_SPFVersion = [userInfo objectForKey:@"dataVersion"];
+	if ([MAMP_SPFVersion isEqualToString:@"1"]) {
+		NSDictionary *spfStructure = [userInfo objectForKey:@"spfData"];
+		if (spfStructure) {
+			[[self frontDocument] setState:spfStructure];
 		}
 	}
 }
