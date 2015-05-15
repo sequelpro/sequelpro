@@ -32,6 +32,7 @@
 #ifndef SP_CODA
 #import "SPFavoritesController.h"
 #import "SPTableTextFieldCell.h"
+#import "SPFavoriteTextFieldCell.h"
 #import "SPPreferenceController.h"
 #import "SPGeneralPreferencePane.h"
 #import "SPAppController.h"
@@ -39,6 +40,7 @@
 #import "SPGroupNode.h"
 #import "SPTreeNode.h"
 #import "SPFavoritesOutlineView.h"
+#import "SPFavoriteColorSupport.h"
 #endif
 
 #ifndef SP_CODA
@@ -145,32 +147,41 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
 {
-	SPTreeNode *node = (SPTreeNode *)item;
+	SPTreeNode              *node         = (SPTreeNode *)item;
+	SPFavoriteTextFieldCell *favoriteCell = (SPFavoriteTextFieldCell *)cell;
 	
 	// Draw entries with the small system font by default
-	[(SPTableTextFieldCell *)cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+	[cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 
 	// Set an image as appropriate; the quick connect image for that entry, no image for other
 	// top-level items, the folder image for group nodes, or the database image for other nodes.
 	if (![[node parentNode] parentNode]) {
 		if (node == quickConnectItem) {
 			if ([outlineView rowForItem:item] == [outlineView selectedRow]) {
-				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImageWhite]];
+				[favoriteCell setImage:[NSImage imageNamed:SPQuickConnectImageWhite]];
 			} 
 			else {
-				[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPQuickConnectImage]];
+				[favoriteCell setImage:[NSImage imageNamed:SPQuickConnectImage]];
 			}
 		} 
 		else {
-			[(SPTableTextFieldCell *)cell setImage:nil];
+			[favoriteCell setImage:nil];
 		}
+		[favoriteCell setLabelColor:nil];
 	} 
 	else {
 		if ([node isGroup]) {
-			[(SPTableTextFieldCell *)cell setImage:folderImage];
+			[favoriteCell setImage:folderImage];
+			[favoriteCell setLabelColor:nil];
 		} 
 		else {
-			[(SPTableTextFieldCell *)cell setImage:[NSImage imageNamed:SPDatabaseImage]];
+			[favoriteCell setImage:[NSImage imageNamed:SPDatabaseImage]];
+			NSColor *bgColor = nil;
+			NSNumber *colorIndexObj = [[[node representedObject] nodeFavorite] objectForKey:SPFavoriteColorIndexKey];
+			if(colorIndexObj != nil) {
+				bgColor = [[SPFavoriteColorSupport sharedInstance] colorForIndex:[colorIndexObj integerValue]];
+			}
+			[favoriteCell setLabelColor:bgColor];
 		}
 	}
 
@@ -312,7 +323,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		return NO;
 	}
 		
-	[pboard declareTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType] owner:self];
+	[pboard declareTypes:@[SPFavoritesPasteboardDragType] owner:self];
 
 	BOOL result = [pboard setData:[NSData data] forType:SPFavoritesPasteboardDragType];
 	
@@ -424,7 +435,7 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
  
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
  
-	[[[[NSApp delegate] preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
+	[[[SPAppDelegate preferenceController] generalPreferencePane] updateDefaultFavoritePopup];
  
 	// Update the selection to account for rearranged faourites
 	NSMutableIndexSet *restoredSelection = [NSMutableIndexSet indexSet];
@@ -606,8 +617,6 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	
 	SPTreeNode *node = [self selectedFavoriteNode];
 	NSInteger selectedRows = [favoritesOutlineView numberOfSelectedRows];
-	
-	if (node == quickConnectItem) return NO;
 
 	if ((action == @selector(sortFavorites:)) || (action == @selector(reverseSortFavorites:))) {
 		
@@ -623,7 +632,14 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 		if (action == @selector(reverseSortFavorites:)) {
 			[menuItem setState:reverseFavoritesSort];
 		}
+		
+		return YES;
 	}
+	
+	// import does not depend on a selection
+	if(action == @selector(importFavorites:)) return YES;
+	
+	if (node == quickConnectItem) return NO;
 
 	// Remove/rename the selected node
 	if (action == @selector(removeNode:) || action == @selector(renameNode:)) {
@@ -645,11 +661,8 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 	// Favorites export
 	if (action == @selector(exportFavorites:)) {
 		
-		if ([[favoritesRoot allChildLeafs] count] == 0) {
+		if ([[favoritesRoot allChildLeafs] count] == 0 || selectedRows == 0) {
 			return NO;
-		}
-		else if (selectedRows == 1) {
-			return (![[self selectedFavoriteNode] isGroup]);
 		}
 		else if (selectedRows > 1) {
 			[menuItem setTitle:NSLocalizedString(@"Export Selected...", @"export selected favorites menu item")];

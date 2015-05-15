@@ -41,6 +41,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPThreadAdditions.h"
 #import "SPCustomQuery.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -191,9 +192,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		// Disable all tables
 		for (NSMutableArray *table in tables)
 		{
-			[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
-			[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
-			[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+			[table replaceObjectAtIndex:1 withObject:@NO];
+			[table replaceObjectAtIndex:2 withObject:@NO];
+			[table replaceObjectAtIndex:3 withObject:@NO];
 		}
 		
 		// Select the supplied tables
@@ -202,9 +203,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 			for (NSString *exportTable in exportTables)
 			{
 				if ([exportTable isEqualToString:[table objectAtIndex:0]]) {
-					[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:YES]];
-					[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:YES]];
-					[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:YES]];
+					[table replaceObjectAtIndex:1 withObject:@YES];
+					[table replaceObjectAtIndex:2 withObject:@YES];
+					[table replaceObjectAtIndex:3 withObject:@YES];
 				}
 			}
 		}
@@ -431,45 +432,50 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[tables removeAllObjects];
 	
 	// For all modes, retrieve table and view names
-	NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
-	
-	for (id itemName in tablesAndViews) {
-		[tables addObject:[NSMutableArray arrayWithObjects:
-						   itemName, 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithBool:YES], 
-						   [NSNumber numberWithInt:SPTableTypeTable], 
-						   nil]];
-	}
+	{
+		NSArray *tablesAndViews = [tablesListInstance allTableAndViewNames];
+
+		for (id itemName in tablesAndViews) {
+			[tables addObject:[NSMutableArray arrayWithObjects:
+					            itemName,
+			                    @YES,
+			                    @YES,
+			                    @YES,
+			                    [NSNumber numberWithInt:SPTableTypeTable],
+			                    nil]];
+		}
+	} // The purpose of this extra { } is to limit visibility and thus catch copy&paste errors
 	
 	// For SQL only, add procedures and functions
 	if (exportType == SPSQLExport) {
-		NSArray *procedures = [tablesListInstance allProcedureNames];
-		
-		for (id procName in procedures) 
+		// Procedures
 		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   procName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeProc], 
-							   nil]];
+			NSArray *procedures = [tablesListInstance allProcedureNames];
+
+			for (id procName in procedures) {
+				[tables addObject:[NSMutableArray arrayWithObjects:
+				                    procName,
+				                    @YES,
+				                    @YES,
+				                    @YES,
+				                    [NSNumber numberWithInt:SPTableTypeProc],
+				                    nil]];
+			}
 		}
-		
-		NSArray *functions = [tablesListInstance allFunctionNames];
-		
-		for (id funcName in functions) 
+		// Functions
 		{
-			[tables addObject:[NSMutableArray arrayWithObjects:
-							   funcName,
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithBool:YES],
-							   [NSNumber numberWithInt:SPTableTypeFunc], 
-							   nil]];
-		}	
+			NSArray *functions = [tablesListInstance allFunctionNames];
+
+			for (id funcName in functions) {
+				[tables addObject:[NSMutableArray arrayWithObjects:
+				                    funcName,
+				                    @YES,
+				                    @YES,
+				                    @YES,
+				                    [NSNumber numberWithInt:SPTableTypeFunc],
+				                    nil]];
+			}
+		}
 	}
 	
 	if (sender) {
@@ -1039,13 +1045,13 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 - (void)dealloc
 {	
-    [tables release], tables = nil;
-	[exporters release], exporters = nil;
-	[exportFiles release], exportFiles = nil;
-	[operationQueue release], operationQueue = nil;
-	[exportFilename release], exportFilename = nil;
+    SPClear(tables);
+	SPClear(exporters);
+	SPClear(exportFiles);
+	SPClear(operationQueue);
+	SPClear(exportFilename);
 	
-	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
 	
 	[super dealloc];
 }

@@ -28,13 +28,22 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#define USE_APPLICATION_UNIT_TEST 1
+
 #import <OCMock/OCMock.h>
+#import <SenTestingKit/SenTestingKit.h>
 
 #import "SPAlertSheets.h"
-#import "SPDatabaseCopyTest.h"
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
 #import "SPLogger.h"
+
+@interface SPDatabaseCopyTest : SenTestCase
+
+- (void)testCopyDatabase;
+- (void)testCreateDatabase;
+
+@end
 
 @implementation SPDatabaseCopyTest
 

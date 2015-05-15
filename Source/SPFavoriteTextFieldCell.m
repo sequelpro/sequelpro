@@ -29,6 +29,9 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFavoriteTextFieldCell.h"
+#import "SPOSInfo.h"
+
+extern BOOL isOSAtLeast10_10_0(void);
 
 @implementation SPFavoriteTextFieldCell
 
@@ -46,6 +49,7 @@
     SPFavoriteTextFieldCell *cell = (SPFavoriteTextFieldCell *)[super copyWithZone:zone];
 
 	cell->drawsDividerUnderCell = drawsDividerUnderCell;
+	cell->labelColor            = [labelColor copyWithZone:zone];
     
 	return cell;
 }
@@ -68,7 +72,78 @@
 	drawsDividerUnderCell = drawsDivider;
 }
 
+@synthesize labelColor;
+
 #pragma mark -
+
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
+{
+	if(labelColor) {
+		CGFloat round = (cellFrame.size.height/2);
+		NSBezierPath *bg = [NSBezierPath bezierPathWithRoundedRect:cellFrame xRadius:round yRadius:round];
+		
+		if(isOSAtLeast10_10_0()) {
+			CGFloat h,s,b,a;
+			[labelColor getHue:&h saturation:&s brightness:&b alpha:&a];
+			
+			[[NSColor colorWithCalibratedHue:h saturation:s*1.21 brightness:b*1.1 alpha:a] set];
+			[bg fill];
+		}
+		else {
+			// Draw main background gradient
+			NSGradient * gradient = [[NSGradient alloc] initWithColorsAndLocations:
+									 [labelColor highlightWithLevel:0.33], 0.0,
+									  labelColor, 0.5,
+									 [labelColor shadowWithLevel:0.15], 1.0, nil];
+			[gradient drawInBezierPath:bg angle:90.0];
+			[gradient release];
+			
+			//replace the shadow color of the highlighted item (the default is dark blue)
+			if([self isHighlighted]) {
+				NSMutableAttributedString *mas = [[self attributedStringValue] mutableCopy];
+				NSShadow *strShadow = [mas attribute:NSShadowAttributeName atIndex:0 effectiveRange:NULL];
+				if(strShadow) {
+					[strShadow setShadowColor:[labelColor shadowWithLevel:0.4]];
+					[self setAttributedStringValue:mas];
+				}
+				[mas release];
+			}
+			
+			// Add a little border at the top half (technically this is an inner shadow)
+			CGContextRef context = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
+			
+			NSShadow* shadow = [[NSShadow alloc] init];
+			[shadow setShadowColor:labelColor];
+			[shadow setShadowOffset: NSMakeSize(0.1, -1.2)];
+			[shadow setShadowBlurRadius: 1];
+			
+			[NSGraphicsContext saveGraphicsState];
+			NSRectClip([bg bounds]);
+			CGContextSetShadowWithColor(context, CGSizeZero, 0, NULL);
+			
+			CGContextSetAlpha(context, [[shadow shadowColor] alphaComponent]);
+			CGContextBeginTransparencyLayer(context, NULL);
+			{
+				[shadow set];
+				
+				CGContextSetBlendMode(context, kCGBlendModeSourceOut);
+				CGContextBeginTransparencyLayer(context, NULL);
+				
+				[[shadow shadowColor] setFill];
+				[bg fill];
+				
+				CGContextEndTransparencyLayer(context);
+			}
+			CGContextEndTransparencyLayer(context);
+			[NSGraphicsContext restoreGraphicsState];
+			
+			[shadow release];
+		}
+	}
+	
+	[super drawWithFrame:cellFrame inView:controlView];
+}
+
 
 /**
  * Draws the actual cell, with a divider if appropriate.
@@ -110,4 +185,16 @@
 	}
 }
 
+- (void)dealloc
+{
+	[self setLabelColor:nil];
+	
+	[super dealloc];
+}
+
 @end
+
+BOOL isOSAtLeast10_10_0() {
+	const BOOL value = [SPOSInfo isOSVersionAtLeastMajor:10 minor:10 patch:0];
+	return value;
+}

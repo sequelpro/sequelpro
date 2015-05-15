@@ -166,7 +166,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 
-	isMyISAMTale = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
+	isMyISAMTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
+	isInnoDBTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"];
 	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
@@ -219,7 +220,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// If no initial field has been selected yet - all fields are indexed - add the first field.
 	if (!initialField) initialField = [fields objectAtIndex:0];
 	
-	if (indexedFieldNames) [indexedFieldNames release], indexedFieldNames = nil;
+	if (indexedFieldNames) SPClear(indexedFieldNames);
 
 	// Reset the indexed columns
 	[indexedFields removeAllObjects];
@@ -236,7 +237,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #ifndef SP_CODA
 	// MyISAM and InnoDB tables only support BTREE storage types so disable the storage type popup button
 	// as it's the default anyway.
-	[indexStorageTypePopUpButton setEnabled:(!(isMyISAMTale || [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"]))];
+	[indexStorageTypePopUpButton setEnabled:(!(isMyISAMTable || isInnoDBTable))];
 
 	// The ability to specify an index's key block size was added in MySQL 5.1.10 so disable the textfield
 	// if it's not supported.
@@ -328,10 +329,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		}
 		
 #ifndef SP_CODA
-		NSString *engine = [[tableData statusValues] objectForKey:@"Engine"];
-		
 		// Specifiying an index storage type (i.e. HASH or BTREE) is not permitted with SPATIAL indexes
-		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !(isMyISAMTale || [engine isEqualToString:@"InnoDB"])];
+		[indexStorageTypePopUpButton setEnabled:(indexType != SPSpatialMenuTag) && !(isMyISAMTable || isInnoDBTable)];
 #endif
 	}
 	
@@ -768,8 +767,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[indexTypePopUpButton removeItemAtIndex:[indexTypePopUpButton indexOfItemWithTag:SPFullTextMenuTag]];
 	}
 	
-	// FULLTEXT and SPATIAL index types are only available using the MyISAM engine
-	if (isMyISAMTale) {
+	// SPATIAL index types are only available using the MyISAM engine
+	if (isMyISAMTable) {
 		if ([[dbDocument serverSupport] supportsSpatialExtensions]) {
 			NSMenuItem *spatialMenuItem = [[[NSMenuItem alloc] init] autorelease];
 			
@@ -778,7 +777,10 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 			
 			[[indexTypePopUpButton menu] addItem:spatialMenuItem];
 		}
+	}
 	
+	// FULLTEXT only works with MyISAM and (InnoDB since 5.6.4)
+	if(isMyISAMTable || (isInnoDBTable && [[dbDocument serverSupport] supportsFulltextOnInnoDB])) {
 		NSMenuItem *fullTextMenuItem = [[[NSMenuItem alloc] init] autorelease];
 		
 		[fullTextMenuItem setTitle:NSLocalizedString(@"FULLTEXT", @"full text index menu item title")];
@@ -1081,14 +1083,14 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 - (void)dealloc
 {
-	[table release], table = nil;
-	[indexes release], indexes = nil;
-	[fields release], fields = nil;
+	SPClear(table);
+	SPClear(indexes);
+	SPClear(fields);
 
-	[supportsLength release], supportsLength = nil;
-	[requiresLength release], requiresLength = nil;
+	SPClear(supportsLength);
+	SPClear(requiresLength);
 
-	if (indexedFields) [indexedFields release], indexedFields = nil;
+	if (indexedFields) SPClear(indexedFields);
 
 #ifndef SP_CODA
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];

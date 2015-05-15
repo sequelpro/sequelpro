@@ -54,6 +54,7 @@
 	[copy setSocketPath:socketPath];
 	[copy setUseSSL:useSSL];
 	[copy setSslKeyFilePath:sslKeyFilePath];
+	[copy setSslCipherList:sslCipherList];
 	[copy setSslCertificatePath:sslCertificatePath];
 	[copy setSslCACertificatePath:sslCACertificatePath];
 	[copy setTimeout:timeout];

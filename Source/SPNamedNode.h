@@ -1,9 +1,9 @@
 //
-//  SPTableCopyTest.h
+//  SPNamedNode.h
 //  sequel-pro
 //
-//  Created by David Rekowski.
-//  Copyright (c) 2010 David Rekowski. All rights reserved.
+//  Created by Max Lohrmann on 11.05.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,12 +28,10 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#define USE_APPLICATION_UNIT_TEST 1
+#import <Foundation/Foundation.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+@protocol SPNamedNode <NSObject>
 
-@interface SPTableCopyTest : SenTestCase
-
-- (void)testCopyTableFromToWithData;
+- (NSString *)nodeName;
 
 @end

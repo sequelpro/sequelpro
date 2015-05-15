@@ -28,6 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import "SPNamedNode.h"
 /**
  * @class SPFavoriteNode SPFavoriteNode.h
  *
@@ -35,7 +36,7 @@
  *
  * Tree node the represents a connection favorite.
  */
-@interface SPFavoriteNode : NSObject <NSCopying, NSCoding>
+@interface SPFavoriteNode : NSObject <NSCopying, NSCoding, SPNamedNode>
 {	
 	NSMutableDictionary *nodeFavorite;
 }

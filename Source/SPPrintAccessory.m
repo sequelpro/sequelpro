@@ -49,7 +49,7 @@
 
 - (NSArray *)localizedSummaryItems
 {    
-	return [NSArray arrayWithObject:[NSDictionary dictionary]];
+	return @[@{}];
 }
 
 - (NSSet *)keyPathsForValuesAffectingPreview

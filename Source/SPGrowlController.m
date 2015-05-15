@@ -98,7 +98,7 @@ static SPGrowlController *sharedGrowlController = nil;
 	[notificationDictionary setObject:description forKey:@"description"];
 	[notificationDictionary setObject:document forKey:@"document"];
 	[notificationDictionary setObject:name forKey:@"name"];
-	[notificationDictionary setObject:[NSDictionary dictionaryWithObject:[NSNumber numberWithUnsignedInteger:[document hash]] forKey:@"notificationDocumentHash"] forKey:@"clickContext"];
+	[notificationDictionary setObject:@{@"notificationDocumentHash" : @([document hash])} forKey:@"clickContext"];
 
 	[self performSelector:@selector(notifyWithObject:) withObject:notificationDictionary afterDelay:0.1];
 }
@@ -143,7 +143,7 @@ static SPGrowlController *sharedGrowlController = nil;
 			postNotification = YES;
 		}
 		
-		[timingNotificationName release], timingNotificationName = nil;
+		SPClear(timingNotificationName);
 	}
 
     // Post notification only if preference is set and visibility has been confirmed
@@ -192,7 +192,7 @@ static SPGrowlController *sharedGrowlController = nil;
 - (void)setVisibilityForNotificationName:(NSString *)name
 {
 	if (timingNotificationName) {
-		[timingNotificationName release], timingNotificationName = nil;
+		SPClear(timingNotificationName);
 	}
 	
 	timingNotificationName = [[NSString alloc] initWithString:name];

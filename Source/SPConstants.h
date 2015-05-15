@@ -46,23 +46,21 @@ typedef enum {
 } SPViewMode;
 
 // Query modes
-enum {
+typedef NS_ENUM(NSUInteger, SPQueryMode) {
 	SPInterfaceQueryMode    = 0,
 	SPCustomQueryQueryMode  = 1,
 	SPImportExportQueryMode = 2
 };
-typedef NSUInteger SPQueryMode;
 
 // Connection types
-enum {
+typedef NS_ENUM(NSUInteger, SPConnectionType) {
 	SPTCPIPConnection     = 0,
 	SPSocketConnection    = 1,
 	SPSSHTunnelConnection = 2
-}; 
-typedef NSUInteger SPConnectionType;
+};
 
 // Export type constants
-enum {
+typedef NS_ENUM(NSUInteger, SPExportType) {
 	SPSQLExport   = 0,
 	SPCSVExport   = 1,
 	SPXMLExport   = 2,
@@ -71,29 +69,25 @@ enum {
 	SPHTMLExport  = 5,
 	SPExcelExport = 6
 };
-typedef NSUInteger SPExportType;
 
 // Export source constants
-enum {
+typedef NS_ENUM(NSUInteger, SPExportSource) {
 	SPFilteredExport = 0,
 	SPQueryExport    = 1,
 	SPTableExport    = 2
 };
-typedef NSUInteger SPExportSource;
 
 // SQL export INSERT statment divider constants
-enum {
+typedef NS_ENUM(NSUInteger , SPSQLExportInsertDivider) {
 	SPSQLInsertEveryNDataBytes = 0,
 	SPSQLInsertEveryNRows      = 1
 };
-typedef NSUInteger SPSQLExportInsertDivider;
 
 // XML export formats
-enum {
+typedef NS_ENUM(NSUInteger, SPXMLExportFormat) {
 	SPXMLExportMySQLFormat = 0,
 	SPXMLExportPlainFormat = 1
 };
-typedef NSUInteger SPXMLExportFormat;
 
 // Table row count query usage levels
 typedef enum {
@@ -109,7 +103,8 @@ typedef enum
 	SPTableTypeTable = 0,
 	SPTableTypeView  = 1,
 	SPTableTypeProc  = 2,
-	SPTableTypeFunc  = 3
+	SPTableTypeFunc  = 3,
+	SPTableTypeEvent = 4
 } SPTableType;
 
 // History views
@@ -153,6 +148,14 @@ typedef enum
 {
 	SPMainMenuSequelPro = 0,
 	SPMainMenuFile      = 1,
+	SPMainMenuFileSaveConnection   = 1004,
+	SPMainMenuFileSaveConnectionAs = 1005,
+	SPMainMenuFileSaveQuery        = 1006,
+	SPMainMenuFileSaveQueryAs      = 1008,
+	SPMainMenuFileSaveSession      = 1020,
+	SPMainMenuFileSaveSessionAs    = 1021,
+	SPMainMenuFileClose            = 1003,
+	SPMainMenuFileCloseTab         = 1103,
 	SPMainMenuEdit      = 2,
 	SPMainMenuView      = 3,
 	SPMainMenuDatabase  = 4,
@@ -183,7 +186,8 @@ typedef enum
 	SPEncodingBig5Chinese		= 150,
 	SPEncodingShiftJISJapanese	= 160,
 	SPEncodingEUCJPJapanese		= 170,
-	SPEncodingEUCKRKorean		= 180
+	SPEncodingEUCKRKorean		= 180,
+	SPEncodingUTF8MB4           = 190
 } SPEncodingTypes;
 
 // Table index type menu tags
@@ -214,6 +218,7 @@ typedef enum
 // Export file handle creation 
 typedef enum
 {
+	SPExportFileHandleInvalid = -1,
 	SPExportFileHandleCreated = 0,
 	SPExportFileHandleFailed  = 1,
 	SPExportFileHandleExists  = 2
@@ -423,6 +428,8 @@ extern NSString *SPHiddenKeyFileVisibilityKey;
 extern NSString *SPSelectionDetailTypeIndexed;
 extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
+extern NSString *SPSSHClientPath;
+extern NSString *SPSSLCipherListKey;
 
 // URLs
 extern NSString *SPDonationsURL;
@@ -595,18 +602,48 @@ extern NSString *SPBundleShellVariableAllFunctions;
 extern NSString *SPBundleShellVariableAllViews;
 extern NSString *SPBundleShellVariableAllTables;
 
-extern const NSInteger SPBundleRedirectActionNone;
-extern const NSInteger SPBundleRedirectActionReplaceSection;
-extern const NSInteger SPBundleRedirectActionReplaceContent;
-extern const NSInteger SPBundleRedirectActionInsertAsText;
-extern const NSInteger SPBundleRedirectActionInsertAsSnippet;
-extern const NSInteger SPBundleRedirectActionShowAsHTML;
-extern const NSInteger SPBundleRedirectActionShowAsTextTooltip;
-extern const NSInteger SPBundleRedirectActionShowAsHTMLTooltip;
-extern const NSInteger SPBundleRedirectActionLastCode;
+typedef NS_ENUM(NSInteger, SPBundleRedirectAction) {
+	SPBundleRedirectActionNone                 = 200,
+	SPBundleRedirectActionReplaceSection       = 201,
+	SPBundleRedirectActionReplaceContent       = 202,
+	SPBundleRedirectActionInsertAsText         = 203,
+	SPBundleRedirectActionInsertAsSnippet      = 204,
+	SPBundleRedirectActionShowAsHTML           = 205,
+	SPBundleRedirectActionShowAsTextTooltip    = 207,
+	SPBundleRedirectActionShowAsHTMLTooltip    = 208,
+	SPBundleRedirectActionLastCode             = 208
+};
 
 // URL scheme
 extern NSString *SPURLSchemeQueryInputPathHeader;
 extern NSString *SPURLSchemeQueryResultPathHeader;
 extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
+
+#define SPAppDelegate ((SPAppController *)[NSApp delegate])
+
+// Provides a standard method for our "[x release], x = nil;" convention.
+// Yes, this could have been done with a preprocessor macro alone, however
+// a function works more nicely in the debugger and in production code
+// the optimizer will most likely remove all overhead by inlining anyway :)
+void _SPClear(id *addr);
+#define SPClear(x) _SPClear(&x)
+
+//Backwards compatibility
+#ifndef __MAC_10_7
+#define __MAC_10_7 1070
+#endif
+#ifndef __MAC_10_8
+#define __MAC_10_8 1080
+#endif
+#ifndef __MAC_10_10
+#define __MAC_10_10 101000
+#endif
+
+// This enum is available since 10.5 but only got a "name" in 10.10
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
+typedef NSUInteger NSCellHitResult;
+#endif
+
+// Stolen from Stack Overflow: http://stackoverflow.com/questions/969130
+#define SPLog(fmt, ...) NSLog((@"%s:%d: " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)

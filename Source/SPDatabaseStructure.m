@@ -567,15 +567,15 @@
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[self destroy:nil];
-	[structureRetrievalThreads release];
+	SPClear(structureRetrievalThreads);
 	
 	pthread_mutex_destroy(&threadManagementLock);
 	pthread_mutex_destroy(&dataLock);
 	pthread_mutex_destroy(&connectionCheckLock);
 	
-	if (mySQLConnection) [mySQLConnection release], mySQLConnection = nil;
-	if (structure) [structure release], structure = nil;
-	if (allKeysofDbStructure) [allKeysofDbStructure release], allKeysofDbStructure = nil;
+	if (mySQLConnection) SPClear(mySQLConnection);
+	if (structure) SPClear(structure);
+	if (allKeysofDbStructure) SPClear(allKeysofDbStructure);
 	
 	[super dealloc];
 }
@@ -630,8 +630,7 @@
 		}
 		pthread_mutex_unlock(&threadManagementLock);
 
-		[mySQLConnection release];
-		mySQLConnection = nil;
+		SPClear(mySQLConnection);
 	}
 
 	// Create a copy of the supplied connection

@@ -111,7 +111,7 @@
 		// Trigger a reconnect depending on connection usage recently.  If the connection has
 		// actively been used in the last couple of minutes, trigger a full reconnection attempt.
 		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 2) {
-			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAllowingRetries:) object:[NSNumber numberWithBool:YES]] autorelease];
+			reconnectionThread = [[[NSThread alloc] initWithTarget:self selector:@selector(_reconnectAllowingRetries:) object:@YES] autorelease];
 			[reconnectionThread setName:@"SPMySQL reconnection thread (full)"];
 			[reconnectionThread start];
 

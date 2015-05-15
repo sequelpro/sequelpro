@@ -56,7 +56,7 @@
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
-NSInteger SPEditCopyAsSQL           = 2003;
+NSInteger SPEditMenuCopyAsSQL       = 2003;
 
 static const NSInteger kBlobExclude     = 1;
 static const NSInteger kBlobInclude     = 2;
@@ -102,13 +102,13 @@ static const NSInteger kBlobAsImageFile = 4;
 #ifndef SP_CODA /* copy table rows */
 	NSString *tmp = nil;
 
-	if ([sender tag] == SPEditCopyAsSQL) {
+	if ([sender tag] == SPEditMenuCopyAsSQL) {
 		tmp = [self rowsAsSqlInsertsOnlySelectedRows:YES];
 		
 		if (tmp != nil){
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-			[pb declareTypes:[NSArray arrayWithObjects: NSStringPboardType, nil] owner:nil];
+			[pb declareTypes:@[NSStringPboardType] owner:nil];
 
 			[pb setString:tmp forType:NSStringPboardType];
 		}
@@ -119,7 +119,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		if (tmp != nil) {
 			NSPasteboard *pb = [NSPasteboard generalPasteboard];
 
-			[pb declareTypes:[NSArray arrayWithObjects:NSTabularTextPboardType, NSStringPboardType, nil] owner:nil];
+			[pb declareTypes:@[NSTabularTextPboardType, NSStringPboardType] owner:nil];
 
 			[pb setString:tmp forType:NSStringPboardType];
 			[pb setString:tmp forType:NSTabularTextPboardType];
@@ -219,7 +219,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
 							[d writeToFile:fp atomically:NO];
-							if(d) [d release], d = nil;
+							if(d) SPClear(d);
 							[image release];
 						} else {
 							NSString *noData = @"";
@@ -242,7 +242,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						} else {
 							[result appendFormat:@"%@\t", [cellData wktString]];
 						}
-						if(v) [v release], v = nil;
+						if(v) SPClear(v);
 					} else {
 						[result appendFormat:@"%@\t", [cellData wktString]];
 					}
@@ -358,7 +358,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						if (image) {
 							NSData *d = [[NSData alloc] initWithData:[image TIFFRepresentationUsingCompression:NSTIFFCompressionLZW factor:1]];
 							[d writeToFile:fp atomically:NO];
-							if(d) [d release], d = nil;
+							if(d) SPClear(d);
 							[image release];
 						} else {
 							NSString *noData = @"";
@@ -381,7 +381,7 @@ static const NSInteger kBlobAsImageFile = 4;
 						} else {
 							[result appendFormat:@"\"%@\",", [cellData wktString]];
 						}
-						if(v) [v release], v = nil;
+						if(v) SPClear(v);
 					} else {
 						[result appendFormat:@"\"%@\",", [cellData wktString]];
 					}
@@ -607,7 +607,7 @@ static const NSInteger kBlobAsImageFile = 4;
 /**
  * Allow for drag-n-drop out of the application as a copy
  */
-- (NSUInteger) draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation) draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationCopy;
 }
@@ -698,7 +698,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	tableInstance     = anInstance;
 	tableStorage	  = theTableStorage;
 
-	if (columnDefinitions) [columnDefinitions release], columnDefinitions = nil;
+	if (columnDefinitions) SPClear(columnDefinitions);
 	columnDefinitions = [[NSArray alloc] initWithArray:columnDefs];
 }
 
@@ -781,7 +781,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
 	NSUInteger columnIndex = (NSUInteger)[[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
-	NSDictionary *stringAttributes = [NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName];
+	NSDictionary *stringAttributes = @{NSFontAttributeName : tableFont};
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 
 	// Check the number of rows available to check, sampling every n rows
@@ -870,7 +870,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	maxCellWidth += columnBaseWidth;
 
 	// If the header width is wider than this expanded width, use it instead
-	cellWidth = [[columnDefinition objectForKey:@"name"] sizeWithAttributes:[NSDictionary dictionaryWithObject:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName]].width;
+	cellWidth = [[columnDefinition objectForKey:@"name"] sizeWithAttributes:@{NSFontAttributeName : [NSFont labelFontOfSize:[NSFont smallSystemFontSize]]}].width;
 	if (cellWidth + 10 > maxCellWidth) maxCellWidth = cellWidth + 10;
 
 	return maxCellWidth;
@@ -885,7 +885,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 	if(![[self delegate] isKindOfClass:[SPCustomQuery class]] && ![[self delegate] isKindOfClass:[SPTableContent class]]) return menu;
 
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
 	NSMenuItem *bItem = [menu itemWithTag:10000000];
@@ -895,8 +895,8 @@ static const NSInteger kBlobAsImageFile = 4;
 		[menu removeItem:bItem];
 	}
 
-	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeDataTable];
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
+	NSArray *bundleCategories = [SPAppDelegate bundleCategoriesForScope:SPBundleScopeDataTable];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeDataTable];
 
 	// Add 'Bundles' sub menu
 	if(bundleItems && [bundleItems count]) {
@@ -991,7 +991,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Don't validate anything other than the copy commands
-	if (menuItemTag != SPEditMenuCopy && menuItemTag != SPEditMenuCopyWithColumns && menuItemTag != SPEditCopyAsSQL) {
+	if (menuItemTag != SPEditMenuCopy && menuItemTag != SPEditMenuCopyWithColumns && menuItemTag != SPEditMenuCopyAsSQL) {
 		return YES;
 	}
 
@@ -1006,7 +1006,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Enable the Copy as SQL commands if rows are selected and column definitions are available
-	if (menuItemTag == SPEditCopyAsSQL) {
+	if (menuItemTag == SPEditMenuCopyAsSQL) {
 		return (columnDefinitions != nil && [self numberOfSelectedRows] > 0);
 	}
 #endif
@@ -1189,15 +1189,14 @@ static const NSInteger kBlobAsImageFile = 4;
  */
 - (BOOL)shouldUseFieldEditorForRow:(NSUInteger)rowIndex column:(NSUInteger)colIndex checkWithLock:(pthread_mutex_t *)dataLock
 {
-	// Retrieve the column definition
-	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
-
-	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
-
 	// Return YES if the multiple line editing button is enabled - triggers sheet editing on all cells.
 #ifndef SP_CODA
 	if ([prefs boolForKey:SPEditInSheetEnabled]) return YES;
 #endif
+	
+	// Retrieve the column definition
+	NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions] objectAtIndex:colIndex];
+	NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
 
 	// If the column is a BLOB or TEXT column, and not an enum, trigger sheet editing
 	BOOL isBlob = ([columnType isEqualToString:@"textdata"] || [columnType isEqualToString:@"blobdata"]);
@@ -1246,7 +1245,7 @@ static const NSInteger kBlobAsImageFile = 4;
 #ifndef SP_CODA /* executeBundleItemForDataTable: */
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeDataTable];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeDataTable];
 	if(idx >=0 && idx < (NSInteger)[bundleItems count]) {
 		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
@@ -1432,7 +1431,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
 											atCurrentDirectoryPath:nil 
-											callerInstance:[[NSApp delegate] frontDocument] 
+											callerInstance:[SPAppDelegate frontDocument]
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
@@ -1509,7 +1508,7 @@ static const NSInteger kBlobAsImageFile = 4;
 							SPBundleHTMLOutputController *bundleController = [[SPBundleHTMLOutputController alloc] init];
 							[bundleController setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[bundleController displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:bundleController];
+							[SPAppDelegate addHTMLOutputController:bundleController];
 						}
 					}
 				}
@@ -1539,9 +1538,9 @@ static const NSInteger kBlobAsImageFile = 4;
 
 - (void)dealloc
 {
-	if (columnDefinitions) [columnDefinitions release];
+	if (columnDefinitions) SPClear(columnDefinitions);
 #ifndef SP_CODA
-	[prefs release];
+	SPClear(prefs);
 #endif
 
 	[super dealloc];

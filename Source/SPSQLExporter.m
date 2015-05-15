@@ -614,7 +614,7 @@
 	}
 	
 	// Export procedures and functions
-	for (NSString *procedureType in [NSArray arrayWithObjects:@"PROCEDURE", @"FUNCTION", nil]) 
+	for (NSString *procedureType in @[@"PROCEDURE", @"FUNCTION"])
 	{
 		// Check for cancellation flag
 		if ([self isCancelled]) {
@@ -729,7 +729,7 @@
 				
 				// A NULL result indicates a permission problem
 				if ([createProcedure isNSNull]) {
-					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permisions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
+					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permissions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
 					[errors appendString:errorString];
 					if ([self sqlOutputIncludeErrors]) {
 						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", errorString] dataUsingEncoding:NSUTF8StringEncoding]];
@@ -910,12 +910,12 @@
 
 - (void)dealloc
 {
-	[sqlExportTables release], sqlExportTables = nil;
-	[sqlDatabaseHost release], sqlDatabaseHost = nil;
-	[sqlDatabaseName release], sqlDatabaseName = nil;
-	[sqlExportCurrentTable release], sqlExportCurrentTable = nil;
-	[sqlDatabaseVersion release], sqlDatabaseVersion = nil;
-	[sqlExportErrors release], sqlExportErrors = nil;
+	SPClear(sqlExportTables);
+	SPClear(sqlDatabaseHost);
+	SPClear(sqlDatabaseName);
+	SPClear(sqlExportCurrentTable);
+	SPClear(sqlDatabaseVersion);
+	SPClear(sqlExportErrors);
 	
 	[super dealloc];
 }

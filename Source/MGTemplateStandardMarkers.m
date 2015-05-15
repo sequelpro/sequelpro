@@ -107,29 +107,20 @@
 
 - (NSArray *)markers
 {
-	return [NSArray arrayWithObjects:
-			FOR_START, FOR_END, 
-			SECTION_START, SECTION_END, 
-			IF_START, ELSE, IF_END, 
-			NOW, 
-			COMMENT_START, COMMENT_END, 
-			LOAD, 
-			CYCLE, 
-			SET, 
-			nil];
+	return @[FOR_START, FOR_END, SECTION_START, SECTION_END, IF_START, ELSE, IF_END, NOW, COMMENT_START, COMMENT_END, LOAD, CYCLE, SET];
 }
 
 
 - (NSArray *)endMarkersForMarker:(NSString *)marker
 {
 	if ([marker isEqualToString:FOR_START]) {
-		return [NSArray arrayWithObjects:FOR_END, nil];
+		return @[FOR_END];
 	} else if ([marker isEqualToString:SECTION_START]) {
-		return [NSArray arrayWithObjects:SECTION_END, nil];
+		return @[SECTION_END];
 	} else if ([marker isEqualToString:IF_START]) {
-		return [NSArray arrayWithObjects:IF_END, ELSE, nil];
+		return @[IF_END, ELSE];
 	} else if ([marker isEqualToString:COMMENT_START]) {
-		return [NSArray arrayWithObjects:COMMENT_END, nil];
+		return @[COMMENT_END];
 	}
 	return nil;
 }
@@ -231,7 +222,7 @@
 				// Disable output for this block.
 				*blockStarted = YES;
 				NSMutableDictionary *stackFrame = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-												   [NSNumber numberWithBool:YES], FOR_STACK_DISABLED_OUTPUT, 
+												   @YES, FOR_STACK_DISABLED_OUTPUT,
 												   [NSValue valueWithRange:markerRange], STACK_START_MARKER_RANGE, 
 												   [NSValue valueWithRange:*nextRange], STACK_START_REMAINING_RANGE, 
 												   nil];
@@ -426,7 +417,7 @@
 				}
 				
 				// Note that we've now seen the else marker.
-				[frame setObject:[NSNumber numberWithBool:YES] forKey:IF_ELSE_SEEN];
+				[frame setObject:@YES forKey:IF_ELSE_SEEN];
 			}
 		}
 		
@@ -522,7 +513,7 @@
 			} else {
 				// New cycle. Create and output appropriately.
 				cycle = [NSMutableDictionary dictionaryWithCapacity:2];
-				[cycle setObject:[NSNumber numberWithInteger:0] forKey:CYCLE_INDEX];
+				[cycle setObject:@0 forKey:CYCLE_INDEX];
 				[cycle setObject:args forKey:CYCLE_VALUES];
 				[cycles setObject:cycle forKey:rangeKey];
 				return [args objectAtIndex:0];
@@ -531,8 +522,7 @@
 	} else if ([marker isEqualToString:SET]) {
 		if (args && [args count] == 2 && *outputEnabled) {
 			// Set variable arg1 to value arg2.
-			NSDictionary *newVar = [NSDictionary dictionaryWithObject:[args objectAtIndex:1] 
-															   forKey:[args objectAtIndex:0]];
+			NSDictionary *newVar = @{[args objectAtIndex:0] : [args objectAtIndex:1]};
 			if (newVar) {
 				*newVariables = newVar;
 			}

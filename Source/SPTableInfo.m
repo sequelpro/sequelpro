@@ -35,6 +35,7 @@
 #import "SPTableData.h"
 #import "SPActivityTextFieldCell.h"
 #import "SPTableTextFieldCell.h"
+#import "SPAppController.h"
 
 @interface SPTableInfo (PrivateAPI)
 
@@ -77,7 +78,7 @@
 		object:nil];
 
 	// Add activities header
-	[activities addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[activities addObject:@{@"name" : NSLocalizedString(@"ACTIVITIES", @"header for activities pane")}];
 	[activitiesTable reloadData];
 
 	// Add Information header
@@ -109,9 +110,9 @@
 	NSMutableArray *acts = [NSMutableArray array];
 	
 	[acts removeAllObjects];
-	[acts addObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"ACTIVITIES", @"header for activities pane"), @"name", nil]];
+	[acts addObject:@{@"name" : NSLocalizedString(@"ACTIVITIES", @"header for activities pane")}];
 	[acts addObjectsFromArray:[tableDocumentInstance runningActivities]];
-	[acts addObjectsFromArray:[[NSApp delegate] runningActivities]];
+	[acts addObjectsFromArray:[SPAppDelegate runningActivities]];
 	
 	_activitiesWillBeUpdated = YES;
 	
@@ -388,11 +389,11 @@
 	if (rowIndex > 0) return NO;
 
 	if (![tableInfoScrollView isHidden]) {
-		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:0]];
+		[tableDocumentInstance setActivityPaneHidden:@0];
 		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
 	} 
 	else {
-		[tableDocumentInstance setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+		[tableDocumentInstance setActivityPaneHidden:@1];
 		[[NSApp mainWindow] makeFirstResponder:infoTable];
 	}
 
@@ -469,8 +470,8 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[info release];
-	[activities release];
+	SPClear(info);
+	SPClear(activities);
 	
 	[super dealloc];
 }

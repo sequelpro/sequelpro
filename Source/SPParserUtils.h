@@ -1,9 +1,9 @@
 //
-//  SPDatabaseCopyTest.h
+//  SPParserUtils.h
 //  sequel-pro
 //
-//  Created by David Rekowski.
-//  Copyright (c) 2010 David Rekowski. All rights reserved.
+//  Created by Max Lohrmann on 27.01.15.
+//  Relocated from existing files. Previous copyright applies.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,13 +28,14 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#define USE_APPLICATION_UNIT_TEST 1
+#ifndef __SPParserUtils__
+#define __SPParserUtils__
 
-#import <SenTestingKit/SenTestingKit.h>
+#include <stdio.h>
 
-@interface SPDatabaseCopyTest : SenTestCase
+/**
+ * Return number of characters (NOT bytes) in a given UTF-8 encoded C string.
+ */
+size_t utf8strlen(const char * _s);
 
-- (void)testCopyDatabase;
-- (void)testCreateDatabase;
-
-@end
+#endif /* defined(__SPParserUtils__) */

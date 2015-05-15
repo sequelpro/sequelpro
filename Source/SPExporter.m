@@ -103,9 +103,9 @@
  */
 - (void)dealloc
 {
-	if (exportData) [exportData release], exportData = nil;
-	if (connection) [connection release], connection = nil;
-	if (exportOutputFile) [exportOutputFile release], exportOutputFile = nil;
+	if (exportData) SPClear(exportData);
+	if (connection) SPClear(connection);
+	if (exportOutputFile) SPClear(exportOutputFile);
 	
 	[super dealloc];
 }

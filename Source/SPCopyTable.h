@@ -40,7 +40,7 @@
 
 extern NSInteger SPEditMenuCopy;
 extern NSInteger SPEditMenuCopyWithColumns;
-extern NSInteger SPEditCopyAsSQL;
+extern NSInteger SPEditMenuCopyAsSQL;
 
 /*!
 	@class copyTable
@@ -52,7 +52,7 @@ extern NSInteger SPEditCopyAsSQL;
 */
 @interface SPCopyTable : SPTableView
 {
-	SPTableContent* tableInstance;                 // the table content view instance
+	SPTableContent* tableInstance;    // the table content view instance
 	id mySQLConnection;               // current MySQL connection
 	NSArray* columnDefinitions;       // array of NSDictionary containing info about columns
 	NSString* selectedTable;          // the name of the current selected table
@@ -94,7 +94,7 @@ extern NSInteger SPEditCopyAsSQL;
 	@param	  isLocal who cares
 	@result	 Always calls for a copy type drag operation
 */
-- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
 
 #ifndef SP_CODA /* method decls */
 /*!

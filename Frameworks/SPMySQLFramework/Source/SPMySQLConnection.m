@@ -65,6 +65,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize sslKeyFilePath;
 @synthesize sslCertificatePath;
 @synthesize sslCACertificatePath;
+@synthesize sslCipherList;
 @synthesize timeout;
 @synthesize useKeepAlive;
 @synthesize keepAliveInterval;
@@ -217,6 +218,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		[proxy setConnectionStateChangeSelector:NULL delegate:nil];
 		[proxy release];
 	}
+	
+	[self setSslCipherList:nil];
 
 	// Ensure the query lock is unlocked, thereafter setting to nil in case of pending calls
 	if ([connectionLock condition] != SPMySQLConnectionIdle) {
@@ -377,20 +380,20 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 {
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
-	NSArray *possibleSocketLocations = [NSArray arrayWithObjects:
-										@"/tmp/mysql.sock",							// Default
-										@"/Applications/MAMP/tmp/mysql/mysql.sock",	// MAMP default location
-										@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
-										@"/var/mysql/mysql.sock",					// Mac OS X Server default
-										@"/opt/local/var/run/mysqld/mysqld.sock",	// Darwinports MySQL
-										@"/opt/local/var/run/mysql4/mysqld.sock",	// Darwinports MySQL 4
-										@"/opt/local/var/run/mysql5/mysqld.sock",	// Darwinports MySQL 5
-										@"/usr/local/zend/mysql/tmp/mysql.sock",	// Zend Server CE (see Issue #1251)
-										@"/var/run/mysqld/mysqld.sock",				// As used on Debian/Gentoo
-										@"/var/tmp/mysql.sock",						// As used on FreeBSD
-										@"/var/lib/mysql/mysql.sock",				// As used by Fedora
-										@"/opt/local/lib/mysql/mysql.sock",			// Alternate fedora
-										nil];
+	NSArray *possibleSocketLocations = @[
+			@"/tmp/mysql.sock",                                     // Default
+			@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
+			@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
+			@"/var/mysql/mysql.sock",                               // Mac OS X Server default
+			@"/opt/local/var/run/mysqld/mysqld.sock",               // Darwinports MySQL
+			@"/opt/local/var/run/mysql4/mysqld.sock",               // Darwinports MySQL 4
+			@"/opt/local/var/run/mysql5/mysqld.sock",               // Darwinports MySQL 5
+			@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
+			@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
+			@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
+			@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
+			@"/opt/local/lib/mysql/mysql.sock"
+	];
 
 	for (NSUInteger i = 0; i < [possibleSocketLocations count]; i++) {
 		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
@@ -546,6 +549,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		const char *theSSLKeyFilePath = NULL;
 		const char *theSSLCertificatePath = NULL;
 		const char *theCACertificatePath = NULL;
+		const char *theSSLCiphers = SPMySQLSSLPermissibleCiphers;
 
 		if (sslKeyFilePath) {
 			theSSLKeyFilePath = [[sslKeyFilePath stringByExpandingTildeInPath] UTF8String];
@@ -556,8 +560,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		if (sslCACertificatePath) {
 			theCACertificatePath = [[sslCACertificatePath stringByExpandingTildeInPath] UTF8String];
 		}
+		if(sslCipherList) {
+			theSSLCiphers = [sslCipherList UTF8String];
+		}
 
-		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, SPMySQLSSLPermissibleCiphers);
+		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, theSSLCiphers);
 	}
 
 	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, SPMySQLConnectionOptions);

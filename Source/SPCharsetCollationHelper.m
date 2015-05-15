@@ -133,6 +133,8 @@
 	
 	if (([encodings count] > 0) && [serverSupport supportsPost41CharacterSetHandling]) {
 		
+		NSUInteger utf8encounters = 0;
+		
 		for (NSDictionary *encoding in encodings) 
 		{
 			NSString *charsetId     = [encoding objectForKey:@"CHARACTER_SET_NAME"];
@@ -146,18 +148,19 @@
 			if(selectedCharset && [charsetId isEqualToString:selectedCharset])
 				selectedRef = menuItem;
 			
-			// If the UTF8 entry has been encountered, promote it to the top of the list
-			if (promoteUTF8 && [charsetId isEqualToString:@"utf8"]) {
-				[[charsetButton menu] insertItem:[menuItem autorelease] atIndex:0];
-				//only add a separator if there actually are more items other than utf8 (might not be true for mysql forks)
-				if([encodings count] > 1)
-					[[charsetButton menu] insertItem:[NSMenuItem separatorItem] atIndex:1];
+			// If an UTF8 entry has been encountered, promote it to the top of the list
+			if (promoteUTF8 && [charsetId hasPrefix:@"utf8"]) {
+				[[charsetButton menu] insertItem:[menuItem autorelease] atIndex:(utf8encounters++)];
 			}
 			else {
 				[[charsetButton menu] addItem:[menuItem autorelease]];
 			}
 				
 		}
+		
+		//only add a separator if there actually are more items other than utf8 (might not be true for mysql forks)
+		if(utf8encounters && [encodings count] > utf8encounters)
+			[[charsetButton menu] insertItem:[NSMenuItem separatorItem] atIndex:utf8encounters];
 		
 		[charsetButton setEnabled:YES];
 	}

@@ -81,6 +81,7 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
+#warning This is not a valid initializer.
 	[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
 	
 	return self;
@@ -96,14 +97,19 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [[self nodeFavorite] objectForKey:SPFavoriteNameKey]];
+	return [NSString stringWithFormat:@"<%@: %p ('%@')>", [self className], self, [self nodeName]];
+}
+
+- (NSString *)nodeName
+{
+	return [[self nodeFavorite] objectForKey:SPFavoriteNameKey];
 }
 
 #pragma mark -
 
 - (void)dealloc
 {
-	if (nodeFavorite) [nodeFavorite release], nodeFavorite = nil;
+	if (nodeFavorite) SPClear(nodeFavorite);
 	
 	[super dealloc];
 }

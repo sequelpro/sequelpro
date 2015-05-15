@@ -71,8 +71,8 @@
 - (void) dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[tableContentStates release];
-	[history release];
+	SPClear(tableContentStates);
+	SPClear(history);
 	[super dealloc];
 }
 
@@ -276,7 +276,7 @@
 	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
 	NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
 	NSRect contentViewport = [tableContentInstance viewport];
-	NSDictionary *contentFilter = [tableContentInstance filterSettings];
+	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
 	NSData *filterTableData = [tableContentInstance filterTableData];
 	if (!theDatabase) return;
 

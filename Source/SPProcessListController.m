@@ -85,7 +85,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
 - (void)awakeFromNib
 {	
-	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[(SPAppController*)[NSApp delegate] frontDocument] name]]];
+	[[self window] setTitle:[NSString stringWithFormat:NSLocalizedString(@"Server Processes on %@", @"server processes window title (var = hostname)"),[[SPAppDelegate frontDocument] name]]];
 	
 	[self setWindowFrameAutosaveName:@"ProcessList"];
 	
@@ -167,7 +167,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		
 		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard declareTypes:@[NSStringPboardType] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
 }
@@ -238,7 +238,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([processesFiltered count] > 0) {
-                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[[NSApp delegate] frontDocument] host]];
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *process in processesFiltered)
                 {
@@ -500,7 +500,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 {	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((processesFiltered) && (processesFiltered != processes)) {
-		[processesFiltered release], processesFiltered = nil;
+		SPClear(processesFiltered);
 	}
 	
 	// Kill the auto refresh timer if running
@@ -554,7 +554,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// If the auto refresh timer is running, kill it
 	if (autoRefreshTimer && [autoRefreshTimer isValid]) {		
 		[autoRefreshTimer invalidate];
-		[autoRefreshTimer release], autoRefreshTimer = nil;
+		SPClear(autoRefreshTimer);
 	}
 }
 
@@ -710,7 +710,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	// If the filtered array is allocated and its not a reference to the processes array,
 	// relase it to prevent memory leaks upon the next allocation.
 	if ((processesFiltered) && (processesFiltered != processes)) {
-		[processesFiltered release], processesFiltered = nil;
+		SPClear(processesFiltered);
 	}
 	
 	processesFiltered = [[NSMutableArray alloc] init];
@@ -763,9 +763,9 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	processListThreadRunning = NO;
 	
-	[processes release], processes = nil;
+	SPClear(processes);
 	
-	if (autoRefreshTimer) [autoRefreshTimer release], autoRefreshTimer = nil;
+	if (autoRefreshTimer) SPClear(autoRefreshTimer);
 	
 	[super dealloc];
 }

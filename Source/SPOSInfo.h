@@ -1,9 +1,9 @@
 //
-//  SPMutableArrayAdditionsTests.h
+//  SPOSInfo.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on February 2, 2011.
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 14.02.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,15 +28,23 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <Foundation/Foundation.h>
+
+typedef struct {
+	NSInteger major;
+	NSInteger minor;
+	NSInteger patch;
+} SPOSVersion;
 
 /**
- * @class SPMutableArrayAdditionsTest SPMutableArrayAdditionsTest.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * SPMutableArrayAdditions tests class.
+ * Compare two OS versions similar to strcmp()
+ * @param left One operand
+ * @param right The other operand
+ * @return A negative value if left < right, 0 is both are equal, a postive value if left > right
  */
-@interface SPMutableArrayAdditionsTests : SenTestCase
+int SPOSVersionCompare(SPOSVersion left, SPOSVersion right);
 
+@interface SPOSInfo : NSObject
++ (SPOSVersion)osVersion;
++ (BOOL)isOSVersionAtLeastMajor:(NSInteger)major minor:(NSInteger)minor patch:(NSInteger)patch;
 @end

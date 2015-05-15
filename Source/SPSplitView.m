@@ -105,11 +105,11 @@
 
 - (void)dealloc
 {
-	[viewMinimumSizes release];
-	[viewMaximumSizes release];
+	SPClear(viewMinimumSizes);
+	SPClear(viewMaximumSizes);
 
-	if (animationTimer) [animationTimer invalidate], [animationTimer release], animationTimer = nil;
-	if (animationRetainCycleBypassObject) [animationRetainCycleBypassObject release], animationRetainCycleBypassObject = nil;
+	if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
+	if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[super dealloc];
@@ -233,8 +233,8 @@
 
 	// Otherwise, start an animation.
 	} else {
-		if (animationTimer) [animationTimer invalidate], [animationTimer release], animationTimer = nil;
-		if (animationRetainCycleBypassObject) [animationRetainCycleBypassObject release], animationRetainCycleBypassObject = nil;
+		if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
+		if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);
 		animationStartTime = [NSDate monotonicTimeInterval];
 
 		// Determine the animation length, in seconds, starting with a quarter of a second
@@ -853,8 +853,8 @@
 
 		// If the animation has reached the end, ensure completion tasks are run
 		if (animationProgress == 1) {
-			if (animationTimer) [animationTimer invalidate], [animationTimer release], animationTimer = nil;
-			if (animationRetainCycleBypassObject) [animationRetainCycleBypassObject release], animationRetainCycleBypassObject = nil;
+			if (animationTimer) [animationTimer invalidate], SPClear(animationTimer);
+			if (animationRetainCycleBypassObject) SPClear(animationRetainCycleBypassObject);
 
 			// If uncollapsing, restore the original view and remove the helper
 			if (!collapsibleSubviewCollapsed) {
@@ -1132,12 +1132,12 @@
 		[[wrappedView window] makeFirstResponder:firstResponderToRestore];
 	}
 
-	[wrappedView release], wrappedView = nil;
+	SPClear(wrappedView);
 }
 
 - (void)dealloc
 {
-	if (wrappedView) [wrappedView release], wrappedView = nil;
+	if (wrappedView) SPClear(wrappedView);
 
 	[super dealloc];
 }

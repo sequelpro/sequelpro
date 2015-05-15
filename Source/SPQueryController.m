@@ -171,20 +171,23 @@ static SPQueryController *sharedQueryController = nil;
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
-				if (includeTimestamps || includeConnections) [string appendString:@"/* "];
+				if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"/* "];
 				
-				if (includeTimestamps) {
-					[string appendString:[dateFormatter stringFromDate:[message messageDate]]];
+				NSDate *date = [message messageDate];
+				if (includeTimestamps && date) {
+					[string appendString:[dateFormatter stringFromDate:date]];
 					[string appendString:@" "];
 				}
 
-				if (includeConnections) {
-					[string appendString:[message messageConnection]];
+				NSString *connection = [message messageConnection];
+				if (includeConnections && connection) {
+					[string appendString:connection];
 					[string appendString:@" "];
 				}
 
-				if (includeDatabases) {
-					[string appendString:[message messageDatabase]];
+				NSString *database = [message messageDatabase];
+				if (includeDatabases && database) {
+					[string appendString:database];
 					[string appendString:@" "];
 				}
 
@@ -199,7 +202,7 @@ static SPQueryController *sharedQueryController = nil;
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 
 		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard declareTypes:@[NSStringPboardType] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
 #endif
@@ -226,7 +229,7 @@ static SPQueryController *sharedQueryController = nil;
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -458,7 +461,7 @@ static SPQueryController *sharedQueryController = nil;
 	[progressIndicator startAnimation:self];
 
 	// Don't allow clearing the console while filtering its content
-	[self _allowFilterClearOrSave:[NSNumber numberWithBool:NO]];
+	[self _allowFilterClearOrSave:@NO];
 
 	[messagesFilteredSet removeAllObjects];
 
@@ -470,7 +473,7 @@ static SPQueryController *sharedQueryController = nil;
 		[consoleTableView reloadData];
 		[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
-		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
+		[self _allowFilterClearOrSave:@YES];
 
 		[saveConsoleButton setTitle:NSLocalizedString(@"Save As...", @"save as button title")];
 
@@ -502,7 +505,7 @@ static SPQueryController *sharedQueryController = nil;
 	[consoleTableView scrollRowToVisible:([messagesVisibleSet count] - 1)];
 
 	if ([messagesVisibleSet count] > 0) {
-		[self _allowFilterClearOrSave:[NSNumber numberWithBool:YES]];
+		[self _allowFilterClearOrSave:@YES];
 	}
 
 	[saveConsoleButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
@@ -623,7 +626,7 @@ static SPQueryController *sharedQueryController = nil;
 		&& [self _messageMatchesCurrentFilters:[consoleMessage message]])
 	{
 		[messagesFilteredSet addObject:[messagesFullSet lastObject]];
-		[self performSelectorOnMainThread:@selector(_allowFilterClearOrSave:) withObject:[NSNumber numberWithBool:YES] waitUntilDone:NO];
+		[self performSelectorOnMainThread:@selector(_allowFilterClearOrSave:) withObject:@YES waitUntilDone:NO];
 	}
 
 	// Reload the table and scroll to the new message if it's visible (for speed)
@@ -645,20 +648,20 @@ static SPQueryController *sharedQueryController = nil;
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 #ifndef SP_CODA
-	[dateFormatter release], dateFormatter = nil;
+	SPClear(dateFormatter);
 
-	[messagesFullSet release], messagesFullSet = nil;
-	[messagesFilteredSet release], messagesFilteredSet = nil;
-	[activeFilterString release], activeFilterString = nil;
+	SPClear(messagesFullSet);
+	SPClear(messagesFilteredSet);
+	SPClear(activeFilterString);
 
-	[favoritesContainer release], favoritesContainer = nil;
-	[historyContainer release], historyContainer = nil;
-	[contentFilterContainer release], contentFilterContainer = nil;
+	SPClear(favoritesContainer);
+	SPClear(historyContainer);
+	SPClear(contentFilterContainer);
 #endif
 
-	if (completionKeywordList) [completionKeywordList release], completionKeywordList = nil;
-	if (completionFunctionList) [completionFunctionList release], completionFunctionList = nil; 
-	if (functionArgumentSnippets) [functionArgumentSnippets release], functionArgumentSnippets = nil;
+	if (completionKeywordList) SPClear(completionKeywordList);
+	if (completionFunctionList) SPClear(completionFunctionList);
+	if (functionArgumentSnippets) SPClear(functionArgumentSnippets);
 	
 #ifndef SP_CODA
 	pthread_mutex_destroy(&consoleLock);

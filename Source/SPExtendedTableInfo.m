@@ -490,7 +490,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	}
 
 	NSError *error = nil;
-	NSArray *HTMLExcludes = [NSArray arrayWithObjects:@"doctype", @"html", @"head", @"body", @"xml", nil];
+	NSArray *HTMLExcludes = @[@"doctype", @"html", @"head", @"body", @"xml"];
 
 	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:NSHTMLTextDocumentType,
 		NSDocumentTypeDocumentAttribute, HTMLExcludes, NSExcludedElementsDocumentAttribute, nil];
@@ -720,7 +720,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[connection release], connection = nil;
+	SPClear(connection);
 	
 	[super dealloc];
 }

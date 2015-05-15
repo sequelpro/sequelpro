@@ -135,7 +135,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 	treeSortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayName" ascending:YES];
 	
-	[self setTreeSortDescriptors:[NSArray arrayWithObject:treeSortDescriptor]];
+	[self setTreeSortDescriptors:@[treeSortDescriptor]];
 		
 	[super windowDidLoad];
 }
@@ -183,7 +183,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
 			[privKey appendString:@"_priv"];
 			
-			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:privKey];
+			[[self privsSupportedByServer] setValue:@YES forKey:privKey];
 		}
 	} 
 	// If that fails, base privilege support on the mysql.users columns
@@ -200,7 +200,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			
 			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
 			
-			[[self privsSupportedByServer] setValue:[NSNumber numberWithBool:YES] forKey:[privKey lowercaseString]];
+			[[self privsSupportedByServer] setValue:@YES forKey:[privKey lowercaseString]];
 		}
 	}
 
@@ -281,7 +281,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		[[self managedObjectContext] save:&error];
 		
 		if (error != nil) {
-			[[NSApplication sharedApplication] presentError:error];
+			[NSApp presentError:error];
 		}
 		
 		[parentResults release];
@@ -443,7 +443,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
     persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel: [self managedObjectModel]];
 	
     if (![persistentStoreCoordinator addPersistentStoreWithType:NSInMemoryStoreType configuration:nil URL:nil options:nil error:&error]) {
-        [[NSApplication sharedApplication] presentError:error];
+        [NSApp presentError:error];
     }    
 	
     return persistentStoreCoordinator;
@@ -555,12 +555,12 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		   didEndSelector:NULL 
 			  contextInfo:nil];
 		
-		[errorsString release];
+		SPClear(errorsString);
 		
 		return;
 	}
 	
-	[errorsString release];
+	SPClear(errorsString);
 
 	// Otherwise, close the sheet
 	[NSApp endSheet:[self window] returnCode:0];
@@ -580,7 +580,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		NS_DURING
-			[selectedUser setValue:[NSNumber numberWithBool:YES] forKey:key];
+			[selectedUser setValue:@YES forKey:key];
 		NS_HANDLER
 		NS_ENDHANDLER
 	}
@@ -600,7 +600,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
 		// Perform the change in a try/catch check to avoid exceptions for unhandled privs
 		NS_DURING
-			[selectedUser setValue:[NSNumber numberWithBool:NO] forKey:key];
+			[selectedUser setValue:@NO forKey:key];
 		NS_HANDLER
 		NS_ENDHANDLER
 	}
@@ -848,7 +848,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)_clearData
 {
 	[managedObjectContext reset];
-	[managedObjectContext release], managedObjectContext = nil;
+	SPClear(managedObjectContext);
 }
 
 /**
@@ -1261,7 +1261,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSArray *array = [moc executeFetchRequest:request error:&error];
 	
 	if (error != nil) {
-		[[NSApplication sharedApplication] presentError:error];
+		[NSApp presentError:error];
 	}
 	
 	return array;
@@ -1297,7 +1297,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSArray *array = [moc executeFetchRequest:request error:&error];
 	
 	if (error != nil) {
-		[[NSApplication sharedApplication] presentError:error];
+		[NSApp presentError:error];
 	}
 	
 	return array;
@@ -1458,18 +1458,20 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-    [managedObjectContext release];
-    [persistentStoreCoordinator release];
-    [managedObjectModel release];
-	[privColumnToGrantMap release];
-	[connection release];
-	[privsSupportedByServer release];
-	[schemas release];
-	[availablePrivs release];
-	[grantedSchemaPrivs release];
-	[treeSortDescriptor release];
-	[serverSupport release];
+
+
+    SPClear(managedObjectContext);
+    SPClear(persistentStoreCoordinator);
+    SPClear(managedObjectModel);
+	SPClear(privColumnToGrantMap);
+	SPClear(connection);
+	SPClear(privsSupportedByServer);
+	SPClear(schemas);
+	SPClear(availablePrivs);
+	SPClear(grantedSchemaPrivs);
+	SPClear(treeSortDescriptor);
+	SPClear(treeSortDescriptors);
+	SPClear(serverSupport);
 	
 	[super dealloc];
 }

@@ -145,6 +145,16 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		if ([self sslCACertFileLocationEnabled]) {
 			[mySQLConnection setSslCACertificatePath:[self sslCACertFileLocation]];
 		}
+		
+		NSString *userSSLCipherList = [prefs stringForKey:SPSSLCipherListKey];
+		if(userSSLCipherList) {
+			//strip out disabled ciphers (e.g. in "foo:bar:--:baz")
+			NSRange markerPos = [userSSLCipherList rangeOfRegex:@":?--"];
+			if(markerPos.location != NSNotFound) {
+				userSSLCipherList = [userSSLCipherList substringToIndex:markerPos.location];
+			}
+			[mySQLConnection setSslCipherList:userSSLCipherList];
+		}
 	}
 	
 	// Connection delegate must be set before actual connection attempt is made
@@ -164,8 +174,12 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	if (![mySQLConnection isConnected]) {
 		if (sshTunnel && !cancellingConnection) {
 			
-			// If an SSH tunnel is running, temporarily block to allow the tunnel to register changes in state
-			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+			// This is a race condition we cannot fix "properly":
+			// For meaningful error handling we need to also consider the debug output from the SSH connection.
+			// The SSH debug output might be sligthly delayed though (flush, delegates, ...) or
+			// there might not even by any output at all (when it is purely a libmysql issue).
+			// TL;DR: No guaranteed events we could wait for, just trying our luck.
+			[NSThread sleepForTimeInterval:0.1]; // 100ms
 			
 			// If the state is connection refused, attempt the MySQL connection again with the host using the hostfield value.
 			if ([sshTunnel state] == SPMySQLProxyForwardingFailed) {
@@ -174,7 +188,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 					[mySQLConnection connect];
 					
 					if (![mySQLConnection isConnected]) {
-						[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
+						[NSThread sleepForTimeInterval:0.1]; //100ms
 					}
 				}
 			}
@@ -208,9 +222,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			// Tidy up
 			isConnecting = NO;
 			
-			if (sshTunnel) [sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+			if (sshTunnel) [sshTunnel disconnect], SPClear(sshTunnel);
 			
-			[mySQLConnection release], mySQLConnection = nil;
+			SPClear(mySQLConnection);
 #ifndef SP_CODA
 			if (!cancellingConnection) [self _restoreConnectionInterface];
 #endif
@@ -229,9 +243,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			// Tidy up
 			isConnecting = NO;
 			
-			if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+			if (sshTunnel) SPClear(sshTunnel);
 			
-			[mySQLConnection release], mySQLConnection = nil;
+			SPClear(mySQLConnection);
 			[self _restoreConnectionInterface];
 			if (isTestingConnection) {
 				[self _showConnectionTestResult:NSLocalizedString(@"Invalid database", @"Invalid database very short status message")];
@@ -352,7 +366,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 #endif
 	
 	// Release the tunnel if set - will now be retained by the connection
-	if (sshTunnel) [sshTunnel release], sshTunnel = nil;
+	if (sshTunnel) SPClear(sshTunnel);
 	
 	// Pass the connection to the document and clean up the interface
 	[self addConnectionToDocument];
@@ -436,7 +450,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	
 	// Release as appropriate
 	if (sshTunnel) {
-		[sshTunnel disconnect], [sshTunnel release], sshTunnel = nil;
+		[sshTunnel disconnect], SPClear(sshTunnel);
 		
 		// If the SSH tunnel connection failed because the port it was trying to bind to was already in use take note
 		// of it so we can give the user the option of connecting via standard connection and use the existing tunnel. 

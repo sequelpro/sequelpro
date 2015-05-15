@@ -189,10 +189,9 @@
 
 		SEL selector = @selector(templateEngine:encounteredError:isContinuing:);
 		if ([(NSObject *)delegate respondsToSelector:selector]) {
-			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN 
-												 code:code 
-											 userInfo:[NSDictionary dictionaryWithObject:errStr 
-																				  forKey:NSLocalizedDescriptionKey]];
+			NSError *error = [NSError errorWithDomain:TEMPLATE_ENGINE_ERROR_DOMAIN
+												 code:code
+											 userInfo:@{NSLocalizedDescriptionKey : errStr}];
 			[(NSObject <MGTemplateEngineDelegate> *)delegate templateEngine:self 
 														   encounteredError:error 
 															   isContinuing:continuing];
@@ -408,12 +407,12 @@
 						  nil], GLOBAL_ENGINE_DELIMITERS, 
 						 nil]
 				 forKey:GLOBAL_ENGINE_GROUP];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"true"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"false"];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"YES"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"NO"];
-	[_globals setObject:[NSNumber numberWithBool:YES] forKey:@"yes"];
-	[_globals setObject:[NSNumber numberWithBool:NO] forKey:@"no"];
+	[_globals setObject:@YES forKey:@"true"];
+	[_globals setObject:@NO forKey:@"false"];
+	[_globals setObject:@YES forKey:@"YES"];
+	[_globals setObject:@NO forKey:@"NO"];
+	[_globals setObject:@YES forKey:@"yes"];
+	[_globals setObject:@NO forKey:@"no"];
 	_outputDisabledCount = 0;
 	[templateContents release];
 	templateContents = [templateString retain];
@@ -542,7 +541,7 @@
 					[frame setObject:endMarkers forKey:BLOCK_END_NAMES_KEY];
 					NSArray *arguments = [matchInfo objectForKey:MARKER_ARGUMENTS_KEY];
 					if (!arguments) {
-						arguments = [NSArray array];
+						arguments = @[];
 					}
 					[frame setObject:arguments forKey:BLOCK_ARGUMENTS_KEY];
 					[frame setObject:[matchInfo objectForKey:MARKER_RANGE_KEY] forKey:BLOCK_START_MARKER_RANGE_KEY];

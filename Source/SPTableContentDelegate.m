@@ -118,7 +118,7 @@
 	[self updateCountText];
 	
 #ifndef SP_CODA /* triggered commands */
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
+	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableRowChanged];
 	
 	for (NSString *cmdPath in triggeredCommands) 
 	{
@@ -150,7 +150,7 @@
 		if (!stopTrigger) {
 			
 			if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if ([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {
@@ -261,11 +261,19 @@
 				[tableContentView reloadData];
 			}
 			
+			// Retrieve the column definition
+			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
+			
+			// TODO: Fix editing of "Display as Hex" columns and remove this (also see above)
+			if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+				NSBeep();
+				[SPTooltip showWithObject:NSLocalizedString(@"Disable \"Display Binary Data as Hex\" in the View menu to edit this field.",@"Temporary : Tooltip shown when trying to edit a binary field in table content view while it is displayed using HEX conversion")];
+				return NO;
+			}
+			
 			// Open the editing sheet if required
 			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
 				
-				// Retrieve the column definition
-				NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
 				BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[tableColumn headerCell] stringValue]];
 				
 				// A table is per definition editable
@@ -295,7 +303,7 @@
 					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 				}
 				
-				if (fieldEditor) [fieldEditor release], fieldEditor = nil;
+				if (fieldEditor) SPClear(fieldEditor);
 				
 				fieldEditor = [[SPFieldEditorController alloc] init];
 				
@@ -318,6 +326,7 @@
 
 				if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
 					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
+					isFieldEditable = NO;
 				}
 				
 				NSInteger editedColumn = 0;
@@ -367,10 +376,11 @@
 		else {
 			tmp = [tableContentView draggedRowsAsTabString];
 		}
-		
+
+#warning code inside "if" is unreachable
 		if (!tmp && [tmp length])
 		{
-			[pboard declareTypes:[NSArray arrayWithObjects: NSTabularTextPboardType, NSStringPboardType, nil] owner:nil];
+			[pboard declareTypes:@[NSTabularTextPboardType, NSStringPboardType] owner:nil];
 			
 			[pboard setString:tmp forType:NSStringPboardType];
 			[pboard setString:tmp forType:NSTabularTextPboardType];

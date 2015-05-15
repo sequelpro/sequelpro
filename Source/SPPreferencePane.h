@@ -42,5 +42,5 @@
 {
 	NSUserDefaults *prefs;
 }
-
+- (void)preferencePaneWillBeShown;
 @end

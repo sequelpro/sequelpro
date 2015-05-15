@@ -206,7 +206,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Allow hit tracking for cancel functionality
  */
-- (NSUInteger)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
+- (NSCellHitResult)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
 {
 	return NSCellHitContentArea | NSCellHitTrackableArea;
 }
@@ -324,10 +324,10 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
  */
 - (void)dealloc 
 {
-	if(activityName) [activityName release], activityName = nil;
-	if(activityInfo) [activityInfo release], activityInfo = nil;
-	if(contextInfo) [contextInfo release], contextInfo = nil;
-	if(cancelButton) [cancelButton release];
+	if(activityName) SPClear(activityName);
+	if(activityInfo) SPClear(activityInfo);
+	if(contextInfo) SPClear(contextInfo);
+	if(cancelButton) SPClear(cancelButton);
 
 	[super dealloc];
 }

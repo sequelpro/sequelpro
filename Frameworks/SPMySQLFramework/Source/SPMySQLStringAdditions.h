@@ -33,5 +33,6 @@
 
 - (NSString *)mySQLBacktickQuotedString;
 - (NSString *)mySQLTickQuotedString;
++ (NSString *)stringForDataBytes:(const void *)dataBytes length:(NSUInteger)dataLength encoding:(NSStringEncoding)aStringEncoding;
 
 @end

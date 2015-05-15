@@ -47,4 +47,9 @@
 	return self;
 }
 
+- (void)preferencePaneWillBeShown
+{
+	// Default: do nothing. Override in subclass.
+}
+
 @end

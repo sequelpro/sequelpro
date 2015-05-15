@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13B3116</string>
-		<string key="IBDocument.InterfaceBuilderVersion">4514</string>
-		<string key="IBDocument.AppKitVersion">1265</string>
-		<string key="IBDocument.HIToolboxVersion">696.00</string>
+		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.InterfaceBuilderVersion">6254</string>
+		<string key="IBDocument.AppKitVersion">1265.21</string>
+		<string key="IBDocument.HIToolboxVersion">698.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">4514</string>
+			<string key="NS.object.0">6254</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSBox</string>
@@ -51,7 +51,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSCustomView" id="768243701">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<array class="NSMutableArray" key="NSSubviews">
 					<object class="NSTabView" id="350183787">
@@ -59,6 +59,7 @@
 						<int key="NSvFlags">266</int>
 						<string key="NSFrame">{{-7, -9}, {464, 96}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
+						<reference key="NSWindow"/>
 						<array class="NSMutableArray" key="NSTabViewItems">
 							<object class="NSTabViewItem" id="773828405">
 								<string key="NSIdentifier">1</string>
@@ -71,6 +72,7 @@
 											<int key="NSvFlags">264</int>
 											<string key="NSFrame">{{28, 47}, {411, 18}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="980919427"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSButtonCell" key="NSCell" id="382295631">
@@ -78,7 +80,7 @@
 												<int key="NSCellFlags2">131072</int>
 												<string key="NSContents">First line contains field names</string>
 												<object class="NSFont" key="NSSupport" id="26">
-													<string key="NSName">.LucidaGrandeUI</string>
+													<bool key="IBIsSystemFont">YES</bool>
 													<double key="NSSize">11</double>
 													<int key="NSfFlags">3100</int>
 												</object>
@@ -100,6 +102,7 @@
 											<int key="NSvFlags">268</int>
 											<string key="NSFrame">{{175, -5}, {54, 22}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="381931944"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="224560182">
@@ -222,6 +225,7 @@
 											<int key="NSvFlags">268</int>
 											<string key="NSFrame">{{8, 0}, {162, 14}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="455670945"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="206342718">
@@ -246,6 +250,7 @@
 											<int key="NSvFlags">265</int>
 											<string key="NSFrame">{{386, 20}, {54, 22}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="88279563"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="762842881">
@@ -333,6 +338,7 @@
 											<int key="NSvFlags">265</int>
 											<string key="NSFrame">{{238, 25}, {143, 14}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="595983007"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="82042584">
@@ -352,6 +358,7 @@
 											<int key="NSvFlags">265</int>
 											<string key="NSFrame">{{386, -5}, {54, 22}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="508807740"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="658483425">
@@ -439,6 +446,7 @@
 											<int key="NSvFlags">265</int>
 											<string key="NSFrame">{{238, 0}, {143, 14}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="704974988"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="391954730">
@@ -458,6 +466,7 @@
 											<int key="NSvFlags">268</int>
 											<string key="NSFrame">{{175, 20}, {54, 22}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="201675078"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="674293841">
@@ -546,6 +555,7 @@
 											<int key="NSvFlags">268</int>
 											<string key="NSFrame">{{8, 25}, {162, 14}}</string>
 											<reference key="NSSuperview" ref="838432414"/>
+											<reference key="NSWindow"/>
 											<reference key="NSNextKeyView" ref="557825428"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="556711750">
@@ -563,6 +573,7 @@
 									</array>
 									<string key="NSFrame">{{10, 7}, {444, 70}}</string>
 									<reference key="NSSuperview" ref="350183787"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="321311538"/>
 								</object>
 								<string key="NSLabel">CSV</string>
@@ -586,7 +597,7 @@
 												<int key="NSCellFlags2">71304192</int>
 												<string key="NSContents">On SQL Error:</string>
 												<object class="NSFont" key="NSSupport" id="857116476">
-													<string key="NSName">.LucidaGrandeUI</string>
+													<bool key="IBIsSystemFont">YES</bool>
 													<double key="NSSize">13</double>
 													<int key="NSfFlags">1044</int>
 												</object>
@@ -669,7 +680,7 @@
 						</array>
 						<reference key="NSSelectedTabViewItem" ref="773828405"/>
 						<object class="NSFont" key="NSFont">
-							<string key="NSName">.LucidaGrandeUI</string>
+							<bool key="IBIsSystemFont">YES</bool>
 							<double key="NSSize">9</double>
 							<int key="NSfFlags">3614</int>
 						</object>
@@ -684,6 +695,7 @@
 						<int key="NSvFlags">264</int>
 						<string key="NSFrame">{{208, 85}, {206, 26}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="142158431">
 							<int key="NSCellFlags">-2076180416</int>
@@ -727,6 +739,7 @@
 						<int key="NSvFlags">264</int>
 						<string key="NSFrame">{{36, 91}, {170, 17}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="350183787"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="7839352">
@@ -746,6 +759,7 @@
 						<int key="NSvFlags">264</int>
 						<string key="NSFrame">{{208, 113}, {206, 26}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="621426894"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="1032099677">
@@ -801,6 +815,7 @@
 						<int key="NSvFlags">264</int>
 						<string key="NSFrame">{{36, 119}, {170, 17}}</string>
 						<reference key="NSSuperview" ref="768243701"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="841218020"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="379355660">
@@ -817,6 +832,8 @@
 					</object>
 				</array>
 				<string key="NSFrameSize">{450, 144}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="640853005"/>
 				<object class="NSMutableString" key="NSClassName">
 					<characters key="NS.bytes">NSView</characters>
@@ -872,7 +889,7 @@
 												<int key="NSTCFlags">1</int>
 											</object>
 											<object class="NSTextViewSharedData" key="NSSharedData">
-												<int key="NSFlags">67111169</int>
+												<int key="NSFlags">2305</int>
 												<int key="NSTextCheckingTypes">0</int>
 												<nil key="NSMarkedAttributes"/>
 												<reference key="NSBackgroundColor" ref="51181249"/>
@@ -1083,7 +1100,7 @@
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<bool key="usesAutoincrementingIDs">NO</bool>
-			<array class="NSMutableArray" key="connectionRecords">
+			<array key="connectionRecords">
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">importFieldsEscapedField</string>
@@ -1839,14 +1856,427 @@
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSTextView</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="doDecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doDecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doPrecomposedStringWithCanonicalMapping:">id</string>
+						<string key="doPrecomposedStringWithCompatibilityMapping:">id</string>
+						<string key="doRemoveDiacritics:">id</string>
+						<string key="doSelectionLowerCase:">id</string>
+						<string key="doSelectionTitleCase:">id</string>
+						<string key="doSelectionUpperCase:">id</string>
+						<string key="doTranspose:">id</string>
+						<string key="executeBundleItemForInputField:">id</string>
+						<string key="insertNULLvalue:">id</string>
+						<string key="moveSelectionLineDown:">id</string>
+						<string key="moveSelectionLineUp:">id</string>
+						<string key="selectCurrentLine:">id</string>
+						<string key="selectCurrentWord:">id</string>
+						<string key="selectEnclosingBrackets:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="doDecomposedStringWithCanonicalMapping:">
+							<string key="name">doDecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doDecomposedStringWithCompatibilityMapping:">
+							<string key="name">doDecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCanonicalMapping:">
+							<string key="name">doPrecomposedStringWithCanonicalMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doPrecomposedStringWithCompatibilityMapping:">
+							<string key="name">doPrecomposedStringWithCompatibilityMapping:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doRemoveDiacritics:">
+							<string key="name">doRemoveDiacritics:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionLowerCase:">
+							<string key="name">doSelectionLowerCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionTitleCase:">
+							<string key="name">doSelectionTitleCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doSelectionUpperCase:">
+							<string key="name">doSelectionUpperCase:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="doTranspose:">
+							<string key="name">doTranspose:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="executeBundleItemForInputField:">
+							<string key="name">executeBundleItemForInputField:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="insertNULLvalue:">
+							<string key="name">insertNULLvalue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineDown:">
+							<string key="name">moveSelectionLineDown:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="moveSelectionLineUp:">
+							<string key="name">moveSelectionLineUp:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentLine:">
+							<string key="name">selectCurrentLine:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectCurrentWord:">
+							<string key="name">selectCurrentWord:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="selectEnclosingBrackets:">
+							<string key="name">selectEnclosingBrackets:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPTextViewAdditions.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDataImport</string>
+					<string key="superclassName">NSObject</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="cancelProgressBar:">id</string>
+						<string key="changeFormat:">id</string>
+						<string key="closeSheet:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="cancelProgressBar:">
+							<string key="name">cancelProgressBar:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="changeFormat:">
+							<string key="name">changeFormat:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="addCreateTableSwitch">id</string>
+						<string key="addDropTableSwitch">id</string>
+						<string key="addErrorsSwitch">id</string>
+						<string key="addTableContentSwitch">id</string>
+						<string key="csvFullStreamingSwitch">id</string>
+						<string key="customQueryInstance">id</string>
+						<string key="errorsSheet">id</string>
+						<string key="errorsView">id</string>
+						<string key="importEncodingPopup">NSPopUpButton</string>
+						<string key="importFieldMapperSheetWindow">id</string>
+						<string key="importFieldNamesSwitch">NSButton</string>
+						<string key="importFieldsEnclosedField">id</string>
+						<string key="importFieldsEscapedField">id</string>
+						<string key="importFieldsTerminatedField">id</string>
+						<string key="importFormatPopup">NSPopUpButton</string>
+						<string key="importFromClipboardAccessoryView">id</string>
+						<string key="importFromClipboardSheet">id</string>
+						<string key="importFromClipboardTextView">NSTextView</string>
+						<string key="importLinesTerminatedField">id</string>
+						<string key="importSQLErrorHandlingPopup">NSPopUpButton</string>
+						<string key="importTabView">id</string>
+						<string key="importView">id</string>
+						<string key="multiCSVFullStreamingSwitch">id</string>
+						<string key="multiXMLFullStreamingSwitch">id</string>
+						<string key="singleProgressBar">id</string>
+						<string key="singleProgressSheet">id</string>
+						<string key="singleProgressText">id</string>
+						<string key="singleProgressTitle">id</string>
+						<string key="sqlCompressionSwitch">id</string>
+						<string key="sqlFullStreamingSwitch">id</string>
+						<string key="tableContentInstance">id</string>
+						<string key="tableDataInstance">id</string>
+						<string key="tableDocumentInstance">id</string>
+						<string key="tableSourceInstance">id</string>
+						<string key="tablesListInstance">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="addCreateTableSwitch">
+							<string key="name">addCreateTableSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="addDropTableSwitch">
+							<string key="name">addDropTableSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="addErrorsSwitch">
+							<string key="name">addErrorsSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="addTableContentSwitch">
+							<string key="name">addTableContentSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="csvFullStreamingSwitch">
+							<string key="name">csvFullStreamingSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="customQueryInstance">
+							<string key="name">customQueryInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorsSheet">
+							<string key="name">errorsSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="errorsView">
+							<string key="name">errorsView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importEncodingPopup">
+							<string key="name">importEncodingPopup</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFieldMapperSheetWindow">
+							<string key="name">importFieldMapperSheetWindow</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFieldNamesSwitch">
+							<string key="name">importFieldNamesSwitch</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFieldsEnclosedField">
+							<string key="name">importFieldsEnclosedField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFieldsEscapedField">
+							<string key="name">importFieldsEscapedField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFieldsTerminatedField">
+							<string key="name">importFieldsTerminatedField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFormatPopup">
+							<string key="name">importFormatPopup</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFromClipboardAccessoryView">
+							<string key="name">importFromClipboardAccessoryView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFromClipboardSheet">
+							<string key="name">importFromClipboardSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importFromClipboardTextView">
+							<string key="name">importFromClipboardTextView</string>
+							<string key="candidateClassName">NSTextView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importLinesTerminatedField">
+							<string key="name">importLinesTerminatedField</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importSQLErrorHandlingPopup">
+							<string key="name">importSQLErrorHandlingPopup</string>
+							<string key="candidateClassName">NSPopUpButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importTabView">
+							<string key="name">importTabView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="importView">
+							<string key="name">importView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="multiCSVFullStreamingSwitch">
+							<string key="name">multiCSVFullStreamingSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="multiXMLFullStreamingSwitch">
+							<string key="name">multiXMLFullStreamingSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="singleProgressBar">
+							<string key="name">singleProgressBar</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="singleProgressSheet">
+							<string key="name">singleProgressSheet</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="singleProgressText">
+							<string key="name">singleProgressText</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="singleProgressTitle">
+							<string key="name">singleProgressTitle</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="sqlCompressionSwitch">
+							<string key="name">sqlCompressionSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="sqlFullStreamingSwitch">
+							<string key="name">sqlFullStreamingSwitch</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableContentInstance">
+							<string key="name">tableContentInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDataInstance">
+							<string key="name">tableDataInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableDocumentInstance">
+							<string key="name">tableDocumentInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableSourceInstance">
+							<string key="name">tableSourceInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tablesListInstance">
+							<string key="name">tablesListInstance</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPDataImport.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPDataImport</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="cancelProgressBar:">id</string>
+						<string key="changeFormat:">id</string>
+						<string key="closeSheet:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="cancelProgressBar:">
+							<string key="name">cancelProgressBar:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="changeFormat:">
+							<string key="name">changeFormat:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPDataImport.m</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<real value="1060" key="NS.object.0"/>
-		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
 			<integer value="4600" key="NS.object.0"/>

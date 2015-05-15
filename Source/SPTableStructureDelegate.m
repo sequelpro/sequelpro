@@ -74,7 +74,7 @@
 		else {
 			// If the structure has loaded (not still loading!) and the table encoding
 			// is set, use the appropriate collations.
-			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : [NSArray array];
+			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : @[];
 		}
 		
 		[[tableColumn dataCell] removeAllItems];
@@ -145,14 +145,14 @@
 	// Reset collation if encoding was changed
 	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
 		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			[currentRow setObject:@0 forKey:@"collation"];
 			[tableSourceView reloadData];
 		}
 	}
 	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
 	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
 		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"collation"];
+			[currentRow setObject:@0 forKey:@"collation"];
 			
 			[tableSourceView reloadData];
 		}
@@ -164,7 +164,7 @@
 			isCurrentExtraAutoIncrement = [[[anObject stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString] isEqualToString:@"AUTO_INCREMENT"];
 			
 			if (isCurrentExtraAutoIncrement) {
-				[currentRow setObject:[NSNumber numberWithInteger:0] forKey:@"null"];
+				[currentRow setObject:@0 forKey:@"null"];
 
 				// Asks the user to add an index to query if AUTO_INCREMENT is set and field isn't indexed
 				if ((![currentRow objectForKey:@"Key"] || [[currentRow objectForKey:@"Key"] isEqualToString:@""])) {
@@ -254,7 +254,7 @@
 	if (![self saveRowOnDeselect]) return NO;
 	
 	if ([rows count] == 1) {
-		[pboard declareTypes:[NSArray arrayWithObject:SPDefaultPasteboardDragType] owner:nil];
+		[pboard declareTypes:@[SPDefaultPasteboardDragType] owner:nil];
 		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
 		
 		return YES;

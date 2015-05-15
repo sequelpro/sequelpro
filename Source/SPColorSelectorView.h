@@ -57,6 +57,8 @@
 	IBOutlet id delegate;
 	
 	NSArray *colorList;
+	
+	BOOL isOSAtLeast10_9_0;
 }
 
 @property (nonatomic,readwrite,assign) NSInteger selectedTag;

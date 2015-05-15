@@ -632,8 +632,8 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
 - (void)dealloc
 {
-	[triggerData release], triggerData = nil;
-	[editedTrigger release], editedTrigger = nil;
+	SPClear(triggerData);
+	SPClear(editedTrigger);
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];

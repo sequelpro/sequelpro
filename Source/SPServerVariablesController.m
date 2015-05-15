@@ -115,7 +115,7 @@
 	
 	// If the filtered array is allocated and it's not a reference to the processes array get rid of it
 	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
+		SPClear(variablesFiltered);
 	}		
 }
 
@@ -126,7 +126,7 @@
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:@"cnf"]];
+	[panel setAllowedFileTypes:@[@"cnf"]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -136,7 +136,7 @@
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([variablesFiltered count] > 0) {
-                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[(SPAppController*)[NSApp delegate] frontDocument] host]];
+                NSMutableString *variablesString = [NSMutableString stringWithFormat:@"# MySQL server variables for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *variable in variablesFiltered)
                 {
@@ -292,7 +292,7 @@
 	// If the filtered array is allocated and its not a reference to the variables array
 	// relase it to prevent memory leaks upon the next allocation.
 	if ((variablesFiltered) && (variablesFiltered != variables)) {
-		[variablesFiltered release], variablesFiltered = nil;
+		SPClear(variablesFiltered);
 	}
 	
 	variablesFiltered = [[NSMutableArray alloc] init];
@@ -370,7 +370,7 @@
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		
 		// Copy the string to the pasteboard
-		[pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pasteBoard declareTypes:@[NSStringPboardType] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
 }
@@ -381,7 +381,7 @@
 {
 	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
 
-	[variables release], variables = nil;
+	SPClear(variables);
 	
 	[super dealloc];
 }

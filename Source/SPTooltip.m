@@ -96,7 +96,7 @@ static CGFloat slow_in_out (CGFloat t)
 
 + (void)showWithObject:(id)content atLocation:(NSPoint)point
 {
-	[self showWithObject:content atLocation:point ofType:@"text" displayOptions:[NSDictionary dictionary]];
+	[self showWithObject:content atLocation:point ofType:@"text" displayOptions:@{}];
 }
 
 + (void)showWithObject:(id)content atLocation:(NSPoint)point ofType:(NSString *)type
@@ -241,9 +241,9 @@ static CGFloat slow_in_out (CGFloat t)
 - (void)dealloc
 {
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	[didOpenAtDate release];
-	[webView release];
-	[webPreferences release];
+	SPClear(didOpenAtDate);
+	SPClear(webView);
+	SPClear(webPreferences);
 	[super dealloc];
 }
 
@@ -320,8 +320,11 @@ static CGFloat slow_in_out (CGFloat t)
 	NSScreen* candidate;
 	for(candidate in [NSScreen screens])
 	{
-		if(NSMinX([candidate frame]) < pos.x && NSMinX([candidate frame]) > NSMinX(screenFrame))
-			screenFrame = [candidate frame];
+		NSRect cf = [candidate frame];
+		if(NSPointInRect(pos,cf)) {
+			screenFrame = cf;
+			break;
+		}
 	}
 
 	// is contentView a webView calculate actual rendered size via JavaScript

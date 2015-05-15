@@ -440,8 +440,8 @@
 				[spfsDocData setObject:[NSNumber numberWithBool:[[spfs objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
 
 				// Set global session properties
-				[[NSApp delegate] setSpfSessionDocData:spfsDocData];
-				[[NSApp delegate] setSessionURL:[NSURL fileURLWithPath:filePath]];
+				[SPAppDelegate setSpfSessionDocData:spfsDocData];
+				[SPAppDelegate setSessionURL:[NSURL fileURLWithPath:filePath]];
 
 				// Loop through each defined window in reversed order to reconstruct the last active window
 				for (NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects])
@@ -670,10 +670,10 @@
 				}
 
 				// Update Bundle Editor if it was already initialized
-				for (id win in [NSApp windows])
+				for (NSWindow *win in [NSApp windows])
 				{
-					if ([[[[win delegate] class] description] isEqualToString:@"SPBundleEditorController"]) {
-						[[win delegate] reloadBundles:nil];
+					if ([[win delegate] class] == [SPBundleEditorController class]) {
+						[((SPBundleEditorController *)[win delegate]) reloadBundles:nil];
 						break;
 					}
 				}
@@ -738,7 +738,7 @@
 	if([pathComponents count] > 2)
 		parameter = [pathComponents subarrayWithRange:NSMakeRange(2, [pathComponents count]-2)];
 	else
-		parameter = [NSArray array];
+		parameter = @[];
 
 
 	NSFileManager *fm = [NSFileManager defaultManager];
@@ -993,7 +993,7 @@
 {
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeGeneral];
+	NSArray *scopeBundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeGeneral];
 	if(idx >=0 && idx < (NSInteger)[scopeBundleItems count]) {
 		infoPath = [[scopeBundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
@@ -1137,7 +1137,7 @@
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c setDocUUID:uuid];
 							[c displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:c];
+							[SPAppDelegate addHTMLOutputController:c];
 						}
 					}
 				}
@@ -1243,12 +1243,12 @@
 	SPDatabaseDocument* frontMostDoc = [self frontDocument];
 	if(frontMostDoc) {
 		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
-			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 		else {
 			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
 									selector:@selector(setActivityPaneHidden:) 
-									object:[NSNumber numberWithInteger:0]];
-			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+									object:@0];
+			[frontMostDoc setActivityPaneHidden:@1];
 		}
 	}
 
@@ -1268,12 +1268,12 @@
 	SPDatabaseDocument* frontMostDoc = [self frontDocument];
 	if(frontMostDoc) {
 		if([runningActivitiesArray count] || [[frontMostDoc runningActivities] count])
-			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:[NSNumber numberWithInteger:0] afterDelay:1.0];
+			[frontMostDoc performSelector:@selector(setActivityPaneHidden:) withObject:@0 afterDelay:1.0];
 		else {
 			[NSObject cancelPreviousPerformRequestsWithTarget:frontMostDoc 
 									selector:@selector(setActivityPaneHidden:) 
-									object:[NSNumber numberWithInteger:0]];
-			[frontMostDoc setActivityPaneHidden:[NSNumber numberWithInteger:1]];
+									object:@0];
+			[frontMostDoc setActivityPaneHidden:@1];
 		}
 	}
 }
@@ -1355,7 +1355,7 @@
  */
 - (void)setSessionURL:(NSString *)urlString
 {
-	if(_sessionURL) [_sessionURL release], _sessionURL = nil;
+	if(_sessionURL) SPClear(_sessionURL);
 	if(urlString)
 		_sessionURL = [[NSURL fileURLWithPath:urlString] retain];
 }
@@ -1533,7 +1533,7 @@
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey])
 		deletedDefaultBundles = [[[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey] retain];
 	else
-		deletedDefaultBundles = [[NSArray array] retain];
+		deletedDefaultBundles = [@[] retain];
 
 	NSMutableString *infoAboutUpdatedDefaultBundles = [NSMutableString string];
 	BOOL doBundleUpdate = ([[NSUserDefaults standardUserDefaults] objectForKey:@"doBundleUpdate"]) ? YES : NO;
@@ -1775,7 +1775,7 @@
 				// Sort items for menus
 				NSSortDescriptor *sortDescriptor = [[[NSSortDescriptor alloc] initWithKey:SPBundleInternLabelKey ascending:YES] autorelease];
 				for(NSString* scope in [bundleItems allKeys]) {
-					[[bundleItems objectForKey:scope] sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+					[[bundleItems objectForKey:scope] sortUsingDescriptors:@[sortDescriptor]];
 					[[bundleCategories objectForKey:scope] sortUsingSelector:@selector(compare:)];
 				}
 			}
@@ -1821,17 +1821,19 @@
 	// For each scope add a submenu but not for the last one (should be General always)
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu setAutoenablesItems:YES];
-	NSArray *scopes = [NSArray arrayWithObjects:SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral, nil];
-	NSArray *scopeTitles = [NSArray arrayWithObjects:NSLocalizedString(@"Input Field", @"input field menu item label"), 
-													 NSLocalizedString(@"Data Table", @"data table menu item label"),
-													 NSLocalizedString(@"General", @"general menu item label"),nil];
+	NSArray *scopes = @[SPBundleScopeInputField, SPBundleScopeDataTable, SPBundleScopeGeneral];
+	NSArray *scopeTitles = @[
+			NSLocalizedString(@"Input Field", @"input field menu item label"),
+			NSLocalizedString(@"Data Table", @"data table menu item label"),
+			NSLocalizedString(@"General", @"general menu item label")
+	];
 
 	NSUInteger k = 0;
 	BOOL bundleOtherThanGeneralFound = NO;
 	for(NSString* scope in scopes) {
 
-		NSArray *scopeBundleCategories = [[NSApp delegate] bundleCategoriesForScope:scope];
-		NSArray *scopeBundleItems = [[NSApp delegate] bundleItemsForScope:scope];
+		NSArray *scopeBundleCategories = [SPAppDelegate bundleCategoriesForScope:scope];
+		NSArray *scopeBundleItems = [SPAppDelegate bundleItemsForScope:scope];
 
 		if(![scopeBundleItems count]) {
 			k++;
@@ -1949,7 +1951,7 @@
 		// Sort if more than one found
 		if([assignedKeyEquivalents count] > 1) {
 			NSSortDescriptor *aSortDescriptor = [[[NSSortDescriptor alloc] initWithKey:@"title" ascending:YES selector:@selector(caseInsensitiveCompare:)] autorelease];
-			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:[NSArray arrayWithObject:aSortDescriptor]];
+			NSArray *sorted = [assignedKeyEquivalents sortedArrayUsingDescriptors:@[aSortDescriptor]];
 			[assignedKeyEquivalents setArray:sorted];
 		}
 	}
@@ -2023,19 +2025,18 @@
  */
 - (NSMutableDictionary*)anonymizePreferencesForFeedbackReport:(NSMutableDictionary *)preferences
 {
-	[preferences removeObjectsForKeys:
-	 [NSArray arrayWithObjects:
-	  @"ContentFilters",
-	  @"favorites",
-	  @"lastSqlFileName",
-	  @"NSNavLastRootDirectory",
-	  @"openPath",
-	  @"queryFavorites",
-	  @"queryHistory",
-	  @"tableColumnWidths",
-	  @"savePath",
-	  @"NSRecentDocumentRecords",
-	  nil]];
+	[preferences removeObjectsForKeys:@[
+			@"ContentFilters",
+			@"favorites",
+			@"lastSqlFileName",
+			@"NSNavLastRootDirectory",
+			@"openPath",
+			@"queryFavorites",
+			@"queryHistory",
+			@"tableColumnWidths",
+			@"savePath",
+			@"NSRecentDocumentRecords"
+	]];
 	
 	return preferences;
 }
@@ -2230,22 +2231,22 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	if (bundleItems) [bundleItems release];
-	if (bundleUsedScopes) [bundleUsedScopes release];
-	if (bundleHTMLOutputController) [bundleHTMLOutputController release];
-	if (bundleCategories) [bundleCategories release];
-	if (bundleTriggers) [bundleTriggers release];
-	if (bundleKeyEquivalents) [bundleKeyEquivalents release];
-	if (installedBundleUUIDs) [installedBundleUUIDs release];
-	if (runningActivitiesArray) [runningActivitiesArray release];
+	if (bundleItems)                SPClear(bundleItems);
+	if (bundleUsedScopes)           SPClear(bundleUsedScopes);
+	if (bundleHTMLOutputController) SPClear(bundleHTMLOutputController);
+	if (bundleCategories)           SPClear(bundleCategories);
+	if (bundleTriggers)             SPClear(bundleTriggers);
+	if (bundleKeyEquivalents)       SPClear(bundleKeyEquivalents);
+	if (installedBundleUUIDs)       SPClear(installedBundleUUIDs);
+	if (runningActivitiesArray)     SPClear(runningActivitiesArray);
 
-	[prefsController release], prefsController = nil;
+	SPClear(prefsController);
 
-	if (aboutController) [aboutController release], aboutController = nil;
-	if (bundleEditorController) [bundleEditorController release], bundleEditorController = nil;
+	if (aboutController) SPClear(aboutController);
+	if (bundleEditorController) SPClear(bundleEditorController);
 
-	if (_sessionURL) [_sessionURL release], _sessionURL = nil;
-	if (_spfSessionDocData) [_spfSessionDocData release], _spfSessionDocData = nil;
+	if (_sessionURL) SPClear(_sessionURL);
+	if (_spfSessionDocData) SPClear(_spfSessionDocData);
 
 	[super dealloc];
 }

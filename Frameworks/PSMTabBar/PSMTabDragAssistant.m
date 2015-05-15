@@ -192,7 +192,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
     }
     [cell setHighlighted:NO];
     NSSize offset = NSZeroSize;
-    [pboard declareTypes:[NSArray arrayWithObjects:@"PSMTabBarControlItemPBType", nil] owner: nil];
+	[pboard declareTypes:@[@"PSMTabBarControlItemPBType"] owner:nil];
     [pboard setString:[[NSNumber numberWithInteger:[[control cells] indexOfObject:cell]] stringValue] forType:@"PSMTabBarControlItemPBType"];
     _animationTimer = [NSTimer scheduledTimerWithTimeInterval:(1.0/30.0) target:self selector:@selector(animateDrag:) userInfo:nil repeats:YES];
     
@@ -768,7 +768,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
     PSMTabBarControl *tabBar;
     while ( (tabBar = [e nextObject]) ) {
         [self calculateDragAnimationForTabBar:tabBar];
-        [[NSRunLoop currentRunLoop] performSelector:@selector(display) target:tabBar argument:nil order:1 modes:[NSArray arrayWithObjects:@"NSEventTrackingRunLoopMode", @"NSDefaultRunLoopMode", nil]];
+		[[NSRunLoop currentRunLoop] performSelector:@selector(display) target:tabBar argument:nil order:1 modes:@[@"NSEventTrackingRunLoopMode", @"NSDefaultRunLoopMode"]];
     }
 }
 

@@ -127,9 +127,9 @@ static NSString *SPOldPreferenceFileFavoritesKey = @"favorites";
  */
 - (void)_informDelegateOfErrorCode:(NSUInteger)code description:(NSString *)description
 {
-	NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain 
-										 code:code 
-									 userInfo:[NSDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey]];
+	NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain
+										 code:code
+									 userInfo:@{NSLocalizedDescriptionKey : description}];
 	
 	[self _informDelegateOfImportCompletion:error];
 }

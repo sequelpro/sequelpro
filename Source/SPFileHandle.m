@@ -467,10 +467,10 @@
 {
 	[self closeFile];
 	
-	if (processingThread) [processingThread release];
+	if (processingThread) SPClear(processingThread);
 	
 	free(wrappedFilePath);
-	[buffer release];
+	SPClear(buffer);
 	
 	pthread_mutex_destroy(&bufferLock);
 	

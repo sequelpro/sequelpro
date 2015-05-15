@@ -140,7 +140,7 @@
 
 - (void)dealloc
 {
-	if (fieldType) [fieldType release], fieldType = nil;
+	if (fieldType) SPClear(fieldType);
 	
 	[super dealloc];
 }

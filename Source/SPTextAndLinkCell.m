@@ -42,6 +42,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	return NSMakeRect(inRect.origin.x + inRect.size.width - 15, inRect.origin.y - 1, 12, inRect.size.height);
 }
 
+
 #pragma mark -
 #pragma mark Setup and teardown
 
@@ -69,7 +70,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
  */
 - (void) dealloc
 {
-	if (linkButton) [linkButton release];
+	if (linkButton) SPClear(linkButton);
 
 	[super dealloc];
 }
@@ -176,7 +177,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 /**
  * Allow hit tracking for link functionality
  */
-- (NSUInteger) hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
+- (NSCellHitResult) hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView
 {
 
 	// Fast case for no link - make entire cell editable click area

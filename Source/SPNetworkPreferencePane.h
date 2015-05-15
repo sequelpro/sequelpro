@@ -37,6 +37,19 @@
  *
  * Network preference pane controller.
  */
-@interface SPNetworkPreferencePane : SPPreferencePane <SPPreferencePaneProtocol> 
-
+@interface SPNetworkPreferencePane : SPPreferencePane <SPPreferencePaneProtocol, NSTableViewDataSource, NSTableViewDelegate>
+{
+	IBOutlet NSView *sshClientPickerView;
+	IBOutlet NSTextField *sshClientPath;
+	IBOutlet NSView *hiddenFileView;
+	IBOutlet NSTableView *sslCipherView;
+	
+@private
+	NSAlert *_currentAlert;
+	NSOpenPanel *_currentFilePanel;
+	NSMutableArray *sslCiphers;
+}
+- (IBAction)pickSSHClientViaFileBrowser:(id)sender;
+- (IBAction)pickSSHClient:(id)sender;
+- (IBAction)resetCipherList:(id)sender;
 @end

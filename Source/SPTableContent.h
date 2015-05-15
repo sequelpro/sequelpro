@@ -48,6 +48,7 @@
 #ifndef SP_CODA
 @class SPSplitView;
 #endif
+@class SPTableContentFilterController;
 
 #import "SPDatabaseContentViewDelegate.h"
 
@@ -116,6 +117,8 @@
 
 	// Temporary to avoid nib conflicts during WIP
 	IBOutlet SPSplitView *contentSplitView;
+
+	IBOutlet SPTableContentFilterController *filterControllerInstance;
 #endif
 	SPMySQLConnection *mySQLConnection;
 

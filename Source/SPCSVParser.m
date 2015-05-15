@@ -469,7 +469,7 @@
  */
 - (void) setNullReplacementString:(NSString *)nullString
 {
-	if (nullReplacementString) [nullReplacementString release], nullReplacementString = nil;
+	if (nullReplacementString) SPClear(nullReplacementString);
 
 	if (nullString) nullReplacementString = [[NSString alloc] initWithString:nullString];
 }
@@ -576,7 +576,7 @@
 {
 	NSMutableString *charactersToSkip;
 
-	if (skipCharacterSet) [skipCharacterSet release], skipCharacterSet = nil;
+	if (skipCharacterSet) SPClear(skipCharacterSet);
 
 	charactersToSkip = [[NSMutableString alloc] init];
 	if (![fieldEndString isEqualToString:@" "] && ![fieldQuoteString isEqualToString:@" "] && ![escapeString isEqualToString:@" "] && ![lineEndString isEqualToString:@" "])
@@ -650,17 +650,17 @@
 	return self;
 }
 - (void) dealloc {
-	[csvString release];
-	[fieldEndString release];
-	[lineEndString release];
-	[fieldQuoteString release];
-	[escapeString release];
-	[escapedFieldEndString release];
-	[escapedLineEndString release];
-	[escapedFieldQuoteString release];
-	[escapedEscapeString release];
-	if (nullReplacementString) [nullReplacementString release];
-	if (skipCharacterSet) [skipCharacterSet release];
+	SPClear(csvString);
+	SPClear(fieldEndString);
+	SPClear(lineEndString);
+	SPClear(fieldQuoteString);
+	SPClear(escapeString);
+	SPClear(escapedFieldEndString);
+	SPClear(escapedLineEndString);
+	SPClear(escapedFieldQuoteString);
+	SPClear(escapedEscapeString);
+	if (nullReplacementString) SPClear(nullReplacementString);
+	if (skipCharacterSet)      SPClear(skipCharacterSet);
 	[super dealloc];
 }
 

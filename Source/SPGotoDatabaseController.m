@@ -185,21 +185,27 @@
 						   nil];
 
 	for (NSString *db in unfilteredList) {
-		// Let's just assume it is in the users interest (most of the time) for searches to be CI.
-		NSRange match = [db rangeOfString:filter options:NSCaseInsensitiveSearch];
-
-		if (match.location == NSNotFound) continue;
-
+		
+		NSArray *matches = nil;
+		BOOL hasMatch = [db nonConsecutivelySearchString:filter matchingRanges:&matches];
+		
+		if(!hasMatch) continue;
+		
 		// Should we check for exact match AND have not yet found one?
 		if (exactMatch && !*exactMatch) {
-			if (match.location == 0 && match.length == [db length]) {
-				*exactMatch = YES;
+			if([matches count] == 1) {
+				NSRange match = [(NSValue *)[matches objectAtIndex:0] rangeValue];
+				if (match.location == 0 && match.length == [db length]) {
+					*exactMatch = YES;
+				}
 			}
 		}
 		
 		NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
 
-		[attrMatch setAttributes:attrs range:match];
+		for (NSValue *matchValue in matches) {
+			[attrMatch setAttributes:attrs range:[matchValue rangeValue]];
+		}
 
 		[filteredList addObject:[attrMatch autorelease]];
 	}
@@ -265,8 +271,8 @@
 
 - (void)dealloc
 {
-    [unfilteredList release], unfilteredList = nil;
-	[filteredList release], filteredList = nil;
+    SPClear(unfilteredList);
+	SPClear(filteredList);
 
 	[super dealloc];
 }

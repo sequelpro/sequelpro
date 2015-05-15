@@ -82,11 +82,11 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
  */
 - (void)resetAllData
 {
-	if (characterSetEncoding != nil) [characterSetEncoding release], characterSetEncoding = nil;
-	if (defaultCollation != nil) [defaultCollation release], defaultCollation = nil;
-	if (defaultCharacterSetEncoding != nil) [defaultCharacterSetEncoding release], defaultCharacterSetEncoding = nil;
-	if (serverDefaultCharacterSetEncoding) [serverDefaultCharacterSetEncoding release], serverDefaultCharacterSetEncoding = nil;
-	if (serverDefaultCollation) [serverDefaultCollation release], serverDefaultCollation = nil;
+	if (characterSetEncoding != nil) SPClear(characterSetEncoding);
+	if (defaultCollation != nil) SPClear(defaultCollation);
+	if (defaultCharacterSetEncoding != nil) SPClear(defaultCharacterSetEncoding);
+	if (serverDefaultCharacterSetEncoding) SPClear(serverDefaultCharacterSetEncoding);
+	if (serverDefaultCollation) SPClear(serverDefaultCollation);
 	
 	[collations removeAllObjects];
 	[characterSetCollations removeAllObjects];
@@ -167,7 +167,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 				NSString *charSet = [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
 
 				if ([charSet isEqualToString:characterSetEncoding]) {
-					[characterSetCollations addObject:[NSDictionary dictionaryWithObject:[NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding] forKey:@"COLLATION_NAME"]];
+					[characterSetCollations addObject:@{@"COLLATION_NAME" : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]}];
 				}
 
 				++c;
@@ -191,36 +191,36 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {	
 	if ([storageEngines count] == 0) {
 		if ([serverSupport isMySQL3] || [serverSupport isMySQL4]) {
-			[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MyISAM" forKey:@"Engine"]];
+			[storageEngines addObject:@{@"Engine" : @"MyISAM"}];
 			
 			// Check if InnoDB support is enabled
 			NSString *result = [self _getSingleVariableValue:@"have_innodb"];
 			
 			if(result && [result isEqualToString:@"YES"])
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"InnoDB" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"InnoDB"}];
 			
 			// Before MySQL 4.1 the MEMORY engine was known as HEAP and the ISAM engine was included
 			if ([serverSupport supportsPre41StorageEngines]) {
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"HEAP" forKey:@"Engine"]];
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ISAM" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"HEAP"}];
+				[storageEngines addObject:@{@"Engine" : @"ISAM"}];
 			}
 			else {
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"MEMORY" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"MEMORY"}];
 			}
 			
 			// BLACKHOLE storage engine was added in MySQL 4.1.11
 			if ([serverSupport supportsBlackholeStorageEngine]) {
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"BLACKHOLE" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"BLACKHOLE"}];
 			}
 				
 			// ARCHIVE storage engine was added in MySQL 4.1.3
 			if ([serverSupport supportsArchiveStorageEngine]) {
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"ARCHIVE" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"ARCHIVE"}];
 			}
 			
 			// CSV storage engine was added in MySQL 4.1.4
 			if ([serverSupport supportsCSVStorageEngine]) {
-				[storageEngines addObject:[NSDictionary dictionaryWithObject:@"CSV" forKey:@"Engine"]];
+				[storageEngines addObject:@{@"Engine" : @"CSV"}];
 			}
 		}
 		// The table information_schema.engines didn't exist until MySQL 5.1.5
@@ -428,7 +428,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	SPMySQLResult *result = [connection queryString:query];
 	
-	if ([connection queryErrored]) return [NSArray array];
+	if ([connection queryErrored]) return @[];
 	
 	[result setReturnDataAsStrings:YES];
 	
@@ -489,11 +489,11 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	[self resetAllData];
 	
-	[collations release], collations = nil;
-	[characterSetCollations release], characterSetCollations = nil;
-	[storageEngines release], storageEngines = nil;
-	[characterSetEncodings release], characterSetEncodings = nil;
-	[cachedCollationsByEncoding release], cachedCollationsByEncoding = nil;
+	SPClear(collations);
+	SPClear(characterSetCollations);
+	SPClear(storageEngines);
+	SPClear(characterSetEncodings);
+	SPClear(cachedCollationsByEncoding);
 	
 	[super dealloc];
 }

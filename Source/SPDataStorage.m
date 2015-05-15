@@ -58,7 +58,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 {
 	NSUInteger i;
 	editedRowCount = 0;
-	[editedRows release], editedRows = nil;
+	SPClear(editedRows);
 	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
 
 	if (dataStorage) {
@@ -68,7 +68,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			[newDataStorage replaceExistingResultStore:dataStorage];
 		}
 
-		[dataStorage release], dataStorage = nil;
+		SPClear(dataStorage);
 	}
 
 	dataStorage = [newDataStorage retain];
@@ -357,12 +357,12 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 {
 
 	// Throw an exception if the range is out of bounds
-	if (rangeToRemove.location + rangeToRemove.length > SPMySQLResultStoreGetRowCount(dataStorage)) {
-		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(rangeToRemove.location + rangeToRemove.length), SPMySQLResultStoreGetRowCount(dataStorage)];
+	if (NSMaxRange(rangeToRemove) > SPMySQLResultStoreGetRowCount(dataStorage)) {
+		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), SPMySQLResultStoreGetRowCount(dataStorage)];
 	}
 
 	// Remove the rows from the edited list and underlying storage
-	NSUInteger i = MIN(editedRowCount, rangeToRemove.location + rangeToRemove.length);
+	NSUInteger i = MIN(editedRowCount, NSMaxRange(rangeToRemove));
 	while (--i >= rangeToRemove.location) {
 		editedRowCount--;
 		[editedRows removePointerAtIndex:i];
@@ -391,7 +391,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	if (columnIndex >= numberOfColumns) {
 		[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 	}
-	unloadedColumns[columnIndex] = true;
+	unloadedColumns[columnIndex] = YES;
 }
 
 #pragma mark - Basic information
@@ -449,8 +449,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 }
 
 - (void) dealloc {
-	[dataStorage release], dataStorage = nil;
-	[editedRows release], editedRows = nil;
+	SPClear(dataStorage);
+	SPClear(editedRows);
 	if (unloadedColumns) free(unloadedColumns), unloadedColumns = NULL;
 
 	[super dealloc];

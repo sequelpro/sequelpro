@@ -165,7 +165,7 @@
 			[self updateTriggersForCurrentTable];
 		} 
 		else {
-			return [NSArray array];
+			return @[];
 		}
 	}
 
@@ -329,18 +329,15 @@
 	[status removeAllObjects];
 
 	if (triggers != nil) {
-		[triggers release];
-		triggers = nil;
+		SPClear(triggers);
 	}
 
 	if (tableEncoding != nil) {
-		[tableEncoding release];
-		tableEncoding = nil;
+		SPClear(tableEncoding);
 	}
 
 	if (tableCreateSyntax != nil) {
-		[tableCreateSyntax release];
-		tableCreateSyntax = nil;
+		SPClear(tableCreateSyntax);
 	}
 }
 
@@ -390,7 +387,7 @@
 		// The table information fetch may have already unlocked the data lock.
 		pthread_mutex_trylock(&dataProcessingLock);
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	[columns addObjectsFromArray:[tableData objectForKey:@"columns"]];
@@ -408,7 +405,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -431,7 +428,7 @@
 		[columnNames removeAllObjects];
 		[constraints removeAllObjects];
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	[columns addObjectsFromArray:[viewData objectForKey:@"columns"]];
@@ -448,7 +445,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -520,7 +517,7 @@
 	// connection reconnect dialog to appear and the user chose to close the connection.
 	if (!syntaxResult) return nil;
 
-	if (tableCreateSyntax != nil) [tableCreateSyntax release], tableCreateSyntax = nil;
+	if (tableCreateSyntax != nil) SPClear(tableCreateSyntax);
 
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
@@ -743,7 +740,7 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-							[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"isprimarykey"];
+							[theTableColumn setObject:@1 forKey:@"isprimarykey"];
 							break;
 						}
 				}
@@ -761,7 +758,7 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-								[theTableColumn setObject:[NSNumber numberWithInteger:1] forKey:@"unique"];
+								[theTableColumn setObject:@1 forKey:@"unique"];
 								break;
 							}
 					}
@@ -783,7 +780,7 @@
 		charsetDefinitionRange = [createTableParser rangeOfString:@"CHARACTER SET=" options:NSCaseInsensitiveSearch];
 	}
 	if (charsetDefinitionRange.location != NSNotFound) {
-		stringStart = charsetDefinitionRange.location + charsetDefinitionRange.length;
+		stringStart = NSMaxRange(charsetDefinitionRange);
 		for (i = stringStart; i < [createTableParser length]; i++) {
 			if ([createTableParser characterAtIndex:i] == ' ') break;
 		}
@@ -864,7 +861,7 @@
 	}
 
 	// Retrieve the table syntax string
-	if (tableCreateSyntax) [tableCreateSyntax release], tableCreateSyntax = nil;
+	if (tableCreateSyntax) SPClear(tableCreateSyntax);
 	NSString *syntaxString = [[theResult getRowAsArray] objectAtIndex:1];
 
 	// A NULL value indicates that the user does not have permission to view the syntax
@@ -915,9 +912,9 @@
 		// If there's a null column, use the details from it
 		if ([resultRow objectForKey:@"Null"]) {
 			if ([[[resultRow objectForKey:@"Null"] uppercaseString] isEqualToString:@"NO"]) {
-				[tableColumn setValue:[NSNumber numberWithBool:NO] forKey:@"null"];
+				[tableColumn setValue:@NO forKey:@"null"];
 			} else {
-				[tableColumn setValue:[NSNumber numberWithBool:YES] forKey:@"null"];
+				[tableColumn setValue:@YES forKey:@"null"];
 			}
 		}
 
@@ -957,7 +954,7 @@
 	// Catch unselected tables and return false
 	if (![tableListInstance tableName]) {
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	// Ensure queries are run as UTF8
@@ -1004,7 +1001,7 @@
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 		pthread_mutex_unlock(&dataProcessingLock);
-		return FALSE;
+		return NO;
 	}
 
 	// Retrieve the status as a dictionary and set as the cache
@@ -1022,7 +1019,7 @@
 			[status setDictionary:[NSDictionary dictionaryWithObjectsAndKeys:@"Error", @"Engine", [NSString stringWithFormat:NSLocalizedString(@"An error occurred retrieving table information.  MySQL said: %@", @"MySQL table info retrieval error message"), [status objectForKey:@"Comment"]], @"Comment", [tableListInstance tableName], @"Name", nil]];
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 			pthread_mutex_unlock(&dataProcessingLock);
-			return FALSE;
+			return NO;
 		}
 
 		// Add a note for whether the row count is accurate or not - only for MyISAM
@@ -1058,7 +1055,7 @@
 
 	pthread_mutex_unlock(&dataProcessingLock);
 
-	return TRUE;
+	return YES;
 }
 
 /**
@@ -1086,7 +1083,7 @@
 							  nil, nil, [NSApp mainWindow], self, nil, nil,
 							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"),
 							  [tableListInstance tableName], [mySQLConnection lastErrorMessage]]);
-			if (triggers) [triggers release], triggers = nil;
+			if (triggers) SPClear(triggers);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
 
@@ -1170,7 +1167,7 @@
  */
 - (NSDictionary *) parseFieldDefinitionStringParts:(NSArray *)definitionParts
 {
-	if (![definitionParts count]) return [NSDictionary dictionary];
+	if (![definitionParts count]) return @{};
 
 	SPSQLParser *detailParser;
 	SPSQLParser *fieldParser = [[SPSQLParser alloc] init];
@@ -1267,16 +1264,13 @@
 	[detailString release];
 
 
-	NSNumber *boolYES = [NSNumber numberWithBool:YES];
-	NSNumber *boolNO  = [NSNumber numberWithBool:NO];
-
 	// Set up some column defaults for all columns
-	[fieldDetails setValue:boolYES forKey:@"null"];
-	[fieldDetails setValue:boolNO forKey:@"unsigned"];
-	[fieldDetails setValue:boolNO forKey:@"binary"];
-	[fieldDetails setValue:boolNO forKey:@"zerofill"];
-	[fieldDetails setValue:boolNO forKey:@"autoincrement"];
-	[fieldDetails setValue:boolNO forKey:@"onupdatetimestamp"];
+	[fieldDetails setValue:@YES forKey:@"null"];
+	[fieldDetails setValue:@NO forKey:@"unsigned"];
+	[fieldDetails setValue:@NO forKey:@"binary"];
+	[fieldDetails setValue:@NO forKey:@"zerofill"];
+	[fieldDetails setValue:@NO forKey:@"autoincrement"];
+	[fieldDetails setValue:@NO forKey:@"onupdatetimestamp"];
 	[fieldDetails setValue:@"" forKey:@"comment"];
 	[fieldDetails setValue:[NSMutableString string] forKey:@"unparsed"];
 
@@ -1288,15 +1282,15 @@
 
 		// Whether numeric fields are unsigned
 		if ([detailString isEqualToString:@"UNSIGNED"]) {
-			[fieldDetails setValue:boolYES forKey:@"unsigned"];
+			[fieldDetails setValue:@YES forKey:@"unsigned"];
 
 		// Whether numeric fields are zerofill
 		} else if ([detailString isEqualToString:@"ZEROFILL"]) {
-			[fieldDetails setValue:boolYES forKey:@"zerofill"];
+			[fieldDetails setValue:@YES forKey:@"zerofill"];
 
 		// Whether text types are binary
 		} else if ([detailString isEqualToString:@"BINARY"]) {
-			[fieldDetails setValue:boolYES forKey:@"binary"];
+			[fieldDetails setValue:@YES forKey:@"binary"];
 
 		// Whether text types have a different encoding to the table
 		} else if ([detailString isEqualToString:@"CHARSET"] && (definitionPartsIndex + 1 < partsArrayLength)) {
@@ -1321,16 +1315,16 @@
 		// Whether fields are NOT NULL
 		} else if ([detailString isEqualToString:@"NOT"] && (definitionPartsIndex + 1 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:boolNO forKey:@"null"];
+			[fieldDetails setValue:@NO forKey:@"null"];
 			definitionPartsIndex++;
 
 		// Whether fields are NULL
 		} else if ([detailString isEqualToString:@"NULL"]) {
-			[fieldDetails setValue:boolYES forKey:@"null"];
+			[fieldDetails setValue:@YES forKey:@"null"];
 
 		// Whether fields should auto-increment
 		} else if ([detailString isEqualToString:@"AUTO_INCREMENT"]) {
-			[fieldDetails setValue:boolYES forKey:@"autoincrement"];
+			[fieldDetails setValue:@YES forKey:@"autoincrement"];
 			tableHasAutoIncrementField = YES;
 
 		// Field defaults
@@ -1347,7 +1341,7 @@
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-			[fieldDetails setValue:boolYES forKey:@"onupdatetimestamp"];
+			[fieldDetails setValue:@YES forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
 
 		// Column comments
@@ -1398,16 +1392,16 @@
  */
 - (void)dealloc
 {
-	[columns release];
-	[columnNames release];
-	[constraints release];
-	[status release];
-	[primaryKeyColumns release];
+	SPClear(columns);
+	SPClear(columnNames);
+	SPClear(constraints);
+	SPClear(status);
+	SPClear(primaryKeyColumns);
 
-	if (triggers) [triggers release];
-	if (tableEncoding) [tableEncoding release];
-	if (tableCreateSyntax) [tableCreateSyntax release];
-	if (mySQLConnection) [mySQLConnection release];
+	if (triggers)          SPClear(triggers);
+	if (tableEncoding)     SPClear(tableEncoding);
+	if (tableCreateSyntax) SPClear(tableCreateSyntax);
+	if (mySQLConnection)   SPClear(mySQLConnection);
 
 	pthread_mutex_destroy(&dataProcessingLock);
 

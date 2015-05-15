@@ -193,7 +193,7 @@
     if (self) {
         // Initialization
         [self initAddedProperties];
-        [self registerForDraggedTypes:[NSArray arrayWithObjects:@"PSMTabBarControlItemPBType", nil]];
+        [self registerForDraggedTypes:@[@"PSMTabBarControlItemPBType"]];
 		
 		// resize
 		[self setPostsFrameChangedNotifications:YES];
@@ -1497,7 +1497,7 @@
 }
 
 // NSDraggingSource
-- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     return (isLocal ? NSDragOperationMove : NSDragOperationNone);
 }
@@ -1990,7 +1990,7 @@
 
             // Initialization
         [self initAddedProperties];
-        [self registerForDraggedTypes:[NSArray arrayWithObjects:@"PSMTabBarControlItemPBType", nil]];
+        [self registerForDraggedTypes:@[@"PSMTabBarControlItemPBType"]];
     
         if ([aDecoder allowsKeyedCoding]) {
             _cells = [[aDecoder decodeObjectForKey:@"PSMcells"] retain];

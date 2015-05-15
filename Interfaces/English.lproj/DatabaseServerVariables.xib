@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13B3116</string>
-		<string key="IBDocument.InterfaceBuilderVersion">4514</string>
-		<string key="IBDocument.AppKitVersion">1265</string>
-		<string key="IBDocument.HIToolboxVersion">696.00</string>
+		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.InterfaceBuilderVersion">6254</string>
+		<string key="IBDocument.AppKitVersion">1265.21</string>
+		<string key="IBDocument.HIToolboxVersion">698.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">4514</string>
+			<string key="NS.object.0">6254</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSButton</string>
@@ -58,7 +58,7 @@
 				<nil key="NSUserInterfaceItemIdentifier"/>
 				<string key="NSWindowContentMinSize">{433, 341}</string>
 				<object class="NSView" key="NSWindowView" id="605976451">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<array class="NSMutableArray" key="NSSubviews">
 						<object class="NSScrollView" id="365271629">
@@ -72,27 +72,31 @@
 										<object class="NSTableView" id="567086457">
 											<reference key="NSNextResponder" ref="892724959"/>
 											<int key="NSvFlags">256</int>
-											<string key="NSFrameSize">{432, 251}</string>
+											<string key="NSFrameSize">{421, 251}</string>
 											<reference key="NSSuperview" ref="892724959"/>
+											<reference key="NSWindow"/>
 											<bool key="NSEnabled">YES</bool>
 											<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 											<bool key="NSControlAllowsExpansionToolTips">YES</bool>
 											<object class="NSTableHeaderView" key="NSHeaderView" id="710723896">
 												<reference key="NSNextResponder" ref="551149994"/>
 												<int key="NSvFlags">256</int>
-												<string key="NSFrameSize">{432, 17}</string>
+												<string key="NSFrameSize">{421, 17}</string>
 												<reference key="NSSuperview" ref="551149994"/>
+												<reference key="NSWindow"/>
 												<reference key="NSTableView" ref="567086457"/>
 											</object>
-											<object class="_NSCornerView" key="NSCornerView">
-												<nil key="NSNextResponder"/>
+											<object class="_NSCornerView" key="NSCornerView" id="186149490">
+												<reference key="NSNextResponder" ref="365271629"/>
 												<int key="NSvFlags">256</int>
 												<string key="NSFrame">{{422, 0}, {12, 17}}</string>
+												<reference key="NSSuperview" ref="365271629"/>
+												<reference key="NSWindow"/>
 											</object>
 											<array class="NSMutableArray" key="NSTableColumns">
 												<object class="NSTableColumn" id="1016923668">
 													<string key="NSIdentifier">Variable_name</string>
-													<double key="NSWidth">230</double>
+													<double key="NSWidth">224</double>
 													<double key="NSMinWidth">40</double>
 													<double key="NSMaxWidth">1000</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -100,7 +104,7 @@
 														<int key="NSCellFlags2">2048</int>
 														<string key="NSContents">Variable Name</string>
 														<object class="NSFont" key="NSSupport" id="26">
-															<string key="NSName">.LucidaGrandeUI</string>
+															<bool key="IBIsSystemFont">YES</bool>
 															<double key="NSSize">11</double>
 															<int key="NSfFlags">3100</int>
 														</object>
@@ -141,7 +145,7 @@
 												</object>
 												<object class="NSTableColumn" id="256631186">
 													<string key="NSIdentifier">Value</string>
-													<double key="NSWidth">196</double>
+													<double key="NSWidth">191</double>
 													<double key="NSMinWidth">40</double>
 													<double key="NSMaxWidth">1000</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -198,18 +202,34 @@
 											<int key="NSTableViewGroupRowStyle">1</int>
 										</object>
 									</array>
-									<string key="NSFrame">{{1, 17}, {432, 251}}</string>
+									<string key="NSFrame">{{1, 17}, {421, 251}}</string>
 									<reference key="NSSuperview" ref="365271629"/>
+									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="567086457"/>
 									<reference key="NSDocView" ref="567086457"/>
+									<reference key="NSBGColor" ref="30234059"/>
+									<int key="NScvFlags">4</int>
+								</object>
+								<object class="NSClipView" id="551149994">
+									<reference key="NSNextResponder" ref="365271629"/>
+									<int key="NSvFlags">2338</int>
+									<array class="NSMutableArray" key="NSSubviews">
+										<reference ref="710723896"/>
+									</array>
+									<string key="NSFrame">{{1, 0}, {421, 17}}</string>
+									<reference key="NSSuperview" ref="365271629"/>
+									<reference key="NSWindow"/>
+									<reference key="NSNextKeyView" ref="710723896"/>
+									<reference key="NSDocView" ref="710723896"/>
 									<reference key="NSBGColor" ref="30234059"/>
 									<int key="NScvFlags">4</int>
 								</object>
 								<object class="NSScroller" id="935382091">
 									<reference key="NSNextResponder" ref="365271629"/>
 									<int key="NSvFlags">256</int>
-									<string key="NSFrame">{{419, 17}, {14, 251}}</string>
+									<string key="NSFrame">{{422, 17}, {11, 251}}</string>
 									<reference key="NSSuperview" ref="365271629"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">256</int>
 									<reference key="NSTarget" ref="365271629"/>
@@ -221,34 +241,25 @@
 									<int key="NSvFlags">-2147483392</int>
 									<string key="NSFrame">{{-100, -100}, {358, 11}}</string>
 									<reference key="NSSuperview" ref="365271629"/>
+									<reference key="NSWindow"/>
 									<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 									<int key="NSsFlags">257</int>
 									<reference key="NSTarget" ref="365271629"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSPercent">0.99721449613571167</double>
 								</object>
-								<object class="NSClipView" id="551149994">
-									<reference key="NSNextResponder" ref="365271629"/>
-									<int key="NSvFlags">2338</int>
-									<array class="NSMutableArray" key="NSSubviews">
-										<reference ref="710723896"/>
-									</array>
-									<string key="NSFrame">{{1, 0}, {432, 17}}</string>
-									<reference key="NSSuperview" ref="365271629"/>
-									<reference key="NSNextKeyView" ref="710723896"/>
-									<reference key="NSDocView" ref="710723896"/>
-									<reference key="NSBGColor" ref="30234059"/>
-									<int key="NScvFlags">4</int>
-								</object>
+								<reference ref="186149490"/>
 							</array>
 							<string key="NSFrame">{{-1, 39}, {434, 269}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="892724959"/>
 							<int key="NSsFlags">133138</int>
 							<reference key="NSVScroller" ref="935382091"/>
 							<reference key="NSHScroller" ref="95583939"/>
 							<reference key="NSContentView" ref="892724959"/>
 							<reference key="NSHeaderClipView" ref="551149994"/>
+							<reference key="NSCornerView" ref="186149490"/>
 							<bytes key="NSScrollAmts">QSAAAEEgAABBkAAAQZAAAA</bytes>
 							<double key="NSMinMagnification">0.25</double>
 							<double key="NSMaxMagnification">4</double>
@@ -259,6 +270,7 @@
 							<int key="NSvFlags">257</int>
 							<string key="NSFrame">{{342, 5}, {77, 28}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="183553689">
 								<int key="NSCellFlags">67108864</int>
@@ -285,6 +297,7 @@
 							<int key="NSvFlags">260</int>
 							<string key="NSFrame">{{12, 5}, {125, 28}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="397417497">
 								<int key="NSCellFlags">-2080374784</int>
@@ -306,13 +319,14 @@
 							<int key="NSvFlags">268</int>
 							<string key="NSFrame">{{9, 316}, {156, 14}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="395355434">
 								<int key="NSCellFlags">68157504</int>
 								<int key="NSCellFlags2">272761856</int>
 								<string key="NSContents">Server Variables</string>
 								<object class="NSFont" key="NSSupport">
-									<string key="NSName">.LucidaGrandeUI-Bold</string>
+									<bool key="IBIsSystemFont">YES</bool>
 									<double key="NSSize">11</double>
 									<int key="NSfFlags">3357</int>
 								</object>
@@ -333,6 +347,7 @@
 							<int key="NSvFlags">265</int>
 							<string key="NSFrame">{{251, 314}, {170, 19}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSearchFieldCell" key="NSCell" id="623709875">
 								<int key="NSCellFlags">342884416</int>
@@ -393,6 +408,7 @@
 							<int key="NSvFlags">-2147483382</int>
 							<string key="NSFrame">{{167, 316}, {79, 14}}</string>
 							<reference key="NSSuperview" ref="605976451"/>
+							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="690211055">
 								<int key="NSCellFlags">68157504</int>
@@ -408,6 +424,8 @@
 						</object>
 					</array>
 					<string key="NSFrameSize">{433, 341}</string>
+					<reference key="NSSuperview"/>
+					<reference key="NSWindow"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMinSize">{433, 363}</string>
@@ -462,7 +480,7 @@
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<bool key="usesAutoincrementingIDs">NO</bool>
-			<array class="NSMutableArray" key="connectionRecords">
+			<array key="connectionRecords">
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">window</string>
@@ -834,14 +852,110 @@
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">SPServerVariablesController</string>
+					<string key="superclassName">NSWindowController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="closeSheet:">id</string>
+						<string key="copy:">id</string>
+						<string key="copyServerVariableName:">id</string>
+						<string key="copyServerVariableValue:">id</string>
+						<string key="saveServerVariables:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copy:">
+							<string key="name">copy:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyServerVariableName:">
+							<string key="name">copyServerVariableName:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyServerVariableValue:">
+							<string key="name">copyServerVariableValue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveServerVariables:">
+							<string key="name">saveServerVariables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="filterVariablesSearchField">NSSearchField</string>
+						<string key="saveVariablesButton">NSButton</string>
+						<string key="variablesCountTextField">NSTextField</string>
+						<string key="variablesTableView">NSTableView</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="filterVariablesSearchField">
+							<string key="name">filterVariablesSearchField</string>
+							<string key="candidateClassName">NSSearchField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="saveVariablesButton">
+							<string key="name">saveVariablesButton</string>
+							<string key="candidateClassName">NSButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="variablesCountTextField">
+							<string key="name">variablesCountTextField</string>
+							<string key="candidateClassName">NSTextField</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="variablesTableView">
+							<string key="name">variablesTableView</string>
+							<string key="candidateClassName">NSTableView</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPServerVariablesController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPServerVariablesController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="closeSheet:">id</string>
+						<string key="copy:">id</string>
+						<string key="copyServerVariableName:">id</string>
+						<string key="copyServerVariableValue:">id</string>
+						<string key="saveServerVariables:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="closeSheet:">
+							<string key="name">closeSheet:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copy:">
+							<string key="name">copy:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyServerVariableName:">
+							<string key="name">copyServerVariableName:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="copyServerVariableValue:">
+							<string key="name">copyServerVariableValue:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="saveServerVariables:">
+							<string key="name">saveServerVariables:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPServerVariablesController.m</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>
-		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
-			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
-			<real value="1060" key="NS.object.0"/>
-		</object>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
 			<integer value="4600" key="NS.object.0"/>

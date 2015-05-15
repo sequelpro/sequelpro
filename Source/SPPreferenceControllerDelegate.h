@@ -37,6 +37,6 @@
  *
  * Preference controller delegate category.
  */
-@interface SPPreferenceController (SPPreferenceControllerDelegate)
+@interface SPPreferenceController (SPPreferenceControllerDelegate) <NSWindowDelegate>
 
 @end

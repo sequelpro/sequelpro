@@ -61,9 +61,23 @@ static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 	return self;
 }
 
+- (id)initWithDictionary:(NSDictionary *)dict
+{
+	if ((self = [self initWithName:[dict objectForKey:SPFavoritesGroupNameKey]])) {
+		[self setNodeIsExpanded:[(NSNumber *)[dict objectForKey:SPFavoritesGroupIsExpandedKey] boolValue]];
+	}
+	
+	return self;
+}
+
 + (SPGroupNode *)groupNodeWithName:(NSString *)name
 {
 	return [[[self alloc] initWithName:name] autorelease];
+}
+
++ (SPGroupNode *)groupNodeWithDictionary:(NSDictionary *)dict
+{
+	return [[[self alloc] initWithDictionary:dict] autorelease];
 }
 
 #pragma mark -
@@ -84,6 +98,7 @@ static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
+#warning This is not a valid initializer.
 	[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
 	[self setNodeIsExpanded:[[coder decodeObjectForKey:SPGroupNodeIsExpandedKey] boolValue]];
 	
@@ -108,7 +123,7 @@ static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 
 - (void)dealloc
 {
-	if (nodeName) [nodeName release], nodeName = nil;
+	if (nodeName) SPClear(nodeName);
 	
 	[super dealloc];
 }

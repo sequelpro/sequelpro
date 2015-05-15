@@ -41,10 +41,13 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPColorSelectorView.h"
+#import "SPOSInfo.h"
 
 @interface SPColorSelectorView (Private)
 
 - (void)setupTrackingAreas;
+- (void)_drawDotBevelStyleWithGradient:(NSGradient *)gradient insideRect:(NSRect)colorSquareRect;
+- (void)_drawDotFlatStyleWithColor:(NSColor *)color insideRect:(NSRect)colorSquareRect;
 
 @end
 
@@ -86,6 +89,8 @@ enum trackingAreaIDs
 		
 		//set ourselves as observer of selectedTag (need to mark view dirty)
 		[self addObserver:self forKeyPath:@"selectedTag" options:0 context:nil];
+		
+		isOSAtLeast10_9_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:9 patch:0];
 	}
 	
 	return self;
@@ -126,9 +131,9 @@ enum trackingAreaIDs
 - (NSRect)rectForColorViewAtIndex:(NSInteger)index
 {
 	CGFloat baseY = 2.0;
-	CGFloat baseX = 2.0;
+	CGFloat baseX = 3.0;
 	
-	CGFloat marginR = 5.0;
+	CGFloat marginR = 7.0;
 	
 	CGFloat width = 16.0;
 	CGFloat height = 16.0;
@@ -138,45 +143,19 @@ enum trackingAreaIDs
 	switch (index)
 	{
 		case kTrackingAreaNone:
-			returnRect = NSMakeRect(baseX, baseY, width, height);
-			break;
-			
 		case kTrackingArea0:
-			returnRect = NSMakeRect(baseX + 1 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea1:
-			returnRect = NSMakeRect(baseX + 2 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea2:
-			returnRect = NSMakeRect(baseX + 3 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea3:
-			returnRect = NSMakeRect(baseX + 4 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea4:
-			returnRect = NSMakeRect(baseX + 5 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea5:
-			returnRect = NSMakeRect(baseX + 6 * (width + marginR), baseY, width, height);
-			break;
-			
 		case kTrackingArea6:
-			returnRect = NSMakeRect(baseX + 7 * (width + marginR), baseY, width, height);
+			returnRect = NSMakeRect(baseX + (index + 1) * (width + marginR), baseY, width, height);
 			break;
 	}
 	
 	return returnRect;
 }
-
-// -------------------------------------------------------------------------------
-//	Returns the color gradient corresponding to the tag. These colours were
-//  chosen to appear similar to those in Aperture 3.
-// -------------------------------------------------------------------------------
 
 - (NSGradient *)gradientForTag:(NSInteger)colorTag
 {
@@ -289,51 +268,77 @@ enum trackingAreaIDs
 			
 			[left setLineWidth:3.0];
 			[left setLineCapStyle:NSButtLineCapStyle];
-			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x + 4.0, colorSquareRect.origin.y + 4.0)];
+			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x +  4.0, colorSquareRect.origin.y +  4.0)];
 			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x + 12.0, colorSquareRect.origin.y + 12.0)];
-			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x + 12.0, colorSquareRect.origin.y + 4.0)];
-			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x + 4.0, colorSquareRect.origin.y + 12.0)];
+			[left moveToPoint:NSMakePoint(colorSquareRect.origin.x + 12.0, colorSquareRect.origin.y +  4.0)];
+			[left lineToPoint:NSMakePoint(colorSquareRect.origin.x +  4.0, colorSquareRect.origin.y + 12.0)];
 			[left stroke];
 		}
 		else {
-			// draw the gradient dot
-			NSGradient *gradient = [self gradientForTag:index];
-			NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
-			NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
-			[gradient drawInBezierPath:circlePath angle:-90.0];
-			
-			// draw a highlight
-			
-			// top edge outline
-			gradient = [[NSGradient alloc] initWithColorsAndLocations:
-						[NSColor colorWithCalibratedWhite:1.0 alpha:0.18], 0.0,
-						[NSColor colorWithCalibratedWhite:1.0 alpha:0.0], 0.6, nil];
-			circlePath = [NSBezierPath bezierPathWithOvalInRect:NSInsetRect(dotRect, 1.0, 1.0)];
-			[circlePath appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(dotRect.origin.x+1.0, dotRect.origin.y-2.0, dotRect.size.width-2.0, dotRect.size.height)]];
-			[circlePath setWindingRule:NSEvenOddWindingRule];
-			[gradient drawInBezierPath:circlePath angle:-90.0];
-			[gradient release];
-			
-			// top center gloss
-			gradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.18]
-													 endingColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.0]];
-			[gradient drawFromCenter:NSMakePoint(NSMidX(dotRect), NSMaxY(dotRect) - 2.0)
-							  radius:0.0
-							toCenter:NSMakePoint(NSMidX(dotRect), NSMaxY(dotRect) - 2.0)
-							  radius:4.0
-							 options:0];
-			[gradient release];
-			
-			// draw a dark outline
-			circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
-			gradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.12]
-													 endingColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.46]];
-			[circlePath appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSInsetRect(dotRect, 1.0, 1.0)]];
-			[circlePath setWindingRule:NSEvenOddWindingRule];
-			[gradient drawInBezierPath:circlePath angle:-90.0];
-			[gradient release];
+			if(!isOSAtLeast10_9_0) {
+				NSGradient *gradient = [self gradientForTag:index];
+				[self _drawDotBevelStyleWithGradient:gradient insideRect:colorSquareRect];
+			}
+			else {
+				NSColor *baseColor = (NSColor *)[colorList objectAtIndex:index];
+				[self _drawDotFlatStyleWithColor:baseColor insideRect:colorSquareRect];
+			}
 		}
 	}
+}
+
+- (void)_drawDotBevelStyleWithGradient:(NSGradient *)gradient insideRect:(NSRect)colorSquareRect
+{
+	// draw the gradient dot
+	NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
+	NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
+	[gradient drawInBezierPath:circlePath angle:-90.0];
+	
+	// draw a highlight
+	
+	// top edge outline
+	NSGradient *grad = [[NSGradient alloc] initWithColorsAndLocations:
+				[NSColor colorWithCalibratedWhite:1.0 alpha:0.18], 0.0,
+				[NSColor colorWithCalibratedWhite:1.0 alpha:0.0], 0.6, nil];
+	circlePath = [NSBezierPath bezierPathWithOvalInRect:NSInsetRect(dotRect, 1.0, 1.0)];
+	[circlePath appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSMakeRect(dotRect.origin.x+1.0, dotRect.origin.y-2.0, dotRect.size.width-2.0, dotRect.size.height)]];
+	[circlePath setWindingRule:NSEvenOddWindingRule];
+	[grad drawInBezierPath:circlePath angle:-90.0];
+	[grad release];
+	
+	// top center gloss
+	NSGradient *grad2 = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.18]
+											 endingColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.0]];
+	[grad2 drawFromCenter:NSMakePoint(NSMidX(dotRect), NSMaxY(dotRect) - 2.0)
+					  radius:0.0
+					toCenter:NSMakePoint(NSMidX(dotRect), NSMaxY(dotRect) - 2.0)
+					  radius:4.0
+					 options:0];
+	[grad2 release];
+	
+	// draw a dark outline
+	circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
+	NSGradient *grad3 = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.12]
+											 endingColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.46]];
+	[circlePath appendBezierPath:[NSBezierPath bezierPathWithOvalInRect:NSInsetRect(dotRect, 1.0, 1.0)]];
+	[circlePath setWindingRule:NSEvenOddWindingRule];
+	[grad3 drawInBezierPath:circlePath angle:-90.0];
+	[grad3 release];
+}
+
+- (void)_drawDotFlatStyleWithColor:(NSColor *)color insideRect:(NSRect)colorSquareRect
+{
+	CGFloat h,s,b,a;
+	[color getHue:&h saturation:&s brightness:&b alpha:&a];
+	
+	NSRect dotRect = NSInsetRect(colorSquareRect, 2.0, 2.0);
+	NSBezierPath *circlePath = [NSBezierPath bezierPathWithOvalInRect:dotRect];
+	[[NSColor colorWithCalibratedHue:h saturation:s*1.21 brightness:b*1.1 alpha:a] set];
+	[circlePath fill];
+	
+	[[color shadowWithLevel:0.15f] set];
+	[circlePath setLineWidth:1.0f];
+	[circlePath stroke];
 }
 
 
@@ -424,7 +429,7 @@ enum trackingAreaIDs
 // -------------------------------------------------------------------------------
 - (void)dealloc
 {
-	[trackingAreas release];
+	SPClear(trackingAreas);
 	
 	[super dealloc];
 }

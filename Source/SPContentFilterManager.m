@@ -37,6 +37,7 @@
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 static NSString *SPExportFilterAction = @"SPExportFilter";
 
@@ -88,12 +89,12 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	[contentFilterSplitView setMaxSize:245.f ofSubviewAtIndex:0];
 
 	// Add global group row to contentFilters
-	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			NSLocalizedString(@"Global",@"Content Filter Manager : Filter Entry List: 'Global' Header"), @"MenuLabel",
-			@"", @"headerOfFileURL",
-			@"", @"Clause",
-			@"", @"ConjunctionLabel",
-			nil]];
+	[contentFilters addObject:@{
+			@"MenuLabel"        : NSLocalizedString(@"Global", @"Content Filter Manager : Filter Entry List: 'Global' Header"),
+			@"headerOfFileURL"  : @"",
+			@"Clause"           : @"",
+			@"ConjunctionLabel" : @""
+	}];
 
 #ifndef SP_CODA /* prefs access */
 	// Build data source for global content filter (as mutable copy! otherwise each
@@ -142,7 +143,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	[contentFilterTextView setString:@""];
 
 	// Register drag types
-	[contentFilterTableView registerForDraggedTypes:[NSArray arrayWithObject:SPContentFilterPasteboardDragType]];
+	[contentFilterTableView registerForDraggedTypes:@[SPContentFilterPasteboardDragType]];
 
 	[contentFilterArrayController setContent:contentFilters];
 	[contentFilterTableView reloadData];
@@ -239,10 +240,10 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// Duplicate a selected filter if sender == self
 	if(sender == self)
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy",@"Content Filter Manager : Initial name of copied filter"),[contentFilterNameTextField stringValue]], [contentFilterTextView string], nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSString stringWithFormat:NSLocalizedString(@"%@ Copy",@"Content Filter Manager : Initial name of copied filter"),[contentFilterNameTextField stringValue]], [contentFilterTextView string], nil] forKeys:@[@"MenuLabel", @"Clause"]];
 	// Add a new filter
 	else
-		filter = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @"", nil] forKeys:[NSArray arrayWithObjects:@"MenuLabel", @"Clause", @"ConjunctionLabel", nil]];
+		filter = [NSMutableDictionary dictionaryWithObjects:@[NSLocalizedString(@"New Filter",@"Content Filter Manager : Initial name for new filter"), @"", @""] forKeys:@[@"MenuLabel", @"Clause", @"ConjunctionLabel"]];
 
 	// If a favourite is currently selected, add the new favourite next to it
 	if([contentFilterTableView numberOfSelectedRows] > 0) {
@@ -332,7 +333,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault]];
 
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -404,7 +405,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 		[cf release];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSApp delegate] orderedDocuments])
+		for(id doc in [SPAppDelegate orderedDocuments])
 			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
 				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
 #endif
@@ -555,7 +556,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	NSArray *pboardTypes = [NSArray arrayWithObject:SPContentFilterPasteboardDragType];
+	NSArray *pboardTypes = @[SPContentFilterPasteboardDragType];
 	NSUInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;
@@ -679,10 +680,10 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			[contentFilterNameTextField setStringValue:
 				[[contentFilters objectAtIndex:[contentFilterTableView selectedRow]] objectForKey:@"MenuLabel"]];
 
-		return TRUE;
+		return YES;
 	}
 
-	return FALSE;
+	return NO;
 }
 
 /**
@@ -929,9 +930,9 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			NSMutableArray *filterData = [NSMutableArray array];
 
 
-			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[spfdata setObject:@1 forKey:@"version"];
 			[spfdata setObject:@"content filters" forKey:@"format"];
-			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
@@ -974,7 +975,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 - (void)dealloc
 {
-	[contentFilters release];
+	SPClear(contentFilters);
 	
 	[super dealloc];
 }

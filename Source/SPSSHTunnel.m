@@ -35,9 +35,12 @@
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
 #import "SPThreadAdditions.h"
+#import "SPOSInfo.h"
 
 #import <netinet/in.h>
 #import <CommonCrypto/CommonDigest.h>
+
+static unsigned short getRandomPort();
 
 @implementation SPSSHTunnel
 
@@ -55,8 +58,7 @@
 	if (!theHost || !targetPort || !targetHost) return nil;
 
 	if ((self = [super init])) {
-		SInt32 systemVersion = 0;
-		Gestalt(gestaltSystemVersion, &systemVersion);
+		BOOL isOSVersionAtLeast10_7_0 = [SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0];
 		
 		// Store the connection settings as appropriate
 		sshHost = [[NSString alloc] initWithString:theHost];
@@ -74,7 +76,7 @@
 
 		// Enable connection muxing on 10.7+, but only if a preference is enabled; this is because
 		// muxing causes connection instability for a large number of users (see Issue #1457)
-		connectionMuxingEnabled = (systemVersion >= 0x1070) && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
+		connectionMuxingEnabled = isOSVersionAtLeast10_7_0 && [[NSUserDefaults standardUserDefaults] boolForKey:SPSSHEnableMuxingPreference];
 
 		// Set up a connection for use by the tunnel process
 		tunnelConnectionName = [[NSString alloc] initWithFormat:@"SequelPro-%lu", (unsigned long)[[NSString stringWithFormat:@"%f", [[NSDate date] timeIntervalSince1970]] hash]];
@@ -116,7 +118,7 @@
 	delegate = theDelegate;
 	stateChangeSelector = theStateChangeSelector;
 
-	return true;
+	return YES;
 }
 
 /*
@@ -126,8 +128,8 @@
 {
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
-	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
-	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
+	if (sshQuestionDialog) SPClear(sshQuestionDialog);
+	if (sshPasswordDialog) SPClear(sshPasswordDialog);
 
 	parentWindow = theWindow;
 	if (![NSBundle loadNibNamed:@"SSHQuestionDialog" owner:self]) {
@@ -167,7 +169,7 @@
  */
 - (BOOL)setPasswordKeychainName:(NSString *)theName account:(NSString *)theAccount
 {
-	if (password) [password release], password = nil;
+	if (password) SPClear(password);
 
 	passwordInKeychain = YES;
 	keychainName = [[NSString alloc] initWithString:theName];
@@ -264,36 +266,10 @@
 
 	// If no local port has yet been chosen, choose one
 	if (!localPort) {
-		int tempSocket;
-		struct sockaddr_in tempSocketAddress;
-		size_t addressLength = sizeof(tempSocketAddress);
-		if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
-			memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
-			tempSocketAddress.sin_family = AF_INET;
-			tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-			tempSocketAddress.sin_port = 0;
-			if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
-				if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
-					localPort = ntohs(tempSocketAddress.sin_port);
-				}
-			}
-			close(tempSocket);
-		}
+		localPort = getRandomPort();
 		
 		if (useHostFallback) {
-			if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
-				memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
-				tempSocketAddress.sin_family = AF_INET;
-				tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-				tempSocketAddress.sin_port = 0;
-				if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
-					if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
-						localPortFallback = ntohs(tempSocketAddress.sin_port);
-					}
-				}
-				close(tempSocket);
-			}
-		
+			localPortFallback = getRandomPort();
 		}
 		
 		// Abort if no local free port could be allocated
@@ -309,7 +285,20 @@
 
 	// Set up the NSTask
 	task = [[NSTask alloc] init];
-	[task setLaunchPath: @"/usr/bin/ssh"];
+	NSString *launchPath = @"/usr/bin/ssh";
+	NSString *userSSHPath = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHClientPath];
+
+	if([userSSHPath length]) {
+		launchPath = userSSHPath;
+		// And I'm sure we will get issue reports about it anyway!
+		[debugMessagesLock lock];
+		[debugMessages addObject:@"################################################################"];
+		[debugMessages addObject:[NSString stringWithFormat:@"# %@",NSLocalizedString(@"Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!", @"SSH connection : debug header with user-defined ssh binary")]];
+		[debugMessages addObject:@"################################################################"];
+		[debugMessagesLock unlock];
+	}
+	
+	[task setLaunchPath:launchPath];
 
 	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
@@ -373,10 +362,10 @@
 		[taskArguments addObject:sshHost];
 	}
 	if (useHostFallback) {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/127.0.0.1/%ld", (long)localPort, (long)remotePort]];
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
 	} else {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld/%@/%ld", (long)localPort, remoteHost, (long)remotePort]];
+		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]];
 	}
 
 	[task setArguments:taskArguments];
@@ -413,15 +402,24 @@
 												object:[standardError fileHandleForReading]];
 	[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 
-	// Launch and run the tunnel
-	[task launch];
-
-	// Listen for output
-	[task waitUntilExit];
+	@try {
+		// Launch and run the tunnel
+		[task launch]; //throws for invalid paths, missing +x permission
+		
+		// Listen for output
+		[task waitUntilExit];
+	}
+	@catch (NSException *e) {
+		connectionState = SPMySQLProxyLaunchFailed;
+		// Log the exception. Could be improved by showing a dedicated alert instead
+		[debugMessagesLock lock];
+		[debugMessages addObject:[NSString stringWithFormat:@"%@: %@\n", [e name], [e reason]]];
+		[debugMessagesLock unlock];
+	}
 
 	// On tunnel close, clean up, ready for re-use if the delegate reconnects.
-	[task release], task = nil;
-	[standardError release], standardError = nil;
+	SPClear(task);
+	SPClear(standardError);
 	[[NSNotificationCenter defaultCenter] removeObserver:self 
 													name:@"NSFileHandleDataAvailableNotification"
 												  object:nil];
@@ -438,8 +436,8 @@
 	// Run the run loop for a short time to ensure all task/pipe callbacks are dealt with
 	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 
-	[taskEnvironment release], taskEnvironment = nil;
-	[taskArguments release], taskArguments = nil;
+	SPClear(taskEnvironment);
+	SPClear(taskArguments);
 
 	[pool release];
 }
@@ -647,7 +645,7 @@
 	NSString *thePassword = nil;
     if (requestedPassphrase) {
         thePassword = [NSString stringWithString:requestedPassphrase];
-        [requestedPassphrase release], requestedPassphrase = nil;
+        SPClear(requestedPassphrase);
     }
     
     // Unlock the lock again
@@ -711,8 +709,7 @@
             SPKeychain *keychain = [[SPKeychain alloc] init];
             [keychain addPassword:thePassword forName:@"SSH" account:currentKeyName withLabel:[NSString stringWithFormat:@"SSH: %@", currentKeyName]];
             [keychain release];
-            [currentKeyName release];
-            currentKeyName = nil;
+            SPClear(currentKeyName);
         }
     }
 	
@@ -727,30 +724,52 @@
 {
 	delegate = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	if (connectionState != SPMySQLProxyIdle) [self disconnect];
+	[self disconnect];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
-	[sshHost release];
-	[sshLogin release];
-	[remoteHost release];
-	[tunnelConnectionName release];
-	[tunnelConnectionVerifyHash release];
+	SPClear(sshHost);
+	SPClear(sshLogin);
+	SPClear(remoteHost);
+	SPClear(tunnelConnectionName);
+	SPClear(tunnelConnectionVerifyHash);
 	[tunnelConnection invalidate];
-	[tunnelConnection release];
-	[debugMessages release];
-	[debugMessagesLock release];
+	SPClear(tunnelConnection);
+	SPClear(debugMessages);
+	SPClear(debugMessagesLock);
 	[answerAvailableLock tryLock];
 	[answerAvailableLock unlock];
-	[answerAvailableLock release];
-	if (password) [password release];
-	if (keychainName) [keychainName release];
-	if (keychainAccount) [keychainAccount release];
-	if (identityFilePath) [identityFilePath release];
+	SPClear(answerAvailableLock);
+	if (password)         SPClear(password);
+	if (keychainName)     SPClear(keychainName);
+	if (keychainAccount)  SPClear(keychainAccount);
+	if (identityFilePath) SPClear(identityFilePath);
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
-	if (sshQuestionDialog) [sshQuestionDialog release], sshQuestionDialog = nil;
-	if (sshPasswordDialog) [sshPasswordDialog release], sshPasswordDialog = nil;
+	if (sshQuestionDialog) SPClear(sshQuestionDialog);
+	if (sshPasswordDialog) SPClear(sshPasswordDialog);
 	
 	[super dealloc];
 }
 
 @end
+
+#pragma mark -
+
+unsigned short getRandomPort() {
+	int port = 0;
+	int tempSocket;
+	struct sockaddr_in tempSocketAddress;
+	size_t addressLength = sizeof(tempSocketAddress);
+	if((tempSocket = socket(AF_INET, SOCK_STREAM, 0)) > 0) {
+		memset(&tempSocketAddress, 0, sizeof(tempSocketAddress));
+		tempSocketAddress.sin_family = AF_INET;
+		tempSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+		tempSocketAddress.sin_port = 0;
+		if (bind(tempSocket, (struct sockaddr *)&tempSocketAddress, (socklen_t)addressLength) >= 0) {
+			if (getsockname(tempSocket, (struct sockaddr *)&tempSocketAddress, (uint32_t *)&addressLength) >= 0) {
+				port = ntohs(tempSocketAddress.sin_port);
+			}
+		}
+		close(tempSocket);
+	}
+	return port;
+}

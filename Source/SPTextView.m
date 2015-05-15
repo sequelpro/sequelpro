@@ -381,7 +381,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
 			NSMutableArray *sortedDbs = [NSMutableArray array];
-			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+			[sortedDbs addObjectsFromArray:[allDbs sortedArrayUsingDescriptors:@[desc]]];
 
 			NSString *currentDb = nil;
 			NSString *currentTable = nil;
@@ -478,7 +478,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 					[sortedTables addObject:aTableName_id];
 				} else {
 					[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:[[db componentsSeparatedByString:SPUniqueSchemaDelimiter] lastObject], @"display", @"database-small", @"image", @"", @"isRef", nil]];
-					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]]];
+					[sortedTables addObjectsFromArray:[allTables sortedArrayUsingDescriptors:@[desc]]];
 					if([sortedTables count] > 1 && [sortedTables containsObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]]) {
 						[sortedTables removeObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable]];
 						[sortedTables insertObject:[NSString stringWithFormat:@"%@%@%@", db, SPUniqueSchemaDelimiter, currentTable] atIndex:0];
@@ -508,7 +508,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 							break;
 						}
 					if(!breakFlag) {
-						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+						NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
 						for(id field in sortedFields) {
 							if(![field hasPrefix:@"  "]) {
 								NSString *fieldpath = [field substringFromIndex:[field rangeOfString:SPUniqueSchemaDelimiter].location];
@@ -772,8 +772,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				backtickMode+=1;
 				leftBacktick = YES;
 			}
-			if([[self string] length] > parseRange.location+parseRange.length) {
-				if([[self string] characterAtIndex:parseRange.location+parseRange.length] == '`') {
+			if([[self string] length] > NSMaxRange(parseRange)) {
+				if([[self string] characterAtIndex:NSMaxRange(parseRange)] == '`') {
 					backtickMode+=2;
 					parseRange.length++; // adjust parse string for right `
 					rightBacktick = YES;
@@ -1127,7 +1127,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	
 	if (rtf)
 	{
-		[pb declareTypes:[NSArray arrayWithObject:NSRTFPboardType] owner:self];
+		[pb declareTypes:@[NSRTFPboardType] owner:self];
 		[pb setData:rtf forType:NSRTFPboardType];
 	}
 }
@@ -1414,7 +1414,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// if(currentDb != nil && dbs != nil && [dbs count] && [dbs objectForKey:currentDb]) {
 		// 	NSArray *allTables = [[dbs objectForKey:currentDb] allKeys];
 		// 	NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-		// 	NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+		// 	NSArray *sortedTables = [allTables sortedArrayUsingDescriptors:@[desc]];
 		// 	[desc release];
 		// 	for(id table in sortedTables) {
 		// 		NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:table];
@@ -1431,7 +1431,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// } else {
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allTableAndViewNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"table-small-square", @"image", @"", @"isRef", nil]];
@@ -1440,13 +1440,13 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	else if([kind isEqualToString:@"$SP_ASLIST_ALL_DATABASES"]) {
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allDatabaseNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
 		arr = [NSArray arrayWithArray:[[(NSObject*)[self delegate] valueForKeyPath:@"tablesListInstance"] allSystemDatabaseNames]];
 		if(arr == nil) {
-			arr = [NSArray array];
+			arr = @[];
 		}
 		for(id w in arr)
 			[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"database-small", @"image", @"", @"isRef", nil]];
@@ -1466,7 +1466,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			NSDictionary * theTable = [[dbs objectForKey:currentDb] objectForKey:currentTable];
 			NSArray *allFields = [theTable allKeys];
 			NSSortDescriptor *desc = [[NSSortDescriptor alloc] initWithKey:nil ascending:YES selector:@selector(localizedCompare:)];
-			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:[NSArray arrayWithObject:desc]];
+			NSArray *sortedFields = [allFields sortedArrayUsingDescriptors:@[desc]];
 			[desc release];
 			for(id field in sortedFields) {
 				if(![field hasPrefix:@"  "]) {
@@ -1499,7 +1499,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		} else {
 			arr = [NSArray arrayWithArray:[[tableDocumentInstance valueForKeyPath:@"tableDataInstance"] valueForKey:@"columnNames"]];
 			if(arr == nil) {
-				arr = [NSArray array];
+				arr = @[];
 			}
 			for(id w in arr)
 				[possibleCompletions addObject:[NSDictionary dictionaryWithObjectsAndKeys:w, @"display", @"field-small-square", @"image", @"", @"isRef", nil]];
@@ -1934,20 +1934,22 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		}
 
 		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
-		NSString *ure = @"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}";
-		while([snip isMatchedByRegex:ure]) {
-			NSRange escapeRange = [snip rangeOfRegex:ure capture:0L];
-			[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
-			NSInteger loc = escapeRange.location + targetRange.location;
-			[snip flushCachedRegexData];
-			for(i=0; i<=snippetControlMax; i++)
-				if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
-					snippetControlArray[i][0]--;
-			// Adjust mirrored snippets
-			if(mirroredCounter > -1)
-				for(i=0; i<=mirroredCounter; i++)
-					if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
-						snippetMirroredControlArray[i][1]--;
+		// unescape escaped mirrored snippets and re-adjust successive snippet locations : \$1 → $1
+		for (NSString *regex in @[@"(?s)\\\\\\$\\{(1?\\d):(.{0}|.*?[^\\\\])\\}",@"(?s)\\\\\\$(1?\\d)(?=\\D)"]) {
+			while([snip isMatchedByRegex:regex]) {
+				NSRange escapeRange = [snip rangeOfRegex:regex capture:0L];
+				[snip replaceCharactersInRange:escapeRange withString:[snip substringWithRange:NSMakeRange(escapeRange.location+1,escapeRange.length-1)]];
+				NSInteger loc = escapeRange.location + targetRange.location;
+				[snip flushCachedRegexData];
+				for(i=0; i<=snippetControlMax; i++)
+					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
+						snippetControlArray[i][0]--;
+				// Adjust mirrored snippets
+				if(mirroredCounter > -1)
+					for(i=0; i<=mirroredCounter; i++)
+						if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
+							snippetMirroredControlArray[i][1]--;
+			}
 		}
 
 		// Insert favorite query by selecting the tab trigger if any
@@ -2907,7 +2909,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 	if(tabStopWidth < 1) tabStopWidth = 1;
 
-	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:[NSDictionary dictionaryWithObject:tvFont forKey:NSFontAttributeName]]).width;
+	float tabWidth = NSSizeToCGSize([@" " sizeWithAttributes:@{NSFontAttributeName : tvFont}]).width;
 	tabWidth = (float)tabStopWidth * tabWidth;
 
 	NSInteger numberOfTabs = 256/tabStopWidth;
@@ -3125,7 +3127,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 
 #ifndef SP_CODA
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
 	// Remove 'Bundles' sub menu and separator
 	NSMenuItem *bItem = [menu itemWithTag:10000000];
@@ -3135,8 +3137,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		[menu removeItem:bItem];
 	}
 
-	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeInputField];
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+	NSArray *bundleCategories = [SPAppDelegate bundleCategoriesForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeInputField];
 
 	// Add 'Bundles' sub menu for custom query editor only so far if bundles with scope 'editor' were found
 	if(customQueryInstance && bundleItems && [bundleItems count]) {
@@ -3225,7 +3227,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
 	// in the main menu
 	if ( [menuItem tag] == SPEditMenuCopyWithColumns
-		|| [menuItem tag] == SPEditCopyAsSQL ) {
+		|| [menuItem tag] == SPEditMenuCopyAsSQL) {
 		return NO;
 	}
 
@@ -3687,18 +3689,18 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	if (completionIsOpen) [completionPopup close], completionIsOpen = NO;
 #ifndef SP_CODA
-	[prefs release];
+	SPClear(prefs);
 #endif
-	[lineNumberView release];
-	if(queryHiliteColor) [queryHiliteColor release];
-	if(queryEditorBackgroundColor) [queryEditorBackgroundColor release];
-	if(commentColor) [commentColor release];
-	if(quoteColor) [quoteColor release];
-	if(keywordColor) [keywordColor release];
-	if(backtickColor) [backtickColor release];
-	if(numericColor) [numericColor release];
-	if(variableColor) [variableColor release];
-	if(otherTextColor) [otherTextColor release];
+	SPClear(lineNumberView);
+	if(queryHiliteColor)           SPClear(queryHiliteColor);
+	if(queryEditorBackgroundColor) SPClear(queryEditorBackgroundColor);
+	if(commentColor)               SPClear(commentColor);
+	if(quoteColor)                 SPClear(quoteColor);
+	if(keywordColor)               SPClear(keywordColor);
+	if(backtickColor)              SPClear(backtickColor);
+	if(numericColor)               SPClear(numericColor);
+	if(variableColor)              SPClear(variableColor);
+	if(otherTextColor)             SPClear(otherTextColor);
 	[super dealloc];
 }
 

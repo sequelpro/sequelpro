@@ -148,7 +148,7 @@
 	        clickCount:1
 	        pressure:0.0f];
 
-	[[NSApplication sharedApplication] sendEvent:theEvent];
+	[NSApp sendEvent:theEvent];
 
 	while ([dialog waitForChoice] && [[[NSApp keyWindow] firstResponder] isKindOfClass:[SPChooseMenuItemDialogTextView class]]) 
 	{
@@ -174,7 +174,7 @@
 
 - (void)dealloc
 {
-	[dummyTextView release];
+	SPClear(dummyTextView);
 	
 	[super dealloc];
 }

@@ -35,46 +35,34 @@
 
 @implementation SPDatabaseCopy
 
-- (BOOL)copyDatabaseFrom:(NSString *)sourceDatabaseName to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent 
+- (BOOL)copyDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent
 {
 	NSArray *tables = nil;
 		
 	// Check whether the source database exists and the target database doesn't.	
-	BOOL sourceExists = [[connection databases] containsObject:sourceDatabaseName];
+	BOOL sourceExists = [[connection databases] containsObject:[sourceDatabase databaseName]];
 	BOOL targetExists = [[connection databases] containsObject:targetDatabaseName];
 	
-	if (sourceExists && !targetExists) {
-		
-		// Retrieve the list of tables/views/funcs/triggers from the source database
-		tables = [connection tablesFromDatabase:sourceDatabaseName];
-	} 
-	else {
+	if (!sourceExists || targetExists)
 		return NO;
-	}
-
+	
+	// Retrieve the list of tables/views/funcs/triggers from the source database
+	tables = [connection tablesFromDatabase:[sourceDatabase databaseName]];
+	
 	// Abort if database creation failed
-	if (![self createDatabase:targetDatabaseName]) return NO;
+	if (![self createDatabase:targetDatabaseName
+				 withEncoding:[sourceDatabase defaultEncoding]
+					collation:[sourceDatabase defaultCollation]]) return NO;
 	
 	SPTableCopy *dbActionTableCopy = [[SPTableCopy alloc] init];
 	
 	[dbActionTableCopy setConnection:connection];
 	
-	BOOL success = [dbActionTableCopy copyTables:tables from:sourceDatabaseName to:targetDatabaseName withContent:copyWithContent];
+	BOOL success = [dbActionTableCopy copyTables:tables from:[sourceDatabase databaseName] to:targetDatabaseName withContent:copyWithContent];
 	
 	[dbActionTableCopy release];
 	
 	return success;
-}
-
-- (BOOL)createDatabase:(NSString *)newDatabaseName 
-{
-	NSString *createStatement = [NSString stringWithFormat:@"CREATE DATABASE %@", [newDatabaseName backtickQuotedString]];
-	
-	[connection queryString:createStatement];	
-
-	if ([connection queryErrored]) return NO;
-	
-	return YES;
 }
 
 @end

@@ -38,11 +38,10 @@
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")
-
-#define SP_Int(x) [NSNumber numberWithInteger:x]
 
 @interface SPQueryFavoriteManager ()
 
@@ -85,11 +84,11 @@
 - (void)awakeFromNib
 {
 #ifndef SP_CODA
-	[favorites addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-			@"Global", @"name", 
-			@"", @"headerOfFileURL",
-			@"", @"query",
-			nil]];
+	[favorites addObject:@{
+			@"name"            : @"Global",
+			@"headerOfFileURL" : @"",
+			@"query"           : @""
+	}];
 
 	// Set up the split view
 	[favoritesSplitView setMinSize:152.f ofSubviewAtIndex:0];
@@ -123,7 +122,7 @@
 	[self _initWithNoSelection];
 
 	// Register drag types
-	[favoritesTableView registerForDraggedTypes:[NSArray arrayWithObject:SPFavoritesPasteboardDragType]];
+	[favoritesTableView registerForDraggedTypes:@[SPFavoritesPasteboardDragType]];
 	
 	[favoritesArrayController setContent:favorites];
 	[favoritesTableView reloadData];
@@ -205,7 +204,7 @@
 		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
 	// Add a new favorite
 	else
-		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"New Favorite", @"", nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
+		favorite = [NSMutableDictionary dictionaryWithObjects:@[@"New Favorite", @""] forKeys:@[@"name", @"query"]];
 	
 	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
@@ -309,7 +308,7 @@
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionSQL]];
+	[panel setAllowedFileTypes:@[SPFileExtensionSQL]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:YES];
@@ -334,7 +333,7 @@
 #ifndef SP_CODA
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPFileExtensionDefault]];
+	[panel setAllowedFileTypes:@[SPFileExtensionDefault]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -379,24 +378,24 @@
 {
 	// Look up the sender's tag to determine the placeholder to insert.
 	// Note that tag values alter behaviour slightly - see below.
-	NSDictionary *lookupTable = [NSDictionary dictionaryWithObjectsAndKeys:
-		NSLocalizedString(@"default_value", @"Query snippet default value placeholder"), SP_Int(100),
-		NSLocalizedString(@"$(shell_command)", @"Query snippet shell command syntax and placeholder"), SP_Int(101),
-		@"$1", SP_Int(501),
-		@"¦a¦b¦", SP_Int(102),
-		@"¦¦a¦b¦¦", SP_Int(103),
-		@"¦", SP_Int(104),
-		@"$SP_SELECTED_TABLE", SP_Int(105),
-		@"$SP_SELECTED_TABLES", SP_Int(106),
-		@"$SP_SELECTED_DATABASE", SP_Int(107),
-		@"¦$SP_ASLIST_ALL_FIELDS¦", SP_Int(108),
-		@"¦¦$SP_ASLIST_ALL_FIELDS¦¦", SP_Int(109),
-		@"¦$SP_ASLIST_ALL_TABLES¦", SP_Int(110),
-		@"¦¦$SP_ASLIST_ALL_TABLES¦¦", SP_Int(111),
-		@"¦$SP_ASLIST_ALL_DATABASES¦", SP_Int(112),
-		@"¦¦$SP_ASLIST_ALL_DATABASES¦¦", SP_Int(113),
-	nil];
-	NSString *placeholder = [lookupTable objectForKey:SP_Int([[sender selectedItem] tag])];
+	NSDictionary *lookupTable = @{
+			@100 : NSLocalizedString(@"default_value", @"Query snippet default value placeholder"),
+			@101 : NSLocalizedString(@"$(shell_command)", @"Query snippet shell command syntax and placeholder"),
+			@501 : @"$1",
+			@102 : @"¦a¦b¦",
+			@103 : @"¦¦a¦b¦¦",
+			@104 : @"¦",
+			@105 : @"$SP_SELECTED_TABLE",
+			@106 : @"$SP_SELECTED_TABLES",
+			@107 : @"$SP_SELECTED_DATABASE",
+			@108 : @"¦$SP_ASLIST_ALL_FIELDS¦",
+			@109 : @"¦¦$SP_ASLIST_ALL_FIELDS¦¦",
+			@110 : @"¦$SP_ASLIST_ALL_TABLES¦",
+			@111 : @"¦¦$SP_ASLIST_ALL_TABLES¦¦",
+			@112 : @"¦$SP_ASLIST_ALL_DATABASES¦",
+			@113 : @"¦¦$SP_ASLIST_ALL_DATABASES¦¦"
+	};
+	NSString *placeholder = [lookupTable objectForKey:[NSNumber numberWithInteger:[[sender selectedItem] tag]]];
 	if (!placeholder) [NSException raise:NSInternalInconsistencyException format:@"Inserted placeholder (%lld) not found", (long long)[[sender selectedItem] tag]];
 
 	// Iterate through the current snippets, to get the lowest unused tab counter, and
@@ -414,7 +413,7 @@
 		// Check whether the selection range lies within the snippet
 		if (selRange.location != NSNotFound
 			&& selRange.location > matchedRange.location + 1
-			&& selRange.location + selRange.length < matchedRange.location + matchedRange.length)
+			&& NSMaxRange(selRange) < NSMaxRange(matchedRange))
 		{
 			selectionInsideSnippet = YES;
 		}
@@ -422,9 +421,9 @@
 		// Identify the tab completion index
 		NSRange snippetNumberRange = [queryString rangeOfRegex:snipRegex options:RKLNoOptions inRange:matchedRange capture:1L error:NULL];
 		NSInteger snippetNumber = [[queryString substringWithRange:snippetNumberRange] integerValue];
-		[snippetNumbers setObject:[NSNumber numberWithBool:YES] forKey:[NSNumber numberWithInteger:snippetNumber]];
+		[snippetNumbers setObject:@YES forKey:[NSNumber numberWithInteger:snippetNumber]];
 
-		rangeStart = matchedRange.location + matchedRange.length;
+		rangeStart = NSMaxRange(matchedRange);
 	}
 
 	// If the selection is not inside a snippet, wrap it inside the snippet syntax.
@@ -477,7 +476,7 @@
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [[NSApp delegate] orderedDocuments])
+		for(id doc in [SPAppDelegate orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];
 	}
@@ -676,7 +675,7 @@
 - (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rows toPasteboard:(NSPasteboard*)pboard
 {
 
-	NSArray *pboardTypes = [NSArray arrayWithObject:SPFavoritesPasteboardDragType];
+	NSArray *pboardTypes = @[SPFavoritesPasteboardDragType];
 	NSInteger originalRow = [rows firstIndex];
 
 	if(originalRow < 1) return NO;
@@ -917,9 +916,9 @@
 			NSMutableArray *favoriteData = [NSMutableArray array];
 
 	
-			[spfdata setObject:[NSNumber numberWithInteger:1] forKey:@"version"];
+			[spfdata setObject:@1 forKey:@"version"];
 			[spfdata setObject:@"query favorites" forKey:@"format"];
-			[spfdata setObject:[NSNumber numberWithBool:NO] forKey:@"encrypted"];
+			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
 
@@ -972,7 +971,7 @@
 
 - (void)dealloc
 {
-	[favorites release];
+	SPClear(favorites);
 	
 	[super dealloc];
 }

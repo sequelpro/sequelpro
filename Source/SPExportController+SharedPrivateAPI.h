@@ -1,9 +1,9 @@
 //
-//  SPDatabaseRenameTest.h
+//  SPExportController+SharedPrivateAPI.h
 //  sequel-pro
 //
-//  Created by David Rekowski.
-//  Copyright (c) 2010 David Rekowski. All rights reserved.
+//  Created by Max Lohrmann on 03.02.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,13 +28,8 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#define USE_APPLICATION_UNIT_TEST 1
+#import "SPExportController.h"
 
-#import <SenTestingKit/SenTestingKit.h>
-
-@interface SPDatabaseRenameTest : SenTestCase
-
-- (void)testRenameDatabase;
-- (void)testCreateDatabase;
-
+@interface SPExportController (SharedPrivateAPI)
+- (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 @end

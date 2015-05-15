@@ -28,10 +28,11 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import "SPOSInfo.h"
+
 @interface SPFavoritesOutlineView : NSOutlineView
 {
-	SInt32 systemVersion;
-	
+	BOOL isOSVersionAtLeast10_7_0;
 	BOOL justGainedFocus;
 }
 

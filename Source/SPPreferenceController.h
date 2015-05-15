@@ -61,7 +61,6 @@
 	NSToolbarItem *generalItem;
 	NSToolbarItem *notificationsItem;
 	NSToolbarItem *tablesItem;
-	NSToolbarItem *favoritesItem;
 	NSToolbarItem *autoUpdateItem;
 	NSToolbarItem *networkItem;
 	NSToolbarItem *editorItem;
@@ -84,8 +83,6 @@
 
 // Toolbar item IBAction methods
 - (IBAction)displayPreferencePane:(id)sender;
-- (IBAction)displayTablePreferences:(id)sender;
-- (IBAction)displayEditorPreferences:(id)sender;
 
 - (void)changeFont:(id)sender;
 

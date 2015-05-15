@@ -16,10 +16,7 @@
 
 - (NSArray *)filters
 {
-	return [NSArray arrayWithObjects:
-			UPPERCASE, LOWERCASE, CAPITALIZED, 
-			DATE_FORMAT, COLOR_FORMAT, 
-			nil];
+	return @[UPPERCASE, LOWERCASE, CAPITALIZED, DATE_FORMAT, COLOR_FORMAT];
 }
 
 - (NSObject *)filterInvoked:(NSString *)filter withArguments:(NSArray *)args onValue:(NSObject *)value

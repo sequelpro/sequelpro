@@ -212,7 +212,7 @@
 
 					// Set BINARY if collation ends with _bin for convenience
 					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {
-						[theField setObject:[NSNumber numberWithInt:1] forKey:@"binary"];
+						[theField setObject:@1 forKey:@"binary"];
 					}
 					
 					break;
@@ -288,9 +288,9 @@
 	
 	// Query the structure of all databases in the background (mainly for completion)
 	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
-	                           target:[tableDocumentInstance databaseStructureRetrieval]
+							   target:[tableDocumentInstance databaseStructureRetrieval]
 							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+							   object:@{@"forceUpdate" : @YES}];
 	
 	[self loadTable:selectedTable];
 }
@@ -312,7 +312,7 @@
 	![tableDocumentInstance isWorking];
 	
 	// Update the selected table name
-	if (selectedTable) [selectedTable release], selectedTable = nil;
+	if (selectedTable) SPClear(selectedTable);
 	if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 	
 	[indexesController setTable:selectedTable];
@@ -335,8 +335,8 @@
 	if (!selectedTable) {
 		[tableSourceView reloadData];
 		// Empty indexesController's fields and indices explicitly before reloading
-		[indexesController setFields:[NSArray array]];
-		[indexesController setIndexes:[NSArray array]];
+		[indexesController setFields:@[]];
+		[indexesController setIndexes:@[]];
 		[indexesTableView reloadData];
 		
 		return;
@@ -348,7 +348,7 @@
 	[indexesController setFields:tableFields];
 	[indexesController setIndexes:[tableDetails objectForKey:@"tableIndexes"]];
 	
-	if (defaultValues) [defaultValues release], defaultValues = nil;
+	if (defaultValues) SPClear(defaultValues);
 	
 	newDefaultValues = [NSMutableDictionary dictionaryWithCapacity:[tableFields count]];
 	

@@ -30,10 +30,58 @@
 
 #import "SPDatabaseAction.h"
 
+#import <SPMySQL/SPMySQL.h>
+
+@implementation SPCreateDatabaseInfo
+
+@synthesize databaseName;
+@synthesize defaultEncoding;
+@synthesize defaultCollation;
+
+- (void)dealloc
+{
+	[self setDatabaseName:nil];
+	[self setDefaultEncoding:nil];
+	[self setDefaultCollation:nil];
+	[super dealloc];
+}
+
+@end
+
+#pragma mark -
+
 @implementation SPDatabaseAction
 
 @synthesize connection;
 @synthesize messageWindow;
 @synthesize tablesList;
+
+- (BOOL)createDatabase:(SPCreateDatabaseInfo *)dbInfo
+{
+	return [self createDatabase:[dbInfo databaseName]
+				   withEncoding:[dbInfo defaultEncoding]
+					  collation:[dbInfo defaultCollation]];
+}
+
+- (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation
+{
+	if(![database length]) {
+		SPLog(@"'database' should not be nil or empty!");
+		return NO;
+	}
+	
+	NSMutableString *query = [NSMutableString stringWithFormat:@"CREATE DATABASE %@", [database backtickQuotedString]];
+	
+	if([encoding length]) { // [nil length] == 0
+		[query appendFormat:@" DEFAULT CHARACTER SET = %@",[encoding backtickQuotedString]];
+	}
+	if([collation length]) {
+		[query appendFormat:@" DEFAULT COLLATE = %@",[collation backtickQuotedString]];
+	}
+	
+	[connection queryString:query];
+	
+	return ![connection queryErrored];
+}
 
 @end

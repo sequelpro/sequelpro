@@ -51,6 +51,7 @@
 	NSString *sslKeyFilePath;
 	NSString *sslCertificatePath;
 	NSString *sslCACertificatePath;
+	NSString *sslCipherList;
 
 	// MySQL connection details and state
 	struct st_mysql *mySQLConnection;
@@ -142,6 +143,15 @@
 @property (readwrite, retain) NSString *sslKeyFilePath;
 @property (readwrite, retain) NSString *sslCertificatePath;
 @property (readwrite, retain) NSString *sslCACertificatePath;
+
+/**
+ * List of supported ciphers for SSL/TLS connections.
+ * This is a colon-separated string of names as used by
+ * `openssl ciphers`. The order of entries specifies
+ * their preference (earlier = better).
+ * A value of nil (default) means SPMySQL will use its built-in cipher list.
+ */
+@property (readwrite, retain) NSString *sslCipherList;
 
 @property (readwrite, assign) NSUInteger timeout;
 @property (readwrite, assign) BOOL useKeepAlive;

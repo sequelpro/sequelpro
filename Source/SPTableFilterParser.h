@@ -1,9 +1,9 @@
 //
-//  SPStringAdditionsTests.h
+//  SPTableFilterParser.h
 //  sequel-pro
 //
-//  Created by Jim Knight on May 17, 2009.
-//  Copyright (c) 2009 Jim Knight. All rights reserved.
+//  Created by Max Lohrmann on 22.04.15.
+//  Relocated from existing files. Previous copyright applies.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,12 +28,34 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <Foundation/Foundation.h>
 
-@interface SPStringAdditionsTests : SenTestCase
+@interface SPTableFilterParser : NSObject
+{
+	NSString *_clause;
+	NSUInteger numberOfArguments;
+	
+	NSString *_currentField;
+	NSString *_argument;
+	NSString *_firstBetweenArgument;
+	NSString *_secondBetweenArgument;
+	
+	BOOL caseSensitive;
+	BOOL suppressLeadingTablePlaceholder;
+}
 
-- (void)testStringByRemovingCharactersInSet;
-- (void)testStringWithNewUUID;
-- (void)testCreateViewSyntaxPrettifier;
+- (id)initWithFilterClause:(NSString *)filter numberOfArguments:(NSUInteger)numArgs;
+
+@property(readonly) NSString *clause;
+@property(readonly) NSUInteger numberOfArguments;
+
+@property BOOL suppressLeadingTablePlaceholder;
+@property BOOL caseSensitive;
+@property(copy) NSString *currentField;
+@property(copy) NSString *argument;
+@property(copy) NSString *firstBetweenArgument;
+@property(copy) NSString *secondBetweenArgument;
+
+- (NSString *)filterString;
 
 @end

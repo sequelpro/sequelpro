@@ -99,7 +99,7 @@
 	NSArray *dataArray = nil;
 	
 	// Get rid of the cached connection encoding
-	if (previousConnectionEncoding) [previousConnectionEncoding release], previousConnectionEncoding = nil;
+	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
 	
 	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
 	
@@ -126,15 +126,15 @@
 
 						// Check the overall export settings
 						if ([[table objectAtIndex:1] boolValue] && (![exportSQLIncludeStructureCheck state])) {
-							[table replaceObjectAtIndex:1 withObject:[NSNumber numberWithBool:NO]];
+							[table replaceObjectAtIndex:1 withObject:@NO];
 						}
 							
 						if ([[table objectAtIndex:2] boolValue] && (![exportSQLIncludeContentCheck state])) {
-							[table replaceObjectAtIndex:2 withObject:[NSNumber numberWithBool:NO]];
+							[table replaceObjectAtIndex:2 withObject:@NO];
 						}
 							
 						if ([[table objectAtIndex:3] boolValue] && (![exportSQLIncludeDropSyntaxCheck state])) {
-							[table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:NO]];
+							[table replaceObjectAtIndex:3 withObject:@NO];
 						}
 
 						[exportTables addObject:table];
@@ -168,6 +168,12 @@
 		case SPDotExport:
 			exportTypeLabel = @"Dot";
 			break;
+		case SPPDFExport:
+		case SPHTMLExport:
+		case SPExcelExport:
+		default:
+			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
+			return;
 	}
 		
 	// Begin the export based on the source

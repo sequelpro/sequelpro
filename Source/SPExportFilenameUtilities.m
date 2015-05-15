@@ -242,7 +242,7 @@
 											   isARepeat:NO 
 												 keyCode:0x24];
 	
-	[[NSApplication sharedApplication] postEvent:tokenizingEvent atStart:NO];
+	[NSApp postEvent:tokenizingEvent atStart:NO];
 
 	// Update the filename preview
 	[self updateDisplayedExportFilename];
@@ -298,6 +298,12 @@
 		case SPDotExport:
 			extension = @"dot";
 			break;
+		case SPPDFExport:
+		case SPHTMLExport:
+		case SPExcelExport:
+		default:
+			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
+			return nil;
 	}
 	
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {

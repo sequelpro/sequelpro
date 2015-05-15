@@ -43,7 +43,6 @@
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
 #ifndef SP_CODA
-#import "QLPreviewPanel.h"
 #import "SPSplitView.h"
 #endif
 #import "SPFieldEditorController.h"
@@ -62,16 +61,13 @@
 #endif
 #import "SPCustomQuery.h"
 #import "SPThreadAdditions.h"
+#import "SPTableFilterParser.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
 #ifndef SP_CODA
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
-#endif
-
-#ifndef __MAC_10_7
-#define __MAC_10_7 1070
 #endif
 
 @interface SPTableContent (SPTableContentDataSource_Private_API)
@@ -411,7 +407,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 
 	// Reset table key store for use in argumentForRow:
-	if (keys) [keys release], keys = nil;
+	if (keys) SPClear(keys);
 
 	// Reset data column store
 	[dataColumns removeAllObjects];
@@ -429,7 +425,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Otherwise store the newly selected table name and reset the data
 	} else {
-		if (selectedTable) [selectedTable release], selectedTable = nil;
+		if (selectedTable) SPClear(selectedTable);
 		if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 		previousTableRowsCount = 0;
 		contentPage = 1;
@@ -466,7 +462,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 
 		// Reset sort column
-		if (sortCol) [sortCol release]; sortCol = nil;
+		if (sortCol) SPClear(sortCol);
 		isDesc = NO;
 
 		// Empty and disable filter options
@@ -568,7 +564,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #else
 	NSFont *tableFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 #endif
-	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 
 	// Add the new columns to the table and filterTable
 	for ( i = 0 ; i < (NSInteger)[dataColumns count] ; i++ ) {
@@ -701,8 +697,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Otherwise, clear sorting
 	} else {
 		if (sortCol) {
-			[sortCol release];
-			sortCol = nil;
+			SPClear(sortCol);
 		}
 		isDesc = NO;
 	}
@@ -817,7 +812,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			[self fieldListForQuery], [selectedTable backtickQuotedString]];
 
 	// Add a filter string if appropriate
-	filterString = [self tableFilterString];
+	filterString = [[self onMainThread] tableFilterString];
 
 	if (filterString) {
 		[queryString appendFormat:@" WHERE %@", filterString];
@@ -1077,6 +1072,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  * Returns the query string for the current filter settings,
  * ready to be dropped into a WHERE clause, or nil if no filtering
  * is active.
+ *
+ * @warning Uses UI. ONLY call from main thread!
  */
 - (NSString *)tableFilterString
 {
@@ -1108,8 +1105,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
 		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
 
-	NSString *filterString;
-
 	if(contentFilters == nil) {
 		NSLog(@"Fatal error while retrieving content filters. No filters found.");
 		NSBeep();
@@ -1137,160 +1132,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		return nil;
 	}
-
-	NSUInteger numberOfArguments = [[filter objectForKey:@"NumberOfArguments"] integerValue];
-
-	BOOL suppressLeadingTablePlaceholder = NO;
-	if([filter objectForKey:@"SuppressLeadingFieldPlaceholder"])
-		suppressLeadingTablePlaceholder = YES;
-
-	// argument if Filter requires only one argument
-	NSMutableString *argument = [[NSMutableString alloc] initWithString:[argumentField stringValue]];
-
-	// If the filter field is empty and the selected filter does not require
-	// only one argument, then no filtering is required - return nil.
-	if (![argument length] && numberOfArguments == 1) {
-		[argument release];
-		return nil;
-	}
-
-	// arguments if Filter requires two arguments
-	NSMutableString *firstBetweenArgument  = [[NSMutableString alloc] initWithString:[firstBetweenField stringValue]];
-	NSMutableString *secondBetweenArgument = [[NSMutableString alloc] initWithString:[secondBetweenField stringValue]];
-
-	// If filter requires two arguments and either of the argument fields are empty
-	// return nil.
-	if (numberOfArguments == 2) {
-		if (([firstBetweenArgument length] == 0) || ([secondBetweenArgument length] == 0)) {
-			[argument release];
-			[firstBetweenArgument release];
-			[secondBetweenArgument release];
-			return nil;
-		}
-	}
-
-	// Retrieve actual WHERE clause
-	NSMutableString *clause = [[NSMutableString alloc] init];
-	[clause setString:[filter objectForKey:@"Clause"]];
-
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$BINARY " withString:(caseSensitive) ? @"BINARY " : @""];
-	[clause flushCachedRegexData];
-	[clause replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:([fieldField titleOfSelectedItem]) ? [[fieldField titleOfSelectedItem] backtickQuotedString] : @""];
-	[clause flushCachedRegexData];
-
-	// Escape % sign for format insertion ie if number of arguments is greater than 0
-	if(numberOfArguments > 0)
-		[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
-	[clause flushCachedRegexData];
-
-	// Replace placeholder ${} by %@
-	NSRange matchedRange;
-	NSString *re = @"(?<!\\\\)\\$\\{.*?\\}";
-	if([clause isMatchedByRegex:re]) {
-		while([clause isMatchedByRegex:re]) {
-			matchedRange = [clause rangeOfRegex:re];
-			[clause replaceCharactersInRange:matchedRange withString:@"%@"];
-			[clause flushCachedRegexData];
-		}
-	}
-
-	// Check number of placeholders and given 'NumberOfArguments'
-	if([clause replaceOccurrencesOfString:@"%@" withString:@"%@" options:NSLiteralSearch range:NSMakeRange(0, [clause length])] != numberOfArguments) {
-		NSLog(@"Error while setting filter string. “NumberOfArguments” differs from the number of arguments specified in “Clause”.");
-		NSBeep();
-		[argument release];
-		[firstBetweenArgument release];
-		[secondBetweenArgument release];
-		[clause release];
-		return nil;
-	}
-
-	// Construct the filter string according the required number of arguments
-
-	if(suppressLeadingTablePlaceholder) {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:clause,
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
-					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]];
-		} else {
-			filterString = [NSString stringWithString:clause];
-				if(numberOfArguments > 2) {
-					NSLog(@"Filter with more than 2 arguments is not yet supported.");
-					NSBeep();
-				}
-		}
-	} else {
-		if (numberOfArguments == 2) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString],
-				[NSString stringWithFormat:clause,
-					[self escapeFilterArgument:firstBetweenArgument againstClause:clause],
-					[self escapeFilterArgument:secondBetweenArgument againstClause:clause]]];
-		} else if (numberOfArguments == 1) {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString],
-				[NSString stringWithFormat:clause, [self escapeFilterArgument:argument againstClause:clause]]];
-		} else {
-			filterString = [NSString stringWithFormat:@"%@ %@",
-				[[fieldField titleOfSelectedItem] backtickQuotedString], clause];
-				if(numberOfArguments > 2) {
-					NSLog(@"Filter with more than 2 arguments is not yet supported.");
-					NSBeep();
-				}
-		}
-	}
-
-	[argument release];
-	[firstBetweenArgument release];
-	[secondBetweenArgument release];
-	[clause release];
-
-	// Return the filter string
-	return filterString;
-}
-
-/**
- * Escape argument by looking for used quoting strings in a clause.  Attempt to
- * be smart - use a single escape for most clauses, doubling up for LIKE clauses.
- * Also attempt to not escape what look like common escape sequences - \n, \r, \t.
- *
- * @param argument The to be used filter argument which should be be escaped
- *
- * @param clause The entire WHERE filter clause
- *
- */
-- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause
-{
-	BOOL clauseIsLike = [clause isMatchedByRegex:@"(?i)\\blike\\b.*?%(?!@)"];
-	NSString *recognizedEscapeSequences, *escapeSequence, *regexTerm;
-	NSMutableString *arg = [argument mutableCopy];
-
-	// Determine the character set not to escape slashes before, and the escape depth
-	if (clauseIsLike) {
-		recognizedEscapeSequences = @"nrt_%";
-		escapeSequence = @"\\\\\\\\\\\\\\\\";
-	} else {
-		recognizedEscapeSequences = @"nrt";
-		escapeSequence = @"\\\\\\\\";
-	}
-	regexTerm = [NSString stringWithFormat:@"(\\\\)(?![%@])", recognizedEscapeSequences];
-
-	// Escape slashes appropriately
-	[arg replaceOccurrencesOfRegex:regexTerm withString:escapeSequence];
-	[arg flushCachedRegexData];
-
-	// Get quote sign for escaping - this should work for 99% of all cases
-	NSString *quoteSign = [clause stringByMatching:@"([\"'])[^\\1]*?%@[^\\1]*?\\1" capture:1L];
-
-	// Escape argument
-	if(quoteSign != nil && [quoteSign length] == 1) {
-		[arg replaceOccurrencesOfRegex:[NSString stringWithFormat:@"(%@)", quoteSign] withString:@"\\\\$1"];
-		[arg flushCachedRegexData];
-	}
-
-	return [arg autorelease];
+	
+	SPTableFilterParser *parser = [[[SPTableFilterParser alloc] initWithFilterClause:[filter objectForKey:@"Clause"] numberOfArguments:[[filter objectForKey:@"NumberOfArguments"] integerValue]] autorelease];
+	[parser setArgument:[argumentField stringValue]];
+	[parser setFirstBetweenArgument:[firstBetweenField stringValue]];
+	[parser setSecondBetweenArgument:[secondBetweenField stringValue]];
+	[parser setSuppressLeadingTablePlaceholder:(!![filter objectForKey:@"SuppressLeadingFieldPlaceholder"])];
+	[parser setCaseSensitive:caseSensitive];
+	[parser setCurrentField:[fieldField titleOfSelectedItem]];
+	
+	return [parser filterString];
 }
 
 /**
@@ -1376,8 +1227,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 	if (tableLoadTimer) {
 		[tableLoadTimer invalidate];
-		[tableLoadTimer release];
-		tableLoadTimer = nil;
+		SPClear(tableLoadTimer);
 	}
 }
 
@@ -1513,7 +1363,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// If a string was supplied, use a custom query from that URL scheme
 	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
-		if(schemeFilter) [schemeFilter release], schemeFilter = nil;
+		if(schemeFilter) SPClear(schemeFilter);
 		schemeFilter = [sender retain];
 		activeFilter = 2;
 	}
@@ -1682,8 +1532,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
         
         // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
         if (isDesc != invert) {
-			[sortCol release];
-			sortCol = nil;
+			SPClear(sortCol);
 		} 
 		else {
 			isDesc = !isDesc;
@@ -3333,7 +3182,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSDictionary *columnDefinition = [NSDictionary dictionaryWithDictionary:[cqColumnDefinition objectAtIndex:[[[[tableContentView tableColumns] objectAtIndex:columnIndex] identifier] integerValue]]];
 
 	if(!columnDefinition)
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-2], @"", nil];
+		return @[@(-2), @""];
 
 	// Resolve the original table name for current column if AS was used
 	NSString *tableForColumn = [columnDefinition objectForKey:@"org_table"];
@@ -3344,13 +3193,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// No table/database name found indicates that the field's column contains data from more than one table as for UNION
 	// or the field data are not bound to any table as in SELECT 1 or if column database is unset
 	if(!tableForColumn || ![tableForColumn length] || !dbForColumn || ![dbForColumn length])
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return @[@(-1), @""];
 
 	// if table and database name are given check if field can be identified unambiguously
 	// first without blob data
 	NSString *fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:NO];
 	if(!fieldIDQueryStr)
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return @[@(-1), @""];
 
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Checking field data for editing...", @"checking field data for editing task description")];
 
@@ -3362,7 +3211,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if ([mySQLConnection queryErrored]) {
 		[tableDocumentInstance endTask];
-		return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+		return @[@(-1), @""];
 	}
 
 	NSArray *tempRow = [tempResult getRowAsArray];
@@ -3372,7 +3221,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		fieldIDQueryStr = [self argumentForRow:rowIndex ofTable:tableForColumn andDatabase:[columnDefinition objectForKey:@"db"] includeBlobs:YES];
 		if(!fieldIDQueryStr) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return @[@(-1), @""];
 		}
 
 		tempResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@.%@ %@",
@@ -3382,14 +3231,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		if ([mySQLConnection queryErrored]) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return @[@(-1), @""];
 		}
 
 		tempRow = [tempResult getRowAsArray];
 
 		if([tempRow count] && [[tempRow objectAtIndex:0] integerValue] < 1) {
 			[tableDocumentInstance endTask];
-			return [NSArray arrayWithObjects:[NSNumber numberWithInteger:-1], @"", nil];
+			return @[@(-1), @""];
 		}
 
 	}
@@ -3498,8 +3347,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	if(fieldEditor) {
-		[fieldEditor release];
-		fieldEditor = nil;
+		SPClear(fieldEditor);
 	}
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
@@ -3851,7 +3699,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 
 			NSMutableDictionary *selectedRowLookupTable = [NSMutableDictionary dictionaryWithCapacity:indexCount];
-			NSNumber *trueNumber = [NSNumber numberWithBool:YES];
+			NSNumber *trueNumber = @YES;
 			for (NSUInteger i = 0; i < indexCount; i++) {
 
 				// For single-column primary keys, use the cell value as a dictionary key for fast lookups
@@ -3921,6 +3769,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 /**
  * Provide a getter for the current filter details
+ *
+ * @warning Uses UI. MUST call from main thread!
  */
 - (NSDictionary *) filterSettings
 {
@@ -3946,7 +3796,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setSortColumnNameToRestore:(NSString *)theSortColumnName isAscending:(BOOL)isAscending
 {
-	if (sortColumnToRestore) [sortColumnToRestore release], sortColumnToRestore = nil;
+	if (sortColumnToRestore) SPClear(sortColumnToRestore);
 
 	if (theSortColumnName) {
 		sortColumnToRestore = [[NSString alloc] initWithString:theSortColumnName];
@@ -3967,7 +3817,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setSelectionToRestore:(NSDictionary *)theSelection
 {
-	if (selectionToRestore) [selectionToRestore release], selectionToRestore = nil;
+	if (selectionToRestore) SPClear(selectionToRestore);
 
 	if (theSelection) selectionToRestore = [theSelection copy];
 }
@@ -3985,11 +3835,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void) setFiltersToRestore:(NSDictionary *)filterSettings
 {
-	if (filterFieldToRestore) [filterFieldToRestore release], filterFieldToRestore = nil;
-	if (filterComparisonToRestore) [filterComparisonToRestore release], filterComparisonToRestore = nil;
-	if (filterValueToRestore) [filterValueToRestore release], filterValueToRestore = nil;
-	if (firstBetweenValueToRestore) [firstBetweenValueToRestore release], firstBetweenValueToRestore = nil;
-	if (secondBetweenValueToRestore) [secondBetweenValueToRestore release], secondBetweenValueToRestore = nil;
+	if (filterFieldToRestore) SPClear(filterFieldToRestore);
+	if (filterComparisonToRestore) SPClear(filterComparisonToRestore);
+	if (filterValueToRestore) SPClear(filterValueToRestore);
+	if (firstBetweenValueToRestore) SPClear(firstBetweenValueToRestore);
+	if (secondBetweenValueToRestore) SPClear(secondBetweenValueToRestore);
 
 	if (filterSettings) {
 		if ([filterSettings objectForKey:@"filterField"])
@@ -4252,7 +4102,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
 		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 
-		[tableContentView setRowHeight:2.0f + NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:[NSDictionary dictionaryWithObject:tableFont forKey:NSFontAttributeName]]).height];
+		[tableContentView setRowHeight:2.0f + NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 		[tableContentView setFont:tableFont];
 		[tableContentView reloadData];
 	}
@@ -4315,37 +4165,38 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:tableContentView];
 
-	if(fieldEditor) [fieldEditor release], fieldEditor = nil;
+	if(fieldEditor) SPClear(fieldEditor);
 
 	[self clearTableLoadTimer];
-	[tableLoadingCondition release];
-	[tableValues release];
+	SPClear(tableLoadingCondition);
+	SPClear(tableValues);
 	pthread_mutex_destroy(&tableValuesLock);
-	[dataColumns release];
-	[oldRow release];
+	SPClear(dataColumns);
+	SPClear(oldRow);
 #ifndef SP_CODA
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];	
-	[nibObjectsToRelease release];
-	[paginationPopover release];
+	SPClear(nibObjectsToRelease);
+	SPClear(paginationPopover);
 
-	[filterTableData release];
-	if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];
-	if (filterTableDefaultOperator) [filterTableDefaultOperator release];
+	SPClear(filterTableData);
+	if (lastEditedFilterTableValue) SPClear(lastEditedFilterTableValue);
+	if (filterTableDefaultOperator) SPClear(filterTableDefaultOperator);
 #endif
-	if (selectedTable) [selectedTable release];
-	if (contentFilters) [contentFilters release];
-	if (numberOfDefaultFilters) [numberOfDefaultFilters release];
-	if (keys) [keys release];
-	if (sortCol) [sortCol release];
-	[usedQuery release];
-	if (sortColumnToRestore) [sortColumnToRestore release];
-	if (selectionToRestore) [selectionToRestore release];
+	if (selectedTable)          SPClear(selectedTable);
+	if (contentFilters)         SPClear(contentFilters);
+	if (numberOfDefaultFilters) SPClear(numberOfDefaultFilters);
+	if (keys)                   SPClear(keys);
+	if (sortCol)                SPClear(sortCol);
+	SPClear(usedQuery);
+	if (sortColumnToRestore)    SPClear(sortColumnToRestore);
+	if (selectionToRestore)     SPClear(selectionToRestore);
+	if (cqColumnDefinition)     SPClear(cqColumnDefinition);
+
 	if (filterFieldToRestore) filterFieldToRestore = nil;
 	if (filterComparisonToRestore) filterComparisonToRestore = nil;
 	if (filterValueToRestore) filterValueToRestore = nil;
 	if (firstBetweenValueToRestore) firstBetweenValueToRestore = nil;
 	if (secondBetweenValueToRestore) secondBetweenValueToRestore = nil;
-	if (cqColumnDefinition) [cqColumnDefinition release];
 
 	[super dealloc];
 }

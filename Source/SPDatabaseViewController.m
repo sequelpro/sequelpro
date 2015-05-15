@@ -116,16 +116,17 @@
 #pragma mark -
 #pragma mark Tab view control and delegate methods
 
+//WARNING: Might be called from code in background threads
 - (IBAction)viewStructure:(id)sender
 {
 	// Cancel the selection if currently editing a view and unable to save
 	if (![self couldCommitCurrentViewActions]) {
-		[mainToolbar setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
+		[[mainToolbar onMainThread] setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
 
-	[tableTabView selectTabViewItemAtIndex:0];
-	[mainToolbar setSelectedItemIdentifier:SPMainToolbarTableStructure];
+	[[tableTabView onMainThread] selectTabViewItemAtIndex:0];
+	[[mainToolbar onMainThread] setSelectedItemIdentifier:SPMainToolbarTableStructure];
 	[spHistoryControllerInstance updateHistoryEntries];
 	
 	[prefs setInteger:SPStructureViewMode forKey:SPLastViewMode];
@@ -332,7 +333,7 @@
 	if (!aTable) {
 		
 		// Update the selected table name and type
-		if (selectedTableName) [selectedTableName release], selectedTableName = nil;
+		if (selectedTableName) SPClear(selectedTableName);
 		
 		selectedTableType = SPTableTypeNone;
 
@@ -589,7 +590,7 @@
 	[self endTask];
 
 #ifndef SP_CODA /* triggered commands */
-	NSArray *triggeredCommands = [[NSApp delegate] bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
 	
 	for(NSString* cmdPath in triggeredCommands) 
 	{
@@ -615,7 +616,7 @@
 		}
 		if(!stopTrigger) {
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[[NSApp delegate] onMainThread] executeBundleItemForApp:aMenuItem];
+				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
 				if([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"])

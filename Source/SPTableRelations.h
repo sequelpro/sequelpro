@@ -39,6 +39,7 @@
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTablesList       *tablesListInstance;
 	IBOutlet SPTableData        *tableDataInstance;
+	IBOutlet SPTableView        *tableList;
 		
 	IBOutlet NSButton    *addRelationButton;
 	IBOutlet NSButton    *removeRelationButton;	
@@ -57,7 +58,10 @@
 	IBOutlet NSButton            *confirmAddRelationButton;
 	IBOutlet NSProgressIndicator *dataProgressIndicator;
 	IBOutlet NSTextField         *progressStatusTextField;
-		
+	
+	IBOutlet NSView     *detailErrorView;
+	IBOutlet NSTextView *detailErrorText;
+	
 	SPMySQLConnection *connection;
 
 	NSUserDefaults *prefs;

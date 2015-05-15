@@ -93,4 +93,9 @@
 	return NO;
 }
 
+- (void)preferencePaneWillBeShown
+{
+	[self updateDisplayedTableFontName];
+}
+
 @end

@@ -116,12 +116,11 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[indexesTableView setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 #endif
 
-	extraFieldSuggestions = [[NSArray arrayWithObjects:
-		@"None",
-		@"auto_increment",
-		@"on update CURRENT_TIMESTAMP",
-		@"SERIAL DEFAULT VALUE",
-		nil
+	extraFieldSuggestions = [@[
+			@"None",
+			@"auto_increment",
+			@"on update CURRENT_TIMESTAMP",
+			@"SERIAL DEFAULT VALUE"
 	] retain];
 
 	// Note that changing the contents or ordering of this array will affect the implementation of 
@@ -253,12 +252,12 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	BOOL allowNull = [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"] ? NO : [prefs boolForKey:SPNewFieldsAllowNulls];
 	
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
-							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", @0, @0, nil]
+							   forKeys:@[@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation"]]
 					  atIndex:insertIndex];
 #else
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", @"1", @"", @"NULL", @"None", @"", [NSNumber numberWithInt:0], [NSNumber numberWithInt:0], nil]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", @"1", @"", @"NULL", @"None", @"", @0, @0, nil]
 							   forKeys:[NSArray arrayWithObjects:@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation", nil]]
 					  atIndex:insertIndex];
 #endif
@@ -913,7 +912,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 				// UNSIGNED keyword.
 				NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
 				
-				NSInteger insertionIndex = (range.location + range.length);
+				NSInteger insertionIndex = NSMaxRange(range);
 				
 				// If the field definition's data type includes the length then we must take this into
 				// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
@@ -964,7 +963,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}
@@ -1059,7 +1058,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	// on the main thread ensures the timer fires on the main thread.
 	if (![errorDictionary objectForKey:@"delayed"]) {
 		NSMutableDictionary *delayedErrorDictionary = [NSMutableDictionary dictionaryWithDictionary:errorDictionary];
-		[delayedErrorDictionary setObject:[NSNumber numberWithBool:YES] forKey:@"delayed"];
+		[delayedErrorDictionary setObject:@YES forKey:@"delayed"];
 		[self performSelector:@selector(showErrorSheetWith:) withObject:delayedErrorDictionary afterDelay:0.3];
 		return;
 	}
@@ -1208,7 +1207,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[indexesController setConnection:mySQLConnection];
 	
 	// Set up tableView
-	[tableSourceView registerForDraggedTypes:[NSArray arrayWithObjects:SPDefaultPasteboardDragType, nil]];
+	[tableSourceView registerForDraggedTypes:@[SPDefaultPasteboardDragType]];
 }
 
 /**
@@ -1474,16 +1473,16 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[prefs removeObserver:indexesController forKeyPath:SPUseMonospacedFonts];
 #endif
 
-	[tableFields release];
-	[oldRow release];
-	[enumFields release];
-	[typeSuggestions release];
-	[extraFieldSuggestions release];
+	SPClear(tableFields);
+	SPClear(oldRow);
+	SPClear(enumFields);
+	SPClear(typeSuggestions);
+	SPClear(extraFieldSuggestions);
 
-	[fieldValidation release], fieldValidation = nil;
+	SPClear(fieldValidation);
 
-	if (defaultValues) [defaultValues release];
-	if (selectedTable) [selectedTable release];
+	if (defaultValues) SPClear(defaultValues);
+	if (selectedTable) SPClear(selectedTable);
 
 	[super dealloc];
 }

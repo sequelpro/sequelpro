@@ -45,7 +45,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 - (void)_addNode:(SPTreeNode *)node asChildOfNode:(SPTreeNode *)parent;
 
 - (SPTreeNode *)_constructBranchForNodeData:(NSDictionary *)nodeData;
-
+- (SPTreeNode *)_addFavoriteNodeWithData:(NSMutableDictionary *)data asChildOfNode:(SPTreeNode *)parent;
 @end
 
 @implementation SPFavoritesController
@@ -164,6 +164,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	[self _addNode:node asChildOfNode:parent];
 
+	[self saveFavorites];
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
 	
 	return node;
@@ -179,11 +180,40 @@ static SPFavoritesController *sharedFavoritesController = nil;
  */
 - (SPTreeNode *)addFavoriteNodeWithData:(NSMutableDictionary *)data asChildOfNode:(SPTreeNode *)parent
 {
-	SPTreeNode *node = [SPTreeNode treeNodeWithRepresentedObject:[SPFavoriteNode favoriteNodeWithDictionary:data]];
-		
+	SPTreeNode *node = [self _addFavoriteNodeWithData:data asChildOfNode:parent];
+
+	[self saveFavorites];
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+
+	return node;
+}
+
+/**
+ * Inner recursive variant of the method above
+ */
+- (SPTreeNode *)_addFavoriteNodeWithData:(NSMutableDictionary *)data asChildOfNode:(SPTreeNode *)parent
+{
+	id object;
+	NSArray *childs = nil;
+	//if it has "Children" it must be a group node, otherwise assume favorite node
+	if ([data objectForKey:SPFavoriteChildrenKey]) {
+		object = [SPGroupNode groupNodeWithDictionary:data];
+		childs = [data objectForKey:SPFavoriteChildrenKey];
+	}
+	else {
+		object = [SPFavoriteNode favoriteNodeWithDictionary:data];
+	}
+	
+	SPTreeNode *node = [SPTreeNode treeNodeWithRepresentedObject:object];
+	
 	[self _addNode:node asChildOfNode:parent];
 	
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPConnectionFavoritesChangedNotification object:self];
+	//also add the children
+	if(childs) {
+		for (NSMutableDictionary *childData in childs) {
+			[self _addFavoriteNodeWithData:childData asChildOfNode:node];
+		}
+	}
 
 	return node;
 }
@@ -218,7 +248,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	NSError *error = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	
-	if (favoritesData) [favoritesData release], favoritesData = nil;
+	if (favoritesData) SPClear(favoritesData);
 	
 	NSString *dataPath = [fileManager applicationSupportDirectoryForSubDirectory:SPDataSupportFolder error:&error];
 	
@@ -237,7 +267,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		favoritesData = [[NSMutableDictionary alloc] initWithContentsOfFile:favoritesFile];
 	}
 	else {
-		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, [NSArray array], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
+		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, @[], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 		
 		error = nil;
 		NSString *errorString = nil;
@@ -377,7 +407,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	// from the current favourites tree and convert it to a dictionary representation
 	// to create the plist data.  This is done before file changes as it can sometimes
 	// be terminated during shutdown.
-	NSDictionary *dictionary = [NSDictionary dictionaryWithObject:data forKey:SPFavoritesRootKey];
+	NSDictionary *dictionary = @{SPFavoritesRootKey : data};
 	
 	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
 																   format:NSPropertyListXMLFormat_v1_0
@@ -460,16 +490,14 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	else {
 		[[[[favoritesTree mutableChildNodes] objectAtIndex:0] mutableChildNodes] addObject:node];
 	}
-	
-	[self saveFavorites];
 }
 
 #pragma mark -
 
 - (void)dealloc
 {
-	if (favoritesTree) [favoritesTree release], favoritesTree = nil;
-	if (favoritesData) [favoritesData release], favoritesData = nil;
+	if (favoritesTree) SPClear(favoritesTree);
+	if (favoritesData) SPClear(favoritesData);
 	
 	pthread_mutex_destroy(&writeLock);
 	pthread_mutex_destroy(&favoritesLock);

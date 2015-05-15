@@ -231,12 +231,12 @@
 {
 	delegate = nil;
 	
-	[dotExportTables release], dotExportTables = nil;
-	[dotExportCurrentTable release], dotExportCurrentTable = nil;
-	[dotTableData release], dotTableData = nil;
-	[dotDatabaseHost release], dotDatabaseHost = nil;
-	[dotDatabaseName release], dotDatabaseName = nil;
-	[dotDatabaseVersion release], dotDatabaseVersion = nil;
+	SPClear(dotExportTables);
+	SPClear(dotExportCurrentTable);
+	SPClear(dotTableData);
+	SPClear(dotDatabaseHost);
+	SPClear(dotDatabaseName);
+	SPClear(dotDatabaseVersion);
 	
 	[super dealloc];
 }

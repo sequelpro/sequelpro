@@ -288,7 +288,12 @@
 		[openPanel setNameFieldStringValue:[lastFilename lastPathComponent]];
 	}
 
-	[openPanel setDirectoryURL:[NSURL URLWithString:[prefs objectForKey:@"openPath"]]];
+	NSString *openPath;
+	if((openPath = [prefs objectForKey:@"openPath"])) {
+		// Doc says calling +[NSURL URLWithString:] with nil is fine,
+		// but at least on 10.6 this will cause an exception
+		[openPanel setDirectoryURL:[NSURL URLWithString:openPath]];
+	}
 
 	[openPanel beginSheetModalForWindow:[tableDocumentInstance parentWindow] completionHandler:^(NSInteger returnCode) {
 		// Ensure text inputs are completed, preventing dead character entry
@@ -307,7 +312,7 @@
 		// Reset progress cancelled from any previous runs
 		progressCancelled = NO;
 
-		if (lastFilename) [lastFilename release]; lastFilename = nil;
+		if (lastFilename) SPClear(lastFilename);
 
 		lastFilename = [[NSString stringWithString:[[openPanel URL] path]] retain];
 
@@ -662,7 +667,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -754,7 +759,7 @@
 	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
 	// Reset progress interface
-	[errorsView setString:@""];
+	[[errorsView onMainThread] setString:@""];
 	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
 	[[singleProgressBar onMainThread] setIndeterminate:YES];
@@ -1178,7 +1183,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], @"forceUpdate", nil]];
+		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];
@@ -1215,7 +1220,7 @@
 						  nil, nil,
 						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
 						  );
-		return FALSE;
+		return YES;
 	}
 
 	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
@@ -1228,7 +1233,7 @@
 						  nil, nil,
 						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
 						  );
-		return FALSE;
+		return NO;
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
 
@@ -1240,29 +1245,33 @@
 	fieldMapperSheetStatus = SPFieldMapperInProgress;
 	fieldMappingArrayHasGlobalVariables = NO;
 
-	// Init the field mapper controller
-	fieldMapperController = [(SPFieldMapperController *)[SPFieldMapperController alloc] initWithDelegate:self];
-	[fieldMapperController setConnection:mySQLConnection];
-	[fieldMapperController setSourcePath:filename];
-	[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
-
-	// Show field mapper sheet and set the focus to it
-	[[NSApp onMainThread] beginSheet:[fieldMapperController window]
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
-		  contextInfo:nil];
-
-	[[[fieldMapperController window] onMainThread] makeKeyWindow];
+	//the field mapper is an UI object and must not be caught in the background thread's autoreleasepool
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Init the field mapper controller
+		fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
+		[fieldMapperController setConnection:mySQLConnection];
+		[fieldMapperController setSourcePath:filename];
+		[fieldMapperController setImportDataArray:fieldMappingImportArray hasHeader:[importFieldNamesSwitch state] isPreview:fieldMappingImportArrayIsPreview];
+		
+		// Show field mapper sheet and set the focus to it
+		[NSApp beginSheet:[fieldMapperController window]
+						  modalForWindow:[tableDocumentInstance parentWindow]
+						   modalDelegate:self
+						  didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
+							 contextInfo:nil];
+		
+		[[fieldMapperController window] makeKeyWindow];
+	});
 
 	// Wait for field mapper sheet
 	while (fieldMapperSheetStatus == SPFieldMapperInProgress)
 		usleep(100000);
+	
+	BOOL success = NO;
 
 	// If the mapping was cancelled, abort the import
 	if (fieldMapperSheetStatus == SPFieldMapperCancelled) {
-		if (fieldMapperController) [fieldMapperController release];
-		return FALSE;
+		goto cleanup;
 	}
 
 	// Get mapping settings and preset some global variables
@@ -1288,9 +1297,8 @@
 		|| ![selectedTableTarget length]
 		|| ![csvImportHeaderString length])
 	{
-		if(fieldMapperController) [fieldMapperController release];
 		NSBeep();
-		return FALSE;
+		goto cleanup;
 	}
 
 	// Store target table definitions
@@ -1312,13 +1320,14 @@
 
 	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
 	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
+	success = YES;
+	
+cleanup:
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if(fieldMapperController) SPClear(fieldMapperController);
+	});
 
-	if(fieldMapperController) [fieldMapperController release];
-
-	if(fieldMapperSheetStatus == SPFieldMapperCompleted)
-		return YES;
-	else
-		return NO;
+	return success;
 }
 
 /**
@@ -1706,34 +1715,33 @@
  */
 - (void)_resetFieldMappingGlobals
 {
-	if (csvImportTailString) [csvImportTailString release], csvImportTailString = nil;
-	if (csvImportHeaderString) [csvImportHeaderString release], csvImportHeaderString = nil;
-	if (fieldMappingArray) [fieldMappingArray release], fieldMappingArray = nil;
-	if (fieldMappingGlobalValueArray) [fieldMappingGlobalValueArray release], fieldMappingGlobalValueArray = nil;
-	if (fieldMappingTableColumnNames) [fieldMappingTableColumnNames release], fieldMappingTableColumnNames = nil;
-	if (fieldMappingTableDefaultValues) [fieldMappingTableDefaultValues release], fieldMappingTableDefaultValues = nil;
-	if (fieldMapperOperator) [fieldMapperOperator release], fieldMapperOperator = nil;
+	if (csvImportTailString) SPClear(csvImportTailString);
+	if (csvImportHeaderString) SPClear(csvImportHeaderString);
+	if (fieldMappingArray) SPClear(fieldMappingArray);
+	if (fieldMappingGlobalValueArray) SPClear(fieldMappingGlobalValueArray);
+	if (fieldMappingTableColumnNames) SPClear(fieldMappingTableColumnNames);
+	if (fieldMappingTableDefaultValues) SPClear(fieldMappingTableDefaultValues);
+	if (fieldMapperOperator) SPClear(fieldMapperOperator);
 }
 
 #pragma mark -
 
 - (void)dealloc
 {	
-	if (fieldMappingImportArray) [fieldMappingImportArray release];
-	if (geometryFields) [geometryFields release];
-	if (geometryFieldsMapIndex) [geometryFieldsMapIndex release];
-	if (bitFields) [bitFields release];
-	if (nullableNumericFields) [nullableNumericFields release];
-	if (bitFieldsMapIndex) [bitFieldsMapIndex release];
-	if (nullableNumericFieldsMapIndex) [nullableNumericFieldsMapIndex release];
-
-	if (lastFilename) [lastFilename release];
-	if (prefs) [prefs release];
-	if(selectedTableTarget) [selectedTableTarget release];
+	if (fieldMappingImportArray)       SPClear(fieldMappingImportArray);
+	if (geometryFields)                SPClear(geometryFields);
+	if (geometryFieldsMapIndex)        SPClear(geometryFieldsMapIndex);
+	if (bitFields)                     SPClear(bitFields);
+	if (nullableNumericFields)         SPClear(nullableNumericFields);
+	if (bitFieldsMapIndex)             SPClear(bitFieldsMapIndex);
+	if (nullableNumericFieldsMapIndex) SPClear(nullableNumericFieldsMapIndex);
+	if (lastFilename)                  SPClear(lastFilename);
+	if (prefs)                         SPClear(prefs);
+	if (selectedTableTarget)           SPClear(selectedTableTarget);
 	
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
-	[nibObjectsToRelease release];
+	SPClear(nibObjectsToRelease);
 	
 	[super dealloc];
 }

@@ -78,8 +78,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			if(spf) [spf release], spf = nil;
-			if(pool) [pool release], pool = nil;
+			if(spf) SPClear(spf);
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -89,8 +89,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 
@@ -146,8 +146,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 			// compose the html
@@ -162,8 +162,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
 			if (template == nil || ![template length] || templateReadError != nil) {
-				if(spf) [spf release], spf = nil;
-				if(pool) [pool release], pool = nil;
+				if(spf) SPClear(spf);
+				if(pool) SPClear(pool);
 				return noErr;
 			}
 			// compose the html
@@ -182,7 +182,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -190,7 +190,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (windowTemplate == nil || ![windowTemplate length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -205,8 +205,8 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
 
 		if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			if(spf) [spf release], spf = nil;
-			if(pool) [pool release], pool = nil;
+			if(spf) SPClear(spf);
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -323,7 +323,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			encoding:NSUTF8StringEncoding error:&templateReadError];
 
 		if (template == nil || ![template length] || templateReadError != nil) {
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 		}
 
@@ -418,10 +418,10 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 						[sqlHTML appendFormat:@"<font color=%@>%@</font>", tokenColor, [[sqlText substringWithRange:tokenRange] HTMLEscapeString]];
 
 					if (QLPreviewRequestIsCancelled(preview)) {
-						if(sqlHTML) [sqlHTML release], sqlHTML = nil;
+						if(sqlHTML) SPClear(sqlHTML);
 						if(truncatedString) [truncatedString release], sqlHTML = nil;
 						if(sqlText) [sqlText release], sqlHTML = nil;
-						if(pool) [pool release], pool = nil;
+						if(pool) SPClear(pool);
 						[loopPool release];
 						return noErr;
 					}
@@ -457,7 +457,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		} else {
 
 			// No file attributes were read, bail for safety reasons
-			if(pool) [pool release], pool = nil;
+			if(pool) SPClear(pool);
 			return noErr;
 
 		}
@@ -474,7 +474,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 
 	// just in case
 	if(!iconImages || [iconImages count] < 1)
-		iconImages = [NSArray arrayWithObject:[NSImage imageNamed:NSImageNameStopProgressTemplate]];
+		iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
 
 #warning Shouldn't that be "> 1"?
 	if([iconImages count] > 0)
@@ -488,14 +488,14 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	imgProps = [[NSMutableDictionary alloc] initWithCapacity:2];
 
 	[props setObject:[NSNumber numberWithInteger:previewHeight] forKey:(NSString *)kQLPreviewPropertyHeightKey];
-	[props setObject:[NSNumber numberWithInt:600] forKey:(NSString *)kQLPreviewPropertyWidthKey];
+	[props setObject:@600 forKey:(NSString *) kQLPreviewPropertyWidthKey];
 
 	if(image) {
 		[imgProps setObject:@"image/tiff" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];
 		[imgProps setObject:image forKey:(NSString *)kQLPreviewPropertyAttachmentDataKey];
 	}
 
-	[props setObject:[NSDictionary dictionaryWithObject:imgProps forKey:@"icon.tiff"] forKey:(NSString *)kQLPreviewPropertyAttachmentsKey];
+	[props setObject:@{@"icon.tiff" : imgProps} forKey:(NSString *) kQLPreviewPropertyAttachmentsKey];
 	[props setObject:@"UTF-8" forKey:(NSString *)kQLPreviewPropertyTextEncodingNameKey];
 	[props setObject:[NSNumber numberWithInt:NSUTF8StringEncoding] forKey:(NSString *)kQLPreviewPropertyStringEncodingKey];
 	[props setObject:@"text/html" forKey:(NSString *)kQLPreviewPropertyMIMETypeKey];

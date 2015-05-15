@@ -247,7 +247,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -269,7 +269,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -291,7 +291,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -312,7 +312,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 	
 }
@@ -335,7 +335,7 @@
 	// if no selection place the caret at the end of the current word
 	{
 		NSRange newRange = [self getRangeForCurrentWord];
-		[self setSelectedRange:NSMakeRange(newRange.location + newRange.length, 0)];
+		[self setSelectedRange:NSMakeRange(NSMaxRange(newRange), 0)];
 	}
 }
 
@@ -511,7 +511,7 @@
 
 	NSInteger idx = [sender tag] - 1000000;
 	NSString *infoPath = nil;
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeInputField];
 	if(idx >=0 && idx < (NSInteger)[bundleItems count]) {
 		infoPath = [[bundleItems objectAtIndex:idx] objectForKey:SPBundleInternPathToFileKey];
 	} else {
@@ -661,7 +661,7 @@
 
 			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
 											atCurrentDirectoryPath:nil 
-											callerInstance:[(SPAppController*)[NSApp delegate] frontDocument] 
+											callerInstance:[SPAppDelegate frontDocument]
 											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
 													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
 													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
@@ -736,7 +736,7 @@
 							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
 							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
 							[c displayHTMLContent:output withOptions:nil];
-							[[NSApp delegate] addHTMLOutputController:c];
+							[SPAppDelegate addHTMLOutputController:c];
 						}
 					}
 
@@ -800,12 +800,12 @@
 		[menu removeItem:bItem];
 	}
 
-	if ([[[(SPWindowController *)[[[NSApp delegate] frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
+	if ([[[(SPWindowController *)[[SPAppDelegate frontDocumentWindow] delegate] selectedTableDocument] connectionID] isEqualToString:@"_"]) return menu;
 
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
-	NSArray *bundleCategories = [[NSApp delegate] bundleCategoriesForScope:SPBundleScopeInputField];
-	NSArray *bundleItems = [[NSApp delegate] bundleItemsForScope:SPBundleScopeInputField];
+	NSArray *bundleCategories = [SPAppDelegate bundleCategoriesForScope:SPBundleScopeInputField];
+	NSArray *bundleItems = [SPAppDelegate bundleItemsForScope:SPBundleScopeInputField];
 
 	// Add 'Bundles' sub menu
 	if(bundleItems && [bundleItems count]) {

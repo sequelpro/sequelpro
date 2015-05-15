@@ -34,6 +34,7 @@
 #import "SPOutlineView.h"
 #import "SPBundleCommandTextView.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
@@ -119,7 +120,6 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	inputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	inputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
-	inputNonePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputGeneralScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputInputFieldScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	outputDataTableScopePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
@@ -128,18 +128,20 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	triggerDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	triggerGeneralPopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 	withBlobDataTablePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
+	inputNonePopUpMenu = [[NSMenu alloc] initWithTitle:@""];
 
-	inputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, nil] retain];
-	inputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent, nil] retain];
-	inputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert, nil] retain];
-	outputInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	outputGeneralScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	outputDataTableScopeArray = [[NSArray arrayWithObjects:SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML, nil] retain];
-	inputFallbackInputFieldScopeArray = [[NSArray arrayWithObjects:SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent, nil] retain];
-	triggerInputFieldArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, nil] retain];
-	triggerDataTableArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged, nil] retain];
-	triggerGeneralArray = [[NSArray arrayWithObjects:SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, nil] retain];
-	withBlobDataTableArray = [[NSArray arrayWithObjects:SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference, nil] retain];
+	inputGeneralScopeArray = [@[SPBundleInputSourceNone] retain];
+	inputInputFieldScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceSelectedText, SPBundleInputSourceEntireContent] retain];
+	inputDataTableScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceSelectedTableRowsAsTab, SPBundleInputSourceSelectedTableRowsAsCsv, SPBundleInputSourceSelectedTableRowsAsSqlInsert, SPBundleInputSourceTableRowsAsTab, SPBundleInputSourceTableRowsAsCsv, SPBundleInputSourceTableRowsAsSqlInsert] retain];
+	outputInputFieldScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionInsertAsText, SPBundleOutputActionInsertAsSnippet, SPBundleOutputActionReplaceSelection, SPBundleOutputActionReplaceContent, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	outputGeneralScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	outputDataTableScopeArray = [@[SPBundleOutputActionNone, SPBundleOutputActionShowAsTextTooltip, SPBundleOutputActionShowAsHTMLTooltip, SPBundleOutputActionShowAsHTML] retain];
+	inputFallbackInputFieldScopeArray = [@[SPBundleInputSourceNone, SPBundleInputSourceCurrentWord, SPBundleInputSourceCurrentLine, SPBundleInputSourceCurrentQuery, SPBundleInputSourceEntireContent] retain];
+	triggerInputFieldArray = [@[SPBundleTriggerActionNone] retain];
+	triggerDataTableArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged, SPBundleTriggerActionTableRowChanged] retain];
+	triggerGeneralArray = [@[SPBundleTriggerActionNone, SPBundleTriggerActionDatabaseChanged, SPBundleTriggerActionTableChanged] retain];
+	withBlobDataTableArray = [@[SPBundleInputSourceBlobHandlingExclude, SPBundleInputSourceBlobHandlingInclude, SPBundleInputSourceBlobHandlingImageFileReference, SPBundleInputSourceBlobHandlingFileReference] retain];
+	NSArray *inputNoneArray = @[SPBundleInputSourceNone]; //we only need that once to construct the menu
 
 	NSMutableArray *allPopupScopeItems = [NSMutableArray array];
 	[allPopupScopeItems addObjectsFromArray:inputGeneralScopeArray];
@@ -153,127 +155,98 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	[allPopupScopeItems addObjectsFromArray:triggerDataTableArray];
 	[allPopupScopeItems addObjectsFromArray:triggerGeneralArray];
 	[allPopupScopeItems addObjectsFromArray:withBlobDataTableArray];
+	[allPopupScopeItems addObjectsFromArray:inputNoneArray];
 
-	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:
-						[NSArray arrayWithObjects:
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
-						 NSLocalizedString(@"Selected Text",           @"Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item"),
-						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item"),
-						 NSLocalizedString(@"Selected Rows (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item"),
-						 NSLocalizedString(@"Selected Rows (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item"),
-						 NSLocalizedString(@"Selected Rows (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item"),
-						 NSLocalizedString(@"Table Content (TSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item"),
-						 NSLocalizedString(@"Table Content (CSV)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item"),
-						 NSLocalizedString(@"Table Content (SQL)",     @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Insert as Text",          @"Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item"),
-						 NSLocalizedString(@"Insert as Snippet",       @"Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item"),
-						 NSLocalizedString(@"Replace Selection",       @"Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item"),
-						 NSLocalizedString(@"Replace Entire Content",  @"Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Field : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=General : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item"),
-						 NSLocalizedString(@"Show as Text Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item"),
-						 NSLocalizedString(@"Show as HTML Tooltip",    @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item"),
-						 NSLocalizedString(@"Show as HTML",            @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Fallback Input source dropdown : 'none' item"),
-						 NSLocalizedString(@"Current Word",            @"Bundle Editor : Fallback Input source dropdown : 'current word' item"),
-						 NSLocalizedString(@"Current Line",            @"Bundle Editor : Fallback Input source dropdown : 'current line' item"),
-						 NSLocalizedString(@"Current Query",           @"Bundle Editor : Fallback Input source dropdown : 'current query' item"),
-						 NSLocalizedString(@"Entire Content",          @"Bundle Editor : Fallback Input source dropdown : 'entire content' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Field : Trigger dropdown : 'none' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item"),
-						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item"),
-						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item"),
-						 NSLocalizedString(@"Table Row changed",       @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item"),
-						 
-						 NSLocalizedString(@"None",                    @"Bundle Editor : Scope=General : Trigger dropdown : 'none' item"),
-						 NSLocalizedString(@"Database changed",        @"Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item"),
-						 NSLocalizedString(@"Table changed",           @"Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item"),
-						 
-						 NSLocalizedString(@"exclude BLOB",            @"Bundle Editor : BLOB dropdown : 'exclude BLOB' item"),
-						 NSLocalizedString(@"include BLOB",            @"Bundle Editor : BLOB dropdown : 'include BLOB' item"),
-						 NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
-						 NSLocalizedString(@"save BLOB as dat file",   @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
+	NSDictionary *menuItemTitles = [NSDictionary dictionaryWithObjects:@[
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Input source dropdown: 'None' item"),
 
-						nil]
-					forKeys:allPopupScopeItems];
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Input source dropdown: 'None' item"),
+					NSLocalizedString(@"Selected Text", @"Bundle Editor : Scope=Field : Input source dropdown: 'selected text' item"),
+					NSLocalizedString(@"Entire Content", @"Bundle Editor : Scope=Field : Input source dropdown: 'entire content' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'none' item"),
+					NSLocalizedString(@"Selected Rows (TSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as tab-separated' item"),
+					NSLocalizedString(@"Selected Rows (CSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as comma-separated' item"),
+					NSLocalizedString(@"Selected Rows (SQL)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'selected rows as SQL' item"),
+					NSLocalizedString(@"Table Content (TSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as tab-separated' item"),
+					NSLocalizedString(@"Table Content (CSV)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as comma-separated' item"),
+					NSLocalizedString(@"Table Content (SQL)", @"Bundle Editor : Scope=Data-Table : Input source dropdown: 'table content as SQL' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Insert as Text", @"Bundle Editor : Scope=Field : Output dropdown : 'insert as text' item"),
+					NSLocalizedString(@"Insert as Snippet", @"Bundle Editor : Scope=Field : Output dropdown : 'insert as snippet' item"),
+					NSLocalizedString(@"Replace Selection", @"Bundle Editor : Scope=Field : Output dropdown : 'replace selection' item"),
+					NSLocalizedString(@"Replace Entire Content", @"Bundle Editor : Scope=Field : Output dropdown : 'replace entire content' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=Field : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=Field : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=Field : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=General : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=General : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=General : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'none' item"),
+					NSLocalizedString(@"Show as Text Tooltip", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as text tooltip' item"),
+					NSLocalizedString(@"Show as HTML Tooltip", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html tooltip' item"),
+					NSLocalizedString(@"Show as HTML", @"Bundle Editor : Scope=Data-Table : Output dropdown : 'show as html' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Fallback Input source dropdown : 'none' item"),
+					NSLocalizedString(@"Current Word", @"Bundle Editor : Fallback Input source dropdown : 'current word' item"),
+					NSLocalizedString(@"Current Line", @"Bundle Editor : Fallback Input source dropdown : 'current line' item"),
+					NSLocalizedString(@"Current Query", @"Bundle Editor : Fallback Input source dropdown : 'current query' item"),
+					NSLocalizedString(@"Entire Content", @"Bundle Editor : Fallback Input source dropdown : 'entire content' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Field : Trigger dropdown : 'none' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'none' item"),
+					NSLocalizedString(@"Database changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'database changed' item"),
+					NSLocalizedString(@"Table changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table changed' item"),
+					NSLocalizedString(@"Table Row changed", @"Bundle Editor : Scope=Data-Table : Trigger dropdown : 'table row changed' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=General : Trigger dropdown : 'none' item"),
+					NSLocalizedString(@"Database changed", @"Bundle Editor : Scope=General : Trigger dropdown : 'database changed' item"),
+					NSLocalizedString(@"Table changed", @"Bundle Editor : Scope=General : Trigger dropdown : 'table changed' item"),
+
+					NSLocalizedString(@"exclude BLOB", @"Bundle Editor : BLOB dropdown : 'exclude BLOB' item"),
+					NSLocalizedString(@"include BLOB", @"Bundle Editor : BLOB dropdown : 'include BLOB' item"),
+					NSLocalizedString(@"save BLOB as image file", @"Bundle Editor : BLOB dropdown : 'save BLOB as image file' item"),
+					NSLocalizedString(@"save BLOB as dat file", @"Bundle Editor : BLOB dropdown : 'save BLOB as dat file' item"),
+
+					NSLocalizedString(@"None", @"Bundle Editor : Scope=? : ? dropdown: 'None' item")
+			] forKeys:allPopupScopeItems];
+
+	struct _menuItemMap {
+		NSArray *items;
+		NSMenu *menu;
+		SEL action;
+	};
+
+	struct _menuItemMap menus[] = {
+			{inputGeneralScopeArray,            inputGeneralScopePopUpMenu,            @selector(inputPopupButtonChanged:)},
+			{inputInputFieldScopeArray,         inputInputFieldScopePopUpMenu,         @selector(inputPopupButtonChanged:)},
+			{inputDataTableScopeArray,          inputDataTableScopePopUpMenu,          @selector(inputPopupButtonChanged:)},
+			{outputGeneralScopeArray,           outputGeneralScopePopUpMenu,           @selector(outputPopupButtonChanged:)},
+			{outputInputFieldScopeArray,        outputInputFieldScopePopUpMenu,        @selector(outputPopupButtonChanged:)},
+			{outputDataTableScopeArray,         outputDataTableScopePopUpMenu,         @selector(outputPopupButtonChanged:)},
+			{inputFallbackInputFieldScopeArray, inputFallbackInputFieldScopePopUpMenu, @selector(inputFallbackPopupButtonChanged:)},
+			{triggerInputFieldArray,            triggerInputFieldPopUpMenu,            @selector(triggerButtonChanged:)},
+			{triggerDataTableArray,             triggerDataTablePopUpMenu,             @selector(triggerButtonChanged:)},
+			{triggerGeneralArray,               triggerGeneralPopUpMenu,               @selector(triggerButtonChanged:)},
+			{withBlobDataTableArray,            withBlobDataTablePopUpMenu,            @selector(withBlobButtonChanged:)},
+			{inputNoneArray,                    inputNonePopUpMenu,                    NULL}
+	};
+
+	for(unsigned int i=0;i<(sizeof(menus)/sizeof(struct _menuItemMap));i++) {
+		struct _menuItemMap *menu = &menus[i];
+		for(NSString* title in menu->items) {
+			NSMenuItem *anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:menu->action keyEquivalent:@""];
+			[menu->menu addItem:anItem];
+			[anItem release];
+		}
+	}
 
 	NSMenuItem *anItem;
-	for(NSString* title in inputGeneralScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputGeneralScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputDataTableScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputPopupButtonChanged:) keyEquivalent:@""];
-		[inputDataTableScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputGeneralScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputGeneralScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in outputDataTableScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(outputPopupButtonChanged:) keyEquivalent:@""];
-		[outputDataTableScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in inputFallbackInputFieldScopeArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(inputFallbackPopupButtonChanged:) keyEquivalent:@""];
-		[inputFallbackInputFieldScopePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerInputFieldArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerInputFieldPopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerDataTableArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerDataTablePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in triggerGeneralArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(triggerButtonChanged:) keyEquivalent:@""];
-		[triggerGeneralPopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	for(NSString* title in withBlobDataTableArray) {
-		anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:@selector(withBlobButtonChanged:) keyEquivalent:@""];
-		[withBlobDataTablePopUpMenu addItem:anItem];
-		[anItem release];
-	}
-	anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:SPBundleInputSourceNone] action:nil keyEquivalent:@""];
-	[inputNonePopUpMenu addItem:anItem];
-	[anItem release];
-
 	[inputGeneralScopePopUpMenu compatibleRemoveAllItems];
 	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kGeneralScopeArrayIndex];
@@ -293,52 +266,51 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	[commandBundleTreeController setSortDescriptors:[NSArray arrayWithObjects:sortDescriptor, nil]];
 
-	shellVariableSuggestions = [[NSArray arrayWithObjects:
-		SPBundleShellVariableAllDatabases,
-		SPBundleShellVariableAllFunctions,
-		SPBundleShellVariableAllProcedures,
-		SPBundleShellVariableAllTables,
-		SPBundleShellVariableAllViews,
-		SPBundleShellVariableAppResourcesDirectory,
-		SPBundleShellVariableBlobFileDirectory,
-		SPBundleShellVariableExitInsertAsSnippet,
-		SPBundleShellVariableExitInsertAsText,
-		SPBundleShellVariableExitNone,
-		SPBundleShellVariableExitReplaceContent,
-		SPBundleShellVariableExitReplaceSelection,
-		SPBundleShellVariableExitShowAsHTML,
-		SPBundleShellVariableExitShowAsHTMLTooltip,
-		SPBundleShellVariableExitShowAsTextTooltip,
-		SPBundleShellVariableInputFilePath,
-		SPBundleShellVariableInputTableMetaData,
-		SPBundleShellVariableBundlePath,
-		SPBundleShellVariableBundleScope,
-		SPBundleShellVariableCurrentEditedColumnName,
-		SPBundleShellVariableCurrentEditedTable,
-		SPBundleShellVariableCurrentHost,
-		SPBundleShellVariableCurrentLine,
-		SPBundleShellVariableCurrentPort,
-		SPBundleShellVariableCurrentQuery,
-		SPBundleShellVariableCurrentUser,
-		SPBundleShellVariableCurrentWord,
-		SPBundleShellVariableDataTableSource,
-		SPBundleShellVariableDatabaseEncoding,
-		SPBundleShellVariableIconFile,
-		SPBundleShellVariableProcessID,
-		SPBundleShellVariableQueryFile,
-		SPBundleShellVariableQueryResultFile,
-		SPBundleShellVariableQueryResultMetaFile,
-		SPBundleShellVariableQueryResultStatusFile,
-		SPBundleShellVariableRDBMSType,
-		SPBundleShellVariableRDBMSVersion,
-		SPBundleShellVariableSelectedDatabase,
-		SPBundleShellVariableSelectedRowIndices,
-		SPBundleShellVariableSelectedTable,
-		SPBundleShellVariableSelectedTables,
-		SPBundleShellVariableSelectedText,
-		SPBundleShellVariableSelectedTextRange,
-		SPBundleShellVariableUsedQueryForTable,
-		nil
+	shellVariableSuggestions = [@[
+			SPBundleShellVariableAllDatabases,
+			SPBundleShellVariableAllFunctions,
+			SPBundleShellVariableAllProcedures,
+			SPBundleShellVariableAllTables,
+			SPBundleShellVariableAllViews,
+			SPBundleShellVariableAppResourcesDirectory,
+			SPBundleShellVariableBlobFileDirectory,
+			SPBundleShellVariableExitInsertAsSnippet,
+			SPBundleShellVariableExitInsertAsText,
+			SPBundleShellVariableExitNone,
+			SPBundleShellVariableExitReplaceContent,
+			SPBundleShellVariableExitReplaceSelection,
+			SPBundleShellVariableExitShowAsHTML,
+			SPBundleShellVariableExitShowAsHTMLTooltip,
+			SPBundleShellVariableExitShowAsTextTooltip,
+			SPBundleShellVariableInputFilePath,
+			SPBundleShellVariableInputTableMetaData,
+			SPBundleShellVariableBundlePath,
+			SPBundleShellVariableBundleScope,
+			SPBundleShellVariableCurrentEditedColumnName,
+			SPBundleShellVariableCurrentEditedTable,
+			SPBundleShellVariableCurrentHost,
+			SPBundleShellVariableCurrentLine,
+			SPBundleShellVariableCurrentPort,
+			SPBundleShellVariableCurrentQuery,
+			SPBundleShellVariableCurrentUser,
+			SPBundleShellVariableCurrentWord,
+			SPBundleShellVariableDataTableSource,
+			SPBundleShellVariableDatabaseEncoding,
+			SPBundleShellVariableIconFile,
+			SPBundleShellVariableProcessID,
+			SPBundleShellVariableQueryFile,
+			SPBundleShellVariableQueryResultFile,
+			SPBundleShellVariableQueryResultMetaFile,
+			SPBundleShellVariableQueryResultStatusFile,
+			SPBundleShellVariableRDBMSType,
+			SPBundleShellVariableRDBMSVersion,
+			SPBundleShellVariableSelectedDatabase,
+			SPBundleShellVariableSelectedRowIndices,
+			SPBundleShellVariableSelectedTable,
+			SPBundleShellVariableSelectedTables,
+			SPBundleShellVariableSelectedText,
+			SPBundleShellVariableSelectedTextRange,
+			SPBundleShellVariableUsedQueryForTable
 	] retain];
 
 	if([[NSUserDefaults standardUserDefaults] objectForKey:SPBundleDeletedDefaultBundlesKey]) {
@@ -347,7 +319,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	[self _initTree];
 
-}
+};
 
 #pragma mark -
 
@@ -674,7 +646,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		if(category == nil) category = @"";
 
 		bundle = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:NSLocalizedString(@"New Bundle",@"Bundle Editor : Default name for new bundle in the list on the left"), NSLocalizedString(@"New Name",@"Bundle Editor : Default name for a new bundle in the menu"), @"", scope, category, newUUID, nil] 
-						forKeys:[NSArray arrayWithObjects:kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey, nil]];
+						forKeys:@[kBundleNameKey, SPBundleFileNameKey, SPBundleFileCommandKey, SPBundleFileScopeKey, SPBundleFileCategoryKey, SPBundleFileUUIDKey]];
 	}
 
 	if(![touchedBundleArray containsObject:[bundle objectForKey:kBundleNameKey]])
@@ -740,8 +712,8 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 - (IBAction)saveBundle:(id)sender
 {
 	NSSavePanel *panel = [NSSavePanel savePanel];
-	
-	[panel setAllowedFileTypes:[NSArray arrayWithObject:SPUserBundleFileExtension]];
+
+	[panel setAllowedFileTypes:@[SPUserBundleFileExtension]];
 	
 	[panel setExtensionHidden:NO];
 	[panel setAllowsOtherFileTypes:NO];
@@ -880,7 +852,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[[self window] performClose:self];
 	}
 
-	[[NSApp delegate] reloadBundles:self];
+	[SPAppDelegate reloadBundles:self];
 
 }
 
@@ -928,9 +900,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		[saveDict setObject:[[saveDict objectForKey:SPBundleFileContactKey] rot13] forKey:SPBundleFileContactKey];
 
 	// Remove unnecessary keys
-	[saveDict removeObjectsForKeys:[NSArray arrayWithObjects:
-		kBundleNameKey,
-		nil]];
+	[saveDict removeObjectsForKeys:@[kBundleNameKey]];
 
 
 	if(!isNewBundle) {
@@ -951,7 +921,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			if([[saveDict description] isEqualToString:[cmdData description]])
 				return YES;
 			if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
-				[saveDict setObject:[NSNumber numberWithBool:YES] forKey:SPBundleFileDefaultBundleWasModifiedKey];
+				[saveDict setObject:@YES forKey:SPBundleFileDefaultBundleWasModifiedKey];
 		}
 		if (cmdData) [cmdData release];
 	}
@@ -1083,7 +1053,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[undeleteTableView reloadData];
 			[[NSUserDefaults standardUserDefaults] setObject:stillUndeletedBundles forKey:SPBundleDeletedDefaultBundlesKey];
 			[[NSUserDefaults standardUserDefaults] synchronize];
-			[[NSApp delegate] reloadBundles:nil];
+			[SPAppDelegate reloadBundles:nil];
 			[self reloadBundles:self];
 
 		}
@@ -1120,10 +1090,9 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Remove temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
-		[draggedFilePath release];
-		draggedFilePath = nil;
+		SPClear(draggedFilePath);
 	}
-	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+	if(oldBundleName) SPClear(oldBundleName);
 }
 
 #pragma mark -
@@ -1264,13 +1233,13 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	// Remember selected bundle name to reset the name if the user cancelled
 	// the editing of the bundle name
-	if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+	if(oldBundleName) SPClear(oldBundleName);
 	if(![[self _currentSelectedObject] objectForKey:kChildrenKey]) {
 		oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
 		[self _enableBundleDataInput:YES bundleEnabled:![[[self _currentSelectedObject] objectForKey:@"disabled"] boolValue]];
 	} else {
 		[self _enableBundleDataInput:NO bundleEnabled:NO];
-		if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+		if(oldBundleName) SPClear(oldBundleName);
 	}
 
 	// Remember the selected bundle name in touchedBundleArray to save only those 
@@ -1357,9 +1326,9 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		//abort editing
 		[control abortEditing];
 		[[NSApp mainWindow] makeFirstResponder:commandsOutlineView];
-		return TRUE;
+		return YES;
 	} else{
-		return FALSE;
+		return NO;
 	}
 }
 
@@ -1416,7 +1385,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[commandBundleTreeController rearrangeObjects];
 			[commandsOutlineView reloadData];
 
-			if(oldBundleName) [oldBundleName release], oldBundleName = nil;
+			if(oldBundleName) SPClear(oldBundleName);
 			oldBundleName = [[[self _currentSelectedObject] objectForKey:kBundleNameKey] retain];
 			if(oldBundleName != nil && ![touchedBundleArray containsObject:oldBundleName])
 				[touchedBundleArray addObject:oldBundleName];
@@ -1492,7 +1461,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 /**
  * Allow for drag-n-drop out of the application as a copy
  */
-- (NSUInteger)draggingSourceOperationMaskForLocal:(BOOL)isLocal
+- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
 	return NSDragOperationMove;
 }
@@ -1508,8 +1477,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Remove old temporary drag file if any
 	if(draggedFilePath) {
 		[[NSFileManager defaultManager] removeItemAtPath:draggedFilePath error:nil];
-		[draggedFilePath release];
-		draggedFilePath = nil;
+		SPClear(draggedFilePath);
 	}
 
 	NSImage *dragImage;
@@ -1535,7 +1503,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 	// Write data to the pasteboard
 	NSArray *fileList = [NSArray arrayWithObjects:draggedFilePath, nil];
 	// NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-	[pboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
+	[pboard declareTypes:@[NSFilenamesPboardType] owner:nil];
 	[pboard setPropertyList:fileList forType:NSFilenamesPboardType];
 
 	// Start the drag operation
@@ -2104,38 +2072,39 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 - (void)dealloc
 {
-	[inputGeneralScopePopUpMenu release];
-	[inputInputFieldScopePopUpMenu release];
-	[inputDataTableScopePopUpMenu release];
-	[outputGeneralScopePopUpMenu release];
-	[outputInputFieldScopePopUpMenu release];
-	[outputDataTableScopePopUpMenu release];
-	[inputFallbackInputFieldScopePopUpMenu release];
-	[triggerInputFieldPopUpMenu release];
-	[triggerDataTablePopUpMenu release];
-	[triggerGeneralPopUpMenu release];
-	[inputNonePopUpMenu release];
+	SPClear(inputGeneralScopePopUpMenu);
+	SPClear(inputInputFieldScopePopUpMenu);
+	SPClear(inputDataTableScopePopUpMenu);
+	SPClear(outputGeneralScopePopUpMenu);
+	SPClear(outputInputFieldScopePopUpMenu);
+	SPClear(outputDataTableScopePopUpMenu);
+	SPClear(inputFallbackInputFieldScopePopUpMenu);
+	SPClear(triggerInputFieldPopUpMenu);
+	SPClear(triggerDataTablePopUpMenu);
+	SPClear(triggerGeneralPopUpMenu);
+	SPClear(withBlobDataTablePopUpMenu);
+	SPClear(inputNonePopUpMenu);
 	
-	[inputGeneralScopeArray release];
-	[inputInputFieldScopeArray release];
-	[inputDataTableScopeArray release];
-	[outputGeneralScopeArray release];
-	[outputInputFieldScopeArray release];
-	[outputDataTableScopeArray release];
-	[inputFallbackInputFieldScopeArray release];
-	[triggerInputFieldArray release];
-	[triggerDataTableArray release];
-	[triggerGeneralArray release];
-	[withBlobDataTableArray release];
+	SPClear(inputGeneralScopeArray);
+	SPClear(inputInputFieldScopeArray);
+	SPClear(inputDataTableScopeArray);
+	SPClear(outputGeneralScopeArray);
+	SPClear(outputInputFieldScopeArray);
+	SPClear(outputDataTableScopeArray);
+	SPClear(inputFallbackInputFieldScopeArray);
+	SPClear(triggerInputFieldArray);
+	SPClear(triggerDataTableArray);
+	SPClear(triggerGeneralArray);
+	SPClear(withBlobDataTableArray);
 	
-	[shellVariableSuggestions release];
-	[deletedDefaultBundles release];
+	SPClear(shellVariableSuggestions);
+	SPClear(deletedDefaultBundles);
 	
-	if (touchedBundleArray) [touchedBundleArray release], touchedBundleArray = nil;
-	if (commandBundleTree) [commandBundleTree release], commandBundleTree = nil;
-	if (sortDescriptor) [sortDescriptor release], sortDescriptor = nil;
-	if (bundlePath) [bundlePath release], bundlePath = nil;
-	if (esUndoManager) [esUndoManager release], esUndoManager = nil;
+	if (touchedBundleArray) SPClear(touchedBundleArray);
+	if (commandBundleTree) SPClear(commandBundleTree);
+	if (sortDescriptor) SPClear(sortDescriptor);
+	if (bundlePath) SPClear(bundlePath);
+	if (esUndoManager) SPClear(esUndoManager);
 	
 	[super dealloc];
 }
