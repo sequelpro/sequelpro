@@ -162,7 +162,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.2</string>
+	<string>1.1</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -175,10 +175,6 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string></string>
-	<key>SPVersionShortHash</key>
-	<string></string>
-	<key>SPVersionLongHash</key>
 	<string></string>
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
@@ -195,8 +191,6 @@
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
-	<key>NSSupportsAutomaticGraphicsSwitching</key>
-	<true/>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
@@ -229,6 +223,12 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+	<key>SPVersionLongHash</key>
+	<string></string>
+	<key>SPVersionShortHash</key>
+	<string></string>
 	<key>SUEnableSystemProfiling</key>
 	<true/>
 	<key>SUFeedURL</key>
