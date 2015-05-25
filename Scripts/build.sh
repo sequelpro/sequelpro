@@ -48,6 +48,11 @@ dev_sign_resource()
 	codesign -f -s 'Sequel Pro Development' "$1" 2> /dev/null
 }
 
+dist_sign_framework()
+{
+	codesign -f -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/spframeworkrequirement.bin" "$1" 2> /dev/null
+}
+
 dist_sign_resource()
 {
 	codesign -f -s 'Developer ID Application: MJ Media' -r "${SRCROOT}/Resources/sprequirement.bin" "$1" 2> /dev/null
@@ -55,36 +60,34 @@ dist_sign_resource()
 
 verify_signing()
 {
-	codesign --verify "$1" 2>&1
+	codesign --verify --deep "$1" 2>&1
 }
 
 dev_code_sign()
 {
-	while read FRAMEWORK
+	while read FILE_TO_SIGN
 	do
-		dev_sign_resource "${FRAMEWORKS_PATH}/${FRAMEWORK}"
+		dev_sign_resource "${FILE_TO_SIGN}"
 	done < "$1"
-
-	dev_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
-	dev_sign_resource "${BUILD_PRODUCT}"
 }
 
 dist_code_sign()
 {
 	ERRORS=''
 
-	while read FRAMEWORK
+	while read FRAMEWORK_TO_SIGN
 	do
-		dist_sign_resource "${FRAMEWORKS_PATH}/${FRAMEWORK}"
+		dist_sign_framework "${FRAMEWORK_TO_SIGN}"
 
-		ERRORS+=$(verify_signing "${FRAMEWORKS_PATH}/${FRAMEWORK}")
+		ERRORS+=$(verify_signing "${FRAMEWORK_TO_SIGN}")
 	done < "$1"
 
-	dist_sign_resource "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant"
-	dist_sign_resource "${BUILD_PRODUCT}"
+	while read FILE_TO_SIGN
+	do
+		dist_sign_resource "${FILE_TO_SIGN}"
 
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant")
-	ERRORS+=$(verify_signing "${BUILD_PRODUCT}")
+		ERRORS+=$(verify_signing "${FILE_TO_SIGN}")
+	done < "$2"
 
 	echo $ERRORS
 }
@@ -127,9 +130,15 @@ cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 # osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
 xattr -wx com.apple.metadata:kMDItemFinderComment "62 70 6C 69 73 74 30 30 5F 10 22 4D 79 53 51 4C 20 64 61 74 61 62 61 73 65 20 70 61 6E 63 61 6B 65 73 20 77 69 74 68 20 73 79 72 75 70 08 00 00 00 00 00 00 01 01 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D" "${BUILD_PRODUCT}"
 
-FRAMEWORKS="/tmp/sp.frameworks.$$"
 
-ls "$FRAMEWORKS_PATH" > "$FRAMEWORKS"
+FRAMEWORKS_LIST="/tmp/sp.frameworks.$$"
+ls -d -1 "$FRAMEWORKS_PATH"/** > "$FRAMEWORKS_LIST"
+
+FILES_TO_SIGN_LIST="/tmp/sp.filelist.$$"
+echo "${BUILD_PRODUCT}/Contents/Library/QuickLook/Sequel Pro.qlgenerator" >> "$FILES_TO_SIGN_LIST"
+echo "${BUILD_PRODUCT}/Contents/Resources/SequelProTunnelAssistant" >> "$FILES_TO_SIGN_LIST"
+echo "${BUILD_PRODUCT}" >> "$FILES_TO_SIGN_LIST"
+
 
 # Perform distribution specific tasks if this is a 'Distribution' build
 if [ "$CONFIGURATION" == 'Distribution' ]
@@ -145,7 +154,7 @@ then
 
 	echo 'Performing distribution build code signing...'
 
-	VERIFY_ERRORS=$(dist_code_sign "$FRAMEWORKS")
+	VERIFY_ERRORS=$(dist_code_sign "$FRAMEWORKS_LIST" "$FILES_TO_SIGN_LIST")
 	
 	if [ "$VERIFY_ERRORS" != '' ]
 	then
@@ -165,12 +174,14 @@ if [ "$CONFIGURATION" == 'Debug' ]
 then
 	echo 'Performing development build code signing...'
 
-	dev_code_sign "$FRAMEWORKS"
+	dev_code_sign "$FRAMEWORKS_LIST"
+	dev_code_sign "$FILES_TO_SIGN_LIST"
 
 	# Run a fake command to silence errors
 	touch "$BUILD_PRODUCT"
 fi
 
-rm "$FRAMEWORKS"
+rm "$FRAMEWORKS_LIST"
+rm "$FILES_TO_SIGN_LIST"
 
 exit 0

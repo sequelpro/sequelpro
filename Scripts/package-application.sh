@@ -90,4 +90,7 @@ then
 	echo "$SIGNATURE" > "${DMG_BUILD_PATH}/${DMG_NAME}.dmg.signature"
 fi
 
+echo "Disk image created at ${DMG_BUILD_PATH}/${DMG_NAME}.dmg and signature placed next to it"
+open -R "${DMG_BUILD_PATH}"
+
 exit 0
