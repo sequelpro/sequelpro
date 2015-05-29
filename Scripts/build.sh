@@ -149,7 +149,43 @@ then
 
 	if [ -e "${SRCROOT}/ResourcesToCopy" ]
 	then
-		find "${SRCROOT}/ResourcesToCopy" \( -name "*.lproj" \) | while read FILE; do; printf "\tCopying localization: ${FILE}\n"; cp -R "$FILE" "${BUILD_PRODUCT}/Contents/Resources/"; done;
+		TRANSLATIONS_BASE="${SRCROOT}/languagetranslations"
+		IBSTRINGSDIR="${SRCROOT}/ibstrings"
+		XIB_BASE="${SRCROOT}/Interfaces/English.lproj"
+		rm -rf "${IBSTRINGSDIR}" &> /dev/null
+		rm -rf "${TRANSLATIONS_BASE}" &> /dev/null
+
+		echo "Creating IB strings files for rekeying..."
+		cp -R "${SRCROOT}/ResourcesToCopy" "${TRANSLATIONS_BASE}"
+		mkdir -p "$IBSTRINGSDIR/English.lproj"
+		find "${XIB_BASE}" \( -name "*.xib" \) | while read FILE; do
+			ibtool "$FILE" --export-strings-file "$IBSTRINGSDIR/English.lproj/`basename "$FILE" .xib`.strings"
+		done
+
+		echo "Rekeying localization files, translating xibs, merging localizations..."
+		find "${TRANSLATIONS_BASE}" \( -name "*.lproj" \) | while read FILE; do
+			loc=`basename "$FILE"`
+			mkdir "$IBSTRINGSDIR/$loc"
+			printf "\tProcessing: $loc\n"
+			find "$FILE" \( -name "*.strings" \) | while read STRFILE; do
+				file=`basename "$STRFILE" .strings`
+				ibkeyfile="$IBSTRINGSDIR/English.lproj/$file.strings"
+				xibfile="$XIB_BASE/$file.xib"
+				transfile="$IBSTRINGSDIR/$loc/$file.strings"
+				if [ -e "$ibkeyfile" ] && [ -e "$xibfile" ]; then
+					"${BUILT_PRODUCTS_DIR}/xibLocalizationPostprocessor" "$STRFILE" "$ibkeyfile" "$transfile"
+
+					# we no longer need the original file and don't want to copy it
+					rm -f "$STRFILE"
+
+					ibtool "$xibfile" --import-strings-file "$transfile" --compile "${TRANSLATIONS_BASE}/$loc/$file.nib"
+				fi
+			done
+			cp -R "$FILE" "${BUILD_PRODUCT}/Contents/Resources/"
+		done
+
+		rm -rf "${IBSTRINGSDIR}" &> /dev/null
+		rm -rf "${TRANSLATIONS_BASE}" &> /dev/null
 	else
 		echo 'No localizations to copy.'
 	fi
