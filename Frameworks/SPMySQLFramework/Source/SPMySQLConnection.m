@@ -452,7 +452,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	state = SPMySQLConnected;
 	initialConnectTime = mach_absolute_time();
 	mysqlConnectionThreadId = mySQLConnection->thread_id;
-	lastConnectionUsedTime = 0;
+	lastConnectionUsedTime = initialConnectTime;
 
 	// Update SSL state
 	connectedWithSSL = NO;
