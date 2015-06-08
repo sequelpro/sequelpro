@@ -575,6 +575,7 @@
 															returningInclusively: NO
 														   ignoringQuotedStrings: NO];
 			if(fieldName == nil || [fieldName length] == 0) {
+#warning NSAlert from background thread! (This whole function needs improvement)
 				NSBeep();
 				NSAlert *alert = [[NSAlert alloc] init];
 				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];

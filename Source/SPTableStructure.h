@@ -129,6 +129,7 @@
 - (void)removeFieldSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (IBAction)resetAutoIncrement:(id)sender;
 - (void)resetAutoincrementSheetDidEnd:(NSWindow *)theSheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)takeAutoIncrementFrom:(NSTextField *)field;
 - (IBAction)showOptimizedFieldType:(id)sender;
 - (IBAction)toggleColumnView:(NSMenuItem *)sender;
 - (BOOL)cancelRowEditing;
@@ -142,7 +143,7 @@
 - (BOOL)saveRowOnDeselect;
 - (BOOL)addRowToDB;
 - (void)addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
-- (void)setAutoIncrementTo:(NSString*)valueAsString;
+- (void)setAutoIncrementTo:(NSNumber *)value;
 
 // Accessors
 - (NSString *)defaultValueForField:(NSString *)field;

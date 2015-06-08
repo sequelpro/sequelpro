@@ -490,7 +490,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[resetAutoIncrementValue setStringValue:@"1"];
 	}
 	else if ([sender tag] == 2) {
-		[self setAutoIncrementTo:@"1"];
+		[self setAutoIncrementTo:@1];
 	}
 #endif
 }
@@ -505,9 +505,19 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	[theSheet orderOut:nil];
 
 	if (returnCode == NSAlertDefaultReturn) {
-		[self setAutoIncrementTo:[[resetAutoIncrementValue stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+		[self takeAutoIncrementFrom:resetAutoIncrementValue];
 	}
 #endif
+}
+
+- (void)takeAutoIncrementFrom:(NSTextField *)field
+{
+	id obj = [field objectValue];
+	//nil is handled by -setAutoIncrementTo:
+	if(obj && ![obj isKindOfClass:[NSNumber class]]) {
+		[NSException raise:NSInternalInconsistencyException format:@"[$field objectValue] should return NSNumber *, but was %@",[obj class]];
+	}
+	[self setAutoIncrementTo:(NSNumber *)obj];
 }
 
 /**
@@ -600,13 +610,13 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
  *
  * @param valueAsString The new auto_increment integer as NSString
  */
-- (void)setAutoIncrementTo:(NSString*)valueAsString
+- (void)setAutoIncrementTo:(NSNumber *)value
 {
 	NSString *selTable = [tablesListInstance tableName];
 
 	if (selTable == nil || ![selTable length]) return;
 
-	if (valueAsString == nil || ![valueAsString length]) {
+	if (value == nil) {
 		// reload data and bail
 		[tableDataInstance resetAllData];
 #ifndef SP_CODA
@@ -616,12 +626,8 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		return;
 	}
 
-	NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-	[formatter setNumberStyle:NSNumberFormatterDecimalStyle];
-	NSNumber *autoIncValue = [formatter numberFromString:valueAsString];
-	[formatter release];
-
-	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %@", [selTable backtickQuotedString], [autoIncValue stringValue]]];
+	// only int and float types can be AUTO_INCREMENT and right now BIGINT = 64 Bit (<= long long) is the largest type mysql supports
+	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ AUTO_INCREMENT = %llu", [selTable backtickQuotedString], [value unsignedLongLongValue]]];
 
 	if ([mySQLConnection queryErrored]) {
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),

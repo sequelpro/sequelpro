@@ -15857,7 +15857,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
-						<string key="label">resetAutoIncrementValueWasEdited:</string>
+						<string key="label">tableRowAutoIncrementWasEdited:</string>
 						<reference key="source" ref="269913528"/>
 						<reference key="destination" ref="735808692"/>
 					</object>
@@ -29569,7 +29569,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="reloadTable:">id</string>
 						<string key="resetAutoIncrement:">id</string>
-						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="tableRowAutoIncrementWasEdited:">id</string>
 						<string key="updateTableCollation:">id</string>
 						<string key="updateTableEncoding:">id</string>
 						<string key="updateTableType:">id</string>
@@ -29583,8 +29583,8 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string key="name">resetAutoIncrement:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
-							<string key="name">resetAutoIncrementValueWasEdited:</string>
+						<object class="IBActionInfo" key="tableRowAutoIncrementWasEdited:">
+							<string key="name">tableRowAutoIncrementWasEdited:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="updateTableCollation:">
@@ -29719,7 +29719,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="reloadTable:">id</string>
 						<string key="resetAutoIncrement:">id</string>
-						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="tableRowAutoIncrementWasEdited:">id</string>
 						<string key="updateTableCollation:">id</string>
 						<string key="updateTableEncoding:">id</string>
 						<string key="updateTableType:">id</string>
@@ -29733,8 +29733,8 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string key="name">resetAutoIncrement:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
-							<string key="name">resetAutoIncrementValueWasEdited:</string>
+						<object class="IBActionInfo" key="tableRowAutoIncrementWasEdited:">
+							<string key="name">tableRowAutoIncrementWasEdited:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="updateTableCollation:">
