@@ -216,10 +216,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	}
 }
 
-- (IBAction)resetAutoIncrementValueWasEdited:(id)sender
+- (IBAction)tableRowAutoIncrementWasEdited:(id)sender
 {
 	[tableRowAutoIncrement setEditable:NO];
-	[tableSourceInstance setAutoIncrementTo:[[tableRowAutoIncrement stringValue] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+	
+	[tableSourceInstance takeAutoIncrementFrom:tableRowAutoIncrement];
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command

@@ -2038,7 +2038,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 				// Reset auto increment if suppression button was ticked
 				if([[alert suppressionButton] state] == NSOnState) {
-					[tableSourceInstance setAutoIncrementTo:@"1"];
+					[tableSourceInstance setAutoIncrementTo:@1];
 #ifndef SP_CODA
 					[prefs setBool:YES forKey:SPResetAutoIncrementAfterDeletionOfAllRows];
 #endif

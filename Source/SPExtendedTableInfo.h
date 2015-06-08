@@ -75,7 +75,7 @@
 - (IBAction)updateTableEncoding:(id)sender;
 - (IBAction)updateTableCollation:(id)sender;
 - (IBAction)resetAutoIncrement:(id)sender;
-- (IBAction)resetAutoIncrementValueWasEdited:(id)sender;
+- (IBAction)tableRowAutoIncrementWasEdited:(id)sender;
 
 // Others
 - (void)loadTable:(NSString *)table; 
