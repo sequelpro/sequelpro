@@ -1884,12 +1884,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if ([prefs boolForKey:SPLoadBlobsAsNeeded]) {
 		
 		// Abort if there are no indices on this table - argumentForRow will display an error.
-		if (![[self argumentForRow:[tableContentView selectedRow]] length]) {
+		NSString *whereArgument = [self argumentForRow:[tableContentView selectedRow]];
+		if (![whereArgument length]) {
 			return;
 		}
 		
 		// If we have indexes, use argumentForRow
-		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], [self argumentForRow:[tableContentView selectedRow]]]];
+		queryResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@", [selectedTable backtickQuotedString], whereArgument]];
 		dbDataRow = [queryResult getRowAsArray];
 	}
 #endif
@@ -2203,9 +2204,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 				while (anIndex != NSNotFound) {
 
 					// Build the AND clause of PRIMARY KEYS
-					[deleteQuery appendString:@"("];
-					[deleteQuery appendString:[self argumentForRow:anIndex excludingLimits:YES]];
-					[deleteQuery appendString:@")"];
+					NSString *whereArg = [self argumentForRow:anIndex excludingLimits:YES];
+					if(![whereArg length]) {
+						SPLog(@"empty WHERE clause not acceptable for DELETE! Abort.");
+						NSBeep();
+						return;
+					}
+					
+					[deleteQuery appendFormat:@"(%@)",whereArg];
 
 					// Split deletion query into 64k chunks
 					if([deleteQuery length] > 64000) {
@@ -2825,7 +2831,15 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			[queryString appendFormat:@"%@ = %@",
 									   [NSArrayObjectAtIndex(rowFieldsToSave, i) backtickQuotedString], NSArrayObjectAtIndex(rowValuesToSave, i)];
 		}
-		[queryString appendFormat:@" WHERE %@", [self argumentForRow:-2]];
+		NSString *whereArg = [self argumentForRow:-2];
+		if(![whereArg length]) {
+			SPLog(@"Did not find plausible WHERE condition for UPDATE.");
+			NSBeep();
+			[rowFieldsToSave release];
+			[rowValuesToSave release];
+			return NO;
+		}
+		[queryString appendFormat:@" WHERE %@", whereArg];
 	}
 
 	[rowFieldsToSave release];
@@ -3029,25 +3043,22 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (NSString *)argumentForRow:(NSInteger)row excludingLimits:(BOOL)excludeLimits
 {
-	SPMySQLResult *theResult;
-	id tempValue;
-	NSMutableString *value = [NSMutableString string];
-	NSMutableString *argument = [NSMutableString string];
-	NSArray *columnNames;
-	NSUInteger i;
-
 	if ( row == -1 )
 		return @"";
 
 	// Retrieve the field names for this table from the data cache.  This is used when requesting all data as part
 	// of the fieldListForQuery method, and also to decide whether or not to preserve the current filter/sort settings.
-	columnNames = [tableDataInstance columnNames];
+	NSArray *columnNames = [tableDataInstance columnNames];
 
 	// Get the primary key if there is one
 	if ( !keys ) {
 		setLimit = NO;
 		keys = [[NSMutableArray alloc] init];
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+		SPMySQLResult *theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW COLUMNS FROM %@", [selectedTable backtickQuotedString]]];
+		if(!theResult) {
+			SPLog(@"no result from SHOW COLUMNS mysql query! Abort.");
+			return @"";
+		}
 		[theResult setReturnDataAsStrings:YES];
 		for (NSDictionary *eachRow in theResult) {
 			if ( [[eachRow objectForKey:@"Key"] isEqualToString:@"PRI"] ) {
@@ -3074,17 +3085,18 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 	}
 
+	NSMutableString *argument = [NSMutableString string];
 	// Walk through the keys list constructing the argument list
-	for ( i = 0 ; i < [keys count] ; i++ ) {
+	for (NSUInteger i = 0 ; i < [keys count] ; i++ ) {
 		if ( i )
 			[argument appendString:@" AND "];
 
+		id tempValue;
 		// Use the selected row if appropriate
 		if ( row >= 0 ) {
 			tempValue = [tableValues cellDataAtRow:row column:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
-
-		// Otherwise use the oldRow
 		}
+		// Otherwise use the oldRow
 		else {
 			tempValue = [oldRow objectAtIndex:[[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"datacolumnindex"] integerValue]];
 		}
@@ -3093,25 +3105,34 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			[argument appendFormat:@"%@ IS NULL", [NSArrayObjectAtIndex(keys, i) backtickQuotedString]];
 		}
 		else if ([tempValue isSPNotLoaded]) {
-			NSLog(@"Exceptional case: SPNotLoaded object found for method “argumentForRow:”!");
+			SPLog(@"Exceptional case: SPNotLoaded object found! Abort.");
 			return @"";
 		}
 		else {
+			NSString *escVal;
+			NSString *fmt = @"%@";
 			// If the field is of type BIT then it needs a binary prefix
 			if ([[[tableDataInstance columnWithName:NSArrayObjectAtIndex(keys, i)] objectForKey:@"type"] isEqualToString:@"BIT"]) {
-				[value setString:[NSString stringWithFormat:@"b'%@'", [mySQLConnection escapeString:tempValue includingQuotes:NO]]];
+				escVal = [mySQLConnection escapeString:tempValue includingQuotes:NO];
+				fmt = @"b'%@'";
 			}
 			else if ([tempValue isKindOfClass:[SPMySQLGeometryData class]]) {
-				[value setString:[mySQLConnection escapeAndQuoteData:[tempValue data]]];
+				escVal = [mySQLConnection escapeAndQuoteData:[tempValue data]];
 			}
 			// BLOB/TEXT data
 			else if ([tempValue isKindOfClass:[NSData class]]) {
-				[value setString:[mySQLConnection escapeAndQuoteData:tempValue]];
+				escVal = [mySQLConnection escapeAndQuoteData:tempValue];
 			}
-			else
-				[value setString:[mySQLConnection escapeAndQuoteString:tempValue]];
-
-			[argument appendFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], value];
+			else {
+				escVal = [mySQLConnection escapeAndQuoteString:tempValue];
+			}
+			
+			if(!escVal) {
+				SPLog(@"(row=%ld) nil value for key <%@> is invalid! Abort.",row,NSArrayObjectAtIndex(keys, i));
+				return @"";
+			}
+			
+			[argument appendFormat:@"%@ = %@", [NSArrayObjectAtIndex(keys, i) backtickQuotedString], [NSString stringWithFormat:fmt,escVal]];
 		}
 	}
 
