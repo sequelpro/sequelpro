@@ -41,6 +41,7 @@
 	NSPipe *standardError;
 	NSConnection *tunnelConnection;
 	NSString *lastError;
+	id lastErrorLock;
 	NSString *tunnelConnectionName;
 	NSString *tunnelConnectionVerifyHash;
 	NSString *sshHost;

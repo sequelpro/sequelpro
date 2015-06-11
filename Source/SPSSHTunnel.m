@@ -42,9 +42,7 @@
 
 static unsigned short getRandomPort();
 
-@interface SPSSHTunnel () {
-	id lastErrorLock;
-}
+@interface SPSSHTunnel ()
 
 - (void)setLastError:(NSString *)msg;
 
