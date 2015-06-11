@@ -239,7 +239,7 @@
 			// issue that the table has no primary key
 			NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
 			
-			if ([wherePart length] == 0) return NO;
+			if (![wherePart length]) return NO;
 			
 			// If the selected cell hasn't been loaded, load it.
 			if ([[tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]] isSPNotLoaded]) {

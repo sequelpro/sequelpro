@@ -495,8 +495,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			// If the data is not loaded, attempt to fetch the value
 			if ([cellData isSPNotLoaded] && [[self delegate] isKindOfClass:spTableContentClass]) {
 
+				NSString *whereArgument = [tableInstance argumentForRow:rowIndex];
 				// Abort if no table name given, not table content, or if there are no indices on this table
-				if (!selectedTable || ![[self delegate] isKindOfClass:spTableContentClass] || ![(NSString*)[tableInstance argumentForRow:rowIndex] length]) {
+				if (!selectedTable || ![[self delegate] isKindOfClass:spTableContentClass] || ![whereArgument length]) {
 					NSBeep();
 					free(columnMappings);
 					free(columnTypes);
@@ -509,7 +510,7 @@ static const NSInteger kBlobAsImageFile = 4;
 							[NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@",
 								[NSArrayObjectAtIndex(tbHeader, columnMappings[c]) backtickQuotedString],
 								[selectedTable backtickQuotedString],
-								[tableInstance argumentForRow:rowIndex]]];
+								whereArgument]];
 			}
 
 			// Check for NULL value
