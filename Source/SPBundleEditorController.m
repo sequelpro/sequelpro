@@ -237,7 +237,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			{inputNoneArray,                    inputNonePopUpMenu,                    NULL}
 	};
 
-	for(unsigned int i=0;i<(sizeof(menus)/sizeof(struct _menuItemMap));i++) {
+	for(unsigned int i=0;i<COUNT_OF(menus);i++) {
 		struct _menuItemMap *menu = &menus[i];
 		for(NSString* title in menu->items) {
 			NSMenuItem *anItem = [[NSMenuItem alloc] initWithTitle:[menuItemTitles objectForKey:title] action:menu->action keyEquivalent:@""];

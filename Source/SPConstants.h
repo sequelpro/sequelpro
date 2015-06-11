@@ -647,3 +647,6 @@ typedef NSUInteger NSCellHitResult;
 
 // Stolen from Stack Overflow: http://stackoverflow.com/questions/969130
 #define SPLog(fmt, ...) NSLog((@"%s:%d: " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+
+// See http://stackoverflow.com/questions/4415524
+#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
