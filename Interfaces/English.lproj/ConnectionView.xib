@@ -7821,7 +7821,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="586011242"/>
-						<string key="toolTip">Click to choose the SSL key file to use when establishing a secure connection</string>
+						<string key="toolTip">Click to choose the SSL private key file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5600.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7831,7 +7831,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="945929172"/>
-						<string key="toolTip">Click to choose the client SSL certificate file to use when establishing a secure connection</string>
+						<string key="toolTip">Click to choose the client SSL certificate file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5604.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7845,7 +7845,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="839299955"/>
-						<string key="toolTip">Click to choose the client SSL Certificate Authority certificate to use when establishing a secure connection</string>
+						<string key="toolTip">Click to choose the SSL Certificate Authority certificate to verify the peer against when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5612.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7871,7 +7871,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="680939705"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the SSL Certificate Authority certificate to verify the peer against when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5691.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7882,7 +7882,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="988136593"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the client SSL certificate file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5694.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7891,7 +7891,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="237955939"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the SSL private key file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="5695.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7978,7 +7978,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="666556728"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the SSL Certificate Authority certificate to verify the peer against when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="7eD-3o-HAJ.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -7993,7 +7993,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="142713239"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the client SSL certificate file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="VqZ-mo-IXW.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -8008,7 +8008,7 @@
 					<object class="IBToolTipAttribute" key="NS.object.0">
 						<string key="name">ToolTip</string>
 						<reference key="object" ref="165705421"/>
-						<string key="toolTip">Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically.</string>
+						<string key="toolTip">Click to choose the SSL private key file to use when establishing a secure connection.</string>
 					</object>
 				</object>
 				<string key="vPP-gd-c4a.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
