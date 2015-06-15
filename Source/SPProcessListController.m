@@ -627,7 +627,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		
 		[processList setReturnDataAsStrings:YES];
 
-		[processes removeAllObjects];
+		[[processes onMainThread] removeAllObjects];
 		
 		for (i = 0; i < [processList numberOfRows]; i++) 
 		{
@@ -650,7 +650,11 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				[rowsFixed setObject:num forKey:@"Time"];
 			}
 			
-			[processes addObject:[[rowsFixed copy] autorelease]];
+			// This is pretty bad from a performance standpoint, but we must not
+			// interfere with the NSTableView's reload cycle and there is no way
+			// to know when it starts/ends. We only know it will happen on the
+			// main thread, so we have to interlock with that.
+			[[processes onMainThread] addObject:[[rowsFixed copy] autorelease]];
 			[rowsFixed release];
 		}
 
