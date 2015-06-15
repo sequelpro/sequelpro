@@ -31,6 +31,7 @@
 #import "SPDataStorage.h"
 #import "SPObjectAdditions.h"
 #import <SPMySQL/SPMySQLStreamingResultStore.h>
+#include <stdlib.h>
 
 @interface SPDataStorage (Private_API)
 
@@ -80,7 +81,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		[self resultStoreDidFinishLoadingData:dataStorage];
 	}
 
-	unloadedColumns = malloc(numberOfColumns * sizeof(BOOL));
+	unloadedColumns = calloc(numberOfColumns, sizeof(BOOL));
 	for (i = 0; i < numberOfColumns; i++) {
 		unloadedColumns[i] = NO;
 	}
@@ -110,6 +111,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 	// Modify unloaded cells as appropriate
 	for (NSUInteger i = 0; i < numberOfColumns; i++) {
+		NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 		if (unloadedColumns[i]) {
 			CFArraySetValueAtIndex((CFMutableArrayRef)dataArray, i, [SPNotLoaded notLoaded]);
 		}
@@ -138,6 +140,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	}
 
 	// If the specified column is not loaded, return a SPNotLoaded reference
+	NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 	if (unloadedColumns[columnIndex]) {
 		return [SPNotLoaded notLoaded];
 	}
@@ -172,6 +175,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	}
 
 	// If the specified column is not loaded, return a SPNotLoaded reference
+	NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 	if (unloadedColumns[columnIndex]) {
 		return [SPNotLoaded notLoaded];
 	}
@@ -199,6 +203,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 	}
 
+	NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 	if (unloadedColumns[columnIndex]) {
 		return YES;
 	}
@@ -232,6 +237,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 		// Modify unloaded cells as appropriate
 		for (NSUInteger i = 0; i < numberOfColumns; i++) {
+			NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 			if (unloadedColumns[i]) {
 				CFArraySetValueAtIndex((CFMutableArrayRef)targetRow, i, [SPNotLoaded notLoaded]);
 			}
@@ -391,6 +397,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	if (columnIndex >= numberOfColumns) {
 		[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 	}
+	NSAssert(unloadedColumns != NULL, @"unloadedColumns not loaded!");
 	unloadedColumns[columnIndex] = YES;
 }
 
