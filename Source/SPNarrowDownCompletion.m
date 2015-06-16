@@ -441,7 +441,7 @@
 		} else {
 			if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
 				NSMutableString *tt = [NSMutableString string];
-				[tt appendString:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""];
+				[tt appendStringOrNil:[[filtered objectAtIndex:rowIndex] objectForKey:@"type"]];
 				[tt appendString:@"\n"];
 				[tt appendString:NSLocalizedString(@"Type Declaration:", @"type declaration header")];
 				[tt appendString:@"\n"];
