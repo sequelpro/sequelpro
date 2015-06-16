@@ -346,15 +346,15 @@
 			NSString *tokenContent = [filenamePart tokenContent];
 
 			if ([tokenContent isEqualToString:NSLocalizedString(@"host", @"export filename host token")]) {
-				[string appendString:[tableDocumentInstance host]];
+				[string appendStringOrNil:[tableDocumentInstance host]];
 
 			} 
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"database", @"export filename database token")]) {
-				[string appendString:[tableDocumentInstance database]];
+				[string appendStringOrNil:[tableDocumentInstance database]];
 
 			} 
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"table", @"table")]) {
-				[string appendString:(table) ? table : @""];
+				[string appendStringOrNil:table];
 			} 
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"date", @"export filename date token")]) {
 				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
@@ -380,7 +380,7 @@
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 			}
 			else if ([tokenContent isEqualToString:NSLocalizedString(@"favorite", @"export filename favorite name token")]) {
-				[string appendString:[tableDocumentInstance name]];
+				[string appendStringOrNil:[tableDocumentInstance name]];
 			}
 		} 
 		else {

@@ -562,3 +562,17 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c)
 
 	return min;
 }
+
+@implementation NSMutableString (SPStringAdditions)
+
+- (void)setStringOrNil:(NSString *)aString
+{
+	[self setString:(aString? aString : @"")];
+}
+
+- (void)appendStringOrNil:(NSString *)aString
+{
+	[self appendString:(aString? aString : @"")];
+}
+
+@end

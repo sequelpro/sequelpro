@@ -101,3 +101,17 @@ static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedSt
  */
 - (BOOL)nonConsecutivelySearchString:(NSString *)other matchingRanges:(NSArray **)submatches;
 @end
+
+@interface NSMutableString (SPStringAdditions)
+/**
+ * nil-safe variant of setString:
+ * nil will be interpreted as @"" instead of throwing an exception
+ */
+- (void)setStringOrNil:(NSString *)aString;
+
+/**
+ * nil-safe variant of appendString: 
+ * nil will be interpreted as @"" instead of throwing an exception
+ */
+- (void)appendStringOrNil:(NSString *)aString;
+@end
