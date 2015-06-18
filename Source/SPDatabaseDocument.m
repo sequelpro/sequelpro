@@ -279,7 +279,19 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	if (_mainNibLoaded) return;
 
 	_mainNibLoaded = YES;
-
+	
+	// This one is a bit tricky: The chooseDatabaseButton is only retained
+	// by its superview which is kept in "nibObjectsToRelease". However once
+	// we pass the button to the NSToolbarItem with setView: the toolbar item
+	// will take over the ownership as its new superview.
+	//   That would mean if the toolbar item is removed from the toolbar, it
+	// will be dealloc'd and so will the chooseDatabaseButton, causing havoc.
+	//   The correct thing to do would be to create a new instance for each
+	// call by the toolbar, but right now the other code relies on the
+	// popup being a "singleton".
+	[chooseDatabaseButton retain];
+	[historyControl retain];
+	
 	// Set up the toolbar
 	[self setupToolbar];
 
@@ -3911,9 +3923,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// set ourself as the delegate
 	[mainToolbar setDelegate:self];
 
-	// update the toolbar item size
-	[self updateChooseDatabaseToolbarItemWidth];
-
 	// The history controller needs to track toolbar item state - trigger setup.
 	[spHistoryControllerInstance setupInterface];
 }
@@ -3942,11 +3951,6 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[chooseDatabaseButton setTarget:self];
 		[chooseDatabaseButton setAction:@selector(chooseDatabase:)];
 		[chooseDatabaseButton setEnabled:(_isConnected && !_isWorkingLevel)];
-
-		if (willBeInsertedIntoToolbar) {
-			chooseDatabaseToolbarItem = toolbarItem;
-			[self updateChooseDatabaseToolbarItemWidth];
-		} 
 
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarHistoryNavigation]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Table History", @"toolbar item for navigation history")];
@@ -4051,6 +4055,25 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	}
 
 	return toolbarItem;
+}
+
+- (void)toolbarWillAddItem:(NSNotification *)notification
+{
+	NSToolbarItem *toAdd = [[notification userInfo] objectForKey:@"item"];
+	
+	if([[toAdd itemIdentifier] isEqualToString:SPMainToolbarDatabaseSelection]) {
+		chooseDatabaseToolbarItem = toAdd;
+		[self updateChooseDatabaseToolbarItemWidth];
+	}
+}
+
+- (void)toolbarDidRemoveItem:(NSNotification *)notification
+{
+	NSToolbarItem *removed = [[notification userInfo] objectForKey:@"item"];
+	
+	if([[removed itemIdentifier] isEqualToString:SPMainToolbarDatabaseSelection]) {
+		chooseDatabaseToolbarItem = nil;
+	}
 }
 
 /**
@@ -6283,6 +6306,10 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
+	
+	// see -(void)awakeFromNib for the reasoning behind this.
+	SPClear(chooseDatabaseButton);
+	SPClear(historyControl);
 	
 #ifndef SP_CODA /* release nib objects */
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
