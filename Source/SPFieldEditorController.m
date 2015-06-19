@@ -40,6 +40,13 @@
 
 #import <SPMySQL/SPMySQL.h>
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_7
+@interface NSTextView (LionPlus)
+- (void)setUsesFindBar:(BOOL)value;
+- (BOOL)usesFindBar;
+@end
+#endif
+
 typedef enum {
 	TextSegment = 0,
 	ImageSegment,
@@ -93,9 +100,18 @@ typedef enum {
 		// Allow the user to enter cmd+return to close the edit sheet in addition to fn+return
 		[editSheetOkButton setKeyEquivalentModifierMask:NSCommandKeyMask];
 
-		// Permit the field edit sheet to become main if necessary; this allows fields within the sheet to
-		// support full interactivity, for example use of the NSFindPanel inside NSTextViews.
-		[editSheet setIsSheetWhichCanBecomeMain:YES];
+		if([editTextView respondsToSelector:@selector(setUsesFindBar:)])
+			// 10.7+
+			// Stealing the main window from the actual main window will cause
+			// a UI bug with the tab bar and the find panel was really the only
+			// thing that had an issue with not working with sheets.
+			// The find bar works fine without hackery.
+			[editTextView setUsesFindBar:YES];
+		else {
+			// Permit the field edit sheet to become main if necessary; this allows fields within the sheet to
+			// support full interactivity, for example use of the NSFindPanel inside NSTextViews.
+			[editSheet setIsSheetWhichCanBecomeMain:YES];
+		}
 
 		allowUndo = NO;
 		selectionChanged = NO;
