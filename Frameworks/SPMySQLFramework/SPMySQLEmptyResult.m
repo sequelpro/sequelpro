@@ -126,6 +126,11 @@
 	return nil;
 }
 
+- (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy
+{
+	return nil;
+}
+
 - (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength
 {
 	return nil;

@@ -31,6 +31,7 @@
 #import "SPMySQLResult.h"
 #import "SPMySQL Private APIs.h"
 #import "SPMySQLArrayAdditions.h"
+#include <stdlib.h>
 
 static id NSNullPointer;
 
@@ -98,7 +99,7 @@ static id NSNullPointer;
 
 		// Cache the field definitions and build up an array of cached field names and types
 		fieldDefinitions = mysql_fetch_fields(resultSet);
-		fieldNames = malloc(sizeof(NSString *) * numberOfFields);
+		fieldNames = calloc(numberOfFields,sizeof(NSString *));
 		for (NSUInteger i = 0; i < numberOfFields; i++) {
 			MYSQL_FIELD aField = fieldDefinitions[i];
 			fieldNames[i] = [[self _stringWithBytes:aField.name length:aField.name_length] retain];
@@ -316,6 +317,35 @@ static id NSNullPointer;
 - (id)_stringWithBytes:(const void *)bytes length:(NSUInteger)length
 {
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:stringEncoding] autorelease];
+}
+
+- (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy
+{
+	//mysql protocol limits column names to 256 bytes.
+	//with inline columns and multibyte charsets this can result in a character
+	//being split in half at which the method above will fail.
+	//Let's first try removing stuff from the end to create something valid.
+	NSUInteger removed = 0;
+	do {
+		NSString *res = [self _stringWithBytes:bytes length:(length-removed)];
+		if(res) {
+			if(outLossy) *outLossy = (removed != 0);
+			return (removed? [NSString stringWithFormat:@"%@…",res] : res);
+		}
+		removed++;
+	} while(removed <= 10 && removed < length); // 10 is arbitrary
+	
+	//if that fails, ascii should accept all values from 0-255 as input
+	NSString *ascii = [[NSString alloc] initWithBytes:bytes length:length encoding:NSASCIIStringEncoding];
+	if(ascii){
+		if(outLossy) *outLossy = YES;
+		return [ascii autorelease];
+	}
+	
+	//if even that failed we lose.
+	NSDictionary *info = @{ @"data": [NSData dataWithBytes:bytes length:length] };
+	NSString *reason = [NSString stringWithFormat:@"Failed to convert byte sequence %@ to string (encoding = %lu)",info[@"data"],stringEncoding];
+	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:info];
 }
 
 /**
