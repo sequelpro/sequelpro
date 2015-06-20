@@ -1513,26 +1513,37 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 	NSString *dictKey = (NSString *)key;
 	id value1, value2;
+	
+	BOOL isNamedComparison = [dictKey isEqualToString:SPFavoriteNameKey];
+	// Group nodes can only be compared using their names.
+	// If this is a named comparison or both nodes are group nodes use their
+	// names. Otherwise let the group nodes win (ie. they will be placed at the
+	// top ordered alphabetically for all other comparison keys)
 
 	if ([favorite1 isGroup]) {
-		if ([dictKey isEqualToString:SPFavoriteNameKey] || [favorite2 isGroup]) {
+		if (isNamedComparison || [favorite2 isGroup]) {
 			value1 = [[favorite1 representedObject] nodeName];
 		} else {
-			value1 = nil;
+			return NSOrderedAscending; // the left object is a group, the right is not -> left wins
 		}
 	} else {
 		value1 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite1 representedObject] nodeFavorite] objectForKey:dictKey];
 	}
 
 	if ([favorite2 isGroup]) {
-		if ([dictKey isEqualToString:SPFavoriteNameKey] || [favorite1 isGroup]) {
+		if (isNamedComparison || [favorite1 isGroup]) {
 			value2 = [[favorite2 representedObject] nodeName];
 		} else {
-			value2 = nil;
+			return NSOrderedDescending; // the left object is not a group, the right is -> left loses
 		}
 	} else {
 		value2 = [[(SPFavoriteNode *)[(SPTreeNode *)favorite2 representedObject] nodeFavorite] objectForKey:dictKey];
 	}
+	
+	//if a value is undefined count it as "loser"
+	if(!value1 && value2) return NSOrderedDescending;
+	if(value1 && !value2) return NSOrderedAscending;
+	if(!value1 && !value2) return NSOrderedSame;
 
 	if ([value1 isKindOfClass:[NSString class]]) {
 		return [value1 caseInsensitiveCompare:value2];
