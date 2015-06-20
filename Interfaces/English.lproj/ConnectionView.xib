@@ -340,6 +340,16 @@
 																	<string key="NSAction">_popUpItemAction:</string>
 																	<reference key="NSTarget" ref="970960222"/>
 																</object>
+																<object class="NSMenuItem" id="660097916">
+																	<reference key="NSMenu" ref="642202204"/>
+																	<string key="NSTitle">Color</string>
+																	<string key="NSKeyEquiv"/>
+																	<int key="NSMnemonicLoc">2147483647</int>
+																	<reference key="NSOnImage" ref="955092474"/>
+																	<reference key="NSMixedImage" ref="913188683"/>
+																	<string key="NSAction">_popUpItemAction:</string>
+																	<reference key="NSTarget" ref="970960222"/>
+																</object>
 																<object class="NSMenuItem" id="975459050">
 																	<reference key="NSMenu" ref="642202204"/>
 																	<bool key="NSIsDisabled">YES</bool>
@@ -368,7 +378,7 @@
 												</array>
 												<reference key="NSMenuFont" ref="807120225"/>
 											</object>
-											<int key="NSSelectedIndex">-1</int>
+											<int key="NSSelectedIndex">10</int>
 											<bool key="NSPullDown">YES</bool>
 											<int key="NSPreferredEdge">1</int>
 											<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1524,7 +1534,6 @@
 																									<int key="NSvFlags">268</int>
 																									<string key="NSFrame">{{328, 12}, {29, 24}}</string>
 																									<reference key="NSSuperview" ref="866600720"/>
-																									<reference key="NSNextKeyView" ref="990947983"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSButtonCell" key="NSCell" id="308087760">
 																										<int key="NSCellFlags">67108864</int>
@@ -2282,7 +2291,7 @@
 																									<string key="NSFrame">{{328, 12}, {29, 24}}</string>
 																									<reference key="NSSuperview" ref="709218819"/>
 																									<reference key="NSWindow"/>
-																									<reference key="NSNextKeyView" ref="990947983"/>
+																									<reference key="NSNextKeyView" ref="134031646"/>
 																									<bool key="NSEnabled">YES</bool>
 																									<object class="NSButtonCell" key="NSCell" id="345867488">
 																										<int key="NSCellFlags">67108864</int>
@@ -3990,6 +3999,14 @@
 						<reference key="destination" ref="237955939"/>
 					</object>
 					<string key="id">nQE-St-ai8</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">sortFavorites:</string>
+						<reference key="source" ref="545410097"/>
+						<reference key="destination" ref="660097916"/>
+					</object>
+					<string key="id">Q9D-q1-jts</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -6068,6 +6085,7 @@
 							<reference ref="914367302"/>
 							<reference ref="703530048"/>
 							<reference ref="233015422"/>
+							<reference ref="660097916"/>
 						</array>
 						<reference key="parent" ref="788191870"/>
 					</object>
@@ -7477,12 +7495,18 @@
 						<reference key="object" ref="994249095"/>
 						<reference key="parent" ref="1003668465"/>
 					</object>
+					<object class="IBObjectRecord">
+						<string key="id">25V-E5-s4p</string>
+						<reference key="object" ref="660097916"/>
+						<reference key="parent" ref="642202204"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
 				<string key="-1.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="-2.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="-3.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="25V-E5-s4p.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="30l-FF-qhV.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="3Y2-Rj-0be.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="4829.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>

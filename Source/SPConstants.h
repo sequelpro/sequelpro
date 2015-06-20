@@ -129,10 +129,11 @@ typedef enum
 // Sort by constants
 typedef enum
 {
-	SPFavoritesSortUnsorted = -1,
-	SPFavoritesSortNameItem = 0,
-	SPFavoritesSortHostItem = 1,
-	SPFavoritesSortTypeItem = 2
+	SPFavoritesSortUnsorted  = -1,
+	SPFavoritesSortNameItem  =  0,
+	SPFavoritesSortHostItem  =  1,
+	SPFavoritesSortTypeItem  =  2,
+	SPFavoritesSortColorItem =  3
 } SPFavoritesSortItem;
 
 // Text and link cell draw states

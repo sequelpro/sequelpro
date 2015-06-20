@@ -1432,6 +1432,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		case SPFavoritesSortTypeItem:
 			sortKey = SPFavoriteTypeKey;
 			break;
+		case SPFavoritesSortColorItem:
+			sortKey = SPFavoriteColorIndexKey;
+			break;
 		case SPFavoritesSortUnsorted:
 			return;
 	}

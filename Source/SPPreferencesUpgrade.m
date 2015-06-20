@@ -30,6 +30,8 @@
 
 #import "SPPreferencesUpgrade.h"
 #import "SPKeychain.h"
+#import "SPFavoritesController.h"
+#import "SPTreeNode.h"
 
 static NSString *SPOldFavoritesKey       = @"favorites";
 static NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
@@ -343,6 +345,20 @@ void SPApplyRevisionChanges(void)
 	// For versions prior to r4049 (~1.0.2), delete the old favourites entry in the plist now it's been migrated
 	if (recordedVersionNumber < 4049) {
 		[prefs removeObjectForKey:SPOldFavoritesKey];
+	}
+	
+	// For versions prior to r4485, add a default colorIndex to fix sorting favorites by color
+	if (recordedVersionNumber < 4485) {
+		SPFavoritesController *ctrl = [SPFavoritesController sharedFavoritesController];
+		NSMutableArray *favs = [(SPTreeNode *)[[[ctrl favoritesTree] childNodes] objectAtIndex:0] descendants];
+		for(SPTreeNode *node in favs) {
+			if([node isGroup])
+				continue;
+			NSMutableDictionary *data = [[node representedObject] nodeFavorite];
+			if(![data objectForKey:SPFavoriteColorIndexKey])
+				[data setObject:@(-1) forKey:SPFavoriteColorIndexKey];
+		}
+		[ctrl saveFavorites];
 	}
 
 	// Display any important release notes, if any.  Call this after a slight delay to prevent double help
