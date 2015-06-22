@@ -1146,7 +1146,7 @@
 
 	// Fetch the number of rows
 	SPMySQLResult *rowResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[tableListInstance tableName] backtickQuotedString]]];
-	if ([mySQLConnection queryErrored]) {
+	if ([mySQLConnection queryErrored] || !rowResult) {
 		return NO;
 	}
 
