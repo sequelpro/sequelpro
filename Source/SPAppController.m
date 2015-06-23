@@ -491,7 +491,7 @@
 
 				// Set global session properties
 				[SPAppDelegate setSpfSessionDocData:spfsDocData];
-				[SPAppDelegate setSessionURL:[NSURL fileURLWithPath:filePath]];
+				[SPAppDelegate setSessionURL:filePath];
 
 				// Loop through each defined window in reversed order to reconstruct the last active window
 				for (NSDictionary *window in [[[spfs objectForKey:@"windows"] reverseObjectEnumerator] allObjects])
