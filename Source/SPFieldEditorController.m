@@ -112,6 +112,9 @@ typedef enum {
 			// support full interactivity, for example use of the NSFindPanel inside NSTextViews.
 			[editSheet setIsSheetWhichCanBecomeMain:YES];
 		}
+		
+		[editTextView setAutomaticDashSubstitutionEnabled:NO];
+		[editTextView setAutomaticQuoteSubstitutionEnabled:NO];
 
 		allowUndo = NO;
 		selectionChanged = NO;
