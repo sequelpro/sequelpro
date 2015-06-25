@@ -344,7 +344,7 @@ static id NSNullPointer;
 	
 	//if even that failed we lose.
 	NSDictionary *info = @{ @"data": [NSData dataWithBytes:bytes length:length] };
-	NSString *reason = [NSString stringWithFormat:@"Failed to convert byte sequence %@ to string (encoding = %lu)",info[@"data"],stringEncoding];
+	NSString *reason = [NSString stringWithFormat:@"Failed to convert byte sequence %@ to string (encoding = %lu)",[info objectForKey:@"data"],stringEncoding];
 	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:info];
 }
 
