@@ -255,9 +255,10 @@
  */
 - (IBAction)removeQueryFavorite:(id)sender
 {
-
+	//sender can be a NSButton or a NSMenuItem
+	
 	// Complete editing in the window
-	[[sender window] makeFirstResponder:[sender window]];
+	[[self window] makeFirstResponder:[self window]];
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected query favorites?", @"remove selected query favorites message") 
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
