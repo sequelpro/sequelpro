@@ -30,6 +30,7 @@
 
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
+#include <stdlib.h>
 
 static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 
@@ -405,7 +406,7 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 
 	if (n++ != 0 && m++ != 0) 
 	{
-		d = malloc(sizeof(NSInteger) * m * n);
+		d = calloc(m * n, sizeof(NSInteger));
 
 		for (k = 0; k < n; k++) 
 		{

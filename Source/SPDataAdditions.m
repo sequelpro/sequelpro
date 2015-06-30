@@ -37,6 +37,7 @@
 #include <zlib.h>
 #include <openssl/aes.h>
 #include <openssl/sha.h>
+#include <stdlib.h>
 
 @implementation NSData (SPDataAdditions)
 
@@ -247,7 +248,7 @@
 			buffLength = totalLength - i;
 		}
 
-		buffer = (unsigned char*) malloc( sizeof(unsigned char) * buffLength + 1);
+		buffer = (unsigned char*) calloc(buffLength + 1, sizeof(unsigned char));
 
 		[self getBytes:buffer range:NSMakeRange(i, buffLength)];
 

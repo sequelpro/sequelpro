@@ -37,6 +37,7 @@
 #import "RegexKitLite.h"
 
 #import <SPMySQL/SPMySQL.h>
+#include <stdlib.h>
 
 @interface SPSQLExporter ()
 
@@ -293,8 +294,8 @@
 			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
 			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
-			useRawDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
-			useRawHexDataForColumnAtIndex = malloc(sizeof(BOOL) * colCount);
+			useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
+			useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
 							
 			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
 			for (j = 0; j < colCount; j++) 

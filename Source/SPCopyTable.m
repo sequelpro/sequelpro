@@ -53,6 +53,7 @@
 
 #import <SPMySQL/SPMySQL.h>
 #import "pthread.h"
+#include <stdlib.h>
 
 NSInteger SPEditMenuCopy            = 2001;
 NSInteger SPEditMenuCopyWithColumns = 2002;
@@ -171,7 +172,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	id cellData = nil;
 
 	// Create an array of table column mappings for fast iteration
-	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
 		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
@@ -309,7 +310,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	id cellData = nil;
 
 	// Create an array of table column mappings for fast iteration
-	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
 		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
@@ -447,8 +448,8 @@ static const NSInteger kBlobAsImageFile = 4;
 	}
 
 	// Create arrays of table column mappings and types for fast iteration
-	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
-	NSUInteger *columnTypes = malloc(numColumns * sizeof(NSUInteger));
+	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
+	NSUInteger *columnTypes = calloc(numColumns, sizeof(NSUInteger));
 	
 	for (c = 0; c < numColumns; c++) 
 	{
@@ -628,7 +629,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	id cellData = nil;
 
 	// Create an array of table column mappings for fast iteration
-	NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
 	for ( c = 0; c < numColumns; c++ )
 		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
 
@@ -1373,7 +1374,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			// Create an array of table column mappings for fast iteration
 			NSArray *columns = [self tableColumns];
 			NSUInteger numColumns = [columns count];
-			NSUInteger *columnMappings = malloc(numColumns * sizeof(NSUInteger));
+			NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
 			NSUInteger c;
 			for ( c = 0; c < numColumns; c++ )
 				columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];

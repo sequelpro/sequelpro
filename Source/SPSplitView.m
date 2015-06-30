@@ -30,6 +30,7 @@
 
 #import "SPSplitView.h"
 #import "SPDateAdditions.h"
+#include <stdlib.h>
 
 @interface SPSplitView (Private_API)
 
@@ -797,9 +798,9 @@
 	float viewLength, sizeDifference, totalGive, changedLength;
 	float totalCurrentSize = 0;
 	float resizeProportionTotal = 1.f;
-	float *originalSizes = malloc(subviewCount * sizeof(float));
-	float *minSizes = malloc(subviewCount * sizeof(float));
-	float *maxSizes = malloc(subviewCount * sizeof(float));
+	float *originalSizes = calloc(subviewCount, sizeof(float));
+	float *minSizes = calloc(subviewCount, sizeof(float));
+	float *maxSizes = calloc(subviewCount, sizeof(float));
 	BOOL *sizesCalculated;
 	float *resizeProportions;
 	NSMutableArray *outputSizes = [NSMutableArray arrayWithCapacity:subviewCount];
@@ -906,8 +907,8 @@
 	}
 
 	// Set up some arrays for fast lookups
-	sizesCalculated = malloc(subviewCount * sizeof(BOOL));
-	resizeProportions = malloc(subviewCount * sizeof(float));
+	sizesCalculated = calloc(subviewCount, sizeof(BOOL));
+	resizeProportions = calloc(subviewCount, sizeof(float));
 
 	// Prepopulate them
 	for (i = 0; i < subviewCount; i++) {

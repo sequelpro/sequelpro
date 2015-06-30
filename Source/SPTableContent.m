@@ -65,6 +65,7 @@
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
+#include <stdlib.h>
 
 #ifndef SP_CODA
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
@@ -908,7 +909,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			BOOL columnsFound = YES;
 			NSArray *primaryKeyFieldNames = [selectionToRestore objectForKey:@"keys"];
 			NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
-			NSUInteger *primaryKeyFieldIndexes = malloc(primaryKeyFieldCount * sizeof(NSUInteger));
+			NSUInteger *primaryKeyFieldIndexes = calloc(primaryKeyFieldCount, sizeof(NSUInteger));
 			for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
 				primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
 				if (primaryKeyFieldIndexes[i] == NSNotFound) {
@@ -3696,7 +3697,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		// Set up an array of the column indexes to store
 		NSUInteger primaryKeyFieldCount = [primaryKeyFieldNames count];
-		NSUInteger *primaryKeyFieldIndexes = malloc(sizeof(NSUInteger) * primaryKeyFieldCount);
+		NSUInteger *primaryKeyFieldIndexes = calloc(primaryKeyFieldCount, sizeof(NSUInteger));
 		BOOL problemColumns = NO;
 		for (NSUInteger i = 0; i < primaryKeyFieldCount; i++) {
 			primaryKeyFieldIndexes[i] = [[tableDataInstance columnNames] indexOfObject:[primaryKeyFieldNames objectAtIndex:i]];
@@ -3716,7 +3717,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		// Only proceed with key-based selection if there were no problem columns
 		if (!problemColumns) {
 			NSIndexSet *selectedRowIndexes = [tableContentView selectedRowIndexes];
-			NSUInteger *indexBuffer = malloc(sizeof(NSUInteger) * [selectedRowIndexes count]);
+			NSUInteger *indexBuffer = calloc([selectedRowIndexes count], sizeof(NSUInteger));
 			NSUInteger indexCount = [selectedRowIndexes getIndexes:indexBuffer maxCount:[selectedRowIndexes count] inIndexRange:NULL];
 
 			NSMutableDictionary *selectedRowLookupTable = [NSMutableDictionary dictionaryWithCapacity:indexCount];

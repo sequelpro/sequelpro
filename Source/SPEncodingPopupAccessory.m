@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPEncodingPopupAccessory.h"
+#include <stdlib.h>
 
 @implementation SPEncodingPopupAccessory
 
@@ -92,7 +93,7 @@ static int encodingCompare(const void *firstPtr, const void *secondPtr)
 		
 		while (cfEncodings[num] != kCFStringEncodingInvalidId) num++;
 		
-		tmp = malloc(sizeof(CFStringEncoding) * num);
+		tmp = calloc(num, sizeof(CFStringEncoding));
 		
 		memcpy(tmp, cfEncodings, sizeof(CFStringEncoding) * num);
 		
