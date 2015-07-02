@@ -1026,7 +1026,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeContentCheck state]] forKey:SPSQLExportContentEnabled];
 	[uiStateDict setObject:[NSNumber numberWithInteger:[exportSQLIncludeDropSyntaxCheck state]] forKey:SPSQLExportDropEnabled];
 
-	[NSThread detachNewThreadWithName:@"SPExportController export button updater" target:self selector:@selector(_toggleExportButton:) object:uiStateDict];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController export button updater",tableDocumentInstance) target:self selector:@selector(_toggleExportButton:) object:uiStateDict];
 	
 	[uiStateDict release];
 }

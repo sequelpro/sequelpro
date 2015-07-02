@@ -1308,7 +1308,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Reloading data...", @"Reloading data task description")];
 
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPTableContent table reload task" target:self selector:@selector(reloadTableTask) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent table reload task", tableDocumentInstance) target:self selector:@selector(reloadTableTask) object:nil];
 	} else {
 		[self reloadTableTask];
 	}
@@ -1420,7 +1420,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[tableDocumentInstance startTaskWithDescription:taskString];
 
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPTableContent filter table task" target:self selector:@selector(filterTableTask) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent filter table task", tableDocumentInstance) target:self selector:@selector(filterTableTask) object:nil];
 	} else {
 		[self filterTableTask];
 	}
@@ -2478,7 +2478,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// If on the main thread, fire up a thread to perform the load while keeping the modification flag
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Loading reference...", @"Loading referece task string")];
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPTableContent linked data load task" target:self selector:@selector(clickLinkArrowTask:) object:theArrowCell];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent linked data load task", tableDocumentInstance) target:self selector:@selector(clickLinkArrowTask:) object:theArrowCell];
 	} else {
 		[self clickLinkArrowTask:theArrowCell];
 	}

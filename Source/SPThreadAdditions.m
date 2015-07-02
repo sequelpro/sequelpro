@@ -95,3 +95,17 @@
 }
 
 @end
+
+#pragma mark -
+
+NSString * SPCtxt(NSString *description,NSObject<SPCountedObject> *object)
+{
+	NSString *idString = @"nil";
+	if(object) {
+		idString = [object className];
+		if([object respondsToSelector:@selector(instanceId)]) {
+			idString = [idString stringByAppendingFormat:@"#%lld", [object instanceId]];
+		}
+	}
+	return [NSString stringWithFormat:@"%@ (%@)",description,idString];
+}

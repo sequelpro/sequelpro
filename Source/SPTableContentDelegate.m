@@ -77,7 +77,7 @@
 	[tableDocumentInstance startTaskWithDescription:NSLocalizedString(@"Sorting table...", @"Sorting table task description")];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPTableContent table sort task" target:self selector:@selector(sortTableTaskWithColumn:) object:tableColumn];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent table sort task", tableDocumentInstance) target:self selector:@selector(sortTableTaskWithColumn:) object:tableColumn];
 	} 
 	else {
 		[self sortTableTaskWithColumn:tableColumn];

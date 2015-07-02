@@ -535,7 +535,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		NSNumber *removeKey = [NSNumber numberWithBool:[(NSString *)contextInfo isEqualToString:SPRemoveFieldAndForeignKey]];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadWithName:@"SPTableStructure field and key removal task" 
+			[NSThread detachNewThreadWithName:SPCtxt(@"SPTableStructure field and key removal task", tableDocumentInstance)
 									   target:self 
 									 selector:@selector(_removeFieldAndForeignKey:) 
 									   object:removeKey];
@@ -969,7 +969,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[tableDocumentInstance setContentRequiresReload:YES];
 
 		// Query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
 
 		return YES;
 	}

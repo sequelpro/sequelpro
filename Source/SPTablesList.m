@@ -357,10 +357,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Query the structure of all databases in the background
 	if (sender == self)
 		// Invoked by SP
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
 }
 
 /**
@@ -1611,7 +1611,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA
@@ -2266,7 +2266,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
 							   target:[tableDocumentInstance databaseStructureRetrieval]
 							 selector:@selector(queryDbStructureWithUserInfo:)
 							   object:@{@"forceUpdate" : @YES}];
@@ -2323,7 +2323,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	// Ensure the task is performed on a background thread to group addition and loads
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPTablesList table addition task" target:self selector:@selector(_addTable) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTablesList table addition task", tableDocumentInstance) target:self selector:@selector(_addTable) object:nil];
 		return;
 	}
 	
@@ -2417,7 +2417,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier"
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
 								   target:[tableDocumentInstance databaseStructureRetrieval]
 								 selector:@selector(queryDbStructureWithUserInfo:)
 								   object:@{@"forceUpdate" : @YES}];
@@ -2630,7 +2630,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 }
 #endif
 

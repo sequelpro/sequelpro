@@ -257,7 +257,7 @@
 	if (importFileName == nil) return;
 
 	// Begin import process
-	[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
 }
 
 
@@ -326,7 +326,7 @@
 		if (importFileName == nil) return;
 
 		// Begin the import process
-		[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
 	}];
 }
 
@@ -336,7 +336,7 @@
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
 	[importFormatPopup selectItemWithTitle:@"SQL"];
-	[NSThread detachNewThreadWithName:@"SPDataImport background import task" target:self selector:@selector(_importBackgroundProcess:) object:filename];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:filename];
 }
 
 #pragma mark -
@@ -667,7 +667,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -1183,7 +1183,7 @@
 		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];

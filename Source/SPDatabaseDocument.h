@@ -60,13 +60,14 @@
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
+#import "SPThreadAdditions.h"
 
 #import <SPMySQL/SPMySQLConnectionDelegate.h>
 
 /**
  * The SPDatabaseDocument class controls the primary database view window.
  */
-@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol, SPMySQLConnectionDelegate, NSTextFieldDelegate, NSToolbarDelegate>
+@interface SPDatabaseDocument : NSObject <SPConnectionControllerDelegateProtocol, SPMySQLConnectionDelegate, NSTextFieldDelegate, NSToolbarDelegate, SPCountedObject>
 {
 #ifdef SP_CODA /* patch */
 	id delegate;
@@ -283,6 +284,8 @@
 #endif
 	SPDatabaseStructure *databaseStructureRetrieval;
 	SPGotoDatabaseController *gotoDatabaseController;
+	
+	int64_t instanceId;
 }
 
 #ifdef SP_CODA /* ivars */
@@ -320,6 +323,7 @@
 #endif
 @property (readonly) SPServerSupport *serverSupport;
 @property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
+@property (readonly) int64_t instanceId;
 
 #ifndef SP_CODA /* method decls */
 - (BOOL)isUntitled;

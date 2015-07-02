@@ -585,7 +585,7 @@
 
 	// If a helper thread is already running, execute inline - otherwise detach a new thread for the queries
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPCustomQuery query perform task" target:self selector:@selector(performQueriesTask:) object:taskArguments];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPCustomQuery query perform task", tableDocumentInstance) target:self selector:@selector(performQueriesTask:) object:taskArguments];
 	} 
 	else {
 		[self performQueriesTask:taskArguments];

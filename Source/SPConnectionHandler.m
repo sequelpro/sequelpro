@@ -86,7 +86,7 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 	[connectButton display];
 #endif
 	
-	[NSThread detachNewThreadWithName:@"SPConnectionHandler MySQL connection task" target:self selector:@selector(initiateMySQLConnectionInBackground) object:nil];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPConnectionHandler MySQL connection task", dbDocument) target:self selector:@selector(initiateMySQLConnectionInBackground) object:nil];
 }
 
 /**

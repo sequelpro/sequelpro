@@ -102,7 +102,7 @@
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection
 {
 	// Perform the task in a background thread to avoid blocking the UI
-	[NSThread detachNewThreadWithName:@"SPDatabaseStructure clone connection task" 
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseStructure clone connection task",delegate)
 							   target:self 
 							 selector:@selector(_cloneConnectionFromConnection:) 
 							   object:aConnection];

@@ -113,9 +113,12 @@ enum {
 
 #import <SPMySQL/SPMySQL.h>
 
+#include <libkern/OSAtomic.h>
+
 // Constants
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
+static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 @interface SPDatabaseDocument ()
 
@@ -168,13 +171,14 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 @synthesize chooseDatabaseButton;
 @synthesize structureContentSwitcher;
 #endif
+@synthesize instanceId;
 
 #pragma mark -
 
 - (id)init
 {
 	if ((self = [super init])) {
-
+		instanceId = OSAtomicIncrement64(&SPDatabaseDocumentInstanceCounter);
 #ifndef SP_CODA /* init ivars */
 
 		_mainNibLoaded = NO;
@@ -594,7 +598,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 		[self startTaskWithDescription:NSLocalizedString(@"Restoring session...", @"Restoring session task description")];
 		
 		if ([NSThread isMainThread])
-			[NSThread detachNewThreadWithName:@"SPDatabaseDocument session load task" target:self selector:@selector(restoreSession) object:nil];
+			[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseDocument session load task",self) target:self selector:@selector(restoreSession) object:nil];
 		else
 			[self restoreSession];
 	} 
@@ -779,7 +783,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	NSDictionary *selectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:database, @"database", item, @"item", nil];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPDatabaseDocument database and table load task" target:self selector:@selector(_selectDatabaseAndItem:) object:selectionDetails];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseDocument database and table load task",self) target:self selector:@selector(_selectDatabaseAndItem:) object:selectionDetails];
 	} 
 	else {
 		[self _selectDatabaseAndItem:selectionDetails];
@@ -1023,7 +1027,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:@"SPNavigatorController database structure querier" target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+			[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",self) target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
 		}
 		else {
 			// Reset chooseDatabaseButton

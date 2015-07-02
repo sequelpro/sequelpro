@@ -310,7 +310,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Cancel the MySQL connection - handing it off to a background thread - if one is present
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];
-		[NSThread detachNewThreadWithName:@"SPConnectionController cancellation background disconnect" target:mySQLConnection selector:@selector(disconnect) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPConnectionController cancellation background disconnect",dbDocument) target:mySQLConnection selector:@selector(disconnect) object:nil];
 		[mySQLConnection autorelease];
 		mySQLConnection = nil;
 	}
@@ -1871,7 +1871,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	if (mySQLConnection) {
 		[mySQLConnection setDelegate:nil];
-		[NSThread detachNewThreadWithName:@"SPConnectionController close background disconnect" target:mySQLConnection selector:@selector(disconnect) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPConnectionController close background disconnect", dbDocument) target:mySQLConnection selector:@selector(disconnect) object:nil];
 		[mySQLConnection autorelease];
 		mySQLConnection = nil;
 		}

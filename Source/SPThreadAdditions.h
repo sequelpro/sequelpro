@@ -35,3 +35,25 @@
 + (void)detachNewThreadWithName:(NSString *)aName target:(id)aTarget selector:(SEL)aSelector object:(id)anArgument;
 
 @end
+
+@protocol SPCountedObject <NSObject>
+/**
+ * @return An arbitrary number that is constant for this object (ie. it never changes after init)
+ *         and unique for the class during the whole runtime of the application
+ *
+ * This is used with the SPCtxt() function to distinguish threaded operations.
+ * While it would have been simpler to just use the object's memory address as
+ * ID that is not unique enough (e.g. another object can malloc the same memory
+ * freed by an earlier object)
+ */
+- (int64_t)instanceId;
+@end
+
+/** 
+ * The string returned by this function should be passed to aName
+ * above in order to distinguish multiple threads (operating on different data
+ * sets) in the debugger / crash reports.
+ * (e.g. two connection tabs doing the "same" stuff).
+ * object should be a distinguishing object (ie. the SPDatabaseDocument *)
+ */
+NSString * SPCtxt(NSString *description,NSObject<SPCountedObject> *object);

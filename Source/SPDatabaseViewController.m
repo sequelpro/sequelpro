@@ -303,7 +303,7 @@
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), [self table]]];
 	
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPDatabaseViewController view load task" 
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseViewController view load task",self)
 								   target:self 
 								 selector:@selector(_loadTabTask:) 
 								   object:tabViewItem];
@@ -388,7 +388,7 @@
 	// If on the main thread, fire up a thread to deal with view changes and data loading;
 	// if already on a background thread, make the changes on the existing thread.
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:@"SPDatabaseViewController table load task" 
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseViewController table load task",self)
 								   target:self 
 								 selector:@selector(_loadTableTask) 
 								   object:nil];

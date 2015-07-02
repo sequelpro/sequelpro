@@ -657,7 +657,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 #endif
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadWithName:@"SPIndexesController index creation thread" target:self selector:@selector(_addIndexUsingDetails:) object:indexDetails];
+			[NSThread detachNewThreadWithName:SPCtxt(@"SPIndexesController index creation thread", dbDocument) target:self selector:@selector(_addIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
@@ -685,7 +685,7 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 		[indexDetails setObject:[NSNumber numberWithBool:[(NSString *)contextInfo hasSuffix:@"AndForeignKey"]] forKey:@"RemoveForeignKey"];
 
 		if ([NSThread isMainThread]) {
-			[NSThread detachNewThreadWithName:@"SPIndexesController index removal thread" target:self selector:@selector(_removeIndexUsingDetails:) object:indexDetails];
+			[NSThread detachNewThreadWithName:SPCtxt(@"SPIndexesController index removal thread", dbDocument) target:self selector:@selector(_removeIndexUsingDetails:) object:indexDetails];
 
 			[dbDocument enableTaskCancellationWithTitle:NSLocalizedString(@"Cancel", @"cancel button") callbackObject:self callbackFunction:NULL];
 		}
