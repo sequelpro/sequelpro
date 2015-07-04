@@ -86,12 +86,12 @@ static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedSt
  * In regex-speak that would mean "abc" is matched as /a.*b.*c/ (not anchored).
  * This is a SEARCH function, NOT a MATCHING function! 
  * Namely the following options will be applied when matching: 
- *   NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSDiacriticInsensitiveSearch
+ *   NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSWidthInsensitiveSearch
  * Additionaly this method might match even when it should not.
  *
  * @param other      String to match against self
  * @param submatches Pass the pointer to a variable that will be set to an NSArray *
- *                   of NSNumber *s of NSRanges. This will only be the case if
+ *                   of NSValue *s of NSRanges. This will only be the case if
  *                   the method also returns YES. The variable will not be modified
  *                   otherwise.
  *                   Pass NULL if you don't care for the ranges.

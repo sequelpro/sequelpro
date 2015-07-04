@@ -47,7 +47,10 @@
 - (IBAction)okClicked:(id)sender;
 - (IBAction)cancelClicked:(id)sender;
 - (IBAction)searchChanged:(id)sender;
+- (IBAction)toggleWordSearch:(id)sender;
 
+- (BOOL)qualifiesForWordSearch:(NSString *)s;
+- (BOOL)qualifiesForWordSearch; //takes s from searchField
 @end
 
 @implementation SPGotoDatabaseController
@@ -127,6 +130,26 @@
 	[okButton setEnabled:([databaseListView selectedRow] >= 0)];
 }
 
+- (IBAction)toggleWordSearch:(id)sender
+{
+	//if the search field is empty just add two " and put the caret in-between
+	if(![[searchField stringValue] length]) {
+		[searchField setStringValue:@"\"\""];
+		[[searchField currentEditor] setSelectedRange:NSMakeRange(1, 0)];
+
+	}
+	else if (![self qualifiesForWordSearch]) {
+		[searchField setStringValue:[NSString stringWithFormat:@"\"%@\"",[searchField stringValue]]];
+		//change the selection to be inside the quotes
+		[[searchField currentEditor] setSelectedRange:NSMakeRange(1, [[searchField stringValue] length]-2)];
+	}
+	else {
+		NSString *str = [searchField stringValue];
+		[searchField setStringValue:[str substringWithRange:NSMakeRange(1, [str length]-2)]];
+	}
+	[self searchChanged:nil];
+}
+
 #pragma mark -
 #pragma mark Public
 
@@ -184,33 +207,71 @@
 						   [NSNumber numberWithInt:NSUnderlineStyleSingle],NSUnderlineStyleAttributeName,
 						   nil];
 
-	for (NSString *db in unfilteredList) {
+	NSStringCompareOptions opts = NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSWidthInsensitiveSearch;
+	
+	// interpret a quoted string as 'looking for exact submachtes only'
+	if([self qualifiesForWordSearch:filter]) {
+		//remove quotes for matching
+		filter = [filter substringWithRange:NSMakeRange(1, [filter length]-2)];
 		
-		NSArray *matches = nil;
-		BOOL hasMatch = [db nonConsecutivelySearchString:filter matchingRanges:&matches];
-		
-		if(!hasMatch) continue;
-		
-		// Should we check for exact match AND have not yet found one?
-		if (exactMatch && !*exactMatch) {
-			if([matches count] == 1) {
-				NSRange match = [(NSValue *)[matches objectAtIndex:0] rangeValue];
-				if (match.location == 0 && match.length == [db length]) {
+		//look for matches
+		for (NSString *db in unfilteredList) {
+			NSRange matchRange = [db rangeOfString:filter options:opts];
+			
+			if(matchRange.location == NSNotFound) continue;
+			
+			// Should we check for exact match AND have not yet found one?
+			if (exactMatch && !*exactMatch) {
+				if (matchRange.location == 0 && matchRange.length == [db length]) {
 					*exactMatch = YES;
 				}
 			}
+			
+			NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
+			[attrMatch setAttributes:attrs range:matchRange];
+			[filteredList addObject:[attrMatch autorelease]];
 		}
-		
-		NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
-
-		for (NSValue *matchValue in matches) {
-			[attrMatch setAttributes:attrs range:[matchValue rangeValue]];
+	}
+	// default to a per-character search
+	else {
+		for (NSString *db in unfilteredList) {
+			
+			NSArray *matches = nil;
+			BOOL hasMatch = [db nonConsecutivelySearchString:filter matchingRanges:&matches];
+			
+			if(!hasMatch) continue;
+			
+			// Should we check for exact match AND have not yet found one?
+			if (exactMatch && !*exactMatch) {
+				if([matches count] == 1) {
+					NSRange match = [(NSValue *)[matches objectAtIndex:0] rangeValue];
+					if (match.location == 0 && match.length == [db length]) {
+						*exactMatch = YES;
+					}
+				}
+			}
+			
+			NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
+			
+			for (NSValue *matchValue in matches) {
+				[attrMatch setAttributes:attrs range:[matchValue rangeValue]];
+			}
+			
+			[filteredList addObject:[attrMatch autorelease]];
 		}
-
-		[filteredList addObject:[attrMatch autorelease]];
 	}
 	
 	[attrs release];
+}
+
+- (BOOL)qualifiesForWordSearch:(NSString *)s
+{
+	return (s && ([s length] > 1) && (([s hasPrefix:@"\""] && [s hasSuffix:@"\""]) || ([s hasPrefix:@"'"] && [s hasSuffix:@"'"])));
+}
+
+- (BOOL)qualifiesForWordSearch
+{
+	return [self qualifiesForWordSearch:[searchField stringValue]];
 }
 
 #pragma mark -
@@ -265,6 +326,17 @@
 	}
 	
 	return NO;
+}
+
+#pragma mark -
+#pragma mark NSUserInterfaceValidations
+
+- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)anItem
+{
+	if([anItem action] == @selector(toggleWordSearch:)) {
+		[(NSMenuItem *)anItem setState:([self qualifiesForWordSearch]? NSOnState : NSOffState)];
+	}
+	return YES;
 }
 
 #pragma mark -
