@@ -524,9 +524,6 @@ typedef enum {
 			[hexTextView setHidden:YES];
 			[hexTextScrollView setHidden:YES];
 			[usedSheet makeFirstResponder:editTextView];
-#ifndef SP_CODA
-			[[NSApp mainWindow] makeFirstResponder:editTextView];
-#endif
 			break;
 		case ImageSegment:
 			[editTextView setHidden:YES];
