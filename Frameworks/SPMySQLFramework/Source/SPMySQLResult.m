@@ -321,6 +321,8 @@ static id NSNullPointer;
 
 - (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy
 {
+	if(!bytes || !length) return @""; //to match -[NSString initWithBytes:length:encoding:]
+	
 	//mysql protocol limits column names to 256 bytes.
 	//with inline columns and multibyte charsets this can result in a character
 	//being split in half at which the method above will fail.
