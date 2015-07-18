@@ -1102,8 +1102,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// If the clause has the placeholder $BINARY that placeholder will be replaced
 	// by BINARY if the user pressed ⇧ while invoking 'Filter' otherwise it will
 	// replaced by @"".
-	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags]
-		& (NSShiftKeyMask|NSControlKeyMask|NSAlternateKeyMask|NSCommandKeyMask)) > 0);
+	BOOL caseSensitive = (([[[NSApp onMainThread] currentEvent] modifierFlags] & NSShiftKeyMask) > 0);
 
 	if(contentFilters == nil) {
 		NSLog(@"Fatal error while retrieving content filters. No filters found.");
