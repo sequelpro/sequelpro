@@ -144,6 +144,40 @@
 @end
 
 /**
+ * A Send-and-forget variant for displaying alerts.
+ * It will queue the alert on the main thread and *always* immediately return.
+ *   Because of that there is no way to set a delegate and callback method
+ * and there is only one default button.
+ * If nil is passed as the button title it will be changed to @"OK".
+ */
+void SPOnewayAlertSheet(
+	NSString *title,
+	NSString *defaultButton,
+	NSWindow *docWindow,
+	NSString *msg)
+{
+	NSString *defaultText = (defaultButton)? defaultButton : NSLocalizedString(@"OK", @"OK button");
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Set up an NSAlert with the supplied details
+		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+		[alert setMessageText:title];
+		
+		NSButton *aButton = [alert addButtonWithTitle:defaultText];
+		[aButton setTag:NSAlertDefaultReturn];
+		
+		// Set the informative message if supplied
+		if (msg) [alert setInformativeText:msg];
+		
+		// Run the alert
+		[alert beginSheetModalForWindow:docWindow modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+		
+		// Ensure the alerting window is frontmost
+		[docWindow makeKeyWindow];
+	});
+}
+
+/**
  * Provide a simple alias of NSBeginAlertSheet, with a few differences:
  *  - printf-type format strings are no longer supported within the "msg"
  *    message text argument, preventing access of random stack areas for
