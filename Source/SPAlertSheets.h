@@ -56,3 +56,10 @@ void SPBeginAlertSheet(
 		void *contextInfo,
 	NSString *msg
 );
+
+void SPOnewayAlertSheet(
+	NSString *title,
+	NSString *defaultButton,
+	NSWindow *docWindow,
+	NSString *msg
+);
