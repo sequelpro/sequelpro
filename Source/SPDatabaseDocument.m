@@ -1429,6 +1429,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Decrement the working level
 	_isWorkingLevel--;
+	assert(_isWorkingLevel >= 0);
 
 	// Ensure cancellation interface is reset
 	[self disableTaskCancellation];

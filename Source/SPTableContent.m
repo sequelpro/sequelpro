@@ -314,17 +314,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// If no table has been supplied, clear the table interface and return
 	if (!aTable || [aTable isEqualToString:@""]) {
-		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
-		 
+		[[self onMainThread] setTableDetails:nil];
 		return;
 	}
 
 	// Attempt to retrieve the table encoding; if that fails (indicating an error occurred
 	// while retrieving table data), or if the Rows variable is null, clear and return
 	if (![tableDataInstance tableEncoding] || [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull]) {
-		[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:nil waitUntilDone:YES];
-		[tableDocumentInstance performSelectorOnMainThread:@selector(endTask) withObject:nil waitUntilDone:YES];
-		
+		[[self onMainThread] setTableDetails:nil];
 		return;
 	}
 
@@ -338,7 +335,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 									[tableDataInstance columnNames], @"columnNames",
 									[tableDataInstance getConstraints], @"constraints",
 									nil];
-	[self performSelectorOnMainThread:@selector(setTableDetails:) withObject:tableDetails waitUntilDone:YES];
+	[[self onMainThread] setTableDetails:tableDetails];
 
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
