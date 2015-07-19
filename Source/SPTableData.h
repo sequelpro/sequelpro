@@ -55,8 +55,8 @@
 }
 
 @property (readonly, assign) BOOL tableHasAutoIncrementField;
+@property (nonatomic, retain) SPMySQLConnection *connection;
 
-- (void) setConnection:(SPMySQLConnection *)theConnection;
 - (NSString *) tableEncoding;
 - (NSString *) tableCreateSyntax;
 - (NSArray *) columns;

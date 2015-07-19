@@ -48,6 +48,7 @@
 @implementation SPTableData
 
 @synthesize tableHasAutoIncrementField;
+@synthesize connection = mySQLConnection;
 
 - (id) init
 {
@@ -61,25 +62,12 @@
 		triggers = nil;
 		tableEncoding = nil;
 		tableCreateSyntax = nil;
-		mySQLConnection = nil;
 		tableHasAutoIncrementField = NO;
 
 		pthread_mutex_init(&dataProcessingLock, NULL);
 	}
 
 	return self;
-}
-
-/**
- * Set the connection for use.
- * Called by the connect sheet methods.
- *
- * @param theConnection The used connection for the SPDatabaseDocument
- */
-- (void) setConnection:(SPMySQLConnection *)theConnection
-{
-	mySQLConnection = theConnection;
-	[mySQLConnection retain];
 }
 
 /**
@@ -1415,7 +1403,7 @@
 	if (triggers)          SPClear(triggers);
 	if (tableEncoding)     SPClear(tableEncoding);
 	if (tableCreateSyntax) SPClear(tableCreateSyntax);
-	if (mySQLConnection)   SPClear(mySQLConnection);
+	[self setConnection:nil];
 
 	pthread_mutex_destroy(&dataProcessingLock);
 
