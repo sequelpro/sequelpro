@@ -6140,7 +6140,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 		// Attempt to select the specified database, and abort on failure
 #ifndef SP_CODA /* patch */
-		if ([chooseDatabaseButton indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
+		if ([[chooseDatabaseButton onMainThread] indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
 		if ( ![mySQLConnection selectDatabase:targetDatabaseName] )
 #endif
@@ -6153,7 +6153,12 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 				// Update the database list
 				[[self onMainThread] setDatabases:self];
 
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Error", @"error"),
+					nil,
+					parentWindow,
+					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
+				);
 			}
 
 			[taskPool drain];
@@ -6198,16 +6203,16 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	// If a the table has changed, update the selection
 	if (![targetItemName isEqualToString:[self table]] && targetItemName) {
 		focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
-		} 
+	}
 
 	// Ensure the window focus is on the table list or the filter as appropriate
-			[[tablesListInstance onMainThread] setTableListSelectability:YES];
+	[[tablesListInstance onMainThread] setTableListSelectability:YES];
 	if (focusOnFilter) {
 		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
 	} else {
 		[[tablesListInstance onMainThread] makeTableListHaveFocus];
 	}
-			[[tablesListInstance onMainThread] setTableListSelectability:NO];
+	[[tablesListInstance onMainThread] setTableListSelectability:NO];
 
 #endif
 	[self endTask];
