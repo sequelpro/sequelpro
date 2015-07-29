@@ -40,9 +40,11 @@
  * the current encoding, a representation will be returned rather than null.
  * The returned cString will correctly preserve any nul characters within the string,
  * which prevents the use of faster functions like [NSString cStringUsingEncoding:].
- * Pass in the third parameter to receive the length of the converted string, or pass
- * in NULL if you do not want this information.
+ * Pass in the third parameter to receive the length of the converted string (INCLUDING
+ * the terminating \0 character), or pass in NULL if you do not want this information.
  */
+#warning This method doesn't make sense. It's only addition over [str dataUsingEncoding:allowLossyConversion:] is the terminating NUL byte. \
+         But the "string" can already contain NUL bytes, so it's not a valid c string anyway.
 + (const char *)_cStringForString:(NSString *)aString usingEncoding:(NSStringEncoding)anEncoding returningLengthAs:(NSUInteger *)cStringLengthPointer
 {
 
@@ -56,7 +58,7 @@
 	// Take the converted data - not null-terminated - and copy it to a null-terminated buffer
 	char *cStringBytes = malloc(convertedDataLength + 1);
 	memcpy(cStringBytes, [convertedData bytes], convertedDataLength);
-	cStringBytes[convertedDataLength] = 0L;
+	cStringBytes[convertedDataLength] = '\0';
 
 	if (cStringLengthPointer) *cStringLengthPointer = convertedDataLength+1;
 

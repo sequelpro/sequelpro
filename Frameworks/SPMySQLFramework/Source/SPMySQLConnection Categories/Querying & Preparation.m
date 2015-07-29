@@ -264,16 +264,17 @@
 		[delegate willQueryString:theQueryString connection:self];
 	}
 
-	// Retrieve a C-style query string from the supplied NSString
-	NSUInteger cQueryStringLength;
-	const char *cQueryString = _cStringForStringWithEncoding(theQueryString, theEncoding, &cQueryStringLength);
+	// Retrieve a byte buffer from the supplied NSString
+	NSData *queryData = [theQueryString dataUsingEncoding:theEncoding allowLossyConversion:YES];
+	NSUInteger queryBytesLength = [queryData length];
+	const char *queryBytes = [queryData bytes];
 
 	// Check the query length against the current maximum query length.  If it is
 	// larger, the query would error (and probably cause a disconnect), so if
 	// the maximum size is editable, increase it and reconnect.
-	if (cQueryStringLength > maxQuerySize) {
+	if (queryBytesLength > maxQuerySize) {
 		queryActionShouldRestoreMaxQuerySize = maxQuerySize;
-		if (![self _attemptMaxQuerySizeIncreaseTo:(cQueryStringLength + 1024)]) {
+		if (![self _attemptMaxQuerySizeIncreaseTo:(queryBytesLength + 1024)]) {
 			queryActionShouldRestoreMaxQuerySize = NSNotFound;
 			return nil;
 		}
@@ -292,7 +293,7 @@
 		// While recording the overall execution time (including network lag!), run
 		// the raw query
 		uint64_t queryStartTime = mach_absolute_time();
-		queryStatus = mysql_real_query(mySQLConnection, cQueryString, cQueryStringLength);
+		queryStatus = mysql_real_query(mySQLConnection, queryBytes, queryBytesLength);
 		queryExecutionTime = _elapsedSecondsSinceAbsoluteTime(queryStartTime);
 		lastConnectionUsedTime = mach_absolute_time();
 
