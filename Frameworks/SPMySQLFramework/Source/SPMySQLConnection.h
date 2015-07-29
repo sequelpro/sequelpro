@@ -127,6 +127,8 @@
 
 	// Queries
 	BOOL retryQueriesOnConnectionFailure;
+	
+	SPMySQLClientFlags clientFlags;
 }
 
 #pragma mark -
@@ -163,6 +165,14 @@
 @property (readwrite, assign) BOOL delegateQueryLogging;
 
 @property (readwrite, assign) BOOL lastQueryWasCancelled;
+
+/**
+ * The mysql client capability flags to set when connecting.
+ * See CLIENT_* in mysql.h
+ */
+@property (readwrite, assign, nonatomic) SPMySQLClientFlags clientFlags;
+- (void)addClientFlags:(SPMySQLClientFlags)opts;
+- (void)removeClientFlags:(SPMySQLClientFlags)opts;
 
 #pragma mark -
 #pragma mark Connection and disconnection

@@ -41,10 +41,10 @@ static void *mySQLThreadFlag;
 #pragma mark Class constants
 
 // The default connection options for MySQL connections
-const NSUInteger SPMySQLConnectionOptions =
-					CLIENT_COMPRESS				|	// Enable protocol compression - almost always a win
-					CLIENT_INTERACTIVE			|	// Mark ourselves as an interactive client
-					CLIENT_MULTI_RESULTS;			// Multiple result support (very basic, but present)
+const SPMySQLClientFlags SPMySQLConnectionOptions =
+					SPMySQLClientFlagCompression |  // Enable protocol compression - almost always a win
+					SPMySQLClientFlagInteractive |  // Mark ourselves as an interactive client
+					SPMySQLClientFlagMultiResults;  // Multiple result support (very basic, but present)
 
 // List of permissible ciphers to use for SSL connections
 const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
@@ -73,6 +73,20 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize retryQueriesOnConnectionFailure;
 @synthesize delegateQueryLogging;
 @synthesize lastQueryWasCancelled;
+@synthesize clientFlags = clientFlags;
+
+#pragma mark -
+#pragma mark Getters and Setters
+
+- (void)addClientFlags:(SPMySQLClientFlags)opts
+{
+	[self setClientFlags:([self clientFlags] | opts)];
+}
+
+- (void)removeClientFlags:(SPMySQLClientFlags)opts
+{
+	[self setClientFlags:([self clientFlags] & ~opts)];
+}
 
 #pragma mark -
 #pragma mark Initialisation and teardown
@@ -188,6 +202,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 		// Start the ping keepalive timer
 		keepAliveTimer = [[SPMySQLKeepAliveTimer alloc] initWithInterval:10 target:self selector:@selector(_keepAlive)];
+		
+		[self setClientFlags:SPMySQLConnectionOptions];
 	}
 
 	return self;
@@ -567,7 +583,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, theSSLCiphers);
 	}
 
-	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, SPMySQLConnectionOptions);
+	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, [self clientFlags]);
 
 	// If the connection failed, return NULL
 	if (theConnection != connectionStatus) {

@@ -61,6 +61,7 @@
 	[copy setUseKeepAlive:useKeepAlive];
 	[copy setRetryQueriesOnConnectionFailure:retryQueriesOnConnectionFailure];
 	[copy setDelegateQueryLogging:delegateQueryLogging];
+	[copy setClientFlags:clientFlags];
 
 	// Active connection state details, like selected database and encoding, are *not* copied.
 

@@ -79,6 +79,7 @@
 	NSString *socket;
 	NSString *port;
 	NSInteger colorIndex;
+	BOOL useCompression;
 	
 	// SSL details
 	NSInteger useSSL;
@@ -209,6 +210,7 @@
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
+@property (readwrite, assign) BOOL useCompression;
 
 #ifdef SP_CODA
 @property (readwrite, assign) SPDatabaseDocument *dbDocument;

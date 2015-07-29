@@ -157,6 +157,9 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 		}
 	}
 	
+	if(![self useCompression])
+		[mySQLConnection removeClientFlags:SPMySQLClientFlagCompression];
+	
 	// Connection delegate must be set before actual connection attempt is made
 	[mySQLConnection setDelegate:dbDocument];
 	
