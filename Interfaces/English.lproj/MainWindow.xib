@@ -43,7 +43,7 @@
 				<string key="NSWindowClass">SPWindow</string>
 				<nil key="NSViewClass"/>
 				<nil key="NSUserInterfaceItemIdentifier"/>
-				<string key="NSWindowContentMinSize">{705, 400}</string>
+				<string key="NSWindowContentMinSize">{800, 400}</string>
 				<object class="NSView" key="NSWindowView" id="1006">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
