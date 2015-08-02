@@ -72,6 +72,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
 
+- (void)_waitUntilQueueIsEmpty:(id)sender;
+- (void)_queueIsEmpty:(id)sender;
+
 @end
 
 @implementation SPExportController
@@ -364,8 +367,20 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[sender setEnabled:NO];
 	
 	// Cancel all of the currently running operations
-	[operationQueue cancelAllOperations];
-	
+	[operationQueue cancelAllOperations]; // async call
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmpty:) object:sender];
+}
+
+- (void)_waitUntilQueueIsEmpty:(id)sender
+{
+	[sender retain];
+	[operationQueue waitUntilAllOperationsAreFinished];
+	[self performSelectorOnMainThread:@selector(_queueIsEmpty:) withObject:sender waitUntilDone:NO];
+	[sender release];
+}
+
+- (void)_queueIsEmpty:(id)sender
+{
 	// Loop the cached export file paths and remove them from disk if they exist
 	for (SPExportFile *file in exportFiles)
 	{
