@@ -42,4 +42,35 @@
 	return (self == null);
 }
 
+- (void)_scrollViewDidChangeBounds:(id)obj
+{
+	NSMutableString *msg = [NSMutableString string];
+	
+	[msg appendFormat:@"%s tripped!\n\n",__PRETTY_FUNCTION__];
+	
+	[msg appendFormat:@"passed object (class <%@>): %@\n\n",[obj className],obj];
+	
+	if([obj isKindOfClass:[NSView class]]) {
+		[msg appendString:@"View hierarchy:\n"];
+		id parent = obj;
+		while(parent) {
+			[msg appendFormat:@"- (class <%@>): %@, id=%@, tag=%ld\n",
+			                  [obj className],
+			                  obj,
+			                  [(NSView *)obj identifier],
+			                  [(NSView *)obj tag]];
+			parent = [parent superview];
+		}
+		[msg appendString:@"\n"];
+	}
+	
+	if([obj respondsToSelector:@selector(window)]) {
+		[msg appendFormat:@"In Window: %@\n\n",[obj window]];
+	}
+	
+	[msg appendFormat:@"self: %p (class <%@>)\n\n",self,[self className]];
+	
+	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:msg userInfo:nil];
+}
+
 @end
