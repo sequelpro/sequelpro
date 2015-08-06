@@ -48,18 +48,35 @@
 	
 	[msg appendFormat:@"%s tripped!\n\n",__PRETTY_FUNCTION__];
 	
+retryDescribe:
 	[msg appendFormat:@"passed object (class <%@>): %@\n\n",[obj className],obj];
 	
+	if ([obj isKindOfClass:[NSNotification class]]) {
+		NSNotification *notif = (NSNotification *)obj;
+		[msg appendFormat:@"unwrapping NSNotification named '%@' (userInfo=%@)\n\n",
+						  [notif name],
+		                  [notif userInfo]];
+		obj = [notif object];
+		goto retryDescribe;
+	}
+	
 	if([obj isKindOfClass:[NSView class]]) {
-		[msg appendString:@"View hierarchy:\n"];
+		[msg appendString:@"View hierarchy (parents):\n"];
 		id parent = obj;
 		while(parent) {
-			[msg appendFormat:@"- (class <%@>): %@, id=%@, tag=%ld\n",
+			[msg appendFormat:@"- %p (class <%@>): %@, id=%@, tag=%ld\n",
+							  obj,
 			                  [obj className],
 			                  obj,
 			                  [(NSView *)obj identifier],
 			                  [(NSView *)obj tag]];
 			parent = [parent superview];
+		}
+		[msg appendString:@"\n"];
+		
+		[msg appendString:@"View hierarchy (own children): \n"];
+		for (id child in [(NSView *)obj subviews]) {
+			[msg appendFormat:@"- %p\n",child];
 		}
 		[msg appendString:@"\n"];
 	}

@@ -424,6 +424,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 #pragma mark -
 #pragma mark Private API
 
+//http://alastairs-place.net/blog/2013/01/10/interesting-os-x-crash-report-tidbits/
+/* CrashReporter info */
+const char *__crashreporter_info__ = NULL;
+asm(".desc ___crashreporter_info__, 0x10");
+
 @implementation SPMySQLConnection (PrivateAPI)
 
 /**
@@ -434,6 +439,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
+		asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state);
+		__builtin_trap();
 		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state];
 		return NO;
 	}
