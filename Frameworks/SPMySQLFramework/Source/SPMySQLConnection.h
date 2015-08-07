@@ -100,7 +100,7 @@
 	BOOL previousEncodingUsesLatin1Transport;
 
 	// Server details
-	NSString *serverVersionString;
+	NSString *serverVariableVersion;
 
 	// Error state for the last query or connection state
 	NSUInteger queryErrorID;

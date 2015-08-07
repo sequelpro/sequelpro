@@ -175,7 +175,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		[connectionLock setName:@"SPMySQLConnection query lock"];
 
 		// Ensure the server detail records are initialised
-		serverVersionString = nil;
+		serverVariableVersion = nil;
 
 		// Start with a blank error state
 		queryErrorID = 0;
@@ -249,7 +249,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 	if (database) [database release], database = nil;
 	if (databaseToRestore) [databaseToRestore release], databaseToRestore = nil;
-	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
 	if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 	if (querySqlstate) [querySqlstate release], querySqlstate = nil;
 	[delegateDecisionLock release];
@@ -911,7 +911,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	}
 
 	// Clear host-specific information
-	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
 	if (database) [database release], database = nil;
 
 	state = SPMySQLDisconnected;
@@ -940,8 +940,8 @@ asm(".desc ___crashreporter_info__, 0x10");
 	}
 
 	// Copy the server version string to the instance variable
-	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
-	serverVersionString = [[variables objectForKey:@"version"] retain];
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
+	serverVariableVersion = [[variables objectForKey:@"version"] retain];
 
 	// Get the connection encoding.  Although a specific encoding may have been requested on
 	// connection, it may be overridden by init_connect commands or connection state changes.

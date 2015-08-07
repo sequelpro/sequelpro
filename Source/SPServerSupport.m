@@ -95,10 +95,10 @@
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion
 {
 	if ((self = [super init])) {
-		
-		serverMajorVersion   = majorVersion;
-		serverMinorVersion   = minorVersion;
-		serverReleaseVersion = releaseVersion;
+		// Might be NSNotFound if unknown. unknown should also lose against "0".
+		serverMajorVersion   = (majorVersion   != NSNotFound)? majorVersion   : -1;
+		serverMinorVersion   = (minorVersion   != NSNotFound)? minorVersion   : -1;
+		serverReleaseVersion = (releaseVersion != NSNotFound)? releaseVersion : -1;
 		
 		// Determine what the server supports
 		[self evaluate];

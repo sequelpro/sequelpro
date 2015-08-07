@@ -42,10 +42,15 @@
  */
 - (NSString *)serverVersionString
 {
-	if (serverVersionString) {
-		return [NSString stringWithString:serverVersionString];
+	if (serverVariableVersion) {
+		return [NSString stringWithString:serverVariableVersion];
 	}
 
+#warning FIXME: There is probably a race condition here with -[self _disconnect]
+	if(mySQLConnection) {
+		return [self _stringForCString:mysql_get_server_info(mySQLConnection)];
+	}
+	
 	return nil;
 }
 
@@ -54,9 +59,9 @@
  */
 - (NSUInteger)serverMajorVersion
 {
-	
-	if (serverVersionString != nil) {
-		NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:0];
+	NSString *ver;
+	if ((ver = [self serverVersionString]) != nil) {
+		NSString *s = [[ver componentsSeparatedByString:@"."] objectAtIndex:0];
 		return (NSUInteger)[s integerValue];
 	} 
 	
@@ -68,8 +73,9 @@
  */
 - (NSUInteger)serverMinorVersion
 {
-	if (serverVersionString != nil) {
-		NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:1];
+	NSString *ver;
+	if ((ver = [self serverVersionString]) != nil) {
+		NSString *s = [[ver componentsSeparatedByString:@"."] objectAtIndex:1];
 		return (NSUInteger)[s integerValue];
 	}
 	
@@ -81,8 +87,9 @@
  */
 - (NSUInteger)serverReleaseVersion
 {
-	if (serverVersionString != nil) {
-		NSString *s = [[serverVersionString componentsSeparatedByString:@"."] objectAtIndex:2];
+	NSString *ver;
+	if ((ver = [self serverVersionString]) != nil) {
+		NSString *s = [[ver componentsSeparatedByString:@"."] objectAtIndex:2];
 		return (NSUInteger)[[[s componentsSeparatedByString:@"-"] objectAtIndex:0] integerValue];
 	}
 	
@@ -98,9 +105,10 @@
  */
 - (BOOL)serverVersionIsGreaterThanOrEqualTo:(NSUInteger)aMajorVersion minorVersion:(NSUInteger)aMinorVersion releaseVersion:(NSUInteger)aReleaseVersion
 {
-	if (!serverVersionString) return NO;
+	NSString *ver;
+	if (!(ver = [self serverVersionString])) return NO;
 
-	NSArray *serverVersionParts = [serverVersionString componentsSeparatedByString:@"."];
+	NSArray *serverVersionParts = [ver componentsSeparatedByString:@"."];
 
 	NSUInteger serverMajorVersion = (NSUInteger)[[serverVersionParts objectAtIndex:0] integerValue];
 	if (serverMajorVersion < aMajorVersion) return NO;

@@ -108,6 +108,10 @@
 
 	// Make a standard query to the server to retrieve the information
 	SPMySQLResult *result = [self queryString:packetQueryString];
+	if(!result) { // query fails on sphinxql
+		NSLog(@"Query for max_allowed_packet failed: %@ (%lu) (on %@)", [self lastErrorMessage], [self lastErrorID], [self serverVersionString]);
+		return;
+	}
 	[result setReturnDataAsStrings:YES];
 
 	// Get the maximum size string
