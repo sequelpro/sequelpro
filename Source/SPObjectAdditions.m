@@ -65,11 +65,11 @@ retryDescribe:
 		id parent = obj;
 		while(parent) {
 			[msg appendFormat:@"- %p (class <%@>): %@, id=%@, tag=%ld\n",
-							  obj,
-			                  [obj className],
-			                  obj,
-			                  [(NSView *)obj identifier],
-			                  [(NSView *)obj tag]];
+							  parent,
+			                  [parent className],
+			                  parent,
+			                  [(NSView *)parent identifier],
+			                  [(NSView *)parent tag]];
 			parent = [parent superview];
 		}
 		[msg appendString:@"\n"];
