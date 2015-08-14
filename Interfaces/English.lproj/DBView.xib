@@ -24277,11 +24277,13 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="120.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="120.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="120.showNotes"/>
+				<string key="120.userInterfaceItemIdentifier">QueryTabView</string>
 				<string key="1245.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="1245.showNotes"/>
 				<string key="1246.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="1246.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="1246.showNotes"/>
+				<string key="1246.userInterfaceItemIdentifier">StatusTabView</string>
 				<string key="1277.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="1277.showNotes"/>
 				<string key="1304.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24395,20 +24397,24 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="27.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="27.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="27.showNotes"/>
+				<string key="27.userInterfaceItemIdentifier">ContentTabView</string>
 				<string key="28.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="28.showNotes"/>
 				<string key="287.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="287.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="287.showNotes"/>
+				<string key="287.userInterfaceItemIdentifier">TableStructureIndexesTableScrollView</string>
 				<string key="288.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="288.showNotes"/>
 				<string key="289.CustomClassName">SPTableView</string>
 				<string key="289.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="289.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="289.showNotes"/>
+				<string key="289.userInterfaceItemIdentifier">TableStructureIndexesTableView</string>
 				<string key="29.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="29.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="29.showNotes"/>
+				<string key="29.userInterfaceItemIdentifier">StructureTabView</string>
 				<string key="290.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="290.showNotes"/>
 				<string key="291.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24918,6 +24924,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="5543.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="5543.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="5543.showNotes"/>
+				<string key="5543.userInterfaceItemIdentifier">RelationsTabView</string>
 				<string key="5544.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="5544.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="5544.showNotes"/>
@@ -25648,6 +25655,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="6693.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="6693.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="6693.showNotes"/>
+				<string key="6693.userInterfaceItemIdentifier">TriggersTabView</string>
 				<string key="6694.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="6694.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="6694.showNotes"/>
@@ -25736,6 +25744,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="672.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="672.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="672.showNotes"/>
+				<string key="672.userInterfaceItemIdentifier">TableStructureIndexesView</string>
 				<string key="6720.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="6720.showNotes"/>
 				<string key="6727.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -25747,6 +25756,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="673.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="673.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="673.showNotes"/>
+				<string key="673.userInterfaceItemIdentifier">TableStructureColumnsView</string>
 				<string key="6730.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="6730.showNotes"/>
 				<string key="6735.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -26020,6 +26030,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="7043.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7043.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7043.showNotes"/>
+				<string key="7043.userInterfaceItemIdentifier">MasterDBView</string>
 				<string key="7051.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="7051.showNotes"/>
 				<string key="7052.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -26405,9 +26416,11 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="7728.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7728.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7728.showNotes"/>
+				<string key="7728.userInterfaceItemIdentifier">TabesListSplitPane</string>
 				<string key="7729.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7729.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7729.showNotes"/>
+				<string key="7729.userInterfaceItemIdentifier">MainAreaSplitPane</string>
 				<string key="7777.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7777.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7777.showNotes"/>

@@ -76,7 +76,12 @@ retryDescribe:
 		
 		[msg appendString:@"View hierarchy (own children): \n"];
 		for (id child in [(NSView *)obj subviews]) {
-			[msg appendFormat:@"- %p\n",child];
+			[msg appendFormat:@"- %p (class <%@>): %@, id=%@, tag=%ld\n",
+			 child,
+			 [child className],
+			 child,
+			 [(NSView *)child identifier],
+			 [(NSView *)child tag]];
 		}
 		[msg appendString:@"\n"];
 	}
