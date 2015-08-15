@@ -1231,7 +1231,7 @@
 																					<string key="NSFrame">{{10, 33}, {420, 371}}</string>
 																					<reference key="NSNextKeyView" ref="233374444"/>
 																				</object>
-																				<string key="NSLabel">Standard</string>
+																				<string key="NSLabel">TCP/IP</string>
 																				<reference key="NSColor" ref="644242225"/>
 																				<reference key="NSTabView" ref="134031646"/>
 																			</object>
