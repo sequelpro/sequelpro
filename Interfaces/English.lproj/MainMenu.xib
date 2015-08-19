@@ -1043,10 +1043,19 @@
 									<reference key="NSOnImage" ref="325032718"/>
 									<reference key="NSMixedImage" ref="674471825"/>
 								</object>
+								<object class="NSMenuItem" id="340365447">
+									<reference key="NSMenu" ref="405399363"/>
+									<string key="NSTitle">Table Triggers</string>
+									<string key="NSKeyEquiv">4</string>
+									<int key="NSKeyEquivModMask">1048576</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="325032718"/>
+									<reference key="NSMixedImage" ref="674471825"/>
+								</object>
 								<object class="NSMenuItem" id="919117831">
 									<reference key="NSMenu" ref="405399363"/>
 									<string key="NSTitle">Table Info</string>
-									<string key="NSKeyEquiv">4</string>
+									<string key="NSKeyEquiv">5</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="325032718"/>
@@ -1055,15 +1064,6 @@
 								<object class="NSMenuItem" id="153028940">
 									<reference key="NSMenu" ref="405399363"/>
 									<string key="NSTitle">Custom Query</string>
-									<string key="NSKeyEquiv">5</string>
-									<int key="NSKeyEquivModMask">1048576</int>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="325032718"/>
-									<reference key="NSMixedImage" ref="674471825"/>
-								</object>
-								<object class="NSMenuItem" id="340365447">
-									<reference key="NSMenu" ref="405399363"/>
-									<string key="NSTitle">Table Triggers</string>
 									<string key="NSKeyEquiv">6</string>
 									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -4023,7 +4023,6 @@
 							<reference ref="217386801"/>
 							<reference ref="919117831"/>
 							<reference ref="153028940"/>
-							<reference ref="340365447"/>
 							<reference ref="344409374"/>
 							<reference ref="898345065"/>
 							<reference ref="165538449"/>
@@ -4038,6 +4037,7 @@
 							<reference ref="1005782740"/>
 							<reference ref="793101047"/>
 							<reference ref="384637681"/>
+							<reference ref="340365447"/>
 							<reference ref="403457070"/>
 						</array>
 						<reference key="parent" ref="852669482"/>
