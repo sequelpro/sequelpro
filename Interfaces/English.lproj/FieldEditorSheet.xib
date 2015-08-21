@@ -629,13 +629,13 @@
 						<object class="NSTextField" id="40787033">
 							<reference key="NSNextResponder" ref="74424767"/>
 							<int key="NSvFlags">266</int>
-							<string key="NSFrame">{{9, 408}, {459, 14}}</string>
+							<string key="NSFrame">{{9, 408}, {379, 14}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
 							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="6880799">
 								<int key="NSCellFlags">67108928</int>
-								<int key="NSCellFlags2">1078069248</int>
+								<int key="NSCellFlags2">1078069760</int>
 								<string key="NSContents">Label</string>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="40787033"/>
@@ -658,13 +658,13 @@
 						<object class="NSButton" id="331104474">
 							<reference key="NSNextResponder" ref="74424767"/>
 							<int key="NSvFlags">265</int>
-							<string key="NSFrame">{{470, 406}, {185, 18}}</string>
+							<string key="NSFrame">{{398, 406}, {257, 18}}</string>
 							<reference key="NSSuperview" ref="74424767"/>
 							<reference key="NSWindow"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="213875702">
 								<int key="NSCellFlags">67108864</int>
-								<int key="NSCellFlags2">131072</int>
+								<int key="NSCellFlags2">67239936</int>
 								<string key="NSContents">Edit All Fields in Pop-up Sheet</string>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="331104474"/>
@@ -7269,6 +7269,7 @@
 				<string key="7.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7.showNotes"/>
+				<boolean value="NO" key="73.IBNSControlSetsMaxLayoutWidthAtFirstLayoutMetadataKey"/>
 				<string key="73.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="73.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="73.showNotes"/>
