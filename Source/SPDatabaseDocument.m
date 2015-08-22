@@ -6162,7 +6162,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 					NSLocalizedString(@"Error", @"error"),
 					nil,
 					parentWindow,
-					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
+					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName],
+					NSWarningAlertStyle
 				);
 			}
 

@@ -61,5 +61,6 @@ void SPOnewayAlertSheet(
 	NSString *title,
 	NSString *defaultButton,
 	NSWindow *docWindow,
-	NSString *msg
+	NSString *msg,
+	NSAlertStyle alertStyle
 );

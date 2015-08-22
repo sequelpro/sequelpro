@@ -492,7 +492,8 @@
 			   NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"),
 			   nil,
 			   [NSApp mainWindow],
-			   errorMessage
+			   errorMessage,
+			   NSWarningAlertStyle
 			);
 
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -517,7 +518,8 @@
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
 		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
+		   NSWarningAlertStyle
 		);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -568,15 +570,13 @@
 															returningInclusively: NO
 														   ignoringQuotedStrings: NO];
 			if(fieldName == nil || [fieldName length] == 0) {
-#warning NSAlert from background thread! (This whole function needs improvement)
 				NSBeep();
-				NSAlert *alert = [[NSAlert alloc] init];
-				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
-				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser]];
-				[alert setMessageText:NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax")];
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				[alert release];
+				SPOnewayAlertSheet(
+				   NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
+				   nil,
+				   nil,
+				   [NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser],
+				   NSCriticalAlertStyle);
 				continue;
 			}
 			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
@@ -849,7 +849,8 @@
 				NSLocalizedString(@"Error", @"error"),
 				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]]
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]],
+				NSWarningAlertStyle
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -866,7 +867,8 @@
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
 		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
+		   NSWarningAlertStyle
 		);
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		return nil;
@@ -885,7 +887,8 @@
 			   NSLocalizedString(@"Error", @"error"),
 			   nil,
 			   [NSApp mainWindow],
-			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]]
+			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]],
+			   NSWarningAlertStyle
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -996,7 +999,8 @@
 				NSLocalizedString(@"Error", @"error"),
 				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]]
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]],
+				NSWarningAlertStyle
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -1083,7 +1087,8 @@
 				NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"),
 				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]]
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]],
+				NSWarningAlertStyle
 			);
 			if (triggers) SPClear(triggers);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
