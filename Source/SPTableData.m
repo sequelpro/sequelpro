@@ -570,15 +570,13 @@
 															returningInclusively: NO
 														   ignoringQuotedStrings: NO];
 			if(fieldName == nil || [fieldName length] == 0) {
-#warning NSAlert from background thread! (This whole function needs improvement)
 				NSBeep();
-				NSAlert *alert = [[NSAlert alloc] init];
-				[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button")];
-				[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser]];
-				[alert setMessageText:NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax")];
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				[alert release];
+				SPOnewayAlertSheet(
+				   NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
+				   nil,
+				   nil,
+				   [NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser],
+				   NSCriticalAlertStyle);
 				continue;
 			}
 			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
