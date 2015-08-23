@@ -980,6 +980,37 @@
 										</array>
 									</object>
 								</object>
+								<object class="NSMenuItem" id="85027785">
+									<reference key="NSMenu" ref="565667192"/>
+									<string key="NSTitle">Speech</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="325032718"/>
+									<reference key="NSMixedImage" ref="674471825"/>
+									<string key="NSAction">submenuAction:</string>
+									<reference key="NSTarget" ref="923215070"/>
+									<object class="NSMenu" key="NSSubmenu" id="923215070">
+										<string key="NSTitle">Speech</string>
+										<array class="NSMutableArray" key="NSMenuItems">
+											<object class="NSMenuItem" id="761425893">
+												<reference key="NSMenu" ref="923215070"/>
+												<string key="NSTitle">Start Speaking</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="325032718"/>
+												<reference key="NSMixedImage" ref="674471825"/>
+											</object>
+											<object class="NSMenuItem" id="644588777">
+												<reference key="NSMenu" ref="923215070"/>
+												<string key="NSTitle">Stop Speaking</string>
+												<string key="NSKeyEquiv"/>
+												<int key="NSMnemonicLoc">2147483647</int>
+												<reference key="NSOnImage" ref="325032718"/>
+												<reference key="NSMixedImage" ref="674471825"/>
+											</object>
+										</array>
+									</object>
+								</object>
 							</array>
 						</object>
 					</object>
@@ -3196,6 +3227,22 @@
 					<string key="id">KxK-Oo-Rsq</string>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">stopSpeaking:</string>
+						<reference key="source" ref="1005713010"/>
+						<reference key="destination" ref="644588777"/>
+					</object>
+					<string key="id">yqH-pe-byl</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">startSpeaking:</string>
+						<reference key="source" ref="1005713010"/>
+						<reference key="destination" ref="761425893"/>
+					</object>
+					<string key="id">bd2-UP-v4o</string>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="524643114"/>
@@ -3689,6 +3736,7 @@
 							<reference ref="986852824"/>
 							<reference ref="125958105"/>
 							<reference ref="631929208"/>
+							<reference ref="85027785"/>
 						</array>
 						<reference key="parent" ref="160028389"/>
 					</object>
@@ -4796,6 +4844,33 @@
 						<reference key="object" ref="383065474"/>
 						<reference key="parent" ref="315159986"/>
 					</object>
+					<object class="IBObjectRecord">
+						<string key="id">qK5-Ty-Uao</string>
+						<reference key="object" ref="85027785"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="923215070"/>
+						</array>
+						<reference key="parent" ref="565667192"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">mGA-xh-Uwq</string>
+						<reference key="object" ref="923215070"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="644588777"/>
+							<reference ref="761425893"/>
+						</array>
+						<reference key="parent" ref="85027785"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">YwR-Sa-nn5</string>
+						<reference key="object" ref="644588777"/>
+						<reference key="parent" ref="923215070"/>
+					</object>
+					<object class="IBObjectRecord">
+						<string key="id">elh-eq-jVU</string>
+						<reference key="object" ref="761425893"/>
+						<reference key="parent" ref="923215070"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -5427,8 +5502,12 @@
 				<string key="998.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="998.showNotes"/>
 				<string key="JtW-Ko-SuZ.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="YwR-Sa-nn5.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="Yzp-Qk-v7Y.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="elh-eq-jVU.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="mGA-xh-Uwq.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="nXE-rI-RyI.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="qK5-Ty-Uao.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 			</dictionary>
 			<dictionary class="NSMutableDictionary" key="unlocalizedProperties"/>
 			<nil key="activeLocalization"/>
