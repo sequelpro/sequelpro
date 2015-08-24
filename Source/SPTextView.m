@@ -3212,7 +3212,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			[menuItem setTitle: NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word")];
 		}
 		NSUInteger stringSize = [self getRangeForCurrentWord].length;
-		return (stringSize || stringSize > 64);
+		return (0 < stringSize && stringSize < 65); // 1 ≤ stringSize ≤ 64
 	}
 	// Enable Copy as RTF if something is selected
 	if ([menuItem action] == @selector(copyAsRTF)) {
