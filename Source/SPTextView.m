@@ -3203,16 +3203,14 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem 
 {
-
-	// Enable or disable the search in the MySQL help menu item depending on whether there is a 
+	// Enable or disable the search in the MySQL help menu item depending on whether there is a
 	// selection and whether it is a reasonable length.
 	if ([menuItem action] == @selector(showMySQLHelpForCurrentWord:)) {
-    if ([self selectedRange].length > 0) {
-      [menuItem setTitle:NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection")];
-    } else {
-      [menuItem setTitle: NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word")];
-    }
-    
+		if ([self selectedRange].length > 0) {
+			[menuItem setTitle:NSLocalizedString(@"MySQL Help for Selection", @"MySQL Help for Selection")];
+		} else {
+			[menuItem setTitle: NSLocalizedString(@"MySQL Help for Word", @"MySQL Help for Word")];
+		}
 		NSUInteger stringSize = [self getRangeForCurrentWord].length;
 		return (stringSize || stringSize > 64);
 	}
@@ -3231,7 +3229,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		return NO;
 	}
 
-	return YES;
+	return [super validateMenuItem:menuItem];
 }
 
 /**
