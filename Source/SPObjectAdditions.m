@@ -28,6 +28,9 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import <objc/runtime.h>
+static NSMutableDictionary *gScrollViewListeners;
+
 @implementation NSObject (SPObjectAdditions)
 
 /**
@@ -92,7 +95,53 @@ retryDescribe:
 	
 	[msg appendFormat:@"self: %p (class <%@>)\n\n",self,[self className]];
 	
+	NSString *key = [NSString stringWithFormat:@"snd=%p,obs=%p",obj,self];
+	
+	[msg appendFormat:@"registration info for pair (%@):\n %@",key,[gScrollViewListeners objectForKey:key]];
+	
 	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:msg userInfo:nil];
+}
+
+@end
+
+
+@implementation NSNotificationCenter (SPScrollViewDebug)
+
++ (void)load
+{
+	 static dispatch_once_t onceToken;
+	
+	dispatch_once(&onceToken, ^{
+		gScrollViewListeners = [[NSMutableDictionary alloc] init];
+		
+		Class notificationCenter = [self class];
+		
+		SEL orig = @selector(addObserver:selector:name:object:);
+		SEL exch = @selector(sp_addObserver:selector:name:object:);
+		
+		Method origM = class_getInstanceMethod(notificationCenter, orig);
+		Method exchM = class_getInstanceMethod(notificationCenter, exch);
+		
+		method_exchangeImplementations(origM, exchM);
+	});
+
+}
+
+- (void)sp_addObserver:(id)notificationObserver selector:(SEL)notificationSelector name:(NSString *)notificationName object:(id)notificationSender
+{
+	if(notificationSelector == @selector(_scrollViewDidChangeBounds:) && [notificationName isEqualToString:NSViewBoundsDidChangeNotification]) {
+		NSString *key = [NSString stringWithFormat:@"snd=%p,obs=%p",notificationSender,notificationObserver];
+		NSMutableString *val = [NSMutableString string];
+		[val appendFormat:@"observer: %1$p (class %2$@) description: %1$@\n",notificationObserver,[notificationObserver className]];
+		if([notificationObserver isKindOfClass:[NSView class]]) {
+			[val appendFormat:@"  view info: id=%@, tag=%ld\n",[(NSView *)notificationObserver identifier], [(NSView *)notificationObserver tag]];
+		}
+		[val appendFormat:@"\nbacktrace:\n%@\n\n",[NSThread callStackSymbols]];
+		
+		[gScrollViewListeners setObject:val forKey:key];
+	}
+	// not recursive! method is swizzled.
+	[self sp_addObserver:notificationObserver selector:notificationSelector name:notificationName object:notificationSender];
 }
 
 @end
