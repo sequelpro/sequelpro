@@ -3363,10 +3363,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			}
 		}
 	}
-
-	if(fieldEditor) {
-		SPClear(fieldEditor);
-	}
+	
+	// this is a delegate method of the field editor controller. calling release
+	// now would risk a dealloc while it is still our parent on the stack:
+	[fieldEditor autorelease], fieldEditor = nil;
 
 	[[tableContentView window] makeFirstResponder:tableContentView];
 

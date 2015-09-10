@@ -2441,6 +2441,12 @@
 
 	// Check if the field can identified bijectively
 	if ( aTableView == customQueryView ) {
+		
+		// Nothing is editable while the field editor is running.
+		// This guards against a special case where accessibility services might
+		// check if a table field is editable while the sheet is running.
+		if (fieldEditor) return NO;
+		
 		NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[aTableColumn identifier] integerValue]];
 
 		// Check if current field is a blob
@@ -2450,7 +2456,6 @@
 		// Open the editing sheet if required
 		if ([customQueryView shouldUseFieldEditorForRow:rowIndex column:[[aTableColumn identifier] integerValue] checkWithLock:NULL])
 		{
-			if (fieldEditor) SPClear(fieldEditor);
 			fieldEditor = [[SPFieldEditorController alloc] init];
 
 			// Remember edited row for reselecting and setting the scroll view after reload
@@ -3681,9 +3686,9 @@
 		}
 	}
 
-	if(fieldEditor) {
-		SPClear(fieldEditor);
-	}
+	// this is a delegate method of the field editor controller. calling release
+	// now would risk a dealloc while it is still our parent on the stack:
+	[fieldEditor autorelease], fieldEditor = nil;
 
 	// Preserve focus and restore selection indexes if appropriate
 	[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 

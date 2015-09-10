@@ -235,6 +235,11 @@
 #endif
 		if (tableView == tableContentView) {
 			
+			// Nothing is editable while the field editor is running.
+			// This guards against a special case where accessibility services might
+			// check if a table field is editable while the sheet is running.
+			if (fieldEditor) return NO;
+			
 			// Ensure that row is editable since it could contain "(not loaded)" columns together with
 			// issue that the table has no primary key
 			NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
@@ -302,8 +307,6 @@
 				if ([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"]) {
 					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
 				}
-				
-				if (fieldEditor) SPClear(fieldEditor);
 				
 				fieldEditor = [[SPFieldEditorController alloc] init];
 				
@@ -709,8 +712,8 @@
 
 /**
  * If the user selected a table cell which is a blob field and tried to edit it
- * cancel the fieldEditor, display the field editor sheet instead for editing
- * and re-enable the fieldEditor after editing.
+ * cancel the inline edit, display the field editor sheet instead for editing
+ * and re-enable inline editing after closing the sheet.
  */
 - (BOOL)control:(NSControl *)control textShouldBeginEditing:(NSText *)aFieldEditor
 {	
@@ -767,6 +770,7 @@
 		// Cancel editing
 		[control abortEditing];
 		
+		NSAssert(fieldEditor == nil, @"Method should not to be called while a field editor sheet is open!");
 		// Call the field editor sheet
 		[self tableView:tableContentView shouldEditTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], column) row:row];
 		
