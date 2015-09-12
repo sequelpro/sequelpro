@@ -52,6 +52,7 @@
 #import "SPThreadAdditions.h"
 #import "SPFavoriteColorSupport.h"
 #import "SPNamedNode.h"
+#import "SPWindowController.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -1628,7 +1629,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (![NSThread isMainThread]) return [[self onMainThread] _restoreConnectionInterface];
 
 	// Reset the window title
-	[[dbDocument parentWindow] setTitle:[dbDocument displayName]];
+	[dbDocument updateWindowTitle:self];
 	[[dbDocument parentTabViewItem] setLabel:[dbDocument displayName]];
 	[[dbDocument parentTabViewItem] setColor:nil];
 	
