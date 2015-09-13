@@ -194,8 +194,9 @@
 			(![[[[self delegate] class] description] isEqualToString:@"SPConnectionController"])) {
 			
 			// Ensure that editing is permitted
-			if (![[self delegate] tableView:self shouldEditTableColumn:[[self tableColumns] objectAtIndex:0] row:[self selectedRow]]) return;
-
+			if(![[self delegate] respondsToSelector:@selector(tableView:shouldEditTableColumn:row:)]) return; // disallow by default
+			if(![[self delegate] tableView:self shouldEditTableColumn:[[self tableColumns] objectAtIndex:0] row:[self selectedRow]]) return;
+			
 			// Trigger a cell edit
 			[self editColumn:0 row:[self selectedRow] withEvent:nil select:YES];
 			
