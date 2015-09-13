@@ -36,10 +36,40 @@
 
 #include <zlib.h>
 #include <openssl/aes.h>
-#include <openssl/sha.h>
+#include <CommonCrypto/CommonCrypto.h>
 #include <stdlib.h>
 
+uint32_t LimitUInt32(NSUInteger i);
+
+#pragma mark -
+
 @implementation NSData (SPDataAdditions)
+
+- (NSData *)sha1Hash
+{
+	unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+	
+	//let's do it as a one step operation, if it fits
+	if([self length] <= UINT32_MAX) {
+		CC_SHA1([self bytes], (uint32_t)[self length], digest);
+	}
+	// or multi-step if length > 32 bit
+	else {
+		CC_SHA1_CTX ctx;
+		CC_SHA1_Init(&ctx);
+		
+		NSUInteger offset = 0;
+		uint32_t len;
+		while((len = LimitUInt32([self length]-offset)) > 0) {
+			CC_SHA1_Update(&ctx, ([self bytes]+offset), len);
+			offset += len;
+		}
+		
+		CC_SHA1_Final(digest, &ctx);
+	}
+	
+	return [NSData dataWithBytes:digest length:CC_SHA1_DIGEST_LENGTH];
+}
 
 - (NSData *)dataEncryptedWithPassword:(NSString *)password
 {
@@ -68,10 +98,9 @@
 	memcpy(paddedBytes + (paddedLength - 4), &bigIntDataLength, 4);
 
 	// Create the key from first 128-bits of the 160-bit password hash
-	unsigned char passwordDigest[20];
-	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
+	NSData *passwordDigest = [[password dataUsingEncoding:NSUTF8StringEncoding] sha1Hash];
 	AES_KEY aesKey;
-	AES_set_encrypt_key(passwordDigest, 128, &aesKey);
+	AES_set_encrypt_key([passwordDigest bytes], 128, &aesKey);
 
 	// AES-128-cbc encrypt the data, filling in the buffer after the IV
 	AES_cbc_encrypt(paddedBytes, encryptedBytes + 16, paddedLength, &aesKey, iv, AES_ENCRYPT);
@@ -83,12 +112,11 @@
 - (NSData *)dataDecryptedWithPassword:(NSString *)password
 {
 	// Create the key from the password hash
-	unsigned char passwordDigest[20];
-	SHA1((const unsigned char *)[password UTF8String], strlen([password UTF8String]), passwordDigest);
+	NSData *passwordDigest = [[password dataUsingEncoding:NSUTF8StringEncoding] sha1Hash];
 
 	// AES-128-cbc decrypt the data
 	AES_KEY aesKey;
-	AES_set_decrypt_key(passwordDigest, 128, &aesKey);
+	AES_set_decrypt_key([passwordDigest bytes], 128, &aesKey);
 
 	// Total length = encrypted length + IV
 	NSInteger totalLength = [self length];
@@ -312,3 +340,13 @@
 }
 
 @end
+
+#pragma mark -
+
+uint32_t LimitUInt32(NSUInteger i) {
+#if NSUIntegerMax > UINT32_MAX
+	return (i > UINT32_MAX)? UINT32_MAX : (uint32_t)i;
+#else
+	return i;
+#endif
+}

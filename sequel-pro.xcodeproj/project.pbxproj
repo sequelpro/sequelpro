@@ -179,6 +179,9 @@
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
+		502D21F61BA50710000D4CE7 /* SPDataAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */; };
+		502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
+		502D21FA1BA509AF000D4CE7 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 502D21F91BA509AF000D4CE7 /* libcrypto.dylib */; };
 		503B02CA1AE82C5E0060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
 		503B02CF1AE95C2C0060CAB1 /* SPTableFilterParserTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02CE1AE95C2C0060CAB1 /* SPTableFilterParserTest.m */; };
 		503B02D11AE95DD40060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
@@ -891,6 +894,8 @@
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
+		502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditionsTests.m; sourceTree = "<group>"; };
+		502D21F91BA509AF000D4CE7 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		5037F79A1B00148000733564 /* SPNamedNode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPNamedNode.h; sourceTree = "<group>"; };
 		503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFilterParser.h; sourceTree = "<group>"; };
 		503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFilterParser.m; sourceTree = "<group>"; };
@@ -1272,6 +1277,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				502D21FA1BA509AF000D4CE7 /* libcrypto.dylib in Frameworks */,
 				1717F9DB1558114D0065C036 /* OCMock.framework in Frameworks */,
 				1717FA43155831600065C036 /* libicucore.dylib in Frameworks */,
 				50EA92671AB23EE1008D3C4F /* SPMySQL.framework in Frameworks */,
@@ -1936,6 +1942,7 @@
 				380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTests.m */,
 				1760599E1336199D0098E162 /* SPMenuAdditionsTests.m */,
 				1798F1C2155018D4004B0AB8 /* SPMutableArrayAdditionsTests.m */,
+				502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -2349,6 +2356,7 @@
 		2A37F4C3FDCFA73011CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				502D21F91BA509AF000D4CE7 /* libcrypto.dylib */,
 				1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */,
 			);
 			name = Frameworks;
@@ -3052,6 +3060,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */,
+				502D21F61BA50710000D4CE7 /* SPDataAdditionsTests.m in Sources */,
 				503B02D21AE95E010060CAB1 /* SPConstants.m in Sources */,
 				503B02D11AE95DD40060CAB1 /* SPTableFilterParser.m in Sources */,
 				503B02CF1AE95C2C0060CAB1 /* SPTableFilterParserTest.m in Sources */,

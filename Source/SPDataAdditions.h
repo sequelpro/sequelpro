@@ -30,6 +30,8 @@
 
 @interface NSData (SPDataAdditions)
 
+- (NSData *)sha1Hash;
+
 - (NSData *)dataEncryptedWithPassword:(NSString *)password;
 - (NSData *)dataDecryptedWithPassword:(NSString *)password;
 - (NSData *)compress;
