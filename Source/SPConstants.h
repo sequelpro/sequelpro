@@ -622,6 +622,8 @@ extern NSString *SPURLSchemeQueryResultPathHeader;
 extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
+extern NSString *SPCommonCryptoExceptionName;
+
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
 
 // Provides a standard method for our "[x release], x = nil;" convention.

@@ -421,6 +421,8 @@ NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
 NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";
 NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
 
+NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
+
 void inline _SPClear(id *addr) {
 	[*addr release], *addr = nil;
 }

@@ -36,6 +36,8 @@
 @interface SPDataAdditionsTests : SenTestCase
 
 - (void)testSha1Hash;
+- (void)testDataEncryptedWithPassword;
+- (void)testDataEncryptedWithKeyIV;
 
 @end
 
@@ -107,6 +109,81 @@
 		STAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash of UTF-8 string");
 	}
 	
+}
+
+- (void)testDataEncryptedWithPassword
+{
+	//this method generates random data, so we can only test it by doing a full round-trip
+	NSData *raw = [@"foo bar baz!" dataUsingEncoding:NSASCIIStringEncoding];
+	NSString *password = @"123456";
+	
+	NSData *encrypted = [raw dataEncryptedWithPassword:password];
+	//check that our encrypted data is not the plaintext data
+	NSData *encCore = [encrypted subdataWithRange:NSMakeRange(16, [raw length])];
+	STAssertFalse([encCore isEqualToData:raw], @"encrypted equal to plain text!");
+	
+	//decrypt again and verify
+	NSData *decrypted = [encrypted dataDecryptedWithPassword:password];
+	STAssertEqualObjects(decrypted, raw, @"decrypted data not equal to plaintext data!");
+}
+
+- (void)testDataEncryptedWithKeyIV
+{
+	NSData *iv  = [@"0123456789ABCDEF" dataUsingEncoding:NSASCIIStringEncoding];
+	NSData *raw = [@"                " dataUsingEncoding:NSASCIIStringEncoding];
+	//               ^^^^^^^^^^^^^^^^ spaces because their pattern is easily recognizable in hexdumps
+	
+	unsigned char keyRaw[] = {0xda,0x39,0xa3,0xee,0x5e,0x6b,0x4b,0x0d,0x32,0x55,0xbf,0xef,0x95,0x60,0x18,0x90,0xaf,0xd8,0x07,0x09}; // sha1("")
+	NSData *key = [NSData dataWithBytes:keyRaw length:16];
+	
+	//argument tests:
+	//key too short
+	{
+		@try {
+			[raw dataEncryptedWithKey:[@"password" dataUsingEncoding:NSASCIIStringEncoding] IV:iv];
+			STFail(@"Password should not be a valid key!");
+		}
+		@catch (NSException *exception) {
+			//expected
+		}
+	}
+	//iv too short
+	{
+		@try {
+			[raw dataEncryptedWithKey:key IV:[NSData data]];
+			STFail(@"Empty IV should throw exception!");
+		}
+		@catch (NSException *exception) {
+			// expected
+		}
+	}
+	//simple test: encrypting empty
+	{
+		NSData *enc = [[NSData data] dataEncryptedWithKey:key IV:iv];
+		unsigned char expect[] = {
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41,
+			0x42, 0x43, 0x44, 0x45, 0x46, 0x50, 0xc9, 0xca, 0x75, 0x14, 0xd3,
+			0x6e, 0xec, 0x9e, 0xc6, 0x4c, 0x25, 0x02, 0x33, 0xdd, 0x86, 0x00,
+			0x02, 0x5c, 0x2c, 0xf9, 0xa5, 0x22, 0x79, 0xa4, 0x14, 0x61, 0x90,
+			0x1d, 0x9f, 0x0c, 0x7a
+		}; // reference data generated with OpenSSL
+		NSData *expData = [NSData dataWithBytesNoCopy:expect length:sizeof(expect) freeWhenDone:NO];
+		STAssertEqualObjects(enc, expData, @"Encryption of empty data");
+	}
+	//simple encryption test
+	{
+		NSData *enc = [raw dataEncryptedWithKey:key IV:iv];
+		unsigned char expect[] = {
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41,
+			0x42, 0x43, 0x44, 0x45, 0x46, 0xd3, 0x58, 0x30, 0x95, 0x6d, 0x7f,
+			0xf5, 0x1e, 0x18, 0xb0, 0xbc, 0x1f, 0xb3, 0xe4, 0x52, 0xb1, 0x75,
+			0x4c, 0xc3, 0x52, 0xd0, 0x93, 0xad, 0xff, 0x36, 0x4a, 0xae, 0xbe,
+			0x60, 0x32, 0xdd, 0x71, 0xef, 0xce, 0x2e, 0x8b, 0x09, 0xcb, 0x9a,
+			0x44, 0x32, 0xb3, 0xda, 0x42, 0x58, 0x29, 0x78, 0xc3
+		}; // reference data generated with OpenSSL
+		NSData *expData = [NSData dataWithBytesNoCopy:expect length:sizeof(expect) freeWhenDone:NO];
+		STAssertEqualObjects(enc, expData, @"Simple encryption test");
+	}
 }
 
 @end

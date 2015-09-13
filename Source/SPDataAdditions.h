@@ -33,7 +33,9 @@
 - (NSData *)sha1Hash;
 
 - (NSData *)dataEncryptedWithPassword:(NSString *)password;
+- (NSData *)dataEncryptedWithKey:(NSData *)aesKey IV:(NSData *)iv;
 - (NSData *)dataDecryptedWithPassword:(NSString *)password;
+
 - (NSData *)compress;
 - (NSData *)decompress;
 
