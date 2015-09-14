@@ -30,6 +30,7 @@
 
 #import <objc/runtime.h>
 static NSMutableDictionary *gScrollViewListeners;
+static NSMutableDictionary *gScrollViewDealloc;
 
 @implementation NSObject (SPObjectAdditions)
 
@@ -97,7 +98,10 @@ retryDescribe:
 	
 	NSString *key = [NSString stringWithFormat:@"snd=%p,obs=%p",obj,self];
 	
-	[msg appendFormat:@"registration info for pair (%@):\n %@",key,[gScrollViewListeners objectForKey:key]];
+	[msg appendFormat:@"registration info for pair (%@):\n %@\n\n",key,[gScrollViewListeners objectForKey:key]];
+	
+	NSString *deallocKey = [NSString stringWithFormat:@"=%p",self];
+	[msg appendFormat:@"self %@ was originally dealloc'ed at:\n %@",deallocKey,[gScrollViewDealloc objectForKey:deallocKey]];
 	
 	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:msg userInfo:nil];
 }
@@ -143,5 +147,42 @@ retryDescribe:
 	// not recursive! method is swizzled.
 	[self sp_addObserver:notificationObserver selector:notificationSelector name:notificationName object:notificationSender];
 }
+
+@end
+
+#import "SPTableView.h"
+
+@implementation SPTableView (SPScrollViewDebug)
+
++ (void)load
+{
+	static dispatch_once_t onceToken;
+	
+	dispatch_once(&onceToken, ^{
+		gScrollViewDealloc = [[NSMutableDictionary alloc] init];
+		
+		Class tableView = [self class];
+		
+		SEL orig = @selector(dealloc);
+		SEL exch = @selector(sp_dealloc);
+		
+		Method origM = class_getInstanceMethod(tableView, orig);
+		Method exchM = class_getInstanceMethod(tableView, exch);
+		
+		method_exchangeImplementations(origM, exchM);
+	});
+}
+
+- (void)sp_dealloc
+{
+	NSString *key = [NSString stringWithFormat:@"=%p",self];
+	NSString *val = [NSString stringWithFormat:@"\ndealloc backtrace:\n%@\n\n",[NSThread callStackSymbols]];
+	
+	[gScrollViewDealloc setObject:val forKey:key];
+	
+	// not recursive! method is swizzled.
+	[self sp_dealloc];
+}
+
 
 @end

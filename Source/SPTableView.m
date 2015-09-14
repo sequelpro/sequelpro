@@ -61,6 +61,11 @@
 	return self;
 }
 
+- (void)dealloc
+{
+	[super dealloc];
+}
+
 - (void) awakeFromNib
 {
 	[super setDoubleAction:@selector(_doubleClickAction)];
