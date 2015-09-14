@@ -38,6 +38,8 @@
 - (void)testSha1Hash;
 - (void)testDataEncryptedWithPassword;
 - (void)testDataEncryptedWithKeyIV;
+- (void)testDataDecryptedWithPassword;
+- (void)testDataDecryptedWithKey;
 
 @end
 
@@ -183,6 +185,99 @@
 		}; // reference data generated with OpenSSL
 		NSData *expData = [NSData dataWithBytesNoCopy:expect length:sizeof(expect) freeWhenDone:NO];
 		STAssertEqualObjects(enc, expData, @"Simple encryption test");
+	}
+}
+
+- (void)testDataDecryptedWithPassword
+{
+	//see test above
+	NSData *raw = [@"                " dataUsingEncoding:NSASCIIStringEncoding];
+	unsigned char encrypted[] = {
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41,
+		0x42, 0x43, 0x44, 0x45, 0x46, 0xd3, 0x58, 0x30, 0x95, 0x6d, 0x7f,
+		0xf5, 0x1e, 0x18, 0xb0, 0xbc, 0x1f, 0xb3, 0xe4, 0x52, 0xb1, 0x75,
+		0x4c, 0xc3, 0x52, 0xd0, 0x93, 0xad, 0xff, 0x36, 0x4a, 0xae, 0xbe,
+		0x60, 0x32, 0xdd, 0x71, 0xef, 0xce, 0x2e, 0x8b, 0x09, 0xcb, 0x9a,
+		0x44, 0x32, 0xb3, 0xda, 0x42, 0x58, 0x29, 0x78, 0xc3
+	};
+	NSData *encData = [NSData dataWithBytesNoCopy:encrypted length:sizeof(encrypted) freeWhenDone:NO];
+	
+	NSData *decrypted = [encData dataDecryptedWithPassword:@""];
+	
+	STAssertEqualObjects(decrypted, raw, @"Decrypt simple data encrypted with empty password");
+}
+
+- (void)testDataDecryptedWithKey
+{
+	NSData *raw = [@"                " dataUsingEncoding:NSASCIIStringEncoding];
+	
+	unsigned char keyRaw[] = {0xda,0x39,0xa3,0xee,0x5e,0x6b,0x4b,0x0d,0x32,0x55,0xbf,0xef,0x95,0x60,0x18,0x90,0xaf,0xd8,0x07,0x09}; // sha1("")
+	NSData *key = [NSData dataWithBytes:keyRaw length:16];
+	
+	unsigned char encrypted[] = {
+		0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41,
+		0x42, 0x43, 0x44, 0x45, 0x46, 0xd3, 0x58, 0x30, 0x95, 0x6d, 0x7f,
+		0xf5, 0x1e, 0x18, 0xb0, 0xbc, 0x1f, 0xb3, 0xe4, 0x52, 0xb1, 0x75,
+		0x4c, 0xc3, 0x52, 0xd0, 0x93, 0xad, 0xff, 0x36, 0x4a, 0xae, 0xbe,
+		0x60, 0x32, 0xdd, 0x71, 0xef, 0xce, 0x2e, 0x8b, 0x09, 0xcb, 0x9a,
+		0x44, 0x32, 0xb3, 0xda, 0x42, 0x58, 0x29, 0x78, 0xc3
+	};
+	NSData *encData = [NSData dataWithBytesNoCopy:encrypted length:sizeof(encrypted) freeWhenDone:NO];
+	
+	// invalid key length
+	{
+		@try {
+			[encData dataDecryptedWithKey:[NSData data]];
+			STFail(@"Invalid key length!");
+		}
+		@catch (NSException *exception) {
+			//expected
+		}
+	}
+	// data too short for encryption
+	{
+		@try {
+			[[@"Hello World!" dataUsingEncoding:NSASCIIStringEncoding] dataDecryptedWithKey:key];
+			STFail(@"Invalid data length!");
+		}
+		@catch (NSException *exception) {
+			//expected
+		}
+	}
+	// wrong data with valid length
+	{
+		NSData *inp = [@"12345678901234567890123456789012" dataUsingEncoding:NSASCIIStringEncoding];
+		STAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt invalid data.");
+	}
+	// wrong data with invalid length
+	{
+		NSData *inp = [@"12345678901234567890123456789012345678901234567" dataUsingEncoding:NSASCIIStringEncoding];
+		STAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt data with invalid length.");
+	}
+	// simple decryption test
+	{
+		NSData *decrypted = [encData dataDecryptedWithKey:key];
+		STAssertEqualObjects(decrypted, raw, @"Simple Decryption test");
+	}
+	// malicious message test
+	{
+		//this is an empty message with a length field set to UINT32_MAX
+		unsigned char _encrypted[] = {
+			0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x41,
+			0x42, 0x43, 0x44, 0x45, 0x46, 0x50, 0xc9, 0xca, 0x75, 0x14, 0xd3,
+			0x6e, 0xec, 0x9e, 0xc6, 0x4c, 0x25, 0x02, 0x33, 0xdd, 0x86, 0x54,
+			0xea, 0x1a, 0x0d, 0xe9, 0x88, 0xe3, 0xeb, 0xcb, 0xb7, 0x01, 0x52,
+			0x42, 0x1c, 0xd8, 0xd5
+		};
+		NSData *_encData = [NSData dataWithBytesNoCopy:_encrypted length:sizeof(_encrypted) freeWhenDone:NO];
+		
+		@try {
+			[_encData dataDecryptedWithKey:key];
+			STFail(@"Malicious message with invalid data length");
+		}
+		@catch (NSException *exception) {
+			//expected
+		}
 	}
 }
 

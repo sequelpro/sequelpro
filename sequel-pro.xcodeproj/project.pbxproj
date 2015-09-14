@@ -181,7 +181,8 @@
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
 		502D21F61BA50710000D4CE7 /* SPDataAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */; };
 		502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
-		502D21FA1BA509AF000D4CE7 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 502D21F91BA509AF000D4CE7 /* libcrypto.dylib */; };
+		502D22151BA62FA5000D4CE7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
+		502D22161BA62FF5000D4CE7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5EAC0FC0EC87FF900CC579C /* Security.framework */; };
 		503B02CA1AE82C5E0060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
 		503B02CF1AE95C2C0060CAB1 /* SPTableFilterParserTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02CE1AE95C2C0060CAB1 /* SPTableFilterParserTest.m */; };
 		503B02D11AE95DD40060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
@@ -409,7 +410,6 @@
 		BC09D7E312A786FB0030DB64 /* cancel.png in Resources */ = {isa = PBXBuildFile; fileRef = BC09D7DD12A786FB0030DB64 /* cancel.png */; };
 		BC0E1486120AAB5600E52E25 /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
 		BC0E1487120AAB5C00E52E25 /* SPStringAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1789343B0F30C1DD0097539A /* SPStringAdditions.m */; };
-		BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 17B7B58F1016028F00F057DE /* libcrypto.dylib */; };
 		BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 179ECEC611F265EE009C6A40 /* libbz2.dylib */; };
 		BC0ED3DA12A9196C00088461 /* SPChooseMenuItemDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = BC0ED3D912A9196C00088461 /* SPChooseMenuItemDialog.m */; };
 		BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = BC1847E90FE6EC8400094BFB /* SPEditSheetTextView.m */; };
@@ -758,7 +758,6 @@
 		17A7773711C52E61001E27B4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Interfaces/English.lproj/IndexesView.xib; sourceTree = "<group>"; };
 		17AF787911FC41C00073D043 /* SPExportFilenameUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFilenameUtilities.h; sourceTree = "<group>"; };
 		17AF787A11FC41C00073D043 /* SPExportFilenameUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFilenameUtilities.m; sourceTree = "<group>"; };
-		17B7B58F1016028F00F057DE /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = /usr/lib/libcrypto.dylib; sourceTree = "<absolute>"; };
 		17B7B591101602AE00F057DE /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = /usr/lib/libssl.dylib; sourceTree = "<absolute>"; };
 		17BA2A3015275D8600389803 /* SPExportInterfaceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInterfaceController.h; sourceTree = "<group>"; };
 		17BA2A3115275D8600389803 /* SPExportInterfaceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInterfaceController.m; sourceTree = "<group>"; };
@@ -895,7 +894,6 @@
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
 		502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditionsTests.m; sourceTree = "<group>"; };
-		502D21F91BA509AF000D4CE7 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		5037F79A1B00148000733564 /* SPNamedNode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SPNamedNode.h; sourceTree = "<group>"; };
 		503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFilterParser.h; sourceTree = "<group>"; };
 		503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFilterParser.m; sourceTree = "<group>"; };
@@ -1277,7 +1275,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				502D21FA1BA509AF000D4CE7 /* libcrypto.dylib in Frameworks */,
+				502D22151BA62FA5000D4CE7 /* Security.framework in Frameworks */,
 				1717F9DB1558114D0065C036 /* OCMock.framework in Frameworks */,
 				1717FA43155831600065C036 /* libicucore.dylib in Frameworks */,
 				50EA92671AB23EE1008D3C4F /* SPMySQL.framework in Frameworks */,
@@ -1288,8 +1286,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				502D22161BA62FF5000D4CE7 /* Security.framework in Frameworks */,
 				BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */,
-				BC0E1493120AABE900E52E25 /* libcrypto.dylib in Frameworks */,
 				584D87C415141A5D00F24774 /* libz.dylib in Frameworks */,
 				58475686120A065B0057631F /* CoreFoundation.framework in Frameworks */,
 				584756B5120A06740057631F /* CoreServices.framework in Frameworks */,
@@ -1364,7 +1362,6 @@
 				296DC8BE0F9091DF002A3258 /* libicucore.dylib */,
 				179ECEC611F265EE009C6A40 /* libbz2.dylib */,
 				17B7B591101602AE00F057DE /* libssl.dylib */,
-				17B7B58F1016028F00F057DE /* libcrypto.dylib */,
 				584D87BE15141A4A00F24774 /* libz.dylib */,
 			);
 			name = "Linked Frameworks";
@@ -2356,7 +2353,6 @@
 		2A37F4C3FDCFA73011CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				502D21F91BA509AF000D4CE7 /* libcrypto.dylib */,
 				1058C7A6FEA54F5311CA2CBB /* Linked Frameworks */,
 			);
 			name = Frameworks;
@@ -3937,10 +3933,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = (
-					"$(SRCROOT)/Frameworks/zlib/libz.a",
-					"-lcrypto",
-				);
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4140,10 +4133,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = (
-					"$(SRCROOT)/Frameworks/zlib/libz.a",
-					"-lcrypto",
-				);
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4167,10 +4157,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = (
-					"$(SRCROOT)/Frameworks/zlib/libz.a",
-					"-lcrypto",
-				);
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};

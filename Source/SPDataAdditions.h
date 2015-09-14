@@ -35,6 +35,7 @@
 - (NSData *)dataEncryptedWithPassword:(NSString *)password;
 - (NSData *)dataEncryptedWithKey:(NSData *)aesKey IV:(NSData *)iv;
 - (NSData *)dataDecryptedWithPassword:(NSString *)password;
+- (NSData *)dataDecryptedWithKey:(NSData *)key;
 
 - (NSData *)compress;
 - (NSData *)decompress;
