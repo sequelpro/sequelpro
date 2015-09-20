@@ -407,9 +407,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Reset table key store for use in argumentForRow:
 	if (keys) SPClear(keys);
 
-	// Reset data column store
-	[dataColumns removeAllObjects];
-
 	// Check the supplied table name.  If it matches the old one, a reload is being performed;
 	// reload the data in-place to maintain table state if possible.
 	if ([selectedTable isEqualToString:newTableName]) {
@@ -433,6 +430,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[tableContentView deselectAll:self];
 
 		// Restore the table content view to the top left
+		// Note: This may cause the table view to reload it's data!
 		[tableContentView scrollRowToVisible:0];
 		[tableContentView scrollColumnToVisible:0];
 
@@ -440,6 +438,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
 		maxNumRowsIsEstimate = YES;
 	}
+	
+	// Reset data column store
+	[dataColumns removeAllObjects];
 
 	// If no table has been supplied, reset the view to a blank table and disabled elements.
 	if (!newTableName) {
