@@ -42,6 +42,8 @@
 
 @end
 
+static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
+
 @implementation SPStringAdditionsTests
 
 /**
@@ -102,7 +104,7 @@
 	{
 		NSArray *matches = nil;
 		STAssertTrue([@"" nonConsecutivelySearchString:@"" matchingRanges:&matches], @"Equality of empty strings");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 0), [(NSValue *)[matches objectAtIndex:0] rangeValue]), @"Returned matches in empty string");
+		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 0), RangeFromArray(matches, 0)), @"Returned matches in empty string");
 	}
 	
 	{
@@ -116,13 +118,13 @@
 	{
 		NSArray *matches = nil;
 		STAssertTrue([@"left" nonConsecutivelySearchString:@"le" matchingRanges:&matches], @"Anchored match left");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 2), [(NSValue *)[matches objectAtIndex:0] rangeValue]), @"Returned matches in anchored left match");
+		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 2), RangeFromArray(matches, 0)), @"Returned matches in anchored left match");
 	}
 	
 	{
 		NSArray *matches = nil;
 		STAssertTrue([@"right" nonConsecutivelySearchString:@"ht" matchingRanges:&matches], @"Anchored match right");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(3, 2), [(NSValue *)[matches objectAtIndex:0] rangeValue]), @"Returned matches in anchroed right match");
+		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(3, 2), RangeFromArray(matches, 0)), @"Returned matches in anchroed right match");
 	}
 	
 	STAssertFalse([@"ht" nonConsecutivelySearchString:@"right" matchingRanges:NULL], @"Left and Right are not commutative");
@@ -132,9 +134,9 @@
 		NSArray *matches = nil;
 		STAssertTrue([@"... is not secure anymore!" nonConsecutivelySearchString:@"NSA"  matchingRanges:&matches], @"Non-consecutive match, ignoring case");
 		STAssertTrue(([matches count] == 3) &&
-					 (NSEqualRanges(NSMakeRange(7, 1), [(NSValue *)[matches objectAtIndex:0] rangeValue])) &&
-					 (NSEqualRanges(NSMakeRange(11, 1), [(NSValue *)[matches objectAtIndex:1] rangeValue])) &&
-					 (NSEqualRanges(NSMakeRange(18, 1), [(NSValue *)[matches objectAtIndex:2] rangeValue])), @"Returned matches in non-consecutive string");
+					 NSEqualRanges(NSMakeRange( 7, 1), RangeFromArray(matches, 0)) &&
+					 NSEqualRanges(NSMakeRange(11, 1), RangeFromArray(matches, 1)) &&
+					 NSEqualRanges(NSMakeRange(18, 1), RangeFromArray(matches, 2)), @"Returned matches in non-consecutive string");
 	}
 	
 	STAssertFalse([@"Deoxyribonucleic Acid" nonConsecutivelySearchString:@"DNS"  matchingRanges:NULL], @"Non-consecutive mismatch");
@@ -142,10 +144,38 @@
 	{
 		NSArray *matches = nil;
 		STAssertTrue([@"Turn left, then right at the corner" nonConsecutivelySearchString:@"left right" matchingRanges:&matches], @"Partly consecutive match");
-		STAssertTrue(([matches count] == 3) &&
-					 (NSEqualRanges(NSMakeRange(5, 4), [(NSValue *)[matches objectAtIndex:0] rangeValue])) &&
-					 (NSEqualRanges(NSMakeRange(10, 1), [(NSValue *)[matches objectAtIndex:1] rangeValue])) &&
-					 (NSEqualRanges(NSMakeRange(16, 5), [(NSValue *)[matches objectAtIndex:2] rangeValue])), @"Returned matches in partly-consecutive string");
+		STAssertTrue(([matches count] == 2) &&
+					 (NSEqualRanges(NSMakeRange( 5, 4), RangeFromArray(matches, 0))) &&
+					 (NSEqualRanges(NSMakeRange(15, 6), RangeFromArray(matches, 1))), @"Returned matches in partly-consecutive string");
+	}
+	
+	//optimization tests
+	{
+		NSArray *matches = nil;
+		//  Haystack:    "central_private_rabbit_park"
+		//  Needle:      "centralpark"
+		//  Unoptimized: "central_private_rabbit_park"
+		//                ^^^^^^^ ^   ^   ^         ^ = 5 (after optimizing consecutive atomic matches)
+		//  Desired:     "central_private_rabbit_park"
+		//                ^^^^^^^                ^^^^ = 2
+		STAssertTrue([@"central_private_rabbit_park" nonConsecutivelySearchString:@"centralpark" matchingRanges:&matches], @"Optimization partly consecutive match");
+		STAssertTrue((([matches count] == 2) &&
+					  (NSEqualRanges(NSMakeRange( 0, 7), RangeFromArray(matches, 0))) &&
+					  (NSEqualRanges(NSMakeRange(23, 4), RangeFromArray(matches, 1)))), @"Returned matches set is minimal");
+	}
+	{
+		// In the previous test it was always the end of the matches array that got optimized.
+		// This time we'll have two different optimizations
+		//   Needle:      ".abc123"
+		//   Haystack:    "a.?a?ab?abc?1?12?123?"
+		//   Unoptimized:   ^ ^  ^   ^ ^  ^   ^ = 7
+		//   Desired:       ^      ^^^      ^^^ = 3
+		NSArray *matches = nil;
+		STAssertTrue([@"a.?a?ab?abc?1?12?123?" nonConsecutivelySearchString:@".abc123" matchingRanges:&matches], @"Optimization non-consecutive match");
+		STAssertTrue((([matches count] == 3) &&
+					  (NSEqualRanges(NSMakeRange( 1, 1), RangeFromArray(matches, 0))) &&
+					  (NSEqualRanges(NSMakeRange( 8, 3), RangeFromArray(matches, 1))) &&
+					  (NSEqualRanges(NSMakeRange(17, 3), RangeFromArray(matches, 2)))), @"Returned matches set is minimal (2)");
 	}
 	
 	//advanced tests
@@ -166,3 +196,8 @@
 }
 
 @end
+
+NSRange RangeFromArray(NSArray *a,NSUInteger idx)
+{
+	return [(NSValue *)[a objectAtIndex:idx] rangeValue];
+}

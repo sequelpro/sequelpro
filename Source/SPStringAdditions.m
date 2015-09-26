@@ -535,9 +535,39 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 					tmpMatchStore[mergeTarget] = this;
 			}
 		}
+		matchCount = mergeTarget+1;
 		
-		NSMutableArray *combinedArray = [NSMutableArray arrayWithCapacity:mergeTarget+1];
-		for (NSUInteger j = 0; j <= mergeTarget; j++) {
+		//Next we want to merge non-adjacent matches that could be adjacent. Example:
+		//  Haystack:    "central_private_rabbit_park"
+		//  Needle:      "centralpark"
+		//  Unoptimized: "central_private_rabbit_park"
+		//                ^^^^^^^ ^   ^   ^         ^ = 5
+		//  Desired:     "central_private_rabbit_park"
+		//                ^^^^^^^                ^^^^ = 2
+		//
+		//  This time we start from the end (object K) and check if object K-1 can
+		//  actually be placed directly in front of K and if so, merge them both into
+		//  a new K-1 and shift down K+1 to K, K+2 to K+1, ...
+		for (NSUInteger k = matchCount - 1; k > 0; k--) {
+			NSRange my   = tmpMatchStore[k];
+			NSRange prev = tmpMatchStore[k-1];
+			NSString *prevMatch = [self substringWithRange:prev];
+			NSRange left = NSMakeRange(my.location - prev.length, prev.length);
+			NSString *myLeftSide = [self substringWithRange:left];
+			if([prevMatch compare:myLeftSide options:opts] == NSOrderedSame) {
+				//yay, let's merge them
+				tmpMatchStore[k-1] = NSMakeRange(left.location, my.length+prev.length);
+				//we now have to shift down k+1 to k, k+2 to k+1, ...
+				for (NSUInteger n = k+1; n < matchCount; n++) {
+					tmpMatchStore[n-1] = tmpMatchStore[n];
+				}
+				//merging means one match less in total
+				matchCount--;
+			}
+		}
+		
+		NSMutableArray *combinedArray = [NSMutableArray arrayWithCapacity:matchCount];
+		for (NSUInteger j = 0; j < matchCount; j++) {
 			[combinedArray addObject:[NSValue valueWithRange:tmpMatchStore[j]]];
 		}
 		

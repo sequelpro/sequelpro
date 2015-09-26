@@ -88,6 +88,10 @@ static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedSt
  * Namely the following options will be applied when matching: 
  *   NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSWidthInsensitiveSearch
  * Additionaly this method might match even when it should not.
+ * A regular substring test is always included. Therefore looking e.g. for "abc" in
+ * "axbxabc" would match as (axbx,"abc") and NOT as ("a",x,"b",xab,"c").
+ * Partial submatches will likewise be optimized to return as few matches as possible.
+ * E.g. ".123" in "a._1_12_123" will return (a,".",_1_12_,"123") NOT (a,".",_,"1",_1,"2",_12,"3")
  *
  * @param other      String to match against self
  * @param submatches Pass the pointer to a variable that will be set to an NSArray *

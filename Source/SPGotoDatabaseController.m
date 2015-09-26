@@ -49,9 +49,13 @@
 - (IBAction)searchChanged:(id)sender;
 - (IBAction)toggleWordSearch:(id)sender;
 
-- (BOOL)qualifiesForWordSearch:(NSString *)s;
 - (BOOL)qualifiesForWordSearch; //takes s from searchField
 @end
+
+static BOOL StringQualifiesForWordSearch(NSString *s);
+static NSUInteger CountSubMatches(NSAttributedString *s);
+
+#pragma mark -
 
 @implementation SPGotoDatabaseController
 
@@ -112,11 +116,17 @@
 		//always add the search string to the end of the list (in case the user
 		//wants to switch to a DB not in the list) unless there was an exact match
 		if ([self allowCustomNames] && !exactMatch) {
-			NSMutableAttributedString *searchValue = [[NSMutableAttributedString alloc] initWithString:newFilter];
+			// remove quotes if any
+			if(StringQualifiesForWordSearch(newFilter))
+				newFilter = [newFilter substringWithRange:NSMakeRange(1, [newFilter length]-2)];
+			
+			if([newFilter length]) {
+				NSMutableAttributedString *searchValue = [[NSMutableAttributedString alloc] initWithString:newFilter];
 
-			[searchValue applyFontTraits:NSItalicFontMask range:NSMakeRange(0, [newFilter length])];
+				[searchValue applyFontTraits:NSItalicFontMask range:NSMakeRange(0, [newFilter length])];
 
-			[filteredList addObject:[searchValue autorelease]];
+				[filteredList addObject:[searchValue autorelease]];
+			}
 		}
 	}
 
@@ -209,8 +219,10 @@
 
 	NSStringCompareOptions opts = NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSWidthInsensitiveSearch;
 	
+	BOOL useWordSearch = StringQualifiesForWordSearch(filter);
+	
 	// interpret a quoted string as 'looking for exact submachtes only'
-	if([self qualifiesForWordSearch:filter]) {
+	if(useWordSearch) {
 		//remove quotes for matching
 		filter = [filter substringWithRange:NSMakeRange(1, [filter length]-2)];
 		
@@ -261,17 +273,33 @@
 		}
 	}
 	
+	//sort the filtered list
+	[filteredList sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+		// word search produces only 1 match, skip.
+		if(!useWordSearch) {
+			// All the items are NSAttributedStrings.
+			// First we want to sort by number of match groups.
+			//   Less match groups -> better result:
+			//     Search string: abc
+			//     Matches: schema_abc, tablecloth
+			//     => First only has 1 match group, is more likely to be the desired result
+			NSUInteger mgc1 = CountSubMatches(obj1);
+			NSUInteger mgc2 = CountSubMatches(obj2);
+			if(mgc1 < mgc2)
+				return NSOrderedAscending;
+			if(mgc2 > mgc1)
+				return NSOrderedDescending;
+		}
+		// For strings with the same number of match groups we just sort alphabetically
+		return [[(NSAttributedString *)obj1 string] compare:[(NSAttributedString *)obj2 string]];
+	}];
+	
 	[attrs release];
-}
-
-- (BOOL)qualifiesForWordSearch:(NSString *)s
-{
-	return (s && ([s length] > 1) && (([s hasPrefix:@"\""] && [s hasSuffix:@"\""]) || ([s hasPrefix:@"'"] && [s hasSuffix:@"'"])));
 }
 
 - (BOOL)qualifiesForWordSearch
 {
-	return [self qualifiesForWordSearch:[searchField stringValue]];
+	return StringQualifiesForWordSearch([searchField stringValue]);
 }
 
 #pragma mark -
@@ -350,3 +378,23 @@
 }
 
 @end
+
+#pragma mark -
+
+BOOL StringQualifiesForWordSearch(NSString *s)
+{
+	return (s && ([s length] > 1) && (([s hasPrefix:@"\""] && [s hasSuffix:@"\""]) || ([s hasPrefix:@"'"] && [s hasSuffix:@"'"])));
+}
+
+NSUInteger CountSubMatches(NSAttributedString *s)
+{
+	__block NSUInteger matches = 0;
+	[s enumerateAttribute:NSBackgroundColorAttributeName
+				  inRange:NSMakeRange(0, [s length])
+				  options:0
+			   usingBlock:^(id value, NSRange range, BOOL *stop) {
+		if(value)
+			matches++;
+	}];
+	return matches;
+}
