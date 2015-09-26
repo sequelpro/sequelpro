@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
-		<string key="IBDocument.SystemVersion">13F34</string>
+		<string key="IBDocument.SystemVersion">13F1096</string>
 		<string key="IBDocument.InterfaceBuilderVersion">6751</string>
 		<string key="IBDocument.AppKitVersion">1265.21</string>
 		<string key="IBDocument.HIToolboxVersion">698.00</string>
@@ -477,6 +477,14 @@
 					</object>
 					<string key="id">O6w-uT-xK7</string>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="1032614363"/>
+						<reference key="destination" ref="1042702399"/>
+					</object>
+					<string key="id">6Ur-iZ-LRv</string>
+				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<array key="orderedObjects">
@@ -720,7 +728,6 @@
 						<string key="okClicked:">id</string>
 						<string key="searchChanged:">id</string>
 						<string key="toggleWordSearch:">id</string>
-						<string key="toogleWordSearch:">id</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="cancelClicked:">
@@ -737,10 +744,6 @@
 						</object>
 						<object class="IBActionInfo" key="toggleWordSearch:">
 							<string key="name">toggleWordSearch:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="toogleWordSearch:">
-							<string key="name">toogleWordSearch:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 					</dictionary>

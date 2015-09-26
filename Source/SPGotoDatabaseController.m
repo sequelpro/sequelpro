@@ -42,7 +42,7 @@
  * It will neither clear the filteredList first, nor change the isFiltered ivar!
  * Search is case insensitive.
  */
-- (void)_buildHightlightedFilterList:(NSString *)filter didFindExactMatch:(BOOL *)exactMatch;
+- (void)_buildFilterList:(NSString *)filter didFindExactMatch:(BOOL *)exactMatch;
 
 - (IBAction)okClicked:(id)sender;
 - (IBAction)cancelClicked:(id)sender;
@@ -53,7 +53,29 @@
 @end
 
 static BOOL StringQualifiesForWordSearch(NSString *s);
-static NSUInteger CountSubMatches(NSAttributedString *s);
+
+#pragma mark -
+
+@interface SPGotoFilteredItem : NSObject {
+	NSString *string;
+	NSArray *matches;
+	BOOL isCustomItem;
+}
+@property(nonatomic,retain) NSString *string;
+@property(nonatomic,retain) NSArray *matches;
+@property(nonatomic,assign) BOOL isCustomItem;
+
++ (SPGotoFilteredItem *)item;
+@end
+
+@implementation SPGotoFilteredItem
+
+@synthesize string;
+@synthesize matches;
+@synthesize isCustomItem;
+
++ (SPGotoFilteredItem *)item { return [[[SPGotoFilteredItem alloc] init] autorelease]; }
+@end
 
 #pragma mark -
 
@@ -64,9 +86,14 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 - (id)init
 {
     if ((self = [super initWithWindowNibName:@"GotoDatabaseDialog"])) {
-        unfilteredList = [[NSMutableArray alloc] init];
+		unfilteredList = [[NSMutableArray alloc] init];
 		filteredList   = [[NSMutableArray alloc] init];
 		isFiltered     = NO;
+		highlightAttrs = [@{
+			NSBackgroundColorAttributeName: [NSColor colorWithCalibratedRed:249/255.0 green:247/255.0 blue:62/255.0 alpha:0.5],
+			NSUnderlineColorAttributeName:  [NSColor colorWithCalibratedRed:246/255.0 green:189/255.0 blue:85/255.0 alpha:1.0],
+			NSUnderlineStyleAttributeName:  [NSNumber numberWithInt:NSUnderlineStyleThick]
+		} retain];
 
 		[self setAllowCustomNames:YES];
     }
@@ -111,7 +138,7 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 
 		BOOL exactMatch = NO;
 
-		[self _buildHightlightedFilterList:newFilter didFindExactMatch:&exactMatch];
+		[self _buildFilterList:newFilter didFindExactMatch:&exactMatch];
 
 		//always add the search string to the end of the list (in case the user
 		//wants to switch to a DB not in the list) unless there was an exact match
@@ -121,11 +148,11 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 				newFilter = [newFilter substringWithRange:NSMakeRange(1, [newFilter length]-2)];
 			
 			if([newFilter length]) {
-				NSMutableAttributedString *searchValue = [[NSMutableAttributedString alloc] initWithString:newFilter];
-
-				[searchValue applyFontTraits:NSItalicFontMask range:NSMakeRange(0, [newFilter length])];
-
-				[filteredList addObject:[searchValue autorelease]];
+				SPGotoFilteredItem *customItem = [SPGotoFilteredItem item];
+				[customItem setString:newFilter];
+				[customItem setIsCustomItem:YES];
+				
+				[filteredList addObject:customItem];
 			}
 		}
 	}
@@ -133,7 +160,7 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 	[databaseListView reloadData];
 
 	// Ensure we have a selection
-	if ([databaseListView selectedRow] < 0) {
+	if ([databaseListView selectedRow] < 0 && [self numberOfRowsInTableView:databaseListView]) {
 		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
 	}
 	
@@ -170,14 +197,10 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 	id attrValue;
 
 	if (isFiltered) {
-		attrValue = [filteredList objectOrNilAtIndex:row];
+		attrValue = [(SPGotoFilteredItem *)[filteredList objectOrNilAtIndex:row] string];
 	}
 	else {
 		attrValue = [unfilteredList objectOrNilAtIndex:row];
-	}
-
-	if ([attrValue isKindOfClass:[NSAttributedString class]]) {
-		return [attrValue string];
 	}
 
 	return attrValue;
@@ -209,14 +232,8 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 #pragma mark -
 #pragma mark Private
 
-- (void)_buildHightlightedFilterList:(NSString *)filter didFindExactMatch:(BOOL *)exactMatch
+- (void)_buildFilterList:(NSString *)filter didFindExactMatch:(BOOL *)exactMatch
 {
-	NSDictionary *attrs = [[NSDictionary alloc] initWithObjectsAndKeys:
-						   [NSColor colorWithCalibratedRed:249/255.0 green:247/255.0 blue:62/255.0 alpha:0.5],NSBackgroundColorAttributeName,
-						   [NSColor colorWithCalibratedRed:180/255.0 green:164/255.0 blue:31/255.0 alpha:1.0],NSUnderlineColorAttributeName,
-						   [NSNumber numberWithInt:NSUnderlineStyleSingle],NSUnderlineStyleAttributeName,
-						   nil];
-
 	NSStringCompareOptions opts = NSCaseInsensitiveSearch|NSDiacriticInsensitiveSearch|NSWidthInsensitiveSearch;
 	
 	BOOL useWordSearch = StringQualifiesForWordSearch(filter);
@@ -239,9 +256,11 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 				}
 			}
 			
-			NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
-			[attrMatch setAttributes:attrs range:matchRange];
-			[filteredList addObject:[attrMatch autorelease]];
+			SPGotoFilteredItem *item = [SPGotoFilteredItem item];
+			[item setString:db];
+			[item setMatches:@[[NSValue valueWithRange:matchRange]]];
+			
+			[filteredList addObject:item];
 		}
 	}
 	// default to a per-character search
@@ -263,13 +282,11 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 				}
 			}
 			
-			NSMutableAttributedString *attrMatch = [[NSMutableAttributedString alloc] initWithString:db];
+			SPGotoFilteredItem *item = [SPGotoFilteredItem item];
+			[item setString:db];
+			[item setMatches:matches];
 			
-			for (NSValue *matchValue in matches) {
-				[attrMatch setAttributes:attrs range:[matchValue rangeValue]];
-			}
-			
-			[filteredList addObject:[attrMatch autorelease]];
+			[filteredList addObject:item];
 		}
 	}
 	
@@ -277,24 +294,22 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 	[filteredList sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 		// word search produces only 1 match, skip.
 		if(!useWordSearch) {
-			// All the items are NSAttributedStrings.
 			// First we want to sort by number of match groups.
 			//   Less match groups -> better result:
 			//     Search string: abc
 			//     Matches: schema_abc, tablecloth
 			//     => First only has 1 match group, is more likely to be the desired result
-			NSUInteger mgc1 = CountSubMatches(obj1);
-			NSUInteger mgc2 = CountSubMatches(obj2);
+			NSUInteger mgc1 = [[(SPGotoFilteredItem *)obj1 matches] count];
+			NSUInteger mgc2 = [[(SPGotoFilteredItem *)obj2 matches] count];
 			if(mgc1 < mgc2)
 				return NSOrderedAscending;
 			if(mgc2 > mgc1)
 				return NSOrderedDescending;
 		}
 		// For strings with the same number of match groups we just sort alphabetically
-		return [[(NSAttributedString *)obj1 string] compare:[(NSAttributedString *)obj2 string]];
+		return [[(SPGotoFilteredItem *)obj1 string] compare:[(SPGotoFilteredItem *)obj2 string]];
 	}];
-	
-	[attrs release];
+
 }
 
 - (BOOL)qualifiesForWordSearch
@@ -321,8 +336,54 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 		return [unfilteredList objectAtIndex:rowIndex];
 	}
 	else {
-		return [filteredList objectAtIndex:rowIndex];
+		return [(SPGotoFilteredItem *)[filteredList objectAtIndex:rowIndex] string];
 	}
+}
+
+#pragma mark -
+#pragma mark NSTableViewDelegate
+
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	//nothing to do here, unless the list is filtered
+	if(!isFiltered) return;
+	
+	// The styling of source list table views is basically done by Apple by replacing
+	// the cell's string with an attributedstring. But if the data source were to
+	// already return an attributedstring, most of the other attributes Apple sets
+	// would not get applied. So we have to add our attributes after Apple has already
+	// modified the string returned by the data source.
+	
+	id cellValue = [cell objectValue];
+	//turn the cell value into something we can work with
+	NSMutableAttributedString *attrString;
+	if([cellValue isKindOfClass:[NSMutableAttributedString class]]) {
+		attrString = cellValue;
+	}
+	else if([cellValue isKindOfClass:[NSAttributedString class]]) {
+		attrString = [[[NSMutableAttributedString alloc] initWithAttributedString:cellValue] autorelease];
+	}
+	else if([cellValue isKindOfClass:[NSString class]]) {
+		attrString = [[[NSMutableAttributedString alloc] initWithString:cellValue] autorelease];
+	}
+	else {
+		SPLog(@"Unknown object for cellValue (type=%@)",[cellValue className]);
+		return;
+	}
+	
+	SPGotoFilteredItem *item = [filteredList objectAtIndex:row];
+	
+	if([item isCustomItem]) {
+		[[attrString mutableString] appendString:@"⁈"];
+		[attrString addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:NSMakeRange([attrString length]-1, 1)];
+	}
+	else {
+		for (NSValue *matchValue in [item matches]) {
+			[attrString addAttributes:highlightAttrs range:[matchValue rangeValue]];
+		}
+	}
+	
+	[cell setObjectValue:attrString];
 }
 
 #pragma mark -
@@ -373,6 +434,7 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 {
     SPClear(unfilteredList);
 	SPClear(filteredList);
+	SPClear(highlightAttrs);
 
 	[super dealloc];
 }
@@ -384,17 +446,4 @@ static NSUInteger CountSubMatches(NSAttributedString *s);
 BOOL StringQualifiesForWordSearch(NSString *s)
 {
 	return (s && ([s length] > 1) && (([s hasPrefix:@"\""] && [s hasSuffix:@"\""]) || ([s hasPrefix:@"'"] && [s hasSuffix:@"'"])));
-}
-
-NSUInteger CountSubMatches(NSAttributedString *s)
-{
-	__block NSUInteger matches = 0;
-	[s enumerateAttribute:NSBackgroundColorAttributeName
-				  inRange:NSMakeRange(0, [s length])
-				  options:0
-			   usingBlock:^(id value, NSRange range, BOOL *stop) {
-		if(value)
-			matches++;
-	}];
-	return matches;
 }
