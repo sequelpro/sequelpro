@@ -3387,12 +3387,16 @@
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:
-		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]
-		action:NULL keyEquivalent:@""];
+	NSString *tblDocName = [[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
+	if(!tblDocName) {
+		//NSMenuItem will not accept nil as title
+		@throw [NSException exceptionWithName:NSInternalInconsistencyException
+									   reason:[NSString stringWithFormat:@"Document name conversion resulted in nil string!? tableDocumentInstance=%@ fileURL=%@",tableDocumentInstance,[tableDocumentInstance fileURL]]
+									 userInfo:nil];
+	}
+	headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
 	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:@"‘%@’ based favorites",
-		[[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent]]];
+	[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
@@ -3416,9 +3420,9 @@
 	}
 
 	// Build global list
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:@"Global" action:NULL keyEquivalent:@""];
+	headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
 	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:@"Globally stored favorites"];
+	[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
 	[headerMenuItem setIndentationLevel:0];
 	[menu addItem:headerMenuItem];
 	[headerMenuItem release];
