@@ -368,7 +368,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	
 	// Cancel all of the currently running operations
 	[operationQueue cancelAllOperations]; // async call
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmpty:) object:sender];
+	[NSThread detachNewThreadWithName:@"SPExportController cancelExport: waiting for empty queue" target:self selector:@selector(_waitUntilQueueIsEmpty:) object:sender];
 }
 
 - (void)_waitUntilQueueIsEmpty:(id)sender

@@ -3746,6 +3746,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				SDKROOT = macosx10.8;
 				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
@@ -3777,6 +3778,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				SDKROOT = macosx10.8;
 				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
@@ -3807,6 +3809,7 @@
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
+				SDKROOT = macosx10.8;
 				TEST_AFTER_BUILD = YES;
 				WRAPPER_EXTENSION = octest;
 			};
@@ -3824,6 +3827,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Debug;
@@ -3840,6 +3844,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				WRAPPER_EXTENSION = qlgenerator;
 				ZERO_LINK = NO;
 			};
@@ -3855,6 +3860,7 @@
 				INFOPLIST_FILE = "Resources/Plists/Sequel Pro QLGenerator-Info.plist";
 				INSTALL_PATH = /Library/QuickLook;
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				WRAPPER_EXTENSION = qlgenerator;
 			};
 			name = Distribution;
@@ -3932,6 +3938,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				SEPARATE_STRIP = NO;
 			};
 			name = Distribution;
@@ -3951,6 +3958,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = PSMTabBar;
+				SDKROOT = macosx10.8;
 			};
 			name = Debug;
 		};
@@ -3969,6 +3977,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = PSMTabBar;
+				SDKROOT = macosx10.8;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -3986,6 +3995,7 @@
 				INFOPLIST_FILE = "Resources/Plists/PSMTabBar-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = PSMTabBar;
+				SDKROOT = macosx10.8;
 			};
 			name = Distribution;
 		};
@@ -4005,6 +4015,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SDKROOT = macosx10.8;
 			};
 			name = Debug;
 		};
@@ -4024,6 +4035,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SDKROOT = macosx10.8;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4042,6 +4054,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xibLocalizationPostprocessor;
+				SDKROOT = macosx10.8;
 			};
 			name = Distribution;
 		};
@@ -4065,6 +4078,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelProTunnelAssistant;
+				SDKROOT = macosx10.8;
 			};
 			name = Debug;
 		};
@@ -4088,6 +4102,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelProTunnelAssistant;
+				SDKROOT = macosx10.8;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -4110,6 +4125,7 @@
 					AppKit,
 				);
 				PRODUCT_NAME = SequelProTunnelAssistant;
+				SDKROOT = macosx10.8;
 			};
 			name = Distribution;
 		};
@@ -4135,6 +4151,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				SEPARATE_STRIP = NO;
 			};
 			name = Debug;
@@ -4162,6 +4179,7 @@
 					"-lcrypto",
 				);
 				PRODUCT_NAME = "Sequel Pro";
+				SDKROOT = macosx10.8;
 				SEPARATE_STRIP = NO;
 			};
 			name = Release;
