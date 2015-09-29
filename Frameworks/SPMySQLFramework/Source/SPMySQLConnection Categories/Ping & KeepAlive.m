@@ -81,7 +81,7 @@
 - (void)_threadedKeepAlive
 {
 	keepAliveThread = [NSThread currentThread];
-	[keepAliveThread setName:@"SPMySQL connection keepalive thread"];
+	[keepAliveThread setName:@"SPMySQL connection keepalive monitor thread"];
 
 	// If the maximum number of ping failures has been reached, determine whether to reconnect.
 	if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
@@ -202,6 +202,8 @@
  */
 void _backgroundPingTask(void *ptr)
 {
+	pthread_setname_np("SPMySQL _backgroundPingTask() worker thread");
+	
 	SPMySQLConnectionPingDetails *pingDetails = (SPMySQLConnectionPingDetails *)ptr;
 
 	// Set up a cleanup routine
