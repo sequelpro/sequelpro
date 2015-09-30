@@ -1,0 +1,5 @@
+sudo: false
+language: objective-c
+osx_image: xcode7
+script:
+    - make sequel-pro localize
