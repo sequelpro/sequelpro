@@ -526,10 +526,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// Calling mysql_init will have automatically installed per-thread variables if necessary,
 	// so track their installation for removal and to avoid recreating again.
-	if (!pthread_getspecific(mySQLThreadInitFlagKey)) {
-		pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
-		[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
-	}
+	[self _validateThreadSetup];
 
 	// Disable automatic reconnection, as it's handled in-framework to preserve
 	// options, encodings and connection state.
@@ -1018,6 +1015,8 @@ asm(".desc ___crashreporter_info__, 0x10");
  * Ensure that the thread this method is called on has been registered for
  * use with MySQL.  MySQL requires thread-specific variables for safe
  * execution.
+ *
+ * Calling this multiple times per thread is OK.
  */
 - (void)_validateThreadSetup
 {
@@ -1026,7 +1025,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	if (pthread_getspecific(mySQLThreadInitFlagKey)) return;
 
 	// If not, install it
-	mysql_thread_init();
+	mysql_thread_init(); // multiple calls per thread OK.
 
 	// Mark the thread to avoid multiple installs
 	pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
