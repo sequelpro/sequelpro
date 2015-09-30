@@ -816,6 +816,13 @@
 	[commandScrollView display];
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	if([keyPath isEqualToString:SPCustomQueryEditorTabStopWidth]) {
+		[self setTabStops];
+	}
+}
+
 #pragma mark -
 
 // Store the font in the prefs for selected delegates only
