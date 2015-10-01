@@ -47,6 +47,7 @@
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPThreadAdditions.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -401,18 +402,20 @@
 	BOOL useIndeterminate = NO;
 	if ([sqlFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
-	// Reset progress interface
-	[errorsView setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
-	[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	[[singleProgressBar onMainThread] startAnimation:self];
-
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
+	SPMainQSync(^{
+		// Reset progress interface
+		[errorsView setString:@""];
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
+		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+		[singleProgressBar setIndeterminate:useIndeterminate];
+		[singleProgressBar setMaxValue:fileTotalLength];
+		[singleProgressBar setUsesThreadedAnimation:YES];
+		[singleProgressBar startAnimation:self];
+		
+		// Open the progress sheet
+		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
+	});
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -568,18 +571,18 @@
 				// If not set to ignore errors, ask what to do.  Use NSAlert rather than
 				// SPBeginWaitingAlertSheet as there is already a modal sheet in progress.
 				if (!ignoreSQLErrors) {
-					NSInteger sqlImportErrorSheetReturnCode;
+					__block NSInteger sqlImportErrorSheetReturnCode;
 
-					NSAlert *sqlErrorAlert = [NSAlert
-							alertWithMessageText:NSLocalizedString(@"An error occurred while importing SQL", @"sql import error message")
-								   defaultButton:NSLocalizedString(@"Continue", @"continue button")
-								 alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
-									 otherButton:NSLocalizedString(@"Stop", @"stop button")
-					   informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]
-					];
-					[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
-					sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
-
+					SPMainQSync(^{
+						NSAlert *sqlErrorAlert = [NSAlert alertWithMessageText:NSLocalizedString(@"An error occurred while importing SQL", @"sql import error message")
+												                 defaultButton:NSLocalizedString(@"Continue", @"continue button")
+												               alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
+												                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+													 informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]];
+						[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
+						sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
+					});
+					
 					switch (sqlImportErrorSheetReturnCode) {
 					
 						// On "continue", no additional action is required
