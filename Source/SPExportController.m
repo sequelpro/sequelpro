@@ -417,8 +417,14 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
     [panel setDirectoryURL:[NSURL URLWithString:[exportPathField stringValue]]];
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
-            [exportPathField setStringValue:[[panel directoryURL] path]];
-            [prefs setObject:[[panel directoryURL] path] forKey:SPExportLastDirectory];
+			NSString *path = [[panel directoryURL] path];
+			if(!path) {
+				@throw [NSException exceptionWithName:NSInternalInconsistencyException
+											   reason:[NSString stringWithFormat:@"File panel ended with OK, but returned nil for path!? directoryURL=%@,isFileURL=%d",[panel directoryURL],[[panel directoryURL] isFileURL]]
+											 userInfo:nil];
+			}
+            [exportPathField setStringValue:path];
+            [prefs setObject:path forKey:SPExportLastDirectory];
         }
     }];		
 }
