@@ -2800,6 +2800,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 					fieldValue = [NSString stringWithFormat:@"b'%@'", ((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"]) ? @"0" : [rowObject description])];
 				} else if ([fieldTypeGroup isEqualToString:@"date"] && [[rowObject description] isEqualToString:@"NOW()"]) {
 					fieldValue = @"NOW()";
+               } else if ([fieldTypeGroup isEqualToString:@"string"] && [[rowObject description] isEqualToString:@"UUID()"]) {
+                   fieldValue = @"UUID()";
 				} else {
 					fieldValue = [mySQLConnection escapeAndQuoteString:[rowObject description]];
 				}
