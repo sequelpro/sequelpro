@@ -313,7 +313,7 @@
 			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
 
 			// Prevent retries if the query was cancelled or not a connection error
-			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
+			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:theErrorID]) {
 				break;
 			}
 		}

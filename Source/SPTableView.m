@@ -72,7 +72,7 @@
 	
 	if ([NSTableView instancesRespondToSelector:@selector(awakeFromNib)]) {
 		[super awakeFromNib];
-}
+	}
 }
 
 #pragma mark -
