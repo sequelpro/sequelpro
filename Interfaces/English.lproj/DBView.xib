@@ -24357,6 +24357,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="22.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="22.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="22.showNotes"/>
+				<string key="22.userInterfaceItemIdentifier">TablesListTableView</string>
 				<string key="23.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="23.showNotes"/>
 				<string key="231.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24366,6 +24367,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="232.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="232.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="232.showNotes"/>
+				<string key="232.userInterfaceItemIdentifier">TableStructureColumnsTableView</string>
 				<string key="233.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="233.showNotes"/>
 				<string key="245.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24438,6 +24440,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="36.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="36.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="36.showNotes"/>
+				<string key="36.userInterfaceItemIdentifier">TableContentTableView</string>
 				<string key="362.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="362.showNotes"/>
 				<string key="3754.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -24941,6 +24944,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="5548.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="5548.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="5548.showNotes"/>
+				<string key="5548.userInterfaceItemIdentifier">TableRelationsTableView</string>
 				<string key="5549.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="5549.showNotes"/>
 				<string key="5550.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -25706,6 +25710,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="6701.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="6701.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="6701.showNotes"/>
+				<string key="6701.userInterfaceItemIdentifier">TableTriggersTableView</string>
 				<string key="6702.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="6702.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="6702.showNotes"/>
@@ -26111,6 +26116,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="7224.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7224.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7224.showNotes"/>
+				<string key="7224.userInterfaceItemIdentifier">CustomQueryResultsTableView</string>
 				<string key="7225.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="7225.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="7225.showNotes"/>
@@ -26806,6 +26812,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<string key="8144.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="8144.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="8144.showNotes"/>
+				<string key="8144.userInterfaceItemIdentifier">AdvancedFilterTableView</string>
 				<string key="8145.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="8145.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="8145.showNotes"/>
