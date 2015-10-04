@@ -31,6 +31,16 @@
 
 #import "Data Conversion.h"
 
+#ifdef SPMYSQL_FOR_UNIT_TESTING
+#define PRIVATE /* public */
+#else
+#define PRIVATE static inline
+#endif
+
+PRIVATE SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField);
+PRIVATE NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength);
+PRIVATE NSString * _convertStringData(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength);
+
 static SPMySQLResultFieldProcessor fieldProcessingMap[256];
 static id NSNullPointer;
 static NSStringEncoding NSFromCFStringEncodingBig5;
@@ -161,10 +171,12 @@ static NSStringEncoding NSFromCFStringEncodingGBK_95;
 	return nil;
 }
 
+@end
+
 /**
  * Returns the field processor to use for a specified field.
  */
-static inline SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField)
+PRIVATE SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField)
 {
 	// Determine the default field processor to use
 	SPMySQLResultFieldProcessor dataProcessor = fieldProcessingMap[aField.type];
@@ -200,7 +212,7 @@ static inline SPMySQLResultFieldProcessor _processorForField(MYSQL_FIELD aField)
  * field length.
  * MySQL stores bit data as string data stored in an 8-bit wide character set.
  */
-static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength)
+PRIVATE NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength)
 {
 	NSUInteger i = 0;
 	NSUInteger bitLength = length << 3;
@@ -242,7 +254,7 @@ static inline NSString * _bitStringWithBytes(const char *bytes, NSUInteger lengt
  * Converts stored string data - which may contain nul bytes - to a native
  * Objective-C string, using the current class encoding.
  */
-static inline NSString * _convertStringData(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength)
+PRIVATE NSString * _convertStringData(const void *dataBytes, NSUInteger dataLength, NSStringEncoding aStringEncoding, NSUInteger previewLength)
 {
 
 	// Fast case - if not using a preview length, or if the data length is shorter, return the requested data.
@@ -413,5 +425,4 @@ static inline NSString * _convertStringData(const void *dataBytes, NSUInteger da
 	return previewString;
 }
 
-
-@end
+#undef PRIVATE

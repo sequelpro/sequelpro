@@ -99,12 +99,7 @@
 @end
 
 // SPMySQLResult Data Conversion Private API
-@interface SPMySQLResult (Data_Conversion_Private_API)
-
-+ (void)_initializeDataConversion;
-- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength;
-
-@end
+#import "Data Conversion.h"
 
 /**
  * Set up a static function to allow fast calling of SPMySQLResult data conversion with cached selectors
