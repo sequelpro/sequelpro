@@ -80,6 +80,10 @@
  */
 - (void)_threadedKeepAlive
 {
+	if(keepAliveThread) {
+		NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
+	}
+	
 	keepAliveThread = [NSThread currentThread];
 	[keepAliveThread setName:@"SPMySQL connection keepalive thread"];
 
