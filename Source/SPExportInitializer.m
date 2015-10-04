@@ -65,7 +65,7 @@
 	[exportProgressIndicator setIndeterminate:NO];
 	[exportProgressIndicator setDoubleValue:0];
 
-	// If it's not already displayed, open the progress sheet open the progress sheet.
+	// If it's not already displayed, open the progress sheet
 	if (![exportProgressWindow isVisible]) {
 		[NSApp beginSheet:exportProgressWindow
 		   modalForWindow:[tableDocumentInstance parentWindow]

@@ -315,9 +315,8 @@
 					useRawHexDataForColumnAtIndex[j] = YES;
 				}
 
-				// Floats, integers and bits can be output directly assuming they're non-binary
-				if (![[theColumnDetail objectForKey:@"binary"] boolValue]
-					&& ([theTypeGrouping isEqualToString:@"bit"] || [theTypeGrouping isEqualToString:@"integer"] || [theTypeGrouping isEqualToString:@"float"]))
+				// Floats, integers can be output directly assuming they're non-binary
+				if (![[theColumnDetail objectForKey:@"binary"] boolValue] && ([@[@"integer",@"float"] containsObject:theTypeGrouping]))
 				{
 					useRawDataForColumnAtIndex[j] = YES;
 				}
