@@ -372,12 +372,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (void) setTableDetails:(NSDictionary *)tableDetails
 {
 	NSString *newTableName;
-	NSInteger i, sortColumnNumberToRestore = NSNotFound;
+	NSInteger sortColumnNumberToRestore = NSNotFound;
 #ifndef SP_CODA
 	NSNumber *colWidth;
 #endif
 	NSArray *columnNames;
-	NSDictionary *columnDefinition;
 	NSMutableDictionary *preservedColumnWidths = nil;
 	NSTableColumn	*theCol;
 #ifndef SP_CODA
@@ -566,8 +565,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 
 	// Add the new columns to the table and filterTable
-	for ( i = 0 ; i < (NSInteger)[dataColumns count] ; i++ ) {
-		columnDefinition = NSArrayObjectAtIndex(dataColumns, i);
+	for (NSDictionary *columnDefinition in dataColumns ) {
 
 		// Set up the column
 		theCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
@@ -1810,9 +1808,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (IBAction)addRow:(id)sender
 {
-	NSMutableDictionary *column;
 	NSMutableArray *newRow = [NSMutableArray array];
-	NSUInteger i;
 
 	// Check whether table editing is permitted (necessary as some actions - eg table double-click - bypass validation)
 	if ([tableDocumentInstance isWorking] || [tablesListInstance tableType] != SPTableTypeTable) return;
@@ -1820,8 +1816,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Check whether a save of the current row is required.
 	if ( ![self saveRowOnDeselect] ) return;
 
-	for ( i = 0 ; i < [dataColumns count] ; i++ ) {
-		column = NSArrayObjectAtIndex(dataColumns, i);
+	for (NSDictionary *column in dataColumns) {
 		if ([column objectForKey:@"default"] == nil || [[column objectForKey:@"default"] isNSNull]) {
 			[newRow addObject:[NSNull null]];
 		} else if ([[column objectForKey:@"default"] isEqualToString:@""]
@@ -3146,10 +3141,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (BOOL)tableContainsBlobOrTextColumns
 {
-	NSUInteger i;
-
-	for ( i = 0 ; i < [dataColumns count]; i++ ) {
-		if ( [tableDataInstance columnIsBlobOrText:[NSArrayObjectAtIndex(dataColumns, i) objectForKey:@"name"]] ) {
+	for (NSDictionary *column in dataColumns) {
+		if ( [tableDataInstance columnIsBlobOrText:[column objectForKey:@"name"]] ) {
 			return YES;
 		}
 	}
