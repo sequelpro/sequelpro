@@ -47,6 +47,9 @@
 
 	NSUInteger numberOfColumns;
 	NSUInteger editedRowCount;
+	
+	NSString *_debugInfo;
+	uint64_t _debugTime;
 }
 
 /* Setting result store */
