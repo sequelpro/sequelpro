@@ -28,6 +28,12 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import <Cocoa/Cocoa.h>
+#import <XCTest/XCTest.h>
+
+// this function is inaccessible outside of unit tests
+extern NSString * _bitStringWithBytes(const char *bytes, NSUInteger length, NSUInteger padLength);
+
 @interface DataConversion_Tests : XCTestCase
 
 - (void)test_bitStringWithBytes;
@@ -40,10 +46,10 @@
 {
 	// BIT(1)
 	{
-		unsigned char y = 1;
-		unsigned char n = 0;
+		const char y = '\1';
+		const char n = '\0';
 		XCTAssertEqualObjects(_bitStringWithBytes(&y,sizeof(y),1), @"1");
-		XCTAssertEqualObjects(_bitStringWithBytes(&n,sizeof(n),0), @"0");
+		XCTAssertEqualObjects(_bitStringWithBytes(&n,sizeof(n),1), @"0");
 	}
 	// BIT(3)
 	{
