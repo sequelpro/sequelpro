@@ -31,6 +31,7 @@
 
 #import "SPKeychain.h"
 #import "SPAlertSheets.h"
+#import "SPOSInfo.h"
 
 #import <Security/Security.h>
 #import <CoreFoundation/CoreFoundation.h>
@@ -212,33 +213,38 @@
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
 {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	NSMutableDictionary *query = [NSMutableDictionary dictionary];
-
-	[query setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];
-	[query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
-	[query setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
-
-	[query setObject:account forKey:(id)kSecAttrAccount];
-	[query setObject:name forKey:(id)kSecAttrService];
-
-	CFDictionaryRef result = NULL;
-
-	return SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
-#else
+	// "kSecClassGenericPassword" was introduced with the 10.7 SDK.
+	// It won't work on 10.6 either (meaning this code never matches properly there).
+	// (That's why there are compile time and runtime checks here)
+	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {
+		NSMutableDictionary *query = [NSMutableDictionary dictionary];
+		
+		[query setObject:(id)kSecClassGenericPassword forKey:(id)kSecClass];
+		[query setObject:(id)kCFBooleanTrue forKey:(id)kSecReturnAttributes];
+		[query setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
+		
+		[query setObject:account forKey:(id)kSecAttrAccount];
+		[query setObject:name forKey:(id)kSecAttrService];
+		
+		CFDictionaryRef result = NULL;
+		
+		return SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
+	}
+#endif
 	SecKeychainItemRef item;
 	SecKeychainSearchRef search = NULL;
 	NSInteger numberOfItemsFound = 0;
 	SecKeychainAttributeList list;
 	SecKeychainAttribute attributes[2];
-
+	
 	// Check supplied variables and replaces nils with empty strings
 	if (!name) name = @"";
 	if (!account) account = @"";
-
+	
 	attributes[0].tag    = kSecAccountItemAttr;
 	attributes[0].data   = (void *)[account UTF8String];			// Account name
 	attributes[0].length = (UInt32)strlen([account UTF8String]);	// Length of account name (bytes)
-
+	
 	attributes[1].tag    = kSecServiceItemAttr;
 	attributes[1].data   = (void *)[name UTF8String];			// Service name
 	attributes[1].length = (UInt32)strlen([name UTF8String]);	// Length of service name (bytes)
@@ -257,7 +263,6 @@
 	if (search) CFRelease(search);
 
 	return (numberOfItemsFound > 0);
-#endif
 }
 
 /**
