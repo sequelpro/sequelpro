@@ -185,6 +185,7 @@
 		503B02D21AE95E010060CAB1 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		503CDBB21ACDC204004F8A2F /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 503CDBB11ACDC204004F8A2F /* Quartz.framework */; };
 		506CE9311A311C6C0039F736 /* SPTableContentFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */; };
+		507FF24B1BC3433F00104523 /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
 		50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */; };
 		50D3C3521A77135F00B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
@@ -3119,6 +3120,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				507FF24B1BC3433F00104523 /* SPOSInfo.m in Sources */,
 				586F457B0FDB269E00B428D7 /* RegexKitLite.m in Sources */,
 				58CDB3410FCE141900F8ACA3 /* SequelProTunnelAssistant.m in Sources */,
 				58CDB3420FCE142500F8ACA3 /* SPKeychain.m in Sources */,
