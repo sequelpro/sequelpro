@@ -53,7 +53,8 @@ enum {
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
 - (void)_createTitleBarLineHidingView;
 - (void)_updateLineHidingViewState;
-
+- (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc;
+- (void)_selectedTableDocumentDeallocd:(NSNotification *)notification;
 @end
 
 @implementation SPWindowController
@@ -63,7 +64,7 @@ enum {
 
 - (void)awakeFromNib
 {
-	selectedTableDocument = nil;
+	[self _switchOutSelectedTableDocument:nil];
 	
 	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
 
@@ -141,7 +142,7 @@ enum {
  */
 - (void)updateSelectedTableDocument
 {
-	selectedTableDocument = [[tabView selectedTabViewItem] identifier];
+	[self _switchOutSelectedTableDocument:[[tabView selectedTabViewItem] identifier]];
 	
 	[selectedTableDocument didBecomeActiveTabInWindow];
 }
@@ -388,7 +389,7 @@ enum {
  */
 - (BOOL)respondsToSelector:(SEL)theSelector
 {
-	return ([super respondsToSelector:theSelector] || (selectedTableDocument && [selectedTableDocument respondsToSelector:theSelector]));
+	return ([super respondsToSelector:theSelector] || [selectedTableDocument respondsToSelector:theSelector]);
 }
 
 /**
@@ -529,10 +530,35 @@ enum {
 	}
 }
 
+
+- (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc
+{
+	NSAssert([NSThread isMainThread], @"Switching the selectedTableDocument via a background thread is not supported!");
+	
+	// shortcut if there is nothing to do
+	if(selectedTableDocument == newDoc) return;
+	
+	NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+	if(selectedTableDocument) {
+		[nc removeObserver:self name:SPDocumentWillCloseNotification object:selectedTableDocument];
+		selectedTableDocument = nil;
+	}
+	if(newDoc) {
+		[nc addObserver:self selector:@selector(_selectedTableDocumentDeallocd:) name:SPDocumentWillCloseNotification object:newDoc];
+		selectedTableDocument = newDoc;
+	}
+}
+
+- (void)_selectedTableDocumentDeallocd:(NSNotification *)notification
+{
+	[self _switchOutSelectedTableDocument:nil];
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
+	[self _switchOutSelectedTableDocument:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
