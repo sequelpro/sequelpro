@@ -160,15 +160,12 @@
  */
 - (void)closeAndStopProgressSheet
 {
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(closeAndStopProgressSheet) withObject:nil waitUntilDone:YES];
-		return;
-	}
-
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-	[[singleProgressBar onMainThread] stopAnimation:self];
-	[[singleProgressBar onMainThread] setMaxValue:100];
+	SPMainQSync(^{
+		[NSApp endSheet:singleProgressSheet];
+		[singleProgressSheet orderOut:nil];
+		[singleProgressBar stopAnimation:self];
+		[singleProgressBar setMaxValue:100];
+	});
 }
 
 #pragma mark -
@@ -762,16 +759,18 @@
 	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
 	// Reset progress interface
-	[[errorsView onMainThread] setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[[singleProgressBar onMainThread] setIndeterminate:YES];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	[[singleProgressBar onMainThread] startAnimation:self];
-
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
+	SPMainQSync(^{
+		[errorsView setString:@""];
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
+		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+		[singleProgressBar setIndeterminate:YES];
+		[singleProgressBar setUsesThreadedAnimation:YES];
+		[singleProgressBar startAnimation:self];
+		
+		// Open the progress sheet
+		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
+	});
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -936,11 +935,13 @@
 				}
 
 				// Reset progress interface and open the progress sheet
-				[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
-				[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
-				[[singleProgressBar onMainThread] startAnimation:self];
-				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-				[[singleProgressSheet onMainThread] makeKeyWindow];
+				SPMainQSync(^{
+					[singleProgressBar setIndeterminate:useIndeterminate];
+					[singleProgressBar setMaxValue:fileTotalLength];
+					[singleProgressBar startAnimation:self];
+					[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+					[singleProgressSheet makeKeyWindow];
+				});
 
 				// Set up index sets for use during row enumeration
 				for (i = 0; i < [fieldMappingArray count]; i++) {
@@ -1183,7 +1184,7 @@
 		// Select the new table
 
 		// Update current database tables 
-		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
+		[[tablesListInstance onMainThread] updateTables:self];
 	
 		// Re-query the structure of all databases in the background
 		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
@@ -1674,7 +1675,7 @@ cleanup:
 - (void)showErrorSheetWithMessage:(NSString*)message
 {
 	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(showErrorSheetWithMessage:) withObject:message waitUntilDone:YES];
+		[[self onMainThread] showErrorSheetWithMessage:message];
 		return;
 	}
 	

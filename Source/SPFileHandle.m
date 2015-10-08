@@ -299,9 +299,10 @@
 	// Throw an exception if the file is closed
 	if (fileIsClosed) [NSException raise:NSInternalInconsistencyException format:@"Cannot write to a file handle after it has been closed"];
 
+	pthread_mutex_lock(&bufferLock);
+	
 	// Add the data to the buffer
 	if ([data length]) {
-		pthread_mutex_lock(&bufferLock);
 		[buffer appendData:data];
 		allDataWritten = NO;
 		bufferDataLength += [data length];
