@@ -389,7 +389,7 @@
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
 	}
-	fileIsCompressed = [sqlFileHandle isCompressed];
+	fileIsCompressed = ([sqlFileHandle compressionFormat] != SPNoCompression);
 
 	// Grab the file length
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
@@ -752,7 +752,7 @@
 	// Grab the file length and status
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
-	fileIsCompressed = [csvFileHandle isCompressed];
+	fileIsCompressed = ([csvFileHandle compressionFormat] != SPNoCompression);
 
 	// If importing a bzipped file, use indeterminate progress bars as no progress is available
 	BOOL useIndeterminate = NO;

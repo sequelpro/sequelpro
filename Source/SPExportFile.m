@@ -191,7 +191,7 @@
 		return;
 	}
 
-	[[self exportFileHandle] setShouldWriteWithCompressionFormat:fileCompressionFormat];
+	[[self exportFileHandle] setCompressionFormat:fileCompressionFormat];
 }
 
 #pragma mark -

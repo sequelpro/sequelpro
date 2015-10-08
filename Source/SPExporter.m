@@ -95,7 +95,7 @@
 	
 	exportOutputCompressFile = compress;
 	
-	[[[self exportOutputFile] exportFileHandle] setShouldWriteWithCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
+	[[[self exportOutputFile] exportFileHandle] setCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
 }
 
 /**

@@ -28,6 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+union SPSomeFileHandle;
 /**
  * @class SPFileHandle SPFileHandle.h
  *
@@ -39,7 +40,7 @@
  */
 @interface SPFileHandle : NSObject 
 {
-	void *wrappedFile;
+	union SPSomeFileHandle *wrappedFile;
 	char *wrappedFilePath;
 
 	NSMutableData *buffer;
@@ -53,7 +54,6 @@
 	BOOL dataWritten;
 	BOOL allDataWritten;
 	BOOL fileIsClosed;
-	BOOL useCompression;
 	
 	SPFileCompressionFormat compressionFormat;
 }
@@ -69,7 +69,7 @@
 #pragma mark Initialisation
 
 // Returns a file handle initialised with a file
-- (id)initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode;
+- (id)initWithFile:(FILE *)theFile fromPath:(const char *)path mode:(int)mode;
 
 #pragma mark -
 #pragma mark Data reading
@@ -87,7 +87,11 @@
 #pragma mark Data writing
 
 // Set whether data should be written in the supplied compression format (defaults to NO on a fresh object)
-- (void)setShouldWriteWithCompressionFormat:(SPFileCompressionFormat)useCompressionFormat;
+// This has no influence on reading data.
+- (void)setCompressionFormat:(SPFileCompressionFormat)useCompressionFormat;
+
+// Returns the compression format being used. Currently gzip or bzip2 only.
+- (SPFileCompressionFormat)compressionFormat;
 
 // Write the provided data to the file
 - (void)writeData:(NSData *)data;
@@ -97,14 +101,5 @@
 
 // Prevents further access to the file
 - (void)closeFile;
-
-#pragma mark -
-#pragma mark File information
-
-// Returns whether compression is enabled on the file
-- (BOOL)isCompressed;
-
-// Returns the compression format being used. Currently gzip or bzip2 only.
-- (SPFileCompressionFormat)compressionFormat;
 
 @end
