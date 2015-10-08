@@ -50,7 +50,9 @@ static NSMutableDictionary *gScrollViewDealloc;
 {
 	NSMutableString *msg = [NSMutableString string];
 	
-	[msg appendFormat:@"%s tripped!\n\n",__PRETTY_FUNCTION__];
+	[msg appendFormat:@"%s tripped!\n",__PRETTY_FUNCTION__];
+	
+	[msg appendFormat:@"  at %@ (mach time: %lf)\n\n",[NSDate date],[NSDate monotonicTimeInterval]];
 	
 retryDescribe:
 	[msg appendFormat:@"passed object (class <%@>): %@\n\n",[obj className],obj];
@@ -136,6 +138,7 @@ retryDescribe:
 	if(notificationSelector == @selector(_scrollViewDidChangeBounds:) && [notificationName isEqualToString:NSViewBoundsDidChangeNotification]) {
 		NSString *key = [NSString stringWithFormat:@"snd=%p,obs=%p",notificationSender,notificationObserver];
 		NSMutableString *val = [NSMutableString string];
+		[val appendFormat:@"at %@ (mach time: %lf)\n",[NSDate date],[NSDate monotonicTimeInterval]];
 		[val appendFormat:@"observer: %1$p (class %2$@) description: %1$@\n",notificationObserver,[notificationObserver className]];
 		if([notificationObserver isKindOfClass:[NSView class]]) {
 			[val appendFormat:@"  view info: id=%@, tag=%ld\n",[(NSView *)notificationObserver identifier], [(NSView *)notificationObserver tag]];
@@ -176,7 +179,7 @@ retryDescribe:
 - (void)sp_dealloc
 {
 	NSString *key = [NSString stringWithFormat:@"=%p",self];
-	NSString *val = [NSString stringWithFormat:@"\ndealloc backtrace:\n%@\n\n",[NSThread callStackSymbols]];
+	NSString *val = [NSString stringWithFormat:@"\n%p dealloc\n  at %@ (mach time: %lf)\n  backtrace:\n%@\n\n",self,[NSDate date],[NSDate monotonicTimeInterval],[NSThread callStackSymbols]];
 	
 	[gScrollViewDealloc setObject:val forKey:key];
 	
