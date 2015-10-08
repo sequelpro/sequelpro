@@ -145,6 +145,7 @@ union SPSomeFileHandle {
 		} 
 		// In write mode, set up a thread to handle writing in the background
 		else if (fileMode == O_WRONLY) {
+			wrappedFile->file = theFile; // can be changed later via setCompressionFormat:
 			processingThread = [[NSThread alloc] initWithTarget:self selector:@selector(_writeBufferToData) object:nil];
 			[processingThread setName:@"SPFileHandle data writing thread"];
 			[processingThread start];
