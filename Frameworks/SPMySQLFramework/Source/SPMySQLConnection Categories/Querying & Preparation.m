@@ -288,6 +288,7 @@
 	// Lock the connection while it's actively in use
 	[self _lockConnection];
 
+	unsigned long long theAffectedRowCount;
 	while (queryAttemptsAllowed > 0) {
 
 		// While recording the overall execution time (including network lag!), run
@@ -296,6 +297,11 @@
 		queryStatus = mysql_real_query(mySQLConnection, queryBytes, queryBytesLength);
 		queryExecutionTime = _elapsedSecondsSinceAbsoluteTime(queryStartTime);
 		lastConnectionUsedTime = mach_absolute_time();
+		
+		// "An integer greater than zero indicates the number of rows affected or retrieved.
+		//  Zero indicates that no records were updated for an UPDATE statement, no rows matched the WHERE clause in the query or that no query has yet been executed.
+		//  -1 indicates that the query returned an error or that, for a SELECT query, mysql_affected_rows() was called prior to calling mysql_store_result()."
+		theAffectedRowCount = mysql_affected_rows(mySQLConnection);
 
 		// If the query succeeded, no need to re-attempt.
 		if (!queryStatus) {
@@ -327,11 +333,11 @@
 			return nil;
 		}
 		[self _lockConnection];
+		NSAssert(mySQLConnection != NULL, @"mySQLConnection has disappeared while checking it!");
 
 		queryAttemptsAllowed--;
 	}
 
-	unsigned long long theAffectedRowCount = mysql_affected_rows(mySQLConnection);
 	id theResult = nil;
 
 	// On success, if there is a query result, retrieve the result data type
