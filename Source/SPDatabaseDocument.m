@@ -3143,8 +3143,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
-			[info setObject:@1 forKey:@"version"];
-			[info setObject:@"connection bundle" forKey:@"format"];
+			[info setObject:@1 forKey:SPFVersionKey];
+			[info setObject:@"connection bundle" forKey:SPFFormatKey];
 
 			// Loop through all windows
 			for(NSWindow *window in [SPAppDelegate orderedDatabaseConnectionWindows]) {
@@ -3303,7 +3303,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		// For dispatching later
-		if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		if(![[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
 			NSLog(@"SPF file format is not 'connection'.");
 			[spf release];
 			return NO;
@@ -3352,8 +3352,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSMutableDictionary *spfData = [NSMutableDictionary dictionary];
 
 	// Add basic details
-	[spfStructure setObject:@1 forKey:@"version"];
-	[spfStructure setObject:@"connection" forKey:@"format"];
+	[spfStructure setObject:@1 forKey:SPFVersionKey];
+	[spfStructure setObject:@"connection" forKey:SPFFormatKey];
 	[spfStructure setObject:@"mysql" forKey:@"rdbms_type"];
 	if([self mySQLVersion])
 		[spfStructure setObject:[self mySQLVersion] forKey:@"rdbms_version"];
@@ -4817,12 +4817,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// If the .spf format is unhandled, error.
-	if (![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+	if (![[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]];
+							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:SPFFormatKey]];
 
 		[alert setAlertStyle:NSWarningAlertStyle];
 		[spf release];

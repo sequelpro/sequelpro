@@ -302,6 +302,9 @@ NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocati
 NSString *SPFavoriteUseCompressionKey                    = @"useCompression";
 NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
 
+NSString *SPFFormatKey = @"format";
+NSString *SPFVersionKey = @"version";
+
 // Favorites import/export
 NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";
 

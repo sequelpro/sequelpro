@@ -492,6 +492,9 @@ extern NSString *SPFavoriteSSLCACertFileLocationKey;
 extern NSString *SPFavoriteUseCompressionKey;
 extern NSString *SPConnectionFavoritesChangedNotification;
 
+extern NSString *SPFFormatKey;
+extern NSString *SPFVersionKey;
+
 // Favorites import/export
 extern NSString *SPFavoritesDataRootKey;
 

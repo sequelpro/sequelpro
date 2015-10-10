@@ -917,8 +917,8 @@
 			NSMutableArray *favoriteData = [NSMutableArray array];
 
 	
-			[spfdata setObject:@1 forKey:@"version"];
-			[spfdata setObject:@"query favorites" forKey:@"format"];
+			[spfdata setObject:@1 forKey:SPFVersionKey];
+			[spfdata setObject:@"query favorites" forKey:SPFFormatKey];
 			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];

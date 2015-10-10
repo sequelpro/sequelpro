@@ -84,7 +84,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		}
 
 		// Dispatch different spf formats
-		if([[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		if([[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginConnectionTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
 
@@ -140,7 +140,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			[dateFormatter release];
 		}
 
-		else if([[spf objectForKey:@"format"] isEqualToString:@"content filters"]) {
+		else if([[spf objectForKey:SPFFormatKey] isEqualToString:@"content filters"]) {
 
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginContentFiltersTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
@@ -156,7 +156,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 			];
 		}
 
-		else if([[spf objectForKey:@"format"] isEqualToString:@"query favorites"]) {
+		else if([[spf objectForKey:SPFFormatKey] isEqualToString:@"query favorites"]) {
 
 			template = [NSString stringWithContentsOfFile:[[NSBundle bundleWithIdentifier:@"com.sequelpro.SequelPro.qlgenerator"] pathForResource:@"SPQLPluginQueryFavoritesTemplate" ofType:@"html"] 
 				encoding:NSUTF8StringEncoding error:&templateReadError];
