@@ -121,7 +121,7 @@
 		}
 	}
 
-	[exportCustomFilenameTokensField setStringValue:[exportTokens componentsJoinedByString:@","]];
+	[exportCustomFilenameTokenPool setStringValue:[exportTokens componentsJoinedByString:@","]];
 }
 
 /**
@@ -130,7 +130,7 @@
  */
 - (id)tokenObjectForString:(NSString *)stringToTokenize
 {
-	if ([[exportCustomFilenameTokensField objectValue] containsObject:stringToTokenize]) {
+	if ([[exportCustomFilenameTokenPool objectValue] containsObject:stringToTokenize]) {
 		SPExportFileNameTokenObject *newToken = [[SPExportFileNameTokenObject alloc] init];
 		
 		[newToken setTokenContent:stringToTokenize];

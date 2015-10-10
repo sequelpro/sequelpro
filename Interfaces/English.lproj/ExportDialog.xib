@@ -3309,7 +3309,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">exportCustomFilenameTokensField</string>
+						<string key="label">exportCustomFilenameTokenPool</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="844630128"/>
 					</object>
@@ -7351,7 +7351,7 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 						<string key="exportCSVLinesTerminatedField">NSComboBox</string>
 						<string key="exportCSVNULLValuesAsTextField">NSTextField</string>
 						<string key="exportCustomFilenameTokenField">NSTokenField</string>
-						<string key="exportCustomFilenameTokensField">NSTokenField</string>
+						<string key="exportCustomFilenameTokenPool">NSTokenField</string>
 						<string key="exportCustomFilenameView">NSView</string>
 						<string key="exportCustomFilenameViewButton">NSButton</string>
 						<string key="exportCustomFilenameViewLabelButton">NSButton</string>
@@ -7451,8 +7451,8 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 							<string key="name">exportCustomFilenameTokenField</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
-						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokensField">
-							<string key="name">exportCustomFilenameTokensField</string>
+						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokenPool">
+							<string key="name">exportCustomFilenameTokenPool</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="exportCustomFilenameView">

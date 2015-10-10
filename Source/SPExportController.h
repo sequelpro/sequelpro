@@ -92,7 +92,7 @@
 	IBOutlet NSButton *exportCustomFilenameViewLabelButton;
 	IBOutlet NSView *exportCustomFilenameView;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
-	IBOutlet NSTokenField *exportCustomFilenameTokensField;
+	IBOutlet NSTokenField *exportCustomFilenameTokenPool;
 	
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
