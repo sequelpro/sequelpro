@@ -259,6 +259,7 @@ extern NSString *SPFavoritesPasteboardDragType;
 extern NSString *SPContentFilterPasteboardDragType;
 extern NSString *SPNavigatorPasteboardDragType;
 extern NSString *SPNavigatorTableDataPasteboardDragType;
+extern NSString *SPExportCustomFileNameTokenPlistType;
 
 // File extensions
 extern NSString *SPFileExtensionDefault;
@@ -398,7 +399,19 @@ extern NSString *SPImportClipboardTempFileNamePrefix;
 extern NSString *SPSQLExportUseCompression;
 extern NSString *SPNoBOMforSQLdumpFile;
 extern NSString *SPExportLastDirectory;
-extern NSString *SPExportFilenameFormat;
+extern NSString *SPExportFilenameFormat;     // legacy
+extern NSString *SPExportFilenameFormatIntl; // new, user language independent version
+
+// Export filename tokens
+extern NSString *SPFileNameDatabaseTokenName;
+extern NSString *SPFileNameHostTokenName;
+extern NSString *SPFileNameDateTokenName;
+extern NSString *SPFileNameYearTokenName;
+extern NSString *SPFileNameMonthTokenName;
+extern NSString *SPFileNameDayTokenName;
+extern NSString *SPFileNameTimeTokenName;
+extern NSString *SPFileNameFavoriteTokenName;
+extern NSString *SPFileNameTableTokenName;
 
 // Misc
 extern NSString *SPContentFilters;

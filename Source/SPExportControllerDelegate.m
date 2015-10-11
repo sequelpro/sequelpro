@@ -32,6 +32,9 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 
+#define IS_TOKEN(x)  [x isKindOfClass:[SPExportFileNameTokenObject class]]
+#define IS_STRING(x) [x isKindOfClass:[NSString class]]
+
 // Defined to suppress warnings
 @interface SPExportController (SPExportControllerPrivateAPI)
 
@@ -39,6 +42,8 @@
 - (void)_toggleSQLExportTableNameTokenAvailability;
 - (void)_updateExportFormatInformation;
 - (void)_switchTab;
+- (NSArray *)_updateTokensForMixedContent:(NSArray *)tokens;
+- (void)_tokenizeCustomFilenameTokenField;
 
 @end
 
@@ -97,78 +102,80 @@
  */
 - (NSTokenStyle)tokenField:(NSTokenField *)tokenField styleForRepresentedObject:(id)representedObject
 {
-	if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) return NSDefaultTokenStyle;
+	if (IS_TOKEN(representedObject)) return NSDefaultTokenStyle;
 
 	return NSPlainTextTokenStyle;
 }
 
+- (BOOL)tokenField:(NSTokenField *)tokenField writeRepresentedObjects:(NSArray *)objects toPasteboard:(NSPasteboard *)pboard
+{
+	NSMutableArray *mixed = [NSMutableArray arrayWithCapacity:[objects count]];
+	NSMutableString *flatted = [NSMutableString string];
+	
+	for(id item in objects) {
+		if(IS_TOKEN(item)) {
+			[mixed addObject:@{@"tokenId": [item tokenId]}];
+			[flatted appendFormat:@"{%@}",[item tokenId]];
+		}
+		else if(IS_STRING(item)) {
+			[mixed addObject:item];
+			[flatted appendString:item];
+		}
+		else {
+			[NSException raise:NSInternalInconsistencyException format:@"tokenField %@ contains unexpected object %@",tokenField,item];
+		}
+	}
+	
+	[pboard setString:flatted forType:NSPasteboardTypeString];
+	[pboard setPropertyList:mixed forType:SPExportCustomFileNameTokenPlistType];
+	return YES;
+}
+
+- (NSArray *)tokenField:(NSTokenField *)tokenField readFromPasteboard:(NSPasteboard *)pboard
+{
+	NSArray *items = [pboard propertyListForType:SPExportCustomFileNameTokenPlistType];
+	// if we have our preferred object type use it
+	if(items) {
+		NSMutableArray *res = [NSMutableArray arrayWithCapacity:[items count]];
+		for (id item in items) {
+			if (IS_STRING(item)) {
+				[res addObject:item];
+			}
+			else if([item isKindOfClass:[NSDictionary class]]) {
+				NSString *name = [item objectForKey:@"tokenId"];
+				if(name) {
+					SPExportFileNameTokenObject *tok = [SPExportFileNameTokenObject tokenWithId:name];
+					[res addObject:tok];
+				}
+			}
+			else {
+				[NSException raise:NSInternalInconsistencyException format:@"pasteboard %@ contains unexpected object %@",pboard,item];
+			}
+		}
+		return res;
+	}
+	// if the string came from another app, paste it literal, tokenfield will take care of any conversions
+	NSString *raw = [pboard stringForType:NSPasteboardTypeString];
+	if(raw) {
+		return @[raw];
+	}
+	
+	return nil;
+}
+
 /**
  * Take the default suggestion of new tokens - all untokenized text, as no tokenizing character is set - and
- * split into many shorter tokens, using non-alphanumeric characters as (preserved) breaks.  This preserves
- * all supplied characters and allows tokens to be typed.
+ * split/recombine strings that contain tokens. This preserves all supplied characters and allows tokens to be typed.
  */
 - (NSArray *)tokenField:(NSTokenField *)tokenField shouldAddObjects:(NSArray *)tokens atIndex:(NSUInteger)index
 {
-	NSUInteger i, j;
-	NSInteger k;
-	NSMutableArray *processedTokens = [NSMutableArray array];
-	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
-	id groupToken;
-
-	for (NSString *inputToken in tokens) 
-	{
-		j = 0;
-		
-		for (i = 0; i < [inputToken length]; i++) 
-		{
-			if (![alphanumericSet characterIsMember:[inputToken characterAtIndex:i]]) {
-				if (i > j) {
-					[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i - j)]]];
-				}
-				
-				[processedTokens addObject:[inputToken substringWithRange:NSMakeRange(i, 1)]];
-				
-				j = i + 1;
-			}
-		}
-		
-		if (j < i) {
-			[processedTokens addObject:[self tokenObjectForString:[inputToken substringWithRange:NSMakeRange(j, i - j)]]];
-		}
-	}
-
-	// Check to see whether unprocessed strings can be combined to form tokens
-	for (i = 1; i < [processedTokens count]; i++) {
-
-		// If this is a token object, skip
-		if ([[processedTokens objectAtIndex:i] isKindOfClass:[SPExportFileNameTokenObject class]]) {
-			continue;
-		}
-
-		for (k = i - 1; k >= 0; k--) {
-
-			// If this is a token object, stop processing
-			if ([[processedTokens objectAtIndex:k] isKindOfClass:[SPExportFileNameTokenObject class]]) {
-				break;
-			}
-
-			// Check whether the group of items make up a token
-			groupToken = [self tokenObjectForString:[[processedTokens subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
-			if ([groupToken isKindOfClass:[SPExportFileNameTokenObject class]]) {
-				[processedTokens replaceObjectsInRange:NSMakeRange(k, 1 + i - k) withObjectsFromArray:@[groupToken]];
-				i = k + 1;
-				break;
-			}
-		}
-	}
-
-	return processedTokens;
+	return [self _updateTokensForMixedContent:tokens];
 }
 
 - (NSString *)tokenField:(NSTokenField *)tokenField displayStringForRepresentedObject:(id)representedObject
 {
-	if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
-		return [(SPExportFileNameTokenObject *)representedObject tokenContent];
+	if (IS_TOKEN(representedObject)) {
+		return [localizedTokenNames objectForKey:[(SPExportFileNameTokenObject *)representedObject tokenId]];
 	}
 
 	return representedObject;
@@ -188,10 +195,16 @@
  */
 - (void)controlTextDidChange:(NSNotification *)notification
 {
+	// this method can either be called by typing, or by copy&paste.
+	// In the latter case tokenization will already be done by now.
 	if ([notification object] == exportCustomFilenameTokenField) {
 		[self updateDisplayedExportFilename];
-		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(tokenizeCustomFilenameTokenField) object:nil];
-		[self performSelector:@selector(tokenizeCustomFilenameTokenField) withObject:nil afterDelay:0.5];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(_tokenizeCustomFilenameTokenField) object:nil];
+		// do not queue a call if the key causing this change was the return key.
+		// This is to prevent a loop with _tokenizeCustomFilenameTokenField.
+		if([[NSApp currentEvent] type] != NSKeyDown || [[NSApp currentEvent] keyCode] != 0x24) {
+			[self performSelector:@selector(_tokenizeCustomFilenameTokenField) withObject:nil afterDelay:0.5];
+		}
 	}
 }
 
@@ -205,4 +218,132 @@
 	}
 }
 
+#pragma mark -
+
+/**
+ * Takes a mixed array of strings and tokens and converts
+ * any valid tokens inside the strings into real tokens
+ */
+- (NSArray *)_updateTokensForMixedContent:(NSArray *)tokens
+{
+	//if two consecutive tokens are strings, merge them
+	NSMutableArray *mergedTokens = [NSMutableArray array];
+	for (id inputToken in tokens)
+	{
+		if(IS_TOKEN(inputToken)) {
+			[mergedTokens addObject:inputToken];
+		}
+		else if(IS_STRING(inputToken)) {
+			id prev = [mergedTokens lastObject];
+			if(IS_STRING(prev)) {
+				[mergedTokens removeLastObject];
+				[mergedTokens addObject:[prev stringByAppendingString:inputToken]];
+			}
+			else {
+				[mergedTokens addObject:inputToken];
+			}
+		}
+	}
+	
+	// create a mapping dict of tokenId => token
+	NSMutableDictionary *replacement = [NSMutableDictionary dictionary];
+	for (SPExportFileNameTokenObject *realToken in [exportCustomFilenameTokenPool objectValue]) {
+		NSString *serializedName = [NSString stringWithFormat:@"{%@}",[realToken tokenId]];
+		[replacement setObject:realToken forKey:serializedName];
+	}
+	
+	//now we can look for real tokens to convert inside the strings
+	NSMutableArray *processedTokens = [NSMutableArray array];
+	for (id token in mergedTokens) {
+		if(IS_TOKEN(token)) {
+			[processedTokens addObject:token];
+			continue;
+		}
+		
+		NSString *remainder = token;
+		while(true) {
+			NSRange openCurl = [remainder rangeOfString:@"{"];
+			if(openCurl.location == NSNotFound) {
+				break;
+			}
+			NSString *before = [remainder substringToIndex:openCurl.location];
+			if([before length]) {
+				[processedTokens addObject:before];
+			}
+			remainder = [remainder substringFromIndex:openCurl.location];
+			NSRange closeCurl = [remainder rangeOfString:@"}"];
+			if(closeCurl.location == NSNotFound) {
+				break; //we've hit an unterminated token
+			}
+			NSString *tokenString = [remainder substringToIndex:closeCurl.location+1];
+			SPExportFileNameTokenObject *tokenObject = [replacement objectForKey:tokenString];
+			if(tokenObject) {
+				[processedTokens addObject:tokenObject];
+			}
+			else {
+				[processedTokens addObject:tokenString]; // no token with this name, add it as string
+			}
+			remainder = [remainder substringFromIndex:closeCurl.location+1];
+		}
+		if([remainder length]) {
+			[processedTokens addObject:remainder];
+		}
+	}
+	
+	return processedTokens;
+}
+
+- (void)_tokenizeCustomFilenameTokenField
+{
+	// if we are currently inside or at the end of a string segment we can
+	// call for tokenization to happen by simulating a return press
+	
+	if ([exportCustomFilenameTokenField currentEditor] == nil) return;
+	
+	NSRange selectedRange = [[exportCustomFilenameTokenField currentEditor] selectedRange];
+	
+	if (selectedRange.location == NSNotFound) return;
+	if (selectedRange.location == 0) return; // the beginning of the field is not valid for tokenization
+	if (selectedRange.length > 0) return;
+	
+	NSUInteger start = 0;
+	for(id obj in [exportCustomFilenameTokenField objectValue]) {
+		NSUInteger length;
+		BOOL isText = NO;
+		if(IS_STRING(obj)) {
+			length = [obj length];
+			isText = YES;
+		}
+		else if(IS_TOKEN(obj)) {
+			length = 1; // tokens are seen as one char by the textview
+		}
+		else {
+			[NSException raise:NSInternalInconsistencyException format:@"Unknown object type in token field: %@",obj];
+		}
+		NSUInteger end = start+length;
+		if(selectedRange.location >= start && selectedRange.location <= end) {
+			if(!isText) return; // cursor is at the end of a token
+			break;
+		}
+		start += length;
+	}
+	
+	// All conditions met - synthesize the return key to trigger tokenization.
+	NSEvent *tokenizingEvent = [NSEvent keyEventWithType:NSKeyDown
+												location:NSMakePoint(0,0)
+										   modifierFlags:0
+											   timestamp:0
+											windowNumber:[[exportCustomFilenameTokenField window] windowNumber]
+												 context:[NSGraphicsContext currentContext]
+											  characters:nil
+							 charactersIgnoringModifiers:nil
+											   isARepeat:NO
+												 keyCode:0x24];
+	
+	[NSApp postEvent:tokenizingEvent atStart:NO];
+}
+
 @end
+
+#undef IS_TOKEN
+#undef IS_STRING

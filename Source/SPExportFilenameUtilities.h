@@ -41,10 +41,10 @@
 
 - (void)updateDisplayedExportFilename;
 - (void)updateAvailableExportFilenameTokens;
-- (id)tokenObjectForString:(NSString *)stringToTokenize;
-- (void)tokenizeCustomFilenameTokenField;
 - (NSString *)generateDefaultExportFilename;
 - (NSString *)currentDefaultExportFileExtension;
 - (NSString *)expandCustomFilenameFormatUsingTableName:(NSString *)table;
+- (NSString *)customFilenamePathExtension;
+- (BOOL)isTableTokenAllowed;
 
 @end

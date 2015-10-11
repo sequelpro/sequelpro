@@ -124,6 +124,18 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		windowMinHeigth = [[self window] minSize].height;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		
+		localizedTokenNames = [@{
+			SPFileNameHostTokenName:     NSLocalizedString(@"Host", @"export filename host token"),
+			SPFileNameDatabaseTokenName: NSLocalizedString(@"Database", @"export filename database token"),
+			SPFileNameTableTokenName:    NSLocalizedString(@"Table", @"table"),
+			SPFileNameDateTokenName:     NSLocalizedString(@"Date", @"export filename date token"),
+			SPFileNameYearTokenName:     NSLocalizedString(@"Year", @"export filename date token"),
+			SPFileNameMonthTokenName:    NSLocalizedString(@"Month", @"export filename date token"),
+			SPFileNameDayTokenName:      NSLocalizedString(@"Day", @"export filename date token"),
+			SPFileNameTimeTokenName:     NSLocalizedString(@"Time", @"export filename time token"),
+			SPFileNameFavoriteTokenName: NSLocalizedString(@"Favorite", @"export filename favorite name token")
+		} retain];
 	}
 	
 	return self;
@@ -680,7 +692,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		// Check whether to save the export filename.  Save it if it's not blank and contains at least one
 		// token - this suggests it's not a one-off filename
 		if ([[exportCustomFilenameTokenField stringValue] length] < 1) {
-			[prefs removeObjectForKey:SPExportFilenameFormat];
+			[prefs removeObjectForKey:SPExportFilenameFormatIntl];
 		} 
 		else {
 			BOOL saveFilename = NO;
@@ -692,7 +704,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 				if ([aToken isKindOfClass:[SPExportFileNameTokenObject class]]) saveFilename = YES;
 			}
 			
-			if (saveFilename) [prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:representedObjects] forKey:SPExportFilenameFormat];
+			if (saveFilename) [prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:representedObjects] forKey:SPExportFilenameFormatIntl];
 		}
 
 		// If we are about to perform a table export, cache the current number of tables within the list, 
@@ -950,14 +962,15 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  */
 - (void)_setPreviousExportFilenameAndPath
 {
+	id o;
 	// Restore the export filename if it exists, and update the display
-	if ([prefs objectForKey:SPExportFilenameFormat]) {
-		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPExportFilenameFormat]]];
+	if ((o = [prefs objectForKey:SPExportFilenameFormatIntl])) {
+		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:o]];
 	}
 	
 	// If a directory has previously been selected, reselect it
-	if ([prefs objectForKey:SPExportLastDirectory]) {
-		[exportPathField setStringValue:[prefs objectForKey:SPExportLastDirectory]];
+	if ((o = [prefs objectForKey:SPExportLastDirectory])) {
+		[exportPathField setStringValue:o];
 	} 
 	else {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
@@ -1071,8 +1084,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	SPClear(exportFiles);
 	SPClear(operationQueue);
 	SPClear(exportFilename);
-	
-	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
+	SPClear(localizedTokenNames);
+	SPClear(previousConnectionEncoding);
 	
 	[super dealloc];
 }

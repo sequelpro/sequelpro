@@ -47,6 +47,7 @@ NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
 NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPNavigatorPasteboardDragType          = @"SPNavigatorPasteboardDragType";
 NSString *SPNavigatorTableDataPasteboardDragType = @"SPNavigatorTableDataPasteboardDragType"; 
+NSString *SPExportCustomFileNameTokenPlistType   = @"SPExportCustomFileNameTokenPlist";
 
 // File extensions
 NSString *SPFileExtensionDefault                 = @"spf";
@@ -199,6 +200,18 @@ NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
 NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
 NSString *SPExportLastDirectory                  = @"SPExportLastDirectory";
 NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
+NSString *SPExportFilenameFormatIntl             = @"CustomExportFilenameFormat";
+
+// Export filename tokens
+NSString *SPFileNameDatabaseTokenName = @"database";
+NSString *SPFileNameHostTokenName     = @"host";
+NSString *SPFileNameDateTokenName     = @"date";
+NSString *SPFileNameYearTokenName     = @"year";
+NSString *SPFileNameMonthTokenName    = @"month";
+NSString *SPFileNameDayTokenName      = @"day";
+NSString *SPFileNameTimeTokenName     = @"time";
+NSString *SPFileNameFavoriteTokenName = @"favorite";
+NSString *SPFileNameTableTokenName    = @"table";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";

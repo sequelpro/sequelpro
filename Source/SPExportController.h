@@ -230,6 +230,9 @@
 	NSInteger heightOffset2;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
+	
+	NSDictionary *localizedTokenNames;
+	
 }
 
 /**
