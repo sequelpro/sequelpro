@@ -2111,7 +2111,10 @@
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (aTableView == customQueryView) {
-		return [self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:NO asPreview:YES];
+		NSUInteger columnIndex = [[tableColumn identifier] integerValue];
+		// if a user enters the field by keyboard navigation they might want to copy the contents without invoking the field editor sheet first
+		BOOL forEditing = ([customQueryView editedColumn] == (NSInteger)columnIndex && [customQueryView editedRow] == rowIndex);
+		return [self _resultDataItemAtRow:rowIndex columnIndex:[[tableColumn identifier] integerValue] preserveNULLs:NO asPreview:(forEditing != YES)];
 	}
 
 	return @"";
@@ -3996,6 +3999,7 @@
  */
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
+#warning duplicate code with SPTableContentDataSource.m tableView:objectValueForTableColumn:…
 	id value = nil;
 	
 	// While the table is being loaded, additional validation is required - data
@@ -4006,11 +4010,7 @@
 		pthread_mutex_lock(&resultDataLock);
 		
 		if (row < resultDataCount && column < [resultData columnCount]) {
-			if (asPreview) {
-				value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
-			} else {
-				value = SPDataStorageObjectAtRowAndColumn(resultData, row, column);
-			}
+			value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
 		}
 		
 		pthread_mutex_unlock(&resultDataLock);
