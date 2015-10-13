@@ -35,3 +35,10 @@
  */
 void SPMainQSync(void (^block)(void));
 
+/**
+ * Copies count bytes into buf provided by caller
+ * @param buf Base address to copy to
+ * @param count Number of bytes to copy
+ * @return 0 on success or -1 if something went wrong, check errno
+ */
+int SPBetterRandomBytes(uint8_t *buf, size_t count);

@@ -29,6 +29,8 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFunctions.h"
+#import <Security/Security.h>
+#import "SPOSInfo.h"
 
 void SPMainQSync(void (^block)(void))
 {
@@ -38,4 +40,32 @@ void SPMainQSync(void (^block)(void))
 	else {
 		dispatch_sync(dispatch_get_main_queue(), block);
 	}
+}
+
+int SPBetterRandomBytes(uint8_t *buf, size_t count)
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
+	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {
+		return SecRandomCopyBytes(kSecRandomDefault, count, buf);
+	}
+#endif
+	// Version for 10.6
+	// https://developer.apple.com/library/prerelease/mac/documentation/Security/Conceptual/cryptoservices/RandomNumberGenerationAPIs/RandomNumberGenerationAPIs.html#//apple_ref/doc/uid/TP40011172-CH12-SW1
+	FILE *fp = fopen("/dev/random", "r");
+ 
+	if (!fp) return -1;
+ 
+	size_t i;
+	for (i=0; i<count; i++) {
+		int c = fgetc(fp);
+		if(c == EOF) { // /dev/random should never EOF
+			errno = ferror(fp);
+			return -1;
+		}
+		buf[i] = c;
+	}
+ 
+	fclose(fp);
+	
+	return 0;
 }

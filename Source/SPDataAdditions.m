@@ -37,6 +37,7 @@
 #include <zlib.h>
 #include <CommonCrypto/CommonCrypto.h>
 #include <stdlib.h>
+#import "SPFunctions.h"
 
 uint32_t LimitUInt32(NSUInteger i);
 
@@ -74,11 +75,12 @@ uint32_t LimitUInt32(NSUInteger i);
 {
 	// Create a random 128-bit initialization vector
 	// IV is block "-1" of plaintext data, therefore it is blockSize long
-	srand((unsigned int)time(NULL));
-	NSInteger ivIndex;
 	unsigned char iv[kCCBlockSizeAES128];
-	for (ivIndex = 0; ivIndex < kCCBlockSizeAES128; ivIndex++)
-		iv[ivIndex] = rand() & 0xff;
+	if(SPBetterRandomBytes(iv,sizeof(iv)) != 0)
+		@throw [NSException exceptionWithName:NSInternalInconsistencyException
+									   reason:@"Getting random data bytes failed!"
+									 userInfo:@{@"errno":@(errno)}];
+
 	NSData *ivData = [NSData dataWithBytes:iv length:sizeof(iv)];
 	
 	// Create the key from first 128-bits of the 160-bit password hash
