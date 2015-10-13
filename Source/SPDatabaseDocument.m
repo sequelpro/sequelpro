@@ -110,6 +110,7 @@ enum {
 
 #import "SPCharsetCollationHelper.h"
 #import "SPGotoDatabaseController.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -4818,7 +4819,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// If the .spf format is unhandled, error.
 	if (![[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Unknown file format", @"warning")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
@@ -5038,21 +5039,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	}
 
-	// Select view
-	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
-		[self viewStructure:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
-		[self viewContent:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
-		[self viewQuery:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
-		[self viewStatus:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
-		[self viewRelations:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
-		[self viewTriggers:self];
-
-	[self updateWindowTitle:self];
+	// update UI on main thread
+	SPMainQSync(^{
+		// Select view
+		if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
+			[self viewStructure:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
+			[self viewContent:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
+			[self viewQuery:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
+			[self viewStatus:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
+			[self viewRelations:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
+			[self viewTriggers:self];
+		
+		[self updateWindowTitle:self];
+	});
 
 	// dealloc spfSession data
 	SPClear(spfSession);
