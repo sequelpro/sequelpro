@@ -188,6 +188,8 @@
 		503B02D11AE95DD40060CAB1 /* SPTableFilterParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */; };
 		503B02D21AE95E010060CAB1 /* SPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 173284E91088FEDE0062E892 /* SPConstants.m */; };
 		503CDBB21ACDC204004F8A2F /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 503CDBB11ACDC204004F8A2F /* Quartz.framework */; };
+		505F568F1BCEE485007467DD /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
+		505F56901BCEE491007467DD /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
 		506CE9311A311C6C0039F736 /* SPTableContentFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */; };
 		507FF1121BBCC57600104523 /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		507FF1621BBF0D5000104523 /* SPTableCopyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 112730551180788A000737FD /* SPTableCopyTest.m */; };
@@ -3078,6 +3080,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				505F56901BCEE491007467DD /* SPOSInfo.m in Sources */,
+				505F568F1BCEE485007467DD /* SPFunctions.m in Sources */,
 				502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */,
 				502D21F61BA50710000D4CE7 /* SPDataAdditionsTests.m in Sources */,
 				503B02D21AE95E010060CAB1 /* SPConstants.m in Sources */,

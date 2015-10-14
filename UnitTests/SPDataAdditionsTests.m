@@ -40,6 +40,7 @@
 - (void)testDataEncryptedWithKeyIV;
 - (void)testDataDecryptedWithPassword;
 - (void)testDataDecryptedWithKey;
+- (void)testEnumerateLinesBreakingAt_withBlock;
 
 @end
 
@@ -278,6 +279,97 @@
 		@catch (NSException *exception) {
 			//expected
 		}
+	}
+}
+
+- (void)testEnumerateLinesBreakingAt_withBlock
+{
+	//simple empty data
+	{
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData data];
+		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			invocations++;
+		}];
+		STAssertTrue(invocations==0, @"Empty data never invokes block");
+	}
+	//simple unix file
+	{
+		const char inp[] = "Two\nLines\n";
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
+		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			switch (invocations) {
+				case 0:
+					STAssertEquals(line, NSMakeRange(0, 3), @"range of first line");
+					break;
+				case 1:
+					STAssertEquals(line, NSMakeRange(4, 5), @"range of second line");
+					break;
+			}
+			invocations++;
+		}];
+		STAssertTrue(invocations==2, @"File with two lines, terminated with empty line");
+	}
+	//simple windows file without ending empty line
+	{
+		const char inp[] = "A\r\nWindows\r\nfile";
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
+		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			switch (invocations) {
+				case 0:
+					STAssertEquals(line, NSMakeRange(0, 1), @"range of first line");
+					break;
+				case 1:
+					STAssertEquals(line, NSMakeRange(3, 7), @"range of second line");
+					break;
+				case 2:
+					STAssertEquals(line, NSMakeRange(12, 4), @"range of third line");
+					break;
+			}
+			invocations++;
+		}];
+		STAssertTrue(invocations==3, @"File with three lines, CRLF, terminated with empty line");
+	}
+	//empty lines with all 3 endings
+	{
+		const char inp[] = "\n\r\n\r";
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
+		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			switch (invocations) {
+				case 0:
+					STAssertEquals(line, NSMakeRange(0, 0), @"range of first line");
+					break;
+				case 1:
+					STAssertEquals(line, NSMakeRange(1, 0), @"range of second line");
+					break;
+				case 2:
+					STAssertEquals(line, NSMakeRange(3, 0), @"range of third line");
+					break;
+			}
+			invocations++;
+		}];
+		STAssertTrue(invocations==3, @"LF, CRLF and CR mixed");
+	}
+	//looking for specific line breaks only
+	{
+		const char inp[] = "foo\nbar\r\nbaz\r";
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
+		[data enumerateLinesBreakingAt:SPLineTerminatorCRLF withBlock:^(NSRange line, BOOL *stop) {
+			switch (invocations) {
+				case 0:
+					STAssertEquals(line, NSMakeRange(0, 7), @"range of first line");
+					break;
+				case 1:
+					STAssertEquals(line, NSMakeRange(9, 4), @"range of second line");
+					break;
+			}
+			invocations++;
+		}];
+		STAssertTrue(invocations==2, @"other line breaks when only CRLF is expected");
 	}
 }
 

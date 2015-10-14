@@ -431,7 +431,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	keySelectionPanel = [[NSOpenPanel openPanel] retain]; // retain/release needed on OS X ≤ 10.6 according to Apple doc
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 	[keySelectionPanel setAccessoryView:accessoryView];
-
+	[keySelectionPanel setDelegate:self];
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
 		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
@@ -484,6 +484,52 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[self _startEditingConnection];
 	}];
 #endif
+}
+
+- (BOOL)panel:(id)sender validateURL:(NSURL *)url error:(NSError **)outError
+{
+	if([keySelectionPanel accessoryView] == sslKeyFileLocationHelp) {
+		// mysql limits yaSSL to PEM format files and
+		// yaSSL only supports RSA type keys, with the exact string below on a single line
+		NSError *err = nil;
+		NSData *file = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:&err];
+		if(err) {
+			*outError = err;
+			return NO;
+		}
+		__block BOOL rsaStart = NO;
+		__block BOOL rsaEnd = NO;
+		[file enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			if(!rsaStart) {
+				const char rsaHead[] = "-----BEGIN RSA PRIVATE KEY-----";
+				size_t rsaLen = strlen(rsaHead);
+				if(line.length != rsaLen) return;
+				if(memcmp(rsaHead, ([file bytes]+line.location), rsaLen) == 0) {
+					rsaStart = YES;
+				}
+			}
+			else {
+				const char rsaFoot[] = "-----END RSA PRIVATE KEY-----";
+				size_t rsaLen = strlen(rsaFoot);
+				if(line.length != rsaLen) return;
+				if(memcmp(rsaFoot, ([file bytes]+line.location), rsaLen) == 0) {
+					rsaEnd = YES;
+					*stop = YES;
+				}
+			}
+		}];
+		
+		if(rsaStart && rsaEnd) return YES;
+
+		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{
+			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid private key file.", @""),[url lastPathComponent]],
+			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains an RSA private key and is using PEM encoding.", @""),
+			NSURLErrorKey: url
+		}];
+		return NO;
+	}
+	//unknown, accept by default
+	return YES;
 }
 
 /**
