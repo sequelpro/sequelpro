@@ -29,7 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFunctions.h"
-#import <Security/Security.h>
+#import <Security/SecRandom.h>
 #import "SPOSInfo.h"
 
 void SPMainQSync(void (^block)(void))
