@@ -155,6 +155,7 @@
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet SPSplitView *contentViewSplitter;
+	IBOutlet SPSplitView *tableInfoSplitView;
 	
 	IBOutlet NSPopUpButton *encodingPopUp;
 #endif

@@ -302,6 +302,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
 	[contentViewSplitter setCollapsibleSubviewIndex:0];
+	
+	// Set a minimum size on both text views on the table info page
+	[tableInfoSplitView setMinSize:20 ofSubviewAtIndex:0];
+	[tableInfoSplitView setMinSize:20 ofSubviewAtIndex:1];
 
 	// Set up the connection controller
 	connectionController = [[SPConnectionController alloc] initWithDocument:self];

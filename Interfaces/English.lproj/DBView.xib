@@ -13314,6 +13314,14 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<string key="id">LR5-fT-2qb</string>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">tableInfoSplitView</string>
+						<reference key="source" ref="800783608"/>
+						<reference key="destination" ref="420718918"/>
+					</object>
+					<string key="id">n3i-dz-XZx</string>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">addDatabase:</string>
 						<reference key="source" ref="463834704"/>
@@ -25280,6 +25288,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<boolean value="NO" key="5828.showNotes"/>
 				<string key="5829.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="5829.showNotes"/>
+				<string key="5904.CustomClassName">SPSplitView</string>
 				<string key="5904.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="5904.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="5904.showNotes"/>
@@ -28435,6 +28444,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						<string key="tableDataInstance">SPTableData</string>
 						<string key="tableDumpInstance">id</string>
 						<string key="tableInfoScrollView">NSScrollView</string>
+						<string key="tableInfoSplitView">SPSplitView</string>
 						<string key="tableInfoTable">NSTableView</string>
 						<string key="tableRelationsInstance">id</string>
 						<string key="tableSourceInstance">SPTableStructure</string>
@@ -28673,6 +28683,10 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						<object class="IBToOneOutletInfo" key="tableInfoScrollView">
 							<string key="name">tableInfoScrollView</string>
 							<string key="candidateClassName">NSScrollView</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoSplitView">
+							<string key="name">tableInfoSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="tableInfoTable">
 							<string key="name">tableInfoTable</string>
@@ -29165,7 +29179,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						<string key="exportCSVLinesTerminatedField">NSComboBox</string>
 						<string key="exportCSVNULLValuesAsTextField">NSTextField</string>
 						<string key="exportCustomFilenameTokenField">NSTokenField</string>
-						<string key="exportCustomFilenameTokensField">NSTokenField</string>
+						<string key="exportCustomFilenameTokenPool">NSTokenField</string>
 						<string key="exportCustomFilenameView">NSView</string>
 						<string key="exportCustomFilenameViewButton">NSButton</string>
 						<string key="exportCustomFilenameViewLabelButton">NSButton</string>
@@ -29265,8 +29279,8 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 							<string key="name">exportCustomFilenameTokenField</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
-						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokensField">
-							<string key="name">exportCustomFilenameTokensField</string>
+						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokenPool">
+							<string key="name">exportCustomFilenameTokenPool</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="exportCustomFilenameView">
