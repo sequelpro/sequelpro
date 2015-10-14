@@ -53,6 +53,7 @@
 #import "SPFavoriteColorSupport.h"
 #import "SPNamedNode.h"
 #import "SPWindowController.h"
+#import "SPFavoritesOutlineView.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -343,10 +344,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Registered to be the double click action of the favorites outline view.
  */
-- (IBAction)nodeDoubleClicked:(id)sender
+- (void)nodeDoubleClicked:(id)sender
 {
 #ifndef SP_CODA
-	SPTreeNode *node = [self selectedFavoriteNode];
+	SPTreeNode *node = [favoritesOutlineView itemForDoubleAction];
 		
 	if (node) {
 		if (node == quickConnectItem) {

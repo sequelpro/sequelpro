@@ -34,8 +34,17 @@
 {
 	BOOL isOSVersionAtLeast10_7_0;
 	BOOL justGainedFocus;
+	
+	id _itemForDoubleAction;
 }
 
 @property (assign) BOOL justGainedFocus;
+
+/**
+ * The item on which the last doubleAction (double click or enter/return key) was performed.
+ * May be nil.
+ * This is only valid during the call to the doubleAction target!
+ */
+@property (nonatomic,readonly,assign) id itemForDoubleAction;
 
 @end

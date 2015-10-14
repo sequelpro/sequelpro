@@ -228,7 +228,7 @@
 
 #ifndef SP_CODA
 // Interface interaction
-- (IBAction)nodeDoubleClicked:(id)sender;
+- (void)nodeDoubleClicked:(id)sender;
 - (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
