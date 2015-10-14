@@ -47,7 +47,7 @@
 #endif
 ;
 
-@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
+@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	

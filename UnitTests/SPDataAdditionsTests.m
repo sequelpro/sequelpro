@@ -371,6 +371,17 @@
 		}];
 		STAssertTrue(invocations==2, @"other line breaks when only CRLF is expected");
 	}
+	//stopping early
+	{
+		const char inp[] = "Two\nLines\n";
+		__block NSUInteger invocations = 0;
+		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
+		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			invocations++;
+			*stop = YES;
+		}];
+		STAssertTrue(invocations==1, @"File with two lines, stopped after first");
+	}
 }
 
 @end

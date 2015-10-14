@@ -63,11 +63,24 @@ static NSString *SPRemoveNode              = @"RemoveNode";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #endif
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_6
 @interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
 
 - (void)setShowsHiddenFiles:(BOOL)flag;
 
 @end
+#endif
+
+/**
+ * This is a utility function to validate SSL key/certificate files
+ * @param fileData   The contents of the file
+ * @param first      Buffer with Data that has to occur on a line
+ * @param first_len  Length of first
+ * @param second     Buffer with Data that has to occur on a line after first
+ * @param second_len Length of second
+ * @return True if file contains two lines matching first and second and second comes after first
+ */
+static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len);
 
 @interface SPConnectionController ()
 
@@ -488,48 +501,64 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 - (BOOL)panel:(id)sender validateURL:(NSURL *)url error:(NSError **)outError
 {
+	// mysql limits yaSSL to PEM format files (it would support DER)
 	if([keySelectionPanel accessoryView] == sslKeyFileLocationHelp) {
-		// mysql limits yaSSL to PEM format files and
-		// yaSSL only supports RSA type keys, with the exact string below on a single line
+		// and yaSSL only supports RSA type keys, with the exact string below on a single line
 		NSError *err = nil;
 		NSData *file = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:&err];
 		if(err) {
 			*outError = err;
 			return NO;
 		}
-		__block BOOL rsaStart = NO;
-		__block BOOL rsaEnd = NO;
-		[file enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
-			if(!rsaStart) {
-				const char rsaHead[] = "-----BEGIN RSA PRIVATE KEY-----";
-				size_t rsaLen = strlen(rsaHead);
-				if(line.length != rsaLen) return;
-				if(memcmp(rsaHead, ([file bytes]+line.location), rsaLen) == 0) {
-					rsaStart = YES;
-				}
-			}
-			else {
-				const char rsaFoot[] = "-----END RSA PRIVATE KEY-----";
-				size_t rsaLen = strlen(rsaFoot);
-				if(line.length != rsaLen) return;
-				if(memcmp(rsaFoot, ([file bytes]+line.location), rsaLen) == 0) {
-					rsaEnd = YES;
-					*stop = YES;
-				}
-			}
-		}];
+
+		// see PemToDer() in crypto_wrapper.cpp in yaSSL
+		const char rsaHead[] = "-----BEGIN RSA PRIVATE KEY-----";
+		const char rsaFoot[] = "-----END RSA PRIVATE KEY-----";
 		
-		if(rsaStart && rsaEnd) return YES;
+		if(FindLinesInFile(file, rsaHead, strlen(rsaHead), rsaFoot, strlen(rsaFoot)))
+			return YES;
 
 		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{
-			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid private key file.", @""),[url lastPathComponent]],
-			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains an RSA private key and is using PEM encoding.", @""),
+			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid private key file.", @"connection view : ssl : key file picker : wrong format error title"),[url lastPathComponent]],
+			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains a RSA private key and is using PEM encoding.", @"connection view : ssl : key file picker : wrong format error description"),
+			NSURLErrorKey: url
+		}];
+		return NO;
+	}
+	else if([keySelectionPanel accessoryView] == sslCertificateLocationHelp) {
+		NSError *err = nil;
+		NSData *file = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:&err];
+		if(err) {
+			*outError = err;
+			return NO;
+		}
+		
+		// see PemToDer() in crypto_wrapper.cpp in yaSSL
+		const char cerHead[] = "-----BEGIN CERTIFICATE-----";
+		const char cerFoot[] = "-----END CERTIFICATE-----";
+		
+		if(FindLinesInFile(file, cerHead, strlen(cerHead), cerFoot, strlen(cerFoot)))
+			return YES;
+		
+		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{
+			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid client certificate file.", @"connection view : ssl : client cert file picker : wrong format error title"),[url lastPathComponent]],
+			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains a X.509 client certificate and is using PEM encoding.", @"connection view : ssl : client cert picker : wrong format error description"),
 			NSURLErrorKey: url
 		}];
 		return NO;
 	}
 	//unknown, accept by default
 	return YES;
+	
+	/* And now, an intermission from the mysql source code:
+	 
+  if (!cert_file &&  key_file)
+	 cert_file= key_file;
+  
+  if (!key_file &&  cert_file)
+	 key_file= cert_file;
+
+	 */
 }
 
 /**
@@ -1994,3 +2023,28 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 }
 
 @end
+
+#pragma mark -
+
+BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len)
+{
+	__block BOOL firstMatch = NO;
+	__block BOOL secondMatch = NO;
+	[fileData enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+		if(!firstMatch) {
+			if(line.length != first_len) return;
+			if(memcmp(first, ([fileData bytes]+line.location), first_len) == 0) {
+				firstMatch = YES;
+			}
+		}
+		else {
+			if(line.length != second_len) return;
+			if(memcmp(second, ([fileData bytes]+line.location), second_len) == 0) {
+				secondMatch = YES;
+				*stop = YES;
+			}
+		}
+	}];
+	
+	return (firstMatch && secondMatch);
+}
