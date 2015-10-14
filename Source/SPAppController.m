@@ -765,13 +765,55 @@
 {
 	NSURL *url = [NSURL URLWithString:[[event paramDescriptorForKeyword:keyDirectObject] stringValue]];
 
-	if (url) {
+	if ([[url scheme] isEqualToString:@"sequelpro"]) {
 		[self handleEventWithURL:url];
+	}
+	else if([[url scheme] isEqualToString:@"mysql"]) {
+		[self handleMySQLConnectWithURL:url];
 	}
 	else {
 		NSBeep();
 		NSLog(@"Error in sequelpro URL scheme");
 	}
+}
+
+- (void)handleMySQLConnectWithURL:(NSURL *)url
+{
+	if(![[url scheme] isEqualToString:@"mysql"]) {
+		SPLog(@"unsupported url scheme: %@",url);
+		return;
+	}
+	
+	// make connection window
+	[self newTab:nil];
+	SPDatabaseDocument *doc = [self frontDocument];
+
+	NSMutableDictionary *details = [NSMutableDictionary dictionary];
+	
+	NSValue *connect = @NO;
+	
+	[details setObject:@"SPTCPIPConnection" forKey:@"type"];
+	if([url port])
+		[details setObject:[url port] forKey:@"port"];
+	
+	if([url user])
+		[details setObject:[url user] forKey:@"user"];
+	
+	if([url password]) {
+		[details setObject:[url password] forKey:@"password"];
+		connect = @YES;
+	}
+	
+	if([[url host] length] && ![[url host] isEqualToString:@"localhost"])
+		[details setObject:[url host] forKey:@"host"];
+	else
+		[details setObject:@"127.0.0.1" forKey:@"host"];
+	
+	NSArray *pc = [url pathComponents];
+	if([pc count] > 1) // first object is "/"
+		[details setObject:[pc objectAtIndex:1] forKey:@"database"];
+	
+	[doc setState:@{@"connection":details,@"auto_connect": connect} fromFile:NO];
 }
 
 - (void)handleEventWithURL:(NSURL*)url

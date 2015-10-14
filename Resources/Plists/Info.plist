@@ -173,6 +173,14 @@
 				<string>sequelpro</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>MySQL URL scheme</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mysql</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string></string>

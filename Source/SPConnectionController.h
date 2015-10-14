@@ -255,6 +255,7 @@
 - (IBAction)duplicateFavorite:(id)sender;
 - (IBAction)renameNode:(id)sender;
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
+- (void)selectQuickConnectItem;
 
 // Import/export favorites
 - (IBAction)importFavorites:(id)sender;

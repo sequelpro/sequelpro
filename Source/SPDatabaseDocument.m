@@ -4633,12 +4633,17 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	return stateDetails;
 }
 
+- (BOOL)setState:(NSDictionary *)stateDetails
+{
+	return [self setState:stateDetails fromFile:YES];
+}
+
 /**
  * Set the state of the document to the supplied dictionary, which should
  * at least contain a "connection" dictionary of details.
  * Returns whether the state was set successfully.
  */
-- (BOOL)setState:(NSDictionary *)stateDetails
+- (BOOL)setState:(NSDictionary *)stateDetails fromFile:(BOOL)spfBased
 {
 	NSDictionary *connection = nil;
 	NSInteger connectionType = -1;
@@ -4655,15 +4660,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller,
-	// and clear and reset the connection state.
-	[[connectionController favoritesOutlineView] deselectAll:connectionController];
-	[connectionController updateFavoriteSelection:self];
-
-	// Suppress the possibility to choose an other connection from the favorites
-	// if a connection should initialized by SPF file. Otherwise it could happen
-	// that the SPF file runs out of sync.
-	[[connectionController favoritesOutlineView] setEnabled:NO];
+	if(spfBased) {
+		// Deselect all favorites on the connection controller,
+		// and clear and reset the connection state.
+		[[connectionController favoritesOutlineView] deselectAll:connectionController];
+		[connectionController updateFavoriteSelection:self];
+		
+		// Suppress the possibility to choose an other connection from the favorites
+		// if a connection should initialized by SPF file. Otherwise it could happen
+		// that the SPF file runs out of sync.
+		[[connectionController favoritesOutlineView] setEnabled:NO];
+	}
+	else {
+		[connectionController selectQuickConnectItem];
+	}
 
 	// Set the correct connection type
 	if ([connection objectForKey:@"type"]) {
@@ -4774,7 +4784,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Autoconnect if appropriate
 	if ([stateDetails objectForKey:@"auto_connect"] && [[stateDetails valueForKey:@"auto_connect"] boolValue]) {
-		[connectionController initiateConnection:self];
+		[self connect];
 	}
 
 	if (keychain) [keychain release];

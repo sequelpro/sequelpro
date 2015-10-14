@@ -1013,6 +1013,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[prefs setInteger:favoriteID forKey:SPDefaultFavorite];
 }
+
+- (void)selectQuickConnectItem
+{
+	return [self _selectNode:quickConnectItem];
+}
 	
 #pragma mark -
 #pragma mark Import/export favorites
@@ -1704,7 +1709,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self _reloadFavoritesViewData];
 
 	// Select Quick Connect item to prevent empty selection
-	[self _selectNode:quickConnectItem];
+	[self selectQuickConnectItem];
 	
 	[connectionResizeContainer setHidden:NO];
 	[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];

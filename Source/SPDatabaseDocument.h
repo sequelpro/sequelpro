@@ -515,6 +515,7 @@
 // State saving and setting
 - (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
+- (BOOL)setState:(NSDictionary *)stateDetails fromFile:(BOOL)spfBased;
 - (BOOL)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
 #endif
