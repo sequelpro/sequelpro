@@ -47,6 +47,20 @@ static const NSString *SPTriggerDefiner    = @"TriggerDefiner";
 static const NSString *SPTriggerCreated    = @"TriggerCreated";
 static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 
+typedef NS_ENUM(NSInteger, SPTriggerActionTimeTag) {
+	SPTriggerActionTimeBeforeTag = 0,
+	SPTriggerActionTimeAfterTag  = 1
+};
+
+typedef NS_ENUM(NSInteger, SPTriggerEventTag) {
+	SPTriggerEventInsertTag = 0,
+	SPTriggerEventUpdateTag = 1,
+	SPTriggerEventDeleteTag = 2
+};
+
+static SPTriggerActionTimeTag TagForActionTime(NSString *mysql);
+static SPTriggerEventTag TagForEvent(NSString *mysql);
+
 @interface SPTableTriggers ()
 
 - (void)_editTriggerAtIndex:(NSInteger)index;
@@ -208,18 +222,29 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	}
 
 	NSString *triggerName       = [triggerNameTextField stringValue];
-	NSString *triggerActionTime = ([triggerActionTimePopUpButton indexOfSelectedItem]) ? @"AFTER" : @"BEFORE";
-	NSString *triggerEvent      = @"";
 	
-	switch ([triggerEventPopUpButton indexOfSelectedItem]) 
+	NSString *triggerActionTime = @"";
+	switch ([triggerActionTimePopUpButton selectedTag])
 	{
-		case 0:
+		case SPTriggerActionTimeBeforeTag:
+			triggerActionTime = @"BEFORE";
+			break;
+			
+		case SPTriggerActionTimeAfterTag:
+			triggerActionTime = @"AFTER";
+			break;
+	}
+	
+	NSString *triggerEvent      = @"";
+	switch ([triggerEventPopUpButton selectedTag])
+	{
+		case SPTriggerEventInsertTag:
 			triggerEvent = @"INSERT";
 			break;
-		case 1:
+		case SPTriggerEventUpdateTag:
 			triggerEvent = @"UPDATE";
 			break;
-		case 2:
+		case SPTriggerEventDeleteTag:
 			triggerEvent = @"DELETE";
 			break;
 	}
@@ -531,23 +556,9 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 	[triggerNameTextField setStringValue:[trigger objectForKey:SPTriggerName]];
 	[triggerStatementTextView setString:[trigger objectForKey:SPTriggerStatement]];
 	
-	// Timin title is different then what we have saved in the database (case difference)
-	for (NSUInteger i = 0; i < [[triggerActionTimePopUpButton itemArray] count]; i++)
-	{
-		if ([[[triggerActionTimePopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerActionTime] uppercaseString]]) {
-			[triggerActionTimePopUpButton selectItemAtIndex:i];
-			break;
-		}
-	}
+	[triggerActionTimePopUpButton selectItemWithTag:TagForActionTime([trigger objectForKey:SPTriggerActionTime])];
 	
-	// Event title is different then what we have saved in the database (case difference)
-	for (NSUInteger i = 0; i < [[triggerEventPopUpButton itemArray] count]; i++)
-	{
-		if ([[[triggerEventPopUpButton itemTitleAtIndex:i] uppercaseString] isEqualToString:[[trigger objectForKey:SPTriggerEvent] uppercaseString]]) {
-			[triggerEventPopUpButton selectItemAtIndex:i];
-			break;
-		}
-	}
+	[triggerEventPopUpButton selectItemWithTag:TagForEvent([trigger objectForKey:SPTriggerEvent])];
 	
 	// Change button label from Add to Edit
 	[confirmAddTriggerButton setTitle:NSLocalizedString(@"Save", @"Save trigger button label")];
@@ -642,3 +653,24 @@ static const NSString *SPTriggerSQLMode    = @"TriggerSQLMode";
 }
 
 @end
+
+#pragma mark -
+
+SPTriggerActionTimeTag TagForActionTime(NSString *mysql)
+{
+	NSString *uc = [mysql uppercaseString];
+	if([uc isEqualToString:@"BEFORE"]) return SPTriggerActionTimeBeforeTag;
+	if([uc isEqualToString:@"AFTER"])  return SPTriggerActionTimeAfterTag;
+	NSLog(@"%s Unknown trigger action time: %@",__FUNCTION__,uc);
+	return -1;
+}
+
+SPTriggerEventTag TagForEvent(NSString *mysql)
+{
+	NSString *uc = [mysql uppercaseString];
+	if([uc isEqualToString:@"INSERT"]) return SPTriggerEventInsertTag;
+	if([uc isEqualToString:@"UPDATE"]) return SPTriggerEventUpdateTag;
+	if([uc isEqualToString:@"DELETE"]) return SPTriggerEventDeleteTag;
+	NSLog(@"%s Unknown trigger event: %@",__FUNCTION__,uc);
+	return -1;
+}
