@@ -9118,6 +9118,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 															<reference key="NSOnImage" ref="803427867"/>
 															<reference key="NSMixedImage" ref="245717585"/>
 															<string key="NSAction">_popUpItemAction:</string>
+															<int key="NSTag">1</int>
 															<reference key="NSTarget" ref="556116646"/>
 														</object>
 													</array>
@@ -9174,6 +9175,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 															<reference key="NSOnImage" ref="803427867"/>
 															<reference key="NSMixedImage" ref="245717585"/>
 															<string key="NSAction">_popUpItemAction:</string>
+															<int key="NSTag">1</int>
 															<reference key="NSTarget" ref="468443756"/>
 														</object>
 														<object class="NSMenuItem" id="766167700">
@@ -9185,6 +9187,7 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 															<reference key="NSOnImage" ref="803427867"/>
 															<reference key="NSMixedImage" ref="245717585"/>
 															<string key="NSAction">_popUpItemAction:</string>
+															<int key="NSTag">2</int>
 															<reference key="NSTarget" ref="468443756"/>
 														</object>
 													</array>
