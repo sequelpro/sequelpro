@@ -42,6 +42,7 @@
 @interface SPTableData (PrivateAPI)
 
 - (void)_loopWhileWorking;
+- (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType;
 
 @end
 
@@ -437,21 +438,12 @@
 }
 
 /**
- * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
- * details, primary key, unique keys, and table encoding.
- * In future this could also be used to retrieve the majority of index information
- * assuming information like cardinality isn't needed.
- * This function is rather long due to the painful parsing required, but is fast.
- * Returns a boolean indicating success.
+ * Retrieve the CREATE statement for a table/view and return extracted table
+ * structure information.
+ * @attention This method will interact with the UI on errors/connection loss!
  */
 - (NSDictionary *) informationForTable:(NSString *)tableName
 {
-	SPSQLParser *createTableParser, *fieldsParser, *fieldParser;
-	NSMutableArray *tableColumns, *fieldStrings;
-	NSMutableDictionary *tableColumn, *tableData;
-	NSString *encodingString = nil;
-	NSUInteger i, stringStart;
-	unichar quoteCharacter;
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return nil
@@ -527,27 +519,46 @@
 	}
 
 	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	
+	NSDictionary *tableData = [self parseCreateStatement:tableCreateSyntax ofType:[resultFieldNames objectAtIndex:0]];
+	
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
+	return tableData;
+}
+
+/**
+ * Analyse a CREATE TABLE tring to extract the field details, primary key, unique keys, and table encoding.
+ * @param tableDef @"CREATE TABLE ..."
+ * @param tableType Can either be Table or View. Value is copied to the result and not used otherwise
+ * @return A dict containing info about the table's structure
+ *
+ * In future this could also be used to retrieve the majority of index information
+ * assuming information like cardinality isn't needed.
+ * This function is rather long due to the painful parsing required, but is fast.
+ */
+- (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType
+{
+	SPSQLParser *createTableParser = [[SPSQLParser alloc] initWithString:tableDef];
 
 	// Extract the fields definition string from the CREATE TABLE syntax
-	fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
+	SPSQLParser *fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
 
 	// Split the fields and keys string into an array of individual elements
-	fieldStrings = [[NSMutableArray alloc] initWithArray:[fieldsParser splitStringByCharacter:',' skippingBrackets:YES]];
+	NSMutableArray *fieldStrings = [[NSMutableArray alloc] initWithArray:[fieldsParser splitStringByCharacter:',' skippingBrackets:YES]];
 
 	// fieldStrings should now hold unparsed field and key strings, while tableProperty string holds unparsed
 	// table information.  Proceed further by parsing the field strings.
-	tableColumns = [[NSMutableArray alloc] init];
-	tableColumn = [[NSMutableDictionary alloc] init];
-	fieldParser = [[SPSQLParser alloc] init];
+	NSMutableArray *tableColumns = [[NSMutableArray alloc] init];
+	NSMutableDictionary *tableColumn = [[NSMutableDictionary alloc] init];
 
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
 	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
 
-	tableData = [NSMutableDictionary dictionary];
+	NSMutableDictionary *tableData = [NSMutableDictionary dictionary];
 
-	for (i = 0; i < [fieldStrings count]; i++) {
+	for (NSUInteger i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
 		[fieldsParser setString:[NSArrayObjectAtIndex(fieldStrings, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet]];
@@ -559,7 +570,7 @@
 
 		// If the first character is a quote character, this is a field definition.
 		if ([quoteSet characterIsMember:[fieldsParser characterAtIndex:0]]) {
-			quoteCharacter = [fieldsParser characterAtIndex:0];
+			unichar quoteCharacter = [fieldsParser characterAtIndex:0];
 
 			// Capture the area between the two backticks as the name
 			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
@@ -734,11 +745,11 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-							[theTableColumn setObject:@1 forKey:@"isprimarykey"];
-							break;
+								[theTableColumn setObject:@1 forKey:@"isprimarykey"];
+								break;
+							}
 						}
-				}
-			}
+					}
 					[tableData setObject:primaryKeyFields forKey:@"primarykeyfield"];
 				}
 			}
@@ -752,9 +763,9 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-								[theTableColumn setObject:@1 forKey:@"unique"];
-								break;
-							}
+							[theTableColumn setObject:@1 forKey:@"unique"];
+							break;
+						}
 					}
 				}
 			}
@@ -769,12 +780,14 @@
 	[tableColumn release];
 
 	// Extract the encoding from the table properties string - other details come from TABLE STATUS.
+	NSString *encodingString = nil;
 	NSRange charsetDefinitionRange = [createTableParser rangeOfString:@"CHARSET=" options:NSCaseInsensitiveSearch];
 	if (charsetDefinitionRange.location == NSNotFound) {
 		charsetDefinitionRange = [createTableParser rangeOfString:@"CHARACTER SET=" options:NSCaseInsensitiveSearch];
 	}
 	if (charsetDefinitionRange.location != NSNotFound) {
-		stringStart = NSMaxRange(charsetDefinitionRange);
+		NSUInteger stringStart = NSMaxRange(charsetDefinitionRange);
+		NSUInteger i;
 		for (i = stringStart; i < [createTableParser length]; i++) {
 			if ([createTableParser characterAtIndex:i] == ' ') break;
 		}
@@ -795,18 +808,15 @@
 	}
 
 	[createTableParser release];
-	[fieldParser release];
 
 	// this will be 'Table' or 'View'
-	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
+	[tableData setObject:tableType forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
 
 	[encodingString release];
 	[tableColumns release];
-
-	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	return tableData;
 }
