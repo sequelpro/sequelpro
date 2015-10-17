@@ -186,6 +186,9 @@ end:
 			keepAliveLastPingBlocked = YES;
 		}
 	} while (keepAlivePingThreadActive);
+	
+	//wait for thread to go away, otherwise our free() below might run before _pingThreadCleanup()
+	pthread_join(keepAlivePingThread_t, NULL);
 
 	// Clean up
 	keepAlivePingThread_t = NULL;
