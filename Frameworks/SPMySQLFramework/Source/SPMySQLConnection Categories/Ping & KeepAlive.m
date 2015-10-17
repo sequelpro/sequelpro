@@ -102,8 +102,7 @@
 		}
 
 		// Return as no further ping action required this cycle.
-		keepAliveThread = nil;
-		return;
+		goto end;
 	}
 
 	// Otherwise, perform a background ping.
@@ -113,6 +112,7 @@
 	} else {
 		keepAlivePingFailures++;
 	}
+end:
 	keepAliveThread = nil;
 }
 
@@ -170,7 +170,7 @@
 
 		// If the ping timeout has been exceeded, or the ping thread has been
 		// cancelled, force a timeout; double-check that the thread is still active.
-		if (([keepAliveThread isCancelled] || pingElapsedTime > pingTimeout)
+		if (([[NSThread currentThread] isCancelled] || pingElapsedTime > pingTimeout)
 			&& keepAlivePingThreadActive
 			&& !threadCancelled)
 		{
@@ -254,24 +254,28 @@ void _pingThreadCleanup(void *pingDetails)
 /**
  * If a keepalive thread is active, cancel it, and wait a short time for it
  * to exit.
+ *
+ * @return YES, if the thread exited within 10 seconds after canceling it
  */
-- (void)_cancelKeepAlives
+- (BOOL)_cancelKeepAlives
 {
 
 	// If no keepalive thread is active, return
-	if (!keepAliveThread) {
-		return;
+	if (keepAliveThread) {
+
+		// Mark the thread as cancelled
+		[keepAliveThread cancel];
+
+		// Wait inside a time limit of ten seconds for it to exit
+		uint64_t threadCancelStartTime_t = mach_absolute_time();
+		do {
+			usleep(100000);
+			if (_elapsedSecondsSinceAbsoluteTime(threadCancelStartTime_t) > 10) return NO;
+		} while (keepAliveThread);
+	
 	}
-
-	// Mark the thread as cancelled
-	[keepAliveThread cancel];
-
-	// Wait inside a time limit of ten seconds for it to exit
-	uint64_t threadCancelStartTime_t = mach_absolute_time();
-	do {
-		usleep(100000);
-		if (_elapsedSecondsSinceAbsoluteTime(threadCancelStartTime_t) > 10) break;
-	} while (keepAliveThread);
+	
+	return YES;
 }
 
 @end

@@ -51,6 +51,6 @@ void _forceThreadExit(int signalNumber);
 void _pingThreadCleanup(void *pingDetails);
 
 // Cancellation
-- (void)_cancelKeepAlives;
+- (BOOL)_cancelKeepAlives;
 
 @end
