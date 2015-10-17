@@ -93,6 +93,8 @@
 		[notifier addObserver:self selector:@selector(_disableDoubleClickAction:) name:NSWindowWillBeginSheetNotification object:aWindow];
 		[notifier addObserver:self selector:@selector(_enableDoubleClickAction:) name:NSWindowDidEndSheetNotification object:aWindow];
 	}
+	
+	[super viewWillMoveToWindow:aWindow];
 }
 
 /**
