@@ -41,6 +41,7 @@
 
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
 - (void)_updateLineHidingViewState;
+- (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc;
 
 @end
 
@@ -186,7 +187,7 @@
 {
 	if ([[PSMTabDragAssistant sharedDragAssistant] isDragging]) return;
 	
-	selectedTableDocument = [tabViewItem identifier];
+	[self _switchOutSelectedTableDocument:[tabViewItem identifier]];
 	[selectedTableDocument didBecomeActiveTabInWindow];
 
 	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];

@@ -6284,6 +6284,7 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 
 - (void)dealloc
 {
+	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!",__func__);
 #ifndef SP_CODA /* Unregister observers */
 	// Unregister observers
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
