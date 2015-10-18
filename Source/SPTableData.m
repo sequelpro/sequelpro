@@ -870,6 +870,12 @@
 	// Retrieve the table syntax string
 	if (tableCreateSyntax) SPClear(tableCreateSyntax);
 	NSString *syntaxString = [[theResult getRowAsArray] objectAtIndex:1];
+	
+	// Crash reports indicate that this does happen, however I'm not sure why.
+	if (!syntaxString) {
+		NSLog(@"%s: query for 'SHOW CREATE TABLE' returned nil but there was no connection error!? queryErrored=%d, userTriggeredDisconnect=%d, isConnected=%d, theResult=%@",__func__,[mySQLConnection queryErrored],[mySQLConnection userTriggeredDisconnect],[mySQLConnection isConnected],theResult);
+		return nil;
+	}
 
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([syntaxString isNSNull]) {
