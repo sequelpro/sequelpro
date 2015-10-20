@@ -849,7 +849,7 @@
 			if([keyEq length])
 				[mItem setKeyEquivalentModifierMask:[[[item objectForKey:SPBundleFileKeyEquivalentKey] objectAtIndex:1] intValue]];
 
-			[mItem setTarget:[[NSApp mainWindow] firstResponder]];
+			[mItem setTarget:[[NSApp keyWindow] firstResponder]];
 
 			if([item objectForKey:SPBundleFileTooltipKey])
 				[mItem setToolTip:[item objectForKey:SPBundleFileTooltipKey]];

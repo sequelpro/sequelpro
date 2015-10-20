@@ -1634,7 +1634,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
 		[control abortEditing];
-		[[NSApp mainWindow] makeFirstResponder:tablesListView];
+		[[tablesListView window] makeFirstResponder:tablesListView];
 
 		return YES;
 	} else{

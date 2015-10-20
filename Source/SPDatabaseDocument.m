@@ -5291,8 +5291,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if([command isEqualToString:@"SelectTableRows"]) {
-		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
-			[(SPCopyTable *)[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+		id firstResponder = [[NSApp keyWindow] firstResponder];
+		if([params count] > 1 && [firstResponder respondsToSelector:@selector(selectTableRows:)]) {
+			[(SPCopyTable *)firstResponder selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
 		}
 		return;
 	}
@@ -6307,17 +6308,18 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			if(!correspondingWindowFound) stopTrigger = YES;
 		}
 		if(!stopTrigger) {
+			id firstResponder = [[NSApp keyWindow] firstResponder];
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
 				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
-				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
+				if ([[[firstResponder class] description] isEqualToString:@"SPCopyTable"]) {
+					[[firstResponder onMainThread] executeBundleItemForDataTable:aMenuItem];
 			}
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
-				if ([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]]) {
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+				if ([firstResponder isKindOfClass:[NSTextView class]]) {
+					[[firstResponder onMainThread] executeBundleItemForInputField:aMenuItem];
 			}
 		}
 	}

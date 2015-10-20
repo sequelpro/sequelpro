@@ -2024,7 +2024,7 @@
 	NSEvent *event = [NSApp currentEvent];
 	BOOL checkForKeyEquivalents = ([event type] == NSKeyDown) ? YES : NO;
 
-	id firstResponder = [[NSApp mainWindow] firstResponder];
+	id firstResponder = [[NSApp keyWindow] firstResponder];
 
 	NSString *scope = [[sender representedObject] objectForKey:@"scope"];
 	NSString *keyEqKey = nil;
@@ -2076,7 +2076,7 @@
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
-					[(SPTextView *)[[NSApp mainWindow] firstResponder] executeBundleItemForInputField:aMenuItem];
+					[(SPTextView *)firstResponder executeBundleItemForInputField:aMenuItem];
 				}
 			}
 		} else {
@@ -2095,7 +2095,7 @@
 					NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
 					[aMenuItem setTag:0];
 					[aMenuItem setToolTip:[eq objectForKey:@"path"]];
-					[(SPCopyTable *)[[NSApp mainWindow] firstResponder] executeBundleItemForDataTable:aMenuItem];
+					[(SPCopyTable *)firstResponder executeBundleItemForDataTable:aMenuItem];
 				}
 			}
 		} else {

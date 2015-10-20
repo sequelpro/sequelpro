@@ -390,11 +390,11 @@
 
 	if (![tableInfoScrollView isHidden]) {
 		[tableDocumentInstance setActivityPaneHidden:@0];
-		[[NSApp mainWindow] makeFirstResponder:activitiesTable];
+		[[activitiesTable window] makeFirstResponder:activitiesTable];
 	} 
 	else {
 		[tableDocumentInstance setActivityPaneHidden:@1];
-		[[NSApp mainWindow] makeFirstResponder:infoTable];
+		[[infoTable window] makeFirstResponder:infoTable];
 	}
 
 	[infoTable deselectAll:nil];
