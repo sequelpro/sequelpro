@@ -144,6 +144,17 @@
 @end
 
 /**
+ * Shorthand for SPOnewayAlertSheetWithStyle() with defaultButton=nil and alertStyle=NSWarningAlertStyle
+ */
+void SPOnewayAlertSheet(
+	NSString *title,
+	NSWindow *docWindow,
+	NSString *msg)
+{
+	SPOnewayAlertSheetWithStyle(title, nil, docWindow, msg, NSWarningAlertStyle);
+}
+
+/**
  * A Send-and-forget variant for displaying alerts.
  * It will queue the alert on the main thread and *always* immediately return.
  *   Because of that there is no way to set a delegate and callback method
@@ -151,7 +162,7 @@
  * If nil is passed as the button title it will be changed to @"OK".
  * If nil is passed as the window NSAlert will be modal
  */
-void SPOnewayAlertSheet(
+void SPOnewayAlertSheetWithStyle(
 	NSString *title,
 	NSString *defaultButton,
 	NSWindow *docWindow,

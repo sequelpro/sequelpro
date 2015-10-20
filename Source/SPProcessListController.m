@@ -676,8 +676,11 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	// Check for errors
 	if ([connection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill query", @"error killing query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to kill query", @"error killing query message"),
+			[self window],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill the query associated with connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]
+		);
 	}
 	
 	// Refresh the process list
@@ -694,8 +697,11 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	// Check for errors
 	if ([connection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to kill connection", @"error killing connection message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to kill connection", @"error killing connection message"),
+			[self window],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while attempting to kill connection %lld.\n\nMySQL said: %@", @"error killing query informative message"), processId, [connection lastErrorMessage]]
+		);
 	}
 	
 	// Refresh the process list

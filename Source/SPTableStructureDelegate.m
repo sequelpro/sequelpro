@@ -401,8 +401,11 @@
 	[mySQLConnection queryString:queryString];
 	
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error moving field", @"error moving field message"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection lastErrorMessage]]
+		);
 	} 
 	else {
 		[tableDataInstance resetAllData];

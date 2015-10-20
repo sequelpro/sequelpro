@@ -77,10 +77,11 @@
 		[[self onMainThread] setTableDetails:nil];
 		
 		if ([mySQLConnection isConnected]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),
-							   [mySQLConnection lastErrorMessage]]);
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[NSApp mainWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]]
+			);
 		}
 		
 		return;

@@ -381,10 +381,11 @@
 	// Open a filehandle for the SQL file
 	sqlFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
 	if (!sqlFileHandle) {
-		SPBeginAlertSheet(NSLocalizedString(@"Import Error", @"Import Error title"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  NSLocalizedString(@"The SQL file you selected could not be found or read.", @"SQL file open error"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Import Error", @"Import Error title"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The SQL file you selected could not be found or read.", @"SQL file open error")
+		);
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
@@ -448,10 +449,11 @@
 				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
 			}
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)", @"SQL read error, including detail from system"), (long)queriesPerformed, [exception reason]]);
+			SPOnewayAlertSheet(
+				SP_FILE_READ_ERROR_STRING,
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)", @"SQL read error, including detail from system"), (long)queriesPerformed, [exception reason]]
+			);
 			[sqlParser release];
 			[sqlDataBuffer release];
 			[importPool drain];
@@ -498,10 +500,11 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:sqlEncoding];
 					}
-					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]);
+					SPOnewayAlertSheet(
+						SP_FILE_READ_ERROR_STRING,
+						[tableDocumentInstance parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]
+					);
 					[sqlParser release];
 					[sqlDataBuffer release];
 					[importPool drain];
@@ -740,10 +743,11 @@
 	csvFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
 	
 	if (!csvFileHandle) {
-		SPBeginAlertSheet(NSLocalizedString(@"Import Error", @"Import Error title"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  NSLocalizedString(@"The CSV file you selected could not be found or read.", @"CSV file open error"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Import Error", @"Import Error title"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The CSV file you selected could not be found or read.", @"CSV file open error")
+		);
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
@@ -822,10 +826,11 @@
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)", @"CSV read error, including detail string from system"), (long)rowsImported, [exception reason]]);
+			SPOnewayAlertSheet(
+				SP_FILE_READ_ERROR_STRING,
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)", @"CSV read error, including detail string from system"), (long)rowsImported, [exception reason]]
+			);
 			[csvParser release];
 			[csvDataBuffer release];
 			[parsedRows release];
@@ -871,10 +876,11 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:csvEncoding];
 					}
-					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]);
+					SPOnewayAlertSheet(
+						SP_FILE_READ_ERROR_STRING,
+						[tableDocumentInstance parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]
+					);
 					[csvParser release];
 					[csvDataBuffer release];
 					[parsedRows release];
@@ -1217,26 +1223,22 @@
 	// Ensure data was provided, or alert than an import error occurred and return false.
 	if (![importData count]) {
 		[self closeAndStopProgressSheet];
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  [tableDocumentInstance parentWindow], self,
-						  nil, nil,
-						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
-						  );
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
+		);
 		return YES;
 	}
 
 	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
 	if ([[importData objectAtIndex:0] count] > 512) {
 		[self closeAndStopProgressSheet];
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  [tableDocumentInstance parentWindow], self,
-						  nil, nil,
-						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
-						  );
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
+		);
 		return NO;
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;

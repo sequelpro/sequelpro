@@ -244,8 +244,11 @@
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Empty query", @"empty query message"),
+				[tableDocumentInstance parentWindow],
+				NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message")
+			);
 			return;
 		}
 
@@ -262,8 +265,11 @@
 		// This should never evaluate to true as we are now performing menu validation, meaning the 'Save Query to Favorites' menu item will
 		// only be enabled if the query text view has at least one character present.
 		if ([[textView string] isEqualToString:@""]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Empty query", @"empty query message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Empty query", @"empty query message"),
+				[tableDocumentInstance parentWindow],
+				NSLocalizedString(@"Cannot save an empty query.", @"empty query informative message")
+			);
 			return;
 		}
 
@@ -2016,9 +2022,11 @@
 
 		// Check for errors while UPDATE
 		if ([mySQLConnection queryErrored]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection lastErrorMessage]]);
-
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't write field.\nMySQL said: %@", @"message of panel when error while updating field to db"), [mySQLConnection lastErrorMessage]]
+			);
 			return;
 		}
 
@@ -2026,8 +2034,11 @@
 		if ( ![mySQLConnection rowsAffectedByLastQuery] ) {
 #ifndef SP_CODA
 			if ( [prefs boolForKey:SPShowNoAffectedRowsError] ) {
-				SPBeginAlertSheet(NSLocalizedString(@"Warning", @"warning"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db"));
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Warning", @"warning"),
+					[tableDocumentInstance parentWindow],
+					NSLocalizedString(@"The row was not written to the MySQL database. You probably haven't changed anything.\nReload the table to be sure that the row exists and use a primary key for your table.\n(This error can be turned off in the preferences.)", @"message of panel when no rows have been affected after writing to the db")
+				);
 			} else {
 				NSBeep();
 			}
@@ -2049,10 +2060,11 @@
 		}
 #endif
 	} else {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed.", @"message of panel when error while updating field to db after enabling it"),
-									(numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, [columnDefinition objectForKey:@"org_table"]]);
-
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"Updating field content failed. Couldn't identify field origin unambiguously (%1$ld matches). It's very likely that while editing this field of table `%2$@` was changed.", @"message of panel when error while updating field to db after enabling it"), (numberOfPossibleUpdateRows<1)?0:numberOfPossibleUpdateRows, [columnDefinition objectForKey:@"org_table"]]
+		);
 	}
 }
 

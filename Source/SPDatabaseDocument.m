@@ -1086,12 +1086,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
--(void)showErrorSheetWith:(id)error
+-(void)showErrorSheetWith:(NSArray *)error
 {
 	// error := first object is the title , second the message, only one button OK
-	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, parentWindow, self, nil, nil,
-			[error objectAtIndex:1]);
+	SPOnewayAlertSheet([error objectAtIndex:0], parentWindow, [error objectAtIndex:1]);
 }
 #endif
 
@@ -2540,10 +2538,18 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
-		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"),
+			parentWindow,
+			NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs")
+		);
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection lastErrorMessage]]
+		);
 	}
 }
 
@@ -5236,8 +5242,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Authenticate command
 	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-						  NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Remote Error", @"remote error"),
+			[self parentWindow],
+			NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated")
+		);
 		return;
 	}
 
@@ -5422,8 +5431,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 				if ( ![queryResult numberOfRows] ) {
 					//error while getting table structure
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Error", @"error"),
+						[self parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]
+					);
 
 					status = @"1";
 
@@ -5464,8 +5476,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 			if(!succeed) {
 				NSBeep();
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-								  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"BASH Error", @"bash error"),
+					[self parentWindow],
+					NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message")
+				);
 			}
 			
 		}
@@ -5637,16 +5652,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"BASH Error", @"bash error"),
+				[self parentWindow],
+				NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message")
+			);
 		}
 		return;
 	}
 
-	SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-					  [NSString stringWithFormat:NSLocalizedString(@"URL scheme command “%@” unsupported", @"URL scheme command “%@” unsupported"), command]);
-	
-
+	SPOnewayAlertSheet(
+		NSLocalizedString(@"Remote Error", @"remote error"),
+		[self parentWindow],
+		[NSString stringWithFormat:NSLocalizedString(@"URL scheme command “%@” unsupported", @"URL scheme command “%@” unsupported"), command]
+	);
 }
 
 - (void)registerActivity:(NSDictionary*)commandDict
@@ -5950,7 +5969,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (void)_copyDatabase 
 {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -5965,9 +5984,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
 	}
 	else {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to copy database", @"unable to copy database message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]
+		);
 	}
 	
 	[dbActionCopy release];
@@ -5982,7 +6003,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSString *newDatabaseName = [databaseRenameNameField stringValue];
 	
 	if ([newDatabaseName isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -5997,9 +6018,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[self selectDatabase:newDatabaseName item:nil];
 	}
 	else {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to rename database", @"unable to rename database message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], newDatabaseName]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to rename database", @"unable to rename database message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], newDatabaseName]
+		);
 	}
 	
 	[dbActionRename release];
@@ -6025,7 +6048,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 
@@ -6041,7 +6064,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if (!res) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
 		return;
 	}
 
@@ -6079,7 +6102,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if ([mySQLConnection queryErrored]) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
 		return;
 	}
 	
@@ -6178,10 +6201,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 				SPOnewayAlertSheet(
 					NSLocalizedString(@"Error", @"error"),
-					nil,
 					parentWindow,
-					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName],
-					NSWarningAlertStyle
+					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
 				);
 			}
 

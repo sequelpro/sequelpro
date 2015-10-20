@@ -191,8 +191,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 						encoding:NSUTF8StringEncoding
 						error:&err];
 			if (err != nil) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@", [err localizedDescription]]);
+				SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), [self window], [NSString stringWithFormat:@"%@", [err localizedDescription]]);
 			}
 		}
 	}

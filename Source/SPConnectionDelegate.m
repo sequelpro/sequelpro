@@ -123,15 +123,9 @@
  */
 - (void)noConnectionAvailable:(id)connection
 {	
-	SPBeginAlertSheet(
+	SPOnewayAlertSheet(
 		NSLocalizedString(@"No connection available", @"no connection available message"),
-		NSLocalizedString(@"OK", @"OK button"),
-		nil,
-		nil,
 		[self parentWindow],
-		self,
-		nil,
-		nil,
 		NSLocalizedString(@"An error has occured and there doesn't seem to be a connection available.", @"no connection available informatie message")
 	);
 }
@@ -176,7 +170,7 @@
 - (void)showErrorWithTitle:(NSString *)theTitle message:(NSString *)theMessage
 {
 	if ([[self parentWindow] isVisible]) {
-		SPBeginAlertSheet(theTitle, NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil, theMessage);
+		SPOnewayAlertSheet(theTitle, [self parentWindow], theMessage);
 	}
 }
 

@@ -482,10 +482,8 @@
 
 			SPOnewayAlertSheet(
 			   NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"),
-			   nil,
 			   [NSApp mainWindow],
-			   errorMessage,
-			   NSWarningAlertStyle
+			   errorMessage
 			);
 
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -508,10 +506,8 @@
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
 		SPOnewayAlertSheet(
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
-		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
-		   NSWarningAlertStyle
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
 		);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -582,7 +578,7 @@
 														   ignoringQuotedStrings: NO];
 			if(fieldName == nil || [fieldName length] == 0) {
 				NSBeep();
-				SPOnewayAlertSheet(
+				SPOnewayAlertSheetWithStyle(
 				   NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
 				   nil,
 				   nil,
@@ -857,10 +853,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error", @"error"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -881,10 +875,8 @@
 	if ([syntaxString isNSNull]) {
 		SPOnewayAlertSheet(
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
-		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
-		   NSWarningAlertStyle
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
 		);
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		return nil;
@@ -901,10 +893,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 			   NSLocalizedString(@"Error", @"error"),
-			   nil,
 			   [NSApp mainWindow],
-			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]],
-			   NSWarningAlertStyle
+			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -1013,10 +1003,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error", @"error"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -1101,10 +1089,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]]
 			);
 			if (triggers) SPClear(triggers);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];

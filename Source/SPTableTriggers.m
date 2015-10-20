@@ -213,7 +213,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 		if ([connection queryErrored]) {
 			SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
 							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
+							  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), NULL,
 							  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"),
 							   [connection lastErrorMessage]]);
 			
@@ -281,7 +281,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 
 		SPBeginAlertSheet(NSLocalizedString(@"Error creating trigger", @"error creating trigger message"),
 						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), nil,
+						  nil, nil, [NSApp mainWindow], self, @selector(_reopenTriggerSheet:returnCode:contextInfo:), NULL,
 						  [NSString stringWithFormat:NSLocalizedString(@"The specified trigger was unable to be created.\n\nMySQL said: %@", @"error creating trigger informative message"),
 						   createTriggerError]);
 	}
@@ -425,11 +425,11 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 
 				if ([connection queryErrored]) {
 					[[alert window] orderOut:self];
-					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [tableDocumentInstance parentWindow], nil, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection lastErrorMessage]]);
-
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Unable to delete trigger", @"error deleting trigger message"),
+						[tableDocumentInstance parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection lastErrorMessage]]
+					);
 					// Abort loop
 					break;
 				}

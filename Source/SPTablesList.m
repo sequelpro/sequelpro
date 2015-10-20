@@ -1577,7 +1577,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 				NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
-				@selector(sheetDidEnd:returnCode:contextInfo:), nil,
+				@selector(sheetDidEnd:returnCode:contextInfo:), NULL,
 				[NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
 		return;
 	}
@@ -1602,7 +1602,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 	@catch (NSException * myException) {
-		SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, [myException reason]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), [tableDocumentInstance parentWindow], [myException reason]);
 	}
 
 #ifndef SP_CODA
@@ -2452,7 +2452,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSString *tableType = @"";
 
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table")
+		);
 		return;
 	}
 
@@ -2493,8 +2497,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ( ![queryResult numberOfRows] ) {
 
 		//error while getting table structure
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]
+		);
 
 		return;
     }
@@ -2542,8 +2549,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if ([mySQLConnection queryErrored]) {
 			if ([mySQLConnection isConnected]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Error", @"error"),
+					[tableDocumentInstance parentWindow],
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]
+				);
 			}
 			return;
 		}
@@ -2555,16 +2565,22 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 
 		if ([mySQLConnection queryErrored]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]
+			);
 		}
 
 	}
 
 	if ([mySQLConnection queryErrored]) {
 		//error while creating new table
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]
+		);
 		return;
 	}
 
@@ -2577,17 +2593,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 									  ]];
 
 		if ([mySQLConnection queryErrored]) {
-			SPBeginAlertSheet(
-							  NSLocalizedString(@"Warning", @"warning"),
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil,
-							  nil,
-							  [tableDocumentInstance parentWindow],
-							  self,
-							  nil,
-							  nil,
-							  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
-							  );
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Warning", @"warning"),
+				[tableDocumentInstance parentWindow],
+				NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
+			);
 		}
 	}
 

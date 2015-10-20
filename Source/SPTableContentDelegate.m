@@ -255,8 +255,11 @@
 				SPMySQLResult *tempResult = [mySQLConnection queryString:query];
 				
 				if (![tempResult numberOfRows]) {
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed"));
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Error", @"error"),
+						[tableDocumentInstance parentWindow],
+						NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed")
+					);
 					return NO;
 				}
 				

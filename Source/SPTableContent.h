@@ -283,7 +283,7 @@
 - (void)autosizeColumns;
 - (BOOL)saveRowOnDeselect;
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn;
-- (void)showErrorSheetWith:(id)error;
+- (void)showErrorSheetWith:(NSArray *)error;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 - (void)saveViewCellValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSUInteger)rowIndex;
 

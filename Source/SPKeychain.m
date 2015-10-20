@@ -115,10 +115,11 @@
 		if (status != noErr) {
 			NSLog(@"Error (%i) while trying to add password for name: %@ account: %@", (int)status, name, account);
 			
-			SPBeginAlertSheet(NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"), 
-							  NSLocalizedString(@"OK", @"OK button"), 
-							  nil, nil, [NSApp mainWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status]);
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error adding password to Keychain", @"error adding password to keychain message"),
+				[NSApp mainWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the password to your Keychain. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error adding password to keychain informative message"), status]
+			);
 		}
 	}
 }
@@ -297,10 +298,11 @@
 	if (status != noErr) {
 		NSLog(@"Error (%i) while trying to find keychain item to edit for name: %@ account: %@", (int)status, name, account);
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"), 
-						  NSLocalizedString(@"OK", @"OK button"), 
-						  nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error finding keychain item to edit informative message"), status]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error retrieving Keychain item to edit", @"error finding keychain item to edit message"),
+			[NSApp mainWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to retrieve the Keychain item you're trying to edit. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error finding keychain item to edit informative message"), status]
+		);
 		return;
 	}
 
@@ -329,10 +331,11 @@
 
 		NSLog(@"Error (%i) while updating keychain item for name: %@ account: %@", (int)status, name, account);
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"), 
-						  NSLocalizedString(@"OK", @"OK button"), 
-						  nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error updating keychain item informative message"), status]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error updating Keychain item", @"error updating keychain item message"),
+			[NSApp mainWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to update the Keychain item. Repairing your Keychain might resolve this, but if it doesn't please report it to the Sequel Pro team, supplying the error code %i.", @"error updating keychain item informative message"), status]
+		);
 	}
 }
 

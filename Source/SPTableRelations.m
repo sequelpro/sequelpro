@@ -526,10 +526,11 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 
 				if ([connection queryErrored]) {
 
-					SPBeginAlertSheet(NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"), 
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [NSApp mainWindow], nil, nil, nil, 
-									  [NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection lastErrorMessage]]);
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Unable to delete relation", @"error deleting relation message"),
+						[NSApp mainWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"The selected relation couldn't be deleted.\n\nMySQL said: %@", @"error deleting relation informative message"), [connection lastErrorMessage]]
+					);
 
 					// Abort loop
 					break;
