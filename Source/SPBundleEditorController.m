@@ -1334,7 +1334,7 @@
 
 		//abort editing
 		[control abortEditing];
-		[[NSApp mainWindow] makeFirstResponder:commandsOutlineView];
+		[[commandsOutlineView window] makeFirstResponder:commandsOutlineView];
 		return YES;
 	} else{
 		return NO;
@@ -1452,7 +1452,7 @@
 		(action == @selector(displayBundleMetaInfo:))) 
 	{
 		// Allow to record short-cuts used by the Bundle Editor
-		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
+		if([[NSApp keyWindow] firstResponder] == keyEquivalentField) return NO;
 		
 		return ([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey]);
 	}
