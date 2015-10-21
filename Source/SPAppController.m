@@ -131,7 +131,6 @@
 	// Register for drag start notifications - used to bring all windows to front
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 
-	isNewFavorite = NO;
 }
 
 /**
