@@ -2112,7 +2112,7 @@
 																				<object class="NSTextField" id="82207312">
 																					<reference key="NSNextResponder" ref="955470299"/>
 																					<int key="NSvFlags">268</int>
-																					<string key="NSFrame">{{3, 3}, {58, 14}}</string>
+																					<string key="NSFrame">{{3, 3}, {155, 14}}</string>
 																					<reference key="NSSuperview" ref="955470299"/>
 																					<reference key="NSNextKeyView" ref="362266093"/>
 																					<bool key="NSEnabled">YES</bool>
@@ -30995,7 +30995,7 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<string key="superclassName">NSObject</string>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="activitiesTable">NSTableView</string>
-						<string key="infoTable">id</string>
+						<string key="infoTable">NSTableView</string>
 						<string key="tableDataInstance">id</string>
 						<string key="tableDocumentInstance">id</string>
 						<string key="tableInfoScrollView">NSScrollView</string>
