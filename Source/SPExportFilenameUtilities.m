@@ -122,6 +122,8 @@
 	}
 
 	[exportCustomFilenameTokensField setStringValue:[exportTokens componentsJoinedByString:@","]];
+	//update preview name as programmatically changing the exportCustomFilenameTokenField does not fire a notification
+	[self updateDisplayedExportFilename];
 }
 
 /**

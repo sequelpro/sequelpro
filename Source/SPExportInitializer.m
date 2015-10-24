@@ -304,7 +304,8 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
-		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:nil] : [self generateDefaultExportFilename]];
+		NSString *selectedTableName = (exportSource == SPTableExport && [exportTables count] == 1)? [[exportTables objectAtIndex:0] objectAtIndex:0] : nil;
+		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
 		
 		// Only append the extension if necessary
 		if (![[exportFilename pathExtension] length]) {
