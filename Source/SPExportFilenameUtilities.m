@@ -149,6 +149,8 @@
 	}
 
 	[exportCustomFilenameTokenPool setObjectValue:exportTokens];
+	//update preview name as programmatically changing the exportCustomFilenameTokenField does not fire a notification
+	[self updateDisplayedExportFilename];
 }
 
 /**
