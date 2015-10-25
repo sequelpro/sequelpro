@@ -172,14 +172,20 @@
 		NSString *encoding = nil;
 		
 		if ([fieldValidation isFieldTypeString:type]) {
-						
-			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [[tableDataInstance statusValues] objectForKey:@"collation"];
-			encoding = [theField objectForKey:@"encoding"] ? [theField objectForKey:@"encoding"] : [tableDataInstance tableEncoding];
 			
-			// If we still don't have a collation then fallback on the database default (not available on MySQL < 4.1.1).
-			if (!collation) {
-				collation = [databaseDataInstance getDatabaseDefaultCollation];
-			}
+			// The MySQL 4.1 manual says:
+			//
+			// MySQL chooses the column character set and collation in the following manner:
+			//   1. If both CHARACTER SET X and COLLATE Y were specified, then character set X and collation Y are used.
+			//   2. If CHARACTER SET X was specified without COLLATE, then character set X and its default collation are used.
+			//   3. If COLLATE Y was specified without CHARACTER SET, then the character set associated with Y and collation Y.
+			//   4. Otherwise, the table character set and collation are used.
+#warning This is not correct, see the comment above. \
+         However MySQL ususally outputs the CREATE TABLE statement in a way for this to still get the result right.
+			encoding  = [theField objectForKey:@"encoding"]  ? [theField objectForKey:@"encoding"]  : [tableDataInstance tableEncoding];
+			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [databaseDataInstance getDefaultCollationForEncoding:encoding];
+			
+			// MySQL < 4.1 does not support collations (they are part of the charset), it will be nil there
 		}
 
 		if (encoding) {
@@ -189,7 +195,8 @@
 					fieldEncoding = encoding;
 
 					// Set the selected index as the match index +1 due to the leading @"" in the popup list
-					[theField setObject:[NSNumber numberWithInteger:(selectedIndex + 1)] forKey:@"encoding"];
+					[theField setObject:@(selectedIndex + 1) forKey:@"encoding"];
+					[theField setObject:encoding forKey:@"encodingName"];
 					break;
 				}
 				
@@ -209,6 +216,7 @@
 					
 					// Set the selected index as the match index +1 due to the leading @"" in the popup list
 					[theField setObject:[NSNumber numberWithInteger:(selectedIndex + 1)] forKey:@"collation"];
+					[theField setObject:collation forKey:@"collationName"];
 
 					// Set BINARY if collation ends with _bin for convenience
 					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {

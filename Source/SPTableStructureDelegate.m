@@ -62,6 +62,8 @@
 	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
 	
 	if ([[tableColumn identifier] isEqualToString:@"collation"]) {
+		NSString *tableEncoding = [tableDataInstance tableEncoding];
+		NSString *columnEncoding = nil;
 		NSInteger idx = 0;
 		
 		if ((idx = [[NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
@@ -69,28 +71,44 @@
 
 			NSUInteger start = [enc rangeOfString:@"("].location + 1;
 			
-			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)]];
+			columnEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
+			collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
 		} 
 		else {
 			// If the structure has loaded (not still loading!) and the table encoding
 			// is set, use the appropriate collations.
-			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : @[];
+			collations = @[];
+			if([tableDocumentInstance structureLoaded]) {
+				columnEncoding = [tableDataInstance tableEncoding];
+				if(columnEncoding) collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
+			}
 		}
 		
-		[[tableColumn dataCell] removeAllItems];
+		NSPopUpButtonCell *collationCell = [tableColumn dataCell];
+		
+		[collationCell removeAllItems];
 		
 		if ([collations count] > 0) {
-			NSString *defaultCollation = [[tableDataInstance statusValues] objectForKey:@"collation"];
+			NSString *tableCollation = [[tableDataInstance statusValues] objectForKey:@"Collation"];
 			
-			if (!defaultCollation) {
-				defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
+			if (![tableCollation length]) {
+				tableCollation = [databaseDataInstance getDefaultCollationForEncoding:tableEncoding];
+			}
+			
+			NSString *columnCollation = [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"collationName"];
+			
+			if (![columnCollation length]) {
+				columnCollation = [databaseDataInstance getDefaultCollationForEncoding:columnEncoding];
 			}
 			
 			[[tableColumn dataCell] addItemWithTitle:@""];
 
 			BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
 			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
+			NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+			[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
 			
+			BOOL columnUsesTableDefaultEncoding = ([columnEncoding isEqualToString:tableEncoding]);
 			// Populate collation popup button
 			for (NSDictionary *collation in collations)
 			{
@@ -99,12 +117,9 @@
 				[[tableColumn dataCell] addItemWithTitle:collationName];
 
 				// If this matches the table's collation, draw in gray
-				if ([collationName length] && [collationName isEqualToString:defaultCollation]) {
+				if (columnUsesTableDefaultEncoding && [collationName isEqualToString:tableCollation]) {
 					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
-					NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
-										
-					[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
-					
+
 					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
 					
 					[collationMenuItem setAttributedTitle:itemString];
