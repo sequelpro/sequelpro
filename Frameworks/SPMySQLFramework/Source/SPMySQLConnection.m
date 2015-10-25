@@ -131,9 +131,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		keepAlivePingFailures = 0;
 		lastKeepAliveTime = 0;
 		keepAliveThread = nil;
-		keepAlivePingThread_t = NULL;
 		keepAlivePingThreadActive = NO;
-		keepAliveLastPingSuccess = NO;
 		keepAliveLastPingBlocked = NO;
 
 		// Set up default encoding variables
