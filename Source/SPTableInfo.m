@@ -192,8 +192,7 @@
 			}
 
 			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
-			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %@", @"Table Info Section : table charset"), [tableDataInstance tableEncoding]]];
-			//[info addObject:[NSString stringWithFormat:NSLocalizedString(@"collation: %@", @"Table Info Section : table collation"), [tableStatus objectForKey:@"Collation"]]];
+			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %1$@ (%2$@)", @"Table Info Section : $1 = table charset, $2 = table collation"), [tableDataInstance tableEncoding], [tableStatus objectForKey:@"Collation"]]];
 			
 			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"auto_increment: %@", @"Table Info Section : current value of auto_increment"),
