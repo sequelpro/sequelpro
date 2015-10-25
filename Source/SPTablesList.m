@@ -357,10 +357,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Query the structure of all databases in the background
 	if (sender == self)
 		// Invoked by SP
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:nil];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
 }
 
 /**
@@ -1611,7 +1611,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA
@@ -2266,10 +2266,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
-							   target:[tableDocumentInstance databaseStructureRetrieval]
-							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA /* operations performed on whole tables */
@@ -2417,10 +2414,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
-								   target:[tableDocumentInstance databaseStructureRetrieval]
-								 selector:@selector(queryDbStructureWithUserInfo:)
-								   object:@{@"forceUpdate" : @YES}];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 	}
 	else {
 		// Error while creating new table
@@ -2640,7 +2634,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 #endif
 

@@ -57,6 +57,7 @@
 - (SPMySQLConnection *)connection;
 
 // Structure retrieval from the server
+- (void)queryDbStructureInBackgroundWithUserInfo:(NSDictionary *)userInfo;
 - (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (BOOL)isQueryingDatabaseStructure;
 

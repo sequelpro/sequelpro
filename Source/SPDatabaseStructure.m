@@ -147,6 +147,14 @@
 #pragma mark -
 #pragma mark Structure retrieval from the server
 
+- (void)queryDbStructureInBackgroundWithUserInfo:(NSDictionary *)userInfo
+{
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", delegate)
+							   target:self
+							 selector:@selector(queryDbStructureWithUserInfo:)
+							   object:userInfo];
+}
+
 /**
  * Updates the dict containing the structure of all available databases (mainly for completion/navigator)
  * executed on the helper connection.

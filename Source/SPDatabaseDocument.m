@@ -1032,7 +1032,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",self) target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+			[databaseStructureRetrieval queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 		}
 		else {
 			// Reset chooseDatabaseButton

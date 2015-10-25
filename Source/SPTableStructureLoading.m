@@ -296,10 +296,7 @@
 	[tableDocumentInstance setStatusRequiresReload:YES];
 	
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
-							   target:[tableDocumentInstance databaseStructureRetrieval]
-							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 	
 	[self loadTable:selectedTable];
 }
