@@ -32,8 +32,8 @@
 
 typedef struct {
 	MYSQL	*mySQLConnection;
-	BOOL	*keepAlivePingActivePointer;
-	BOOL	*keepAliveLastPingSuccessPointer;
+	volatile BOOL *keepAlivePingThreadActivePointer;
+	volatile BOOL *keepAliveLastPingSuccessPointer;
 } SPMySQLConnectionPingDetails;
 
 @interface SPMySQLConnection (Ping_and_KeepAlive)

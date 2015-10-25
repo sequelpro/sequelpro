@@ -86,9 +86,7 @@
 	uint64_t lastKeepAliveTime;
 	NSUInteger keepAlivePingFailures;
 	volatile NSThread *keepAliveThread;
-	pthread_t keepAlivePingThread_t;
-	BOOL keepAlivePingThreadActive;
-	BOOL keepAliveLastPingSuccess;
+	volatile BOOL keepAlivePingThreadActive;
 	BOOL keepAliveLastPingBlocked;
 
 	// Encoding details - and also a record of any previous encoding to allow

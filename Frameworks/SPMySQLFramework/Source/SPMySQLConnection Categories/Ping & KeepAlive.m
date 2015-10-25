@@ -140,7 +140,7 @@ end:
 	// Set up a query lock
 	[self _lockConnection];
 
-	keepAliveLastPingSuccess = NO;
+	volatile BOOL keepAliveLastPingSuccess = NO;
 	keepAliveLastPingBlocked = NO;
 	keepAlivePingThreadActive = YES;
 
@@ -152,12 +152,14 @@ end:
 	SPMySQLConnectionPingDetails *pingDetails = malloc(sizeof(SPMySQLConnectionPingDetails));
 	pingDetails->mySQLConnection = mySQLConnection;
 	pingDetails->keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess;
-	pingDetails->keepAlivePingActivePointer = &keepAlivePingThreadActive;
+	pingDetails->keepAlivePingThreadActivePointer = &keepAlivePingThreadActive;
 
 	// Create a pthread for the ping
+	pthread_t keepAlivePingThread_t;
+	
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, pingDetails);
 
 	// Record the ping start time
@@ -245,7 +247,7 @@ void _forceThreadExit(int signalNumber)
 void _pingThreadCleanup(void *pingDetails)
 {
 	SPMySQLConnectionPingDetails *pingDetailsStruct = pingDetails;
-	*(pingDetailsStruct->keepAlivePingActivePointer) = NO;
+	*(pingDetailsStruct->keepAlivePingThreadActivePointer) = NO;
 
 	// Clean up MySQL variables and handlers
 	mysql_thread_end();
