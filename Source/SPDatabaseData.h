@@ -42,6 +42,7 @@
 @interface SPDatabaseData : NSObject 
 {
 	NSString *characterSetEncoding;
+	NSString *defaultCollationForCharacterSet;
 	NSString *defaultCharacterSetEncoding;
 	NSString *defaultCollation;
 	NSString *serverDefaultCharacterSetEncoding;
@@ -72,6 +73,7 @@
 
 - (NSArray *)getDatabaseCollations;
 - (NSArray *)getDatabaseCollationsForEncoding:(NSString *)encoding;
+- (NSString *)getDefaultCollationForEncoding:(NSString *)encoding;
 - (NSArray *)getDatabaseStorageEngines;
 - (NSArray *)getDatabaseCharacterSetEncodings;
 
