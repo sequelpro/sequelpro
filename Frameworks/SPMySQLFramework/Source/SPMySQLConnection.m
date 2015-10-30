@@ -454,6 +454,17 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	mysqlConnectionThreadId = mySQLConnection->thread_id;
 	lastConnectionUsedTime = 0;
 
+	// Copy the server version string to the instance variable
+	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
+	// the mysql_get_server_info() function
+	//   * returns the version name that is part of the initial connection handshake.
+	//   * Unless the connection failed, it will always return a non-null buffer containing at least a '\0'.
+	//   * It will never affect the error variables (since it only returns a struct member)
+	//
+	// At that point (handshake) there is no charset and it's highly unlikely this will ever contain something other than ASCII,
+	// but to be safe, we'll use the Latin1 encoding which won't bail on invalid chars.
+	serverVersionString = [[NSString alloc] initWithCString:mysql_get_server_info(mySQLConnection) encoding:NSISOLatin1StringEncoding];
+
 	// Update SSL state
 	connectedWithSSL = NO;
 	if (useSSL) connectedWithSSL = (mysql_get_ssl_cipher(mySQLConnection))?YES:NO;
@@ -915,10 +926,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	for (NSArray *variableRow in theResult) {
 		[variables setObject:[variableRow objectAtIndex:1] forKey:[variableRow objectAtIndex:0]];
 	}
-
-	// Copy the server version string to the instance variable
-	if (serverVersionString) [serverVersionString release], serverVersionString = nil;
-	serverVersionString = [[variables objectForKey:@"version"] retain];
 
 	// Get the connection encoding.  Although a specific encoding may have been requested on
 	// connection, it may be overridden by init_connect commands or connection state changes.
