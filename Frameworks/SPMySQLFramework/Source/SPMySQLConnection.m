@@ -503,9 +503,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	keepAlivePingFailures = 0;
 
 	// Clear the connection error record
-	[self _updateLastErrorID:NSNotFound];
-	[self _updateLastErrorMessage:nil];
-	[self _updateLastSqlstate:nil];
+	[self _updateLastErrorInfos];
 
 	// Unlock the connection
 	[self _unlockConnection];
@@ -1028,7 +1026,6 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (void)_validateThreadSetup
 {
-
 	// Check to see whether the handler has already been installed
 	if (pthread_getspecific(mySQLThreadInitFlagKey)) return;
 
@@ -1039,7 +1036,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
 
 	// Set up the notification handler to deregister it
-	[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
+	[[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
 }
 
 /**

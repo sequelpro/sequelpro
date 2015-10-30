@@ -82,6 +82,7 @@
 @interface SPMySQLConnection (Querying_and_Preparation_Private_API)
 
 - (void)_flushMultipleResultSets;
+- (void)_updateLastErrorInfos;
 - (void)_updateLastErrorMessage:(NSString *)theErrorMessage;
 - (void)_updateLastErrorID:(NSUInteger)theErrorID;
 - (void)_updateLastSqlstate:(NSString *)theSqlstate;

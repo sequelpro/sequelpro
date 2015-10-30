@@ -72,10 +72,11 @@
 		}
 		return nil;
 	}
-	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Ensure per-thread variables are set up
 	[self _validateThreadSetup];
+
+	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Perform a lossy conversion to bytes, using NSData to do the hard work.  Preserves
 	// nul characters correctly.
@@ -663,6 +664,16 @@
 			mysql_free_result(eachResult);
 		}
 	}
+}
+
+/**
+ * Update lastErrorID, lastErrorMessage and lastSqlstate from connection
+ */
+- (void)_updateLastErrorInfos
+{
+	[self _updateLastErrorID:NSNotFound];
+	[self _updateLastErrorMessage:nil];
+	[self _updateLastSqlstate:nil];
 }
 
 /**
