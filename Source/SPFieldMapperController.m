@@ -1043,9 +1043,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
 	NSString *utf8MenuItemTitle = nil;
 	
-	if ([encodings count] > 0
-		&& ([mySQLConnection serverMajorVersion] > 4
-			|| ([mySQLConnection serverMajorVersion] == 4 && [mySQLConnection serverMinorVersion] >= 1)))
+	if ([encodings count] > 0 && ([mySQLConnection serverVersionIsGreaterThanOrEqualTo:4 minorVersion:1 releaseVersion:0]))
 	{
 		[[newTableInfoEncodingPopup menu] addItem:[NSMenuItem separatorItem]];
 		for (NSDictionary *encoding in encodings) {

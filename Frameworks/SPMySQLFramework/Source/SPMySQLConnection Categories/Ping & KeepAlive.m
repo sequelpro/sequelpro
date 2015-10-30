@@ -94,15 +94,15 @@
 		// attempt a single reconnection in the background
 		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
 			[self _reconnectAfterBackgroundConnectionLoss];
-
+		}
 		// Otherwise set the state to connection lost for automatic reconnect on
 		// next use.
-		} else {
+		else {
 			state = SPMySQLConnectionLostInBackground;
 		}
 
 		// Return as no further ping action required this cycle.
-		goto end;
+		goto end_cleanup;
 	}
 
 	// Otherwise, perform a background ping.
@@ -112,7 +112,7 @@
 	} else {
 		keepAlivePingFailures++;
 	}
-end:
+end_cleanup:
 	keepAliveThread = nil;
 }
 
@@ -139,6 +139,11 @@ end:
 
 	// Set up a query lock
 	[self _lockConnection];
+	//we might find ourselves at the losing end of a contest with -[self _disconnect]
+	if(!mySQLConnection) {
+		[self _unlockConnection];
+		return NO;
+	}
 
 	volatile BOOL keepAliveLastPingSuccess = NO;
 	keepAliveLastPingBlocked = NO;

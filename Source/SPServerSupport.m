@@ -95,10 +95,9 @@
 - (id)initWithMajorVersion:(NSInteger)majorVersion minor:(NSInteger)minorVersion release:(NSInteger)releaseVersion
 {
 	if ((self = [super init])) {
-		// Might be NSNotFound if unknown. unknown should also lose against "0".
-		serverMajorVersion   = (majorVersion   != NSNotFound)? majorVersion   : -1;
-		serverMinorVersion   = (minorVersion   != NSNotFound)? minorVersion   : -1;
-		serverReleaseVersion = (releaseVersion != NSNotFound)? releaseVersion : -1;
+		serverMajorVersion   = majorVersion;
+		serverMinorVersion   = minorVersion;
+		serverReleaseVersion = releaseVersion;
 		
 		// Determine what the server supports
 		[self evaluate];
@@ -363,9 +362,9 @@
 - (void)dealloc
 {
 	// Reset version integers
-	serverMajorVersion   = -1;
-	serverMinorVersion   = -1;
-	serverReleaseVersion = -1;
+	serverMajorVersion   = 0;
+	serverMinorVersion   = 0;
+	serverReleaseVersion = 0;
 	
 	// Invalidate all ivars
 	[self _invalidate];

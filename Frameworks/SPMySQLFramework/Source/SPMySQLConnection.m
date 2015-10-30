@@ -174,6 +174,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 		// Ensure the server detail records are initialised
 		serverVariableVersion = nil;
+		serverVersionNumber = 0;
 
 		// Start with a blank error state
 		queryErrorID = 0;
@@ -474,6 +475,19 @@ asm(".desc ___crashreporter_info__, 0x10");
 	initialConnectTime = mach_absolute_time();
 	mysqlConnectionThreadId = mySQLConnection->thread_id;
 	lastConnectionUsedTime = initialConnectTime;
+
+	// Copy the server version string to the instance variable
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
+	// the mysql_get_server_info() function
+	//   * returns the version name that is part of the initial connection handshake.
+	//   * Unless the connection failed, it will always return a non-null buffer containing at least a '\0'.
+	//   * It will never affect the error variables (since it only returns a struct member)
+	//
+	// At that point (handshake) there is no charset and it's highly unlikely this will ever contain something other than ASCII,
+	// but to be safe, we'll use the Latin1 encoding which won't bail on invalid chars.
+	serverVariableVersion = [[NSString alloc] initWithCString:mysql_get_server_info(mySQLConnection) encoding:NSISOLatin1StringEncoding];
+	// this one can actually change the error state, but only if the server version string is not set (ie. no connection)
+	serverVersionNumber = mysql_get_server_version(mySQLConnection);
 
 	// Update SSL state
 	connectedWithSSL = NO;
@@ -892,6 +906,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	[self _unlockConnection];
 	[self _cancelKeepAlives];
 
+	[self _lockConnection];
 	// Close the underlying MySQL connection if it still appears to be active, and not reading
 	// or writing.  While this may result in a leak of the MySQL object, it prevents crashes
 	// due to attempts to close a blocked/stuck connection.
@@ -899,17 +914,16 @@ asm(".desc ___crashreporter_info__, 0x10");
 		mysql_close(mySQLConnection);
 	}
 	mySQLConnection = NULL;
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
+	serverVersionNumber = 0;
+	if (database) [database release], database = nil;
+	state = SPMySQLDisconnected;
+	[self _unlockConnection];
 
 	// If using a connection proxy, disconnect that too
 	if (proxy) {
 		[proxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
 	}
-
-	// Clear host-specific information
-	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
-	if (database) [database release], database = nil;
-
-	state = SPMySQLDisconnected;
 }
 
 /**
@@ -933,10 +947,6 @@ asm(".desc ___crashreporter_info__, 0x10");
 	for (NSArray *variableRow in theResult) {
 		[variables setObject:[variableRow objectAtIndex:1] forKey:[variableRow objectAtIndex:0]];
 	}
-
-	// Copy the server version string to the instance variable
-	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
-	serverVariableVersion = [[variables objectForKey:@"version"] retain];
 
 	// Get the connection encoding.  Although a specific encoding may have been requested on
 	// connection, it may be overridden by init_connect commands or connection state changes.

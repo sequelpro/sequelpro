@@ -99,6 +99,7 @@
 
 	// Server details
 	NSString *serverVariableVersion;
+	unsigned long serverVersionNumber;
 
 	// Error state for the last query or connection state
 	NSUInteger queryErrorID;
