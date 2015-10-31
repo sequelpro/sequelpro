@@ -130,7 +130,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 				
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 	}
 		
@@ -180,12 +180,14 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 				NSString *charSet = [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
 
 				if ([charSet isEqualToString:characterSetEncoding]) {
-					[characterSetCollations addObject:@{@"COLLATION_NAME" : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]}];
+					[characterSetCollations addObject:@{
+						@"COLLATION_NAME" : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]
+					}];
 				}
 
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 
 		if ([characterSetCollations count]) {
@@ -220,6 +222,23 @@ copy_return:
 		}
 	}
 	return defaultCollationForCharacterSet;
+}
+
+/** Get the name of the mysql charset a given collation belongs to.
+ * @param collation Name of the collation (e.g. "latin1_swedish_ci")
+ * @return name of the charset (e.g. "latin1") or nil if unknown
+ *
+ * According to the MySQL doc every collation can only ever belong to a single charset.
+ */
+- (NSString *)getEncodingFromCollation:(NSString *)collation {
+	if([collation length]) { //shortcut for nil and @""
+		for(NSDictionary *coll in [self getDatabaseCollations]) {
+			if([[coll objectForKey:@"COLLATION_NAME"] isEqualToString:collation]) {
+				return [coll objectForKey:@"CHARACTER_SET_NAME"];
+			}
+		}
+	}
+	return nil;
 }
 
 /**
@@ -321,11 +340,11 @@ copy_return:
 			for (NSDictionary *anEncoding in supportedEncodings) 
 			{
 				NSDictionary *convertedEncoding = [NSDictionary dictionaryWithObjectsAndKeys:
-													[anEncoding objectForKey:@"Charset"], @"CHARACTER_SET_NAME",
-													[anEncoding objectForKey:@"Description"], @"DESCRIPTION",
-													[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
-													[anEncoding objectForKey:@"Maxlen"], @"MAXLEN",
-													nil];
+					[anEncoding objectForKey:@"Charset"],           @"CHARACTER_SET_NAME",
+					[anEncoding objectForKey:@"Description"],       @"DESCRIPTION",
+					[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
+					[anEncoding objectForKey:@"Maxlen"],            @"MAXLEN",
+				nil];
 				
 				[characterSetEncodings addObject:convertedEncoding];
 			}
@@ -336,14 +355,14 @@ copy_return:
 			const SPDatabaseCharSets *c = SPGetDatabaseCharacterSets();
 #warning This probably won't work as intended. See my comment in getDatabaseCollationsForEncoding:
 			do {
-				[characterSetEncodings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-					[NSString stringWithCString:c->name encoding:NSUTF8StringEncoding], @"CHARACTER_SET_NAME",
-					[NSString stringWithCString:c->description encoding:NSUTF8StringEncoding], @"DESCRIPTION",
-				nil]];
+				[characterSetEncodings addObject:@{
+					@"CHARACTER_SET_NAME" : [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding],
+					@"DESCRIPTION"        : [NSString stringWithCString:c->description encoding:NSUTF8StringEncoding]
+				}];
 
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 	}
 		

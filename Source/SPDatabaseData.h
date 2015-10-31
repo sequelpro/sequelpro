@@ -74,6 +74,7 @@
 - (NSArray *)getDatabaseCollations;
 - (NSArray *)getDatabaseCollationsForEncoding:(NSString *)encoding;
 - (NSString *)getDefaultCollationForEncoding:(NSString *)encoding;
+- (NSString *)getEncodingFromCollation:(NSString *)collation;
 - (NSArray *)getDatabaseStorageEngines;
 - (NSArray *)getDatabaseCharacterSetEncodings;
 
