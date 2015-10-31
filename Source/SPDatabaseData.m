@@ -471,6 +471,9 @@ copy_return:
 	
 	[result setReturnDataAsStrings:YES];
 	
+	if([connection queryErrored])
+		SPLog(@"server variable lookup failed for '%@': %@ (%lu)",variable,[connection lastErrorMessage],[connection lastErrorID]);
+	
 	if ([result numberOfRows] != 1)
 		return nil;
 	

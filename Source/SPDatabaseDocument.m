@@ -1729,20 +1729,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	_supportsEncoding = YES;
 
-	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
+	NSString *mysqlEncoding = [[databaseDataInstance getDatabaseDefaultCharacterSet] retain];
 
 	SPClear(selectedDatabaseEncoding);
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
-		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		NSLog(@"Error: no character encoding found for db, mysql version is %@", [self mySQLVersion]);
 		
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		
 		_supportsEncoding = NO;
 	} 
 	else {
-		selectedDatabaseEncoding = [mysqlEncoding retain];
+		selectedDatabaseEncoding = mysqlEncoding;
 	}
 }
 

@@ -87,7 +87,7 @@
 {
 	unsigned long myver = aMajorVersion * 10000 + aMinorVersion * 100 + aReleaseVersion;
 
-	return (myver >= serverVersionNumber);
+	return (serverVersionNumber >= myver);
 }
 
 #pragma mark -
