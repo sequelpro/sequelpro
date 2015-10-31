@@ -39,6 +39,6 @@
 /**
  * @return A serialized form of the "custom filename" field
  */
-- (NSDictionary *)currentCustomFilenameAsArray;
+- (NSArray *)currentCustomFilenameAsArray;
 
 @end

@@ -146,17 +146,17 @@
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	// Make sure that the drag operation is for the right table view
+	// Make sure that the operation is for the right table view
 	if (aTableView != tableSourceView) return;
+
+	NSMutableDictionary *currentRow = NSArrayObjectAtIndex(tableFields,rowIndex);
 	
 	if (!isEditingRow) {
-		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
+		[oldRow setDictionary:currentRow];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	
-	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
-	
+
 	// Reset collation if encoding was changed
 	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
 		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
@@ -286,7 +286,7 @@
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
     // Make sure that the drag operation is for the right table view
-    if (tableView!=tableSourceView) return NO;
+    if (tableView!=tableSourceView) return NSDragOperationNone;
 	
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	NSInteger originalRow;
@@ -457,10 +457,8 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	id object = [aNotification object];
-	
 	// Check for which table view the selection changed
-	if (object == tableSourceView) {
+	if ([aNotification object] == tableSourceView) {
 		
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
@@ -557,10 +555,9 @@
 		[self cancelRowEditing];
 		
 		return YES;
-	} 
-	else {
-		return NO;
 	}
+
+	return NO;
 }
 
 /**
@@ -577,7 +574,7 @@
 	} 
 	else {
 		// Validate cell against current field type
-		NSString *rowType = @"";
+		NSString *rowType;
 		NSDictionary *row = NSArrayObjectAtIndex(tableFields, rowIndex);
 		
 		if ((rowType = [row objectForKey:@"type"])) {
@@ -692,7 +689,7 @@
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH[c] %@", [uncompletedString uppercaseString]];
 	NSArray *result = [typeSuggestions filteredArrayUsingPredicate:predicate];
 	
-	if (result && [result count]) return [result objectAtIndex:0];
+	if ([result count]) return [result objectAtIndex:0];
 	
 	return @"";
 }

@@ -119,7 +119,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	if ([currentType isEqualToString:newType]) return;
 
 	// If the table is empty, perform the change directly
-	if ([[[tableDataInstance statusValues] objectForKey:SPMySQLRowsField] isEqualToString:@"0"]) {
+	if ([[tableDataInstance statusValueForKey:SPMySQLRowsField] isEqualToString:@"0"]) {
 		[self _changeCurrentTableTypeFrom:currentType to:newType];
 		return;
 	}

@@ -166,8 +166,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 
-	isMyISAMTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
-	isInnoDBTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"];
+	isMyISAMTable = [[tableData statusValueForKey:@"Engine"] isEqualToString:@"MyISAM"];
+	isInnoDBTable = [[tableData statusValueForKey:@"Engine"] isEqualToString:@"InnoDB"];
 	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];

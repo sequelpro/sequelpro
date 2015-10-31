@@ -320,7 +320,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Attempt to retrieve the table encoding; if that fails (indicating an error occurred
 	// while retrieving table data), or if the Rows variable is null, clear and return
-	if (![tableDataInstance tableEncoding] || [[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull]) {
+	if (![tableDataInstance tableEncoding] || [[tableDataInstance statusValueForKey:@"Rows"] isNSNull]) {
 		[[self onMainThread] setTableDetails:nil];
 		return;
 	}
@@ -3992,16 +3992,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		// If the state is now accurate, use it
 		if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = NO;
-		checkStatusCount = YES;
+			maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+			maxNumRowsIsEstimate = NO;
+			checkStatusCount = YES;
 
-		// Otherwise, use the estimate count
-	} else {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = YES;
-		checkStatusCount = YES;
-	}
+			// Otherwise, use the estimate count
+		} else {
+			maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+			maxNumRowsIsEstimate = YES;
+			checkStatusCount = YES;
+		}
 	}
 
 	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
@@ -4102,7 +4102,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		return;
 #endif
 
-	if ( ![[[tableDataInstance statusValues] objectForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) {
+	if ( ![[tableDataInstance statusValueForKey:@"Rows"] isNSNull] && selectedTable && [selectedTable length] && [tableDataInstance tableEncoding]) {
 		[addButton setEnabled:([tablesListInstance tableType] == SPTableTypeTable)];
 		[self updatePaginationState];
 		[reloadButton setEnabled:YES];
