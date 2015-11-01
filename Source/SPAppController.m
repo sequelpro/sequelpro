@@ -2193,6 +2193,9 @@
  */
 - (void)updaterWillRelaunchApplication:(SUUpdater *)updater
 {	
+	// Sparkle might call this on a background thread, but calling endSheet: from a bg thread is unhealthy
+	if(![NSThread isMainThread]) return [[self onMainThread] updaterWillRelaunchApplication:updater];
+
 	// Get all the currently open windows and their attached sheets if any
 	NSArray *windows = [NSApp windows];
 	
