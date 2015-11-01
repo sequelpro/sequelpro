@@ -36,6 +36,8 @@
 #import "SPIndexesController.h"
 #import "SPTablesList.h"
 #import "SPThreadAdditions.h"
+#import "SPTableView.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -115,65 +117,47 @@
 	
 	// Set up the encoding PopUpButtonCell
 	NSArray *encodings  = [databaseDataInstance getDatabaseCharacterSetEncodings];
-	
-	if ([encodings count]) {
-		NSString *defaultEncodingDescription = nil;
-		
-		// Populate encoding popup button
-		NSMutableArray *encodingTitles = [[NSMutableArray alloc] initWithCapacity:[encodings count]+1];
-		
-		[encodingTitles addObject:@""];
-		
-		for (NSDictionary *encoding in encodings)
-		{
-			[encodingTitles addObject:(![encoding objectForKey:@"DESCRIPTION"]) ? [encoding objectForKey:@"CHARACTER_SET_NAME"] : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], [encoding objectForKey:@"CHARACTER_SET_NAME"]]];
-			if ([[encoding objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:[tableDataInstance tableEncoding]]) {
-				defaultEncodingDescription = [encodingTitles lastObject];
+
+	SPMainQSync(^{
+		[encodingPopupCell removeAllItems];
+
+		if ([encodings count]) {
+
+			[encodingPopupCell addItemWithTitle:@"dummy"];
+			//copy the default attributes and add gray color
+			NSMutableDictionary *defaultAttrs = [NSMutableDictionary dictionaryWithDictionary:[[encodingPopupCell attributedTitle] attributesAtIndex:0 effectiveRange:NULL]];
+			[defaultAttrs setObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+			[[encodingPopupCell lastItem] setTitle:@""];
+
+			for (NSDictionary *encoding in encodings)
+			{
+				NSString *encodingName = [encoding objectForKey:@"CHARACTER_SET_NAME"];
+				NSString *title = (![encoding objectForKey:@"DESCRIPTION"]) ? encodingName : [NSString stringWithFormat:@"%@ (%@)", [encoding objectForKey:@"DESCRIPTION"], encodingName];
+
+				[encodingPopupCell addItemWithTitle:title];
+				NSMenuItem *item = [encodingPopupCell lastItem];
+
+				[item setRepresentedObject:encodingName];
+
+				if ([encodingName isEqualToString:[tableDataInstance tableEncoding]]) {
+
+					NSAttributedString *itemString = [[NSAttributedString alloc] initWithString:[item title] attributes:defaultAttrs];
+
+					[item setAttributedTitle:[itemString autorelease]];
+				}
 			}
 		}
-		
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemsWithTitles:encodingTitles];
-
-		// Take the encoding that matches the table's encoding and gray it out
-		if (defaultEncodingDescription) {
-			NSMenuItem *tableEncodingMenuItem = [[encodingPopupCell menu] itemWithTitle:defaultEncodingDescription];
-			NSMutableParagraphStyle *menuStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
-			
-			[menuStyle setLineBreakMode:NSLineBreakByTruncatingTail];
-			
-			NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
-
-			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
-
-			[menuAttributes setObject:[prefs boolForKey:SPUseMonospacedFonts] ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
-			
-			NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:defaultEncodingDescription attributes:menuAttributes] autorelease];
-			
-			[[tableEncodingMenuItem onMainThread] setAttributedTitle:itemString];
+		else {
+			[encodingPopupCell addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
 		}
-
-		[encodingTitles release];
-	}
-	else {
-		[[encodingPopupCell onMainThread] removeAllItems];
-		[[encodingPopupCell onMainThread] addItemWithTitle:NSLocalizedString(@"Not available", @"not available label")];
-	}
+	});
 	
 	// Process all the fields to normalise keys and add additional information
 	for (id theField in theTableFields) 
 	{
-		// Select and re-map encoding and collation since [self dataSource] stores the choice as NSNumbers
-		NSString *fieldEncoding = @"";
-		NSInteger selectedIndex = 0;
-		
 		NSString *type = [[[theField objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
-		
-		NSString *collation = nil; 
-		NSString *encoding = nil;
-		
+
 		if ([fieldValidation isFieldTypeString:type]) {
-			
 			// The MySQL 4.1 manual says:
 			//
 			// MySQL chooses the column character set and collation in the following manner:
@@ -181,56 +165,40 @@
 			//   2. If CHARACTER SET X was specified without COLLATE, then character set X and its default collation are used.
 			//   3. If COLLATE Y was specified without CHARACTER SET, then the character set associated with Y and collation Y.
 			//   4. Otherwise, the table character set and collation are used.
-#warning This is not correct, see the comment above. \
-         However MySQL ususally outputs the CREATE TABLE statement in a way for this to still get the result right.
-			encoding  = [theField objectForKey:@"encoding"]  ? [theField objectForKey:@"encoding"]  : [tableDataInstance tableEncoding];
-			collation = [theField objectForKey:@"collation"] ? [theField objectForKey:@"collation"] : [databaseDataInstance getDefaultCollationForEncoding:encoding];
-			
-			// MySQL < 4.1 does not support collations (they are part of the charset), it will be nil there
-		}
-
-		if (encoding) {
-			for (id enc in encodings) 
-			{
-				if ([[enc objectForKey:@"CHARACTER_SET_NAME"] isEqualToString:encoding]) {
-					fieldEncoding = encoding;
-
-					// Set the selected index as the match index +1 due to the leading @"" in the popup list
-					[theField setObject:@(selectedIndex + 1) forKey:@"encoding"];
-					[theField setObject:encoding forKey:@"encodingName"];
-					break;
+			NSString *encoding  = [theField objectForKey:@"encoding"];
+			NSString *collation = [theField objectForKey:@"collation"];
+			if(encoding) {
+				if(collation) {
+					// 1
 				}
-				
-				selectedIndex++;
+				else {
+					collation = [databaseDataInstance getDefaultCollationForEncoding:encoding]; // 2
+				}
 			}
-		}
-		
-		selectedIndex = 0;
-		
-		if (encoding && collation) {
-			
-			NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-			
-			for (id col in theCollations) 
-			{
-				if ([[col objectForKey:@"COLLATION_NAME"] isEqualToString:collation]) {
-					
-					// Set the selected index as the match index +1 due to the leading @"" in the popup list
-					[theField setObject:[NSNumber numberWithInteger:(selectedIndex + 1)] forKey:@"collation"];
-					[theField setObject:collation forKey:@"collationName"];
-
-					// Set BINARY if collation ends with _bin for convenience
-					if ([[col objectForKey:@"COLLATION_NAME"] hasSuffix:@"_bin"]) {
-						[theField setObject:@1 forKey:@"binary"];
+			else {
+				if(collation) {
+					encoding = [databaseDataInstance getEncodingFromCollation:collation]; // 3
+				}
+				else {
+					encoding = [tableDataInstance tableEncoding]; //4
+					collation = [tableDataInstance statusValueForKey:@"Collation"];
+					if(!collation) {
+						// should not happen, as the TABLE STATUS output always(?) includes the collation
+						collation = [databaseDataInstance getDefaultCollationForEncoding:encoding];
 					}
-					
-					break;
 				}
-				
-				selectedIndex++;
+			}
+
+			// MySQL < 4.1 does not support collations (they are part of the charset), it will be nil there
+
+			[theField setObject:encoding forKey:@"encodingName"];
+			[theField setObject:collation forKey:@"collationName"];
+
+			// Set BINARY if collation ends with _bin for convenience
+			if ([collation hasSuffix:@"_bin"]) {
+				[theField setObject:@1 forKey:@"binary"];
 			}
 		}
-		
 		
 		// Get possible values if the field is an enum or a set
 		if (([type isEqualToString:@"ENUM"] || [type isEqualToString:@"SET"]) && [theField objectForKey:@"values"]) {

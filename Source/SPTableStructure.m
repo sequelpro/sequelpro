@@ -46,6 +46,7 @@
 #import "SPTableStructureLoading.h"
 #import "SPThreadAdditions.h"
 #import "SPServerSupport.h"
+#import "SPExtendedTableInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -252,8 +253,8 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	BOOL allowNull = [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"] ? NO : [prefs boolForKey:SPNewFieldsAllowNulls];
 	
 	[tableFields insertObject:[NSMutableDictionary
-							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", @0, @0, nil]
-							   forKeys:@[@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment", @"encoding", @"collation"]]
+							   dictionaryWithObjects:[NSArray arrayWithObjects:@"", @"INT", @"", @"0", @"0", @"0", allowNull ? @"1" : @"0", @"", [prefs stringForKey:SPNullValue], @"None", @"", nil]
+							   forKeys:@[@"name", @"type", @"length", @"unsigned", @"zerofill", @"binary", @"null", @"Key", @"default", @"Extra", @"comment"]]
 					  atIndex:insertIndex];
 #else
 	[tableFields insertObject:[NSMutableDictionary
@@ -810,29 +811,24 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 
 		if ([fieldValidation isFieldTypeString:theRowType]) {
+			BOOL charsetSupport = [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling];
+
 			// Add CHARSET
-			NSString *fieldEncoding = @"";
-			if([[theRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
-				NSString *enc = [[encodingPopupCell itemAtIndex:[[theRow objectForKey:@"encoding"] integerValue]] title];
-				NSInteger start = [enc rangeOfString:@"("].location+1;
-				NSInteger end = [enc length] - start - 1;
-				fieldEncoding = [enc substringWithRange:NSMakeRange(start, end)];
+			NSString *fieldEncoding = [theRow objectForKey:@"encodingName"];
+			if(charsetSupport && [fieldEncoding length]) {
 				[queryString appendFormat:@"\n CHARACTER SET %@", fieldEncoding];
 			}
-			// Remember CHARSET for COLLATE
-			if(![fieldEncoding length] && [tableDataInstance tableEncoding]) {
-				fieldEncoding = [tableDataInstance tableEncoding];
-			}
 
-			// ADD COLLATE
-			if([fieldEncoding length] && [[theRow objectForKey:@"collation"] integerValue] > 0 && ![[theRow objectForKey:@"binary"] integerValue]) {
-				NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-				NSString *col = [[theCollations objectAtIndex:[[theRow objectForKey:@"collation"] integerValue]-1] objectForKey:@"COLLATION_NAME"];
-				[queryString appendFormat:@"\n COLLATE %@", col];
-			}
-
-			if ( [[theRow objectForKey:@"binary"] integerValue] == 1) {
+			if ([[theRow objectForKey:@"binary"] integerValue] == 1) {
 				[queryString appendString:@"\n BINARY"];
+			}
+			else {
+				// ADD COLLATE
+				// Note: a collate without charset is valid in MySQL. The charset can be determined from a collation.
+				NSString *fieldCollation = [theRow objectForKey:@"collationName"];
+				if(charsetSupport && [fieldCollation length]) {
+					[queryString appendFormat:@"\n COLLATE %@", fieldCollation];
+				}
 			}
 
 		}

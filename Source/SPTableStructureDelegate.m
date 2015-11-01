@@ -37,6 +37,7 @@
 #import "SPTableFieldValidation.h"
 #import "SPTableStructureLoading.h"
 #import "SPServerSupport.h"
+#import "SPTablesList.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -60,72 +61,68 @@
 {
 	// Return a placeholder if the table is reloading
 	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
+
+	NSDictionary *rowData = NSArrayObjectAtIndex(tableFields, rowIndex);
 	
 	if ([[tableColumn identifier] isEqualToString:@"collation"]) {
 		NSString *tableEncoding = [tableDataInstance tableEncoding];
-		NSString *columnEncoding = nil;
-		NSInteger idx = 0;
-		
-		if ((idx = [[NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
-			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
+		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
+		NSString *columnCollation = [rowData objectForKey:@"collationName"]; // loadTable: has already inferred it, if not set explicit
 
-			NSUInteger start = [enc rangeOfString:@"("].location + 1;
-			
-			columnEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
-			collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
-		} 
-		else {
-			// If the structure has loaded (not still loading!) and the table encoding
-			// is set, use the appropriate collations.
-			collations = @[];
-			if([tableDocumentInstance structureLoaded]) {
-				columnEncoding = [tableDataInstance tableEncoding];
-				if(columnEncoding) collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
-			}
-		}
-		
 		NSPopUpButtonCell *collationCell = [tableColumn dataCell];
-		
 		[collationCell removeAllItems];
-		
-		if ([collations count] > 0) {
-			NSString *tableCollation = [[tableDataInstance statusValues] objectForKey:@"Collation"];
-			
-			if (![tableCollation length]) {
-				tableCollation = [databaseDataInstance getDefaultCollationForEncoding:tableEncoding];
-			}
-			
-			NSString *columnCollation = [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"collationName"];
-			
-			if (![columnCollation length]) {
-				columnCollation = [databaseDataInstance getDefaultCollationForEncoding:columnEncoding];
-			}
-			
-			[[tableColumn dataCell] addItemWithTitle:@""];
+		[collationCell addItemWithTitle:@"dummy"];
+		//copy the default style of menu items and add gray color for default item
+		NSMutableDictionary *menuAttrs = [NSMutableDictionary dictionaryWithDictionary:[[collationCell attributedTitle] attributesAtIndex:0 effectiveRange:NULL]];
+		[menuAttrs setObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+		[[collationCell lastItem] setTitle:@""];
 
-			BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
-			NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
-			[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
-			
-			BOOL columnUsesTableDefaultEncoding = ([columnEncoding isEqualToString:tableEncoding]);
-			// Populate collation popup button
-			for (NSDictionary *collation in collations)
-			{
-				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
-				
-				[[tableColumn dataCell] addItemWithTitle:collationName];
+		//if this is not set the column either has no encoding (numeric etc.) or retrieval failed. Either way we can't provide collations
+		if(columnEncoding) {
+			collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
 
-				// If this matches the table's collation, draw in gray
-				if (columnUsesTableDefaultEncoding && [collationName isEqualToString:tableCollation]) {
-					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
+			if ([collations count] > 0) {
+				NSString *tableCollation = [[tableDataInstance statusValues] objectForKey:@"Collation"];
 
-					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
-					
-					[collationMenuItem setAttributedTitle:itemString];
+				if (![tableCollation length]) {
+					tableCollation = [databaseDataInstance getDefaultCollationForEncoding:tableEncoding];
 				}
+
+				BOOL columnUsesTableDefaultEncoding = ([columnEncoding isEqualToString:tableEncoding]);
+				// Populate collation popup button
+				for (NSDictionary *collation in collations)
+				{
+					NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+
+					[collationCell addItemWithTitle:collationName];
+					NSMenuItem *item = [collationCell lastItem];
+					[item setRepresentedObject:collationName];
+
+					// If this matches the table's collation, draw in gray
+					if (columnUsesTableDefaultEncoding && [collationName isEqualToString:tableCollation]) {
+						NSAttributedString *itemString = [[NSAttributedString alloc] initWithString:[item title] attributes:menuAttrs];
+						[item setAttributedTitle:[itemString autorelease]];
+					}
+				}
+
+				//look up the right item
+				NSInteger idx = [collationCell indexOfItemWithRepresentedObject:columnCollation];
+				if(idx > 0) return @(idx);
 			}
 		}
+
+		return @0;
+	}
+	else if ([[tableColumn identifier] isEqualToString:@"encoding"]) {
+		// the encoding menu was already configured during setTableDetails:
+		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
+
+		if(columnEncoding) {
+			NSInteger idx = [encodingPopupCell indexOfItemWithRepresentedObject:columnEncoding];
+			if(idx > 0) return @(idx);
+		}
+
+		return @0;
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"Extra"]) {
 		id dataCell = [tableColumn dataCell];
@@ -141,7 +138,7 @@
 		}
 	}
 
-	return [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:[tableColumn identifier]];
+	return [rowData objectForKey:[tableColumn identifier]];
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
@@ -159,16 +156,32 @@
 
 	// Reset collation if encoding was changed
 	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:@0 forKey:@"collation"];
+		NSString *oldEncoding = [currentRow objectForKey:@"encodingName"];
+		NSString *newEncoding = [[encodingPopupCell itemAtIndex:[anObject integerValue]] representedObject];
+		if (![oldEncoding isEqualToString:newEncoding]) {
+			[currentRow removeObjectForKey:@"collationName"];
 			[tableSourceView reloadData];
 		}
+		if(!newEncoding)
+			[currentRow removeObjectForKey:@"encodingName"];
+		else
+			[currentRow setObject:newEncoding forKey:@"encodingName"];
+		return;
+	}
+	else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
+		NSString *newCollation = [[(NSPopUpButtonCell *)[aTableColumn dataCell] itemAtIndex:[anObject integerValue]] representedObject];
+
+		if(!newCollation)
+			[currentRow removeObjectForKey:@"collationName"];
+		else
+			[currentRow setObject:newCollation forKey:@"collationName"];
+		return;
 	}
 	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
 	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
 		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:@0 forKey:@"collation"];
-			
+			[currentRow removeObjectForKey:@"collationName"];
+
 			[tableSourceView reloadData];
 		}
 	}
@@ -220,9 +233,8 @@
 			[tableSourceView reloadData];
 		}
 	}
-	
 	// Store new value but not if user choose "---" for type and reset values if required
-	if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
 		if (anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			
@@ -238,10 +250,10 @@
 			
 			[tableSourceView reloadData];
 		}
+		return;
 	} 
-	else {
-		[currentRow setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
-	}
+
+	[currentRow setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 }
 
 /**
@@ -270,7 +282,7 @@
 	
 	if ([rows count] == 1) {
 		[pboard declareTypes:@[SPDefaultPasteboardDragType] owner:nil];
-		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
+		[pboard setString:[NSString stringWithFormat:@"%lu",[rows firstIndex]] forType:SPDefaultPasteboardDragType];
 		
 		return YES;
 	} 
@@ -332,27 +344,19 @@
 		[queryString appendFormat:@"(%@)", [originalRow objectForKey:@"length"]];
 	}
 	
-	NSString *fieldEncoding = @"";
-			
-	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
-		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
-		
-		NSInteger start = [enc rangeOfString:@"("].location + 1;
-		
-		fieldEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
-		
+	NSString *fieldEncoding = [originalRow objectForKey:@"encodingName"];
+
+	if ([fieldEncoding length] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
 		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
 	}
 	
 	if (![fieldEncoding length] && [tableDataInstance tableEncoding]) {
 		fieldEncoding = [tableDataInstance tableEncoding];
 	}
-	
-	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0 && ![[originalRow objectForKey:@"binary"] integerValue]) {
-		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue] - 1] objectForKey:@"COLLATION_NAME"];
-		
-		[queryString appendFormat:@" COLLATE %@", col];
+
+	NSString *fieldCollation = [originalRow objectForKey:@"collationName"];
+	if ([fieldEncoding length] && [fieldCollation length] && ![[originalRow objectForKey:@"binary"] integerValue]) {
+		[queryString appendFormat:@" COLLATE %@", fieldCollation];
 	}
 
 	// Add unsigned, zerofill, binary, not null if necessary
