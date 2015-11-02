@@ -1675,7 +1675,7 @@
 																										<nil key="NSMenuItem"/>
 																										<bool key="NSMenuItemRespectAlignment">YES</bool>
 																										<object class="NSMenu" key="NSMenu" id="856601787">
-																											<string key="NSTitle">OtherViews</string>
+																											<string key="NSTitle">encodingPopupMenu</string>
 																											<array class="NSMutableArray" key="NSMenuItems"/>
 																										</object>
 																										<int key="NSSelectedIndex">-1</int>
@@ -1717,7 +1717,7 @@
 																										<nil key="NSMenuItem"/>
 																										<bool key="NSMenuItemRespectAlignment">YES</bool>
 																										<object class="NSMenu" key="NSMenu" id="65801928">
-																											<string key="NSTitle">OtherViews</string>
+																											<string key="NSTitle">collationPopupMenu</string>
 																											<array class="NSMutableArray" key="NSMenuItems"/>
 																										</object>
 																										<int key="NSSelectedIndex">-1</int>
@@ -17349,6 +17349,22 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 						<reference key="destination" ref="758231677"/>
 					</object>
 					<string key="id">7299</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="856601787"/>
+						<reference key="destination" ref="239767357"/>
+					</object>
+					<string key="id">Jbs-NM-Lzb</string>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">delegate</string>
+						<reference key="source" ref="65801928"/>
+						<reference key="destination" ref="239767357"/>
+					</object>
+					<string key="id">Dcc-ay-7AU</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">

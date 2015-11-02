@@ -38,8 +38,26 @@
 #import "SPTableStructureLoading.h"
 #import "SPServerSupport.h"
 #import "SPTablesList.h"
+#import "SPPillAttachmentCell.h"
 
 #import <SPMySQL/SPMySQL.h>
+
+struct _cmpMap {
+	NSString *title; // the title of the "pill"
+	NSString *tooltipPart; // the tooltip of the menuitem
+	NSString *cmpWith; // the string to match against
+};
+
+/**
+ * This function will compare the representedObject of every item in menu against
+ * every map->cmpWith. If they match it will append a pill-like (similar to a TokenFieldCell's token)
+ * element labelled map->title to the menu item's title. If map->tooltipPart is set,
+ * it will also be added to the menu item's tooltip.
+ *
+ * This is used with the encoding/collation popup menus to add visual indicators for the
+ * table-level and default encoding/collation.
+ */
+static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries);
 
 @interface SPTableStructure (PrivateAPI)
 
@@ -69,6 +87,7 @@
 		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
 		NSString *columnCollation = [rowData objectForKey:@"collationName"]; // loadTable: has already inferred it, if not set explicit
 
+#warning Building the collation menu here is a big performance hog. This should be done in menuNeedsUpdate: below!
 		NSPopUpButtonCell *collationCell = [tableColumn dataCell];
 		[collationCell removeAllItems];
 		[collationCell addItemWithTitle:@"dummy"];
@@ -698,4 +717,111 @@
 	return @"";
 }
 
+#pragma mark -
+#pragma mark Menu delegate methods (encoding/collation dropdown menu)
+
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+	//NOTE: NSTableView will usually copy the menu and call this method on the copy. Matching with == won't work!
+
+	//walk through the menu and clear the attributedTitle if set. This will remove the gray color from the default items
+	for(NSMenuItem *item in [menu itemArray]) {
+		if([item attributedTitle]) {
+			[item setAttributedTitle:nil];
+		}
+	}
+
+	NSDictionary *rowData = NSArrayObjectAtIndex(tableFields, [tableSourceView selectedRow]);
+	
+	if([[menu title] isEqualToString:@"encodingPopupMenu"]) {
+		NSString *tableEncoding = [tableDataInstance tableEncoding];
+		//NSString *databaseEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
+		//NSString *serverEncoding = [databaseDataInstance getServerDefaultCharacterSet];
+
+		struct _cmpMap defaultCmp[] = {
+			{
+				NSLocalizedString(@"Table",@"Table Structure : Encoding dropdown : 'item is table default' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default encoding of table “%@”.", @"Table Structure : Encoding dropdown : table marker tooltip"),selectedTable],
+				tableEncoding
+			},
+			/* //we could, but that might confuse users even more plus there is no inheritance between a columns charset and the db/server default
+			{
+				NSLocalizedString(@"Database",@"Table Structure : Encoding dropdown : 'item is database default' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default encoding of database “%@”.", @"Table Structure : Encoding dropdown : database marker tooltip"),[tableDocumentInstance database]],
+				databaseEncoding
+			},
+			{
+				NSLocalizedString(@"Server",@"Table Structure : Encoding dropdown : 'item is server default' marker"),
+				NSLocalizedString(@"This is the default encoding of this server.", @"Table Structure : Encoding dropdown : server marker tooltip"),
+				serverEncoding
+			} */
+		};
+
+		_BuildMenuWithPills(menu, defaultCmp, COUNT_OF(defaultCmp));
+	}
+	else if([[menu title] isEqualToString:@"collationPopupMenu"]) {
+		NSString *encoding = [rowData objectForKey:@"encodingName"];
+		NSString *encodingDefaultCollation = [databaseDataInstance getDefaultCollationForEncoding:encoding];
+		NSString *tableCollation = [tableDataInstance statusValueForKey:@"Collation"];
+		//NSString *databaseCollation = [databaseDataInstance getDatabaseDefaultCollation];
+		//NSString *serverCollation = [databaseDataInstance getServerDefaultCollation];
+		
+		struct _cmpMap defaultCmp[] = {
+			{
+				NSLocalizedString(@"Default",@"Table Structure : Collation dropdown : 'item is the same as the default collation of the row's charset' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of encoding “%@”.", @"Table Structure : Collation dropdown : default marker tooltip"),encoding],
+				encodingDefaultCollation
+			},
+			{
+				NSLocalizedString(@"Table",@"Table Structure : Collation dropdown : 'item is the same as the collation of table' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of table “%@”.", @"Table Structure : Collation dropdown : table marker tooltip"),selectedTable],
+				tableCollation
+			},
+			/* // see the comment for charset above
+			{
+				NSLocalizedString(@"Database",@"Table Structure : Collation dropdown : 'item is the same as the collation of database' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of database “%@”.", @"Table Structure : Collation dropdown : database marker tooltip"),[tableDocumentInstance database]],
+				databaseCollation
+			},
+			{
+				NSLocalizedString(@"Server",@"Table Structure : Collation dropdown : 'item is the same as the collation of server' marker"),
+				NSLocalizedString(@"This is the default collation of this server.", @"Table Structure : Collation dropdown : server marker tooltip"),
+				serverCollation
+			} */
+		};
+		
+		_BuildMenuWithPills(menu, defaultCmp, COUNT_OF(defaultCmp));
+	}
+}
+
 @end
+
+void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries)
+{
+	NSDictionary *baseAttrs = @{NSFontAttributeName:[menu font],NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
+	
+	for(NSMenuItem *item in [menu itemArray]) {
+		NSMutableAttributedString *itemStr = [[NSMutableAttributedString alloc] initWithString:[item title] attributes:baseAttrs];
+		NSString *value = [item representedObject];
+		
+		NSMutableArray *tooltipParts = [NSMutableArray array];
+		for (unsigned int i = 0; i < mapEntries; ++i) {
+			struct _cmpMap *cmp = &map[i];
+			if([cmp->cmpWith isEqualToString:value]) {
+				SPPillAttachmentCell *cell = [[SPPillAttachmentCell alloc] init];
+				[cell setStringValue:cmp->title];
+				NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+				[attachment setAttachmentCell:[cell autorelease]];
+				NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:[attachment autorelease]];
+				
+				[[itemStr mutableString] appendString:@" "];
+				[itemStr appendAttributedString:attachmentString];
+				
+				if(cmp->tooltipPart) [tooltipParts addObject:cmp->tooltipPart];
+			}
+		}
+		if([tooltipParts count]) [item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+		
+		[item setAttributedTitle:[itemStr autorelease]];
+	}
+}
