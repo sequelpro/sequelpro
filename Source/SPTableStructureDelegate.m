@@ -62,6 +62,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 @interface SPTableStructure (PrivateAPI)
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+- (NSString *)_buildPartialColumnDefinitionString:(NSDictionary *)theRow;
 
 @end
 
@@ -351,88 +352,19 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	NSDictionary *originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-	
-	NSString *fieldType = [[originalRow objectForKey:@"type"] uppercaseString];
-	
+
 	// Begin construction of the reordering query
-	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
-									[[originalRow objectForKey:@"name"] backtickQuotedString], fieldType];
-	
-	// Add the length parameter if necessary
-	if ([originalRow objectForKey:@"length"] && ![[originalRow objectForKey:@"length"] isEqualToString:@""]) {
-		[queryString appendFormat:@"(%@)", [originalRow objectForKey:@"length"]];
-	}
-	
-	NSString *fieldEncoding = [originalRow objectForKey:@"encodingName"];
+	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@",
+	                                                                 [selectedTable backtickQuotedString],
+	                                                                 [self _buildPartialColumnDefinitionString:originalRow]];
 
-	if ([fieldEncoding length] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
-		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
-	}
-	
-	if (![fieldEncoding length] && [tableDataInstance tableEncoding]) {
-		fieldEncoding = [tableDataInstance tableEncoding];
-	}
-
-	NSString *fieldCollation = [originalRow objectForKey:@"collationName"];
-	if ([fieldEncoding length] && [fieldCollation length] && ![[originalRow objectForKey:@"binary"] integerValue]) {
-		[queryString appendFormat:@" COLLATE %@", fieldCollation];
-	}
-
-	// Add unsigned, zerofill, binary, not null if necessary
-	if ([[originalRow objectForKey:@"unsigned"] integerValue]) {
-		[queryString appendString:@" UNSIGNED"];
-	}
-	
-	if ([[originalRow objectForKey:@"zerofill"] integerValue]) {
-		[queryString appendString:@" ZEROFILL"];
-	}
-	
-	if ([[originalRow objectForKey:@"binary"] integerValue]) {
-		[queryString appendString:@" BINARY"];
-	}
-	
-	if (![[originalRow objectForKey:@"null"] integerValue]) {
-		[queryString appendString:@" NOT NULL"];
-	}
-	
-	if (![[originalRow objectForKey:@"Extra"] isEqualToString:@"None"] ) {
-		[queryString appendString:@" "];
-		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
-	}
-	
-	BOOL isTimestampType = [fieldType isEqualToString:@"TIMESTAMP"];
-	
-	// Add the default value, skip it for auto_increment
-	if ([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
-		if ([[originalRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			if ([[originalRow objectForKey:@"null"] integerValue] == 1) {
-				[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
-			}
-		}
-		else if (isTimestampType && ([[[originalRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
-			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-		}
-		else if ([(NSString *)[originalRow objectForKey:@"default"] length]) {
-			[queryString appendFormat:@" DEFAULT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"default"]]];
-		}
-	}
-	
-	// Any column comments
-	if ([(NSString *)[originalRow objectForKey:@"comment"] length]) {
-		[queryString appendFormat:@" COMMENT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"comment"]]];
-	}
-	
-	// Unparsed details - column formats, storage, reference definitions
-	if ([originalRow objectForKey:@"unparsed"]) {
-		[queryString appendString:[originalRow objectForKey:@"unparsed"]];
-	}
-	
+	[queryString appendString:@" "];
 	// Add the new location
 	if (destinationRowIndex == 0) {
-		[queryString appendString:@" FIRST"];
+		[queryString appendString:@"FIRST"];
 	} 
 	else {
-		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@"AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
 	}
 	
 	// Run the query; report any errors, or reload the table on success

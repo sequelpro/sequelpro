@@ -56,6 +56,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 @interface SPTableStructure (PrivateAPI)
 
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey;
+- (NSString *)_buildPartialColumnDefinitionString:(NSDictionary *)theRow;
 
 @end
 
@@ -741,6 +742,129 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[[tableSourceView window] endEditingFor:nil];
 	}
 
+	NSDictionary *theRow = [tableFields objectAtIndex:currentlyEditingRow];
+
+	if ([autoIncrementIndex isEqualToString:@"PRIMARY KEY"]) {
+		// If the field isn't set to be unsigned and we're making it the primary key then make it unsigned
+		if (![[theRow objectForKey:@"unsigned"] boolValue]) {
+			NSMutableDictionary *rowCpy = [theRow mutableCopy];
+			[rowCpy setObject:@YES forKey:@"unsigned"];
+			theRow = [rowCpy autorelease];
+		}
+	}
+
+	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@",[selectedTable backtickQuotedString]];
+	[queryString appendString:@" "];
+	if (isEditingNewRow) {
+		[queryString appendString:@"ADD"];
+	}
+	else {
+		[queryString appendFormat:@"CHANGE %@",[[oldRow objectForKey:@"name"] backtickQuotedString]];
+	}
+	[queryString appendString:@" "];
+	[queryString appendString:[self _buildPartialColumnDefinitionString:theRow]];
+
+	// Process index if given for fields set to AUTO_INCREMENT
+	if (autoIncrementIndex) {
+		// User wants to add PRIMARY KEY
+		if ([autoIncrementIndex isEqualToString:@"PRIMARY KEY"]) {
+			[queryString appendString:@"\n PRIMARY KEY"];
+
+			// Add AFTER ... only if the user added a new field
+			if (isEditingNewRow) {
+				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+			}
+		}
+		else {
+			// Add AFTER ... only if the user added a new field
+			if (isEditingNewRow) {
+				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+			}
+
+			[queryString appendFormat:@"\n, ADD %@ (%@)", autoIncrementIndex, [[theRow objectForKey:@"name"] backtickQuotedString]];
+		}
+	}
+	// Add AFTER ... only if the user added a new field
+	else if (isEditingNewRow) {
+		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
+	}
+
+	isCurrentExtraAutoIncrement = NO;
+	autoIncrementIndex = nil;
+
+	// Execute query
+	[mySQLConnection queryString:queryString];
+
+	if (![mySQLConnection queryErrored]) {
+		isEditingRow = NO;
+		isEditingNewRow = NO;
+		currentlyEditingRow = -1;
+
+		[tableDataInstance resetAllData];
+		[tableDocumentInstance setStatusRequiresReload:YES];
+		[self loadTable:selectedTable];
+
+		// Mark the content table for refresh
+		[tableDocumentInstance setContentRequiresReload:YES];
+
+		// Query the structure of all databases in the background
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
+
+		return YES;
+	}
+	else {
+		alertSheetOpened = YES;
+		if([mySQLConnection lastErrorID] == 1146) { // If the current table doesn't exist anymore
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"),selectedTable, [mySQLConnection lastErrorMessage]]
+			);
+
+			isEditingRow = NO;
+			isEditingNewRow = NO;
+			currentlyEditingRow = -1;
+			[tableFields removeAllObjects];
+			[tableSourceView reloadData];
+			[indexesTableView reloadData];
+			[addFieldButton setEnabled:NO];
+			[duplicateFieldButton setEnabled:NO];
+			[removeFieldButton setEnabled:NO];
+#ifndef SP_CODA
+			[addIndexButton setEnabled:NO];
+			[removeIndexButton setEnabled:NO];
+			[editTableButton setEnabled:NO];
+#endif
+			[tablesListInstance updateTables:self];
+			return NO;
+		}
+		// Problem: alert sheet doesn't respond to first click
+		if (isEditingNewRow) {
+			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"),
+							  NSLocalizedString(@"Edit row", @"Edit row button"),
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), NULL,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@", @"error adding field informative message"),
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
+		}
+		else {
+			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"),
+							  NSLocalizedString(@"Edit row", @"Edit row button"),
+							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), NULL,
+							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@", @"error changing field informative message"),
+							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
+		}
+
+		return NO;
+	}
+}
+
+/**
+ * Takes the column definition from a dictionary and returns the it to be used
+ * with an ALTER statement, e.g.:
+ *  `col1` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT
+ */
+- (NSString *)_buildPartialColumnDefinitionString:(NSDictionary *)theRow
+{
 	NSMutableString *queryString;
 	BOOL fieldDefIncludesLen = NO;
 	
@@ -749,27 +873,16 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 	
 	BOOL specialFieldTypes = NO;
 
-	NSDictionary *theRow = [tableFields objectAtIndex:currentlyEditingRow];
-
 	if ([theRow objectForKey:@"type"])
 		theRowType = [[[theRow objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
 	if ([theRow objectForKey:@"Extra"])
 		theRowExtra = [[[theRow objectForKey:@"Extra"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
-	if (isEditingNewRow) {
-		queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ ADD %@ %@", 
-					   [selectedTable backtickQuotedString], 
-					   [[theRow objectForKey:@"name"] backtickQuotedString], 
-					   theRowType];
-	}
-	else {
-		queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ CHANGE %@ %@ %@", 
-					   [selectedTable backtickQuotedString], 
-					   [[oldRow objectForKey:@"name"] backtickQuotedString], 
-					   [[theRow objectForKey:@"name"] backtickQuotedString], 
-					   theRowType];
-	}
+	queryString = [NSMutableString stringWithString:[[theRow objectForKey:@"name"] backtickQuotedString]];
+
+	[queryString appendString:@" "];
+	[queryString appendString:theRowType];
 
 	// Check for pre-defined field type SERIAL
 	if([theRowType isEqualToString:@"SERIAL"]) {
@@ -888,7 +1001,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 			}
 		}
 
-		if (![theRowExtra isEqualToString:@""] && ![theRowExtra isEqualToString:@"NONE"]) {
+		if ([theRowExtra length] && ![theRowExtra isEqualToString:@"NONE"]) {
 			[queryString appendFormat:@"\n %@", theRowExtra];
 		}
 	}
@@ -898,126 +1011,12 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 		[queryString appendFormat:@"\n COMMENT %@", [mySQLConnection escapeAndQuoteString:[theRow objectForKey:@"comment"]]];
 	}
 
-	if (!isEditingNewRow) {
-
-		// Unparsed details - column formats, storage, reference definitions
-		if ([(NSString *)[theRow objectForKey:@"unparsed"] length]) {
-			[queryString appendFormat:@"\n %@", [theRow objectForKey:@"unparsed"]];
-		}
+	// Unparsed details - column formats, storage, reference definitions
+	if ([(NSString *)[theRow objectForKey:@"unparsed"] length]) {
+		[queryString appendFormat:@"\n %@", [theRow objectForKey:@"unparsed"]];
 	}
 
-	// Process index if given for fields set to AUTO_INCREMENT 
-	if (autoIncrementIndex) {
-		// User wants to add PRIMARY KEY
-		if ([autoIncrementIndex isEqualToString:@"PRIMARY KEY"]) {
-			[queryString appendString:@"\n PRIMARY KEY"];
-			
-			// If the field isn't set to be unsigned and we're making it the primary key then make it unsigned
-			if (![[theRow objectForKey:@"unsigned"] boolValue]) {
-				
-				// Find the occurrence of the table name and data type so we know where to insert the 
-				// UNSIGNED keyword.
-				NSRange range = [queryString rangeOfString:[NSString stringWithFormat:@"%@ %@", [[theRow objectForKey:@"name"] backtickQuotedString], theRowType] options:NSLiteralSearch];
-				
-				NSInteger insertionIndex = NSMaxRange(range);
-				
-				// If the field definition's data type includes the length then we must take this into
-				// account when inserting the UNSIGNED keyword. Add 2 to the index to accommodate the
-				// parentheses used.
-				if (fieldDefIncludesLen) {
-					insertionIndex += ([(NSString *)[theRow objectForKey:@"length"] length] + 2); 
-				}
-				
-				[queryString insertString:@" UNSIGNED" atIndex:insertionIndex];
-			}
-							
-			// Add AFTER ... only if the user added a new field
-			if (isEditingNewRow) {
-				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
-			}
-		}
-		else {
-			// Add AFTER ... only if the user added a new field
-			if (isEditingNewRow) {
-				[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
-			}
-
-			[queryString appendFormat:@"\n, ADD %@ (%@)", autoIncrementIndex, [[theRow objectForKey:@"name"] backtickQuotedString]];
-		}
-	}
-
-	// Add AFTER ... only if the user added a new field
-	else if (isEditingNewRow) {
-		[queryString appendFormat:@"\n AFTER %@", [[[tableFields objectAtIndex:(currentlyEditingRow -1)] objectForKey:@"name"] backtickQuotedString]];
-	}
-
-	isCurrentExtraAutoIncrement = NO;
-	autoIncrementIndex = nil;
-
-	// Execute query
-	[mySQLConnection queryString:queryString];
-
-	if (![mySQLConnection queryErrored]) {
-		isEditingRow = NO;
-		isEditingNewRow = NO;
-		currentlyEditingRow = -1;
-
-		[tableDataInstance resetAllData];
-		[tableDocumentInstance setStatusRequiresReload:YES];
-		[self loadTable:selectedTable];
-
-		// Mark the content table for refresh
-		[tableDocumentInstance setContentRequiresReload:YES];
-
-		// Query the structure of all databases in the background
-		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:[NSDictionary dictionaryWithObjectsAndKeys:@YES, @"forceUpdate", selectedTable, @"affectedItem", [NSNumber numberWithInteger:[tablesListInstance tableType]], @"affectedItemType", nil]];
-
-		return YES;
-	}
-	else {
-		alertSheetOpened = YES;
-		if([mySQLConnection lastErrorID] == 1146) { // If the current table doesn't exist anymore
-			SPOnewayAlertSheet(
-				NSLocalizedString(@"Error", @"error"),
-				[tableDocumentInstance parentWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to alter table '%@'.\n\nMySQL said: %@", @"error while trying to alter table message"),selectedTable, [mySQLConnection lastErrorMessage]]
-			);
-
-			isEditingRow = NO;
-			isEditingNewRow = NO;
-			currentlyEditingRow = -1;
-			[tableFields removeAllObjects];
-			[tableSourceView reloadData];
-			[indexesTableView reloadData];
-			[addFieldButton setEnabled:NO];
-			[duplicateFieldButton setEnabled:NO];
-			[removeFieldButton setEnabled:NO];
-#ifndef SP_CODA
-			[addIndexButton setEnabled:NO];
-			[removeIndexButton setEnabled:NO];
-			[editTableButton setEnabled:NO];
-#endif
-			[tablesListInstance updateTables:self];
-			return NO;
-		}
-		// Problem: alert sheet doesn't respond to first click
-		if (isEditingNewRow) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error adding field", @"error adding field message"),
-							  NSLocalizedString(@"Edit row", @"Edit row button"),
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), NULL,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to add the field '%@' via\n\n%@\n\nMySQL said: %@", @"error adding field informative message"),
-							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
-		}
-		else {
-			SPBeginAlertSheet(NSLocalizedString(@"Error changing field", @"error changing field message"),
-							  NSLocalizedString(@"Edit row", @"Edit row button"),
-							  NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), NULL,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the field '%@' via\n\n%@\n\nMySQL said: %@", @"error changing field informative message"),
-							  [theRow objectForKey:@"name"], queryString, [mySQLConnection lastErrorMessage]]);
-		}
-
-		return NO;
-	}
+	return queryString;
 }
 
 #ifdef SP_CODA /* glue */
