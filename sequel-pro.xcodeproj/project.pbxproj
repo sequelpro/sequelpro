@@ -198,6 +198,7 @@
 		507FF26A1BC8450100104523 /* SPExportSettingsPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */; };
 		507FF2A11BCD27A700104523 /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		507FF2A21BCD27AE00104523 /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
+		5089B0271BE714E300E226CD /* SPIdMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 5089B0261BE714E300E226CD /* SPIdMenu.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
 		50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */; };
 		50D3C3521A77135F00B5429C /* SPParserUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = 50D3C3501A77135F00B5429C /* SPParserUtils.c */; };
@@ -916,6 +917,8 @@
 		507FF1111BBCC57600104523 /* SPFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFunctions.m; sourceTree = "<group>"; };
 		507FF2681BC8450100104523 /* SPExportSettingsPersistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportSettingsPersistence.h; sourceTree = "<group>"; };
 		507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportSettingsPersistence.m; sourceTree = "<group>"; };
+		5089B0251BE714E300E226CD /* SPIdMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIdMenu.h; sourceTree = "<group>"; };
+		5089B0261BE714E300E226CD /* SPIdMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIdMenu.m; sourceTree = "<group>"; };
 		50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGotoDatabaseController.h; sourceTree = "<group>"; };
 		50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGotoDatabaseController.m; sourceTree = "<group>"; };
 		50D3C34A1A75B8A800B5429C /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/GotoDatabaseDialog.xib; sourceTree = "<group>"; };
@@ -2394,6 +2397,8 @@
 			children = (
 				507FF1101BBCC4C400104523 /* SPFunctions.h */,
 				507FF1111BBCC57600104523 /* SPFunctions.m */,
+				5089B0251BE714E300E226CD /* SPIdMenu.h */,
+				5089B0261BE714E300E226CD /* SPIdMenu.m */,
 			);
 			name = Utility;
 			sourceTree = "<group>";
@@ -3248,6 +3253,7 @@
 				171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */,
 				174CE14210AB9281008F892B /* SPProcessListController.m in Sources */,
 				1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */,
+				5089B0271BE714E300E226CD /* SPIdMenu.m in Sources */,
 				1792C26110AE1A2D00ABE758 /* SPConnectionDelegate.m in Sources */,
 				17CC97F310B4ABE90034CD7A /* SPAboutController.m in Sources */,
 				5870868410FA3E9C00D58E1C /* SPDataStorage.m in Sources */,

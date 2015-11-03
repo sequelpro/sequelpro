@@ -39,6 +39,7 @@
 #import "SPServerSupport.h"
 #import "SPTablesList.h"
 #import "SPPillAttachmentCell.h"
+#import "SPIdMenu.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -654,6 +655,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
+	if(![menu isKindOfClass:[SPIdMenu class]]) return;
 	//NOTE: NSTableView will usually copy the menu and call this method on the copy. Matching with == won't work!
 
 	//walk through the menu and clear the attributedTitle if set. This will remove the gray color from the default items
@@ -665,7 +667,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 	NSDictionary *rowData = NSArrayObjectAtIndex(tableFields, [tableSourceView selectedRow]);
 	
-	if([[menu title] isEqualToString:@"encodingPopupMenu"]) {
+	if([[menu menuId] isEqualToString:@"encodingPopupMenu"]) {
 		NSString *tableEncoding = [tableDataInstance tableEncoding];
 		//NSString *databaseEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
 		//NSString *serverEncoding = [databaseDataInstance getServerDefaultCharacterSet];
@@ -691,7 +693,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 		_BuildMenuWithPills(menu, defaultCmp, COUNT_OF(defaultCmp));
 	}
-	else if([[menu title] isEqualToString:@"collationPopupMenu"]) {
+	else if([[menu menuId] isEqualToString:@"collationPopupMenu"]) {
 		NSString *encoding = [rowData objectForKey:@"encodingName"];
 		NSString *encodingDefaultCollation = [databaseDataInstance getDefaultCollationForEncoding:encoding];
 		NSString *tableCollation = [tableDataInstance statusValueForKey:@"Collation"];
