@@ -51,6 +51,7 @@
 	NSString *selectedCharset;
 	NSString *selectedCollation;
 	NSString *defaultCharsetFormatString;
+	NSString *defaultCollationFormatString;
 	NSString *_oldCharset;
 	
 	BOOL _enabled;
@@ -104,6 +105,27 @@
  * It must contain one %@ variable (the charset name).
  */
 @property(readwrite,retain) NSString *defaultCharsetFormatString;
+
+/**
+ * This is the format string that will be used for formatting the defaultCollation.
+ * It must contain one %@ variable (the collation name).
+ *
+ * Note that this is only used as long as the user keeps the _implicit_ defaultCharset.
+ * E.g. if the charset menu has those items:
+ * @code
+ *   Inherited from db (latin1)
+ *   -------------------------------
+ *   ...
+ *   cp1521 Western Europe (latin1)
+ *   ...
+ * @endcode
+ * This item will only be used for the FIRST appearance of latin1.
+ * If the user picks ANY item below the line (thus making the charset explicit) both the defaultCollation
+ * and the defaultCollationFormatString no longer apply and the item at the top of
+ * the collation list will be the global default for the given charset (not the inherited one)
+ * and named "Default (...)", because that is how MySQL applies the settings.
+ */
+@property(readwrite,retain) NSString *defaultCollationFormatString;
 
 /**
  * Set this to YES before showing the UI and NO after dismissing it.

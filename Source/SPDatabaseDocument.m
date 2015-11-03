@@ -809,6 +809,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	// Setup the charset and collation dropdowns
 	[addDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[addDatabaseCharsetHelper setDefaultCharsetFormatString:NSLocalizedString(@"Server Default (%@)", @"Add Database : Charset dropdown : default item ($1 = charset name)")];
+	[addDatabaseCharsetHelper setDefaultCollationFormatString:NSLocalizedString(@"Server Default (%@)", @"Add Database : Collation dropdown : default item ($1 = collation name)")];
 	[addDatabaseCharsetHelper setServerSupport:serverSupport];
 	[addDatabaseCharsetHelper setPromoteUTF8:YES];
 	[addDatabaseCharsetHelper setSelectedCharset:nil];

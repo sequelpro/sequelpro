@@ -7474,14 +7474,14 @@
 			<object class="NSWindowTemplate" id="971880172">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{343, 433}, {384, 162}}</string>
+				<string key="NSWindowRect">{{343, 433}, {425, 162}}</string>
 				<int key="NSWTFlags">1886912512</int>
 				<string key="NSWindowTitle">New Table</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>
 				<nil key="NSUserInterfaceItemIdentifier"/>
 				<string key="NSWindowContentMaxSize">{600, 162}</string>
-				<string key="NSWindowContentMinSize">{384, 142}</string>
+				<string key="NSWindowContentMinSize">{425, 162}</string>
 				<object class="NSView" key="NSWindowView" id="381160134">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -7527,7 +7527,7 @@
 						<object class="NSTextField" id="374259664">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">258</int>
-							<string key="NSFrame">{{138, 124}, {226, 18}}</string>
+							<string key="NSFrame">{{138, 124}, {267, 18}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<reference key="NSNextKeyView" ref="513414376"/>
 							<bool key="NSEnabled">YES</bool>
@@ -7547,7 +7547,7 @@
 						<object class="NSButton" id="671615720">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{291, 13}, {78, 28}}</string>
+							<string key="NSFrame">{{332, 13}, {78, 28}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
 							<int key="NSTag">1</int>
@@ -7572,7 +7572,7 @@
 						<object class="NSPopUpButton" id="1050266816">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">258</int>
-							<string key="NSFrame">{{135, 95}, {232, 22}}</string>
+							<string key="NSFrame">{{135, 95}, {273, 22}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<reference key="NSNextKeyView" ref="289339603"/>
 							<bool key="NSEnabled">YES</bool>
@@ -7624,7 +7624,7 @@
 						<object class="NSPopUpButton" id="467430961">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">258</int>
-							<string key="NSFrame">{{135, 70}, {232, 22}}</string>
+							<string key="NSFrame">{{135, 70}, {273, 22}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<reference key="NSNextKeyView" ref="725803993"/>
 							<bool key="NSEnabled">YES</bool>
@@ -7676,7 +7676,7 @@
 						<object class="NSPopUpButton" id="189903457">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">258</int>
-							<string key="NSFrame">{{135, 45}, {232, 22}}</string>
+							<string key="NSFrame">{{135, 45}, {273, 22}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<reference key="NSNextKeyView" ref="635170907"/>
 							<bool key="NSEnabled">YES</bool>
@@ -7709,7 +7709,7 @@
 						<object class="NSButton" id="635170907">
 							<reference key="NSNextResponder" ref="381160134"/>
 							<int key="NSvFlags">257</int>
-							<string key="NSFrame">{{209, 13}, {84, 28}}</string>
+							<string key="NSFrame">{{250, 13}, {84, 28}}</string>
 							<reference key="NSSuperview" ref="381160134"/>
 							<reference key="NSNextKeyView" ref="671615720"/>
 							<string key="NSHuggingPriority">{250, 750}</string>
@@ -7731,7 +7731,7 @@
 							<bool key="NSAllowsLogicalLayoutDirection">NO</bool>
 						</object>
 					</array>
-					<string key="NSFrameSize">{384, 162}</string>
+					<string key="NSFrameSize">{425, 162}</string>
 					<reference key="NSNextKeyView" ref="1005413998"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>

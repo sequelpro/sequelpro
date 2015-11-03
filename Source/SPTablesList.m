@@ -391,6 +391,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[addTableCharsetHelper setServerSupport:[tableDocumentInstance serverSupport]];
 	[addTableCharsetHelper setPromoteUTF8:YES];
 	[addTableCharsetHelper setDefaultCharsetFormatString:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Encoding Dropdown : Default inherited from database")];
+	[addTableCharsetHelper setDefaultCollationFormatString:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Collation Dropdown : Default inherited from database")];
 	[addTableCharsetHelper setDefaultCharset:[databaseDataInstance getDatabaseDefaultCharacterSet]];
 	[addTableCharsetHelper setDefaultCollation:[databaseDataInstance getDatabaseDefaultCollation]];
 	[addTableCharsetHelper setSelectedCharset:nil]; //reset to not carry over state from last time sheet was shown
