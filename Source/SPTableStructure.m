@@ -852,7 +852,7 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 		// Don't provide any defaults for auto-increment fields
 		if (![theRowExtra isEqualToString:@"AUTO_INCREMENT"]) {
-
+			NSArray *matches;
 			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
 			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
 			{
@@ -862,10 +862,15 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 			}
 			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps/datetimes, use that
 			else if (([theRowType isEqualToString:@"TIMESTAMP"] || [theRowType isEqualToString:@"DATETIME"]) &&
-					 [[[theRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"])
+					[(matches = [[[theRow objectForKey:@"default"] uppercaseString] captureComponentsMatchedByRegex:@"^\\s*CURRENT_TIMESTAMP(?:\\s*\\(\\s*(\\d+)\\s*\\))?\\s*$"]) count])
 			{
 				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP"];
-
+				NSString *userLen = [matches objectAtIndex:1];
+				//mysql 5.6.4+ allows DATETIME(n) for fractional seconds, which in turn requires CURRENT_TIMESTAMP(n).
+				// Also, if the user explicitly added one we should never ignore that.
+				if([userLen length] || fieldDefIncludesLen) {
+					[queryString appendFormat:@"(%@)",([userLen length]? userLen : [theRow objectForKey:@"length"])];
+				}
 			}
 			// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
 			// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
