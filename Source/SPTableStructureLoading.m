@@ -227,9 +227,15 @@
 		}
 		
 		// For timestamps/datetime check to see whether "on update CURRENT_TIMESTAMP"  and set Extra accordingly
-		else if (([type isEqualToString:@"TIMESTAMP"] || [type isEqualToString:@"DATETIME"]) &&
-				 [[theField objectForKey:@"onupdatetimestamp"] integerValue]) {
-			[theField setObject:@"on update CURRENT_TIMESTAMP" forKey:@"Extra"];
+		else if ([type isInArray:@[@"TIMESTAMP",@"DATETIME"]] && [[theField objectForKey:@"onupdatetimestamp"] boolValue]) {
+			NSString *ouct = @"on update CURRENT_TIMESTAMP";
+			// restore a length parameter if the field has fractional seconds.
+			// the parameter of current_timestamp MUST match the field's length in that case, so we can just 'guess' it.
+			NSString *fieldLen = [theField objectForKey:@"length"];
+			if([fieldLen length] && ![fieldLen isEqualToString:@"0"]) {
+				ouct = [ouct stringByAppendingFormat:@"(%@)",fieldLen];
+			}
+			[theField setObject:ouct forKey:@"Extra"];
 		}
 	}
 	

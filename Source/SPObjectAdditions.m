@@ -46,6 +46,11 @@ static NSMutableDictionary *gScrollViewDealloc;
 	return (self == null);
 }
 
+- (BOOL)isInArray:(NSArray *)list
+{
+	return [list containsObject:self];
+}
+
 - (void)_scrollViewDidChangeBounds:(id)obj
 {
 	NSMutableString *msg = [NSMutableString string];

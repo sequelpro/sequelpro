@@ -620,6 +620,8 @@ extern NSString *SPBundleShellVariableAllFunctions;
 extern NSString *SPBundleShellVariableAllViews;
 extern NSString *SPBundleShellVariableAllTables;
 
+extern NSString *SPCurrentTimestampPattern;
+
 typedef NS_ENUM(NSInteger, SPBundleRedirectAction) {
 	SPBundleRedirectActionNone                 = 200,
 	SPBundleRedirectActionReplaceSection       = 201,

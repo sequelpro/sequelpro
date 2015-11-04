@@ -2801,14 +2801,15 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 				fieldValue = [mySQLConnection escapeAndQuoteData:rowObject];
 
 			} else {
-				if ([[rowObject description] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-					fieldValue = @"CURRENT_TIMESTAMP";
+				NSString *desc = [rowObject description];
+				if ([desc isMatchedByRegex:SPCurrentTimestampPattern]) {
+					fieldValue = desc;
 				} else if ([fieldTypeGroup isEqualToString:@"bit"]) {
-					fieldValue = [NSString stringWithFormat:@"b'%@'", ((![[rowObject description] length] || [[rowObject description] isEqualToString:@"0"]) ? @"0" : [rowObject description])];
-				} else if ([fieldTypeGroup isEqualToString:@"date"] && [[rowObject description] isEqualToString:@"NOW()"]) {
+					fieldValue = [NSString stringWithFormat:@"b'%@'", ((![desc length] || [desc isEqualToString:@"0"]) ? @"0" : desc)];
+				} else if ([fieldTypeGroup isEqualToString:@"date"] && [desc isEqualToString:@"NOW()"]) {
 					fieldValue = @"NOW()";
 				} else {
-					fieldValue = [mySQLConnection escapeAndQuoteString:[rowObject description]];
+					fieldValue = [mySQLConnection escapeAndQuoteString:desc];
 				}
 			}
 		}
@@ -3426,19 +3427,19 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		} else if ( [anObject isKindOfClass:[NSData class]] ) {
 			newObject = [mySQLConnection escapeAndQuoteData:anObject];
 		} else {
-			if ( [[anObject description] isEqualToString:@"CURRENT_TIMESTAMP"] ) {
-				newObject = @"CURRENT_TIMESTAMP";
+			NSString *desc = [anObject description];
+			if ( [desc isMatchedByRegex:SPCurrentTimestampPattern] ) {
+				newObject = desc;
 			} else if([anObject isEqualToString:[prefs stringForKey:SPNullValue]]) {
 				newObject = @"NULL";
 			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"geometry"]) {
 				newObject = [(NSString*)anObject getGeomFromTextString];
 			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"bit"]) {
-				newObject = [NSString stringWithFormat:@"b'%@'", ((![[anObject description] length] || [[anObject description] isEqualToString:@"0"]) ? @"0" : [anObject description])];
-			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"]
-						&& [[anObject description] isEqualToString:@"NOW()"]) {
+				newObject = [NSString stringWithFormat:@"b'%@'", ((![desc length] || [desc isEqualToString:@"0"]) ? @"0" : desc)];
+			} else if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"date"] && [desc isEqualToString:@"NOW()"]) {
 				newObject = @"NOW()";
 			} else {
-				newObject = [mySQLConnection escapeAndQuoteString:[anObject description]];
+				newObject = [mySQLConnection escapeAndQuoteString:desc];
 			}
 		}
 

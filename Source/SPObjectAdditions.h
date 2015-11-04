@@ -35,4 +35,9 @@
  */
 - (BOOL)isNSNull;
 
+/**
+ * easier to read version of [array containsObject:x]
+ */
+- (BOOL)isInArray:(NSArray *)list;
+
 @end

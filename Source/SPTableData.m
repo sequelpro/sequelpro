@@ -1359,7 +1359,8 @@
 		// Special timestamp/datetime case - Whether fields are set to update the current timestamp
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
-					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+					&& [NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) isMatchedByRegex:SPCurrentTimestampPattern]) {
+			// mysql requires the CURRENT_TIMESTAMP(n) to be exactly the same as the column types length, so we don't need to keep it, we can just restore it later
 			[fieldDetails setValue:@YES forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
 

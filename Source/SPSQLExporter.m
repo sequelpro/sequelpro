@@ -884,8 +884,8 @@
 					[fieldString appendString:@" DEFAULT NULL"];
 				}
 			} 
-			else if (([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] || [[column objectForKey:@"type"] isEqualToString:@"DATETIME"]) && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+			else if (([[column objectForKey:@"type"] isInArray:@[@"TIMESTAMP",@"DATETIME"]]) && [[column objectForKey:@"default"] isMatchedByRegex:SPCurrentTimestampPattern]) {
+				[fieldString appendFormat:@" DEFAULT %@",[column objectForKey:@"default"]];
 			} 
 			else {
 				[fieldString appendFormat:@" DEFAULT %@", [connection escapeAndQuoteString:[column objectForKey:@"default"]]];

@@ -974,12 +974,12 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 				}
 			}
 			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps/datetimes, use that
-			else if (([theRowType isEqualToString:@"TIMESTAMP"] || [theRowType isEqualToString:@"DATETIME"]) &&
-					[(matches = [[[theRow objectForKey:@"default"] uppercaseString] captureComponentsMatchedByRegex:@"^\\s*CURRENT_TIMESTAMP(?:\\s*\\(\\s*(\\d+)\\s*\\))?\\s*$"]) count])
+			else if ([theRowType isInArray:@[@"TIMESTAMP",@"DATETIME"]] &&
+					[(matches = [[[theRow objectForKey:@"default"] uppercaseString] captureComponentsMatchedByRegex:SPCurrentTimestampPattern]) count])
 			{
 				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP"];
 				NSString *userLen = [matches objectAtIndex:1];
-				//mysql 5.6.4+ allows DATETIME(n) for fractional seconds, which in turn requires CURRENT_TIMESTAMP(n).
+				// mysql 5.6.4+ allows DATETIME(n) for fractional seconds, which in turn requires CURRENT_TIMESTAMP(n) with the same n!
 				// Also, if the user explicitly added one we should never ignore that.
 				if([userLen length] || fieldDefIncludesLen) {
 					[queryString appendFormat:@"(%@)",([userLen length]? userLen : [theRow objectForKey:@"length"])];
@@ -1003,6 +1003,10 @@ static NSString *SPRemoveFieldAndForeignKey = @"SPRemoveFieldAndForeignKey";
 
 		if ([theRowExtra length] && ![theRowExtra isEqualToString:@"NONE"]) {
 			[queryString appendFormat:@"\n %@", theRowExtra];
+			//fix our own default item if needed
+			if([theRowExtra isEqualToString:@"ON UPDATE CURRENT_TIMESTAMP"] && fieldDefIncludesLen) {
+				[queryString appendFormat:@"(%@)",[theRow objectForKey:@"length"]];
+			}
 		}
 	}
 
