@@ -32,10 +32,16 @@
 
 @implementation SPAppController (SPWindowManagement)
 
+
+- (IBAction)newWindow:(id)sender
+{
+	[self newWindow];
+}
+
 /**
  * Create a new window, containing a single tab.
  */
-- (IBAction)newWindow:(id)sender
+- (SPWindowController *)newWindow
 {
 	static NSPoint cascadeLocation = {.x = 0, .y = 0};
 	
@@ -58,7 +64,7 @@
 	}
 	
 	// Add the connection view
-	[newWindowController addNewConnection:self];
+	[newWindowController addNewConnection];
 	
 	// Cascade according to the statically stored cascade location.
 	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
@@ -69,6 +75,8 @@
 	// Show the window, and perform frontmost tasks again once the window has drawn
 	[newWindowController showWindow:self];
 	[[newWindowController selectedTableDocument] didBecomeActiveTabInWindow];
+	
+	return newWindowController;
 }
 
 /**
@@ -76,15 +84,7 @@
  */
 - (IBAction)newTab:(id)sender
 {
-	SPWindowController *frontController = nil;
-	
-	for (NSWindow *aWindow in [NSApp orderedWindows]) 
-	{
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			frontController = [aWindow windowController];
-			break;
-		}
-	}
+	SPWindowController *frontController = [self frontController];
 	
 	// If no window was found, create a new one
 	if (!frontController) {
@@ -97,6 +97,25 @@
 		
 		[frontController addNewConnection:self];
 	}
+}
+
+- (SPDatabaseDocument *)makeNewConnectionTabOrWindow
+{
+	SPWindowController *frontController = [self frontController];
+	
+	SPDatabaseDocument *frontDocument;
+	// If no window was found or the front most window has no tabs, create a new one
+	if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
+		frontController = [self newWindow];
+		frontDocument = [frontController selectedTableDocument];
+	}
+	// Open the spf file in a new tab if the tab bar is visible
+	else {
+		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
+		frontDocument = [frontController addNewConnection];
+	}
+	
+	return frontDocument;
 }
 
 /**
@@ -113,7 +132,7 @@
 		[[self frontDocumentWindow] deminiaturize:self];
 	}
 	
-	[[[self frontDocumentWindow] windowController] addNewConnection:self];
+	SPDatabaseDocument *newConnection = [[self frontController] addNewConnection];
 	
 	// Get the state of the previously-frontmost document
 	NSDictionary *allStateDetails = @{
@@ -130,7 +149,7 @@
 	[frontState setObject:@YES forKey:@"auto_connect"];
 	
 	// Set the connection on the new tab
-	[[self frontDocument] setState:frontState];
+	[newConnection setState:frontState];
 }
 
 /**
@@ -138,12 +157,17 @@
  */
 - (NSWindow *)frontDocumentWindow
 {
+	return [[self frontController] window];
+}
+
+- (SPWindowController *)frontController
+{
 	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			return aWindow;
+		id ctr = [aWindow windowController];
+		if ([ctr isMemberOfClass:[SPWindowController class]]) {
+			return ctr;
 		}
 	}
-	
 	return nil;
 }
 

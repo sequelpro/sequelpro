@@ -31,6 +31,7 @@
 #import "SPGrowlController.h"
 #import "SPDatabaseDocument.h"
 #import "SPWindowController.h"
+#import "SPAppController.h"
 
 #include <mach/mach_time.h>
 
@@ -167,16 +168,14 @@ static SPGrowlController *sharedGrowlController = nil;
 		NSUInteger documentHash = [[clickContext objectForKey:@"notificationDocumentHash"] unsignedIntegerValue];
 
 		// Loop through the windows, looking for the document
-		for (NSWindow *eachWindow in [NSApp orderedWindows]) 
+		for (NSWindow *eachWindow in [SPAppDelegate orderedDatabaseConnectionWindows])
 		{
-			if ([[eachWindow windowController] isKindOfClass:[SPWindowController class]]) {
-				for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents]) 
-				{
-					if ([eachDocument hash] == documentHash) {
-						[NSApp activateIgnoringOtherApps:YES];
-						[eachDocument makeKeyDocument];
-						return;
-					}
+			for (SPDatabaseDocument *eachDocument in [[eachWindow windowController] documents])
+			{
+				if ([eachDocument hash] == documentHash) {
+					[NSApp activateIgnoringOtherApps:YES];
+					[eachDocument makeKeyDocument];
+					return;
 				}
 			}
 		}
