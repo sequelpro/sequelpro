@@ -165,15 +165,15 @@
 
 	// If no documents are open, open one
 	if (![self frontDocument]) {
-		[self newWindow:self];
+		SPDatabaseDocument *newConnection = [self makeNewConnectionTabOrWindow];
 		
 		if (spfDict) {
-			[[self frontDocument] setState:spfDict];
+			[newConnection setState:spfDict];
 		}
 		
 		// Set autoconnection if appropriate
 		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
-			[[self frontDocument] connect];
+			[newConnection connect];
 		}
 	}
 }
@@ -181,30 +181,13 @@
 
 - (void)externalApplicationWantsToOpenADatabaseConnection:(NSNotification *)notification
 {
-	SPWindowController *frontController = nil;
-	
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			frontController = [aWindow windowController];
-			break;
-		}
-	}
-	
-	// If no window was found or the front most window has no tabs, create a new one
-	if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
-		[self newWindow:self];
-		// Open the spf file in a new tab if the tab bar is visible
-	} else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
-		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
-		[frontController addNewConnection:self];
-	}
-	
 	NSDictionary *userInfo = [notification userInfo];
 	NSString *MAMP_SPFVersion = [userInfo objectForKey:@"dataVersion"];
 	if ([MAMP_SPFVersion isEqualToString:@"1"]) {
 		NSDictionary *spfStructure = [userInfo objectForKey:@"spfData"];
 		if (spfStructure) {
-			[[self frontDocument] setState:spfStructure];
+			SPDatabaseDocument *frontDoc = [self makeNewConnectionTabOrWindow];
+			[frontDoc setState:spfStructure];
 		}
 	}
 }
@@ -406,20 +389,21 @@
 				[[NSUserDefaults standardUserDefaults] setInteger:[[encodingPopUp selectedItem] tag] forKey:SPLastSQLFileEncoding];
 			}
 
+			SPDatabaseDocument *frontDocument = [self frontDocument];
 			// Check if at least one document exists.  If not, open one.
-			if (![self frontDocument]) {
-				[self newWindow:self];
-				[[self frontDocument] initQueryEditorWithString:sqlString];
+			if (!frontDocument) {
+				frontDocument = [self makeNewConnectionTabOrWindow];
+				[frontDocument initQueryEditorWithString:sqlString];
 			}
 			else {
 				// Pass query to the Query editor of the current document
-				[[self frontDocument] doPerformLoadQueryService:sqlString];
+				[frontDocument doPerformLoadQueryService:sqlString];
 			}
 
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
 
-			[[self frontDocument] setSqlFileURL:[NSURL fileURLWithPath:filePath]];
-			[[self frontDocument] setSqlFileEncoding:sqlEncoding];
+			[frontDocument setSqlFileURL:[NSURL fileURLWithPath:filePath]];
+			[frontDocument setSqlFileEncoding:sqlEncoding];
 
 			break; // open only the first SQL file
 
@@ -436,17 +420,9 @@
 				}
 			}
 
-			// If no window was found or the front most window has no tabs, create a new one
-			if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
-				[self newWindow:self];
-			// Open the spf file in a new tab if the tab bar is visible
-			}
-			else if ([[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] != 1) {
-				if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
-				[frontController addNewConnection:self];
-			}
+			SPDatabaseDocument *frontDocument = [self makeNewConnectionTabOrWindow];
 
-			[[self frontDocument] setStateFromConnectionFile:filePath];
+			[frontDocument setStateFromConnectionFile:filePath];
 
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:filePath]];
 		}
@@ -861,7 +837,7 @@
 		return;
 	}
 
-	NSString *activeProcessID = [[(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument] processID];
+	NSString *activeProcessID = [[self frontDocument] processID];
 
 	SPDatabaseDocument *processDocument = nil;
 
@@ -869,7 +845,7 @@
 	// For speed check the front most first otherwise iterate through all
 	if(passedProcessID && [passedProcessID length]) {
 		if([activeProcessID isEqualToString:passedProcessID]) {
-			processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
+			processDocument = [self frontDocument];
 		} else {
 			for (NSWindow *aWindow in [NSApp orderedWindows]) {
 				if([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
@@ -888,7 +864,7 @@
 	// if no processDoc found and no passedProcessID was passed execute
 	// command at front most doc
 	if(!processDocument && !passedProcessID)
-		processDocument = [(SPWindowController *)[[self frontDocumentWindow] delegate] selectedTableDocument];
+		processDocument = [self frontDocument];
 
 	if(processDocument && command) {
 		if([command isEqualToString:@"passToDoc"]) {
@@ -1383,13 +1359,7 @@
  */
 - (SPDatabaseDocument *) frontDocument
 {
-	for (NSWindow *aWindow in [NSApp orderedWindows]) {
-		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
-			return [[aWindow windowController] selectedTableDocument];
-		}
-	}
-
-	return nil;
+	return [[self frontController] selectedTableDocument];
 }
 
 /**

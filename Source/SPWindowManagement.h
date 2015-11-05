@@ -30,6 +30,8 @@
 
 #import "SPAppController.h"
 
+@class SPWindowController;
+
 /**
  * @category SPWindowManagement SPWindowManagement.h
  *
@@ -42,6 +44,10 @@
 - (IBAction)newWindow:(id)sender;
 - (IBAction)newTab:(id)sender;
 - (IBAction)duplicateTab:(id)sender;
+
+- (SPWindowController *)newWindow;
+- (SPDatabaseDocument *)makeNewConnectionTabOrWindow;
+- (SPWindowController *)frontController;
 
 - (NSWindow *)frontDocumentWindow;
 - (void)tabDragStarted:(id)sender;

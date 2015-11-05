@@ -50,6 +50,8 @@
 - (IBAction)addNewConnection:(id)sender;
 - (IBAction)moveSelectedTabInNewWindow:(id)sender;
 
+- (SPDatabaseDocument *)addNewConnection;
+
 /**
  * @danger THIS IS NOT RETAINED!!! 
  *

@@ -104,6 +104,11 @@ enum {
  */
 - (IBAction)addNewConnection:(id)sender
 {
+	[self addNewConnection];
+}
+
+- (SPDatabaseDocument *)addNewConnection
+{
 	// Create a new database connection view
 	SPDatabaseDocument *newTableDocument = [[SPDatabaseDocument alloc] init];
 	
@@ -125,8 +130,8 @@ enum {
 
 	// Bind the tab bar's progress display to the document
 	[self _updateProgressIndicatorForItem:newItem];
-
-	[newTableDocument release];
+	
+	return [newTableDocument autorelease];
 }
 
 /**
