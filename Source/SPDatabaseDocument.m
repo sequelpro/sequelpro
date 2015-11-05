@@ -5034,20 +5034,23 @@ static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
 	}
 
 	// Select view
+	SEL viewAction = NULL;
 	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
-		[self viewStructure:self];
+		viewAction = @selector(viewStructure:);
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
-		[self viewContent:self];
+		viewAction = @selector(viewContent:);
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
-		[self viewQuery:self];
+		viewAction = @selector(viewQuery:);
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
-		[self viewStatus:self];
+		viewAction = @selector(viewStatus:);
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
-		[self viewRelations:self];
+		viewAction = @selector(viewRelations:);
 	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
-		[self viewTriggers:self];
+		viewAction = @selector(viewTriggers:);
+	
+	if(viewAction) [self performSelectorOnMainThread:viewAction withObject:self waitUntilDone:YES];
 
-	[self updateWindowTitle:self];
+	[[self onMainThread] updateWindowTitle:self];
 
 	// dealloc spfSession data
 	SPClear(spfSession);
