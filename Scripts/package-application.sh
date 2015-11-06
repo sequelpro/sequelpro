@@ -66,6 +66,7 @@ mkdir "${DISTTEMP}"
 
 # Copy in the required distribution files
 cp -R "${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}" "${DMG_BUILD_PATH}/disttemp"
+ln -s /Applications "${DMG_BUILD_PATH}/disttemp"
 
 # Create a disk image
 hdiutil create -srcfolder "${DISTTEMP}" -volname "$DMG_VOLUME_NAME" -fs HFS+ -fsargs '-c c=64,a=16,e=16' -format UDRW "${DMG_BUILD_PATH}/${DMG_NAME}.temp.dmg" > /dev/null
