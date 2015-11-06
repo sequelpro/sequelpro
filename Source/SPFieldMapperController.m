@@ -1606,15 +1606,21 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	NSInteger row = [fieldMapperTableView selectedRow];
 
 	// Hide/display Remove New Column menu item
 	[[[fieldMapperTableView menu] itemAtIndex:3] setHidden:([toBeEditedRowIndexes containsIndex:row]) ? NO : YES];
 
 	if (newTableMode && [menuItem action] == @selector(setAllTypesTo:)) {
-		NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
-		[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+		if(row > -1) { // row == -1 on empty selection
+			NSString *orgTitle = [[menuItem title] substringToIndex:[[menuItem title] rangeOfString:@":"].location];
+			[menuItem setTitle:[NSString stringWithFormat:@"%@: %@", orgTitle, [fieldMappingTableTypes objectAtIndex:row]]];
+			[menuItem setHidden:NO];
+		}
+		else {
+			[menuItem setHidden:YES];
+			return NO;
+		}
 	}
 	else if (!newTableMode && [menuItem action] == @selector(insertNULLValue:)) {
 		return ([[globalValuesTableView selectedRowIndexes] count] == 1) ? YES : NO;
