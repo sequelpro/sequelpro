@@ -270,11 +270,25 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 	}
 
 	// Get all InnoDB tables in the current database
-	// TODO: MySQL 4 compatibility
-	SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
-	[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
-	for (NSArray *eachRow in result) {
-		[refTablePopUpButton addItemWithTitle:[eachRow objectAtIndex:0]];
+	if ([[tableDocumentInstance serverSupport] supportsInformationSchema]) {
+		//MySQL 5.0+
+		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine = 'InnoDB' AND table_schema = %@", [[tableDocumentInstance database] tickQuotedString]]];
+		[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		for (NSArray *eachRow in result) {
+			[refTablePopUpButton addItemWithTitle:[eachRow objectAtIndex:0]];
+		}
+	}
+	else {
+		//this will work back to 3.23.0, innodb was added in 3.23.49
+		SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS FROM %@", [[tableDocumentInstance database] backtickQuotedString]]];
+		[result setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		[result setReturnDataAsStrings:YES]; // some mysql versions would return NSData for string fields otherwise
+		for (NSArray *eachRow in result) {
+			// col[1] was named "Type" < 4.1, "Engine" afterwards
+			if(![[[eachRow objectAtIndex:1] uppercaseString] isEqualToString:@"INNODB"]) continue;
+			// col[0] is the table name
+			[refTablePopUpButton addItemWithTitle:[eachRow objectAtIndex:0]];
+		}
 	}
 
 	// Reset other fields
