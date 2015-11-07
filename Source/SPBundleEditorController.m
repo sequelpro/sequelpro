@@ -721,7 +721,7 @@
 	[panel setNameFieldStringValue:[[self _currentSelectedObject] objectForKey:kBundleNameKey]];
 
 	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
-		if (returnCode != NSOKButton) return;
+		if (returnCode != NSFileHandlingPanelOKButton) return;
 		
 		// Panel is still on screen. Hide it first. (This is Apple's recommended way)
 		[panel orderOut:nil];

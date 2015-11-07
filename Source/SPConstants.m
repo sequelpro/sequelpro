@@ -443,6 +443,7 @@ NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STAT
 NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
 
 NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
+NSString *SPErrorDomain = @"SPErrorDomain";
 
 void inline _SPClear(id *addr) {
 	[*addr release], *addr = nil;

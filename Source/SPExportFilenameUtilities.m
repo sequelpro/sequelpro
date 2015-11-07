@@ -153,6 +153,18 @@
 	[self updateDisplayedExportFilename];
 }
 
+- (NSArray *)currentAllowedExportFilenameTokens
+{
+	NSArray *mixed = [exportCustomFilenameTokenPool objectValue];
+	NSMutableArray *tokens = [NSMutableArray arrayWithCapacity:[mixed count]]; // ...or less
+	
+	for (id obj in mixed) {
+		if([obj isKindOfClass:[SPExportFileNameTokenObject class]]) [tokens addObject:obj];
+	}
+	
+	return tokens;
+}
+
 /**
  * Generates the default export filename based on the selected export options.
  *

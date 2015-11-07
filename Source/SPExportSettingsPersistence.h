@@ -34,11 +34,31 @@
 @interface SPExportController (SPExportSettingsPersistence)
 
 - (IBAction)exportCurrentSettings:(id)sender;
+- (IBAction)importCurrentSettings:(id)sender;
+
+/**
+ * @return The current settings as a dictionary which can be serialized
+ */
 - (NSDictionary *)currentSettingsAsDictionary;
+
+/** Overwrite current export settings with those defined in dict
+ * @param dict The new settings to apply (passing nil is an error.)
+ * @param err  Errors while applying (will mostly be about invalid format, type)
+ *             Can pass NULL, if not interested in details.
+ *             Will NOT be changed unless the method also returns NO
+ * @return success
+ */
+- (BOOL)applySettingsFromDictionary:(NSDictionary *)dict error:(NSError **)err;
 
 /**
  * @return A serialized form of the "custom filename" field
  */
 - (NSArray *)currentCustomFilenameAsArray;
+
+/**
+ * @param tokenList A serialized form of the "custom filename" field
+ * @see currentCustomFilenameAsArray
+ */
+- (void)setCustomFilenameFromArray:(NSArray *)tokenList;
 
 @end

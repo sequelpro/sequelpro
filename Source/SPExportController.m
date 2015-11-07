@@ -198,9 +198,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
 			
-	// Select the 'selected tables' source option
-	[exportInputPopUpButton selectItemAtIndex:source];
-	
 	// If tables were supplied, select them
 	if (exportTables) {
 		
@@ -231,6 +228,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	// Ensure interface validation
 	[self _switchTab];
 	[self _updateExportAdvancedOptionsLabel];
+	[self setExportInput:source];
 	
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -306,9 +304,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	}
 	
 	[self exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
-	
-	// Ensure UI validation
-	[self switchInput:exportInputPopUpButton];
 }
 
 /**
@@ -337,27 +332,50 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[[sender window] orderOut:self];
 }
 
+- (BOOL)setExportInput:(SPExportSource)input
+{
+	SPExportSource actualInput = input;
+	// Dot will always be a TableExport
+	if(exportType == SPDotExport) {
+		actualInput = SPTableExport;
+	}
+	//check if the type actually is valid
+	else if(![[exportInputPopUpButton itemAtIndex:input] isEnabled]) {
+		//...no, pick a valid one instead
+		for (NSMenuItem *item in [exportInputPopUpButton itemArray]) {
+			if([item isEnabled]) {
+				actualInput = [exportInputPopUpButton indexOfItem:item];
+				goto set_input;
+			}
+		}
+		// nothing found (should not happen)
+		SPLog(@"did not find any valid export input!?");
+		return NO;
+	}
+set_input:
+	exportSource = actualInput;
+	
+	[exportInputPopUpButton selectItemAtIndex:exportSource];
+	
+	BOOL isSelectedTables = (exportSource == SPTableExport);
+	
+	[exportFilePerTableCheck setHidden:(!isSelectedTables) || (exportType == SPSQLExport)];
+	[exportTableList setEnabled:isSelectedTables];
+	[exportSelectAllTablesButton setEnabled:isSelectedTables];
+	[exportDeselectAllTablesButton setEnabled:isSelectedTables];
+	[exportRefreshTablesButton setEnabled:isSelectedTables];
+	
+	[self updateAvailableExportFilenameTokens]; // will also update the filename itself
+	
+	return (actualInput == input);
+}
+
 /**
  * Enables/disables and shows/hides various interface controls depending on the selected item.
  */
 - (IBAction)switchInput:(id)sender
 {
-	if ([sender isKindOfClass:[NSPopUpButton class]]) {
-		
-		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-				
-		BOOL isSelectedTables = ([sender indexOfSelectedItem] == SPTableExport);
-				
-		[exportFilePerTableCheck setHidden:(!isSelectedTables) || (exportType == SPSQLExport)];		
-		[exportTableList setEnabled:isSelectedTables];
-		[exportSelectAllTablesButton setEnabled:isSelectedTables];
-		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
-		[exportRefreshTablesButton setEnabled:isSelectedTables];
-		
-		[self updateAvailableExportFilenameTokens];
-		[self updateDisplayedExportFilename];
-	}
+	[self setExportInput:(SPExportSource)[exportInputPopUpButton indexOfSelectedItem]];
 }
 
 /**
@@ -428,7 +446,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
     
     [panel setDirectoryURL:[NSURL URLWithString:[exportPathField stringValue]]];
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
+        if (returnCode == NSFileHandlingPanelOKButton) {
 			NSString *path = [[panel directoryURL] path];
 			if(!path) {
 				@throw [NSException exceptionWithName:NSInternalInconsistencyException
@@ -673,9 +691,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender
 {	
 	[self exportTables:nil asFormat:[sender tag] usingSource:SPQueryExport];
-
-	// Ensure UI validation
-	[self switchInput:exportInputPopUpButton];
 }
 
 #pragma mark -
@@ -770,11 +785,11 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	BOOL isSQL  = (exportType == SPSQLExport);
 	BOOL isCSV  = (exportType == SPCSVExport);
 	BOOL isXML  = (exportType == SPXMLExport);
-	BOOL isHTML = (exportType == SPHTMLExport);
-	BOOL isPDF  = (exportType == SPPDFExport);
+	//BOOL isHTML = (exportType == SPHTMLExport);
+	//BOOL isPDF  = (exportType == SPPDFExport);
 	BOOL isDot  = (exportType == SPDotExport);
 	
-	BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
+	BOOL enable = (isCSV || isXML /* || isHTML || isPDF  */ || isDot);
 	
 	[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
 	[exportTableList setEnabled:(!isDot)];

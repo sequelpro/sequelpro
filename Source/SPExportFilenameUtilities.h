@@ -41,6 +41,7 @@
 
 - (void)updateDisplayedExportFilename;
 - (void)updateAvailableExportFilenameTokens;
+- (NSArray *)currentAllowedExportFilenameTokens;
 - (NSString *)generateDefaultExportFilename;
 - (NSString *)currentDefaultExportFileExtension;
 - (NSString *)expandCustomFilenameFormatUsingTableName:(NSString *)table;

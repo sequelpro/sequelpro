@@ -32,8 +32,8 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 
-#define IS_TOKEN(x)  [x isKindOfClass:[SPExportFileNameTokenObject class]]
-#define IS_STRING(x) [x isKindOfClass:[NSString class]]
+static inline BOOL IS_TOKEN(id x);
+static inline BOOL IS_STRING(id x);
 
 // Defined to suppress warnings
 @interface SPExportController (SPExportControllerPrivateAPI)
@@ -345,5 +345,15 @@
 
 @end
 
-#undef IS_TOKEN
-#undef IS_STRING
+#pragma mark -
+
+BOOL IS_TOKEN(id x)
+{
+	return [x isKindOfClass:[SPExportFileNameTokenObject class]];
+}
+
+BOOL IS_STRING(id x)
+{
+	return [x isKindOfClass:[NSString class]];
+}
+

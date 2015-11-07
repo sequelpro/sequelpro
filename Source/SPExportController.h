@@ -254,6 +254,14 @@
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
 
+/**
+ * Tries to set the export input to a given value or falls back to a default if not valid
+ * @param input The source to use
+ * @return YES if the source was accepted, NO otherwise
+ * @pre _switchTab needs to have been run before this method to decide valid inputs
+ */
+- (BOOL)setExportInput:(SPExportSource)input;
+
 // IB action methods
 - (IBAction)export:(id)sender;
 - (IBAction)closeSheet:(id)sender;

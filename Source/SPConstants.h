@@ -641,6 +641,16 @@ extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
 extern NSString *SPCommonCryptoExceptionName;
+extern NSString *SPErrorDomain; // generic SP error domain for NSError
+
+typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
+	/** When plist deserialization fails with nil return and no NSError or the returned object has the wrong type */
+	SPErrorWrongTypeOrNil = 110001,
+	/** Parsed data is syntactically correct, but semantically wrong (e.g. a SPF file with the wrong content format */
+	SPErrorWrongContentType = 110002,
+	/** Some data has a version that we don't know how to handle (can be used with e.g. SPF files, which have explicit version numbers) */
+	SPErrorWrongContentVersion = 110003,
+};
 
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
 
