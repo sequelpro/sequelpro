@@ -720,7 +720,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		
 		[[structureHelpText textStorage] setAttributedString:[as autorelease]];
 
-		CGRect rect = [as boundingRectWithSize:CGSizeMake([structureHelpText frame].size.width-2, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin];
+		NSRect rect = [as boundingRectWithSize:NSMakeSize([structureHelpText frame].size.width-2, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin];
 		
 		NSRect winRect = [structureHelpPanel frame];
 		
