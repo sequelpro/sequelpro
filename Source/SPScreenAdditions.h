@@ -1,9 +1,9 @@
 //
-//  SPCategoryAdditions.h
+//  SPScreenAdditions.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 23, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 09.11.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,27 +28,17 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import <Cocoa/Cocoa.h>
+
+@interface NSScreen (SPScreenAdditions)
+
++ (NSScreen *)screenAtPoint:(NSPoint)p;
+
 /**
- * This header is intended to import all of our custom category additions to classes outwith our control.
- * It is subsequently included in Sequel Pro's precompiled header making all of the additional methods/functions 
- * included in header available to all classes within the application.
+ * Use this method instead of [[NSScreen screenAtPoint:p] frame] as the
+ * return value of [nil frame] is not neccesarily reliable.
+ * This method will return NSZeroRect if no screen is found.
  */
++ (NSRect)rectOfScreenAtPoint:(NSPoint)p;
 
-#import "SPArrayAdditions.h"
-#import "SPMutableArrayAdditions.h"
-#import "SPStringAdditions.h"
-#import "SPObjectAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPWindowAdditions.h"
-#import "SPDataAdditions.h"
-#import "SPDataBase64EncodingAdditions.h"
-#import "SPMenuAdditions.h"
-#import "SPNotLoaded.h"
-#import "SPMainThreadTrampoline.h"
-#import "SPColorAdditions.h"
-#import "SPFileManagerAdditions.h"
-#import "SPDateAdditions.h"
-#import "SPScreenAdditions.h"
-
-#import "NSNotificationCenterThreadingAdditions.h"
-#import "NSMutableArray-MultipleSort.h"
+@end

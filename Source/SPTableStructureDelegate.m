@@ -40,6 +40,7 @@
 #import "SPTablesList.h"
 #import "SPPillAttachmentCell.h"
 #import "SPIdMenu.h"
+#import "SPComboBoxCell.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -64,6 +65,8 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 - (NSString *)_buildPartialColumnDefinitionString:(NSDictionary *)theRow;
+
+- (void)_displayFieldTypeHelpIfPossible:(SPComboBoxCell *)cell;
 
 @end
 
@@ -648,6 +651,105 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	if ([result count]) return [result objectAtIndex:0];
 	
 	return @"";
+}
+
+- (void)comboBoxCell:(SPComboBoxCell *)cell willPopUpWindow:(NSWindow *)win
+{
+	// the selected item in the popup list is independent of the displayed text, we have to explicitly set it, too
+	NSInteger pos = [typeSuggestions indexOfObject:[cell stringValue]];
+	if(pos != NSNotFound) {
+		[cell selectItemAtIndex:pos];
+	}
+	
+	//set up the help window to the right position
+	NSRect listFrame = [win frame];
+	NSRect helpFrame = [structureHelpPanel frame];
+	helpFrame.origin.y = listFrame.origin.y;
+	helpFrame.size.height = listFrame.size.height;
+	[structureHelpPanel setFrame:helpFrame display:YES];
+	
+	[self _displayFieldTypeHelpIfPossible:cell];
+}
+
+- (void)comboBoxCell:(SPComboBoxCell *)cell willDismissWindow:(NSWindow *)win
+{
+	//hide the window if it is still visible
+	[structureHelpPanel orderOut:nil];
+}
+
+- (void)comboBoxCellSelectionDidChange:(SPComboBoxCell *)cell
+{
+	[self _displayFieldTypeHelpIfPossible:cell];
+}
+
+- (void)_displayFieldTypeHelpIfPossible:(SPComboBoxCell *)cell
+{
+	NSString *selected = [typeSuggestions objectOrNilAtIndex:[cell indexOfSelectedItem]];
+	
+	const SPFieldTypeHelp *help = [[self class] helpForFieldType:selected];
+	
+	if(help) {
+		NSMutableAttributedString *as = [[NSMutableAttributedString alloc] init];
+		
+		//title
+		{
+			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]]};
+			NSAttributedString *title = [[NSAttributedString alloc] initWithString:[help typeDefinition] attributes:titleAttr];
+			[as appendAttributedString:[title autorelease]];
+			[[as mutableString] appendString:@"\n"];
+		}
+		
+		//range
+		if([[help typeRange] length]) {
+			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]};
+			NSAttributedString *range = [[NSAttributedString alloc] initWithString:[help typeRange] attributes:rangeAttr];
+			[as appendAttributedString:[range autorelease]];
+			[[as mutableString] appendString:@"\n"];
+		}
+		
+		[[as mutableString] appendString:@"\n"];
+		
+		//description
+		{
+			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]]};
+			NSAttributedString *desc = [[NSAttributedString alloc] initWithString:[help typeDescription] attributes:descAttr];
+			[as appendAttributedString:[desc autorelease]];
+		}
+		
+		[as addAttribute:NSParagraphStyleAttributeName value:[NSParagraphStyle defaultParagraphStyle] range:NSMakeRange(0, [as length])];
+		
+		[[structureHelpText textStorage] setAttributedString:[as autorelease]];
+
+		CGRect rect = [as boundingRectWithSize:CGSizeMake([structureHelpText frame].size.width-2, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin];
+		
+		NSRect winRect = [structureHelpPanel frame];
+		
+		CGFloat winAddonSize = (winRect.size.height - [[structureHelpPanel contentView] frame].size.height) + (6*2);
+		
+		NSRect popUpFrame = [[cell spPopUpWindow] frame];
+		
+		//determine the side on which to add our window based on the space left on screen
+		NSPoint topRightCorner = NSMakePoint(popUpFrame.origin.x, NSMaxY(popUpFrame));
+		NSRect screenRect = [NSScreen rectOfScreenAtPoint:topRightCorner];
+		
+		if(NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
+			// exceeds right border, display on the left
+			winRect.origin.x = popUpFrame.origin.x - 10 - winRect.size.width;
+		}
+		else {
+			// display on the right
+			winRect.origin.x = NSMaxX(popUpFrame)+10;
+		}
+		
+		winRect.size.height = rect.size.height + winAddonSize;
+		winRect.origin.y = NSMaxY(popUpFrame) - winRect.size.height;
+		[structureHelpPanel setFrame:winRect display:YES];
+		
+		[structureHelpPanel orderFront:nil];
+	}
+	else {
+		[structureHelpPanel orderOut:nil];
+	}
 }
 
 #pragma mark -

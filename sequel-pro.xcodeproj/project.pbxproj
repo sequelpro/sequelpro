@@ -179,6 +179,8 @@
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
+		500DA4B71BEFF877000773FE /* SPComboBoxCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4B61BEFF877000773FE /* SPComboBoxCell.m */; };
+		500DA4BC1BF0CD57000773FE /* SPScreenAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4BB1BF0CD57000773FE /* SPScreenAdditions.m */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
 		502D21F61BA50710000D4CE7 /* SPDataAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */; };
 		502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2C16D30FEBEDF10003993B /* SPDataAdditions.m */; };
@@ -903,6 +905,10 @@
 		4D90B7A1101E0D1500D116A1 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
+		500DA4B51BEFF877000773FE /* SPComboBoxCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPComboBoxCell.h; sourceTree = "<group>"; };
+		500DA4B61BEFF877000773FE /* SPComboBoxCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPComboBoxCell.m; sourceTree = "<group>"; };
+		500DA4BA1BF0CD57000773FE /* SPScreenAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPScreenAdditions.h; sourceTree = "<group>"; };
+		500DA4BB1BF0CD57000773FE /* SPScreenAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPScreenAdditions.m; sourceTree = "<group>"; };
 		501B1D161728A3DA0017C92E /* SPCharsetCollationHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCharsetCollationHelper.h; sourceTree = "<group>"; };
 		501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPCharsetCollationHelper.m; sourceTree = "<group>"; };
 		502D21F51BA50710000D4CE7 /* SPDataAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDataAdditionsTests.m; sourceTree = "<group>"; };
@@ -1449,6 +1455,8 @@
 				BC5750D312A6233900911BA2 /* SPActivityTextFieldCell.m */,
 				1A56463D14569A0B56EE8BAC /* SPPillAttachmentCell.m */,
 				1A564C0C0FFB444D2E5CA447 /* SPPillAttachmentCell.h */,
+				500DA4B51BEFF877000773FE /* SPComboBoxCell.h */,
+				500DA4B61BEFF877000773FE /* SPComboBoxCell.m */,
 			);
 			name = Cells;
 			sourceTree = "<group>";
@@ -2641,6 +2649,8 @@
 				1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */,
 				584D899B15162CBE00F24774 /* SPDataBase64EncodingAdditions.h */,
 				584D899C15162CBE00F24774 /* SPDataBase64EncodingAdditions.m */,
+				500DA4BA1BF0CD57000773FE /* SPScreenAdditions.h */,
+				500DA4BB1BF0CD57000773FE /* SPScreenAdditions.m */,
 			);
 			name = "Category Additions";
 			sourceTree = "<group>";
@@ -3304,6 +3314,7 @@
 				1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */,
 				1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */,
 				1785EB66127DD5EA00F468C8 /* SPNetworkPreferencePane.m in Sources */,
+				500DA4B71BEFF877000773FE /* SPComboBoxCell.m in Sources */,
 				1785EB6A127DD79300F468C8 /* SPEditorPreferencePane.m in Sources */,
 				17FDB04C1280778B00DBBBC2 /* SPFontPreviewTextField.m in Sources */,
 				17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */,
@@ -3323,6 +3334,7 @@
 				583CA21512EC8B2200C9E763 /* SPWindow.m in Sources */,
 				582F02311370B52600B30621 /* SPExportFileNameTokenObject.m in Sources */,
 				1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */,
+				500DA4BC1BF0CD57000773FE /* SPScreenAdditions.m in Sources */,
 				1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */,
 				17902612141025BB005F677F /* SPQueryControllerInitializer.m in Sources */,
 				584D878B15140FEB00F24774 /* SPObjectAdditions.m in Sources */,

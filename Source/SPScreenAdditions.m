@@ -1,9 +1,9 @@
 //
-//  SPCategoryAdditions.h
+//  SPScreenAdditions.m
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on October 23, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 09.11.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,27 +28,27 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-/**
- * This header is intended to import all of our custom category additions to classes outwith our control.
- * It is subsequently included in Sequel Pro's precompiled header making all of the additional methods/functions 
- * included in header available to all classes within the application.
- */
-
-#import "SPArrayAdditions.h"
-#import "SPMutableArrayAdditions.h"
-#import "SPStringAdditions.h"
-#import "SPObjectAdditions.h"
-#import "SPTextViewAdditions.h"
-#import "SPWindowAdditions.h"
-#import "SPDataAdditions.h"
-#import "SPDataBase64EncodingAdditions.h"
-#import "SPMenuAdditions.h"
-#import "SPNotLoaded.h"
-#import "SPMainThreadTrampoline.h"
-#import "SPColorAdditions.h"
-#import "SPFileManagerAdditions.h"
-#import "SPDateAdditions.h"
 #import "SPScreenAdditions.h"
 
-#import "NSNotificationCenterThreadingAdditions.h"
-#import "NSMutableArray-MultipleSort.h"
+@implementation NSScreen (SPScreenAdditions)
+
++ (NSScreen *)screenAtPoint:(NSPoint)p
+{
+	for(NSScreen* candidate in [NSScreen screens])
+	{
+		NSRect cf = [candidate frame];
+		if(NSPointInRect(p,cf)) {
+			return candidate;
+		}
+	}
+	return nil;
+}
+
++ (NSRect)rectOfScreenAtPoint:(NSPoint)p
+{
+	NSScreen *s = [NSScreen screenAtPoint:p];
+	
+	return (s? [s frame] : NSZeroRect);
+}
+
+@end
