@@ -102,7 +102,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		[[collationCell lastItem] setTitle:@""];
 
 		//if this is not set the column either has no encoding (numeric etc.) or retrieval failed. Either way we can't provide collations
-		if(columnEncoding) {
+		if([columnEncoding length]) {
 			collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
 
 			if ([collations count] > 0) {
@@ -129,19 +129,18 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 					}
 				}
 
-				//look up the right item
-				NSInteger idx = [collationCell indexOfItemWithRepresentedObject:columnCollation];
-				if(idx > 0) return @(idx);
+				// the popup cell is subclassed to take the representedObject instead of the item index
+				return columnCollation;
 			}
 		}
 
-		return @0;
+		return nil;
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"encoding"]) {
 		// the encoding menu was already configured during setTableDetails:
 		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
 
-		if(columnEncoding) {
+		if([columnEncoding length]) {
 			NSInteger idx = [encodingPopupCell indexOfItemWithRepresentedObject:columnEncoding];
 			if(idx > 0) return @(idx);
 		}
@@ -193,7 +192,8 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		return;
 	}
 	else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
-		NSString *newCollation = [[(NSPopUpButtonCell *)[aTableColumn dataCell] itemAtIndex:[anObject integerValue]] representedObject];
+		//the popup button is subclassed to return the representedObject instead of the item index
+		NSString *newCollation = anObject;
 
 		if(!newCollation)
 			[currentRow removeObjectForKey:@"collationName"];

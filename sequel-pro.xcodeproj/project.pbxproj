@@ -200,6 +200,7 @@
 		507FF26A1BC8450100104523 /* SPExportSettingsPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */; };
 		507FF2A11BCD27A700104523 /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		507FF2A21BCD27AE00104523 /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
+		50805B0D1BF2A068005F7A99 /* SPPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */; };
 		5089B0271BE714E300E226CD /* SPIdMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 5089B0261BE714E300E226CD /* SPIdMenu.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
 		50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */; };
@@ -923,6 +924,8 @@
 		507FF1111BBCC57600104523 /* SPFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFunctions.m; sourceTree = "<group>"; };
 		507FF2681BC8450100104523 /* SPExportSettingsPersistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportSettingsPersistence.h; sourceTree = "<group>"; };
 		507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportSettingsPersistence.m; sourceTree = "<group>"; };
+		50805B0B1BF2A068005F7A99 /* SPPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPopUpButtonCell.h; sourceTree = "<group>"; };
+		50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPopUpButtonCell.m; sourceTree = "<group>"; };
 		5089B0251BE714E300E226CD /* SPIdMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIdMenu.h; sourceTree = "<group>"; };
 		5089B0261BE714E300E226CD /* SPIdMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIdMenu.m; sourceTree = "<group>"; };
 		50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGotoDatabaseController.h; sourceTree = "<group>"; };
@@ -2326,6 +2329,8 @@
 				17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */,
 				58D2A6A516FBDEFF002EB401 /* SPComboPopupButton.h */,
 				58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */,
+				50805B0B1BF2A068005F7A99 /* SPPopUpButtonCell.h */,
+				50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */,
 			);
 			name = Controls;
 			sourceTree = "<group>";
@@ -3286,6 +3291,7 @@
 				173C837A11AAD2AE00B8B084 /* SPHTMLExporter.m in Sources */,
 				173C837B11AAD2AE00B8B084 /* SPPDFExporter.m in Sources */,
 				173C839011AAD32A00B8B084 /* SPCSVExporterDelegate.m in Sources */,
+				50805B0D1BF2A068005F7A99 /* SPPopUpButtonCell.m in Sources */,
 				173C839111AAD32A00B8B084 /* SPDotExporterDelegate.m in Sources */,
 				173C839211AAD32A00B8B084 /* SPHTMLExporterDelegate.m in Sources */,
 				173C839311AAD32A00B8B084 /* SPPDFExporterDelegate.m in Sources */,
