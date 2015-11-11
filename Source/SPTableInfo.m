@@ -192,7 +192,16 @@
 			}
 
 			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
-			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %1$@ (%2$@)", @"Table Info Section : $1 = table charset, $2 = table collation"), [tableDataInstance tableEncoding], [tableStatus objectForKey:@"Collation"]]];
+			NSString *tableEnc = [tableDataInstance tableEncoding];
+			NSString *tableColl = [tableStatus objectForKey:@"Collation"];
+			if([tableColl length]) {
+				// instead of @"latin1 (latin1_german_ci)" we can just show @"latin1 (german_ci)"
+				if([tableColl hasPrefix:[NSString stringWithFormat:@"%@_",tableEnc]]) tableColl = [tableColl substringFromIndex:([tableEnc length]+1)];
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %1$@ (%2$@)", @"Table Info Section : $1 = table charset, $2 = table collation"), tableEnc, tableColl]];
+			}
+			else {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"encoding: %1$@", @"Table Info Section : $1 = table charset"), tableEnc]];
+			}
 			
 			if (![[tableStatus objectForKey:@"Auto_increment"] isNSNull]) {
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"auto_increment: %@", @"Table Info Section : current value of auto_increment"),
