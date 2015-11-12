@@ -359,6 +359,7 @@
 - (IBAction) makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
+- (IBAction)shutdownServer:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (IBAction)showGotoDatabase:(id)sender;
 #endif

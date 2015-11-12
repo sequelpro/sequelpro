@@ -148,4 +148,21 @@
 	return ![self queryErrored];
 }
 
+- (BOOL)serverShutdown
+{
+	if([self _checkConnectionIfNecessary]) {
+		[self _lockConnection];
+		// Ensure per-thread variables are set up
+		[self _validateThreadSetup];
+		//only SHUTDOWN_DEFAULT is supported right now
+		int res = mysql_shutdown(mySQLConnection, SHUTDOWN_DEFAULT);
+		//update or clear error
+		[self _updateLastErrorInfos];
+		[self _unlockConnection];
+		
+		return (res == 0);
+	}
+	return NO;
+}
+
 @end

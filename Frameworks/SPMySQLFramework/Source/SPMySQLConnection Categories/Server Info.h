@@ -45,4 +45,11 @@
 - (SPMySQLResult *)listProcesses;
 - (BOOL)killQueryOnThreadID:(unsigned long)theThreadID;
 
+/**
+ * mysql_shutdown() - If the user has the permission, will shutdown the (remote) server
+ * @return Whether the command was executed successfully
+ *         Note: this can also be NO if the user denied a reconnect attempt.
+ */
+- (BOOL)serverShutdown;
+
 @end
