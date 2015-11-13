@@ -93,7 +93,7 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSearchFieldCell" key="NSCell" id="753691092">
 								<int key="NSCellFlags">342884416</int>
-								<int key="NSCellFlags2">268600320</int>
+								<int key="NSCellFlags2">268600384</int>
 								<string key="NSContents"/>
 								<object class="NSFont" key="NSSupport" id="26">
 									<bool key="IBIsSystemFont">YES</bool>

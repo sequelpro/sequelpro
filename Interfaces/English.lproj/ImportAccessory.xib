@@ -107,7 +107,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="224560182">
 												<int key="NSCellFlags">342884417</int>
-												<int key="NSCellFlags2">132352</int>
+												<int key="NSCellFlags2">132416</int>
 												<string key="NSContents">"</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="455670945"/>
@@ -255,7 +255,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="762842881">
 												<int key="NSCellFlags">342884417</int>
-												<int key="NSCellFlags2">132352</int>
+												<int key="NSCellFlags2">132416</int>
 												<string key="NSContents">\ or "</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="595983007"/>
@@ -363,7 +363,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="658483425">
 												<int key="NSCellFlags">342884417</int>
-												<int key="NSCellFlags2">132352</int>
+												<int key="NSCellFlags2">132416</int>
 												<string key="NSContents">\n</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="704974988"/>
@@ -471,7 +471,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSComboBoxCell" key="NSCell" id="674293841">
 												<int key="NSCellFlags">342884417</int>
-												<int key="NSCellFlags2">132352</int>
+												<int key="NSCellFlags2">132416</int>
 												<string key="NSContents">,</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="557825428"/>

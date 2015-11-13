@@ -1052,7 +1052,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="748268806">
 												<int key="NSCellFlags">-1804599231</int>
-												<int key="NSCellFlags2">272761856</int>
+												<int key="NSCellFlags2">272761920</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="26"/>
 												<string key="NSPlaceholderString">[sub menu category]</string>
@@ -1216,7 +1216,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="43525095">
 												<int key="NSCellFlags">-1804599231</int>
-												<int key="NSCellFlags2">272761856</int>
+												<int key="NSCellFlags2">272761920</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="26"/>
 												<string key="NSPlaceholderString">[menu label tooltip]</string>
@@ -1256,7 +1256,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="1025501303">
 												<int key="NSCellFlags">-1804599231</int>
-												<int key="NSCellFlags2">272761856</int>
+												<int key="NSCellFlags2">272761920</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="26"/>
 												<string key="NSPlaceholderString">[menu label name]</string>
@@ -1605,7 +1605,7 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="464624197">
 								<int key="NSCellFlags">-1804599231</int>
-								<int key="NSCellFlags2">272761856</int>
+								<int key="NSCellFlags2">272761920</int>
 								<string key="NSContents"/>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="623620101"/>
@@ -1642,7 +1642,7 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="561460655">
 								<int key="NSCellFlags">-1804599231</int>
-								<int key="NSCellFlags2">272761856</int>
+								<int key="NSCellFlags2">272761920</int>
 								<string key="NSContents"/>
 								<reference key="NSSupport" ref="26"/>
 								<reference key="NSControlView" ref="448539706"/>

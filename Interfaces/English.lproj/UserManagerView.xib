@@ -574,7 +574,7 @@
 																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSTextFieldCell" key="NSCell" id="540584164">
 																					<int key="NSCellFlags">-1804599231</int>
-																					<int key="NSCellFlags2">272630784</int>
+																					<int key="NSCellFlags2">272630848</int>
 																					<string key="NSContents"/>
 																					<reference key="NSSupport" ref="746597359"/>
 																					<reference key="NSControlView" ref="1021720165"/>
@@ -606,7 +606,7 @@
 																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSSecureTextFieldCell" key="NSCell" id="71857161">
 																					<int key="NSCellFlags">342884416</int>
-																					<int key="NSCellFlags2">272630784</int>
+																					<int key="NSCellFlags2">272630848</int>
 																					<string key="NSContents"/>
 																					<reference key="NSSupport" ref="746597359"/>
 																					<reference key="NSControlView" ref="926329636"/>
@@ -2066,7 +2066,7 @@
 																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSTextFieldCell" key="NSCell" id="228458735">
 																					<int key="NSCellFlags">-1804599231</int>
-																					<int key="NSCellFlags2">272630784</int>
+																					<int key="NSCellFlags2">272630848</int>
 																					<reference key="NSSupport" ref="746597359"/>
 																					<object class="NSNumberFormatter" key="NSFormatter" id="268664286">
 																						<dictionary class="NSMutableDictionary" key="NS.attributes">
@@ -2131,7 +2131,7 @@
 																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSTextFieldCell" key="NSCell" id="950352714">
 																					<int key="NSCellFlags">-1804599231</int>
-																					<int key="NSCellFlags2">272630784</int>
+																					<int key="NSCellFlags2">272630848</int>
 																					<reference key="NSSupport" ref="746597359"/>
 																					<object class="NSNumberFormatter" key="NSFormatter" id="867019301">
 																						<dictionary class="NSMutableDictionary" key="NS.attributes">
@@ -2187,7 +2187,7 @@
 																				<bool key="NSEnabled">YES</bool>
 																				<object class="NSTextFieldCell" key="NSCell" id="473921129">
 																					<int key="NSCellFlags">-1804599231</int>
-																					<int key="NSCellFlags2">272630784</int>
+																					<int key="NSCellFlags2">272630848</int>
 																					<reference key="NSSupport" ref="746597359"/>
 																					<object class="NSNumberFormatter" key="NSFormatter" id="765293659">
 																						<dictionary class="NSMutableDictionary" key="NS.attributes">
