@@ -157,7 +157,7 @@ static inline BOOL IS_STRING(id x);
 	// if the string came from another app, paste it literal, tokenfield will take care of any conversions
 	NSString *raw = [pboard stringForType:NSPasteboardTypeString];
 	if(raw) {
-		return @[raw];
+		return @[[raw stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet]	withString:@" "]];
 	}
 	
 	return nil;

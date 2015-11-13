@@ -78,6 +78,13 @@ static inline id NSMutableAttributedStringAttributeAtIndex(NSMutableAttributedSt
 
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet;
 - (NSString *)stringByRemovingCharactersInSet:(NSCharacterSet *)charSet options:(NSUInteger)mask;
+/**
+ * Replace all occurances of any character in set with the replacement string
+ * @param set    Characters to look for (MUST NOT be nil)
+ * @param string A replacement string (can be nil == empty string)
+ * @return A string with replacements applied
+ */
+- (NSString *)stringByReplacingCharactersInSet:(NSCharacterSet *)set withString:(NSString *)string;
 
 - (CGFloat)levenshteinDistanceWithWord:(NSString *)stringB;
 
