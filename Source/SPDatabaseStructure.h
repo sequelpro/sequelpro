@@ -51,7 +51,6 @@
 // Setup and teardown
 - (id)initWithDelegate:(SPDatabaseDocument *)theDelegate;
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection;
-- (void)destroy:(NSNotification *)notification;
 
 // Information
 - (SPMySQLConnection *)connection;

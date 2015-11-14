@@ -682,3 +682,12 @@ typedef NSUInteger NSCellHitResult;
 
 // See http://stackoverflow.com/questions/4415524
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+// This definition is mostly for legibility
+#ifndef ESUCCESS
+	#define ESUCCESS 0
+#else
+	#if ESUCCESS != 0
+		#error 'ESUCCESS' must be defined as zero!
+	#endif
+#endif
