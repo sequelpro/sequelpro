@@ -289,6 +289,7 @@
 			<string>ISSUER</string>
 			<string>ITERATE</string>
 			<string>JOIN</string>
+			<string>JSON</string>
 			<string>KEY</string>
 			<string>KEYS</string>
 			<string>KEY_BLOCK_SIZE</string>
@@ -834,6 +835,27 @@
 			<string>ISSIMPLE</string>
 			<string>IS_FREE_LOCK</string>
 			<string>IS_USED_LOCK</string>
+			<string>JSON_APPEND</string>
+			<string>JSON_ARRAY_APPEND</string>
+			<string>JSON_ARRAY_INSERT</string>
+			<string>JSON_ARRAY</string>
+			<string>JSON_CONTAINS_PATH</string>
+			<string>JSON_CONTAINS</string>
+			<string>JSON_DEPTH</string>
+			<string>JSON_EXTRACT</string>
+			<string>JSON_INSERT</string>
+			<string>JSON_KEYS</string>
+			<string>JSON_LENGTH</string>
+			<string>JSON_MERGE</string>
+			<string>JSON_OBJECT</string>
+			<string>JSON_QUOTE</string>
+			<string>JSON_REMOVE</string>
+			<string>JSON_REPLACE</string>
+			<string>JSON_SEARCH</string>
+			<string>JSON_SET</string>
+			<string>JSON_TYPE</string>
+			<string>JSON_UNQUOTE</string>
+			<string>JSON_VALID</string>
 			<string>LAST_DAY</string>
 			<string>LAST_INSERT_ID</string>
 			<string>LCASE</string>
@@ -1162,6 +1184,48 @@
 			<string>${1:bits}, ${2:str1}</string>
 			<key>FIND_IN_SET</key>
 			<string>${1:str}, ${2:strlist}</string>
+			<key>JSON_APPEND</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_ARRAY_APPEND</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_ARRAY_INSERT</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_ARRAY</key>
+			<string>${1:${2:val} ${3:, ${4:val}${5:, ${6:...}}}}</string>
+			<key>JSON_CONTAINS_PATH</key>
+			<string>${1:json_doc}, ${2:¦'one'¦'all'¦}, ${3:path}${4:, ${5:path}${6:, ${7:...}}}</string>
+			<key>JSON_CONTAINS</key>
+			<string>${1:json_doc}, ${2:val}${3:, ${4:path}}</string>
+			<key>JSON_DEPTH</key>
+			<string>${1:json_doc}</string>
+			<key>JSON_EXTRACT</key>
+			<string>${1:json_doc}, ${2:path}${3:, ${4:path}${5:, ${6:...}}}</string>
+			<key>JSON_INSERT</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_KEYS</key>
+			<string>${1:json_doc}${2:, ${3:path}}</string>
+			<key>JSON_LENGTH</key>
+			<string>${1:json_doc}${2:, ${3:path}}</string>
+			<key>JSON_MERGE</key>
+			<string>${1:json_doc}, ${2:json_doc}${3:, ${4:...}}</string>
+			<key>JSON_OBJECT</key>
+			<string>${1:${2:key}, ${3:val}${4:, ${5:key}, ${6:val}${7:, ${8:...}}}}</string>
+			<key>JSON_QUOTE</key>
+			<string>${1:json_val}</string>
+			<key>JSON_REMOVE</key>
+			<string>${1:json_doc}, ${2:path}${3:, ${4:path}${5:, ${6:...}}}</string>
+			<key>JSON_REPLACE</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_SEARCH</key>
+			<string>${1:json_doc}, ${2:¦'one'¦'all'¦}, ${3:search_str}${4:, ${5:escape_char}${6:, ${7:path${8:, ${9:...}}}}}</string>
+			<key>JSON_SET</key>
+			<string>${1:json_doc}, ${2:path}, ${3:val}${4:, ${5:path}, ${6:val}${7:, ${8:...}}}</string>
+			<key>JSON_TYPE</key>
+			<string>${1:json_val}</string>
+			<key>JSON_UNQUOTE</key>
+			<string>${1:val}</string>
+			<key>JSON_VALID</key>
+			<string>${1:val}</string>
 		</dict>
 	</dict>
 </plist>

@@ -72,3 +72,4 @@ extern NSString *SPMySQLMultiPointType;
 extern NSString *SPMySQLMultiLineStringType;
 extern NSString *SPMySQLMultiPolygonType;
 extern NSString *SPMySQLGeometryCollectionType;
+extern NSString *SPMySQLJsonType;

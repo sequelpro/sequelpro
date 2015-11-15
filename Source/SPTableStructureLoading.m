@@ -157,7 +157,15 @@
 	{
 		NSString *type = [[[theField objectForKey:@"type"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 
-		if ([fieldValidation isFieldTypeString:type]) {
+		if([type isEqualToString:@"JSON"]) {
+			// MySQL 5.7 manual:
+			// "MySQL handles strings used in JSON context using the utf8mb4 character set and utf8mb4_bin collation.
+			//  Strings in other character set are converted to utf8mb4 as necessary."
+			[theField setObject:@"utf8mb4" forKey:@"encodingName"];
+			[theField setObject:@"utf8mb4_bin" forKey:@"collationName"];
+			[theField setObject:@1 forKey:@"binary"];
+		}
+		else if ([fieldValidation isFieldTypeString:type]) {
 			// The MySQL 4.1 manual says:
 			//
 			// MySQL chooses the column character set and collation in the following manner:

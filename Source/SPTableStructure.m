@@ -194,6 +194,7 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 		SPMySQLLongBlobType,
 		SPMySQLBinaryType,
 		SPMySQLVarBinaryType,
+		SPMySQLJsonType,
 		SPMySQLEnumType,
 		SPMySQLSetType,
 		@"--------",
@@ -959,7 +960,10 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 	if(!specialFieldTypes) {
 
 
-		if ([fieldValidation isFieldTypeString:theRowType]) {
+		if ([theRowType isEqualToString:@"JSON"]) {
+			// we "see" JSON as a string, but it is not internally to MySQL and so doesn't allow CHARACTER SET/BINARY/COLLATE either.
+		}
+		else if ([fieldValidation isFieldTypeString:theRowType]) {
 			BOOL charsetSupport = [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling];
 
 			// Add CHARSET
@@ -1002,8 +1006,9 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 		// Don't provide any defaults for auto-increment fields
 		if (![theRowExtra isEqualToString:@"AUTO_INCREMENT"]) {
 			NSArray *matches;
+			NSString *defaultValue = [theRow objectForKey:@"default"];
 			// If a NULL value has been specified, and NULL is allowed, specify DEFAULT NULL
-			if ([[theRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) 
+			if ([defaultValue isEqualToString:[prefs objectForKey:SPNullValue]])
 			{
 				if ([[theRow objectForKey:@"null"] integerValue] == 1) {
 					[queryString appendString:@"\n DEFAULT NULL"];
@@ -1011,7 +1016,7 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 			}
 			// Otherwise, if CURRENT_TIMESTAMP was specified for timestamps/datetimes, use that
 			else if ([theRowType isInArray:@[@"TIMESTAMP",@"DATETIME"]] &&
-					[(matches = [[[theRow objectForKey:@"default"] uppercaseString] captureComponentsMatchedByRegex:SPCurrentTimestampPattern]) count])
+					[(matches = [[defaultValue uppercaseString] captureComponentsMatchedByRegex:SPCurrentTimestampPattern]) count])
 			{
 				[queryString appendString:@"\n DEFAULT CURRENT_TIMESTAMP"];
 				NSString *userLen = [matches objectAtIndex:1];
@@ -1023,17 +1028,17 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 			}
 			// If the field is of type BIT, permit the use of single qoutes and also don't quote the default value.
 			// For example, use DEFAULT b'1' as opposed to DEFAULT 'b\'1\'' which results in an error.
-			else if ([(NSString *)[theRow objectForKey:@"default"] length] && [theRowType isEqualToString:@"BIT"]) {
-				[queryString appendFormat:@"\n DEFAULT %@", [theRow objectForKey:@"default"]];
+			else if ([defaultValue length] && [theRowType isEqualToString:@"BIT"]) {
+				[queryString appendFormat:@"\n DEFAULT %@", defaultValue];
 			}
 			// Suppress appending DEFAULT clause for any numerics, date, time fields if default is empty to avoid error messages;
-			// also don't specify a default for TEXT/BLOB or geometry fields to avoid strict mode errors
-			else if (![(NSString *)[theRow objectForKey:@"default"] length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
+			// also don't specify a default for TEXT/BLOB, JSON or geometry fields to avoid strict mode errors
+			else if (![defaultValue length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [theRowType isEqualToString:@"JSON"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
 				;
 			}
 			// Otherwise, use the provided default
 			else {
-				[queryString appendFormat:@"\n DEFAULT %@", [mySQLConnection escapeAndQuoteString:[theRow objectForKey:@"default"]]];
+				[queryString appendFormat:@"\n DEFAULT %@", [mySQLConnection escapeAndQuoteString:defaultValue]];
 			}
 		}
 
@@ -1716,6 +1721,12 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 				@"VARBINARY(M)",
 				[NSString stringWithFormat:NSLocalizedString(@"M: %@ to %@ bytes", @"range for varbinary type"),FN(@0),FN(@(65535))],
 				NSLocalizedString(@"A byte array with variable length. The actual number of bytes is further limited by the values of other fields in the row.",@"description of varbinary")
+			),
+			MakeFieldTypeHelp(
+				SPMySQLJsonType,
+				@"JSON",
+				NSLocalizedString(@"Limited to @@max_allowed_packet", @"range for json type"),
+				NSLocalizedString(@"A data type that validates JSON data on INSERT and internally stores it in a binary format that is both, more compact and faster to access than textual JSON.\nAvailable from MySQL 5.7.8.", @"description of json")
 			),
 			MakeFieldTypeHelp(
 				SPMySQLEnumType,

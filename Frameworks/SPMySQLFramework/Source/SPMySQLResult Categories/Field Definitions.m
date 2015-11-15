@@ -372,7 +372,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 
 	switch (type) {
 
-		case FIELD_TYPE_BIT:
+		case MYSQL_TYPE_BIT:
 			return @"BIT";
 
 		case MYSQL_TYPE_DECIMAL:
@@ -475,6 +475,9 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 
 		case MYSQL_TYPE_GEOMETRY:
 			return @"GEOMETRY";
+			
+		case MYSQL_TYPE_JSON:
+			return @"JSON";
 
 		default:
 			return @"UNKNOWN";

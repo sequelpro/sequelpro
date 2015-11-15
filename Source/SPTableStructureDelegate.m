@@ -540,13 +540,14 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 			rowType = [[rowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		}
 		
-		// Only string fields allow encoding settings
+		// Only string fields allow encoding settings, but JSON only uses utf8mb4
 		if (([[tableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+			[aCell setEnabled:(![rowType isEqualToString:@"JSON"] && [fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if ([[tableColumn identifier] isEqualToString:@"collation"]) {
+			// JSON always uses utf8mb4_bin which is already covered by this logic
  			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[row objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
@@ -557,12 +558,13 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 		
 		// Check if BINARY is allowed
 		else if ([[tableColumn identifier] isEqualToString:@"binary"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:rowType])];
+			// JSON always uses utf8mb4_bin
+			[aCell setEnabled:(![rowType isEqualToString:@"JSON"] && [fieldValidation isFieldTypeAllowBinary:rowType])];
 		}
 		
-		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
+		// TEXT, BLOB, GEOMETRY and JSON fields don't allow a DEFAULT
 		else if ([[tableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [rowType isEqualToString:@"JSON"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		
 		// Check allow NULL
@@ -572,10 +574,11 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 							   [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]) ? NO : YES];
 		}
 		
-		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
+		// TEXT, BLOB, date, GEOMETRY and JSON fields don't allow a length
 		else if ([[tableColumn identifier] isEqualToString:@"length"]) {
 			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || 
-							   [rowType hasSuffix:@"BLOB"] || 
+							   [rowType hasSuffix:@"BLOB"] ||
+			                   [rowType isEqualToString:@"JSON"] ||
 							   ([fieldValidation isFieldTypeDate:rowType] && ![[tableDocumentInstance serverSupport] supportsFractionalSeconds] && ![rowType isEqualToString:@"YEAR"]) || 
 							   [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
@@ -659,6 +662,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 	NSInteger pos = [typeSuggestions indexOfObject:[cell stringValue]];
 	if(pos != NSNotFound) {
 		[cell selectItemAtIndex:pos];
+		[cell scrollItemAtIndexToTop:pos];
 	}
 	
 	//set up the help window to the right position

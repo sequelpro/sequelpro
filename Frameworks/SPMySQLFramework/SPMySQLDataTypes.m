@@ -74,3 +74,4 @@ NSString *SPMySQLMultiPointType         = @"MULTIPOINT";
 NSString *SPMySQLMultiLineStringType    = @"MULTILINESTRING";
 NSString *SPMySQLMultiPolygonType       = @"MULTIPOLYGON";
 NSString *SPMySQLGeometryCollectionType = @"GEOMETRYCOLLECTION";
+NSString *SPMySQLJsonType               = @"JSON";

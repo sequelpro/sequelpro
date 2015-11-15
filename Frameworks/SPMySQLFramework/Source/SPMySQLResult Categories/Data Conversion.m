@@ -78,6 +78,7 @@ static NSStringEncoding NSFromCFStringEncodingGBK_95;
 	fieldProcessingMap[MYSQL_TYPE_NEWDATE] = SPMySQLResultFieldAsString;
 	fieldProcessingMap[MYSQL_TYPE_VARCHAR] = SPMySQLResultFieldAsString;
 	fieldProcessingMap[MYSQL_TYPE_BIT] = SPMySQLResultFieldAsBit;
+	fieldProcessingMap[MYSQL_TYPE_JSON] = SPMySQLResultFieldAsString;
 	fieldProcessingMap[MYSQL_TYPE_NEWDECIMAL] = SPMySQLResultFieldAsString;
 	fieldProcessingMap[MYSQL_TYPE_ENUM] = SPMySQLResultFieldAsString;
 	fieldProcessingMap[MYSQL_TYPE_SET] = SPMySQLResultFieldAsString;

@@ -1267,7 +1267,8 @@
 	} else if ([detailString isEqualToString:@"ENUM"] || [detailString isEqualToString:@"SET"]) {
 		[fieldDetails setObject:@"enum" forKey:@"typegrouping"];
 	} else if ([detailString isEqualToString:@"TINYTEXT"] || [detailString isEqualToString:@"TEXT"]
-				|| [detailString isEqualToString:@"MEDIUMTEXT"] || [detailString isEqualToString:@"LONGTEXT"]) {
+				|| [detailString isEqualToString:@"MEDIUMTEXT"] || [detailString isEqualToString:@"LONGTEXT"]
+	            || [detailString isEqualToString:@"JSON"]) { // JSON is seen as a text type by us, but works a bit different (e.g. encoding is always "utf8mb4")
 		[fieldDetails setObject:@"textdata" forKey:@"typegrouping"];
 	} else if ([detailString isEqualToString:@"POINT"] || [detailString isEqualToString:@"GEOMETRY"]
 				|| [detailString isEqualToString:@"LINESTRING"] || [detailString isEqualToString:@"POLYGON"]
