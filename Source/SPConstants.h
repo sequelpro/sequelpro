@@ -274,6 +274,12 @@ extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
 
+// SPF file types
+extern NSString *SPFExportSettingsContentType;
+extern NSString *SPFContentFiltersContentType;
+extern NSString *SPFQueryFavoritesContentType;
+extern NSString *SPFConnectionContentType;
+
 // Folder names
 extern NSString *SPThemesSupportFolder;
 extern NSString *SPBundleSupportFolder;

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<style>
+			body {
+				font-family:'Lucida Grande';
+				font-size:10pt;
+			}
+			.token {
+				background: linear-gradient(to top, rgb(199,216,244) 0%,rgb(217,229,247) 100%);
+				border: 1px solid rgb(168,184,249);
+				padding: 0 5px;
+				margin: 2px;
+				border-radius: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<center>
+			<table>
+				<tr>
+					<td colspan="2">
+						<center>
+							<b style="font-size:12pt">Sequel Pro Saved Export Settings</b><br />
+							{{ filename }}
+						</center><br /><br />
+					</td>
+				</tr>
+				<tr>
+					<td valign="right">
+						<img width="128" heigth="128" src="cid:icon.tiff">
+					</td>
+					<td>
+						<table>
+							<tr>
+								<td align="right">Path: </td><td>{{ exportPath }}</td>
+							</tr>
+						{% if customFilename %}
+							<tr>
+								<td align="right">Filename: </td>
+								<td><!-- Those comments are only used to eliminate visible whitespace
+						{% /if %}
+						{% for part in customFilename %}
+								{% if part.isToken %}
+									--><span class="token">{{ part.name }}</span><!--
+								{% else %}
+									-->{{ part.name }}<!--
+								{% /if %}
+						{% /for %}
+						{% comment This is most likely a bug in our version of MGTemplateEngine, but putting the for loop inside the if will create broken output %}
+						{% if customFilename %}
+								--></td>
+							</tr>
+						{% /if %}
+							<tr>
+								<td align="right">Format: </td><td><b>{{ exportType }}</b></td>
+							</tr>
+							<tr>
+								<td align="right">Compression: </td><td>{{ compressionFormat }}</td>
+							</tr>
+							<tr>
+								<td align="right">Input data: </td><td>{{ exportSource }}</td>
+							</tr>
+							<tr>
+								<td align="right">Low Memory: </td><td><input type="checkbox" {% if lowMemoryStreaming %}checked{% /if %} disabled></td>
+							</tr>
+							<tr>
+								<td colspan="2" style="color: grey;"><br />(format specific settings not shown)</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</center>
+	</body>
+</html>

@@ -179,6 +179,15 @@
 		4DECC3370EC2A170008D359E /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
 		4DECC48F0EC2B436008D359E /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3320EC2A170008D359E /* Sparkle.framework */; };
 		4DECC4910EC2B436008D359E /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4DECC3340EC2A170008D359E /* Growl.framework */; };
+		50082B3D1BF7CD2100746ECC /* ICUTemplateMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AC0F909194002A3258 /* ICUTemplateMatcher.m */; };
+		50082B3E1BF7CD2100746ECC /* NSArray_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AE0F909194002A3258 /* NSArray_DeepMutableCopy.m */; };
+		50082B3F1BF7CD2100746ECC /* NSDictionary_DeepMutableCopy.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B10F909194002A3258 /* NSDictionary_DeepMutableCopy.m */; };
+		50082B421BF7CD3C00746ECC /* ICUTemplateMatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8A90F909194002A3258 /* ICUTemplateMatcher.h */; };
+		50082B431BF7CD3C00746ECC /* NSArray_DeepMutableCopy.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8AF0F909194002A3258 /* NSArray_DeepMutableCopy.h */; };
+		50082B441BF7CD3C00746ECC /* NSDictionary_DeepMutableCopy.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8B20F909194002A3258 /* NSDictionary_DeepMutableCopy.h */; };
+		50082B451BF7D1C300746ECC /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
+		50082B461BF7D1CD00746ECC /* RegexKitLite.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8B00F909194002A3258 /* RegexKitLite.h */; };
+		50082B471BF7D1F600746ECC /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
 		500DA4B71BEFF877000773FE /* SPComboBoxCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4B61BEFF877000773FE /* SPComboBoxCell.m */; };
 		500DA4BC1BF0CD57000773FE /* SPScreenAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4BB1BF0CD57000773FE /* SPScreenAdditions.m */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
@@ -200,6 +209,15 @@
 		507FF26A1BC8450100104523 /* SPExportSettingsPersistence.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */; };
 		507FF2A11BCD27A700104523 /* SPFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1111BBCC57600104523 /* SPFunctions.m */; };
 		507FF2A21BCD27AE00104523 /* SPOSInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 50EAB5B71A8FBB08008F627A /* SPOSInfo.m */; };
+		508022951BF7BA470052A9B2 /* SPQLPluginExportSettingsTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 508022931BF7BA470052A9B2 /* SPQLPluginExportSettingsTemplate.html */; };
+		508022961BF7C0E90052A9B2 /* MGTemplateMarker.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8A50F909194002A3258 /* MGTemplateMarker.h */; };
+		508022971BF7C0E90052A9B2 /* MGTemplateFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8A60F909194002A3258 /* MGTemplateFilter.h */; };
+		508022981BF7C0E90052A9B2 /* MGTemplateEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8A80F909194002A3258 /* MGTemplateEngine.h */; };
+		508022991BF7C0E90052A9B2 /* MGTemplateStandardMarkers.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8B30F909194002A3258 /* MGTemplateStandardMarkers.h */; };
+		5080229A1BF7C0E90052A9B2 /* MGTemplateStandardFilters.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8B50F909194002A3258 /* MGTemplateStandardFilters.h */; };
+		5080229B1BF7C0FE0052A9B2 /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8A70F909194002A3258 /* MGTemplateEngine.m */; };
+		5080229C1BF7C0FE0052A9B2 /* MGTemplateStandardMarkers.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */; };
+		5080229D1BF7C0FE0052A9B2 /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */; };
 		50805B0D1BF2A068005F7A99 /* SPPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */; };
 		5089B0271BE714E300E226CD /* SPIdMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 5089B0261BE714E300E226CD /* SPIdMenu.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
@@ -924,6 +942,7 @@
 		507FF1111BBCC57600104523 /* SPFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFunctions.m; sourceTree = "<group>"; };
 		507FF2681BC8450100104523 /* SPExportSettingsPersistence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportSettingsPersistence.h; sourceTree = "<group>"; };
 		507FF2691BC8450100104523 /* SPExportSettingsPersistence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportSettingsPersistence.m; sourceTree = "<group>"; };
+		508022941BF7BA470052A9B2 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = English; path = English.lproj/SPQLPluginExportSettingsTemplate.html; sourceTree = "<group>"; };
 		50805B0B1BF2A068005F7A99 /* SPPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPopUpButtonCell.h; sourceTree = "<group>"; };
 		50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPopUpButtonCell.m; sourceTree = "<group>"; };
 		5089B0251BE714E300E226CD /* SPIdMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIdMenu.h; sourceTree = "<group>"; };
@@ -1313,6 +1332,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50082B471BF7D1F600746ECC /* libicucore.dylib in Frameworks */,
 				502D22161BA62FF5000D4CE7 /* Security.framework in Frameworks */,
 				BC0E14A1120AAC2E00E52E25 /* libbz2.dylib in Frameworks */,
 				584D87C415141A5D00F24774 /* libz.dylib in Frameworks */,
@@ -2453,6 +2473,7 @@
 				584756FE120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html */,
 				58475700120A1B290057631F /* SPQLPluginSQLTemplate.html */,
 				BCEC861F12115A30002561DA /* SPQLPluginConnectionBundleWindowTemplate.html */,
+				508022931BF7BA470052A9B2 /* SPQLPluginExportSettingsTemplate.html */,
 			);
 			name = "QuickLook Plugin";
 			sourceTree = "<group>";
@@ -2687,6 +2708,15 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50082B461BF7D1CD00746ECC /* RegexKitLite.h in Headers */,
+				50082B421BF7CD3C00746ECC /* ICUTemplateMatcher.h in Headers */,
+				50082B431BF7CD3C00746ECC /* NSArray_DeepMutableCopy.h in Headers */,
+				50082B441BF7CD3C00746ECC /* NSDictionary_DeepMutableCopy.h in Headers */,
+				508022961BF7C0E90052A9B2 /* MGTemplateMarker.h in Headers */,
+				508022971BF7C0E90052A9B2 /* MGTemplateFilter.h in Headers */,
+				508022981BF7C0E90052A9B2 /* MGTemplateEngine.h in Headers */,
+				508022991BF7C0E90052A9B2 /* MGTemplateStandardMarkers.h in Headers */,
+				5080229A1BF7C0E90052A9B2 /* MGTemplateStandardFilters.h in Headers */,
 				BC6D709D120C4C97008027B5 /* SPEditorTokens.h in Headers */,
 				BCD06FC7120AAACB00C73602 /* SPStringAdditions.h in Headers */,
 				BCD06FC6120AAAC200C73602 /* SPDataAdditions.h in Headers */,
@@ -2883,6 +2913,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				58475702120A1B290057631F /* SPQLPluginConnectionTemplate.html in Resources */,
+				508022951BF7BA470052A9B2 /* SPQLPluginExportSettingsTemplate.html in Resources */,
 				58475703120A1B290057631F /* SPQLPluginContentFiltersTemplate.html in Resources */,
 				58475704120A1B290057631F /* SPQLPluginQueryFavoritesTemplate.html in Resources */,
 				58475705120A1B290057631F /* SPQLPluginSQLTemplate.html in Resources */,
@@ -3133,6 +3164,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50082B451BF7D1C300746ECC /* RegexKitLite.m in Sources */,
+				50082B3D1BF7CD2100746ECC /* ICUTemplateMatcher.m in Sources */,
+				50082B3E1BF7CD2100746ECC /* NSArray_DeepMutableCopy.m in Sources */,
+				50082B3F1BF7CD2100746ECC /* NSDictionary_DeepMutableCopy.m in Sources */,
+				5080229B1BF7C0FE0052A9B2 /* MGTemplateEngine.m in Sources */,
+				5080229C1BF7C0FE0052A9B2 /* MGTemplateStandardMarkers.m in Sources */,
+				5080229D1BF7C0FE0052A9B2 /* MGTemplateStandardFilters.m in Sources */,
 				507FF2A21BCD27AE00104523 /* SPOSInfo.m in Sources */,
 				507FF2A11BCD27A700104523 /* SPFunctions.m in Sources */,
 				50D3C3541A7715E600B5429C /* SPParserUtils.c in Sources */,
@@ -3517,6 +3555,14 @@
 				4D90B7A1101E0D1500D116A1 /* English */,
 			);
 			name = UserManagerView.xib;
+			sourceTree = "<group>";
+		};
+		508022931BF7BA470052A9B2 /* SPQLPluginExportSettingsTemplate.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				508022941BF7BA470052A9B2 /* English */,
+			);
+			name = SPQLPluginExportSettingsTemplate.html;
 			sourceTree = "<group>";
 		};
 		50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */ = {

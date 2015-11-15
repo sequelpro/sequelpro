@@ -3350,7 +3350,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		// For dispatching later
-		if(![[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
+		if(![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
 			NSLog(@"SPF file format is not 'connection'.");
 			[spf release];
 			return NO;
@@ -3400,7 +3400,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Add basic details
 	[spfStructure setObject:@1 forKey:SPFVersionKey];
-	[spfStructure setObject:@"connection" forKey:SPFFormatKey];
+	[spfStructure setObject:SPFConnectionContentType forKey:SPFFormatKey];
 	[spfStructure setObject:@"mysql" forKey:@"rdbms_type"];
 	if([self mySQLVersion])
 		[spfStructure setObject:[self mySQLVersion] forKey:@"rdbms_version"];
@@ -4874,7 +4874,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// If the .spf format is unhandled, error.
-	if (![[spf objectForKey:SPFFormatKey] isEqualToString:@"connection"]) {
+	if (![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Unknown file format", @"warning")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 

@@ -43,8 +43,6 @@ static inline NSNumber *IsOn(id obj);
  */
 static inline void SetOnOff(NSNumber *ref,id obj);
 
-static const NSString *SPFExportSettingsContentType = @"export settings";
-
 @interface SPExportController (Private)
 
 - (void)_updateExportAdvancedOptionsLabel;
@@ -412,7 +410,7 @@ static const NSString *SPFExportSettingsContentType = @"export settings";
 			NSDictionary *errInfo = @{
 				@"isVersion":                          @(version),
 				NSLocalizedDescriptionKey:             NSLocalizedString(@"Unsupported version for export settings!", @"export : import settings : file version error title"),
-				NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions)"),version,@"1"],
+				NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings were stored with version\u00A0%1$ld, but only settings with the following versions can be imported: %2$@.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.", @"export : import settings : file version error description ($1 = is version, $2 = list of supported versions); note: the u00A0 is a non-breaking space, do not add more whitespace."),version,@"1"],
 			};
 			*err = [NSError errorWithDomain:SPErrorDomain
 									   code:SPErrorWrongContentVersion

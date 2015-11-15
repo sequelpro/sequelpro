@@ -918,7 +918,7 @@
 
 	
 			[spfdata setObject:@1 forKey:SPFVersionKey];
-			[spfdata setObject:@"query favorites" forKey:SPFFormatKey];
+			[spfdata setObject:SPFQueryFavoritesContentType forKey:SPFFormatKey];
 			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];

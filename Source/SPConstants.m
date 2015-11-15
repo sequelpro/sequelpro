@@ -56,6 +56,12 @@ NSString *SPFileExtensionSQL                     = @"sql";
 NSString *SPColorThemeFileExtension              = @"spTheme";
 NSString *SPUserBundleFileExtension              = @"spBundle";
 
+// SPF File types
+NSString *SPFExportSettingsContentType           = @"export settings";
+NSString *SPFContentFiltersContentType           = @"content filters";
+NSString *SPFQueryFavoritesContentType           = @"query favorites";
+NSString *SPFConnectionContentType               = @"connection";
+
 // File names
 NSString *SPFavoritesDataFile                    = @"Favorites.plist";
 NSString *SPHTMLPrintTemplate                    = @"SPPrintTemplate";
