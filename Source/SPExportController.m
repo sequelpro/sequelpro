@@ -42,6 +42,7 @@
 #import "SPThreadAdditions.h"
 #import "SPCustomQuery.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportSettingsPersistence.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -63,7 +64,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_displayExportTypeOptions:(BOOL)display;
 - (void)_updateExportFormatInformation;
 - (void)_updateExportAdvancedOptionsLabel;
-- (void)_setPreviousExportFilenameAndPath;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -120,8 +120,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 		heightOffset1 = 0;
 		heightOffset2 = 0;
-		windowMinWidth = [[self window] minSize].width;
-		windowMinHeigth = [[self window] minSize].height;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
 		
@@ -150,13 +148,17 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	if (mainNibLoaded) return;
 	
 	mainNibLoaded = YES;
+	
+	windowMinWidth = [[self window] minSize].width;
+	windowMinHeigth = [[self window] minSize].height;
 
 	// Select the 'selected tables' option
 	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
 	
 	// Select the SQL tab
 	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
-		
+	[exportTypeTabBar selectTabViewItemAtIndex:0];
+	
 	// By default a new SQL INSERT statement should be created every 250KiB of data
 	[exportSQLInsertNValueTextField setIntegerValue:250];
 	
@@ -186,14 +188,28 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  * @param source       The source of the export. See SPExportSource constants.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source
-{	
-	// Select the correct tab
-	[exportTypeTabBar selectTabViewItemAtIndex:format];
+{
+	// set some defaults
+	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	if(![[exportPathField stringValue] length]) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
+		// If found the set the default path to the user's desktop, otherwise use their home directory
+		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
+	}
 	
-	[self _setPreviousExportFilenameAndPath];
+	// initially popuplate the tables list
+	[self refreshTableList:nil];
+	
+	// overwrite defaults with user settings from last export
+	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:NULL];
+	
+	// overwrite those with settings for the current export
+	
+	// Select the correct tab
+	if(format != SPAnyExportType) [exportTypeTabBar selectTabViewItemAtIndex:format];
 	
 	[self updateDisplayedExportFilename];
-	[self refreshTableList:nil];
 	
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
@@ -281,7 +297,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  */
 - (IBAction)export:(id)sender
 {
-	SPExportType selectedExportType = SPSQLExport;
+	SPExportType selectedExportType = SPAnyExportType;
 	SPExportSource selectedExportSource = SPTableExport;
 	
 	NSArray *selectedTables = [tablesListInstance selectedTableItems];
@@ -454,7 +470,6 @@ set_input:
 											 userInfo:nil];
 			}
             [exportPathField setStringValue:path];
-            [prefs setObject:path forKey:SPExportLastDirectory];
         }
     }];		
 }
@@ -703,24 +718,8 @@ set_input:
 {
 	// Perform the export
 	if (returnCode == NSOKButton) {
-
-		// Check whether to save the export filename.  Save it if it's not blank and contains at least one
-		// token - this suggests it's not a one-off filename
-		if ([[exportCustomFilenameTokenField stringValue] length] < 1) {
-			[prefs removeObjectForKey:SPExportFilenameFormatIntl];
-		} 
-		else {
-			BOOL saveFilename = NO;
-			
-			NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-			
-			for (id aToken in representedObjects) 
-			{
-				if ([aToken isKindOfClass:[SPExportFileNameTokenObject class]]) saveFilename = YES;
-			}
-			
-			if (saveFilename) [prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:representedObjects] forKey:SPExportFilenameFormatIntl];
-		}
+		
+		[prefs setObject:[self currentSettingsAsDictionary] forKey:SPLastExportSettings];
 
 		// If we are about to perform a table export, cache the current number of tables within the list, 
 		// refresh the list and then compare the numbers to accommodate situations where new tables are
@@ -843,9 +842,6 @@ set_input:
 		
 		[exportDotForceLowerTableNamesCheck setState:(serverLowerCaseTableNameValue == 0)?NSOffState:NSOnState];
 	}
-
-	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
-	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
 	[self _displayExportTypeOptions:(isSQL || isCSV || isXML || isDot)];
 	[self updateAvailableExportFilenameTokens];
@@ -970,29 +966,6 @@ set_input:
 	}
 
 	[exportAdvancedOptionsViewLabelButton setTitle:[NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Advanced", @"Advanced options short title"), [optionsSummary componentsJoinedByString:@", "]]];
-}
-
-/**
- * Sets the previous export filename and path if available.
- */
-- (void)_setPreviousExportFilenameAndPath
-{
-	id o;
-	// Restore the export filename if it exists, and update the display
-	if ((o = [prefs objectForKey:SPExportFilenameFormatIntl])) {
-		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:o]];
-	}
-	
-	// If a directory has previously been selected, reselect it
-	if ((o = [prefs objectForKey:SPExportLastDirectory])) {
-		[exportPathField setStringValue:o];
-	} 
-	else {
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
-		
-		// If found the set the default path to the user's desktop, otherwise use their home directory
-		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
-	}
 }
 
 /**

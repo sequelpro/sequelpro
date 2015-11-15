@@ -46,7 +46,6 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 @interface SPExportController (Private)
 
 - (void)_updateExportAdvancedOptionsLabel;
-- (void)_switchTab;
 
 @end
 
@@ -463,7 +462,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 
 	// token pool is only valid once the schema object selection is done
 	[self updateAvailableExportFilenameTokens];
-	if((o = [dict objectForKey:@"customFilename"])) [self setCustomFilenameFromArray:o];
+	if((o = [dict objectForKey:@"customFilename"]) && [o isKindOfClass:[NSArray class]]) [self setCustomFilenameFromArray:o];
 	
 	return YES;
 }

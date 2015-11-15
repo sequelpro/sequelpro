@@ -3808,38 +3808,6 @@ y7bMNcy1zTXNtc42zrbPN8+40DnQutE80b7SP9LB00TTxtRJ1MvVTtXR1lXW2Ndc1+DYZNjo2WzZ8dp2
 					</object>
 					<string key="id">1238</string>
 				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.SPExportMemoryModeLastValue</string>
-						<reference key="source" ref="829070828"/>
-						<reference key="destination" ref="965845845"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="829070828"/>
-							<reference key="NSDestination" ref="965845845"/>
-							<string key="NSLabel">value: values.SPExportMemoryModeLastValue</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.SPExportMemoryModeLastValue</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">1389</string>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">selectedIndex: values.SPExportCompressionLastValue</string>
-						<reference key="source" ref="257072199"/>
-						<reference key="destination" ref="965845845"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="257072199"/>
-							<reference key="NSDestination" ref="965845845"/>
-							<string key="NSLabel">selectedIndex: values.SPExportCompressionLastValue</string>
-							<string key="NSBinding">selectedIndex</string>
-							<string key="NSKeyPath">values.SPExportCompressionLastValue</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<string key="id">1387</string>
-				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<array key="orderedObjects">

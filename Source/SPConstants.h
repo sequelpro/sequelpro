@@ -67,7 +67,8 @@ typedef NS_ENUM(NSUInteger, SPExportType) {
 	SPDotExport   = 3,
 	SPPDFExport   = 4,
 	SPHTMLExport  = 5,
-	SPExcelExport = 6
+	SPExcelExport = 6,
+	SPAnyExportType = NSUIntegerMax, // this is a transient type to indicate "no specific choice"
 };
 
 // Export source constants
@@ -402,11 +403,7 @@ extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
-extern NSString *SPSQLExportUseCompression;
-extern NSString *SPNoBOMforSQLdumpFile;
-extern NSString *SPExportLastDirectory;
-extern NSString *SPExportFilenameFormat;     // legacy
-extern NSString *SPExportFilenameFormatIntl; // new, user language independent version
+extern NSString *SPLastExportSettings;
 
 // Export filename tokens
 extern NSString *SPFileNameDatabaseTokenName;
