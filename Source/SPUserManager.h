@@ -32,6 +32,8 @@
 @class SPMySQLConnection;
 @class SPSplitView;
 @class SPDatabaseDocument;
+@class SPUserMO;
+@class SPPrivilegesMO;
 
 @interface SPUserManager : NSWindowController
 {	
@@ -92,6 +94,7 @@
 @property (nonatomic, retain) NSMutableArray *schemas;
 @property (nonatomic, retain) NSMutableArray *grantedSchemaPrivs;
 @property (nonatomic, retain) NSMutableArray *availablePrivs;
+@property (nonatomic, readonly) BOOL isInitializing;
 
 // Add/Remove users
 - (IBAction)addUser:(id)sender;
@@ -116,13 +119,12 @@
 - (IBAction)refresh:(id)sender;
 
 // Core Data notifications
-- (void)contextDidSave:(NSNotification *)notification;
-- (BOOL)insertUsers:(NSArray *)insertedUsers;
-- (BOOL)deleteUsers:(NSArray *)deletedUsers;
-- (BOOL)updateUsers:(NSArray *)updatedUsers;
-- (BOOL)updateResourcesForUser:(NSManagedObject *)user;
-- (BOOL)grantPrivilegesToUser:(NSManagedObject *)user;
-- (BOOL)grantDbPrivilegesWithPrivilege:(NSManagedObject *)user;
+- (BOOL)insertUser:(SPUserMO *)user;
+- (BOOL)deleteUser:(SPUserMO *)user;
+- (BOOL)updateUser:(SPUserMO *)user;
+- (BOOL)updateResourcesForUser:(SPUserMO *)user;
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user;
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)user;
 
 // External
 /**

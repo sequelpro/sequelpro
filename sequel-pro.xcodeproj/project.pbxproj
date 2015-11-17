@@ -188,6 +188,7 @@
 		50082B451BF7D1C300746ECC /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AB0F909194002A3258 /* RegexKitLite.m */; };
 		50082B461BF7D1CD00746ECC /* RegexKitLite.h in Headers */ = {isa = PBXBuildFile; fileRef = 296DC8B00F909194002A3258 /* RegexKitLite.h */; };
 		50082B471BF7D1F600746ECC /* libicucore.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC8BE0F9091DF002A3258 /* libicucore.dylib */; };
+		500C1F921BFB5F9F0095DC7F /* SPPrivilegesMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */; };
 		500DA4B71BEFF877000773FE /* SPComboBoxCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4B61BEFF877000773FE /* SPComboBoxCell.m */; };
 		500DA4BC1BF0CD57000773FE /* SPScreenAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 500DA4BB1BF0CD57000773FE /* SPScreenAdditions.m */; };
 		501B1D181728A3DA0017C92E /* SPCharsetCollationHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 501B1D171728A3DA0017C92E /* SPCharsetCollationHelper.m */; };
@@ -924,6 +925,8 @@
 		4D90B7A1101E0D1500D116A1 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/UserManagerView.xib; sourceTree = "<group>"; };
 		4DECC3320EC2A170008D359E /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = Frameworks/Sparkle.framework; sourceTree = "<group>"; };
 		4DECC3340EC2A170008D359E /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Growl.framework; path = Frameworks/Growl.framework; sourceTree = "<group>"; };
+		500C1F901BFB5F9F0095DC7F /* SPPrivilegesMO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPrivilegesMO.h; sourceTree = "<group>"; };
+		500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPrivilegesMO.m; sourceTree = "<group>"; };
 		500DA4B51BEFF877000773FE /* SPComboBoxCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPComboBoxCell.h; sourceTree = "<group>"; };
 		500DA4B61BEFF877000773FE /* SPComboBoxCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPComboBoxCell.m; sourceTree = "<group>"; };
 		500DA4BA1BF0CD57000773FE /* SPScreenAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPScreenAdditions.h; sourceTree = "<group>"; };
@@ -1608,6 +1611,8 @@
 				4D90B79C101E0CF200D116A1 /* SPUserMO.h */,
 				4D90B79D101E0CF200D116A1 /* SPUserMO.m */,
 				4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */,
+				500C1F901BFB5F9F0095DC7F /* SPPrivilegesMO.h */,
+				500C1F911BFB5F9F0095DC7F /* SPPrivilegesMO.m */,
 			);
 			name = "Core Data";
 			sourceTree = "<group>";
@@ -3293,6 +3298,7 @@
 				50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */,
 				173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */,
 				173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */,
+				500C1F921BFB5F9F0095DC7F /* SPPrivilegesMO.m in Sources */,
 				17F5B1511048C4E400FC794F /* SPCSVExporter.m in Sources */,
 				17F5B1541048C50D00FC794F /* SPExporter.m in Sources */,
 				17F5B39C1049B96A00FC794F /* SPSQLExporter.m in Sources */,

@@ -1,9 +1,9 @@
 //
-//  SPUserMO.h
+//  SPPrivilegesMO.h
 //  sequel-pro
 //
-//  Created by Mark Townsend on January 1, 2009.
-//  Copyright (c) 2009 Mark Townsend. All rights reserved.
+//  Created by Max Lohrmann on 17.11.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,20 +28,14 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@interface SPUserMO : NSManagedObject
+@class SPUserMO;
 
-@property (nonatomic, retain) NSString *user;
-@property (nonatomic, retain) NSString *host;
-@property (nonatomic, retain) SPUserMO *parent;
-@property (nonatomic, retain) NSSet *children;
+@interface SPPrivilegesMO : NSManagedObject
 
-- (NSString *)displayName;
-- (void)setDisplayName:(NSString *)value;
-
-// Access to-many relationship via -[NSObject mutableSetValueForKey:]
-- (void)addChildrenObject:(SPUserMO *)value;
-- (void)removeChildrenObject:(SPUserMO *)value;
+@property (nonatomic, retain) NSString *db;
+@property (nonatomic, retain) SPUserMO *user;
 
 @end

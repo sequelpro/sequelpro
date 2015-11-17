@@ -1,9 +1,9 @@
 //
-//  SPUserMO.h
+//  SPPrivilegesMO.m
 //  sequel-pro
 //
-//  Created by Mark Townsend on January 1, 2009.
-//  Copyright (c) 2009 Mark Townsend. All rights reserved.
+//  Created by Max Lohrmann on 17.11.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,20 +28,23 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import <CoreData/CoreData.h>
+#import "SPPrivilegesMO.h"
+#import "SPUserMO.h"
+#import "SPUserManager.h"
 
-@interface SPUserMO : NSManagedObject
 
-@property (nonatomic, retain) NSString *user;
-@property (nonatomic, retain) NSString *host;
-@property (nonatomic, retain) SPUserMO *parent;
-@property (nonatomic, retain) NSSet *children;
+@implementation SPPrivilegesMO
 
-- (NSString *)displayName;
-- (void)setDisplayName:(NSString *)value;
+@dynamic db;
+@dynamic user;
 
-// Access to-many relationship via -[NSObject mutableSetValueForKey:]
-- (void)addChildrenObject:(SPUserMO *)value;
-- (void)removeChildrenObject:(SPUserMO *)value;
+- (BOOL)validateForUpdate:(NSError **)error
+{
+	if(![super validateForUpdate:error]) return NO;
+	
+	SPUserManager *mgr = [self valueForKey:@"userManager"];
+	
+	return [mgr grantDbPrivilegesWithPrivilege:self];
+}
 
 @end

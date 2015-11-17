@@ -65,7 +65,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 		[self _initializeAvailablePrivs];
 
 		if ([[treeController selectedObjects] count] > 0 && [[schemasTableView selectedRowIndexes] count] > 0) {
-			NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
+			SPUserMO *user = [[treeController selectedObjects] objectAtIndex:0];
 			
 			// Check to see if the user host node was selected
 			if ([user valueForKey:@"host"]) {
@@ -127,7 +127,7 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 
 		// If the schema has permissions set, highlight with a yellow background
 		BOOL enabledPermissions = NO;
-		NSManagedObject *user = [[treeController selectedObjects] objectAtIndex:0];
+		SPUserMO *user = [[treeController selectedObjects] objectAtIndex:0];
 		NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"] 
 		                                      schema:[schemaName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
 		                                        host:[user valueForKey:@"host"]];
@@ -233,9 +233,8 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 	if ([cell isKindOfClass:[ImageAndTextCell class]])
 	{
 		// Determines which Image to display depending on parent or child object		
-		NSImage *image = [[NSImage imageNamed:[(NSManagedObject *)[item  representedObject] parent] ? NSImageNameNetwork : NSImageNameUser] retain];
+		NSImage *image = [[NSImage imageNamed:[(SPUserMO *)[item  representedObject] parent] ? NSImageNameNetwork : NSImageNameUser] retain];
 		
-		[image setScalesWhenResized:YES];
 		[image setSize:(NSSize){16, 16}];
 		[(ImageAndTextCell *)cell setImage:image];
 		[image release];
