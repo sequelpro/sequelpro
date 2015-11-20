@@ -170,6 +170,8 @@
 
 	// we require utf8
 	[connection setEncoding:@"utf8"];
+	// …but utf8mb4 (aka "really" utf8) would be even better.
+	BOOL utf8mb4 = [connection setEncoding:@"utf8mb4"];
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# ************************************************************\n"];
@@ -186,6 +188,15 @@
 	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
 	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
+	if(utf8mb4) {
+		// !! This being outside of a conditional comment is FULLY INTENTIONAL !!
+		// We *absolutely* want that to fail if the export includes utf8mb4 data, but the server can't handle it.
+		// MySQL would _normally_ just drop-replace such characters with "?" (a literal questionmark) without any (visible) complaint.
+		// Since that means irreversible (and often hard to notice) data corruption,
+		//   the user should CONSCIOUSLY make a decision for that to happen!
+		//TODO we should link to a website explaining the risk here
+		[metaString appendString:@"SET NAMES utf8mb4;\n"];
+	}
 	
 	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
@@ -464,6 +475,7 @@
 								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
+#warning This can corrupt data! Check if this case ever happens and if so, export as hex-string
 									data = [[NSString alloc] initWithData:object encoding:NSASCIIStringEncoding];
 								}
 								
