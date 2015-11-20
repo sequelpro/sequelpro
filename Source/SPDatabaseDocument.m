@@ -549,6 +549,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[tableDumpInstance setConnection:mySQLConnection];
 #ifndef SP_CODA
 	[exportControllerInstance setConnection:mySQLConnection];
+	[exportControllerInstance setServerSupport:serverSupport];
 #endif
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];

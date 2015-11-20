@@ -80,6 +80,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 @implementation SPExportController
 
 @synthesize connection;
+@synthesize serverSupport = serverSupport;
 @synthesize exportToMultipleFiles;
 @synthesize exportCancelled;
 
@@ -1074,6 +1075,7 @@ set_input:
 	SPClear(exportFilename);
 	SPClear(localizedTokenNames);
 	SPClear(previousConnectionEncoding);
+	[self setServerSupport:nil];
 	
 	[super dealloc];
 }

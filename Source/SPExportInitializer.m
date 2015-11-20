@@ -426,9 +426,10 @@
 	for (SPExporter *exporter in exporters)
 	{
 		[exporter setConnection:connection];
+		[exporter setServerSupport:[self serverSupport]];
 		[exporter setExportOutputEncoding:[connection stringEncoding]];
 		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
-		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemoryButton state] == NSOnState)];
 		[exporter setExportOutputCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}

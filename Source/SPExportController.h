@@ -33,7 +33,8 @@
 @class SPCustomQuery;
 @class SPTablesList;
 @class SPTableData;
-@class SPMySQLConnection; 
+@class SPMySQLConnection;
+@class SPServerSupport;
 
 /**
  * @class SPExportController SPExportController.h
@@ -170,6 +171,7 @@
 	 * Database connection
 	 */
 	SPMySQLConnection *connection;
+	SPServerSupport *serverSupport;
 	
 	/**
 	 * Concurrent operation queue
@@ -249,6 +251,7 @@
  * @property connection Database connection
  */
 @property(readwrite, assign) SPMySQLConnection *connection;
+@property(readwrite, assign) SPServerSupport *serverSupport;
 
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
