@@ -43,6 +43,7 @@
 @interface SPExportController (SPExportInitializer)
 
 - (void)startExport;
+- (void)exportEnded;
 - (void)initializeExportUsingSelectedOptions;
 
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;

@@ -269,9 +269,7 @@ SPExportErrorChoice;
 		}
 	}
 
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
+	[self _hideExportProgress];
 	
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:files];
 	[alert autorelease];

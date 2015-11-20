@@ -72,8 +72,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
 
-- (void)_waitUntilQueueIsEmpty:(id)sender;
-- (void)_queueIsEmpty:(id)sender;
+- (void)_waitUntilQueueIsEmptyAfterCancelling:(id)sender;
+- (void)_queueIsEmptyAfterCancelling:(id)sender;
 
 @end
 
@@ -415,18 +415,18 @@ set_input:
 	
 	// Cancel all of the currently running operations
 	[operationQueue cancelAllOperations]; // async call
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmpty:) object:sender];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmptyAfterCancelling:) object:sender];
 }
 
-- (void)_waitUntilQueueIsEmpty:(id)sender
+- (void)_waitUntilQueueIsEmptyAfterCancelling:(id)sender
 {
 	[sender retain];
 	[operationQueue waitUntilAllOperationsAreFinished];
-	[self performSelectorOnMainThread:@selector(_queueIsEmpty:) withObject:sender waitUntilDone:NO];
+	[self performSelectorOnMainThread:@selector(_queueIsEmptyAfterCancelling:) withObject:sender waitUntilDone:NO];
 	[sender release];
 }
 
-- (void)_queueIsEmpty:(id)sender
+- (void)_queueIsEmptyAfterCancelling:(id)sender
 {
 	// Loop the cached export file paths and remove them from disk if they exist
 	for (SPExportFile *file in exportFiles)
@@ -434,20 +434,28 @@ set_input:
 		[file delete];
 	}
 	
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
-	
-	// Stop the progress indicator
-	[exportProgressIndicator stopAnimation:self];
-	[exportProgressIndicator setUsesThreadedAnimation:NO];
-	
+	[self _hideExportProgress];
+
+	// Restore the connection encoding to it's pre-export value
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+
 	// Re-enable the cancel button for future exports
 	[sender setEnabled:YES];
 	
 	// Finally get rid of all the exporters and files
 	[exportFiles removeAllObjects];
 	[exporters removeAllObjects];
+}
+
+- (void)_hideExportProgress
+{
+	// Close the progress sheet
+	[NSApp endSheet:exportProgressWindow returnCode:0];
+	[exportProgressWindow orderOut:self];
+
+	// Stop the progress indicator
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
 }
 
 /**

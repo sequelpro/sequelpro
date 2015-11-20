@@ -31,31 +31,22 @@
 #import "SPSQLExporterDelegate.h"
 #import "SPSQLExporter.h"
 #import "SPDatabaseDocument.h"
+#import "SPExportInitializer.h"
 
 @implementation SPExportController (SPSQLExporterDelegate)
 
 - (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter
 {
-	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
-	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+	[exportProgressTitle setStringValue:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
+	[exportProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
 	
-	[[exportProgressTitle onMainThread] displayIfNeeded];
-	[[exportProgressText onMainThread] displayIfNeeded];
+	[exportProgressTitle displayIfNeeded];
+	[exportProgressText displayIfNeeded];
 }
 
 - (void)sqlExportProcessComplete:(SPSQLExporter *)exporter
 {
-	[exportProgressIndicator stopAnimation:self];
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
-		
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-	
-	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
-	
-	// Display Growl notification
-	[self displayExportFinishedGrowlNotification];
+	[self exportEnded];
 	
 	// Check for errors and display the errors sheet if necessary
 	if ([exporter didExportErrorsOccur]) {

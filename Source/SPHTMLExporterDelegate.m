@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPHTMLExporterDelegate.h"
+#import "SPExportInitializer.h"
 
 @implementation SPExportController (SPHTMLExporterDelegate)
 
@@ -37,7 +38,8 @@
 }
 
 - (void)htmlExportProcessComplete:(SPHTMLExporter *)exporter
-{	
+{
+	[self exportEnded];
 }
 
 - (void)htmlExportProcessWillBeginWritingData:(SPHTMLExporter *)exporter

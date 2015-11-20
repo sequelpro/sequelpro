@@ -46,6 +46,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPConnectionControllerDelegateProtocol.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -74,14 +75,9 @@
 			  contextInfo:nil];
 	}
 
-	// If using an export type that requires the connection to start in UTF8, cache the current connection
-	// encoding and then set it here.
-	if (exportType == SPSQLExport || exportType == SPDotExport) {
-		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-				
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];	
-	}
+	// cache the current connection encoding so the exporter can do what it wants.
+	previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+	previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 		
 	// Add the first exporter to the operation queue
 	[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -89,6 +85,23 @@
 	// Remove the exporter we just added to the operation queue from our list of exporters 
 	// so we know it's already been done.
 	[exporters removeObjectAtIndex:0];	
+}
+
+/**
+ * @see _queueIsEmptyAfterCancelling:
+ */
+- (void)exportEnded
+{
+	[self _hideExportProgress];
+
+	// Restore query mode
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+
+	// Display Growl notification
+	[self displayExportFinishedGrowlNotification];
+
+	// Restore the connection encoding to it's pre-export value
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 }
 
 /**

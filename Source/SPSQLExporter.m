@@ -174,6 +174,9 @@
 	if ([self sqlOutputIncludeUTF8BOM]) {
 		[metaString appendString:@"\xef\xbb\xbf"];
 	}
+
+	// we require utf8
+	[connection setEncoding:@"utf8"];
 	
 	// Add the dump header to the dump file
 	[metaString appendString:@"# ************************************************************\n"];
