@@ -130,4 +130,9 @@
 
 - (void)setExportOutputCompressFile:(BOOL)compress;
 
+/**
+ * This is the method you should override in every concrete exporter implementation.
+ */
+- (void)exportOperation;
+
 @end

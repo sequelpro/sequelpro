@@ -84,13 +84,8 @@
 	return self;
 }
 
-/**
- * Start the SQL export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
+- (void)exportOperation
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
 	[sqlTableDataInstance setConnection:connection];
 			
@@ -128,7 +123,6 @@
 	{
 		[errors release];
 		[sqlString release];
-		[pool release];
 		return;
 	}
 			
@@ -150,7 +144,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -207,7 +200,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -383,7 +375,6 @@
 						[sqlExportPool release];
 						[errors release];
 						[sqlString release];
-						[pool release];
 						free(useRawDataForColumnAtIndex);
 						free(useRawHexDataForColumnAtIndex);
 
@@ -550,7 +541,6 @@
 					if ([self isCancelled]) {
 						[errors release];
 						[sqlString release];
-						[pool release];
 						return;
 					}
 					
@@ -598,7 +588,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -619,7 +608,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -651,7 +639,6 @@
 				if ([self isCancelled]) {
 					[errors release];
 					[sqlString release];
-					[pool release];
 					return;
 				}
 
@@ -667,7 +654,6 @@
 						[proceduresList release];
 						[errors release];
 						[sqlString release];
-						[pool release];
 						return;
 					}
 					
@@ -796,8 +782,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
-	
-	[pool release];
 }
 
 /**

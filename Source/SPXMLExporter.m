@@ -63,14 +63,8 @@
 	return self;
 }
 
-/**
- * Start the XML export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
+- (void)exportOperation
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
 	BOOL isTableExport = NO;
 	
 	NSArray *xmlRow = nil;
@@ -96,7 +90,6 @@
 		(([self xmlFormat] == SPXMLExportMySQLFormat) && ((![self xmlOutputIncludeStructure]) && (![self xmlOutputIncludeContent]))) ||
 		(([self xmlFormat] == SPXMLExportPlainFormat) && (![self xmlNULLString])))
 	{
-		[pool release];
 		return;
 	}
 			
@@ -213,7 +206,6 @@
 				}
 				
 				[xmlExportPool release];
-				[pool release];
 				
 				return;
 			}
@@ -245,7 +237,6 @@
 					}
 					
 					[xmlExportPool release];
-					[pool release];
 					
 					return;
 				}
@@ -350,8 +341,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
-	
-	[pool release];
 }
 
 #pragma mark -

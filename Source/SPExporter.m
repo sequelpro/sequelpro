@@ -67,11 +67,31 @@
 }
 
 /**
- * Override NSOperation's main() method. This method should never be called as all subclasses should override it.
+ * Override NSOperation's main() method.
+ * This method only creates an autoreleasepool and calls exportOperation
  */
 - (void)main
 {
-	[NSException raise:NSInternalInconsistencyException format:@"Cannot call NSOperation's main() method in SPExpoter, must be overriden in a subclass. See SPExporter.h"];
+	NSAutoreleasePool *pool = nil;
+	@try {
+		pool = [[NSAutoreleasePool alloc] init];
+
+		[self exportOperation];
+	}
+	@catch(NSException *e) {
+		[[NSApp onMainThread] reportException:e]; // will be caught by FeedbackReporter
+	}
+	@finally {
+		[pool release];
+	}
+}
+
+/**
+ * This method should never be called as all subclasses should override it.
+ */
+- (void)exportOperation
+{
+	[NSException raise:NSInternalInconsistencyException format:@"Cannot call %s, must be overriden in a subclass. See SPExporter.h",__PRETTY_FUNCTION__];
 }
 
 /**

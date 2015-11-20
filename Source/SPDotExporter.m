@@ -65,19 +65,12 @@
 	return self;
 }
 
-/**
- * Start the Dot schema export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
+- (void)exportOperation
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];		
-	
 	NSMutableString *metaString = [NSMutableString string];
 	
 	// Check that we have all the required info before starting the export
 	if ((![self dotExportTables]) || (![self dotTableData]) || ([[self dotExportTables] count] == 0)) {
-		[pool release];
 		return;
 	}
 
@@ -120,7 +113,6 @@
 		// Check for cancellation flag
 		if ([self isCancelled]) {
 			[fkInfo release];
-			[pool release];
 			
 			return;
 		}
@@ -171,7 +163,6 @@
 				// Check for cancellation flag
 				if ([self isCancelled]) {
 					[fkInfo release];
-					[pool release];
 					
 					return;
 				}
@@ -225,8 +216,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(dotExportProcessComplete:) withObject:self waitUntilDone:NO];
-	
-	[pool release];
 }
 
 #pragma mark -

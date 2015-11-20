@@ -68,13 +68,10 @@
 }
 
 /**
- * Start the CSV export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
+ * Start the CSV export process.
  */
-- (void)main
-{		
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
+- (void)exportOperation
+{
 	NSMutableString *csvString     = [NSMutableString string];
 	NSMutableString *csvCellString = [NSMutableString string];
 	
@@ -96,7 +93,6 @@
 	if ((![self csvTableName] && ![self csvDataArray]) ||
 		([[self csvTableName] isEqualToString:@""] && [[self csvDataArray] count] == 0))
 	{
-		[pool release];
 		return;
 	}
 	
@@ -105,7 +101,6 @@
 		(![self csvEscapeString]) ||
 		(![self csvLineEndingString]))
 	{
-		[pool release];
 		return;
 	}
 		 
@@ -114,7 +109,6 @@
 		([[self csvEscapeString] isEqualToString:@""]) ||
 		([[self csvLineEndingString] isEqualToString:@""])) 
 	{
-		[pool release];
 		return;
 	}
 					
@@ -233,8 +227,7 @@
 			}
 			
 			[csvExportPool release];
-			[pool release];
-			
+
 			return;
 		}
 		
@@ -266,8 +259,7 @@
 			// Check for cancellation flag
 			if ([self isCancelled]) {
 				[csvExportPool release];
-				[pool release];
-				
+
 				return;
 			}
 			
@@ -408,7 +400,6 @@
 	[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
 	
 	[csvExportPool release];
-	[pool release];
 }
 
 #pragma mark -
