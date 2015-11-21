@@ -363,7 +363,7 @@
 		currentPoolDataLength += [csvString length];
 		
 		// Write it to the fileHandle
-		[[self exportOutputFile] writeData:[csvString dataUsingEncoding:[self exportOutputEncoding]]];
+		[self writeString:csvString];
 		
 		currentRowIndex++;
 		

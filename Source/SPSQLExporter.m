@@ -901,19 +901,6 @@
 	return [placeholderSyntax autorelease];
 }
 
-- (void)writeString:(NSString *)input
-{
-	[[self exportOutputFile] writeData:[input dataUsingEncoding:[self exportOutputEncoding]]];
-}
-
-#warning This method mainly exists to shorten some old code which sometimes uses [self exportOutputEncoding] and sometimes NSUTF8StringEncoding. \
-	     In general there should be no need to have more than one encoding in a file (and we only really support utf-8 anyway). \
-         Someone needs to check if that was an oversight or intentional.
-- (void)writeUTF8String:(NSString *)input
-{
-	[[self exportOutputFile] writeData:[input dataUsingEncoding:NSUTF8StringEncoding]];
-}
-
 #pragma mark -
 
 - (void)dealloc

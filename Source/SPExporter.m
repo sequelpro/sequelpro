@@ -119,6 +119,16 @@
 	[[[self exportOutputFile] exportFileHandle] setCompressionFormat:(compress) ? [self exportOutputCompressionFormat] : SPNoCompression];
 }
 
+- (void)writeString:(NSString *)input
+{
+	[[self exportOutputFile] writeData:[input dataUsingEncoding:[self exportOutputEncoding]]];
+}
+
+- (void)writeUTF8String:(NSString *)input
+{
+	[[self exportOutputFile] writeData:[input dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
 /**
  * Get rid of the export data.
  */

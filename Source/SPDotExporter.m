@@ -103,7 +103,7 @@
 	[metaString appendString:@"\trankdir = LR;\n"];
 	
 	// Write information to the file
-	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	[self writeUTF8String:metaString];
 			
 	NSMutableArray *fkInfo = [[NSMutableArray alloc] init];
 	
@@ -150,9 +150,9 @@
 		[metaString appendString:@"\t\t\t</TABLE>>\n"];
 		[metaString appendString:@"\t\t];\n"];
 		[metaString appendString:@"\t}\n"];
-		
-		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
-		
+
+		[self writeUTF8String:metaString];
+
 		// Check if any relations are available for the table
 		NSArray *tableConstraints = [tableInfo objectForKey:@"constraints"];
 		
@@ -206,7 +206,7 @@
 	[metaString appendString:@"}\n"];
 	
 	// Write information to the file
-	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	[self writeUTF8String:metaString];
 			
 	// Write data to disk
 	[[self exportOutputFile] close];
