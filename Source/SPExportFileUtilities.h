@@ -41,9 +41,6 @@
  */
 @interface SPExportController (SPExportFileUtilities)
 
-- (void)writeCSVHeaderToExportFile:(SPExportFile *)file;
-- (void)writeXMLHeaderToExportFile:(SPExportFile *)file;
-
 - (void)errorCreatingExportFileHandles:(NSArray *)files;
 
 @end

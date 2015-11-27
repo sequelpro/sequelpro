@@ -44,9 +44,6 @@
 {
 	NSString *exportFilePath;
 	
-	BOOL exportFileNeedsCSVHeader;
-	BOOL exportFileNeedsXMLHeader;
-	
 	SPFileHandle *exportFileHandle;
 	
 	SPExportFileHandleStatus exportFileHandleStatus;
@@ -61,16 +58,6 @@
  * @property exportFileHandle
  */
 @property (readonly) SPFileHandle *exportFileHandle;
-
-/**
- * @property exportFileNeedsCSVHeader
- */
-@property (readwrite, assign) BOOL exportFileNeedsCSVHeader;
-
-/**
- * @property exportFileNeedsXMLHeader
- */
-@property (readwrite, assign) BOOL exportFileNeedsXMLHeader;
 
 /**
  * @property exportFileHandleStatus

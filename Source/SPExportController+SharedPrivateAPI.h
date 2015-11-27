@@ -29,8 +29,35 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportController.h"
+#import "SPExportHandlerInstance.h"
 
 @interface SPExportController (SharedPrivateAPI)
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (void)_hideExportProgress;
+- (void)_updateExportAdvancedOptionsLabel;
+- (void)_switchTab;
 @end
+
+#pragma mark -
+
+@interface _SPExportListItem : NSObject <SPExportSchemaObject> {
+	BOOL isGroupRow;
+	SPTableType type;
+	NSString *name;
+	id addonData;
+}
+
+@property (readwrite, nonatomic) BOOL isGroupRow;
+@property (readwrite, nonatomic) SPTableType type;
+@property (readwrite, nonatomic, copy) NSString *name;
+@property (readwrite, nonatomic, retain) id addonData;
+
+@end
+
+static inline _SPExportListItem *MakeExportListItem(SPTableType type,NSString *name) {
+	_SPExportListItem *item = [[_SPExportListItem alloc] init];
+	[item setName:name];
+	[item setType:type];
+	[item setIsGroupRow:NO];
+	return [item autorelease];
+}

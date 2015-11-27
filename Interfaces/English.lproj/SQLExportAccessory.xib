@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <development version="5100" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SPSQLExportViewController">
+            <connections>
+                <outlet property="exportSQLBLOBFieldsAsHexCheck" destination="YcO-8x-SUf" id="SOx-Jt-oY2"/>
+                <outlet property="exportSQLIncludeAutoIncrementValueButton" destination="adM-w6-PoF" id="Yl5-BQ-y1N"/>
+                <outlet property="exportSQLIncludeContentCheck" destination="cp8-Pj-LQw" id="ulh-NV-b2Y"/>
+                <outlet property="exportSQLIncludeDropSyntaxCheck" destination="0fx-W9-2av" id="aJJ-MB-YxG"/>
+                <outlet property="exportSQLIncludeErrorsCheck" destination="HMO-Ra-aTG" id="oJi-AZ-AeM"/>
+                <outlet property="exportSQLIncludeStructureCheck" destination="yE7-Cu-0e8" id="mOn-ax-T7b"/>
+                <outlet property="exportSQLInsertDividerPopUpButton" destination="RDj-py-CLY" id="cN4-hf-PkE"/>
+                <outlet property="exportSQLInsertNValueTextField" destination="7I7-aT-EG5" id="iBw-dO-Ye8"/>
+                <outlet property="exportUseUTF8BOMButton" destination="VIu-96-Nhq" id="Atg-Ge-Z2x"/>
+                <outlet property="view" destination="hkh-yR-xuK" id="jhG-R8-cul"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <view id="hkh-yR-xuK">
+            <rect key="frame" x="0.0" y="0.0" width="269" height="269"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button id="yE7-Cu-0e8">
+                    <rect key="frame" x="17" y="211" width="233" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Structure" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" state="on" inset="2" id="pOv-3l-Z0W">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="toggleSQLIncludeStructure:" target="-2" id="vmL-lx-COp"/>
+                    </connections>
+                </button>
+                <textField verticalHuggingPriority="750" id="5EJ-Qz-NSp">
+                    <rect key="frame" x="18" y="235" width="232" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Include:" id="ahM-oS-7fJ">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="M2K-xL-GOQ">
+                    <rect key="frame" x="18" y="111" width="233" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Advanced:" id="lkb-s4-aA2">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button id="HMO-Ra-aTG">
+                    <rect key="frame" x="18" y="131" width="232" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Errors" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="mcs-h2-Nzi">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <button id="cp8-Pj-LQw">
+                    <rect key="frame" x="18" y="151" width="232" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Content" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" state="on" inset="2" id="Soo-CD-z77">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="toggleSQLIncludeContent:" target="-2" id="sU3-ir-vAj"/>
+                    </connections>
+                </button>
+                <button id="VIu-96-Nhq">
+                    <rect key="frame" x="18" y="87" width="232" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Add UTF-8 BOM to output" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="Ahf-x5-w8R">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <button id="YcO-8x-SUf">
+                    <rect key="frame" x="18" y="67" width="232" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Output BLOB fields as hex" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" state="on" inset="2" id="5Nj-23-0HI">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <textField verticalHuggingPriority="750" id="Vw6-RR-EyA">
+                    <rect key="frame" x="18" y="47" width="232" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="New INSERT statement every:" id="f5L-z9-pYl">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="7I7-aT-EG5">
+                    <rect key="frame" x="21" y="20" width="60" height="19"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="Xqx-Va-I9p">
+                        <numberFormatter key="formatter" formatterBehavior="default10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="309" maximumFractionDigits="3" id="hsQ-K8-JjL">
+                            <real key="minimum" value="0.0"/>
+                        </numberFormatter>
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <popUpButton verticalHuggingPriority="750" id="RDj-py-CLY">
+                    <rect key="frame" x="86" y="17" width="117" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <popUpButtonCell key="cell" type="push" title="KiB of data" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="EnE-Mb-K2y" id="Blh-Sn-wE8">
+                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                        <menu key="menu" title="OtherViews" id="r3P-hJ-ZTP">
+                            <items>
+                                <menuItem title="KiB of data" state="on" id="EnE-Mb-K2y"/>
+                                <menuItem title="Rows" id="tuX-9h-bab"/>
+                            </items>
+                        </menu>
+                    </popUpButtonCell>
+                </popUpButton>
+                <button id="adM-w6-PoF">
+                    <rect key="frame" x="35" y="191" width="215" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Auto increment value" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="JX0-Z7-ZFU">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <button id="0fx-W9-2av">
+                    <rect key="frame" x="35" y="172" width="215" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="DROP TABLE syntax" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" state="on" inset="2" id="o9n-nI-mFG">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="toggleSQLIncludeDropSyntax:" target="-2" id="ZMb-zv-XiU"/>
+                    </connections>
+                </button>
+            </subviews>
+            <point key="canvasLocation" x="146.5" y="164.5"/>
+        </view>
+    </objects>
+</document>

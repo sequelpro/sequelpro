@@ -47,7 +47,7 @@
  * available to SPExportController via delegate methods in order to update the user interface.
  *
  * Note that all exporters are designed to be run concurrently and as such this base class is a subclass of 
- * NSOperation. All the data format specific subclasses have to do is override NSOperation's main() method
+ * NSOperation. All the data format specific subclasses have to do is override NSOperation's exportOperation() method
  * and implement all processes which are to be run concurrently within it. This method is automatically called
  * once the exporter instance is placed on the operation queue once its ready to be run. It should not be
  * explicity called.

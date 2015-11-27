@@ -30,9 +30,6 @@
 
 #import "SPExportController.h"
 
-@class SPCSVExporter;
-@class SPXMLExporter;
-
 /**
  * @category SPExportInitializer SPExportInitializer.h
  *
@@ -47,8 +44,5 @@
 - (void)initializeExportUsingSelectedOptions;
 
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;
-
-- (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
-- (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
 
 @end

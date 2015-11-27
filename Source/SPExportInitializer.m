@@ -47,6 +47,7 @@
 #import "SPExportFileNameTokenObject.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportHandlerInstance.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -109,97 +110,94 @@
  */
 - (void)initializeExportUsingSelectedOptions
 {
-	NSArray *dataArray = nil;
-	
-	// Get rid of the cached connection encoding
-	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
-	
-	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
-	
-	NSMutableArray *exportTables = [NSMutableArray array];
-	
-	// Set whether or not we are to export to multiple files
-	[self setExportToMultipleFiles:[exportFilePerTableCheck state]];
-	
-	// Get the data depending on the source
-	switch (exportSource) 
-	{
-		case SPFilteredExport:
-			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
-			break;
-		case SPQueryExport:
-			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
-			break;
-		case SPTableExport:
-			// Create an array of tables to export
-			for (NSMutableArray *table in tables)
-			{
-				if (exportType == SPSQLExport) {
-					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
-
-						// Check the overall export settings
-						if ([[table objectAtIndex:1] boolValue] && (![exportSQLIncludeStructureCheck state])) {
-							[table replaceObjectAtIndex:1 withObject:@NO];
-						}
-							
-						if ([[table objectAtIndex:2] boolValue] && (![exportSQLIncludeContentCheck state])) {
-							[table replaceObjectAtIndex:2 withObject:@NO];
-						}
-							
-						if ([[table objectAtIndex:3] boolValue] && (![exportSQLIncludeDropSyntaxCheck state])) {
-							[table replaceObjectAtIndex:3 withObject:@NO];
-						}
-
-						[exportTables addObject:table];
-					}
-				}
-				else if (exportType == SPDotExport) {
-					[exportTables addObject:[table objectAtIndex:0]];
-				}
-				else {
-					if ([[table objectAtIndex:2] boolValue]) {
-						[exportTables addObject:[table objectAtIndex:0]];
-					}
-				}
-			}
-			
-			break;
-	}
-	
-	// Set the export type label 
-	switch (exportType)
-	{
-		case SPSQLExport:
-			exportTypeLabel = @"SQL";
-			break;
-		case SPCSVExport:
-			exportTypeLabel = @"CSV";
-			break;
-		case SPXMLExport:
-			exportTypeLabel = @"XML";
-			break;
-		case SPDotExport:
-			exportTypeLabel = @"Dot";
-			break;
-		case SPPDFExport:
-		case SPHTMLExport:
-		case SPExcelExport:
-		default:
-			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
-			return;
-	}
-		
-	// Begin the export based on the source
-	switch (exportSource) 
-	{
-		case SPFilteredExport:
-		case SPQueryExport:
-			[self exportTables:nil orDataArray:dataArray];
-			break;
-		case SPTableExport:
-			[self exportTables:exportTables orDataArray:nil];
-			break;
-	}
+//	NSArray *dataArray = nil;
+//
+//	// Get rid of the cached connection encoding
+//	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
+//
+//	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
+//
+//	NSMutableArray *exportTables = [NSMutableArray array];
+//
+//	// Get the data depending on the source
+//	switch (exportSource)
+//	{
+//		case SPFilteredExport:
+//			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
+//			break;
+//		case SPQueryExport:
+//			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
+//			break;
+//		case SPTableExport:
+//			// Create an array of tables to export
+//			for (NSMutableArray *table in tables)
+//			{
+//				if (exportType == SPSQLExport) {
+//					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
+//
+//						// Check the overall export settings
+//						if ([[table objectAtIndex:1] boolValue] && (![exportSQLIncludeStructureCheck state])) {
+//							[table replaceObjectAtIndex:1 withObject:@NO];
+//						}
+//
+//						if ([[table objectAtIndex:2] boolValue] && (![exportSQLIncludeContentCheck state])) {
+//							[table replaceObjectAtIndex:2 withObject:@NO];
+//						}
+//
+//						if ([[table objectAtIndex:3] boolValue] && (![exportSQLIncludeDropSyntaxCheck state])) {
+//							[table replaceObjectAtIndex:3 withObject:@NO];
+//						}
+//
+//						[exportTables addObject:table];
+//					}
+//				}
+//				else if (exportType == SPDotExport) {
+//					[exportTables addObject:[table objectAtIndex:0]];
+//				}
+//				else {
+//					if ([[table objectAtIndex:2] boolValue]) {
+//						[exportTables addObject:[table objectAtIndex:0]];
+//					}
+//				}
+//			}
+//
+//			break;
+//	}
+//
+//	// Set the export type label
+//	switch (exportType)
+//	{
+//		case SPSQLExport:
+//			exportTypeLabel = @"SQL";
+//			break;
+//		case SPCSVExport:
+//			exportTypeLabel = @"CSV";
+//			break;
+//		case SPXMLExport:
+//			exportTypeLabel = @"XML";
+//			break;
+//		case SPDotExport:
+//			exportTypeLabel = @"Dot";
+//			break;
+//		case SPPDFExport:
+//		case SPHTMLExport:
+//		case SPExcelExport:
+//		default:
+//			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
+//			return;
+//	}
+//
+//	// Begin the export based on the source
+//	switch (exportSource)
+//	{
+//		case SPFilteredExport:
+//		case SPQueryExport:
+//			[self exportTables:nil orDataArray:dataArray];
+//			break;
+//		case SPTableExport:
+//			[self exportTables:exportTables orDataArray:nil];
+//			break;
+//	}
 }
 
 /**
@@ -212,8 +210,9 @@
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
-	BOOL singleFileHandleSet = NO;
-	SPExportFile *singleExportFile = nil, *file = nil;
+	//BOOL singleFileHandleSet = NO;
+	//SPExportFile *file = nil;
+	//SPExportFile *singleExportFile = nil;
 	
 	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
@@ -235,205 +234,9 @@
 	   didEndSelector:nil 
 		  contextInfo:nil];
 	
-	// CSV export
-	if (exportType == SPCSVExport) {
-		
-		SPCSVExporter *csvExporter = nil;
-		
-		// If the user has selected to only export to a single file or this is a filtered or custom query 
-		// export, create the single file now and assign it to all subsequently created exporters.
-		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-			NSString *selectedTableName = nil;
-			
-			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
-
-			[exportFilename setString:createCustomFilename ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-
-			// Only append the extension if necessary
-			if (![[exportFilename pathExtension] length]) {
-				[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-			}
-
-			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		}
-		
-		// Start the export process depending on the data source
-		if (exportSource == SPTableExport) {
-			
-			// Cache the number of tables being exported
-			exportTableCount = [exportTables count];
-			
-			// Loop through the tables, creating an exporter for each
-			for (NSString *table in exportTables) 
-			{				
-				csvExporter = [self initializeCSVExporterForTable:table orDataArray:nil];
-				
-				// If required create a single file handle for all CSV exports
-				if (![self exportToMultipleFiles]) {
-					if (!singleFileHandleSet) {
-						[singleExportFile setExportFileNeedsCSVHeader:YES];
-						
-						[exportFiles addObject:singleExportFile];
-						
-						singleFileHandleSet = YES;
-					}
-					
-					[csvExporter setExportOutputFile:singleExportFile];
-				}
-				
-				[exporters addObject:csvExporter];
-			}		
-		}
-		else {
-			csvExporter = [self initializeCSVExporterForTable:nil orDataArray:dataArray];
-			
-			[exportFiles addObject:singleExportFile];
-			
-			[csvExporter setExportOutputFile:singleExportFile];
-			
-			[exporters addObject:csvExporter];
-		}
-	}
-	// SQL export
-	else if (exportType == SPSQLExport) {
-		
-		// Cache the number of tables being exported
-		exportTableCount = [exportTables count];
-		
-		SPSQLExporter *sqlExporter = [[SPSQLExporter alloc] initWithDelegate:self];
-				
-		[sqlExporter setSqlDatabaseHost:[tableDocumentInstance host]];
-		[sqlExporter setSqlDatabaseName:[tableDocumentInstance database]];
-		[sqlExporter setSqlDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-		
-		[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
-		[sqlExporter setSqlOutputEncodeBLOBasHex:[exportSQLBLOBFieldsAsHexCheck state]];
-		[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
-		[sqlExporter setSqlOutputIncludeAutoIncrement:([exportSQLIncludeStructureCheck state] && [exportSQLIncludeAutoIncrementValueButton state])];
-		
-		[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
-		[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
-		
-		[sqlExporter setSqlExportTables:exportTables];
-		
-		// Create custom filename if required
-		NSString *selectedTableName = (exportSource == SPTableExport && [exportTables count] == 1)? [[exportTables objectAtIndex:0] objectAtIndex:0] : nil;
-		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-		
-		// Only append the extension if necessary
-		if (![[exportFilename pathExtension] length]) {
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-		}
-		
-		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		
-		[exportFiles addObject:file];
-		
-		[sqlExporter setExportOutputFile:file];
-		
-		[exporters addObject:sqlExporter];
-		
-		[sqlExporter release];
-	}
-	// XML export
-	else if (exportType == SPXMLExport) {
-		
-		SPXMLExporter *xmlExporter = nil;
-		
-		// If the user has selected to only export to a single file or this is a filtered or custom query 
-		// export, create the single file now and assign it to all subsequently created exporters.
-		if ((![self exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-			NSString *selectedTableName = nil;
-			if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
-			
-			[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-						
-			// Only append the extension if necessary
-			if (![[exportFilename pathExtension] length]) {
-				[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-			}
-
-			singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		}
-		
-		// Start the export process depending on the data source
-		if (exportSource == SPTableExport) {
-			
-			// Cache the number of tables being exported
-			exportTableCount = [exportTables count];
-			
-			// Loop through the tables, creating an exporter for each
-			for (NSString *table in exportTables) 
-			{				
-				xmlExporter = [self initializeXMLExporterForTable:table orDataArray:nil];
-				
-				// If required create a single file handle for all XML exports 
-				if (![self exportToMultipleFiles]) {
-					if (!singleFileHandleSet) {
-						[singleExportFile setExportFileNeedsXMLHeader:YES];
-						
-						[exportFiles addObject:singleExportFile];
-						
-						singleFileHandleSet = YES;
-					}
-					
-					[xmlExporter setExportOutputFile:singleExportFile];
-				}
-				
-				[exporters addObject:xmlExporter];
-			}		
-		}
-		else {
-			xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:dataArray];
-			
-			[singleExportFile setExportFileNeedsXMLHeader:YES];
-			
-			[exportFiles addObject:singleExportFile];
-			
-			[xmlExporter setExportOutputFile:singleExportFile];
-		
-			[exporters addObject:xmlExporter];
-		}		
-	}
-	// Dot export
-	else if (exportType == SPDotExport) {
-		
-		// Cache the number of tables being exported
-		exportTableCount = [exportTables count];
-		
-		SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
-		
-		[dotExporter setDotTableData:tableDataInstance];
-		[dotExporter setDotForceLowerTableNames:[exportDotForceLowerTableNamesCheck state]];
-		[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
-		[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
-		[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-
-		[dotExporter setDotExportTables:exportTables];
-		
-		// Create custom filename if required
-		if (createCustomFilename) {
-			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:nil]];
-		}
-		else {
-			[exportFilename setString:[tableDocumentInstance database]];
-		}
-		
-		// Only append the extension if necessary
-		if (![[exportFilename pathExtension] length]) {
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-		}
-		
-		file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		
-		[exportFiles addObject:file];
-		
-		[dotExporter setExportOutputFile:file];
-		
-		[exporters addObject:dotExporter];
-		
-		[dotExporter release];
-	}
+	SPExportersAndFiles pair = [[self currentExportHandler] allExporters];
+	[exporters addObjectsFromArray:pair.exporters];
+	[exportFiles addObjectsFromArray:pair.exportFiles];
 	
 	// For each of the created exporters, set their generic properties
 	for (SPExporter *exporter in exporters)
@@ -455,13 +258,6 @@
 		if ([exportFile createExportFileHandle:NO] == SPExportFileHandleCreated) {
 
 			[exportFile setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
-			
-			if ([exportFile exportFileNeedsCSVHeader]) {
-				[self writeCSVHeaderToExportFile:exportFile];
-			}
-			else if ([exportFile exportFileNeedsXMLHeader]) {
-				[self writeXMLHeaderToExportFile:exportFile];
-			}
 		}
 		else {
 			[problemFiles addObject:exportFile];
@@ -479,132 +275,6 @@
 	[problemFiles release];
 }
 
-/**
- * Initialises a CSV exporter for the supplied table name or data array.
- *
- * @param table     The table name for which the exporter should be cerated for (can be nil).
- * @param dataArray The MySQL result data array for which the exporter should be created for (can be nil).
- */
-- (SPCSVExporter *)initializeCSVExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
-{	
-	SPCSVExporter *csvExporter = [[SPCSVExporter alloc] initWithDelegate:self];
-	
-	// Depeding on the export source, set the table name or data array
-	if (exportSource == SPTableExport) {
-		[csvExporter setCsvTableName:table];
-	}
-	else {
-		[csvExporter setCsvDataArray:dataArray];
-	}
-	
-	[csvExporter setCsvTableData:tableDataInstance];
-	[csvExporter setCsvOutputFieldNames:[exportCSVIncludeFieldNamesCheck state]];
-	[csvExporter setCsvFieldSeparatorString:[exportCSVFieldsTerminatedField stringValue]];
-	[csvExporter setCsvEnclosingCharacterString:[exportCSVFieldsWrappedField stringValue]];
-	[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
-	[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
-	[csvExporter setCsvNULLString:[exportCSVNULLValuesAsTextField stringValue]];
-		
-	// If required create separate files
-	if (exportSource == SPTableExport && [self exportToMultipleFiles]) {
-		
-		if (createCustomFilename) {
-			
-			// Create custom filename based on the selected format
-			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
-			
-			// If the user chose to use a custom filename format and we exporting to multiple files, make
-			// sure the table name is included to ensure the output files are unique.
-			if (exportTableCount > 1) {
-				BOOL tableNameInTokens = NO;
-				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
-				}
-				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
-			}
-		}
-		else {
-			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
-		}
-		
-		// Only append the extension if necessary
-		if (![[exportFilename pathExtension] length]) {
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-		}
-						
-		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		
-		[exportFiles addObject:file];
-		
-		[csvExporter setExportOutputFile:file];
-	}
-	
-	return [csvExporter autorelease];
-}
 
-/**
- * Initialises a XML exporter for the supplied table name or data array.
- *
- * @param table     The table name for which the exporter should be cerated for (can be nil).
- * @param dataArray The MySQL result data array for which the exporter should be created for (can be nil).
- */
-- (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
-{	
-	SPXMLExporter *xmlExporter = [[SPXMLExporter alloc] initWithDelegate:self];
-	
-	// if required set the data array
-	if (exportSource != SPTableExport) {
-		[xmlExporter setXmlDataArray:dataArray];
-	}
-	
-	// Regardless of the export source, set exporter's table name as it's used in the output
-	// of table and table content exports.
-	[xmlExporter setXmlTableName:table];
-
-	[xmlExporter setXmlFormat:[exportXMLFormatPopUpButton indexOfSelectedItem]];
-	[xmlExporter setXmlOutputIncludeStructure:[exportXMLIncludeStructure state]];
-	[xmlExporter setXmlOutputIncludeContent:[exportXMLIncludeContent state]];
-	[xmlExporter setXmlNULLString:[exportXMLNULLValuesAsTextField stringValue]];
-	
-	// If required create separate files
-	if ((exportSource == SPTableExport) && exportToMultipleFiles && (exportTableCount > 0)) {
-		
-		if (createCustomFilename) {
-			
-			// Create custom filename based on the selected format
-			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
-			
-			// If the user chose to use a custom filename format and we exporting to multiple files, make
-			// sure the table name is included to ensure the output files are unique.
-			if (exportTableCount > 1) {
-				BOOL tableNameInTokens = NO;
-				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
-				}
-				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
-			}
-		}
-		else {
-			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table]; 
-		}
-		
-		// Only append the extension if necessary
-		if (![[exportFilename pathExtension] length]) {
-			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-		}
-										
-		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-		
-		[file setExportFileNeedsXMLHeader:YES];
-		
-		[exportFiles addObject:file];
-		
-		[xmlExporter setExportOutputFile:file];
-	}
-	
-	return [xmlExporter autorelease];
-}
 
 @end

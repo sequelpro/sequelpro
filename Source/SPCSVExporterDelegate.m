@@ -65,7 +65,7 @@
 	if ((exportCount > 0) && (exportSource == SPTableExport)) {
 			
 		// If we're only exporting to a single file then write a header for the next table
-		if (!exportToMultipleFiles) {
+		if (![self exportToMultipleFiles]) {
 			
 			// If we're exporting multiple tables to a single file then append some space and the next table's
 			// name, but only if there is at least 2 exportes left.

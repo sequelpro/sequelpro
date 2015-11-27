@@ -35,6 +35,10 @@
 @class SPTableData;
 @class SPMySQLConnection;
 @class SPServerSupport;
+@protocol SPExportHandlerInstance;
+@protocol SPExportSchemaObject;
+
+extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 
 /**
  * @class SPExportController SPExportController.h
@@ -57,8 +61,7 @@
 	IBOutlet NSButton *exportButton;
 	IBOutlet NSTextField *exportPathField;
 	IBOutlet NSTableView *exportTableList;
-	IBOutlet NSTabView *exportTypeTabBar;
-	IBOutlet NSTabView *exportOptionsTabBar;	
+	IBOutlet NSTabView *exportTypeTabBar;	
 	IBOutlet NSPopUpButton *exportInputPopUpButton;
 	IBOutlet NSButton *exportFilePerTableCheck;
 	IBOutlet NSButton *exportSelectAllTablesButton;
@@ -75,7 +78,6 @@
 	IBOutlet NSButton *exportAdvancedOptionsViewButton;
 	IBOutlet NSView *exportAdvancedOptionsView;
 	IBOutlet NSButton *exportAdvancedOptionsViewLabelButton;
-	IBOutlet NSButton *exportUseUTF8BOMButton;
 	IBOutlet NSButton *exportProcessLowMemoryButton;
 	IBOutlet NSPopUpButton *exportOutputCompressionFormatPopupButton;
 	
@@ -95,32 +97,7 @@
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
 	IBOutlet NSTokenField *exportCustomFilenameTokenPool;
 	
-	// SQL
-	IBOutlet NSButton *exportSQLIncludeStructureCheck;
-	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
-	IBOutlet NSButton *exportSQLIncludeContentCheck;
-	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
-	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
-	IBOutlet NSTextField *exportSQLInsertNValueTextField;
-	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
-	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
-	
-	// CSV
-	IBOutlet NSButton *exportCSVIncludeFieldNamesCheck;
-	IBOutlet NSComboBox *exportCSVFieldsTerminatedField;
-	IBOutlet NSComboBox *exportCSVFieldsWrappedField;
-	IBOutlet NSComboBox *exportCSVFieldsEscapedField;
-	IBOutlet NSComboBox *exportCSVLinesTerminatedField;
-	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
-	
-	// XML
-	IBOutlet NSPopUpButton *exportXMLFormatPopUpButton;
-	IBOutlet NSButton *exportXMLIncludeStructure;
-	IBOutlet NSButton *exportXMLIncludeContent;
-	IBOutlet NSTextField *exportXMLNULLValuesAsTextField;
-
-	// Dot
-	IBOutlet NSButton *exportDotForceLowerTableNamesCheck;
+	IBOutlet NSBox *accessoryViewContainer;
 
 	/**
 	 * Whether the awakeFromNib routine has already been run
@@ -163,11 +140,6 @@
 	NSMutableString *exportFilename;
 	
 	/**
-	 * Current database's tables
-	 */
-	NSMutableArray *tables;
-	
-	/** 
 	 * Database connection
 	 */
 	SPMySQLConnection *connection;
@@ -187,11 +159,6 @@
 	 * Array of export files.
 	 */
 	NSMutableArray *exportFiles;
-	
-	/**
-	 * Export type
-	 */
-	SPExportType exportType;
 	
 	/**
 	 * Export source
@@ -234,8 +201,18 @@
 	NSUInteger windowMinHeigth;
 	
 	NSDictionary *localizedTokenNames;
-	
+
+	NSMutableDictionary *exportHandlers;
+	id<SPExportHandlerInstance> currentExportHandler;
+	NSMutableArray *exportObjectList;
 }
+
+/**
+ * The current user setting for export source
+ */
+@property (readonly, nonatomic) SPExportSource exportSource;
+
+@property (readonly, nonatomic, retain) id<SPExportHandlerInstance> currentExportHandler;
 
 /**
  * @property exportCancelled Export cancellation flag
@@ -253,7 +230,7 @@
 @property(readwrite, assign) SPMySQLConnection *connection;
 @property(readwrite, assign) SPServerSupport *serverSupport;
 
-- (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
+- (void)exportTables:(NSArray *)table asFormat:(NSString *)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
 
@@ -263,7 +240,7 @@
  * @return YES if the source was accepted, NO otherwise
  * @pre _switchTab needs to have been run before this method to decide valid inputs
  */
-- (BOOL)setExportInput:(SPExportSource)input;
+- (BOOL)setExportSourceIfPossible:(SPExportSource)input;
 
 // IB action methods
 - (IBAction)export:(id)sender;
@@ -278,10 +255,16 @@
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender;
 
-- (IBAction)toggleXMLOutputFormat:(id)sender;
-- (IBAction)toggleSQLIncludeStructure:(NSButton *)sender;
-- (IBAction)toggleSQLIncludeContent:(NSButton *)sender;
-- (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender;
-- (IBAction)toggleNewFilePerTable:(NSButton *)sender;
+- (NSString *)exportPath;
+
+/**
+ * Get an array of NSString *s with the names of all known objects of this type.
+ * If the list changes the controller will post a SPExportControllerSchemaObjectsChangedNotification
+ */
+- (NSArray *)schemaObjectsForType:(SPTableType)type;
+
+- (id<SPExportSchemaObject>)schemaObjectNamed:(NSString *)name;
+
+- (NSArray *)allSchemaObjects;
 
 @end

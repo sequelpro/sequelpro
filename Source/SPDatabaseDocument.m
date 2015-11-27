@@ -3617,25 +3617,25 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		NSInteger type = [tablesListInstance tableType];
 		NSInteger numberOfSelectedItems = [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
 		
-		BOOL enable = (([self database] != nil) && numberOfSelectedItems);
-		
-		// Enable all export formats if at least one table/view is selected
-		if (numberOfSelectedItems == 1) {
-			if (type == SPTableTypeTable || type == SPTableTypeView) {
-				return enable;
-			}
-			else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
-				return (enable && (tag == SPSQLExport));
-			}
-		} 
-		else {
-			for (NSNumber *eachType in [tablesListInstance selectedTableTypes]) 
-			{
-				if ([eachType intValue] == SPTableTypeTable || [eachType intValue] == SPTableTypeView) return enable;
-			}
-			
-			return (enable && (tag == SPSQLExport));
-		}
+//		BOOL enable = (([self database] != nil) && numberOfSelectedItems);
+//		
+//		// Enable all export formats if at least one table/view is selected
+//		if (numberOfSelectedItems == 1) {
+//			if (type == SPTableTypeTable || type == SPTableTypeView) {
+//				return enable;
+//			}
+//			else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
+//				return (enable && (tag == SPSQLExport));
+//			}
+//		} 
+//		else {
+//			for (NSNumber *eachType in [tablesListInstance selectedTableTypes]) 
+//			{
+//				if ([eachType intValue] == SPTableTypeTable || [eachType intValue] == SPTableTypeView) return enable;
+//			}
+//			
+//			return (enable && (tag == SPSQLExport));
+//		}
 	}
 	
 	// Can only be enabled on mysql 4.1+

@@ -32,6 +32,8 @@
 #import "SPExportFileNameTokenObject.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportHandlerFactory.h"
+#import "SPExporterRegistry.h"
 
 /**
  * converts a ([obj state] == NSOnState) to @YES / @NO
@@ -43,52 +45,18 @@ static inline NSNumber *IsOn(id obj);
  */
 static inline void SetOnOff(NSNumber *ref,id obj);
 
-@interface SPExportController (Private)
-
-- (void)_updateExportAdvancedOptionsLabel;
-
-@end
+#pragma mark -
 
 @interface SPExportController (SPExportSettingsPersistence_Private)
 
 // those methods will convert the name of a C enum constant to a NSString
 + (NSString *)describeExportSource:(SPExportSource)es;
-+ (NSString *)describeExportType:(SPExportType)et;
 + (NSString *)describeCompressionFormat:(SPFileCompressionFormat)cf;
-+ (NSString *)describeXMLExportFormat:(SPXMLExportFormat)xf;
-+ (NSString *)describeSQLExportInsertDivider:(SPSQLExportInsertDivider)eid;
 
 // these will store the C enum constant named by NSString in dst and return YES,
 // if a valid mapping exists. Otherwise will just return NO and not modify dst.
 + (BOOL)copyExportSourceForDescription:(NSString *)esd to:(SPExportSource *)dst;
 + (BOOL)copyCompressionFormatForDescription:(NSString *)esd to:(SPFileCompressionFormat *)dst;
-+ (BOOL)copyExportTypeForDescription:(NSString *)esd to:(SPExportType *)dst;
-+ (BOOL)copyXMLExportFormatForDescription:(NSString *)xfd to:(SPXMLExportFormat *)dst;
-+ (BOOL)copySQLExportInsertDividerForDescription:(NSString *)xfd to:(SPSQLExportInsertDivider *)dst;
-
-- (NSDictionary *)exporterSettings;
-- (NSDictionary *)csvSettings;
-- (NSDictionary *)dotSettings;
-- (NSDictionary *)xmlSettings;
-- (NSDictionary *)sqlSettings;
-
-- (void)applyExporterSettings:(NSDictionary *)settings;
-- (void)applyCsvSettings:(NSDictionary *)settings;
-- (void)applyDotSettings:(NSDictionary *)settings;
-- (void)applyXmlSettings:(NSDictionary *)settings;
-- (void)applySqlSettings:(NSDictionary *)settings;
-
-- (id)exporterSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (id)dotSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (id)xmlSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (id)csvSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (id)sqlSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type;
-
-- (void)applyExporterSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (void)applyDotSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (void)applyXmlSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (void)applyCsvSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type;
-- (void)applySqlSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type;
 
 @end
 
@@ -105,6 +73,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 		NAMEOF(SPFilteredExport);
 		NAMEOF(SPQueryExport);
 		NAMEOF(SPTableExport);
+		NAMEOF(SPDatabaseExport);
 	}
 	return nil;
 }
@@ -114,32 +83,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	VALUEOF(SPFilteredExport, esd,dst);
 	VALUEOF(SPQueryExport,    esd,dst);
 	VALUEOF(SPTableExport,    esd,dst);
-	return NO;
-}
-
-+ (NSString *)describeExportType:(SPExportType)et
-{
-	switch (et) {
-		NAMEOF(SPSQLExport);
-		NAMEOF(SPCSVExport);
-		NAMEOF(SPXMLExport);
-		NAMEOF(SPDotExport);
-		NAMEOF(SPPDFExport);
-		NAMEOF(SPHTMLExport);
-		NAMEOF(SPExcelExport);
-	}
-	return nil;
-}
-
-+ (BOOL)copyExportTypeForDescription:(NSString *)etd to:(SPExportType *)dst
-{
-	VALUEOF(SPSQLExport, etd, dst);
-	VALUEOF(SPCSVExport, etd, dst);
-	VALUEOF(SPXMLExport, etd, dst);
-	VALUEOF(SPDotExport, etd, dst);
-	//VALUEOF(SPPDFExport, etd, dst);
-	//VALUEOF(SPHTMLExport, etd, dst);
-	//VALUEOF(SPExcelExport, etd, dst);
+	VALUEOF(SPDatabaseExport, esd,dst);
 	return NO;
 }
 
@@ -161,37 +105,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	return NO;
 }
 
-+ (NSString *)describeXMLExportFormat:(SPXMLExportFormat)xf
-{
-	switch (xf) {
-		NAMEOF(SPXMLExportMySQLFormat);
-		NAMEOF(SPXMLExportPlainFormat);
-	}
-	return nil;
-}
 
-+ (BOOL)copyXMLExportFormatForDescription:(NSString *)xfd to:(SPXMLExportFormat *)dst
-{
-	VALUEOF(SPXMLExportMySQLFormat, xfd, dst);
-	VALUEOF(SPXMLExportPlainFormat, xfd, dst);
-	return NO;
-}
-
-+ (NSString *)describeSQLExportInsertDivider:(SPSQLExportInsertDivider)eid
-{
-	switch (eid) {
-		NAMEOF(SPSQLInsertEveryNDataBytes);
-		NAMEOF(SPSQLInsertEveryNRows);
-	}
-	return nil;
-}
-
-+ (BOOL)copySQLExportInsertDividerForDescription:(NSString *)eidd to:(SPSQLExportInsertDivider *)dst
-{
-	VALUEOF(SPSQLInsertEveryNDataBytes, eidd, dst);
-	VALUEOF(SPSQLInsertEveryNRows,      eidd, dst);
-	return NO;
-}
 
 #undef NAMEOF
 #undef VALUEOF
@@ -345,23 +259,25 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	[root setObject:SPFExportSettingsContentType forKey:SPFFormatKey];
 	[root setObject:@1 forKey:SPFVersionKey];
 	
-	[root setObject:[exportPathField stringValue] forKey:@"exportPath"];
+	[root setObject:[self exportPath] forKey:@"exportPath"];
 	
 	[root setObject:[[self class] describeExportSource:exportSource] forKey:@"exportSource"];
-	[root setObject:[[self class] describeExportType:exportType] forKey:@"exportType"];
+	[root setObject:[[[self currentExportHandler] factory] uniqueName] forKey:@"exportType"];
 	
 	if([[exportCustomFilenameTokenField stringValue] length] > 0) {
 		[root setObject:[self currentCustomFilenameAsArray] forKey:@"customFilename"];
 	}
 	
-	[root setObject:[self exporterSettings] forKey:@"settings"];
+	[root setObject:[[self currentExportHandler] settings] forKey:@"settings"];
 	
 	if(exportSource == SPTableExport) {
-		NSMutableDictionary *perObjectSettings = [NSMutableDictionary dictionaryWithCapacity:[tables count]];
+		NSMutableDictionary *perObjectSettings = [NSMutableDictionary dictionaryWithCapacity:[exportObjectList count]];
 		
-		for (NSMutableArray *table in tables) {
-			NSString *key = [table objectAtIndex:0];
-			id settings = [self exporterSpecificSettingsForSchemaObject:key ofType:SPTableTypeTable];
+		for (_SPExportListItem *item in exportObjectList) {
+			// skip visual only objects
+			if([item isGroupRow]) continue;
+			NSString *key = [item name];
+			id settings = [[self currentExportHandler] specificSettingsForSchemaObject:item];
 			if(settings)
 				[perObjectSettings setObject:settings forKey:key];
 		}
@@ -423,22 +339,36 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
 	
-	id o;
+	id o = nil;
 	if((o = [dict objectForKey:@"exportPath"])) [exportPathField setStringValue:o];
 	
-	SPExportType et;
-	if((o = [dict objectForKey:@"exportType"]) && [[self class] copyExportTypeForDescription:o to:&et]) {
-		[exportTypeTabBar selectTabViewItemAtIndex:et];
+	// check that we actually know that export handler or abort
+	if((o = [dict objectForKey:@"exportType"]) && [[SPExporterRegistry sharedRegistry] handlerNamed:o]) {
+		[exportTypeTabBar selectTabViewItemWithIdentifier:o];
+		[self _switchTab]; //changes the currentExportHandler
+	}
+	else {
+		if(err) {
+			NSDictionary *errInfo = @{
+					@"exportType":                         (o? o : [NSNull null]),
+					NSLocalizedDescriptionKey:             NSLocalizedString(@"Unknown export format for export settings!", @"export : import settings : unknown export handler error title"),
+					NSLocalizedRecoverySuggestionErrorKey: [NSString stringWithFormat:NSLocalizedString(@"The selected export settings define export format “%@” which is not supported by this version of Sequel Pro.\n\nEither save the settings in a backwards compatible way or update your version of Sequel Pro.", @"export : import settings : unknown export handler description ($1 = export handler internal name)"),o],
+			};
+			*err = [NSError errorWithDomain:SPErrorDomain
+			                           code:SPErrorUnknownIdentifier
+			                       userInfo:errInfo];
+		}
+		return NO;
 	}
 	
 	//exportType should be changed first, as exportSource depends on it
 	SPExportSource es;
 	if((o = [dict objectForKey:@"exportSource"]) && [[self class] copyExportSourceForDescription:o to:&es]) {
-		[self setExportInput:es]; //try to set it. might fail e.g. if the settings were saved with "query result" but right now no custom query result exists
+		[self setExportSourceIfPossible:es]; //try to set it. might fail e.g. if the settings were saved with "query result" but right now no custom query result exists
 	}
 
 	// set exporter specific settings
-	[self applyExporterSettings:[dict objectForKey:@"settings"]];
+	[[self currentExportHandler] applySettings:[dict objectForKey:@"settings"]];
 
 	// load schema object settings
 	if(exportSource == SPTableExport) {
@@ -446,7 +376,9 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 		
 		for (NSString *table in [perObjectSettings allKeys]) {
 			id settings = [perObjectSettings objectForKey:table];
-			[self applyExporterSpecificSettings:settings forSchemaObject:table ofType:SPTableTypeTable];
+			//we have to find the current object to apply the settings onto
+			id<SPExportSchemaObject> obj = [self schemaObjectNamed:table];
+			if (obj) [[self currentExportHandler] applySpecificSettings:settings forSchemaObject:obj];
 		}
 		
 		[exportTableList reloadData];
@@ -465,326 +397,6 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	if((o = [dict objectForKey:@"customFilename"]) && [o isKindOfClass:[NSArray class]]) [self setCustomFilenameFromArray:o];
 	
 	return YES;
-}
-
-- (NSDictionary *)exporterSettings
-{
-	switch (exportType) {
-		case SPCSVExport:
-			return [self csvSettings];
-		case SPSQLExport:
-			return [self sqlSettings];
-		case SPXMLExport:
-			return [self xmlSettings];
-		case SPDotExport:
-			return [self dotSettings];
-		case SPExcelExport:
-		case SPHTMLExport:
-		case SPPDFExport:
-		default:
-			@throw [NSException exceptionWithName:NSInternalInconsistencyException
-										   reason:@"exportType not implemented!"
-										 userInfo:@{@"exportType": @(exportType)}];
-	}
-}
-
-- (void)applyExporterSettings:(NSDictionary *)settings
-{
-	switch (exportType) {
-		case SPCSVExport:
-			return [self applyCsvSettings:settings];
-		case SPSQLExport:
-			return [self applySqlSettings:settings];
-		case SPXMLExport:
-			return [self applyXmlSettings:settings];
-		case SPDotExport:
-			return [self applyDotSettings:settings];
-		case SPExcelExport:
-		case SPHTMLExport:
-		case SPPDFExport:
-		default:
-			@throw [NSException exceptionWithName:NSInternalInconsistencyException
-										   reason:@"exportType not implemented!"
-										 userInfo:@{@"exportType": @(exportType)}];
-	}
-}
-
-- (NSDictionary *)csvSettings
-{
-	return @{
-		@"exportToMultipleFiles": IsOn(exportFilePerTableCheck),
-		@"CSVIncludeFieldNames":  IsOn(exportCSVIncludeFieldNamesCheck),
-		@"CSVFieldsTerminated":   [exportCSVFieldsTerminatedField stringValue],
-		@"CSVFieldsWrapped":      [exportCSVFieldsWrappedField stringValue],
-		@"CSVLinesTerminated":    [exportCSVLinesTerminatedField stringValue],
-		@"CSVFieldsEscaped":      [exportCSVFieldsEscapedField stringValue],
-		@"CSVNULLValuesAsText":   [exportCSVNULLValuesAsTextField stringValue]
-	};
-}
-
-- (void)applyCsvSettings:(NSDictionary *)settings
-{
-	id o;
-	if((o = [settings objectForKey:@"exportToMultipleFiles"])) SetOnOff(o,exportFilePerTableCheck);
-	[self toggleNewFilePerTable:nil];
-	
-	if((o = [settings objectForKey:@"CSVIncludeFieldNames"]))  SetOnOff(o, exportCSVIncludeFieldNamesCheck);
-	if((o = [settings objectForKey:@"CSVFieldsTerminated"]))   [exportCSVFieldsTerminatedField setStringValue:o];
-	if((o = [settings objectForKey:@"CSVFieldsWrapped"]))      [exportCSVFieldsWrappedField setStringValue:o];
-	if((o = [settings objectForKey:@"CSVLinesTerminated"]))    [exportCSVLinesTerminatedField setStringValue:o];
-	if((o = [settings objectForKey:@"CSVFieldsEscaped"]))      [exportCSVFieldsEscapedField setStringValue:o];
-	if((o = [settings objectForKey:@"CSVNULLValuesAsText"]))   [exportCSVNULLValuesAsTextField setStringValue:o];
-}
-
-- (NSDictionary *)dotSettings
-{
-	return @{@"DotForceLowerTableNames": IsOn(exportDotForceLowerTableNamesCheck)};
-}
-
-- (void)applyDotSettings:(NSDictionary *)settings
-{
-	id o;
-	if((o = [settings objectForKey:@"DotForceLowerTableNames"])) SetOnOff(o, exportDotForceLowerTableNamesCheck);
-}
-
-- (NSDictionary *)xmlSettings
-{
-	return @{
-		@"exportToMultipleFiles":     IsOn(exportFilePerTableCheck),
-		@"XMLFormat":                 [[self class] describeXMLExportFormat:(SPXMLExportFormat)[exportXMLFormatPopUpButton indexOfSelectedItem]],
-		@"XMLOutputIncludeStructure": IsOn(exportXMLIncludeStructure),
-		@"XMLOutputIncludeContent":   IsOn(exportXMLIncludeContent),
-		@"XMLNULLString":             [exportXMLNULLValuesAsTextField stringValue]
-	};
-}
-
-- (void)applyXmlSettings:(NSDictionary *)settings
-{
-	id o;
-	SPXMLExportFormat xmlf;
-	if((o = [settings objectForKey:@"exportToMultipleFiles"]))     SetOnOff(o, exportFilePerTableCheck);
-	[self toggleNewFilePerTable:nil];
-	
-	if((o = [settings objectForKey:@"XMLFormat"]) && [[self class] copyXMLExportFormatForDescription:o to:&xmlf]) [exportXMLFormatPopUpButton selectItemAtIndex:xmlf];
-	if((o = [settings objectForKey:@"XMLOutputIncludeStructure"])) SetOnOff(o, exportXMLIncludeStructure);
-	if((o = [settings objectForKey:@"XMLOutputIncludeContent"]))   SetOnOff(o, exportXMLIncludeContent);
-	if((o = [settings objectForKey:@"XMLNULLString"]))             [exportXMLNULLValuesAsTextField setStringValue:o];
-	
-	[self toggleXMLOutputFormat:exportXMLFormatPopUpButton];
-}
-
-- (NSDictionary *)sqlSettings
-{
-	BOOL includeStructure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-	
-	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
-		@"SQLIncludeStructure": IsOn(exportSQLIncludeStructureCheck),
-		@"SQLIncludeContent":   IsOn(exportSQLIncludeContentCheck),
-		@"SQLIncludeErrors":    IsOn(exportSQLIncludeErrorsCheck),
-		@"SQLIncludeDROP":      IsOn(exportSQLIncludeDropSyntaxCheck),
-		@"SQLUseUTF8BOM":       IsOn(exportUseUTF8BOMButton),
-		@"SQLBLOBFieldsAsHex":  IsOn(exportSQLBLOBFieldsAsHexCheck),
-		@"SQLInsertNValue":     @([exportSQLInsertNValueTextField integerValue]),
-		@"SQLInsertDivider":    [[self class] describeSQLExportInsertDivider:(SPSQLExportInsertDivider)[exportSQLInsertDividerPopUpButton indexOfSelectedItem]]
-	}];
-	
-	if(includeStructure) {
-		[dict addEntriesFromDictionary:@{
-			@"SQLIncludeAutoIncrementValue":  IsOn(exportSQLIncludeAutoIncrementValueButton),
-			@"SQLIncludeDropSyntax":          IsOn(exportSQLIncludeDropSyntaxCheck)
-		}];
-	}
-	
-	return dict;
-}
-
-- (void)applySqlSettings:(NSDictionary *)settings
-{
-	id o;
-	SPSQLExportInsertDivider div;
-	
-	if((o = [settings objectForKey:@"SQLIncludeContent"]))   SetOnOff(o, exportSQLIncludeContentCheck);
-	[self toggleSQLIncludeContent:exportSQLIncludeContentCheck];
-	
-	if((o = [settings objectForKey:@"SQLIncludeDROP"]))    SetOnOff(o, exportSQLIncludeDropSyntaxCheck);
-	[self toggleSQLIncludeDropSyntax:exportSQLIncludeDropSyntaxCheck];
-	
-	if((o = [settings objectForKey:@"SQLIncludeStructure"])) SetOnOff(o, exportSQLIncludeStructureCheck);
-	[self toggleSQLIncludeStructure:exportSQLIncludeStructureCheck];
-	
-	if((o = [settings objectForKey:@"SQLIncludeErrors"]))    SetOnOff(o, exportSQLIncludeErrorsCheck);
-	if((o = [settings objectForKey:@"SQLUseUTF8BOM"]))       SetOnOff(o, exportUseUTF8BOMButton);
-	if((o = [settings objectForKey:@"SQLBLOBFieldsAsHex"]))  SetOnOff(o, exportSQLBLOBFieldsAsHexCheck);
-	if((o = [settings objectForKey:@"SQLInsertNValue"]))     [exportSQLInsertNValueTextField setIntegerValue:[o integerValue]];
-	if((o = [settings objectForKey:@"SQLInsertDivider"]) && [[self class] copySQLExportInsertDividerForDescription:o to:&div]) [exportSQLInsertDividerPopUpButton selectItemAtIndex:div];
-
-	if([exportSQLIncludeStructureCheck state] == NSOnState) {
-		if((o = [settings objectForKey:@"SQLIncludeAutoIncrementValue"]))  SetOnOff(o, exportSQLIncludeAutoIncrementValueButton);
-		if((o = [settings objectForKey:@"SQLIncludeDropSyntax"]))  SetOnOff(o, exportSQLIncludeDropSyntaxCheck);
-	}
-}
-
-- (id)exporterSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	switch (exportType) {
-		case SPCSVExport:
-			return [self csvSpecificSettingsForSchemaObject:name ofType:type];
-		case SPSQLExport:
-			return [self sqlSpecificSettingsForSchemaObject:name ofType:type];
-		case SPXMLExport:
-			return [self xmlSpecificSettingsForSchemaObject:name ofType:type];
-		case SPDotExport:
-			return [self dotSpecificSettingsForSchemaObject:name ofType:type];
-		case SPExcelExport:
-		case SPHTMLExport:
-		case SPPDFExport:
-		default:
-			@throw [NSException exceptionWithName:NSInternalInconsistencyException
-										   reason:@"exportType not implemented!"
-										 userInfo:@{@"exportType": @(exportType)}];
-	}
-}
-
-- (void)applyExporterSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	switch (exportType) {
-		case SPCSVExport:
-			return [self applyCsvSpecificSettings:settings forSchemaObject:name ofType:type];
-		case SPSQLExport:
-			return [self applySqlSpecificSettings:settings forSchemaObject:name ofType:type];
-		case SPXMLExport:
-			return [self applyXmlSpecificSettings:settings forSchemaObject:name ofType:type];
-		case SPDotExport:
-			return [self applyDotSpecificSettings:settings forSchemaObject:name ofType:type];
-		case SPExcelExport:
-		case SPHTMLExport:
-		case SPPDFExport:
-		default:
-			@throw [NSException exceptionWithName:NSInternalInconsistencyException
-										   reason:@"exportType not implemented!"
-										 userInfo:@{@"exportType": @(exportType)}];
-	}
-}
-
-- (id)dotSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	// Dot is a graph of the whole database - nothing to pick from
-	return nil;
-}
-
-- (void)applyDotSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	//should never be called
-}
-
-- (id)xmlSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	// XML per table setting is only yes/no
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views' rows to find the current checkbox value...
-		for (NSArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				return @([[table objectAtIndex:2] boolValue]);
-			}
-		}
-	}
-	return nil;
-}
-
-- (void)applyXmlSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	// XML per table setting is only yes/no
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views' rows to find the appropriate table...
-		for (NSMutableArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				[table replaceObjectAtIndex:2 withObject:@([settings boolValue])];
-				return;
-			}
-		}
-	}
-}
-
-- (id)csvSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	// CSV per table setting is only yes/no
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views rows to find the current checkbox value...
-		for (NSArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				return @([[table objectAtIndex:2] boolValue]);
-			}
-		}
-	}
-	return nil;
-}
-
-- (void)applyCsvSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	// CSV per table setting is only yes/no
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views' rows to find the appropriate table...
-		for (NSMutableArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				[table replaceObjectAtIndex:2 withObject:@([settings boolValue])];
-				return;
-			}
-		}
-	}
-}
-
-- (id)sqlSpecificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	BOOL structure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-	BOOL content   = ([exportSQLIncludeContentCheck state] == NSOnState);
-	BOOL drop      = ([exportSQLIncludeDropSyntaxCheck state] == NSOnState);
-	
-	// SQL allows per table setting of structure/content/drop table
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views rows to find the current checkbox value...
-		for (NSArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				NSMutableArray *flags = [NSMutableArray arrayWithCapacity:3];
-				
-				if (structure && [[table objectAtIndex:1] boolValue]) {
-					[flags addObject:@"structure"];
-				}
-				
-				if (content && [[table objectAtIndex:2] boolValue]) {
-					[flags addObject:@"content"];
-				}
-				
-				if (drop && [[table objectAtIndex:3] boolValue]) {
-					[flags addObject:@"drop"];
-				}
-			
-				return flags;
-			}
-		}
-	}
-	return nil;
-}
-
-- (void)applySqlSpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-	BOOL structure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-	BOOL content   = ([exportSQLIncludeContentCheck state] == NSOnState);
-	BOOL drop      = ([exportSQLIncludeDropSyntaxCheck state] == NSOnState);
-	
-	// SQL allows per table setting of structure/content/drop table
-	if(type == SPTableTypeTable) {
-		// we have to look through the table views' rows to find the appropriate table...
-		for (NSMutableArray *table in tables) {
-			if([[table objectAtIndex:0] isEqualTo:name]) {
-				NSArray *flags = settings;
-				
-				[table replaceObjectAtIndex:1 withObject:@((structure && [flags containsObject:@"structure"]))];
-				[table replaceObjectAtIndex:2 withObject:@((content   && [flags containsObject:@"content"]))];
-				[table replaceObjectAtIndex:3 withObject:@((drop      && [flags containsObject:@"drop"]))];
-				return;
-			}
-		}
-	}
 }
 
 @end

@@ -38,8 +38,6 @@
 #import "SPTableContentDelegate.h"
 #import "SPExportController+SharedPrivateAPI.h"
 
-#import <SPMySQL/SPMySQL.h>
-
 typedef enum
 {
 	SPExportErrorCancelExport   = 0,
@@ -53,84 +51,6 @@ SPExportErrorChoice;
 @end
 
 @implementation SPExportController (SPExportFileUtilitiesPrivateAPI)
-
-/**
- * Writes the CSV file header to the supplied export file.
- *
- * @param file The export file to write the header to.
- */
-- (void)writeCSVHeaderToExportFile:(SPExportFile *)file
-{
-	NSMutableString *lineEnding = [NSMutableString stringWithString:[exportCSVLinesTerminatedField stringValue]];
-	
-	// Escape tabs, line endings and carriage returns
-	[lineEnding replaceOccurrencesOfString:@"\\t" withString:@"\t"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [lineEnding length])];
-	
-	
-	[lineEnding replaceOccurrencesOfString:@"\\n" withString:@"\n"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [lineEnding length])];
-	
-	[lineEnding replaceOccurrencesOfString:@"\\r" withString:@"\r"
-								   options:NSLiteralSearch
-									 range:NSMakeRange(0, [lineEnding length])];
-	
-	// Write the file header and the first table name
-	[file writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-					  NSLocalizedString(@"Host", @"export header host label"),
-					  [tableDocumentInstance host], 
-					  NSLocalizedString(@"Database", @"export header database label"),
-					  [tableDocumentInstance database], 
-					  NSLocalizedString(@"Generation Time", @"export header generation time label"),
-					  [NSDate date], 
-					  lineEnding, 
-					  lineEnding,
-					  NSLocalizedString(@"Table", @"csv export table heading"),
-					  [[tables objectAtIndex:0] objectAtIndex:0],
-					  lineEnding, 
-					  lineEnding] dataUsingEncoding:[connection stringEncoding]]];
-}
-
-/**
- * Writes the XML file header to the supplied export file.
- *
- * @param file The export file to write the header to.
- */
-- (void)writeXMLHeaderToExportFile:(SPExportFile *)file
-{
-	NSMutableString *header = [NSMutableString string];
-	
-	[header setString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
-	[header appendString:@"<!--\n-\n"];
-	[header appendString:@"- Sequel Pro XML dump\n"];
-	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
-	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
-	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
-	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [tableDocumentInstance database]];
-	[header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
-	[header appendString:@"-\n-->\n\n"];
-	
-	if ([exportXMLFormatPopUpButton indexOfSelectedItem] == SPXMLExportMySQLFormat) {
-		
-		NSString *tag;
-		
-		if (exportSource == SPTableExport) {
-			tag = [NSString stringWithFormat:@"<mysqldump xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<database name=\"%@\">\n\n", [tableDocumentInstance database]];
-		}
-		else {
-			tag = [NSString stringWithFormat:@"<resultset statement=\"%@\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\n", (exportSource == SPFilteredExport) ? [tableContentInstance usedQuery] : [customQueryInstance usedQuery]];
-		}
-		
-		[header appendString:tag];
-	}
-	else {
-		[header appendFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]];
-	}
-	
-	[file writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];
-}
 
 /**
  * Indicates that one or more errors occurred while attempting to create the export file handles. Asks the 
@@ -321,13 +241,13 @@ SPExportErrorChoice;
 				
 				if ([file createExportFileHandle:YES] == SPExportFileHandleCreated) {
 					[file setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
-					
-					if ([file exportFileNeedsCSVHeader]) {
-						[self writeCSVHeaderToExportFile:file];
-					}
-					else if ([file exportFileNeedsXMLHeader]) {
-						[self writeXMLHeaderToExportFile:file];
-					}
+
+//					if ([file exportFileNeedsCSVHeader]) {
+//						[self writeCSVHeaderToExportFile:file];
+//					}
+//					else if ([file exportFileNeedsXMLHeader]) {
+//						[self writeXMLHeaderToExportFile:file];
+//					}
 				}
 			}
 		}

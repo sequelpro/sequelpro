@@ -41,8 +41,6 @@
 
 @synthesize exportFilePath;
 @synthesize exportFileHandle;
-@synthesize exportFileNeedsCSVHeader;
-@synthesize exportFileNeedsXMLHeader;
 @synthesize exportFileHandleStatus;
 
 #pragma mark -
@@ -73,10 +71,7 @@
 		
 		[self setExportFilePath:path];
 		
-		exportFileHandleStatus = -1;
-		
-		[self setExportFileNeedsCSVHeader:NO];
-		[self setExportFileNeedsXMLHeader:NO];
+		exportFileHandleStatus = SPExportFileHandleInvalid;
 	}
 	
 	return self;

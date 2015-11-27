@@ -32,6 +32,9 @@
 #import "SPTablesList.h"
 #import "SPDatabaseViewController.h"
 #import "SPExportFileNameTokenObject.h"
+#import "SPExportHandlerInstance.h"
+#import "SPExportHandlerFactory.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 @implementation SPExportController (SPExportFilenameUtilities)
 
@@ -40,7 +43,7 @@
  */
 - (void)updateDisplayedExportFilename
 {	
-	NSString *filename  = @"";
+	NSString *filename;
 	
 	if ([[exportCustomFilenameTokenField stringValue] length] > 0) {
 		
@@ -83,33 +86,34 @@
 
 - (BOOL)isTableTokenAllowed
 {
-	NSUInteger i = 0;
-	BOOL removeTable = NO;
-	
-	BOOL isSQL = exportType == SPSQLExport;
-	BOOL isCSV = exportType == SPCSVExport;
-	BOOL isDot = exportType == SPDotExport;
-	BOOL isXML = exportType == SPXMLExport;
-	
 	// Determine whether to remove the table from the tokens list
-	if (exportSource == SPQueryExport || isDot) {
-		removeTable = YES;
+	// query result is possibly not derived from any real table (e.g. joins, inline views, functions …).
+	// database export only works on the db level, not on the schema object level.
+	if (exportSource != SPTableExport && exportSource != SPFilteredExport) {
+		return NO;
 	}
-	else if (isSQL || isCSV || isXML) {
-		for (NSArray *table in tables)
-		{
-			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
-				i++;
-				if (i == 2) break;
-			}
-		}
-		
-		if (i > 1) {
-			removeTable = isSQL ? YES : ![exportFilePerTableCheck state];
+
+	// filtered export has always one table as source.
+	if(exportSource == SPFilteredExport) {
+		return YES;
+	}
+
+	// table export has always zero or more tables as source.
+	NSUInteger i = 0;
+	for (_SPExportListItem *item in exportObjectList)
+	{
+		if ([[self currentExportHandler] wouldIncludeSchemaObject:item]) {
+			i++;
+			if (i == 2) break;
 		}
 	}
-	
-	return (removeTable == NO);
+
+	if (!i || (i > 1 && ![[[self currentExportHandler] factory] supportsExportToMultipleFiles])) {
+		return NO;
+	}
+
+	// if multiple tables are selected the table token can only be used in "export to multiple files" mode.
+	return ([self exportToMultipleFiles]);
 }
 
 /**
@@ -179,10 +183,13 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			filename = [NSString stringWithFormat:@"%@_view", [tableDocumentInstance table]];
+			filename = [NSString stringWithFormat:NSLocalizedString(@"%@_view",@"filename template for (filtered) table content export ($1 = table name)"), [tableDocumentInstance table]];
 			break;
 		case SPQueryExport:
-			filename = @"query_result";
+			filename = NSLocalizedString(@"query_result",@"filename template for query results export");
+			break;
+		case SPDatabaseExport:
+			filename = [NSString stringWithFormat:NSLocalizedString(@"%1$@_relations",@"filename template for Dot export ($1 = db name)"),[tableDocumentInstance database]];
 			break;
 		case SPTableExport:
 			filename = [NSString stringWithFormat:@"%@_%@", [tableDocumentInstance database], [[NSDate date] descriptionWithCalendarFormat:@"%Y-%m-%d" timeZone:nil locale:nil]];
@@ -199,30 +206,8 @@
  */
 - (NSString *)currentDefaultExportFileExtension
 {
-	NSString *extension = @"";
-	
-	switch (exportType) {
-		case SPSQLExport:
-			extension = SPFileExtensionSQL;
-			break;
-		case SPCSVExport:
-			// If the tab character (\t) is selected as the feild separator return the extension as .tsv 
-			extension = ([exportCSVFieldsTerminatedField indexOfSelectedItem] == 2) ? @"tsv" : @"csv";
-			break;
-		case SPXMLExport:
-			extension = @"xml";
-			break;
-		case SPDotExport:
-			extension = @"dot";
-			break;
-		case SPPDFExport:
-		case SPHTMLExport:
-		case SPExcelExport:
-		default:
-			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
-			return nil;
-	}
-	
+	NSString *extension = [[self currentExportHandler] fileExtension];
+
 	if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression) {
 		
 		SPFileCompressionFormat compressionFormat = (SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem];

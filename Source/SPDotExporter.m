@@ -218,6 +218,11 @@
 	[delegate performSelectorOnMainThread:@selector(dotExportProcessComplete:) withObject:self waitUntilDone:NO];
 }
 
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
+	NSAssert(false, @"This method should never be called on dot exporter because it doesn't even support SPTableExport!");
+	return NO;
+}
+
 #pragma mark -
 
 - (void)dealloc

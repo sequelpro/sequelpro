@@ -31,6 +31,8 @@
 #import "SPExportControllerDelegate.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
+#import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportHandlerInstance.h"
 
 static inline BOOL IS_TOKEN(id x);
 static inline BOOL IS_STRING(id x);
@@ -39,9 +41,6 @@ static inline BOOL IS_STRING(id x);
 @interface SPExportController (SPExportControllerPrivateAPI)
 
 - (void)_toggleExportButtonOnBackgroundThread;
-- (void)_toggleSQLExportTableNameTokenAvailability;
-- (void)_updateExportFormatInformation;
-- (void)_switchTab;
 - (NSArray *)_updateTokensForMixedContent:(NSArray *)tokens;
 - (void)_tokenizeCustomFilenameTokenField;
 
@@ -54,21 +53,36 @@ static inline BOOL IS_STRING(id x);
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-	return [tables count];
+	return [exportObjectList count];
 }
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {		
-	return NSArrayObjectAtIndex([tables objectAtIndex:rowIndex], [exportTableList columnWithIdentifier:[tableColumn identifier]]);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+
+	if([[tableColumn identifier] isEqualToString:@"name"] || ([item isGroupRow] && !tableColumn))
+		return [item name];
+	
+	//a group row can only be asked for its name
+	if([item isGroupRow]) {
+		return nil;
+	}
+
+	// all other values are provided by the export handler
+	return [[self currentExportHandler] objectValueForTableColumn:tableColumn schemaObject:item];
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{	
-	[[tables objectAtIndex:rowIndex] replaceObjectAtIndex:[exportTableList columnWithIdentifier:[tableColumn identifier]] withObject:anObject];
+{
+	if(!tableColumn || [[tableColumn identifier] isEqualToString:@"name"]) {
+		NSBeep();
+		return;
+	}
 	
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	[[self currentExportHandler] setObjectValue:anObject forTableColumn:tableColumn schemaObject:item];
+	// changing the selection most likely will change the availability of the "table" token
 	[self updateAvailableExportFilenameTokens];
-	[self _toggleExportButtonOnBackgroundThread];
-	[self _updateExportFormatInformation];
 }
 
 #pragma mark -
@@ -82,6 +96,31 @@ static inline BOOL IS_STRING(id x);
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	[cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+}
+
+- (BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
+{
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,row);
+	return [item isGroupRow];
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+{
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	return (![item isGroupRow]);
+}
+
+- (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+
+	// group rows only have a cell in the name column.
+	// by changing the cell for tableColumn==nil we define a single cell for the whole row
+	if([item isGroupRow] && !tableColumn) {
+		return [[tableView tableColumnWithIdentifier:@"name"] dataCellForRow:rowIndex];
+	}
+
+	return nil;
 }
 
 #pragma mark -
@@ -205,16 +244,6 @@ static inline BOOL IS_STRING(id x);
 		if([[NSApp currentEvent] type] != NSKeyDown || [[NSApp currentEvent] keyCode] != 0x24) {
 			[self performSelector:@selector(_tokenizeCustomFilenameTokenField) withObject:nil afterDelay:0.5];
 		}
-	}
-}
-
-#pragma mark -
-#pragma mark Combo box delegate methods
-
-- (void)comboBoxSelectionDidChange:(NSNotification *)notification
-{
-	if ([notification object] == exportCSVFieldsTerminatedField) {
-		[self updateDisplayedExportFilename];
 	}
 }
 

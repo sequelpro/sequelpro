@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <development version="5100" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="SPCSVExportViewController">
+            <connections>
+                <outlet property="exportCSVFieldsEscapedField" destination="sLC-XD-GXy" id="XML-Ne-RxN"/>
+                <outlet property="exportCSVFieldsTerminatedField" destination="a6x-Du-X63" id="sKT-Ic-obD"/>
+                <outlet property="exportCSVFieldsWrappedField" destination="Ax0-Yo-OHS" id="avG-Jy-r9A"/>
+                <outlet property="exportCSVIncludeFieldNamesCheck" destination="aGZ-EI-XOn" id="k6G-Q7-0q3"/>
+                <outlet property="exportCSVLinesTerminatedField" destination="Ljc-sh-GEg" id="uUn-Y3-gBT"/>
+                <outlet property="exportCSVNULLValuesAsTextField" destination="Ooz-ch-GEo" id="UFw-fF-lRX"/>
+                <outlet property="view" destination="a1N-5E-AVM" id="MwO-ix-cyu"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <view id="a1N-5E-AVM">
+            <rect key="frame" x="0.0" y="0.0" width="276" height="251"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <textField verticalHuggingPriority="750" id="cGa-mX-UCC">
+                    <rect key="frame" x="18" y="196" width="240" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Fields:" id="mV1-PX-3gI">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="XwT-zh-A2c">
+                    <rect key="frame" x="18" y="97" width="240" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Lines:" id="0gO-a9-8zl">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="Bkk-q2-oib">
+                    <rect key="frame" x="59" y="143" width="199" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Wrap" id="8RX-NN-kSL">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="JPJ-hy-0pA">
+                    <rect key="frame" x="59" y="168" width="199" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Terminate" id="6Fa-sN-DXx">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <comboBox toolTip="Character used to separate fields" verticalHuggingPriority="750" id="a6x-Du-X63">
+                    <rect key="frame" x="21" y="167" width="36" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <comboBoxCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" alignment="left" title="," drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="3" id="Zat-Ee-N5u">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <objectValues>
+                            <string>,</string>
+                            <string>;</string>
+                            <string>\t</string>
+                        </objectValues>
+                    </comboBoxCell>
+                    <connections>
+                        <outlet property="delegate" destination="-2" id="VoQ-8z-AXe"/>
+                    </connections>
+                </comboBox>
+                <comboBox toolTip="Character used to enclose fields" verticalHuggingPriority="750" id="Ax0-Yo-OHS">
+                    <rect key="frame" x="21" y="142" width="36" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <comboBoxCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" alignment="left" title="&quot;" drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="2" id="LdX-1M-a3f">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <objectValues>
+                            <string>"</string>
+                            <string></string>
+                        </objectValues>
+                    </comboBoxCell>
+                </comboBox>
+                <comboBox toolTip="Character used to escape special characters" verticalHuggingPriority="750" id="sLC-XD-GXy">
+                    <rect key="frame" x="21" y="115" width="36" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <comboBoxCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" alignment="left" title="\" drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="2" id="JEN-jh-oqv">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <objectValues>
+                            <string>\</string>
+                            <string>"</string>
+                        </objectValues>
+                    </comboBoxCell>
+                </comboBox>
+                <textField verticalHuggingPriority="750" id="dib-sZ-dxW">
+                    <rect key="frame" x="59" y="116" width="199" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Escape" id="BzZ-8H-oc5">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <comboBox toolTip="Character used to terminate lines" verticalHuggingPriority="750" id="Ljc-sh-GEg">
+                    <rect key="frame" x="21" y="68" width="36" height="22"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <comboBoxCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" alignment="left" title="\n" drawsBackground="YES" usesSingleLineMode="YES" completes="NO" numberOfVisibleItems="3" id="yOD-lD-zi1">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <objectValues>
+                            <string>\n</string>
+                            <string>\r\n</string>
+                            <string>\r</string>
+                        </objectValues>
+                    </comboBoxCell>
+                </comboBox>
+                <textField verticalHuggingPriority="750" id="icS-sV-AAu">
+                    <rect key="frame" x="59" y="69" width="199" height="17"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" title="Terminate" id="yV8-XR-Gln">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button id="aGZ-EI-XOn">
+                    <rect key="frame" x="18" y="216" width="240" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Put field names in first row" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" state="on" inset="2" id="gqf-cT-HT5">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                    </buttonCell>
+                </button>
+                <textField verticalHuggingPriority="750" id="ehk-Sd-UHq">
+                    <rect key="frame" x="18" y="47" width="240" height="14"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="NULL values:" id="HOr-ry-JKz">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <textField verticalHuggingPriority="750" id="Ooz-ch-GEo">
+                    <rect key="frame" x="21" y="20" width="55" height="19"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="nNK-OF-liS">
+                        <font key="font" metaFont="smallSystem"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <point key="canvasLocation" x="150" y="155.5"/>
+        </view>
+    </objects>
+</document>

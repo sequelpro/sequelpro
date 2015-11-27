@@ -117,6 +117,8 @@
 				
 	// Mark the process as running
 	[self setExportProcessIsRunning:YES];
+
+	[self writeCSVHeaderToExportFile];
 	
 	lastProgressValue = 0;
 
@@ -400,6 +402,45 @@
 	[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
 	
 	[csvExportPool release];
+}
+
+/**
+ * Writes the CSV file header to the supplied export file.
+ *
+ * @param file The export file to write the header to.
+ */
+- (void)writeCSVHeaderToExportFile
+{
+	NSMutableString *lineEnding = [NSMutableString stringWithString:[self csvLineEndingString]];
+
+	// Escape tabs, line endings and carriage returns
+	[lineEnding replaceOccurrencesOfString:@"\\t" withString:@"\t"
+	                               options:NSLiteralSearch
+	                                 range:NSMakeRange(0, [lineEnding length])];
+
+
+	[lineEnding replaceOccurrencesOfString:@"\\n" withString:@"\n"
+	                               options:NSLiteralSearch
+	                                 range:NSMakeRange(0, [lineEnding length])];
+
+	[lineEnding replaceOccurrencesOfString:@"\\r" withString:@"\r"
+	                               options:NSLiteralSearch
+	                                 range:NSMakeRange(0, [lineEnding length])];
+
+	// Write the file header and the first table name
+//	[[self exportOutputFile] writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
+//					NSLocalizedString(@"Host", @"export header host label"),
+//					                                   [tableDocumentInstance host],
+//					NSLocalizedString(@"Database", @"export header database label"),
+//					                                   [tableDocumentInstance database],
+//					NSLocalizedString(@"Generation Time", @"export header generation time label"),
+//					                                   [NSDate date],
+//					                                   lineEnding,
+//					                                   lineEnding,
+//					NSLocalizedString(@"Table", @"csv export table heading"),
+//					                                   [[tables objectAtIndex:0] objectAtIndex:0],
+//					                                   lineEnding,
+//					                                   lineEnding] dataUsingEncoding:[connection stringEncoding]]];
 }
 
 #pragma mark -

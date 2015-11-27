@@ -59,23 +59,17 @@ typedef NS_ENUM(NSUInteger, SPConnectionType) {
 	SPSSHTunnelConnection = 2
 };
 
-// Export type constants
-typedef NS_ENUM(NSUInteger, SPExportType) {
-	SPSQLExport   = 0,
-	SPCSVExport   = 1,
-	SPXMLExport   = 2,
-	SPDotExport   = 3,
-	SPPDFExport   = 4,
-	SPHTMLExport  = 5,
-	SPExcelExport = 6,
-	SPAnyExportType = NSUIntegerMax, // this is a transient type to indicate "no specific choice"
-};
-
 // Export source constants
 typedef NS_ENUM(NSUInteger, SPExportSource) {
+	// Input is the (filtered) result set of a single table
 	SPFilteredExport = 0,
+	// Input is the result set of a query
 	SPQueryExport    = 1,
-	SPTableExport    = 2
+	// Input is a list of schema objects. The user can pick which should be included in the export.
+	SPTableExport    = 2,
+	// Input is the current database.
+	// There is nothing to pick from for the user. This type is mostly only for Dot exports.
+	SPDatabaseExport = 3
 };
 
 // SQL export INSERT statment divider constants
@@ -643,6 +637,7 @@ extern NSString *SPURLSchemeQueryResultPathHeader;
 extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
+extern NSString *SPNotImplementedExceptionName;
 extern NSString *SPCommonCryptoExceptionName;
 extern NSString *SPErrorDomain; // generic SP error domain for NSError
 
@@ -653,6 +648,8 @@ typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
 	SPErrorWrongContentType = 110002,
 	/** Some data has a version that we don't know how to handle (can be used with e.g. SPF files, which have explicit version numbers) */
 	SPErrorWrongContentVersion = 110003,
+	/** An identifier of some kind has a value that is not known */
+	SPErrorUnknownIdentifier = 110004,
 };
 
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
@@ -675,9 +672,12 @@ void _SPClear(id *addr);
 #define __MAC_10_10 101000
 #endif
 
-// This enum is available since 10.5 but only got a "name" in 10.10
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
+// This enum is available since 10.5 but only got a "name" in 10.10
 typedef NSUInteger NSCellHitResult;
+
+// exists since 10.0 but only has a name in 10.10+
+typedef NSUInteger NSAutoresizingMaskOptions;
 #endif
 
 // Stolen from Stack Overflow: http://stackoverflow.com/questions/969130

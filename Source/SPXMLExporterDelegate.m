@@ -70,7 +70,7 @@
 		
 		// If we're exporting to multiple files then close the file handle of the exporter
 		// that just finished, ensuring its data is written to disk.
-		if (exportToMultipleFiles) {
+		if ([self exportToMultipleFiles]) {
 			NSString *string = @"";
 			
 			if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {

@@ -40,14 +40,14 @@
  */
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger popUpMask              = [exportInputPopUpButton autoresizingMask];
-	NSUInteger fileCheckMask          = [exportFilePerTableCheck autoresizingMask];
-	NSUInteger scrollMask             = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask          = [exportTableListButtonBar autoresizingMask];
-	NSUInteger buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
-	NSUInteger textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
-	NSUInteger customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
-	NSUInteger tabBarMask             = [exportOptionsTabBar autoresizingMask];
+	NSAutoresizingMaskOptions popUpMask              = [exportInputPopUpButton autoresizingMask];
+	NSAutoresizingMaskOptions fileCheckMask          = [exportFilePerTableCheck autoresizingMask];
+	NSAutoresizingMaskOptions scrollMask             = [exportTablelistScrollView autoresizingMask];
+	NSAutoresizingMaskOptions buttonBarMask          = [exportTableListButtonBar autoresizingMask];
+	NSAutoresizingMaskOptions buttonMask             = [exportCustomFilenameViewButton autoresizingMask];
+	NSAutoresizingMaskOptions textFieldMask          = [exportCustomFilenameViewLabelButton autoresizingMask];
+	NSAutoresizingMaskOptions customFilenameViewMask = [exportCustomFilenameView autoresizingMask];
+	NSAutoresizingMaskOptions tabBarMask             = [accessoryViewContainer autoresizingMask];
 	
 	NSRect frame = [[self window] frame];
 	
@@ -62,7 +62,7 @@
 	[exportFilePerTableCheck setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
-	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
+	[accessoryViewContainer setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportCustomFilenameViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportCustomFilenameViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportCustomFilenameView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
@@ -88,7 +88,7 @@
 	[exportCustomFilenameViewButton setAutoresizingMask:buttonMask];
 	[exportCustomFilenameViewLabelButton setAutoresizingMask:textFieldMask];
 	[exportCustomFilenameView setAutoresizingMask:customFilenameViewMask];
-	[exportOptionsTabBar setAutoresizingMask:tabBarMask];
+	[accessoryViewContainer setAutoresizingMask:tabBarMask];
 }
 
 /**
@@ -99,13 +99,13 @@
  */
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta
 {
-	NSUInteger scrollMask        = [exportTablelistScrollView autoresizingMask];
-	NSUInteger buttonBarMask     = [exportTableListButtonBar autoresizingMask];
-	NSUInteger tabBarMask        = [exportTypeTabBar autoresizingMask];
-	NSUInteger optionsTabBarMask = [exportOptionsTabBar autoresizingMask];
-	NSUInteger buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
-	NSUInteger textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
-	NSUInteger advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
+	NSAutoresizingMaskOptions scrollMask        = [exportTablelistScrollView autoresizingMask];
+	NSAutoresizingMaskOptions buttonBarMask     = [exportTableListButtonBar autoresizingMask];
+	NSAutoresizingMaskOptions tabBarMask        = [exportTypeTabBar autoresizingMask];
+	NSAutoresizingMaskOptions optionsTabBarMask = [accessoryViewContainer autoresizingMask];
+	NSAutoresizingMaskOptions buttonMask        = [exportAdvancedOptionsViewButton autoresizingMask];
+	NSAutoresizingMaskOptions textFieldMask     = [exportAdvancedOptionsViewLabelButton autoresizingMask];
+	NSAutoresizingMaskOptions advancedViewMask  = [exportAdvancedOptionsView autoresizingMask];
 	
 	NSRect frame = [[self window] frame];
 	
@@ -119,7 +119,7 @@
 	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportTypeTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
-	[exportOptionsTabBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
+	[accessoryViewContainer setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportAdvancedOptionsView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
@@ -141,7 +141,7 @@
 	[exportTablelistScrollView setAutoresizingMask:scrollMask];
 	[exportTableListButtonBar setAutoresizingMask:buttonBarMask];
 	[exportTypeTabBar setAutoresizingMask:tabBarMask];
-	[exportOptionsTabBar setAutoresizingMask:optionsTabBarMask];
+	[accessoryViewContainer setAutoresizingMask:optionsTabBarMask];
 	[exportAdvancedOptionsViewButton setAutoresizingMask:buttonMask];
 	[exportAdvancedOptionsViewLabelButton setAutoresizingMask:textFieldMask];
 	[exportAdvancedOptionsView setAutoresizingMask:advancedViewMask];

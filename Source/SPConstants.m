@@ -444,6 +444,7 @@ NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
 NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STATUS_";
 NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
 
+NSString *SPNotImplementedExceptionName = @"SPNotImplementedException";
 NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
 NSString *SPErrorDomain = @"SPErrorDomain";
 
