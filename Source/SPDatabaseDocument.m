@@ -2469,11 +2469,40 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 /**
- * Opens the data export dialog.
+ * Opens the export dialog selecting the appropriate export type and source based on the current context.
+ * For example, if either the table content view or custom query editor views are active and there is
+ * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If
+ * either of these views are not active then the default source are the currently selected tables. If no
+ * tables are currently selected then all tables are checked. Note that in this instance the default export
+ * type is SQL where as in the case of filtered or query result export the default type is CSV.
+ *
+ * @param sender The caller (can be anything or nil as it is not currently used).
  */
 - (IBAction)export:(id)sender
 {
-	[exportControllerInstance export:self];
+	NSString *selectedExportType = nil;
+	SPExportSource selectedExportSource = SPTableExport;
+	
+	NSArray *selectedTables = [tablesListInstance selectedTableItems];
+	
+	BOOL isCustomQuerySelected = ([self isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1));
+	BOOL isContentSelected     = ([[self selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
+	
+	if (isContentSelected) {
+		selectedTables = nil;
+//		selectedExportType = SPCSVExport;
+		selectedExportSource = SPFilteredExport;
+	}
+	else if (isCustomQuerySelected) {
+		selectedTables = nil;
+//		selectedExportType = SPCSVExport;
+		selectedExportSource = SPQueryExport;
+	}
+	else {
+		selectedTables = ([selectedTables count]) ? selectedTables : nil;
+	}
+	
+	[exportControllerInstance exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
 }
 
 #pragma mark -

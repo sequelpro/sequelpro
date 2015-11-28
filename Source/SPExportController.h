@@ -48,14 +48,18 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
  * Export controller.
  */
 @interface SPExportController : NSWindowController
-{	
+{
+	// NOTE: Those outlets are connected when we are instantiated from DBView!
+
 	// Controllers
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTableContent *tableContentInstance;
 	IBOutlet SPCustomQuery *customQueryInstance;
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableData *tableDataInstance;
-	
+
+	// NOTE: All outlets below are connected when our own xib is loaded.
+
 	// Export window
 	IBOutlet NSView *exporterView;
 	IBOutlet NSButton *exportButton;
@@ -102,7 +106,7 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	/**
 	 * Whether the awakeFromNib routine has already been run
 	 */
-	BOOL mainNibLoaded;
+	dispatch_once_t mainNibLoaded;
 	
 	/**
 	 * Cancellation flag
@@ -212,6 +216,9 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
  */
 @property (readonly, nonatomic) SPExportSource exportSource;
 
+/**
+ * The current export handler that is responsible for implementing a certain export format
+ */
 @property (readonly, nonatomic, retain) id<SPExportHandlerInstance> currentExportHandler;
 
 /**
@@ -231,31 +238,10 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 @property(readwrite, assign) SPServerSupport *serverSupport;
 
 - (void)exportTables:(NSArray *)table asFormat:(NSString *)format usingSource:(SPExportSource)source;
-- (void)openExportErrorsSheetWithString:(NSString *)errors;
-- (void)displayExportFinishedGrowlNotification;
-
-/**
- * Tries to set the export input to a given value or falls back to a default if not valid
- * @param input The source to use
- * @return YES if the source was accepted, NO otherwise
- * @pre _switchTab needs to have been run before this method to decide valid inputs
- */
-- (BOOL)setExportSourceIfPossible:(SPExportSource)input;
-
-// IB action methods
-- (IBAction)export:(id)sender;
-- (IBAction)closeSheet:(id)sender;
-- (IBAction)switchInput:(id)sender;
-- (IBAction)cancelExport:(id)sender;
-- (IBAction)changeExportOutputPath:(id)sender;
-- (IBAction)refreshTableList:(id)sender;
-- (IBAction)selectDeselectAllTables:(id)sender;
-- (IBAction)changeExportCompressionFormat:(id)sender;
-- (IBAction)toggleCustomFilenameFormatView:(id)sender;
-- (IBAction)toggleAdvancedExportOptionsView:(id)sender;
-- (IBAction)exportCustomQueryResultAsFormat:(id)sender;
 
 - (NSString *)exportPath;
+
+#pragma mark - Methods to be used by export handlers
 
 /**
  * Get an array of NSString *s with the names of all known objects of this type.

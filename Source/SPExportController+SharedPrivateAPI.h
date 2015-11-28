@@ -33,9 +33,21 @@
 
 @interface SPExportController (SharedPrivateAPI)
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)openExportErrorsSheetWithString:(NSString *)errors;
+- (void)displayExportFinishedGrowlNotification;
 - (void)_hideExportProgress;
 - (void)_updateExportAdvancedOptionsLabel;
 - (void)_switchTab;
+- (void)_reopenExportSheet;
+
+/**
+ * Tries to set the export input to a given value or falls back to a default if not valid
+ * @param input The source to use
+ * @return YES if the source was accepted, NO otherwise
+ * @pre _switchTab needs to have been run before this method to decide valid inputs
+ */
+- (BOOL)setExportSourceIfPossible:(SPExportSource)input;
+
 @end
 
 #pragma mark -

@@ -43,8 +43,7 @@
 #import "SPExportHandlerInstance.h"
 #import "SPExporterRegistry.h"
 #import "SPExportHandlerFactory.h"
-
-#import <SPMySQL/SPMySQL.h>
+#import "SPExportInterfaceController.h"
 
 NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification = @"SPExportHandlerSchemaObjectTypeSupportChanged";
 NSString *SPExportControllerSchemaObjectsChangedNotification        = @"SPExportControllerSchemaObjectsChanged";
@@ -62,29 +61,32 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 static void *_KVOContext; // we only need this to get a unique number ( = the address of this variable)
 
-@interface SPExportController (PrivateAPI)
+@interface SPExportController ()
 
-- (void)_switchTab;
+@property(readwrite, retain, nonatomic) id<SPExportHandlerInstance> currentExportHandler;
+@property(readwrite, assign, nonatomic) SPExportSource exportSource;
+
+- (IBAction)closeSheet:(id)sender;
+- (IBAction)switchInput:(id)sender;
+- (IBAction)cancelExport:(id)sender;
+- (IBAction)changeExportOutputPath:(id)sender;
+- (IBAction)refreshTableList:(id)sender;
+- (IBAction)selectDeselectAllTables:(id)sender;
+- (IBAction)changeExportCompressionFormat:(id)sender;
+- (IBAction)toggleCustomFilenameFormatView:(id)sender;
+- (IBAction)toggleAdvancedExportOptionsView:(id)sender;
+- (IBAction)exportCustomQueryResultAsFormat:(id)sender;
+
+- (void)_refreshTableListKeepingState:(BOOL)keepState fromServer:(BOOL)fromServer;
 - (void)_checkForDatabaseChanges;
 - (void)_displayExportTypeOptions:(BOOL)display;
-- (void)_updateExportAdvancedOptionsLabel;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
 - (void)_toggleExportButtonWithBool:(NSNumber *)enable;
 
-- (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
-- (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
-
 - (void)_waitUntilQueueIsEmptyAfterCancelling:(id)sender;
 - (void)_queueIsEmptyAfterCancelling:(id)sender;
-
-@end
-
-@interface SPExportController ()
-
-@property(readwrite, retain, nonatomic) id<SPExportHandlerInstance> currentExportHandler;
-@property(readwrite, assign, nonatomic) SPExportSource exportSource;
 
 @end
 
@@ -112,7 +114,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		[self setExportCancelled:NO];
 		[self setExportToMultipleFiles:YES];
 
-		mainNibLoaded = NO;
+		mainNibLoaded = 0;
 
 		exportSource = SPTableExport;
 		exportTableCount = 0;
@@ -162,55 +164,50 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 - (void)awakeFromNib
 {
 	// This method is first called when DBView is loaded and later again, when we load our own view.
-	// We MUST NOT do our init stuff when called from DBView as none of our outlets are connected at that time.
-	if(!exportTypeTabBar) {
-		[self window]; // will load our window
-		return;
-	}
+	// We MUST NOT do our init stuff when called from DBView as none of our owned outlets are connected at that time.
+	if(!exportTypeTabBar) return;
 	
 	// As this controller also loads its own nib, it may call awakeFromNib multiple times; perform setup only once.
-	if (mainNibLoaded) return;
-	
-	mainNibLoaded = YES;
+	dispatch_once(&mainNibLoaded, ^{
+		while([exportTypeTabBar numberOfTabViewItems])
+			[exportTypeTabBar removeTabViewItem:[exportTypeTabBar tabViewItemAtIndex:0]];
 
-	while([exportTypeTabBar numberOfTabViewItems])
-		[exportTypeTabBar removeTabViewItem:[exportTypeTabBar tabViewItemAtIndex:0]];
+		[exportHandlers removeAllObjects];
+		for(id<SPExportHandlerFactory> handler in [[SPExporterRegistry sharedRegistry] registeredHandlers]) {
+			id<SPExportHandlerInstance> instance = [handler makeInstanceWithController:self];
+			NSTabViewItem *tvi = [[NSTabViewItem alloc] init];
+			[tvi setLabel:[handler localizedShortName]];
+			[tvi setIdentifier:[handler uniqueName]];
+			[exportTypeTabBar addTabViewItem:[tvi autorelease]];
+			[exportHandlers setObject:instance forKey:[handler uniqueName]];
+		}
 
-	[exportHandlers removeAllObjects];
-	for(id<SPExportHandlerFactory> handler in [[SPExporterRegistry sharedRegistry] registeredHandlers]) {
-		id<SPExportHandlerInstance> instance = [handler makeInstanceWithController:self];
-		NSTabViewItem *tvi = [[NSTabViewItem alloc] init];
-		[tvi setLabel:[handler localizedShortName]];
-		[tvi setIdentifier:[handler uniqueName]];
-		[exportTypeTabBar addTabViewItem:[tvi autorelease]];
-		[exportHandlers setObject:instance forKey:[handler uniqueName]];
-	}
-	
-	windowMinWidth = [[self window] minSize].width;
-	windowMinHeigth = [[self window] minSize].height;
+		windowMinWidth = [[self window] minSize].width;
+		windowMinHeigth = [[self window] minSize].height;
 
-	// Select the 'selected tables' option
-	[exportInputPopUpButton selectItemWithTag:SPTableExport];
-	
-	// Select the SQL tab
-	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
-	[exportTypeTabBar selectTabViewItemAtIndex:0];
-	
-	// Prevents the background colour from changing when clicked
-	[[exportCustomFilenameViewLabelButton cell] setHighlightsBy:NSNoCellMask];
-	
-	// Set the progress indicator's max value
-	[exportProgressIndicator setMaxValue:(NSInteger)[exportProgressIndicator bounds].size.width];
+		// Select the 'selected tables' option
+		[exportInputPopUpButton selectItemWithTag:SPTableExport];
 
-	// Empty the tokenizing character set for the filename field
-	[exportCustomFilenameTokenField setTokenizingCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@""]];
+		// Select the SQL tab
+		[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
+		[exportTypeTabBar selectTabViewItemAtIndex:0];
 
-	// Accept Core Animation
-	[accessoryViewContainer wantsLayer];
-	[exportTablelistScrollView wantsLayer];
-	[exportTableListButtonBar wantsLayer];
+		// Prevents the background colour from changing when clicked
+		[[exportCustomFilenameViewLabelButton cell] setHighlightsBy:NSNoCellMask];
 
-	[self addObserver:self forKeyPath:@"exportToMultipleFiles" options:0 context:&_KVOContext];
+		// Set the progress indicator's max value
+		[exportProgressIndicator setMaxValue:(NSInteger)[exportProgressIndicator bounds].size.width];
+
+		// Empty the tokenizing character set for the filename field
+		[exportCustomFilenameTokenField setTokenizingCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@""]];
+
+		// Accept Core Animation
+		[accessoryViewContainer wantsLayer];
+		[exportTablelistScrollView wantsLayer];
+		[exportTableListButtonBar wantsLayer];
+
+		[self addObserver:self forKeyPath:@"exportToMultipleFiles" options:0 context:&_KVOContext];
+	});
 }
 
 #pragma mark -
@@ -226,6 +223,8 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(NSString *)format usingSource:(SPExportSource)source
 {
+	[self window]; // the window is lazy loaded
+
 	// set some defaults
 	if(![[exportPathField stringValue] length]) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
@@ -233,9 +232,9 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	}
 	
-	// initially popuplate the tables list
-	[self refreshTableList:nil];
-	
+	// initially popuplate the tables list from the main view
+	[self _refreshTableListKeepingState:NO fromServer:NO];
+
 	// overwrite defaults with user settings from last export
 	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:NULL];
 	
@@ -282,12 +281,20 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	[self _switchTab];
 	[self _updateExportAdvancedOptionsLabel];
 	[self setExportSourceIfPossible:source]; // will also update the tokens and filename preview
-	
+
+	[self _reopenExportSheet];
+}
+
+/**
+ * Re-open the export sheet without resetting the interface - for use on error.
+ */
+- (void)_reopenExportSheet
+{
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
+	    modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+	      contextInfo:nil];
 }
 
 /**
@@ -358,43 +365,6 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 #pragma mark -
 #pragma mark IB action methods
-
-/**
- * Opens the export dialog selecting the appropriate export type and source based on the current context.
- * For example, if either the table content view or custom query editor views are active and there is 
- * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If 
- * either of these views are not active then the default source are the currently selected tables. If no 
- * tables are currently selected then all tables are checked. Note that in this instance the default export 
- * type is SQL where as in the case of filtered or query result export the default type is CSV.
- *
- * @param sender The caller (can be anything or nil as it is not currently used).
- */
-- (IBAction)export:(id)sender
-{
-	NSString *selectedExportType = nil;
-	SPExportSource selectedExportSource = SPTableExport;
-	
-	NSArray *selectedTables = [tablesListInstance selectedTableItems];
-	
-	BOOL isCustomQuerySelected = ([tableDocumentInstance isCustomQuerySelected] && ([[customQueryInstance currentResult] count] > 1)); 
-	BOOL isContentSelected     = ([[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] && ([[tableContentInstance currentResult] count] > 1));
-	
-	if (isContentSelected) {		
-		selectedTables = nil;
-//		selectedExportType = SPCSVExport;
-		selectedExportSource = SPFilteredExport;
-	}
-	else if (isCustomQuerySelected) {
-		selectedTables = nil;
-//		selectedExportType = SPCSVExport;
-		selectedExportSource = SPQueryExport;
-	}
-	else {
-		selectedTables = ([selectedTables count]) ? selectedTables : nil; 
-	}
-	
-	[self exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
-}
 
 /**
  * Closes the export dialog.
@@ -558,10 +528,15 @@ set_input:
  */
 - (IBAction)refreshTableList:(id)sender
 {		
+	[self _refreshTableListKeepingState:YES fromServer:YES];
+}
+
+- (void)_refreshTableListKeepingState:(BOOL)keepState fromServer:(BOOL)fromServer
+{
 	NSMutableArray *objectStateBackupArray = [[NSMutableArray alloc] initWithCapacity:[exportObjectList count]];
 
 	// Before refreshing the list, preserve the user's table selection, but only if it was triggered by the UI.
-	if (sender) {
+	if (keepState) {
 		for(_SPExportListItem *item in exportObjectList) {
 			// skip those
 			if([item isGroupRow]) continue;
@@ -569,19 +544,19 @@ set_input:
 			id savedState = [[self currentExportHandler] specificSettingsForSchemaObject:item];
 			if(savedState) {
 				[objectStateBackupArray addObject:@{
-					@"name" :       [item name],
-					@"type" :       @([item type]),
-					@"savedState" : savedState
+						@"name" :       [item name],
+						@"type" :       @([item type]),
+						@"savedState" : savedState
 				}];
 			}
 		}
 	}
 
 	//refresh the list and rebuild the basic table
-	[tablesListInstance updateTables:self];
+	if(fromServer) [tablesListInstance updateTables:self];
 	[self _evaluateShownObjectTypes];
 
-	if (sender) {
+	if (keepState) {
 		// Restore the user's table selection
 		for(NSDictionary *backup in objectStateBackupArray) {
 			NSString *name = [backup objectForKey:@"name"];
@@ -708,8 +683,15 @@ set_input:
 	}
 	else {
 		// Cancel the export and redisplay the export dialog after a short delay
-		[self performSelector:@selector(export:) withObject:self afterDelay:0.5];		
+		[self performSelector:@selector(_reopenAndUpdateTables) withObject:nil afterDelay:0.5];
 	}
+}
+
+- (void)_reopenAndUpdateTables
+{
+	[self _reopenExportSheet];
+	// we just fetched everything to display the warning. No need to do it right again
+	[self _refreshTableListKeepingState:YES fromServer:NO];
 }
 
 /**
@@ -718,7 +700,7 @@ set_input:
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
 	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
-		return (([customQueryInstance currentResultRowCount] > 0) && (![tableDocumentInstance isProcessing]));		
+		return ([self _hasDataForSource:SPQueryExport] && (![tableDocumentInstance isProcessing]));
 	}
 	
 	return YES;
@@ -1009,7 +991,7 @@ after_update:
 	};
 
 	NSUInteger j = 0;
-	for (int k = 0; k < COUNT_OF(addIfList); ++k) {
+	for (unsigned int k = 0; k < COUNT_OF(addIfList); ++k) {
 		struct _addIfListItem *item = &addIfList[k];
 		if([[self currentExportHandler] canExportSchemaObjectsOfType:item->type]) j += item->count;
 	}

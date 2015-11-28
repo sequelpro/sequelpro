@@ -30,8 +30,6 @@
 
 #import "SPExportController.h"
 
-@class SPExportFile;
-
 /**
  * @category SPExportFileUtilities SPExportFileUtilities.h
  *

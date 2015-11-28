@@ -39,4 +39,7 @@
  */
 @interface SPExportController (SPExportInterfaceController)
 
+- (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
+- (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
+
 @end

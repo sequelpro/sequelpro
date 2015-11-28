@@ -46,11 +46,7 @@ typedef enum
 } 
 SPExportErrorChoice;
 
-@interface SPExportController (SPExportFileUtilitiesPrivateAPI)
-- (void)_reopenExportSheet;
-@end
-
-@implementation SPExportController (SPExportFileUtilitiesPrivateAPI)
+@implementation SPExportController (SPExportFileUtilities)
 
 /**
  * Indicates that one or more errors occurred while attempting to create the export file handles. Asks the 
@@ -276,18 +272,6 @@ SPExportErrorChoice;
 		// Trigger restoration of the export interface
 		[self performSelector:@selector(_reopenExportSheet) withObject:nil afterDelay:0.1];
 	}
-}
-
-/**
- * Re-open the export sheet without resetting the interface - for use on error.
- */
-- (void)_reopenExportSheet
-{
-	[NSApp beginSheet:[self window]
-	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
 }
 
 @end

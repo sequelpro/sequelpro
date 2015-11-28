@@ -51,12 +51,13 @@
 	
 	NSRect frame = [[self window] frame];
 	
-	if (frame.size.height > 600 && delta > heightOffset1) {
-		frame.origin.y += [exportCustomFilenameView frame].size.height;
-		frame.size.height -= [exportCustomFilenameView frame].size.height;
-		
-		[[self window] setFrame:frame display:YES animate:YES];
-	}
+	// what is this about?
+//	if (frame.size.height > 600 && delta > heightOffset1) {
+//		frame.origin.y += [exportCustomFilenameView frame].size.height;
+//		frame.size.height -= [exportCustomFilenameView frame].size.height;
+//		
+//		[[self window] setFrame:frame display:YES animate:YES];
+//	}
 	
 	[exportInputPopUpButton setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
 	[exportFilePerTableCheck setAutoresizingMask:NSViewNotSizable | NSViewMaxYMargin];
@@ -109,12 +110,13 @@
 	
 	NSRect frame = [[self window] frame];
 	
-	if (frame.size.height > 600 && delta > heightOffset2) {
-		frame.origin.y += [exportAdvancedOptionsView frame].size.height;
-		frame.size.height -= [exportAdvancedOptionsView frame].size.height;
-		
-		[[self window] setFrame:frame display:YES animate:YES];
-	}
+	// what is this about?
+//	if (frame.size.height > 600 && delta > heightOffset2) {
+//		frame.origin.y += [exportAdvancedOptionsView frame].size.height;
+//		frame.size.height -= [exportAdvancedOptionsView frame].size.height;
+//		
+//		[[self window] setFrame:frame display:YES animate:YES];
+//	}
 	
 	[exportTablelistScrollView setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
 	[exportTableListButtonBar setAutoresizingMask:NSViewNotSizable | NSViewMinYMargin];
