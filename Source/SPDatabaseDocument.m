@@ -399,6 +399,16 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	alterDatabaseCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseAlterEncodingButton CollationButton:databaseAlterCollationButton];
 	addDatabaseCharsetHelper   = [[SPCharsetCollationHelper alloc] initWithCharsetButton:databaseEncodingButton CollationButton:databaseCollationButton];
+
+	// populate the export menus
+	[queryResultsExportMenu compatibleRemoveAllItems];
+	[exportControllerInstance addExportHandlersToMenu:queryResultsExportMenu forSource:SPQueryExport];
+
+	[tableListExportMenu compatibleRemoveAllItems];
+	[exportControllerInstance addExportHandlersToMenu:tableListExportMenu forSource:SPTableExport];
+
+	[tableListContextExportMenu compatibleRemoveAllItems];
+	[exportControllerInstance addExportHandlersToMenu:tableListContextExportMenu forSource:SPTableExport];
 }
 
 #pragma mark -
@@ -2461,14 +2471,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 /**
- * Exports the selected tables in the chosen file format.
- */
-- (IBAction)exportSelectedTablesAs:(id)sender
-{
-	[exportControllerInstance exportTables:[tablesListInstance selectedTableItems] asFormat:[sender tag] usingSource:SPTableExport];
-}
-
-/**
  * Opens the export dialog selecting the appropriate export type and source based on the current context.
  * For example, if either the table content view or custom query editor views are active and there is
  * data available, these options will be selected as the export source ('Filtered' or 'Query Result'). If
@@ -2480,7 +2482,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (IBAction)export:(id)sender
 {
-	NSString *selectedExportType = nil;
 	SPExportSource selectedExportSource = SPTableExport;
 	
 	NSArray *selectedTables = [tablesListInstance selectedTableItems];
@@ -2490,19 +2491,17 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if (isContentSelected) {
 		selectedTables = nil;
-//		selectedExportType = SPCSVExport;
 		selectedExportSource = SPFilteredExport;
 	}
 	else if (isCustomQuerySelected) {
 		selectedTables = nil;
-//		selectedExportType = SPCSVExport;
 		selectedExportSource = SPQueryExport;
 	}
 	else {
 		selectedTables = ([selectedTables count]) ? selectedTables : nil;
 	}
 	
-	[exportControllerInstance exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
+	[exportControllerInstance exportTables:selectedTables asFormat:nil usingSource:selectedExportSource];
 }
 
 #pragma mark -
@@ -3637,34 +3636,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Data export
 	if (action == @selector(export:)) {
 		return (([self database] != nil) && ([[tablesListInstance tables] count] > 1));
-	}
-	
-	// Selected tables data export
-	if (action == @selector(exportSelectedTablesAs:)) {
-		
-		NSInteger tag = [menuItem tag];
-		NSInteger type = [tablesListInstance tableType];
-		NSInteger numberOfSelectedItems = [[[tablesListInstance valueForKeyPath:@"tablesListView"] selectedRowIndexes] count];
-		
-//		BOOL enable = (([self database] != nil) && numberOfSelectedItems);
-//		
-//		// Enable all export formats if at least one table/view is selected
-//		if (numberOfSelectedItems == 1) {
-//			if (type == SPTableTypeTable || type == SPTableTypeView) {
-//				return enable;
-//			}
-//			else if ((type == SPTableTypeProc) || (type == SPTableTypeFunc)) {
-//				return (enable && (tag == SPSQLExport));
-//			}
-//		} 
-//		else {
-//			for (NSNumber *eachType in [tablesListInstance selectedTableTypes]) 
-//			{
-//				if ([eachType intValue] == SPTableTypeTable || [eachType intValue] == SPTableTypeView) return enable;
-//			}
-//			
-//			return (enable && (tag == SPSQLExport));
-//		}
 	}
 	
 	// Can only be enabled on mysql 4.1+

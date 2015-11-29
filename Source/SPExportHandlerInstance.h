@@ -101,7 +101,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  * @return YES, if any data would be written (be it structure, content, other metadata…)
  * @note This is **required** when supporting SPTableExport
  *
- * You can send a SPExportHandlerSchemaObjectTypeSupportChangedNotification to signal the controller to re-fetch
+ * You can send a SPExportHandlerSchemaObjectTypeSupportChanged notification to signal the controller to re-fetch
  * the results for the current objects.
  */
 - (BOOL)wouldIncludeSchemaObject:(id<SPExportSchemaObject>)obj;
@@ -112,6 +112,17 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  * @param newState the new state for all objects
  */
 - (void)updateIncludeStateForAllSchemaObjects:(BOOL)newState;
+
+/**
+ * You can optionally implement this method to enable a basic selection of items that will be made initially
+ * before opening the export controller. This is only valid for SPTableExport sources.
+ *
+ * @param objectName An array of NSString *s of schema object names that should in some way be included.
+ *
+ * This method should *replace* the previous selection, NOT add to it.
+ * NOTE: It is YOUR responsibility to filter out any invalid or unsupported objects from the list.
+ */
+- (void)setIncludedSchemaObjects:(NSArray *)objectNames;
 
 @required
 

@@ -209,6 +209,7 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	NSMutableDictionary *exportHandlers;
 	id<SPExportHandlerInstance> currentExportHandler;
 	NSMutableArray *exportObjectList;
+	NSMutableArray *hiddenTabViewStorage;
 }
 
 /**
@@ -241,16 +242,35 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 
 - (NSString *)exportPath;
 
+- (void)addExportHandlersToMenu:(NSMenu *)parent forSource:(SPExportSource)source;
+
 #pragma mark - Methods to be used by export handlers
 
 /**
  * Get an array of NSString *s with the names of all known objects of this type.
- * If the list changes the controller will post a SPExportControllerSchemaObjectsChangedNotification
+ * If the list changes the controller will post a SPExportControllerSchemaObjectsChangedNotification.
+ * The list will ONLY include objects that the current export handler also supports.
+ * Will be empty if the source is not SPTableExport.
  */
 - (NSArray *)schemaObjectsForType:(SPTableType)type;
 
+/**
+ * Find the schema object which has a given name.
+ * @param name The name of the schema object
+ * @return The schema object or nil.
+ *
+ * Note that only schema objects which are supported by the current export handler are searched.
+ * Receiving nil does not imply that an object does not exist, only that such an object will not be
+ * exported with the current settings.
+ *
+ * This will always return nil if source is not SPTableExport.
+ */
 - (id<SPExportSchemaObject>)schemaObjectNamed:(NSString *)name;
 
+/**
+ * Get all schema objects supported by the current export handler.
+ * @return A list of objects. Will be empty if source != SPTableExport.
+ */
 - (NSArray *)allSchemaObjects;
 
 @end

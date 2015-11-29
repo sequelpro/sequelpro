@@ -33,6 +33,7 @@
 #import "SPExportFileNameTokenObject.h"
 #import "SPExportController+SharedPrivateAPI.h"
 #import "SPExportHandlerInstance.h"
+#import "SPFunctions.h"
 
 static inline BOOL IS_TOKEN(id x) { return [x isKindOfClass:[SPExportFileNameTokenObject class]]; }
 static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; }
@@ -57,7 +58,7 @@ static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; 
 
 - (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {		
-	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(rowIndex));
 
 	if([[tableColumn identifier] isEqualToString:@"name"] || ([item isGroupRow] && !tableColumn))
 		return [item name];
@@ -78,7 +79,7 @@ static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; 
 		return;
 	}
 	
-	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(rowIndex));
 	[[self currentExportHandler] setObjectValue:anObject forTableColumn:tableColumn schemaObject:item];
 	// changing the selection most likely will change the availability of the "table" token
 	[self updateAvailableExportFilenameTokens];
@@ -99,19 +100,19 @@ static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; 
 
 - (BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
 {
-	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,row);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(row));
 	return [item isGroupRow];
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
 {
-	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(rowIndex));
 	return (![item isGroupRow]);
 }
 
 - (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,rowIndex);
+	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(rowIndex));
 
 	// group rows only have a cell in the name column.
 	// by changing the cell for tableColumn==nil we define a single cell for the whole row

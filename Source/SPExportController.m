@@ -75,7 +75,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 - (IBAction)changeExportCompressionFormat:(id)sender;
 - (IBAction)toggleCustomFilenameFormatView:(id)sender;
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
-- (IBAction)exportCustomQueryResultAsFormat:(id)sender;
+- (IBAction)exportFromMenuItem:(id)sender;
 
 - (void)_refreshTableListKeepingState:(BOOL)keepState fromServer:(BOOL)fromServer;
 - (void)_checkForDatabaseChanges;
@@ -153,6 +153,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		} retain];
 		
 		exportHandlers = [[NSMutableDictionary alloc] init];
+		hiddenTabViewStorage = [[NSMutableArray alloc] init];
 	}
 	
 	return self;
@@ -240,49 +241,82 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	
 	// overwrite those with settings for the current export
 
+	[self _updateVisibleTabsForValidHandlers];
 	// Select the correct tab.
 	// If none was given the tab bar will default to the first one after launch and re-use the users last choice afterwards, which is fine.
 	if(format) {
 		NSAssert(([[SPExporterRegistry sharedRegistry] handlerNamed:format] != nil),@"<%@> is not a known export handler!",format);
-		[exportTypeTabBar selectTabViewItemWithIdentifier:format];
+		// setting an unknown identifier would throw (an export handler without data is not visible and can't be selected)
+		if([exportTypeTabBar indexOfTabViewItemWithIdentifier:format] != NSNotFound) [exportTypeTabBar selectTabViewItemWithIdentifier:format];
 	}
 
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
-			
-	// If tables were supplied, select them
-//	if (exportTables) {
-//
-//		// Disable all tables
-//		for (NSMutableArray *table in tables)
-//		{
-//			[table replaceObjectAtIndex:1 withObject:@NO];
-//			[table replaceObjectAtIndex:2 withObject:@NO];
-//			[table replaceObjectAtIndex:3 withObject:@NO];
-//		}
-//
-//		// Select the supplied tables
-//		for (NSMutableArray *table in tables)
-//		{
-//			for (NSString *exportTable in exportTables)
-//			{
-//				if ([exportTable isEqualToString:[table objectAtIndex:0]]) {
-//					[table replaceObjectAtIndex:1 withObject:@YES];
-//					[table replaceObjectAtIndex:2 withObject:@YES];
-//					[table replaceObjectAtIndex:3 withObject:@YES];
-//				}
-//			}
-//		}
-//
-//		[exportTableList reloadData];
-//	}
-	
+
 	// Ensure interface validation
 	[self _switchTab];
 	[self _updateExportAdvancedOptionsLabel];
 	[self setExportSourceIfPossible:source]; // will also update the tokens and filename preview
 
+	// If tables were supplied, select them
+	if(exportTables && source == SPTableExport && [[self currentExportHandler] respondsToSelector:@selector(setIncludedSchemaObjects:)]) {
+		[[self currentExportHandler] setIncludedSchemaObjects:exportTables];
+		[exportTableList reloadData];
+	}
+
 	[self _reopenExportSheet];
+}
+
+- (void)_updateVisibleTabsForValidHandlers
+{
+	// this is a bit retarted, but for some reason NSTabView does not support hiding items.
+	// we'll have to remove all items and then re-add those that are valid.
+
+	// add visible items to the backup list
+	[hiddenTabViewStorage addObjectsFromArray:[exportTypeTabBar tabViewItems]];
+	
+	// for the moment, prevent the delegate methods from firing as that would end up exactly
+	// where we don't want (namely in setExportSourceIfPossible:)!
+	id delegate = [exportTypeTabBar delegate];
+	[exportTypeTabBar setDelegate:nil];
+	NSTabViewItem *selected = [[exportTypeTabBar selectedTabViewItem] identifier];
+	
+	// remove all from view
+	while([exportTypeTabBar numberOfTabViewItems]) [exportTypeTabBar removeTabViewItem:[exportTypeTabBar tabViewItemAtIndex:0]];
+
+	NSMutableArray *readdItems = [NSMutableArray array];
+
+	SPExportSource es[] = {SPTableExport,SPQueryExport,SPFilteredExport,SPDatabaseExport};
+	// go through all tab views
+	for(NSTabViewItem *item in hiddenTabViewStorage) {
+		id<SPExportHandlerInstance> handler = [exportHandlers objectForKey:[item identifier]];
+		// handler is valid if there is any data it can be used with
+		for (unsigned int i = 0; i < COUNT_OF(es); i++) {
+			if([self _hasDataForSource:es[i] handler:handler]) {
+				[readdItems addObject:item];
+				break;
+			}
+		}
+	}
+
+	// remove the readd items from the hidden item array
+	[hiddenTabViewStorage removeObjectsInArray:readdItems];
+
+	// sort the readd items for display
+	[readdItems sortWithOptions:NSSortStable usingComparator:^NSComparisonResult(id obj1, id obj2) {
+		return [[(NSTabViewItem *) obj1 label] localizedCompare:[(NSTabViewItem *)obj2 label]];
+	}];
+
+	NSAssert([readdItems count] > 0, @"Did not find any valid export handler for current state!?");
+
+	// and re-add them
+	for(NSTabViewItem *tvi in readdItems) {
+		[exportTypeTabBar addTabViewItem:tvi];
+	}
+	
+	// finally try to re-select the previous choice and re-enable the delegate
+	if([exportTypeTabBar indexOfTabViewItem:selected] != NSNotFound) [exportTypeTabBar selectTabViewItem:selected];
+	[exportTypeTabBar setDelegate:delegate];
 }
 
 /**
@@ -638,11 +672,41 @@ set_input:
 }
 
 /**
- * Opens the export sheet, selecting custom query as the export source.
+ * Opens the export sheet, selecting [sender tag] as the export source.
  */
-- (IBAction)exportCustomQueryResultAsFormat:(id)sender
-{	
-	[self exportTables:nil asFormat:[sender tag] usingSource:SPQueryExport];
+- (IBAction)exportFromMenuItem:(id)sender
+{
+	SPExportSource source = (SPExportSource)[sender tag];
+	NSArray *tables = nil;
+
+	if(source == SPTableExport) {
+		// since this method would most likely be called from the tables list context or gear menu
+		// we can assume that what the user wants is to export the current selected item.
+		tables = [tablesListInstance selectedTableItems];
+	}
+
+	[self exportTables:tables asFormat:[sender representedObject] usingSource:source];
+}
+
+- (void)addExportHandlersToMenu:(NSMenu *)parent forSource:(SPExportSource)source
+{
+	[self window]; //export handlers is populated in awakeFromNib when our window is loaded
+	
+	for(NSString *name in [exportHandlers allKeys]) {
+		id<SPExportHandlerInstance> instance = [exportHandlers objectForKey:name];
+
+		// don't add them if they can't handle that mode
+		if(![[instance factory] supportsExportSource:source]) continue;
+
+		NSString *title = [NSString stringWithFormat:NSLocalizedString(@"%@…", @"export handler menu item"), [[instance factory] localizedShortName]];
+
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title action:@selector(exportFromMenuItem:) keyEquivalent:@""];
+		[item setTag:source];
+		[item setRepresentedObject:name];
+		[item setTarget:self];
+
+		[parent addItem:[item autorelease]];
+	}
 }
 
 #pragma mark -
@@ -699,8 +763,27 @@ set_input:
  */
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-	if ([menuItem action] == @selector(exportCustomQueryResultAsFormat:)) {
-		return ([self _hasDataForSource:SPQueryExport] && (![tableDocumentInstance isProcessing]));
+	if ([menuItem action] == @selector(exportFromMenuItem:)) {
+		SPExportSource source = (SPExportSource)[menuItem tag];
+		id<SPExportHandlerInstance> handler = [exportHandlers objectForKey:[menuItem representedObject]];
+
+		if([tableDocumentInstance isProcessing] || !handler) return NO;
+
+		if(source == SPTableExport) {
+			// special case for table export:
+			// Normally table export is valid as soon as a DB is selected (doesn't matter if it has items or not).
+			// However this particular method is usually called for the tables list context or gear menus which
+			// suggest there has to be a selection for export.
+			NSArray *selectedTypes = [tablesListInstance selectedTableTypes];
+
+			for (NSNumber *type in selectedTypes) {
+				if ([handler canExportSchemaObjectsOfType:(SPTableType) [type integerValue]]) return YES;
+			}
+
+			return NO;
+		}
+
+		return ([self _hasDataForSource:source handler:handler]);
 	}
 	
 	return YES;
@@ -750,7 +833,11 @@ set_input:
 			SPExportSource sources[] = {SPFilteredExport, SPQueryExport, SPTableExport, SPDatabaseExport};
 			for (unsigned int i = 0; i < COUNT_OF(sources); ++i) {
 				SPExportSource src = sources[i];
-				[[[exportInputPopUpButton menu] itemWithTag:src] setEnabled:([self _hasDataForSource:src] && [[newHandler factory] supportsExportSource:src])];
+				// Hide items which are not supported and disable supported items if there is no data for them.
+				// Note that _hasDataForSource:handler: will also return NO if the handler does not support src.
+				// This is required by some other validation logic which checks if an item is enabled.
+				[[[exportInputPopUpButton menu] itemWithTag:src] setHidden:(![[newHandler factory] supportsExportSource:src])];
+				[[[exportInputPopUpButton menu] itemWithTag:src] setEnabled:([self _hasDataForSource:src handler:newHandler])];
 			}
 			
 			//update the selected source to actually fit the new handler
@@ -1172,6 +1259,14 @@ after_update:
  */
 - (BOOL)_hasDataForSource:(SPExportSource)src
 {
+	return [self _hasDataForSource:src handler:[self currentExportHandler]];
+}
+
+- (BOOL)_hasDataForSource:(SPExportSource)src handler:(id<SPExportHandlerInstance>)handler
+{
+	//if the handler can't use this source there is never data available
+	if(![[handler factory] supportsExportSource:src]) return NO;
+
 	switch(src) {
 		// requires a db to be selected
 		case SPDatabaseExport:
@@ -1188,6 +1283,7 @@ after_update:
 			return ([[tableContentInstance currentResult] count] > 1);
 
 	}
+	return NO;
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -1228,6 +1324,7 @@ after_update:
 	SPClear(previousConnectionEncoding);
 	[self setServerSupport:nil];
 	SPClear(exportHandlers);
+	SPClear(hiddenTabViewStorage);
 	
 	[super dealloc];
 }

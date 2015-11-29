@@ -60,6 +60,7 @@ int SPBetterRandomBytes(uint8_t *buf, size_t count)
 		int c = fgetc(fp);
 		if(c == EOF) { // /dev/random should never EOF
 			errno = ferror(fp);
+			fclose(fp);
 			return -1;
 		}
 		buf[i] = c;
@@ -68,4 +69,11 @@ int SPBetterRandomBytes(uint8_t *buf, size_t count)
 	fclose(fp);
 	
 	return 0;
+}
+
+NSUInteger SPIntS2U(NSInteger i)
+{
+	if(i < 0) [NSException raise:NSRangeException format:@"NSInteger %ld does not fit in NSUInteger",i];
+
+	return (NSUInteger)i;
 }

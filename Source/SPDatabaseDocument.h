@@ -185,6 +185,10 @@
 	IBOutlet id inputTextWindowSecureTextField;
 	NSInteger passwordSheetReturnCode;
 #endif
+
+	IBOutlet NSMenu *queryResultsExportMenu;
+	IBOutlet NSMenu *tableListExportMenu;
+	IBOutlet NSMenu *tableListContextExportMenu;
 	
 	// Master connection
 	SPMySQLConnection *mySQLConnection;
@@ -408,7 +412,6 @@
 - (IBAction)focusOnTableContentFilter:(id)sender;
 - (IBAction)showFilterTable:(id)sender;
 - (IBAction)export:(id)sender;
-- (IBAction)exportSelectedTablesAs:(id)sender;
 
 // Other methods
 - (IBAction)closeSheet:(id)sender;
