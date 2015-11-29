@@ -30,7 +30,6 @@
 
 #import <SPMySQL/SPMySQL.h>
 #import "SPDotExporter.h"
-#import "SPFileHandle.h"
 #import "SPTableData.h"
 #import "SPExportUtilities.h"
 #import "SPExportFile.h"
@@ -216,11 +215,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(dotExportProcessComplete:) withObject:self waitUntilDone:NO];
-}
-
-- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
-	NSAssert(false, @"This method should never be called on dot exporter because it doesn't even support SPTableExport!");
-	return NO;
 }
 
 #pragma mark -

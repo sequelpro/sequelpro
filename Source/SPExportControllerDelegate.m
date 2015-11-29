@@ -128,8 +128,6 @@ static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; 
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
-	[tabViewItem setView:exporterView];
-	
 	[self _switchTab];
 }
 

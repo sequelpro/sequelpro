@@ -1,8 +1,8 @@
 //
-//  SPCSVExportHander.h
+//  SPTableBaseExportHandler_Protected.h
 //  sequel-pro
 //
-//  Created by Max Lohrmann on 24.11.15.
+//  Created by Max Lohrmann on 29.11.15.
 //  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,12 +28,23 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import <Foundation/Foundation.h>
 #import "SPTableBaseExportHandler.h"
+#import "SPBaseExportHandler_Protected.h"
 
-@protocol SPExportHandlerInstance;
-@class SPCSVExportViewController;
+@interface SPTableBaseExportHandler ()
 
-@interface SPCSVExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
+@property(readwrite, nonatomic, copy) NSArray *tableColumns;
+
+/**
+ * You should override this method and implement the logic that does
+ * check and setCanBeImported: here.
+ */
+- (void)updateCanBeImported;
+
+/**
+ * You should override this method and implement the logic that does
+ * check and setIsValidForExport: here.
+ */
+- (void)updateValidForExport;
 
 @end

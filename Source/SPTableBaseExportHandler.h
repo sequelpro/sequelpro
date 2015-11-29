@@ -1,8 +1,8 @@
 //
-//  SPCSVExportHander.h
+//  SPTableBaseExportHandler.h
 //  sequel-pro
 //
-//  Created by Max Lohrmann on 24.11.15.
+//  Created by Max Lohrmann on 25.11.15.
 //  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -29,11 +29,29 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Foundation/Foundation.h>
-#import "SPTableBaseExportHandler.h"
+#import "SPExportHandlerInstance.h"
+#import "SPBaseExportHandler.h"
 
-@protocol SPExportHandlerInstance;
-@class SPCSVExportViewController;
+@class SPExportController;
+@protocol SPExportSchemaObject;
+@protocol SPExportHandlerFactory;
 
-@interface SPCSVExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
+/**
+ * This class implements a basic export handler with support for selecting schema objects
+ * via checkbox.
+ * This is an **abstract** class. You still have to implement many of the methods.
+ *
+ * Note that this class makes the addonData of SPExportSchemaObject an NSMutableDictionary.
+ */
+@interface SPTableBaseExportHandler : SPBaseExportHandler {
+	NSArray *_tableColumns;
+}
+
+@property(readonly, nonatomic, copy) NSArray *tableColumns;
 
 @end
+
+#pragma mark -
+#pragma mark Protected
+
+

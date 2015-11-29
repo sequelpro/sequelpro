@@ -28,12 +28,16 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+#import <SPMySQL/SPMySQL.h>
 #import "SPDotExportHandler.h"
 #import "SPExporterRegistry.h"
 #import "SPExportController.h"
 #import "SPExportFile.h"
 #import "SPDotExporter.h"
 #import "SPExportHandlerFactory.h"
+#import "SPDatabaseDocument.h"
+#import "SPExportInitializer.h"
+#import "SPBaseExportHandler_Protected.h"
 
 #pragma mark -
 
@@ -42,7 +46,6 @@
 @end
 
 @interface SPDotExportViewController : NSViewController {
-@public
 	// Dot
 	IBOutlet NSButton *exportDotForceLowerTableNamesCheck;
 }
@@ -53,8 +56,11 @@
 
 @implementation SPDotExportHandler
 
+@synthesize serverLowerCaseTableNameValue = serverLowerCaseTableNameValue;
+
 - (instancetype)initWithFactory:(SPDotExportHandlerFactory *)factory {
 	if ((self = [super initWithFactory:factory])) {
+		[self setServerLowerCaseTableNameValue:NSMixedState];
 		[self setCanBeImported:NO];
 		[self setIsValidForExport:YES]; //always
 		SPDotExportViewController *viewController = [[[SPDotExportViewController alloc] init] autorelease];
@@ -65,67 +71,119 @@
 	return self;
 }
 
-- (SPExportersAndFiles)allExporters {
-	return ((SPExportersAndFiles){nil,nil});
-//	// Cache the number of tables being exported
-//	exportTableCount = [exportTables count];
-//
-//	SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
-//
-//	[dotExporter setDotTableData:tableDataInstance];
-//	[dotExporter setDotForceLowerTableNames:[exportDotForceLowerTableNamesCheck state]];
-//	[dotExporter setDotDatabaseHost:[tableDocumentInstance host]];
-//	[dotExporter setDotDatabaseName:[tableDocumentInstance database]];
-//	[dotExporter setDotDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-//
-//	[dotExporter setDotExportTables:exportTables];
-//
-//	// Create custom filename if required
-//	if (createCustomFilename) {
-//		[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:nil]];
-//	}
-//	else {
-//		[exportFilename setString:[tableDocumentInstance database]];
-//	}
-//
-//	// Only append the extension if necessary
-//	if (![[exportFilename pathExtension] length]) {
-//		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//	}
-//
-//	SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-//
-//	[dotExporter setExportOutputFile:file];
-//
-//	SPExportersAndFiles result = {@[dotExporter],@[file]};
-//	[dotExporter autorelease];
-//
-//	return result;
+- (void)willBecomeActive
+{
+	// When switching to Dot export, ensure the server's lower_case_table_names value is checked the first time
+	// to set the export's link case sensitivity setting
+	if ([self serverLowerCaseTableNameValue] == NSMixedState) {
+
+		SPMySQLResult *caseResult = [[[self controller] connection] queryString:@"SHOW VARIABLES LIKE 'lower_case_table_names'"];
+
+		[caseResult setReturnDataAsStrings:YES];
+
+		if ([caseResult numberOfRows] == 1) {
+			NSInteger value = [[[caseResult getRowAsDictionary] objectForKey:@"Value"] integerValue]; // can be 0,1,2
+			[self setServerLowerCaseTableNameValue:(value? NSOnState : NSOffState)];
+		}
+		else {
+			[self setServerLowerCaseTableNameValue:NSOffState];
+		}
+	}
+}
+
+- (SPExportersAndFiles)allExporters
+{
+	SPDatabaseDocument *tdi = [[self controller] tableDocumentInstance];
+
+	NSArray *exportTables = [tdi allTableNames];
+	// Cache the number of tables being exported
+	exportTableCount = [exportTables count];
+
+	SPDotExporter *dotExporter = [[SPDotExporter alloc] initWithDelegate:self];
+
+	[dotExporter setDotTableData:[[self controller] tableDataInstance]];
+	[dotExporter setDotForceLowerTableNames:([self serverLowerCaseTableNameValue] == NSOnState)];
+	[dotExporter setDotDatabaseHost:[tdi host]];
+	[dotExporter setDotDatabaseName:[tdi database]];
+	[dotExporter setDotDatabaseVersion:[tdi mySQLVersion]];
+
+	[dotExporter setDotExportTables:exportTables];
+
+	SPExportFile *file = [[self controller] exportFileForTableName:nil];
+
+	[dotExporter setExportOutputFile:file];
+
+	SPExportersAndFiles result = {@[dotExporter],@[file]};
+	[dotExporter autorelease];
+
+	return result;
 }
 
 - (NSDictionary *)settings
 {
-	return nil;
-//	return @{@"DotForceLowerTableNames": IsOn(exportDotForceLowerTableNamesCheck)};
+	return @{
+		//without the explicit @YES/@NO the exported object would be an int
+		@"DotForceLowerTableNames": (([self serverLowerCaseTableNameValue] == NSOnState)? @YES : @NO)
+	};
 }
 
 - (void)applySettings:(NSDictionary *)settings
 {
 	id o;
-//	if((o = [settings objectForKey:@"DotForceLowerTableNames"])) SetOnOff(o, exportDotForceLowerTableNamesCheck);
+	if((o = [settings objectForKey:@"DotForceLowerTableNames"])) [self setServerLowerCaseTableNameValue:[o boolValue]];
 }
 
-- (id)specificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
+- (id)specificSettingsForSchemaObject:(id<SPExportSchemaObject>)obj
 {
 	// Dot is a graph of the whole database - nothing to pick from
+	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
 	return nil;
 }
 
-- (void)applySpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
+- (void)applySpecificSettings:(id)settings forSchemaObject:(id<SPExportSchemaObject>)obj
 {
 	//should never be called
+	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
 }
 
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
+	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
+	return NO;
+}
+
+#pragma mark - Exporter delegate
+
+- (void)dotExportProcessWillBegin:(SPDotExporter *)exporter
+{
+	[[self controller] setExportProgressTitle:NSLocalizedString(@"Exporting Dot File", @"text showing that the application is exporting a Dot file")];
+	[[self controller] setExportProgressDetail:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+
+	[[self controller] setExportProgressIndeterminate:NO];
+}
+
+- (void)dotExportProcessComplete:(SPDotExporter *)exporter
+{
+	[[self controller] exportEnded];
+}
+
+- (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter
+{
+	[[self controller] setExportProgress:[exporter exportProgressValue]];
+}
+
+- (void)dotExportProcessWillBeginFetchingData:(SPDotExporter *)exporter forTableWithIndex:(NSUInteger)tableIndex
+{
+	// Update the current table export index
+	currentTableExportIndex = tableIndex;
+
+	[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
+}
+
+- (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter
+{
+	[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
+	[[self controller] setExportProgressIndeterminate:YES];
+}
 
 @end
 

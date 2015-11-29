@@ -30,10 +30,10 @@
 
 #import <Foundation/Foundation.h>
 #import "SPExportHandlerInstance.h"
-#import "SPBaseExportHandler.h"
+#import "SPTableBaseExportHandler.h"
 
 @class SPXMLExportViewController;
 
-@interface SPXMLExportHandler : SPBaseExportHandler <SPExportHandlerInstance>
+@interface SPXMLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
 
 @end

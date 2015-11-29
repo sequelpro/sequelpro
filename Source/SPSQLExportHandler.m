@@ -34,6 +34,7 @@
 #import "SPExportFile.h"
 #import "SPSQLExporter.h"
 #import "SPExportHandlerFactory.h"
+#import "SPTableBaseExportHandler_Protected.h"
 
 @interface SPSQLExportViewController : NSViewController {
 	// SQL
@@ -261,7 +262,7 @@
 //	}
 }
 
-- (void)_validateExportButton
+- (void)updateValidForExport
 {
 	BOOL enable = NO;
 //	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] boolValue];
@@ -311,7 +312,8 @@
 //		}
 //	}
 //
-	[self setIsValidForExport:enable];
+	//[self setIsValidForExport:enable];
+	[super updateValidForExport];
 }
 
 

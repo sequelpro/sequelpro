@@ -37,7 +37,7 @@
  *
  * Dot schema exporter delegate protocol.
  */
-@protocol SPDotExporterProtocol
+@protocol SPDotExporterProtocol <NSObject>
 
 /**
  * Called when the dot export process is about to begin. 

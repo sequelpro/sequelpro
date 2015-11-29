@@ -34,6 +34,7 @@
 #import "SPExportController.h"
 #import "SPExportFile.h"
 #import "SPExportHandlerFactory.h"
+#import "SPTableBaseExportHandler_Protected.h"
 
 @class SPXMLExportViewController;
 
@@ -79,19 +80,23 @@
 	return [instance autorelease];
 }
 
-- (NSString *)uniqueName {
+- (NSString *)uniqueName
+{
 	return @"SPXMLExporter";
 }
 
-- (NSString *)localizedShortName {
+- (NSString *)localizedShortName
+{
 	return NSLocalizedString(@"XML","xml exporter short name");
 }
 
-- (BOOL)supportsExportToMultipleFiles {
+- (BOOL)supportsExportToMultipleFiles
+{
 	return YES;
 }
 
-- (BOOL)supportsExportSource:(SPExportSource)source {
+- (BOOL)supportsExportSource:(SPExportSource)source
+{
 	switch(source) {
 		case SPTableExport:
 		case SPFilteredExport:

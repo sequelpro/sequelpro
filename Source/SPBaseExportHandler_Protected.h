@@ -1,9 +1,9 @@
 //
-//  SPDotExporterDelegate.h
+//  SPBaseExportHandler_Protected.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on April 17, 2010.
-//  Copyright (c) 2010 Stuart Connolly. All rights reserved.
+//  Created by Max Lohrmann on 29.11.15.
+//  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,16 +28,14 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPExportController.h"
-#import "SPDotExporterProtocol.h"
+#import "SPBaseExportHandler.h"
 
-/**
- * @category SPDotExporterDelegate SPDotExporterDelegate.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * Dot exporter delegate category.
- */
-@interface SPExportController (SPDotExporterDelegate) <SPDotExporterProtocol>
+@interface SPBaseExportHandler ()
+
+@property(readwrite, nonatomic, assign) BOOL canBeImported;
+@property(readwrite, nonatomic, assign) BOOL isValidForExport;
+@property(readwrite, nonatomic, copy)   NSString *fileExtension;
+@property(readwrite, nonatomic, retain) NSViewController *accessoryViewController;
+@property(readwrite, nonatomic, assign) SPExportController *controller;
 
 @end

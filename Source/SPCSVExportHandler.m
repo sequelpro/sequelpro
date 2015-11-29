@@ -35,6 +35,7 @@
 #import "SPExportController.h"
 #import "SPExportFilenameUtilities.h"
 #import "SPCSVExporter.h"
+#import "SPTableBaseExportHandler_Protected.h"
 
 @interface SPCSVExportHandlerFactory : NSObject  <SPExportHandlerFactory>
 
@@ -63,7 +64,8 @@ static void *_KVOContext;
 
 @implementation SPCSVExportHandler
 
-- (instancetype)initWithFactory:(SPCSVExportHandlerFactory *)factory {
+- (instancetype)initWithFactory:(SPCSVExportHandlerFactory *)factory
+{
 	if ((self = [super initWithFactory:factory])) {
 		[self setCanBeImported:NO];
 		SPCSVExportViewController *viewController = [[[SPCSVExportViewController alloc] init] autorelease];
@@ -74,7 +76,8 @@ static void *_KVOContext;
 	return self;
 }
 
-- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type
+{
 	// we can only export what provides a data table
 	switch (type) {
 		case SPTableTypeTable:
@@ -84,7 +87,8 @@ static void *_KVOContext;
 	return NO;
 }
 
-- (SPExportersAndFiles)allExporters {
+- (SPExportersAndFiles)allExporters
+{
 	return ((SPExportersAndFiles){nil,nil});;
 
 //	SPCSVExporter *csvExporter = nil;
@@ -288,6 +292,7 @@ static void *_KVOContext;
 
 - (void)willBecomeActive
 {
+	[super willBecomeActive];
 	// we have to show the "can't be imported" warning when "export to multiple files" is enabled
 	[[self controller] addObserver:self forKeyPath:@"exportToMultipleFiles" options:NSKeyValueObservingOptionInitial context:&_KVOContext];
 }
@@ -324,19 +329,23 @@ static void *_KVOContext;
 	return [instance autorelease];
 }
 
-- (NSString *)uniqueName {
+- (NSString *)uniqueName
+{
 	return @"SPCSVExporter";
 }
 
-- (NSString *)localizedShortName {
+- (NSString *)localizedShortName
+{
 	return NSLocalizedString(@"CSV","csv exporter short name");
 }
 
-- (BOOL)supportsExportToMultipleFiles {
+- (BOOL)supportsExportToMultipleFiles
+{
 	return YES;
 }
 
-- (BOOL)supportsExportSource:(SPExportSource)source {
+- (BOOL)supportsExportSource:(SPExportSource)source
+{
 	switch (source) {
 		case SPTableExport:
 		case SPQueryExport:
@@ -360,7 +369,8 @@ static void *_KVOContext;
 	return self;
 }
 
-- (void)awakeFromNib {
+- (void)awakeFromNib
+{
 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
 	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 }

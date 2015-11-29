@@ -124,11 +124,29 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  */
 - (void)setIncludedSchemaObjects:(NSArray *)objectNames;
 
+/**
+ * Implement this method if you support SPTableExport!
+ * @param schemaObjects An array of SPExportSchemaObject *s that you declared for export
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects;
+
+/**
+ * Implement this method if you support SPFilteredExport and/or SPQueryExport!
+ * @param data The content data rows
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExportersForData:(NSArray *)data;
+
+/**
+ * Implement this method if you support SPDatabaseExport!
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExporters;
+
 @required
 
 - (NSViewController *)accessoryViewController;
-
-- (SPExportersAndFiles)allExporters;
 
 // must be KVO compliant
 @property(readonly, nonatomic) BOOL canBeImported;

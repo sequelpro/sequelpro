@@ -31,10 +31,19 @@
 #import <Foundation/Foundation.h>
 #import "SPExportHandlerInstance.h"
 #import "SPBaseExportHandler.h"
+#import "SPDotExporterProtocol.h"
 
 @class SPExportController;
 @class SPDotExportViewController;
 
-@interface SPDotExportHandler : SPBaseExportHandler <SPExportHandlerInstance>
+@interface SPDotExportHandler : SPBaseExportHandler <SPExportHandlerInstance, SPDotExporterProtocol> {
+	/**
+	 * The server's lower_case_table_names setting
+	 */
+	NSCellStateValue serverLowerCaseTableNameValue;
+}
+
+// This is for binding our accessory view's checkbox value
+@property (readwrite, nonatomic) NSCellStateValue serverLowerCaseTableNameValue;
 
 @end

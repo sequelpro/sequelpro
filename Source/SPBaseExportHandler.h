@@ -2,7 +2,7 @@
 //  SPBaseExportHandler.h
 //  sequel-pro
 //
-//  Created by Max Lohrmann on 25.11.15.
+//  Created by Max Lohrmann on 29.11.15.
 //  Copyright (c) 2015 Max Lohrmann. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -32,54 +32,32 @@
 #import "SPExportHandlerInstance.h"
 
 @class SPExportController;
-@protocol SPExportSchemaObject;
-@protocol SPExportHandlerFactory;
 
-/**
- * This class implements a basic export handler with support for selecting schema objects
- * via checkbox.
- * This is an **abstract** class. You still have to implement many of the method.
- *
- * Note that this class makes the addonData of SPExportSchemaObject an NSMutableDictionary.
- */
 @interface SPBaseExportHandler : NSObject <SPExportHandlerInstance> {
 	BOOL _canBeImported;
 	BOOL _isValidForExport;
 	SPExportController *_controller;
 	NSViewController *_accessoryViewController;
 	NSString *_fileExtension;
-	NSArray *_tableColumns;
 	id<SPExportHandlerFactory> _factory;
 
+	/**
+	 * Number of tables being exported
+	 */
 	NSUInteger exportTableCount;
+
+	/**
+	 * Index of the current table being exported
+	 */
+	NSUInteger currentTableExportIndex;
 }
 
 - (instancetype)initWithFactory:(id<SPExportHandlerFactory>)factory;
 
-@end
-
-#pragma mark -
-#pragma mark Protected
-
-@interface SPBaseExportHandler ()
-
-@property(readwrite, nonatomic, assign) BOOL canBeImported;
-@property(readwrite, nonatomic, assign) BOOL isValidForExport;
-@property(readwrite, nonatomic, copy)   NSString *fileExtension;
-@property(readwrite, nonatomic, retain) NSViewController *accessoryViewController;
-@property(readwrite, nonatomic, assign) SPExportController *controller;
-@property(readwrite, nonatomic, copy) NSArray *tableColumns;
-
-/**
- * You should override this method and implement the logic that does
- * check and setCanBeImported: here.
- */
-- (void)updateCanBeImported;
-
-/**
- * You should override this method and implement the logic that does
- * check and setIsValidForExport: here.
- */
-- (void)updateValidForExport;
+@property(readonly, nonatomic, retain) NSViewController *accessoryViewController;
+@property(readonly, nonatomic) BOOL canBeImported;
+@property(readonly, nonatomic) BOOL isValidForExport;
+@property(readonly, nonatomic, copy) NSString *fileExtension;
+@property(readonly, nonatomic, assign) id<SPExportHandlerFactory> factory;
 
 @end

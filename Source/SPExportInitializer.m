@@ -48,6 +48,7 @@
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportController+SharedPrivateAPI.h"
 #import "SPExportHandlerInstance.h"
+#import "SPExportHandlerFactory.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -60,7 +61,7 @@
 - (void)startExport
 {
 	// Start progress indicator
-	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];		
+	[exportProgressTitle setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Exporting %@", @"text showing that the application is importing a supplied format"), exportTypeLabel]];
 	[exportProgressText setStringValue:NSLocalizedString(@"Writing...", @"text showing that app is writing text file")];
 	
 	[exportProgressIndicator setUsesThreadedAnimation:NO];
@@ -110,110 +111,67 @@
  */
 - (void)initializeExportUsingSelectedOptions
 {
-//	NSArray *dataArray = nil;
-//
-//	// Get rid of the cached connection encoding
-//	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
-//
-//	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
-//
-//	NSMutableArray *exportTables = [NSMutableArray array];
-//
-//	// Get the data depending on the source
-//	switch (exportSource)
-//	{
-//		case SPFilteredExport:
-//			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
-//			break;
-//		case SPQueryExport:
-//			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
-//			break;
-//		case SPTableExport:
-//			// Create an array of tables to export
-//			for (NSMutableArray *table in tables)
-//			{
-//				if (exportType == SPSQLExport) {
-//					if ([[table objectAtIndex:1] boolValue] || [[table objectAtIndex:2] boolValue] || [[table objectAtIndex:3] boolValue]) {
-//
-//						// Check the overall export settings
-//						if ([[table objectAtIndex:1] boolValue] && (![exportSQLIncludeStructureCheck state])) {
-//							[table replaceObjectAtIndex:1 withObject:@NO];
-//						}
-//
-//						if ([[table objectAtIndex:2] boolValue] && (![exportSQLIncludeContentCheck state])) {
-//							[table replaceObjectAtIndex:2 withObject:@NO];
-//						}
-//
-//						if ([[table objectAtIndex:3] boolValue] && (![exportSQLIncludeDropSyntaxCheck state])) {
-//							[table replaceObjectAtIndex:3 withObject:@NO];
-//						}
-//
-//						[exportTables addObject:table];
-//					}
-//				}
-//				else if (exportType == SPDotExport) {
-//					[exportTables addObject:[table objectAtIndex:0]];
-//				}
-//				else {
-//					if ([[table objectAtIndex:2] boolValue]) {
-//						[exportTables addObject:[table objectAtIndex:0]];
-//					}
-//				}
-//			}
-//
-//			break;
-//	}
-//
-//	// Set the export type label
-//	switch (exportType)
-//	{
-//		case SPSQLExport:
-//			exportTypeLabel = @"SQL";
-//			break;
-//		case SPCSVExport:
-//			exportTypeLabel = @"CSV";
-//			break;
-//		case SPXMLExport:
-//			exportTypeLabel = @"XML";
-//			break;
-//		case SPDotExport:
-//			exportTypeLabel = @"Dot";
-//			break;
-//		case SPPDFExport:
-//		case SPHTMLExport:
-//		case SPExcelExport:
-//		default:
-//			[NSException raise:NSInvalidArgumentException format:@"unsupported exportType=%lu",exportType];
-//			return;
-//	}
-//
-//	// Begin the export based on the source
-//	switch (exportSource)
-//	{
-//		case SPFilteredExport:
-//		case SPQueryExport:
-//			[self exportTables:nil orDataArray:dataArray];
-//			break;
-//		case SPTableExport:
-//			[self exportTables:exportTables orDataArray:nil];
-//			break;
-//	}
+	NSArray *dataArray = nil;
+
+	// Get rid of the cached connection encoding
+	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
+
+	createCustomFilename = ([[exportCustomFilenameTokenField stringValue] length] > 0);
+
+	NSMutableArray *exportTables = [NSMutableArray array];
+
+	// Get the data depending on the source
+	switch (exportSource)
+	{
+		case SPFilteredExport:
+			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
+			break;
+		case SPQueryExport:
+			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
+			break;
+		case SPTableExport:
+			// Create an array of tables to export
+			for (_SPExportListItem *object in exportObjectList)
+			{
+				if([object isGroupRow]) continue;
+
+				if([[self currentExportHandler] wouldIncludeSchemaObject:object])
+					[exportTables addObject:object];
+			}
+			break;
+		case SPDatabaseExport:
+			; // nothing to do here
+	}
+
+	// Set the export type label
+	[exportTypeLabel release];
+	exportTypeLabel = [[[[self currentExportHandler] factory] localizedShortName] retain];
+
+	// Begin the export based on the source
+	switch (exportSource)
+	{
+		case SPFilteredExport:
+		case SPQueryExport:
+			[self exportTables:nil orDataArray:dataArray];
+			break;
+		case SPTableExport:
+			[self exportTables:exportTables orDataArray:nil];
+			break;
+		case SPDatabaseExport:
+			[self exportTables:nil orDataArray:nil];
+			break;
+	}
 }
 
 /**
  * Exports the contents of the supplied array of tables or data array.
  *
- * Note that at least one of these parameters must not be nil.
  *
  * @param exportTables An array of table/view names to be exported (can be nil).
  * @param dataArray    A MySQL result set array to be exported (can be nil).
  */
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray
 {
-	//BOOL singleFileHandleSet = NO;
-	//SPExportFile *file = nil;
-	//SPExportFile *singleExportFile = nil;
-	
 	// Change query logging mode
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 	
@@ -234,7 +192,20 @@
 	   didEndSelector:nil 
 		  contextInfo:nil];
 	
-	SPExportersAndFiles pair = [[self currentExportHandler] allExporters];
+	SPExportersAndFiles pair;
+	if(exportTables) {
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExportersForSchemaObjects:)],@"Current exporter handler %@ does not implement method for exporting schema objects!",[self currentExportHandler]);
+		pair = [[self currentExportHandler] allExportersForSchemaObjects:exportTables];
+	}
+	else if(dataArray) {
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExportersForData:)],@"Current exporter handler %@ does not implement method for exporting table data!",[self currentExportHandler]);
+		pair = [[self currentExportHandler] allExportersForData:dataArray];
+	}
+	else {
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExporters)],@"Current exporter handler %@ does not implement method for exporting databases!",[self currentExportHandler]);
+		pair = [[self currentExportHandler] allExporters];
+	}
+
 	[exporters addObjectsFromArray:pair.exporters];
 	[exportFiles addObjectsFromArray:pair.exportFiles];
 	
@@ -274,7 +245,5 @@
 
 	[problemFiles release];
 }
-
-
 
 @end

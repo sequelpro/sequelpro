@@ -21,21 +21,14 @@
                 <button id="ooW-HI-zX2">
                     <rect key="frame" x="17" y="213" width="230" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <string key="toolTip">When the default configuration of MySQL server is running on Windows or Mac OS X, or case sensitivity has been disabled, this option should be enabled to allow table relations to work correctly.</string>
                     <buttonCell key="cell" type="check" title="Use case-insentive links" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="PSc-tA-RGy">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
-                    <attributedString key="userComments">
-                        <fragment>
-                            <string key="content">When the default configuration of MySQL server is running on Windows or Mac OS X, or case sensitivity has been disabled, this option should be enabled to allow table relations to work correctly.</string>
-                            <attributes>
-                                <color key="NSColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                                <font key="NSFont" metaFont="smallSystem"/>
-                                <font key="NSOriginalFont" metaFont="smallSystem"/>
-                                <paragraphStyle key="NSParagraphStyle" alignment="natural" lineBreakMode="wordWrapping" baseWritingDirection="natural"/>
-                            </attributes>
-                        </fragment>
-                    </attributedString>
+                    <connections>
+                        <binding destination="-2" name="value" keyPath="representedObject.serverLowerCaseTableNameValue" id="HRO-0v-i7u"/>
+                    </connections>
                 </button>
             </subviews>
             <point key="canvasLocation" x="144.5" y="154"/>

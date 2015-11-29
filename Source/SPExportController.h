@@ -37,6 +37,7 @@
 @class SPServerSupport;
 @protocol SPExportHandlerInstance;
 @protocol SPExportSchemaObject;
+@class SPExportFile;
 
 extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 
@@ -124,16 +125,6 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	BOOL createCustomFilename;
 	
 	/**
-	 * Number of tables being exported
-	 */
-	NSUInteger exportTableCount;
-	
-	/** 
-	 * Index of the current table being exported
-	 */
-	NSUInteger currentTableExportIndex;
-	
-	/**
 	 * Export type label
 	 */
 	NSString *exportTypeLabel;
@@ -193,11 +184,6 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	 * Previous connection encoding was via Latin1
 	 */
 	BOOL previousConnectionEncodingViaLatin1;
-
-	/**
-	 * The server's lower_case_table_names setting
-	 */
-	NSInteger serverLowerCaseTableNameValue;
 
 	NSInteger heightOffset1;
 	NSInteger heightOffset2;
@@ -272,5 +258,20 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
  * @return A list of objects. Will be empty if source != SPTableExport.
  */
 - (NSArray *)allSchemaObjects;
+
+/**
+ * Create and return a new export output file
+ * @param tableName The value for the {table} token object. Can be nil.
+ * @return A export file at the path chosen by the user.
+ */
+- (SPExportFile *)exportFileForTableName:(NSString *)tableName;
+
+- (SPDatabaseDocument *)tableDocumentInstance;
+- (SPTableData *)tableDataInstance;
+
+- (void)setExportProgressTitle:(NSString *)title;
+- (void)setExportProgressDetail:(NSString *)detail;
+- (void)setExportProgress:(double)value;
+- (void)setExportProgressIndeterminate:(BOOL)indeterminate;
 
 @end
