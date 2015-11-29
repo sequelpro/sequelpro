@@ -34,7 +34,7 @@
 @interface SPExportController (SharedPrivateAPI)
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
-- (void)displayExportFinishedGrowlNotification;
+- (void)displayExportFinishedGrowlNotification:(NSString *)exportFilename;
 - (void)_hideExportProgress;
 - (void)_updateExportAdvancedOptionsLabel;
 - (void)_switchTab;

@@ -35,6 +35,7 @@
 #import "SPExportHandlerInstance.h"
 #import "SPExportHandlerFactory.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportSettingsPersistence.h"
 
 @implementation SPExportController (SPExportFilenameUtilities)
 
@@ -73,9 +74,9 @@
 	// That seems to be the easiest way to let NSString correctly determine if an extension is present
 	for (id filenamePart in [exportCustomFilenameTokenField objectValue])
 	{
-		if([filenamePart isKindOfClass:[NSString class]])
+		if(IS_STRING(filenamePart))
 			[flatted appendString:filenamePart];
-		else if([filenamePart isKindOfClass:[SPExportFileNameTokenObject class]])
+		else if(IS_TOKEN(filenamePart))
 			[flatted appendString:@"/a"];
 		else
 			[NSException raise:NSInternalInconsistencyException format:@"unknown object in token list: %@",filenamePart];
@@ -108,12 +109,22 @@
 		}
 	}
 
-	if (!i || (i > 1 && ![[[self currentExportHandler] factory] supportsExportToMultipleFiles])) {
+	if (i > 1 && ![[[self currentExportHandler] factory] supportsExportToMultipleFiles]) {
 		return NO;
 	}
 
 	// if multiple tables are selected the table token can only be used in "export to multiple files" mode.
-	return ([self exportToMultipleFiles]);
+	return (i <= 1 || [self exportToMultipleFiles]);
+}
+
+- (BOOL)isTableTokenIncludedForCustomFilename
+{
+	for(id obj in [exportCustomFilenameTokenField objectValue]) {
+		if(IS_TOKEN(obj)) {
+			if([[(SPExportFileNameTokenObject *)obj tokenId] isEqualToString:SPFileNameTableTokenName]) return YES;
+		}
+	}
+	return NO;
 }
 
 /**
@@ -163,7 +174,7 @@
 	NSMutableArray *tokens = [NSMutableArray arrayWithCapacity:[mixed count]]; // ...or less
 	
 	for (id obj in mixed) {
-		if([obj isKindOfClass:[SPExportFileNameTokenObject class]]) [tokens addObject:obj];
+		if(IS_TOKEN(obj)) [tokens addObject:obj];
 	}
 	
 	return tokens;
@@ -244,7 +255,7 @@
 	
 	for (id filenamePart in representedFilenameParts) 
 	{
-		if ([filenamePart isKindOfClass:[SPExportFileNameTokenObject class]]) {
+		if (IS_TOKEN(filenamePart)) {
 			NSString *tokenContent = [filenamePart tokenId];
 
 			if ([tokenContent isEqualToString:SPFileNameHostTokenName]) {
@@ -304,8 +315,8 @@
 	
 	[dateFormatter release];
 
-	// Don't allow empty strings - if an empty string resulted, revert to the default string
-	if (![string length]) [string setString:[self generateDefaultExportFilename]];
+	// Don't allow empty strings
+	NSAssert(([string length] > 0), @"expansion of custom filename pattern [%@] resulted in empty string!?",[self currentCustomFilenameAsString]);
 
 	return string;
 }

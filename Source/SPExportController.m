@@ -44,6 +44,7 @@
 #import "SPExporterRegistry.h"
 #import "SPExportHandlerFactory.h"
 #import "SPExportInterfaceController.h"
+#import "SPDatabaseViewController.h"
 
 NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification = @"SPExportHandlerSchemaObjectTypeSupportChanged";
 NSString *SPExportControllerSchemaObjectsChangedNotification        = @"SPExportControllerSchemaObjectsChanged";
@@ -118,7 +119,6 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 		exportSource = SPTableExport;
 		
-		exportFilename = [[NSMutableString alloc] init];
 		exportTypeLabel = [@"" retain];
 		
 		createCustomFilename = NO;
@@ -363,7 +363,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 /**
  * Displays the export finished Growl notification.
  */
-- (void)displayExportFinishedGrowlNotification
+- (void)displayExportFinishedGrowlNotification:(NSString *)exportFilename
 {
 	// Export finished Growl notification
 	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Export Finished" 
@@ -410,17 +410,31 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 - (SPExportFile *)exportFileForTableName:(NSString *)tableName
 {
+	//for filtered export we can guess the table name - there can only be one
+	if(!tableName && [self exportSource] == SPFilteredExport) tableName = [tableDocumentInstance table];
+	
+	NSMutableString *exportFilename = [NSMutableString string];
 	// Create custom filename if required
+	BOOL needsTableName;
 	if (createCustomFilename) {
 		[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:tableName]];
+		needsTableName = (![self isTableTokenIncludedForCustomFilename]);
+		
+		// the logic for finding the extension is a bit more difficult because the pattern can include e.g. dates with "."
+		NSString *extension = [self currentDefaultExportFileExtension];
+		if (![[self customFilenamePathExtension] length] && [extension length] > 0) [exportFilename setString:[exportFilename stringByAppendingPathExtension:extension]];
 	}
 	else {
-		[exportFilename setString:[tableDocumentInstance database]];
+		[exportFilename setString:[self generateDefaultExportFilename]];
+		needsTableName = ([self exportSource] != SPFilteredExport); // only filtered export has the table name in the default pattern
 	}
-
-	// Only append the extension if necessary
-	if (![[exportFilename pathExtension] length]) {
-		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
+	
+	// If we're exporting to multiple files, make sure the table name is included to ensure the output files are unique.
+	if ([self exportToMultipleFiles] && (currentExportFileCountEstimate > 1) && needsTableName) {
+		NSString *ext = [exportFilename pathExtension];
+		[exportFilename setString:[exportFilename stringByDeletingPathExtension]];
+		[exportFilename appendFormat:@"_%@", tableName];
+		[exportFilename setString:[exportFilename stringByAppendingPathExtension:ext]];
 	}
 
 	SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
@@ -466,6 +480,11 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		[exportProgressIndicator stopAnimation:self];
 		[exportProgressIndicator setIndeterminate:NO];
 	}
+}
+
+- (NSArray *)waitingExporters
+{
+	return [NSArray arrayWithArray:exporters];
 }
 
 #pragma mark -
@@ -700,10 +719,23 @@ set_input:
 		if (toggleDropTable) [table replaceObjectAtIndex:3 withObject:[NSNumber numberWithBool:[sender tag]]];
 	}
 	*/
-	[[self currentExportHandler] updateIncludeStateForAllSchemaObjects:([sender tag] == 1)];
+	
+	// if there currently is a selection of more than one item let's assume the user wants to
+	// toggle the selected items instead of all items.
+	id<SPExportHandlerInstance> handler = [self currentExportHandler];
+	NSIndexSet *selection = [exportTableList selectedRowIndexes];
+	if([selection count] > 1 && [handler respondsToSelector:@selector(updateIncludeState:forSchemaObject:)]) {
+		[selection enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
+			[handler updateIncludeState:([sender tag] == 1) forSchemaObject:[exportObjectList objectAtIndex:idx]];
+		}];
+	}
+	else {
+		[handler updateIncludeStateForAllSchemaObjects:([sender tag] == 1)];
+	}
+
 	[exportTableList reloadData];
 
-	[self _toggleExportButtonOnBackgroundThread];
+//	[self _toggleExportButtonOnBackgroundThread];
 }
 
 /**
@@ -1373,7 +1405,6 @@ after_update:
 	SPClear(exporters);
 	SPClear(exportFiles);
 	SPClear(operationQueue);
-	SPClear(exportFilename);
 	SPClear(localizedTokenNames);
 	SPClear(previousConnectionEncoding);
 	[self setServerSupport:nil];

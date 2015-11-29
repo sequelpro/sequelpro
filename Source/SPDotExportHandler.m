@@ -163,7 +163,7 @@
 
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter
 {
-	[[self controller] exportEnded];
+	[[self controller] exportEnded:exporter];
 }
 
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter

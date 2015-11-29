@@ -114,6 +114,13 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 - (void)updateIncludeStateForAllSchemaObjects:(BOOL)newState;
 
 /**
+ * You can optionally implement this method to enable advanced selection options in the GUI
+ * @param newState the new state for the object
+ * @param object the schema object to toggle
+ */
+- (void)updateIncludeState:(BOOL)newState forSchemaObject:(id<SPExportSchemaObject>)object;
+
+/**
  * You can optionally implement this method to enable a basic selection of items that will be made initially
  * before opening the export controller. This is only valid for SPTableExport sources.
  *

@@ -52,6 +52,9 @@
 	NSString *csvEscapeString;
 	NSString *csvLineEndingString;
 	NSString *csvNULLString;
+
+	NSString *databaseHost;
+	NSString *databaseName;
 	
 	BOOL csvOutputFieldNames;
 	
@@ -109,5 +112,8 @@
 @property(readwrite, retain) SPTableData *csvTableData;
 
 - (id)initWithDelegate:(NSObject *)exportDelegate;
+
+@property(readwrite, copy) NSString *databaseHost;
+@property(readwrite, copy) NSString *databaseName;
 
 @end

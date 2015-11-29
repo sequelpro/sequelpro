@@ -48,6 +48,8 @@
 @synthesize csvLineEndingString;
 @synthesize csvNULLString;
 @synthesize csvTableData;
+@synthesize databaseHost;
+@synthesize databaseName;
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate.
@@ -87,7 +89,7 @@
 	BOOL quoteFieldSeparators = [[self csvEnclosingCharacterString] isEqualToString:@""];
 
 	double lastProgressValue;
-	NSUInteger i, totalRows, csvCellCount = 0;
+	NSUInteger i, totalRows = 0, csvCellCount = 0;
 	
 	// Check to see if we have at least a table name or data array
 	if ((![self csvTableName] && ![self csvDataArray]) ||
@@ -393,7 +395,7 @@
 	}
 	
 	// Write data to disk
-	[[(SPExportFile*)[self exportOutputFile] exportFileHandle] synchronizeFile];
+	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];
@@ -428,19 +430,19 @@
 	                                 range:NSMakeRange(0, [lineEnding length])];
 
 	// Write the file header and the first table name
-//	[[self exportOutputFile] writeData:[[NSMutableString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-//					NSLocalizedString(@"Host", @"export header host label"),
-//					                                   [tableDocumentInstance host],
-//					NSLocalizedString(@"Database", @"export header database label"),
-//					                                   [tableDocumentInstance database],
-//					NSLocalizedString(@"Generation Time", @"export header generation time label"),
-//					                                   [NSDate date],
-//					                                   lineEnding,
-//					                                   lineEnding,
-//					NSLocalizedString(@"Table", @"csv export table heading"),
-//					                                   [[tables objectAtIndex:0] objectAtIndex:0],
-//					                                   lineEnding,
-//					                                   lineEnding] dataUsingEncoding:[connection stringEncoding]]];
+	[self writeString:[NSString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
+					NSLocalizedString(@"Host", @"export header host label"),
+					                                   [self databaseHost],
+					NSLocalizedString(@"Database", @"export header database label"),
+					                                   [self databaseName],
+					NSLocalizedString(@"Generation Time", @"export header generation time label"),
+					                                   [NSDate date],
+					                                   lineEnding,
+					                                   lineEnding,
+					NSLocalizedString(@"Table", @"csv export table heading"),
+					                                   csvTableName,
+					                                   lineEnding,
+					                                   lineEnding]];
 }
 
 #pragma mark -
@@ -456,6 +458,9 @@
 	SPClear(csvLineEndingString);
 	SPClear(csvNULLString);
 	SPClear(csvTableData);
+
+	[self setDatabaseHost:nil];
+	[self setDatabaseName:nil];
 	
 	[super dealloc];
 }

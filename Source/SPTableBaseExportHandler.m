@@ -156,6 +156,16 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 	[self updateValidForExport];
 }
 
+- (void)updateIncludeState:(BOOL)newState forSchemaObject:(id <SPExportSchemaObject>)object
+{
+	EnsureAddonDict(object);
+	[[object addonData] setObject:@(newState) forKey:ContentColumnKey];
+
+	[self updateCanBeImported];
+	[self updateValidForExport];
+}
+
+
 - (void)updateValidForExport
 {
 	// as a default, we'll just check whether at least one object is selected

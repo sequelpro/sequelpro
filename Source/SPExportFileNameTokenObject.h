@@ -38,3 +38,8 @@
 @property (nonatomic,copy) NSString *tokenId;
 
 @end
+
+#pragma mark - Utility functions
+
+static inline BOOL IS_TOKEN(id x) { return [x isKindOfClass:[SPExportFileNameTokenObject class]]; }
+static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; }

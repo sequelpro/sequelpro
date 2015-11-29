@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportController.h"
+@class SPExporter;
 
 /**
  * @category SPExportInitializer SPExportInitializer.h
@@ -40,7 +41,7 @@
 @interface SPExportController (SPExportInitializer)
 
 - (void)startExport;
-- (void)exportEnded;
+- (void)exportEnded:(SPExporter *)exp;
 - (void)initializeExportUsingSelectedOptions;
 
 - (void)exportTables:(NSArray *)exportTables orDataArray:(NSArray *)dataArray;

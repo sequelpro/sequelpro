@@ -36,6 +36,9 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPCSVExporter.h"
 #import "SPTableBaseExportHandler_Protected.h"
+#import "SPExportFile.h"
+#import "SPExportInitializer.h"
+#import "SPDatabaseDocument.h"
 
 @interface SPCSVExportHandlerFactory : NSObject  <SPExportHandlerFactory>
 
@@ -87,70 +90,67 @@ static void *_KVOContext;
 	return NO;
 }
 
-- (SPExportersAndFiles)allExporters
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects
 {
-	return ((SPExportersAndFiles){nil,nil});;
+	SPExportFile *singleExportFile = nil;
+	NSMutableArray *exporters   = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
+	NSMutableArray *exportFiles = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
 
-//	SPCSVExporter *csvExporter = nil;
-//	NSMutableArray *exporters   = [NSMutableArray arrayWithCapacity:[exportTables count]];
-//	NSMutableArray *exportFiles = [NSMutableArray arrayWithCapacity:[exportTables count]];
-//
-//	SPExportSource exportSource = [[self controller] exportSource];
-//	// If the user has selected to only export to a single file or this is a filtered or custom query
-//	// export, create the single file now and assign it to all subsequently created exporters.
-//	if ((![[self controller] exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-//		NSString *selectedTableName = nil;
-//
-//		if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
-//
-//		[exportFilename setString:createCustomFilename ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-//
-//		// Only append the extension if necessary
-//		if (![[exportFilename pathExtension] length]) {
-//			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//		}
-//
-//		singleExportFile = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-//	}
-//
-//	// Start the export process depending on the data source
-//	if (exportSource == SPTableExport) {
-//		NSArray *exportTables = [[self controller] schemaObjectsForType:SPTableTypeTable];
-//		// Cache the number of tables being exported
-//		exportTableCount = [exportTables count];
-//
-//		// Loop through the tables, creating an exporter for each
-//		for (NSString *table in exportTables)
-//		{
-//			csvExporter = [self initializeCSVExporterForTable:table orDataArray:nil];
-//
-//			// If required create a single file handle for all CSV exports
-//			if (![[self controller] exportToMultipleFiles]) {
-//				if (!singleFileHandleSet) {
-//
-//					[exportFiles addObject:singleExportFile];
-//
-//					singleFileHandleSet = YES;
-//				}
-//
-//				[csvExporter setExportOutputFile:singleExportFile];
-//			}
-//
-//			[exporters addObject:csvExporter];
-//		}
-//	}
-//	else {
-//		csvExporter = [self initializeCSVExporterForTable:nil orDataArray:dataArray];
-//
-//		[exportFiles addObject:singleExportFile];
-//
-//		[csvExporter setExportOutputFile:singleExportFile];
-//
-//		[exporters addObject:csvExporter];
-//	}
-//
-//	SPExportersAndFiles ret = {exporters, exportFiles};
-//	return ret;
+	// If the user has selected to only export to a single file, create the single file now and assign it to all subsequently created exporters.
+	if ((![[self controller] exportToMultipleFiles])) {
+		NSString *selectedTableName = nil;
+
+		if ([schemaObjects count] == 1) selectedTableName = [(id<SPExportSchemaObject>)[schemaObjects objectAtIndex:0] name];
+
+		singleExportFile = [[self controller] exportFileForTableName:selectedTableName];
+	}
+
+	// Cache the number of tables being exported
+	exportTableCount = [schemaObjects count];
+
+	BOOL singleFileHandleSet = NO;
+	// Loop through the tables, creating an exporter for each
+	for (id<SPExportSchemaObject> object in schemaObjects)
+	{
+		SPCSVExporter *csvExporter = [self initializeCSVExporterForTable:[object name] orDataArray:nil];
+
+		// If required create a single file handle for all CSV exports
+		if (![[self controller] exportToMultipleFiles]) {
+			if (!singleFileHandleSet) {
+
+				[exportFiles addObject:singleExportFile];
+
+				singleFileHandleSet = YES;
+			}
+
+			[csvExporter setExportOutputFile:singleExportFile];
+		}
+		else {
+			// If required create separate files
+			SPExportFile *file = [[self controller] exportFileForTableName:[object name]];
+
+			[exportFiles addObject:file];
+
+			[csvExporter setExportOutputFile:file];
+		}
+
+		[exporters addObject:csvExporter];
+	}
+
+	SPExportersAndFiles ret = {exporters, exportFiles};
+	return ret;
+}
+
+- (SPExportersAndFiles)allExportersForData:(NSArray *)dataArray
+{
+	SPExportFile *singleExportFile = [[self controller] exportFileForTableName:nil];
+
+	SPCSVExporter *csvExporter = [self initializeCSVExporterForTable:nil orDataArray:dataArray];
+
+	[csvExporter setExportOutputFile:singleExportFile];
+
+	SPExportersAndFiles ret = {@[csvExporter],@[singleExportFile]};
+	return ret;
 }
 
 /**
@@ -171,48 +171,15 @@ static void *_KVOContext;
 		[csvExporter setCsvDataArray:dataArray];
 	}
 
-//	[csvExporter setCsvTableData:tableDataInstance];
-	[csvExporter setCsvOutputFieldNames:[avc->exportCSVIncludeFieldNamesCheck state]];
+	[csvExporter setCsvTableData:[[self controller] tableDataInstance]];
+	[csvExporter setCsvOutputFieldNames:([avc->exportCSVIncludeFieldNamesCheck state] == NSOnState)];
 	[csvExporter setCsvFieldSeparatorString:[avc->exportCSVFieldsTerminatedField stringValue]];
 	[csvExporter setCsvEnclosingCharacterString:[avc->exportCSVFieldsWrappedField stringValue]];
 	[csvExporter setCsvLineEndingString:[avc->exportCSVLinesTerminatedField stringValue]];
 	[csvExporter setCsvEscapeString:[avc->exportCSVFieldsEscapedField stringValue]];
 	[csvExporter setCsvNULLString:[avc->exportCSVNULLValuesAsTextField stringValue]];
-
-	// If required create separate files
-//	if ([[self controller] exportSource] == SPTableExport && [[self controller] exportToMultipleFiles]) {
-//
-//		if (createCustomFilename) {
-//
-//			// Create custom filename based on the selected format
-//			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
-//
-//			// If the user chose to use a custom filename format and we exporting to multiple files, make
-//			// sure the table name is included to ensure the output files are unique.
-//			if (exportTableCount > 1) {
-//				BOOL tableNameInTokens = NO;
-//				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-//				for (id representedObject in representedObjects) {
-//					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
-//				}
-//				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
-//			}
-//		}
-//		else {
-//			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table];
-//		}
-//
-//		// Only append the extension if necessary
-//		if (![[exportFilename pathExtension] length]) {
-//			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//		}
-//
-//		SPExportFile *file = [SPExportFile exportFileAtPath:[[self exportPath] stringByAppendingPathComponent:exportFilename]];
-//
-//		[exportFiles addObject:file];
-//
-//		[csvExporter setExportOutputFile:file];
-//	}
+	[csvExporter setDatabaseHost:[[[self controller] tableDocumentInstance] host]];
+	[csvExporter setDatabaseName:[[[self controller] tableDocumentInstance] database]];
 
 	return [csvExporter autorelease];
 }
@@ -222,7 +189,7 @@ static void *_KVOContext;
 {
 	return @{
 			@"exportToMultipleFiles": @([[self controller] exportToMultipleFiles]),
-//			@"CSVIncludeFieldNames":  IsOn(avc->exportCSVIncludeFieldNamesCheck),
+			@"CSVIncludeFieldNames":  (([avc->exportCSVIncludeFieldNamesCheck state] == NSOnState)? @YES : @NO),
 			@"CSVFieldsTerminated":   [avc->exportCSVFieldsTerminatedField stringValue],
 			@"CSVFieldsWrapped":      [avc->exportCSVFieldsWrappedField stringValue],
 			@"CSVLinesTerminated":    [avc->exportCSVLinesTerminatedField stringValue],
@@ -236,40 +203,12 @@ static void *_KVOContext;
 	id o;
 	if((o = [settings objectForKey:@"exportToMultipleFiles"])) [[self controller] setExportToMultipleFiles:[o boolValue]];
 
-//	if((o = [settings objectForKey:@"CSVIncludeFieldNames"]))  SetOnOff(o, avc->exportCSVIncludeFieldNamesCheck);
+	if((o = [settings objectForKey:@"CSVIncludeFieldNames"]))  [avc->exportCSVIncludeFieldNamesCheck setState:([o boolValue]? NSOnState : NSOffState)];
 	if((o = [settings objectForKey:@"CSVFieldsTerminated"]))   [avc->exportCSVFieldsTerminatedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVFieldsWrapped"]))      [avc->exportCSVFieldsWrappedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVLinesTerminated"]))    [avc->exportCSVLinesTerminatedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVFieldsEscaped"]))      [avc->exportCSVFieldsEscapedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVNULLValuesAsText"]))   [avc->exportCSVNULLValuesAsTextField setStringValue:o];
-}
-
-- (id)specificSettingsForSchemaObject:(id<SPExportSchemaObject>)obj
-{
-	// CSV per table setting is only yes/no
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views rows to find the current checkbox value...
-//		for (NSArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				return @([[table objectAtIndex:2] boolValue]);
-//			}
-//		}
-//	}
-	return nil;
-}
-
-- (void)applySpecificSettings:(id)settings forSchemaObject:(id<SPExportSchemaObject>)obj
-{
-	// CSV per table setting is only yes/no
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views' rows to find the appropriate table...
-//		for (NSMutableArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				[table replaceObjectAtIndex:2 withObject:@([settings boolValue])];
-//				return;
-//			}
-//		}
-//	}
 }
 
 - (void)updateCanBeImported
@@ -294,7 +233,10 @@ static void *_KVOContext;
 {
 	[super willBecomeActive];
 	// we have to show the "can't be imported" warning when "export to multiple files" is enabled
-	[[self controller] addObserver:self forKeyPath:@"exportToMultipleFiles" options:NSKeyValueObservingOptionInitial context:&_KVOContext];
+	[[self controller] addObserver:self
+	                    forKeyPath:@"exportToMultipleFiles"
+	                       options:NSKeyValueObservingOptionInitial
+	                       context:&_KVOContext];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
@@ -307,6 +249,79 @@ static void *_KVOContext;
 	if([keyPath isEqualToString:@"exportToMultipleFiles"]) {
 		[self updateCanBeImported];
 	}
+}
+
+#pragma mark Delegate
+
+- (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter
+{
+	[[self controller] setExportProgressIndeterminate:YES];
+
+	// Only update the progress text if this is a table export
+	if ([[self controller] exportSource] == SPTableExport) {
+		// Update the current table export index
+		currentTableExportIndex = (exportTableCount - [[[self controller] waitingExporters] count]);
+
+		[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter csvTableName]]];
+	}
+	else {
+		[[self controller] setExportProgressDetail:NSLocalizedString(@"Fetching data...", @"export label showing that the app is fetching data")];
+	}
+}
+
+- (void)csvExportProcessComplete:(SPCSVExporter *)exporter
+{
+	NSArray *waiting = [[self controller] waitingExporters];
+	NSUInteger exportCount = [waiting count];
+
+	// If required add the next exporter to the operation queue
+	if ((exportCount > 0) && ([[self controller] exportSource] == SPTableExport)) {
+
+		// If we're only exporting to a single file then write a header for the next table
+		if (![[self controller] exportToMultipleFiles]) {
+
+			// If we're exporting multiple tables to a single file then append some space and the next table's
+			// name, but only if there is at least 2 exportes left.
+			[[exporter exportOutputFile] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@",
+														   [exporter csvLineEndingString],
+														   [exporter csvLineEndingString],
+														   NSLocalizedString(@"Table", @"csv export table heading"),
+														   [(SPCSVExporter *)[waiting objectAtIndex:0] csvTableName],
+														   [exporter csvLineEndingString],
+														   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];
+		}
+		// Otherwise close the file handle of the exporter that just finished
+		// ensuring it's data is written to disk.
+		else {
+			[[exporter exportOutputFile] close];
+		}
+	}
+	// Otherwise if the exporter list is empty, close the progress sheet
+	else {
+		// Close the last exporter's file handle
+		[[exporter exportOutputFile] close];
+	}
+
+	[[self controller] exportEnded:exporter];
+}
+
+- (void)csvExportProcessWillBeginWritingData:(SPCSVExporter *)exporter
+{
+	// Only update the progress text if this is a table export
+	if ([[self controller] exportSource] == SPTableExport) {
+		[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter csvTableName]]];
+	}
+	else {
+		[[self controller] setExportProgressDetail:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
+	}
+
+	[[self controller] setExportProgressIndeterminate:NO];
+	[[self controller] setExportProgress:0];
+}
+
+- (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter
+{
+	[[self controller] setExportProgress:[exporter exportProgressValue]];
 }
 
 @end

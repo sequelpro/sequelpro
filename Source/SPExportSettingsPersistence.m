@@ -205,10 +205,10 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	NSMutableArray *tokenListOut = [NSMutableArray arrayWithCapacity:[tokenListIn count]];
 	
 	for (id obj in tokenListIn) {
-		if([obj isKindOfClass:[NSString class]]) {
+		if(IS_STRING(obj)) {
 			[tokenListOut addObject:obj];
 		}
-		else if([obj isKindOfClass:[SPExportFileNameTokenObject class]]) {
+		else if(IS_TOKEN(obj)) {
 			NSDictionary *tokenProperties = @{@"tokenId": [obj tokenId]};
 			// in the future the dict can be used to store per-token settings
 			[tokenListOut addObject:tokenProperties];
@@ -219,6 +219,27 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	}
 	
 	return tokenListOut;
+}
+
+- (NSString *)currentCustomFilenameAsString
+{
+	NSArray *tokenListIn = [exportCustomFilenameTokenField objectValue];
+	NSMutableString *tokenStringOut = [NSMutableString string];
+	
+	for (id obj in tokenListIn) {
+		if(IS_STRING(obj)) {
+			[tokenStringOut appendString:obj];
+		}
+		else if(IS_TOKEN(obj)) {
+			// in the future needs to include per-token settings
+			[tokenStringOut appendFormat:@"{%@}",[obj tokenId]];
+		}
+		else {
+			SPLog(@"unknown object in token list: %@",obj);
+		}
+	}
+	
+	return tokenStringOut;
 }
 
 - (void)setCustomFilenameFromArray:(NSArray *)tokenList

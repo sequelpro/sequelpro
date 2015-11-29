@@ -30,10 +30,11 @@
 
 #import <Foundation/Foundation.h>
 #import "SPTableBaseExportHandler.h"
+#import "SPCSVExporterProtocol.h"
 
 @protocol SPExportHandlerInstance;
 @class SPCSVExportViewController;
 
-@interface SPCSVExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
+@interface SPCSVExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPCSVExporterProtocol>
 
 @end

@@ -56,6 +56,11 @@
 - (NSArray *)currentCustomFilenameAsArray;
 
 /**
+ * @return A compact serialized form of the "custom filename" field
+ */
+- (NSString *)currentCustomFilenameAsString;
+
+/**
  * @param tokenList A serialized form of the "custom filename" field
  * @see currentCustomFilenameAsArray
  */

@@ -80,30 +80,39 @@
 	// cache the current connection encoding so the exporter can do what it wants.
 	previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
 	previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-		
-	// Add the first exporter to the operation queue
-	[operationQueue addOperation:[exporters objectAtIndex:0]];
-	
-	// Remove the exporter we just added to the operation queue from our list of exporters 
-	// so we know it's already been done.
-	[exporters removeObjectAtIndex:0];	
+
+	// this will also add the next exporter to the operation queue, which is the same we would do here.
+	[self exportEnded:nil];
 }
 
 /**
  * @see _queueIsEmptyAfterCancelling:
  */
-- (void)exportEnded
+- (void)exportEnded:(SPExporter *)exp
 {
-	[self _hideExportProgress];
+	//if there are more exporters left, start with the next one
+	if([exporters count]) {
 
-	// Restore query mode
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+		[operationQueue addOperation:[exporters objectAtIndex:0]];
 
-	// Display Growl notification
-	[self displayExportFinishedGrowlNotification];
+		// Remove the exporter we just added to the operation queue from our list of exporters
+		// so we know it's already been done.
+		[exporters removeObjectAtIndex:0];
 
-	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	}
+	//done with everything
+	else {
+		[self _hideExportProgress];
+
+		// Restore query mode
+		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+
+		// Display Growl notification
+		[self displayExportFinishedGrowlNotification:[[[exp exportOutputFile] exportFilePath] lastPathComponent]];
+
+		// Restore the connection encoding to it's pre-export value
+		[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+	}
 }
 
 /**
@@ -124,9 +133,11 @@
 	switch (exportSource)
 	{
 		case SPFilteredExport:
+			currentExportFileCountEstimate = 1;
 			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
 			break;
 		case SPQueryExport:
+			currentExportFileCountEstimate = 1;
 			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
 			break;
 		case SPTableExport:
@@ -138,8 +149,10 @@
 				if([[self currentExportHandler] wouldIncludeSchemaObject:object])
 					[exportTables addObject:object];
 			}
+			currentExportFileCountEstimate = ([exportTables count])? (([self exportToMultipleFiles])? [exportTables count] : 1) : 0;
 			break;
 		case SPDatabaseExport:
+			currentExportFileCountEstimate = 0; //can't say what will happen
 			; // nothing to do here
 	}
 

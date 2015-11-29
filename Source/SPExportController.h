@@ -129,11 +129,6 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	 */
 	NSString *exportTypeLabel;
 	
-	/** 
-	 * Export filename
-	 */
-	NSMutableString *exportFilename;
-	
 	/**
 	 * Database connection
 	 */
@@ -196,6 +191,8 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	id<SPExportHandlerInstance> currentExportHandler;
 	NSMutableArray *exportObjectList;
 	NSMutableArray *hiddenTabViewStorage;
+
+	NSUInteger currentExportFileCountEstimate;
 }
 
 /**
@@ -273,5 +270,10 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 - (void)setExportProgressDetail:(NSString *)detail;
 - (void)setExportProgress:(double)value;
 - (void)setExportProgressIndeterminate:(BOOL)indeterminate;
+
+/**
+ * @return A snapshot of the list of exporters waiting to be processed.
+ */
+- (NSArray *)waitingExporters;
 
 @end

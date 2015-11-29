@@ -35,9 +35,6 @@
 #import "SPExportHandlerInstance.h"
 #import "SPFunctions.h"
 
-static inline BOOL IS_TOKEN(id x) { return [x isKindOfClass:[SPExportFileNameTokenObject class]]; }
-static inline BOOL IS_STRING(id x) { return [x isKindOfClass:[NSString class]]; }
-
 // Defined to suppress warnings
 @interface SPExportController (SPExportControllerPrivateAPI)
 

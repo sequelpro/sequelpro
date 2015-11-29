@@ -47,5 +47,6 @@
 - (NSString *)expandCustomFilenameFormatUsingTableName:(NSString *)table;
 - (NSString *)customFilenamePathExtension;
 - (BOOL)isTableTokenAllowed;
+- (BOOL)isTableTokenIncludedForCustomFilename;
 
 @end
