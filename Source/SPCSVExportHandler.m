@@ -229,6 +229,19 @@ static void *_KVOContext;
 	[self setCanBeImported:(numberOfTables <= 1)];
 }
 
+- (void)updateValidForExport
+{
+	[super updateValidForExport];
+	if([self isValidForExport]) {
+		// Check that we have all the required info before allowing the export
+		[self setIsValidForExport:(
+			([[avc->exportCSVFieldsTerminatedField stringValue] length]) &&
+			([[avc->exportCSVFieldsEscapedField stringValue] length]) &&
+			([[avc->exportCSVLinesTerminatedField stringValue] length])
+		)];
+	}
+}
+
 - (void)willBecomeActive
 {
 	[super willBecomeActive];

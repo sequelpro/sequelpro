@@ -31,9 +31,12 @@
 #import <Foundation/Foundation.h>
 #import "SPExportHandlerInstance.h"
 #import "SPTableBaseExportHandler.h"
+#import "SPXMLExporterProtocol.h"
 
 @class SPXMLExportViewController;
 
-@interface SPXMLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
+@interface SPXMLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPXMLExporterProtocol> {
+	BOOL writeHeaderForCurrentFile;
+}
 
 @end

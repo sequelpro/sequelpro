@@ -291,7 +291,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	// where we don't want (namely in setExportSourceIfPossible:)!
 	id delegate = [exportTypeTabBar delegate];
 	[exportTypeTabBar setDelegate:nil];
-	NSTabViewItem *selected = [[exportTypeTabBar selectedTabViewItem] identifier];
+	NSTabViewItem *selected = [exportTypeTabBar selectedTabViewItem];
 	
 	// remove all from view
 	while([exportTypeTabBar numberOfTabViewItems]) [exportTypeTabBar removeTabViewItem:[exportTypeTabBar tabViewItemAtIndex:0]];
@@ -450,6 +450,16 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 - (SPTableData *)tableDataInstance
 {
 	return tableDataInstance;
+}
+
+- (SPTableContent *)tableContentInstance
+{
+	return tableContentInstance;
+}
+
+- (SPCustomQuery *)customQueryInstance
+{
+	return customQueryInstance;
 }
 
 - (void)setExportProgressTitle:(NSString *)title

@@ -265,6 +265,8 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 
 - (SPDatabaseDocument *)tableDocumentInstance;
 - (SPTableData *)tableDataInstance;
+- (SPTableContent *)tableContentInstance;
+- (SPCustomQuery *)customQueryInstance;
 
 - (void)setExportProgressTitle:(NSString *)title;
 - (void)setExportProgressDetail:(NSString *)detail;

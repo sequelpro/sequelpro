@@ -35,12 +35,6 @@
 
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPXMLExporter ()
-
-- (void)writeXMLHeaderToExportFile;
-
-@end
-
 @implementation SPXMLExporter
 
 @synthesize delegate;
@@ -91,8 +85,7 @@
 	NSUInteger i, totalRows, currentRowIndex, currentPoolDataLength;
 	
 	// Check to see if we have at least a table name or data array
-	if ((![self xmlTableName] && ![self xmlDataArray]) ||
-		([[self xmlTableName] length] == 0 && [[self xmlDataArray] count] == 0) ||
+	if ((![[self xmlTableName] length] && ![[self xmlDataArray] count]) ||
 		(([self xmlFormat] == SPXMLExportMySQLFormat) && ((![self xmlOutputIncludeStructure]) && (![self xmlOutputIncludeContent]))) ||
 		(([self xmlFormat] == SPXMLExportPlainFormat) && (![self xmlNULLString])))
 	{
@@ -100,12 +93,11 @@
 	}
 			
 	// Inform the delegate that the export process is about to begin
-	[delegate performSelectorOnMainThread:@selector(xmlExportProcessWillBegin:) withObject:self waitUntilDone:NO];
+	// we have to wait because the delegate might add the header
+	[delegate performSelectorOnMainThread:@selector(xmlExportProcessWillBegin:) withObject:self waitUntilDone:YES];
 	
 	// Mark the process as running
 	[self setExportProcessIsRunning:YES];
-
-	[self writeXMLHeaderToExportFile];
 
 	// Make a streaming request for the data if the data array isn't set
 	if ((![self xmlDataArray]) && [self xmlTableName]) {
@@ -172,8 +164,8 @@
 	}
 	
 	// Only proceed to export the content if this is not a table export or it is and include content is selected
-	if ((!isTableExport) || (isTableExport && [self xmlOutputIncludeContent])) {
-	
+	if (!isTableExport || [self xmlOutputIncludeContent]) {
+
 		// Set up an array of encoded field names as opening and closing tags
 		fieldNames = ([self xmlDataArray]) ? NSArrayObjectAtIndex([self xmlDataArray], 0) : [streamingResult fieldNames];
 		
@@ -348,46 +340,8 @@
 	[self setExportProcessIsRunning:NO];
 	
 	// Inform the delegate that the export process is complete
-	[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
-}
-
-/**
- * Writes the XML file header to the supplied export file.
- *
- * @param file The export file to write the header to.
- */
-- (void)writeXMLHeaderToExportFile
-{
-	 NSMutableString *header = [NSMutableString string];
-	 
-	 [header setString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
-//	 [header appendString:@"<!--\n-\n"];
-//	 [header appendString:@"- Sequel Pro XML dump\n"];
-//	 [header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
-//	 [header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
-//	 [header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [tableDocumentInstance host], [tableDocumentInstance mySQLVersion]];
-//	 [header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [tableDocumentInstance database]];
-//	 [header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
-//	 [header appendString:@"-\n-->\n\n"];
-//
-//	if ([self xmlFormat] == SPXMLExportMySQLFormat) {
-//
-//		NSString *tag;
-//
-//		if (exportSource == SPTableExport) {
-//			tag = [NSString stringWithFormat:@"<mysqldump xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<database name=\"%@\">\n\n", [tableDocumentInstance database]];
-//		}
-//		else {
-//			tag = [NSString stringWithFormat:@"<resultset statement=\"%@\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\n", (exportSource == SPFilteredExport) ? [tableContentInstance usedQuery] : [customQueryInstance usedQuery]];
-//		}
-//
-//		[header appendString:tag];
-//	}
-//	else {
-//		[header appendFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]];
-//	}
-//
-	[self writeUTF8String:header];
+	// again wait until the delegate has added a footer
+	[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:YES];
 }
 
 #pragma mark -

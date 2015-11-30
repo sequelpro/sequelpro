@@ -69,7 +69,7 @@
 	NSMutableString *metaString = [NSMutableString string];
 	
 	// Check that we have all the required info before starting the export
-	if ((![self dotExportTables]) || (![self dotTableData]) || ([[self dotExportTables] count] == 0)) {
+	if ((![self dotTableData]) || ([[self dotExportTables] count] == 0)) {
 		return;
 	}
 

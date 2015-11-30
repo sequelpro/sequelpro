@@ -35,6 +35,10 @@
 #import "SPExportFile.h"
 #import "SPExportHandlerFactory.h"
 #import "SPTableBaseExportHandler_Protected.h"
+#import "SPExportInitializer.h"
+#import "SPDatabaseDocument.h"
+#import "SPCustomQuery.h"
+#import "SPTableContent.h"
 
 @class SPXMLExportViewController;
 
@@ -45,6 +49,8 @@
 
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray;
 
+- (void)writeXMLHeaderForExporter:(SPXMLExporter *)exporter;
+- (void)writeXMLFooterForExporter:(SPXMLExporter *)exporter;
 @end
 
 @interface SPXMLExportHandlerFactory : NSObject  <SPExportHandlerFactory>
@@ -121,6 +127,8 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 	[obj setState:([ref boolValue] ? NSOnState : NSOffState)];
 }
 
+#define avc ((SPXMLExportViewController *)[self accessoryViewController])
+
 @implementation SPXMLExportHandler
 
 #define NAMEOF(x) case x: return @#x
@@ -129,8 +137,8 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 + (NSString *)describeXMLExportFormat:(SPXMLExportFormat)xf
 {
 	switch (xf) {
-			NAMEOF(SPXMLExportMySQLFormat);
-			NAMEOF(SPXMLExportPlainFormat);
+		NAMEOF(SPXMLExportMySQLFormat);
+		NAMEOF(SPXMLExportPlainFormat);
 	}
 	return nil;
 }
@@ -152,6 +160,7 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 		[viewController setRepresentedObject:self];
 		[self setAccessoryViewController:viewController];
 		[self setFileExtension:@"xml"];
+		writeHeaderForCurrentFile = YES;
 	}
 
 	return self;
@@ -167,71 +176,63 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 	return NO;
 }
 
-- (SPExportersAndFiles)allExporters {
-	return ((SPExportersAndFiles){nil,nil});
-//
-//	BOOL singleFileHandleSet = NO;
-//	SPExportFile *singleExportFile = nil, *file = nil;
-//	SPXMLExporter *xmlExporter = nil;
-//
-//	SPExportSource exportSource = [[self controller] exportSource];
-//	NSMutableArray *exporters = [NSMutableArray arrayWithCapacity:[exportTables count]];
-//	NSMutableArray *exportFiles = [NSMutableArray arrayWithCapacity:[exportTables count]];
-//
-//	// If the user has selected to only export to a single file or this is a filtered or custom query
-//	// export, create the single file now and assign it to all subsequently created exporters.
-//	if ((![[self controller] exportToMultipleFiles]) || (exportSource == SPFilteredExport) || (exportSource == SPQueryExport)) {
-//		NSString *selectedTableName = nil;
-//		if (exportSource == SPTableExport && [exportTables count] == 1) selectedTableName = [exportTables objectAtIndex:0];
-//
-//		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-//
-//		// Only append the extension if necessary
-//		if (![[exportFilename pathExtension] length]) {
-//			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//		}
-//
-//		singleExportFile = [SPExportFile exportFileAtPath:[[[self controller] exportPath] stringByAppendingPathComponent:exportFilename]];
-//	}
-//
-//	// Start the export process depending on the data source
-//	if (exportSource == SPTableExport) {
-//
-//		// Cache the number of tables being exported
-//		exportTableCount = [exportTables count];
-//
-//		// Loop through the tables, creating an exporter for each
-//		for (NSString *table in exportTables)
-//		{
-//			xmlExporter = [self initializeXMLExporterForTable:table orDataArray:nil];
-//
-//			// If required create a single file handle for all XML exports
-//			if (![[self controller] exportToMultipleFiles]) {
-//				if (!singleFileHandleSet) {
-//
-//					[exportFiles addObject:singleExportFile];
-//
-//					singleFileHandleSet = YES;
-//				}
-//
-//				[xmlExporter setExportOutputFile:singleExportFile];
-//			}
-//
-//			[exporters addObject:xmlExporter];
-//		}
-//	}
-//	else {
-//		xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:dataArray];
-//
-//		[exportFiles addObject:singleExportFile];
-//
-//		[xmlExporter setExportOutputFile:singleExportFile];
-//
-//		[exporters addObject:xmlExporter];
-//	}
-//
-//	SPExportersAndFiles pair = {exporters,exportFiles};
-//	return pair;
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects
+{
+	NSMutableArray *exporters = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
+	NSMutableArray *exportFiles = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
+	SPExportFile *singleExportFile = nil;
+
+	// If the user has selected to only export to a single file, create the single file now and assign it to all subsequently created exporters.
+	if ((![[self controller] exportToMultipleFiles])) {
+		NSString *selectedTableName = nil;
+		if ([schemaObjects count] == 1) selectedTableName = [(id<SPExportSchemaObject>)[schemaObjects objectAtIndex:0] name];
+
+		singleExportFile = [[self controller] exportFileForTableName:selectedTableName];
+	}
+
+	// Cache the number of tables being exported
+	exportTableCount = [schemaObjects count];
+
+	// Loop through the tables, creating an exporter for each
+	BOOL singleFileHandleSet = NO;
+	for (id<SPExportSchemaObject> object in schemaObjects)
+	{
+		SPXMLExporter *xmlExporter = [self initializeXMLExporterForTable:[object name] orDataArray:nil];
+
+		// If required create a single file handle for all XML exports
+		if (![[self controller] exportToMultipleFiles]) {
+			if (!singleFileHandleSet) {
+
+				[exportFiles addObject:singleExportFile];
+
+				singleFileHandleSet = YES;
+			}
+
+			[xmlExporter setExportOutputFile:singleExportFile];
+		}
+		else if(exportTableCount > 0) {
+			SPExportFile *file = [[self controller] exportFileForTableName:[object name]];
+
+			[exportFiles addObject:file];
+
+			[xmlExporter setExportOutputFile:file];
+		}
+
+		[exporters addObject:xmlExporter];
+	}
+
+	SPExportersAndFiles result = {exporters,exportFiles};
+	return result;
+}
+
+- (SPExportersAndFiles)allExportersForData:(NSArray *)data
+{
+	SPExportFile *singleExportFile = [[self controller] exportFileForTableName:nil];
+	SPXMLExporter *xmlExporter = [self initializeXMLExporterForTable:nil orDataArray:data];
+	[xmlExporter setExportOutputFile:singleExportFile];
+
+	SPExportersAndFiles result = {@[xmlExporter],@[singleExportFile]};
+	return result;
 }
 
 /**
@@ -243,55 +244,16 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 - (SPXMLExporter *)initializeXMLExporterForTable:(NSString *)table orDataArray:(NSArray *)dataArray
 {
 	SPXMLExporter *xmlExporter = [[SPXMLExporter alloc] initWithDelegate:self];
-	
-	// if required set the data array
-	if ([[self controller] exportSource] != SPTableExport) {
-		[xmlExporter setXmlDataArray:dataArray];
-	}
-	
+
+	[xmlExporter setXmlDataArray:dataArray]; // nil stays nil
 	// Regardless of the export source, set exporter's table name as it's used in the output
 	// of table and table content exports.
 	[xmlExporter setXmlTableName:table];
 	
-//	[xmlExporter setXmlFormat:[[self accessoryViewController]->exportXMLFormatPopUpButton indexOfSelectedItem]];
-//	[xmlExporter setXmlOutputIncludeStructure:[[self accessoryViewController]->exportXMLIncludeStructure state]];
-//	[xmlExporter setXmlOutputIncludeContent:[[self accessoryViewController]->exportXMLIncludeContent state]];
-//	[xmlExporter setXmlNULLString:[[self accessoryViewController]->exportXMLNULLValuesAsTextField stringValue]];
-//
-//	// If required create separate files
-//	if (([[self controller] exportSource] == SPTableExport) && [[self controller] exportToMultipleFiles] && (exportTableCount > 0)) {
-//
-//		if (createCustomFilename) {
-//
-//			// Create custom filename based on the selected format
-//			[exportFilename setString:[self expandCustomFilenameFormatUsingTableName:table]];
-//
-//			// If the user chose to use a custom filename format and we exporting to multiple files, make
-//			// sure the table name is included to ensure the output files are unique.
-//			if (exportTableCount > 1) {
-//				BOOL tableNameInTokens = NO;
-//				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-//				for (id representedObject in representedObjects) {
-//					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
-//				}
-//				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
-//			}
-//		}
-//		else {
-//			[exportFilename setString:(dataArray) ? [tableDocumentInstance database] : table];
-//		}
-//
-//		// Only append the extension if necessary
-//		if (![[exportFilename pathExtension] length]) {
-//			[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//		}
-//
-//		SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-//
-//		[exportFiles addObject:file];
-//
-//		[xmlExporter setExportOutputFile:file];
-//	}
+	[xmlExporter setXmlFormat:(SPXMLExportFormat)[avc->exportXMLFormatPopUpButton indexOfSelectedItem]];
+	[xmlExporter setXmlOutputIncludeStructure:([avc->exportXMLIncludeStructure state] == NSOnState)];
+	[xmlExporter setXmlOutputIncludeContent:([avc->exportXMLIncludeContent state] == NSOnState)];
+	[xmlExporter setXmlNULLString:[avc->exportXMLNULLValuesAsTextField stringValue]];
 	
 	return [xmlExporter autorelease];
 }
@@ -300,10 +262,10 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 {
 	return @{
 		@"exportToMultipleFiles":     @([[self controller] exportToMultipleFiles]),
-//		@"XMLFormat":                 [[self class] describeXMLExportFormat:(SPXMLExportFormat)[exportXMLFormatPopUpButton indexOfSelectedItem]],
-//		@"XMLOutputIncludeStructure": IsOn(exportXMLIncludeStructure),
-//		@"XMLOutputIncludeContent":   IsOn(exportXMLIncludeContent),
-//		@"XMLNULLString":             [exportXMLNULLValuesAsTextField stringValue]
+		@"XMLFormat":                 [[self class] describeXMLExportFormat:(SPXMLExportFormat)[avc->exportXMLFormatPopUpButton indexOfSelectedItem]],
+		@"XMLOutputIncludeStructure": IsOn(avc->exportXMLIncludeStructure),
+		@"XMLOutputIncludeContent":   IsOn(avc->exportXMLIncludeContent),
+		@"XMLNULLString":             [avc->exportXMLNULLValuesAsTextField stringValue]
 	};
 }
 
@@ -311,44 +273,149 @@ static inline void SetOnOff(NSNumber *ref,id obj)
 {
 	id o;
 	SPXMLExportFormat xmlf;
-//	if((o = [settings objectForKey:@"exportToMultipleFiles"]))     [[self controller] setExportToMultipleFiles:[o boolValue]];
-//	if((o = [settings objectForKey:@"XMLFormat"]) && [[self class] copyXMLExportFormatForDescription:o to:&xmlf]) [exportXMLFormatPopUpButton selectItemAtIndex:xmlf];
-//	if((o = [settings objectForKey:@"XMLOutputIncludeStructure"])) SetOnOff(o, exportXMLIncludeStructure);
-//	if((o = [settings objectForKey:@"XMLOutputIncludeContent"]))   SetOnOff(o, exportXMLIncludeContent);
-//	if((o = [settings objectForKey:@"XMLNULLString"]))             [exportXMLNULLValuesAsTextField setStringValue:o];
-//
-//	[self toggleXMLOutputFormat:exportXMLFormatPopUpButton];
+	if((o = [settings objectForKey:@"exportToMultipleFiles"]))     [[self controller] setExportToMultipleFiles:[o boolValue]];
+	if((o = [settings objectForKey:@"XMLFormat"]) && [[self class] copyXMLExportFormatForDescription:o to:&xmlf]) [avc->exportXMLFormatPopUpButton selectItemAtIndex:xmlf];
+	if((o = [settings objectForKey:@"XMLOutputIncludeStructure"])) SetOnOff(o, avc->exportXMLIncludeStructure);
+	if((o = [settings objectForKey:@"XMLOutputIncludeContent"]))   SetOnOff(o, avc->exportXMLIncludeContent);
+	if((o = [settings objectForKey:@"XMLNULLString"]))             [avc->exportXMLNULLValuesAsTextField setStringValue:o];
+
+	[avc toggleXMLOutputFormat:avc->exportXMLFormatPopUpButton];
 }
 
-- (id)specificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
-{
-//	// XML per table setting is only yes/no
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views' rows to find the current checkbox value...
-//		for (NSArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				return @([[table objectAtIndex:2] boolValue]);
-//			}
-//		}
-//	}
-	return nil;
+- (void)updateValidForExport {
+	// let super check for selection
+	[super updateValidForExport];
+	if([self isValidForExport]) {
+		BOOL enable = NO;
+		SPXMLExportFormat fmt = (SPXMLExportFormat)[avc->exportXMLFormatPopUpButton indexOfSelectedItem];
+		// we also need to make sure that at least one of structure, content is selected
+		if(fmt == SPXMLExportMySQLFormat) {
+			enable = (([avc->exportXMLIncludeStructure state] == NSOnState) || ([avc->exportXMLIncludeContent state] == NSOnState));
+		}
+		// and a null string is given for plain
+		else if(fmt == SPXMLExportPlainFormat) {
+			enable = ([[avc->exportXMLNULLValuesAsTextField stringValue] length] > 0);
+		}
+		[self setIsValidForExport:enable];
+	}
 }
 
-- (void)applySpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
+#pragma mark Delegate
+
+- (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter
 {
-	// XML per table setting is only yes/no
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views' rows to find the appropriate table...
-//		for (NSMutableArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				[table replaceObjectAtIndex:2 withObject:@([settings boolValue])];
-//				return;
-//			}
-//		}
-//	}
+	[[self controller] setExportProgressIndeterminate:YES];
+
+	// Only update the progress text if this is a table export
+	if ([[self controller] exportSource] == SPTableExport) {
+
+		// Update the current table export index
+		currentTableExportIndex = (exportTableCount - [[[self controller] waitingExporters] count]);
+
+		[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+	}
+	else {
+		[[self controller] setExportProgressDetail:NSLocalizedString(@"Fetching data...", @"export label showing that the app is fetching data")];
+	}
+
+	if(writeHeaderForCurrentFile) {
+		[self writeXMLHeaderForExporter:exporter];
+		writeHeaderForCurrentFile = NO;
+	}
+}
+
+- (void)xmlExportProcessComplete:(SPXMLExporter *)exporter
+{
+	if ([[[self controller] waitingExporters] count]) {
+		// if we are writing all to one file and there is still stuff left, skip the footer
+		if (![[self controller] exportToMultipleFiles]) {
+			goto skip_footer;
+		}
+	}
+
+	[self writeXMLFooterForExporter:exporter];
+	[[exporter exportOutputFile] close];
+	writeHeaderForCurrentFile = YES;
+	
+skip_footer:
+	[[self controller] exportEnded:exporter];
+}
+
+- (void)xmlExportProcessProgressUpdated:(SPXMLExporter *)exporter
+{
+	[[self controller] setExportProgress:[exporter exportProgressValue]];
+}
+
+- (void)xmlExportProcessWillBeginWritingData:(SPXMLExporter *)exporter
+{
+	// Only update the progress text if this is a table export
+	if ([[self controller] exportSource] == SPTableExport) {
+		[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+	}
+	else {
+		[[self controller] setExportProgressDetail:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
+	}
+
+	[[self controller] setExportProgressIndeterminate:NO];
+	[[self controller] setExportProgress:0];
+}
+
+/**
+ * Writes the XML file header to the supplied export file.
+ *
+ * @param file The export file to write the header to.
+ */
+- (void)writeXMLHeaderForExporter:(SPXMLExporter *)exporter
+{
+	NSMutableString *header = [NSMutableString string];
+
+	[header appendString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
+	[header appendString:@"<!--\n-\n"];
+	[header appendString:@"- Sequel Pro XML dump\n"];
+	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
+	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
+	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [[[self controller] tableDocumentInstance] host], [[[self controller] tableDocumentInstance] mySQLVersion]];
+	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [[[self controller] tableDocumentInstance] database]];
+	[header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
+	[header appendString:@"-\n-->\n\n"];
+
+	if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {
+
+		NSString *tag;
+
+		if ([[self controller] exportSource] == SPTableExport) {
+			tag = [NSString stringWithFormat:@"<mysqldump xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<database name=\"%@\">\n\n", [[[self controller] tableDocumentInstance] database]];
+		}
+		else {
+			tag = [NSString stringWithFormat:@"<resultset statement=\"%@\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n\n", ([[self controller] exportSource] == SPFilteredExport) ? [[[self controller] tableContentInstance] usedQuery] : [[[self controller] customQueryInstance] usedQuery]];
+		}
+
+		[header appendString:tag];
+	}
+	else {
+		[header appendFormat:@"<%@>\n\n", [[[[self controller] tableDocumentInstance] database] HTMLEscapeString]];
+	}
+
+	[exporter writeUTF8String:header];
+}
+
+- (void)writeXMLFooterForExporter:(SPXMLExporter *)exporter
+{
+	NSString *string = @"";
+
+	if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {
+		string = ([[self controller] exportSource] == SPTableExport) ? @"</database>\n</mysqldump>\n" : @"</resultset>\n";
+	}
+	else if ([exporter xmlFormat] == SPXMLExportPlainFormat) {
+		string = [NSString stringWithFormat:@"</%@>\n", [[[[self controller] tableDocumentInstance] database] HTMLEscapeString]];
+	}
+
+	[exporter writeString:string];
 }
 
 @end
+
+#undef avc
 
 #pragma mark -
 

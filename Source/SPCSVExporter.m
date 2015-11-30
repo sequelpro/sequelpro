@@ -92,8 +92,7 @@
 	NSUInteger i, totalRows = 0, csvCellCount = 0;
 	
 	// Check to see if we have at least a table name or data array
-	if ((![self csvTableName] && ![self csvDataArray]) ||
-		([[self csvTableName] isEqualToString:@""] && [[self csvDataArray] count] == 0))
+	if (![[self csvTableName] length] && ![[self csvDataArray] count])
 	{
 		return;
 	}
