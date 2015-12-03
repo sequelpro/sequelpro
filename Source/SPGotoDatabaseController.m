@@ -303,7 +303,7 @@ static BOOL StringQualifiesForWordSearch(NSString *s);
 			NSUInteger mgc2 = [[(SPGotoFilteredItem *)obj2 matches] count];
 			if(mgc1 < mgc2)
 				return NSOrderedAscending;
-			if(mgc2 > mgc1)
+			if(mgc2 < mgc1)
 				return NSOrderedDescending;
 		}
 		// For strings with the same number of match groups we just sort alphabetically
