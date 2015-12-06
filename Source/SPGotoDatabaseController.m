@@ -396,15 +396,30 @@ static BOOL StringQualifiesForWordSearch(NSString *s);
 		[cancelButton performClick:control];
 		return YES;
 	}
+	
+	// the keyboard event is the preferable choice as it will also scroll the window
+	// TODO: check if the other path is ever used
+	NSEvent *currentEvent = [NSApp currentEvent];
+	BOOL isKeyDownEvent = ([currentEvent type] == NSKeyDown);
 
 	// Arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
 	if (commandSelector == @selector(moveDown:)) {
-		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]+1)] byExtendingSelection:NO];
+		if(isKeyDownEvent) {
+			[databaseListView keyDown:currentEvent];
+		}
+		else {
+			[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]+1)] byExtendingSelection:NO];
+		}
 		return YES;
 	}
 
 	if (commandSelector == @selector(moveUp:)) {
-		[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]-1)] byExtendingSelection:NO];
+		if(isKeyDownEvent) {
+			[databaseListView keyDown:currentEvent];
+		}
+		else {
+			[databaseListView selectRowIndexes:[NSIndexSet indexSetWithIndex:([databaseListView selectedRow]-1)] byExtendingSelection:NO];
+		}
 		return YES;
 	}
 
