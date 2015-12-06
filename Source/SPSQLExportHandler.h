@@ -31,10 +31,15 @@
 #import <Foundation/Foundation.h>
 #import "SPExportHandlerInstance.h"
 #import "SPTableBaseExportHandler.h"
+#import "SPSQLExporterProtocol.h"
 
 @class SPExportController;
 @class SPSQLExportViewController;
 
-@interface SPSQLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance>
+@interface SPSQLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPSQLExporterProtocol> {
+	BOOL sqlIncludeStructure;
+	BOOL sqlIncludeContent;
+	BOOL sqlIncludeDropSyntax;
+}
 
 @end

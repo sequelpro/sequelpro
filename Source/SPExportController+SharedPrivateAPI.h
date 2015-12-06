@@ -73,3 +73,22 @@ static inline _SPExportListItem *MakeExportListItem(SPTableType type,NSString *n
 	[item setIsGroupRow:NO];
 	return [item autorelease];
 }
+
+#pragma mark -
+
+/**
+ * converts a ([obj state] == NSOnState) to @YES / @NO
+ * (because doing @([obj state] == NSOnState) will result in an integer 0/1)
+ */
+static inline NSNumber *IsOn(id obj)
+{
+	return (([obj state] == NSOnState)? @YES : @NO);
+}
+
+/**
+ * Sets the state of obj to NSOnState or NSOffState based on the value of ref
+ */
+static inline void SetOnOff(NSNumber *ref,id obj)
+{
+	[obj setState:([ref boolValue] ? NSOnState : NSOffState)];
+}

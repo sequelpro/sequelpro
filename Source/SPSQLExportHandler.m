@@ -35,8 +35,20 @@
 #import "SPSQLExporter.h"
 #import "SPExportHandlerFactory.h"
 #import "SPTableBaseExportHandler_Protected.h"
+#import "SPThreadAdditions.h"
+#import "SPExportInitializer.h"
+#import "SPExportController+SharedPrivateAPI.h"
+#import "MGTemplateEngine.h"
+#import "SPDatabaseDocument.h"
+
+static NSString * const SPTableViewStructureColumnID = @"structure";
+static NSString * const SPTableViewContentColumnID   = @"content";
+static NSString * const SPTableViewDropColumnID      = @"drop";
+
+static void *_KVOContext;
 
 @interface SPSQLExportViewController : NSViewController {
+@public
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
 	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
@@ -48,10 +60,6 @@
 	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
 	IBOutlet NSButton *exportUseUTF8BOMButton;
 }
-
-- (IBAction)toggleSQLIncludeStructure:(NSButton *)sender;
-- (IBAction)toggleSQLIncludeContent:(NSButton *)sender;
-- (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender;
 
 @end
 
@@ -68,118 +76,148 @@
 + (NSString *)describeSQLExportInsertDivider:(SPSQLExportInsertDivider)eid;
 + (BOOL)copySQLExportInsertDividerForDescription:(NSString *)xfd to:(SPSQLExportInsertDivider *)dst;
 
+// those are directly bound to the IB controls
+@property (nonatomic) BOOL sqlIncludeStructure;
+@property (nonatomic) BOOL sqlIncludeContent;
+@property (nonatomic) BOOL sqlIncludeDropSyntax;
+
 @end
 
 #pragma mark -
 
+#define avc ((SPSQLExportViewController *)[self accessoryViewController])
+
 @implementation SPSQLExportHandler
+
+@synthesize sqlIncludeStructure;
+@synthesize sqlIncludeContent;
+@synthesize sqlIncludeDropSyntax;
+
+#define NAMEOF(x) case x: return @#x
+#define VALUEOF(x,y,dst) if([y isEqualToString:@#x]) { *dst = x; return YES; }
 
 + (NSString *)describeSQLExportInsertDivider:(SPSQLExportInsertDivider)eid
 {
-//	switch (eid) {
-//		NAMEOF(SPSQLInsertEveryNDataBytes);
-//		NAMEOF(SPSQLInsertEveryNRows);
-//	}
+	switch (eid) {
+		NAMEOF(SPSQLInsertEveryNDataBytes);
+		NAMEOF(SPSQLInsertEveryNRows);
+	}
 	return nil;
 }
 
 + (BOOL)copySQLExportInsertDividerForDescription:(NSString *)eidd to:(SPSQLExportInsertDivider *)dst
 {
-//	VALUEOF(SPSQLInsertEveryNDataBytes, eidd, dst);
-//	VALUEOF(SPSQLInsertEveryNRows,      eidd, dst);
+	VALUEOF(SPSQLInsertEveryNDataBytes, eidd, dst);
+	VALUEOF(SPSQLInsertEveryNRows,      eidd, dst);
 	return NO;
 }
 
-- (instancetype)initWithFactory:(SPSQLExportHandlerFactory *)factory {
+#undef NAMEOF
+#undef VALUEOF
+
+- (instancetype)initWithFactory:(SPSQLExportHandlerFactory *)factory
+{
 	if ((self = [super initWithFactory:factory])) {
 		[self setCanBeImported:YES];
 		SPSQLExportViewController *viewController = [[[SPSQLExportViewController alloc] init] autorelease];
 		[viewController setRepresentedObject:self];
 		[self setAccessoryViewController:viewController];
 		[self setFileExtension:SPFileExtensionSQL];
+		[self updateTableColumns];
+
+		// we subscribe to our own properties to notice IB value changes
+		[self addObserver:self forKeyPath:@"sqlIncludeStructure" options:0 context:&_KVOContext];
+		[self addObserver:self forKeyPath:@"sqlIncludeContent" options:0 context:&_KVOContext];
+		[self addObserver:self forKeyPath:@"sqlIncludeDropSyntax" options:0 context:&_KVOContext];
 	}
 	return self;
 }
 
-- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
+- (void)dealloc
+{
+	[self removeObserver:self forKeyPath:@"sqlIncludeStructure" context:&_KVOContext];
+	[self removeObserver:self forKeyPath:@"sqlIncludeContent" context:&_KVOContext];
+	[self removeObserver:self forKeyPath:@"sqlIncludeDropSyntax" context:&_KVOContext];
+
+	[super dealloc];
+}
+
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type
+{
 	switch (type) {
 		case SPTableTypeTable:
 		case SPTableTypeView:
 		case SPTableTypeFunc:
-		case SPTableTypeEvent:
+		case SPTableTypeProc:
 			return YES;
 	}
 	return NO;
 }
 
-- (SPExportersAndFiles)allExporters
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects
 {
-	return ((SPExportersAndFiles){nil,nil});
-//
-//	// Cache the number of tables being exported
-//	exportTableCount = [exportTables count];
-//
-//	SPSQLExporter *sqlExporter = [[SPSQLExporter alloc] initWithDelegate:self];
-//
-//	[sqlExporter setSqlDatabaseHost:[tableDocumentInstance host]];
-//	[sqlExporter setSqlDatabaseName:[tableDocumentInstance database]];
-//	[sqlExporter setSqlDatabaseVersion:[tableDocumentInstance mySQLVersion]];
-//
-//	[sqlExporter setSqlOutputIncludeUTF8BOM:[exportUseUTF8BOMButton state]];
-//	[sqlExporter setSqlOutputEncodeBLOBasHex:[exportSQLBLOBFieldsAsHexCheck state]];
-//	[sqlExporter setSqlOutputIncludeErrors:[exportSQLIncludeErrorsCheck state]];
-//	[sqlExporter setSqlOutputIncludeAutoIncrement:([exportSQLIncludeStructureCheck state] && [exportSQLIncludeAutoIncrementValueButton state])];
-//
-//	[sqlExporter setSqlInsertAfterNValue:[exportSQLInsertNValueTextField integerValue]];
-//	[sqlExporter setSqlInsertDivider:[exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
-//
-//	[sqlExporter setSqlExportTables:exportTables];
-//
-//	// Create custom filename if required
-//	NSString *selectedTableName = ([[self controller] exportSource] == SPTableExport && [exportTables count] == 1)? [[exportTables objectAtIndex:0] objectAtIndex:0] : nil;
-//	[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
-//
-//	// Only append the extension if necessary
-//	if (![[exportFilename pathExtension] length]) {
-//		[exportFilename setString:[exportFilename stringByAppendingPathExtension:[self currentDefaultExportFileExtension]]];
-//	}
-//
-//	SPExportFile *file = [SPExportFile exportFileAtPath:[[exportPathField stringValue] stringByAppendingPathComponent:exportFilename]];
-//
-//
-//	[sqlExporter setExportOutputFile:file];
-//
-//	SPExportersAndFiles result = {@[sqlExporter],@[file]};
-//	[sqlExporter autorelease];
-//
-//	return result;
+	// Cache the number of tables being exported
+	exportTableCount = [schemaObjects count];
+
+	SPSQLExporter *sqlExporter = [[SPSQLExporter alloc] initWithDelegate:self];
+
+	SPDatabaseDocument *tdi = [[self controller] tableDocumentInstance];
+	[sqlExporter setSqlDatabaseHost:[tdi host]];
+	[sqlExporter setSqlDatabaseName:[tdi database]];
+	[sqlExporter setSqlDatabaseVersion:[tdi mySQLVersion]];
+
+	[sqlExporter setSqlOutputIncludeUTF8BOM:[avc->exportUseUTF8BOMButton state]];
+	[sqlExporter setSqlOutputEncodeBLOBasHex:[avc->exportSQLBLOBFieldsAsHexCheck state]];
+	[sqlExporter setSqlOutputIncludeErrors:[avc->exportSQLIncludeErrorsCheck state]];
+	[sqlExporter setSqlOutputIncludeAutoIncrement:([avc->exportSQLIncludeStructureCheck state] && [avc->exportSQLIncludeAutoIncrementValueButton state])];
+
+	[sqlExporter setSqlInsertAfterNValue:[avc->exportSQLInsertNValueTextField integerValue]];
+	[sqlExporter setSqlInsertDivider:[avc->exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
+
+	NSMutableArray *names = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
+	// reformat for sqlexporter
+	// FIXME: make the exporter use a common format
+	for(id<SPExportSchemaObject> obj in schemaObjects) {
+		[names addObject:@[
+			[obj name],
+			@([[[obj addonData] objectForKey:SPTableViewStructureColumnID] boolValue]),
+			@([[[obj addonData] objectForKey:SPTableViewContentColumnID] boolValue]),
+			@([[[obj addonData] objectForKey:SPTableViewDropColumnID] boolValue]),
+			@([obj type])
+		]];
+	}
+	[sqlExporter setSqlExportTables:names];
+
+	SPExportFile *file = [[self controller] exportFileForTableName:(exportTableCount == 1? [(id<SPExportSchemaObject>)[schemaObjects objectAtIndex:0] name] : nil)];
+
+	[sqlExporter setExportOutputFile:file];
+
+	SPExportersAndFiles result = {@[sqlExporter],@[file]};
+	[sqlExporter autorelease];
+
+	return result;
 }
 
 - (NSDictionary *)settings
 {
-	return nil;
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
+			@"SQLIncludeStructure": @([self sqlIncludeStructure]),
+			@"SQLIncludeContent":   @([self sqlIncludeContent]),
+			@"SQLIncludeErrors":    IsOn(avc->exportSQLIncludeErrorsCheck),
+			@"SQLUseUTF8BOM":       IsOn(avc->exportUseUTF8BOMButton),
+			@"SQLBLOBFieldsAsHex":  IsOn(avc->exportSQLBLOBFieldsAsHexCheck),
+			@"SQLInsertNValue":     @([avc->exportSQLInsertNValueTextField integerValue]),
+			@"SQLInsertDivider":    [[self class] describeSQLExportInsertDivider:(SPSQLExportInsertDivider)[avc->exportSQLInsertDividerPopUpButton indexOfSelectedItem]]
+	}];
 
-//	BOOL includeStructure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-//
-//	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:@{
-//			@"SQLIncludeStructure": IsOn(exportSQLIncludeStructureCheck),
-//			@"SQLIncludeContent":   IsOn(exportSQLIncludeContentCheck),
-//			@"SQLIncludeErrors":    IsOn(exportSQLIncludeErrorsCheck),
-//			@"SQLIncludeDROP":      IsOn(exportSQLIncludeDropSyntaxCheck),
-//			@"SQLUseUTF8BOM":       IsOn(exportUseUTF8BOMButton),
-//			@"SQLBLOBFieldsAsHex":  IsOn(exportSQLBLOBFieldsAsHexCheck),
-//			@"SQLInsertNValue":     @([exportSQLInsertNValueTextField integerValue]),
-//			@"SQLInsertDivider":    [[self class] describeSQLExportInsertDivider:(SPSQLExportInsertDivider)[exportSQLInsertDividerPopUpButton indexOfSelectedItem]]
-//	}];
-//
-//	if(includeStructure) {
-//		[dict addEntriesFromDictionary:@{
-//				@"SQLIncludeAutoIncrementValue":  IsOn(exportSQLIncludeAutoIncrementValueButton),
-//				@"SQLIncludeDropSyntax":          IsOn(exportSQLIncludeDropSyntaxCheck)
-//		}];
-//	}
-//
-//	return dict;
+	if([self sqlIncludeStructure]) {
+		[dict addEntriesFromDictionary:@{
+				@"SQLIncludeAutoIncrementValue":  IsOn(avc->exportSQLIncludeAutoIncrementValueButton),
+				@"SQLIncludeDropSyntax":          @([self sqlIncludeDropSyntax])
+		}];
+	}
+
+	return dict;
 }
 
 - (void)applySettings:(NSDictionary *)settings
@@ -187,137 +225,286 @@
 	id o;
 	SPSQLExportInsertDivider div;
 
-//	if((o = [settings objectForKey:@"SQLIncludeContent"]))   SetOnOff(o, exportSQLIncludeContentCheck);
-//	[self toggleSQLIncludeContent:exportSQLIncludeContentCheck];
-//
-//	if((o = [settings objectForKey:@"SQLIncludeDROP"]))    SetOnOff(o, exportSQLIncludeDropSyntaxCheck);
-//	[self toggleSQLIncludeDropSyntax:exportSQLIncludeDropSyntaxCheck];
-//
-//	if((o = [settings objectForKey:@"SQLIncludeStructure"])) SetOnOff(o, exportSQLIncludeStructureCheck);
-//	[self toggleSQLIncludeStructure:exportSQLIncludeStructureCheck];
-//
-//	if((o = [settings objectForKey:@"SQLIncludeErrors"]))    SetOnOff(o, exportSQLIncludeErrorsCheck);
-//	if((o = [settings objectForKey:@"SQLUseUTF8BOM"]))       SetOnOff(o, exportUseUTF8BOMButton);
-//	if((o = [settings objectForKey:@"SQLBLOBFieldsAsHex"]))  SetOnOff(o, exportSQLBLOBFieldsAsHexCheck);
-//	if((o = [settings objectForKey:@"SQLInsertNValue"]))     [exportSQLInsertNValueTextField setIntegerValue:[o integerValue]];
-//	if((o = [settings objectForKey:@"SQLInsertDivider"]) && [[self class] copySQLExportInsertDividerForDescription:o to:&div]) [exportSQLInsertDividerPopUpButton selectItemAtIndex:div];
-//
-//	if([exportSQLIncludeStructureCheck state] == NSOnState) {
-//		if((o = [settings objectForKey:@"SQLIncludeAutoIncrementValue"]))  SetOnOff(o, exportSQLIncludeAutoIncrementValueButton);
-//		if((o = [settings objectForKey:@"SQLIncludeDropSyntax"]))  SetOnOff(o, exportSQLIncludeDropSyntaxCheck);
-//	}
+	if((o = [settings objectForKey:@"SQLIncludeContent"]))   [self setSqlIncludeContent:[o boolValue]];
+
+	if((o = [settings objectForKey:@"SQLIncludeStructure"])) [self setSqlIncludeStructure:[o boolValue]];
+	// todo kvo update notwendig?
+
+	if((o = [settings objectForKey:@"SQLIncludeErrors"]))    SetOnOff(o, avc->exportSQLIncludeErrorsCheck);
+	if((o = [settings objectForKey:@"SQLUseUTF8BOM"]))       SetOnOff(o, avc->exportUseUTF8BOMButton);
+	if((o = [settings objectForKey:@"SQLBLOBFieldsAsHex"]))  SetOnOff(o, avc->exportSQLBLOBFieldsAsHexCheck);
+	if((o = [settings objectForKey:@"SQLInsertNValue"]))     [avc->exportSQLInsertNValueTextField setIntegerValue:[o integerValue]];
+	if((o = [settings objectForKey:@"SQLInsertDivider"]) && [[self class] copySQLExportInsertDividerForDescription:o to:&div]) [avc->exportSQLInsertDividerPopUpButton selectItemAtIndex:div];
+
+	if([self sqlIncludeStructure]) {
+		if((o = [settings objectForKey:@"SQLIncludeAutoIncrementValue"]))  SetOnOff(o, avc->exportSQLIncludeAutoIncrementValueButton);
+		if((o = [settings objectForKey:@"SQLIncludeDropSyntax"]))  [self setSqlIncludeDropSyntax:[o boolValue]];
+	}
+	
+	[self updateTableColumns];
 }
 
-- (id)specificSettingsForSchemaObject:(NSString *)name ofType:(SPTableType)type
+- (id)specificSettingsForSchemaObject:(id <SPExportSchemaObject>)obj
 {
-//	BOOL structure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-//	BOOL content   = ([exportSQLIncludeContentCheck state] == NSOnState);
-//	BOOL drop      = ([exportSQLIncludeDropSyntaxCheck state] == NSOnState);
-//
-//	// SQL allows per table setting of structure/content/drop table
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views rows to find the current checkbox value...
-//		for (NSArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				NSMutableArray *flags = [NSMutableArray arrayWithCapacity:3];
-//
-//				if (structure && [[table objectAtIndex:1] boolValue]) {
-//					[flags addObject:@"structure"];
-//				}
-//
-//				if (content && [[table objectAtIndex:2] boolValue]) {
-//					[flags addObject:@"content"];
-//				}
-//
-//				if (drop && [[table objectAtIndex:3] boolValue]) {
-//					[flags addObject:@"drop"];
-//				}
-//
-//				return flags;
-//			}
-//		}
-//	}
+	// SQL allows per table setting of structure/content/drop table
+	if([obj type] == SPTableTypeTable) {
+		NSMutableArray *flags = [NSMutableArray arrayWithCapacity:3];
+
+		// we retain the state regardless of whether that column is visible.
+		// That way we can restore state if a user changes minds about not exporting a column.
+		if([[[obj addonData] objectForKey:SPTableViewStructureColumnID] boolValue]) {
+			[flags addObject:@"structure"];
+		}
+
+		if([[[obj addonData] objectForKey:SPTableViewContentColumnID] boolValue]) {
+			[flags addObject:@"content"];
+		}
+
+		if([[[obj addonData] objectForKey:SPTableViewDropColumnID] boolValue]) {
+			[flags addObject:@"drop"];
+		}
+
+		return flags;
+	}
 	return nil;
 }
 
-- (void)applySpecificSettings:(id)settings forSchemaObject:(NSString *)name ofType:(SPTableType)type
+- (void)applySpecificSettings:(id)settings forSchemaObject:(id <SPExportSchemaObject>)obj
 {
-//	BOOL structure = ([exportSQLIncludeStructureCheck state] == NSOnState);
-//	BOOL content   = ([exportSQLIncludeContentCheck state] == NSOnState);
-//	BOOL drop      = ([exportSQLIncludeDropSyntaxCheck state] == NSOnState);
-//
-//	// SQL allows per table setting of structure/content/drop table
-//	if(type == SPTableTypeTable) {
-//		// we have to look through the table views' rows to find the appropriate table...
-//		for (NSMutableArray *table in tables) {
-//			if([[table objectAtIndex:0] isEqualTo:name]) {
-//				NSArray *flags = settings;
-//
-//				[table replaceObjectAtIndex:1 withObject:@((structure && [flags containsObject:@"structure"]))];
-//				[table replaceObjectAtIndex:2 withObject:@((content   && [flags containsObject:@"content"]))];
-//				[table replaceObjectAtIndex:3 withObject:@((drop      && [flags containsObject:@"drop"]))];
-//				return;
-//			}
-//		}
-//	}
+	// SQL allows per table setting of structure/content/drop table
+	if([obj type] == SPTableTypeTable) {
+		NSArray *flags = settings;
+		[[self class] ensureAddonDict:obj];
+
+		// updating the state even if a column is hidden doesn't really hurt either
+		[[obj addonData] setObject:@([flags containsObject:@"structure"]) forKey:SPTableViewStructureColumnID];
+		[[obj addonData] setObject:@([flags containsObject:@"content"])   forKey:SPTableViewContentColumnID];
+		[[obj addonData] setObject:@([flags containsObject:@"drop"])      forKey:SPTableViewDropColumnID];
+	}
+	
+	[self updateValidForExport];
 }
 
 - (void)updateValidForExport
 {
 	BOOL enable = NO;
-//	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] boolValue];
-//	BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] boolValue];
-//	BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] boolValue];
-//
-//	if (((!structureEnabled) || (!dropEnabled))) {
-//		enable = NO;
-//
-//		// Only enable the button if at least one table is selected
-//		for (NSArray *table in tables)
-//		{
-//			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
-//				enable = YES;
-//				break;
-//			}
-//		}
-//	}
-//	else {
-//
-//		// Disable if all are unchecked
-//		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
-//			enable = NO;
-//		}
-//			// If they are all checked, check to see if any of the tables are checked
-//		else if (contentEnabled && structureEnabled && dropEnabled) {
-//
-//			// Only enable the button if at least one table is selected
-//			for (NSArray *table in tables)
-//			{
-//				if ([NSArrayObjectAtIndex(table, 1) boolValue] ||
-//						[NSArrayObjectAtIndex(table, 2) boolValue] ||
-//						[NSArrayObjectAtIndex(table, 3) boolValue])
-//				{
-//					enable = YES;
-//					break;
-//				}
-//			}
-//		}
-//			// Disable if structure is unchecked, but content and drop are as dropping a
-//			// table then trying to insert into it is obviously an error.
-//		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
-//			enable = NO;
-//		}
-//		else {
-//			enable = (contentEnabled || (structureEnabled || dropEnabled));
-//		}
-//	}
-//
-	//[self setIsValidForExport:enable];
-	[super updateValidForExport];
+	BOOL structureEnabled = [self sqlIncludeStructure];
+	BOOL contentEnabled   = [self sqlIncludeContent];
+	BOOL dropEnabled      = [self sqlIncludeDropSyntax];
+
+	if(structureEnabled || contentEnabled || dropEnabled) {
+		for(id<SPExportSchemaObject> obj in [[self controller] allSchemaObjects]) {
+			BOOL structure = (structureEnabled && [[[obj addonData] objectForKey:SPTableViewStructureColumnID] boolValue]);
+			BOOL content   = (contentEnabled   && [[[obj addonData] objectForKey:SPTableViewContentColumnID] boolValue]);
+			BOOL drop      = (dropEnabled      && [[[obj addonData] objectForKey:SPTableViewDropColumnID] boolValue]);
+
+			/* a drop can't appear without structure but with content. "DROP TABLE ...; INSERT ...;" wouldn't make sense.
+			 *
+			 * obligatory truthiness table
+			 * D C S =
+			 * ----- --
+			 * 0 0 0 F <--
+			 * 0 0 1 T
+			 * 0 1 0 T
+			 * 0 1 1 T
+			 * 1 0 0 T
+			 * 1 0 1 T
+			 * 1 1 0 F <--
+			 * 1 1 1 T
+			 */
+			if(drop && content && !structure)
+				continue;
+
+			if(structure || content || drop) {
+				enable = YES;
+				break;
+			}
+		}
+	}
+
+	[self setIsValidForExport:enable];
 }
 
+- (void)updateIncludeStateForAllSchemaObjects:(BOOL)newState
+{
+	BOOL toggleStructure = [self sqlIncludeStructure];
+	BOOL toggleContent   = [self sqlIncludeContent];
+	BOOL toggleDropTable = [self sqlIncludeDropSyntax];
+
+	for (id<SPExportSchemaObject> object in [[self controller] allSchemaObjects])
+	{
+		[[self class] ensureAddonDict:object];
+		if (toggleStructure) [[object addonData] setObject:@(newState) forKey:SPTableViewStructureColumnID];
+		if (toggleContent)   [[object addonData] setObject:@(newState) forKey:SPTableViewContentColumnID];
+		if (toggleDropTable) [[object addonData] setObject:@(newState) forKey:SPTableViewDropColumnID];
+	}
+
+	[self updateCanBeImported];
+	[self updateValidForExport];
+}
+
+- (void)updateIncludeState:(BOOL)newState forSchemaObjects:(NSArray *)objects
+{
+	for(id <SPExportSchemaObject> object in objects) {
+		BOOL toggleStructure = [self sqlIncludeStructure];
+		BOOL toggleContent   = [self sqlIncludeContent];
+		BOOL toggleDropTable = [self sqlIncludeDropSyntax];
+
+		[[self class] ensureAddonDict:object];
+		if (toggleStructure) [[object addonData] setObject:@(newState) forKey:SPTableViewStructureColumnID];
+		if (toggleContent)   [[object addonData] setObject:@(newState) forKey:SPTableViewContentColumnID];
+		if (toggleDropTable) [[object addonData] setObject:@(newState) forKey:SPTableViewDropColumnID];
+	}
+
+	[self updateCanBeImported];
+	[self updateValidForExport];
+}
+
+- (BOOL)wouldIncludeSchemaObject:(id <SPExportSchemaObject>)obj
+{
+	return (
+		([self sqlIncludeStructure]  && [[[obj addonData] objectForKey:SPTableViewStructureColumnID] boolValue]) ||
+		([self sqlIncludeContent]    && [[[obj addonData] objectForKey:SPTableViewContentColumnID] boolValue]) ||
+		([self sqlIncludeStructure] && [self sqlIncludeDropSyntax] && [[[obj addonData] objectForKey:SPTableViewDropColumnID] boolValue])
+	);
+}
+
+- (void)setIncludedSchemaObjects:(NSArray *)objectNames
+{
+	for(id <SPExportSchemaObject> object in [[self controller] allSchemaObjects]) {
+		BOOL toggleStructure = [self sqlIncludeStructure];
+		BOOL toggleContent   = [self sqlIncludeContent];
+		BOOL toggleDropTable = [self sqlIncludeDropSyntax];
+
+		BOOL matches = [objectNames containsObject:[object name]];
+
+		[[self class] ensureAddonDict:object];
+		if (toggleStructure) [[object addonData] setObject:@(toggleStructure && matches) forKey:SPTableViewStructureColumnID];
+		if (toggleContent)   [[object addonData] setObject:@(toggleContent && matches)   forKey:SPTableViewContentColumnID];
+		if (toggleDropTable) [[object addonData] setObject:@(toggleDropTable && matches) forKey:SPTableViewDropColumnID];
+	}
+
+	[self updateCanBeImported];
+	[self updateValidForExport];
+}
+
+- (void)configureTableColumn:(NSTableColumn *)col
+{
+	if([[col identifier] isEqualToString:SPTableViewStructureColumnID]) {
+		[col setHeaderToolTip:NSLocalizedString(@"Include DDL statements to create the objects",@"export : item list : S column : tooltip")];
+		[[col headerCell] setStringValue:NSLocalizedString(@"S","export : item list : S column title (S=structure)")]; // 10.10+ has setTitle:
+
+	}
+	else if([[col identifier] isEqualToString:SPTableViewContentColumnID]) {
+		[col setHeaderToolTip:NSLocalizedString(@"Include DML statements to fill the tables",@"export : item list : C column : tooltip")];
+		[[col headerCell] setStringValue:NSLocalizedString(@"C","export : item list : C column title (C=content)")]; // 10.10+ has setTitle:
+	}
+	else if([[col identifier] isEqualToString:SPTableViewDropColumnID]) {
+		[col setHeaderToolTip:NSLocalizedString(@"Include statements to drop preexisting objects first",@"export : item list : D column : tooltip")];
+		[[col headerCell] setStringValue:NSLocalizedString(@"D","export : item list : D column title (D=drop)")]; // 10.10+ has setTitle:
+	}
+	else {
+		SPLog(@"asking for column layout of unknown column [%@]!",col);
+		return;
+	}
+
+	[col setWidth:15];
+	[col setMinWidth:15];
+	[col setMaxWidth:15];
+	[col setEditable:YES];
+	[col setResizingMask:NSTableColumnAutoresizingMask];
+
+	NSButtonCell *dc = [[NSButtonCell alloc] init];
+	[dc setButtonType:NSSwitchButton];
+	[dc setAllowsMixedState:NO];
+
+	[col setDataCell:[dc autorelease]];
+}
+
+- (id)objectValueForTableColumn:(NSTableColumn *)aTableColumn schemaObject:(id <SPExportSchemaObject>)obj
+{
+	NSAssert([[aTableColumn identifier] isInArray:[self tableColumns]],@"%s: asking for value of unknown table column [%@]",__PRETTY_FUNCTION__,aTableColumn);
+
+	NSNumber *state;
+	if((state = [[obj addonData] objectForKey:[aTableColumn identifier]])) return state;
+	// if we don't know a key we can just assume it is "unchecked"
+	return @NO;
+}
+
+- (void)setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn schemaObject:(id <SPExportSchemaObject>)obj
+{
+	NSAssert([[aTableColumn identifier] isInArray:[self tableColumns]],@"%s: trying to set value of unknown table column [%@]",__PRETTY_FUNCTION__,aTableColumn);
+
+	[[self class] ensureAddonDict:obj];
+	[[obj addonData] setObject:([anObject integerValue] == NSOnState? @YES : @NO) forKey:[aTableColumn identifier]];
+	[self updateCanBeImported];
+	[self updateValidForExport];
+}
+
+- (void)updateTableColumns
+{
+	NSMutableArray *items = [NSMutableArray arrayWithCapacity:3];
+
+	if([self sqlIncludeStructure])  [items addObject:SPTableViewStructureColumnID];
+	if([self sqlIncludeContent])    [items addObject:SPTableViewContentColumnID];
+	if([self sqlIncludeStructure] && [self sqlIncludeDropSyntax]) [items addObject:SPTableViewDropColumnID];
+
+	[self setTableColumns:items];
+	[self updateValidForExport];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+	// only handle updates from our own registrations
+	if(context != &_KVOContext) {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+		return;
+	}
+
+	if([keyPath isInArray:@[@"sqlIncludeStructure",@"sqlIncludeContent",@"sqlIncludeDropSyntax"]]) {
+		[self updateTableColumns];
+	}
+}
+
+#pragma mark Delegate
+
+- (void)sqlExportProcessWillBegin:(SPSQLExporter *)exporter
+{
+	[[self controller] setExportProgressTitle:NSLocalizedString(@"Exporting SQL", @"text showing that the application is exporting SQL")];
+	[[self controller] setExportProgressDetail:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+}
+
+- (void)sqlExportProcessComplete:(SPSQLExporter *)exporter
+{
+	[[self controller] exportEnded:exporter];
+
+	// Check for errors and display the errors sheet if necessary
+	if ([exporter didExportErrorsOccur]) {
+		[[self controller] openExportErrorsSheetWithString:[exporter sqlExportErrors]];
+	}
+}
+
+- (void)sqlExportProcessProgressUpdated:(SPSQLExporter *)exporter
+{
+	[[self controller] setExportProgress:[exporter exportProgressValue]];
+}
+
+- (void)sqlExportProcessWillBeginFetchingData:(SPSQLExporter *)exporter
+{
+	[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
+
+	[[self controller] setExportProgressIndeterminate:NO];
+	[[self controller] setExportProgress:0];
+}
+
+- (void)sqlExportProcessWillBeginWritingData:(SPSQLExporter *)exporter
+{
+	[[self controller] setExportProgressDetail:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), [exporter sqlCurrentTableExportIndex], exportTableCount, [exporter sqlExportCurrentTable]]];
+}
 
 @end
+
+#undef avc
 
 #pragma mark -
 
@@ -352,7 +539,6 @@
 	return (source == SPTableExport);
 }
 
-
 @end
 
 #pragma mark -
@@ -371,46 +557,6 @@
 {
 	// By default a new SQL INSERT statement should be created every 250KiB of data
 	[exportSQLInsertNValueTextField setIntegerValue:250];
-}
-
-
-/**
- * Toggles the export button when choosing to include or table structures in an SQL export.
- */
-- (IBAction)toggleSQLIncludeStructure:(NSButton *)sender
-{
-	if (![sender state])
-	{
-		[exportSQLIncludeDropSyntaxCheck setState:NSOffState];
-	}
-
-	[exportSQLIncludeDropSyntaxCheck setEnabled:[sender state]];
-	[exportSQLIncludeAutoIncrementValueButton setEnabled:[sender state]];
-
-//	[[exportTableList tableColumnWithIdentifier:SPTableViewDropColumnID] setHidden:(![sender state])];
-//	[[exportTableList tableColumnWithIdentifier:SPTableViewStructureColumnID] setHidden:(![sender state])];
-//
-//	[self _toggleExportButtonOnBackgroundThread];
-}
-
-/**
- * Toggles the export button when choosing to include or exclude table contents in an SQL export.
- */
-- (IBAction)toggleSQLIncludeContent:(NSButton *)sender
-{
-//	[[exportTableList tableColumnWithIdentifier:SPTableViewContentColumnID] setHidden:(![sender state])];
-//
-//	[self _toggleExportButtonOnBackgroundThread];
-}
-
-/**
- * Toggles the export button when choosing to include or exclude table drop syntax in an SQL export.
- */
-- (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender
-{
-//	[[exportTableList tableColumnWithIdentifier:SPTableViewDropColumnID] setHidden:(![sender state])];
-//
-//	[self _toggleExportButtonOnBackgroundThread];
 }
 
 @end

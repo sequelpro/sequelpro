@@ -33,13 +33,14 @@
 
 static NSString *ContentColumnKey = @"content";
 
-static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
-	if(![obj addonData]) [obj setAddonData:[NSMutableDictionary dictionary]]; //initialize dictionary if not already set
-}
-
 @implementation SPTableBaseExportHandler
 
 @synthesize tableColumns = _tableColumns;
+
++ (void)ensureAddonDict:(id<SPExportSchemaObject>)obj
+{
+	if(![obj addonData]) [obj setAddonData:[NSMutableDictionary dictionary]]; //initialize dictionary if not already set
+}
 
 - (instancetype)initWithFactory:(id <SPExportHandlerFactory>)factory
 {
@@ -58,6 +59,13 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 	                                         selector:@selector(_schemaObjectsChanged:)
 	                                             name:SPExportControllerSchemaObjectsChangedNotification
 	                                           object:[self controller]];
+}
+
+- (void)didBecomeInactive
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self
+													name:SPExportControllerSchemaObjectsChangedNotification
+												  object:[self controller]];
 }
 
 - (void)_schemaObjectsChanged:(NSNotification *)notification
@@ -107,7 +115,7 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 - (void)setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn schemaObject:(id<SPExportSchemaObject>)obj
 {
 	if([[aTableColumn identifier] isEqualToString:ContentColumnKey]) {
-		EnsureAddonDict(obj);
+		[[self class] ensureAddonDict:obj];
 
 		[[obj addonData] setObject:anObject forKey:ContentColumnKey];
 		[self updateCanBeImported];
@@ -127,7 +135,7 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 
 - (void)applySpecificSettings:(id)settings forSchemaObject:(id <SPExportSchemaObject>)obj
 {
-	EnsureAddonDict(obj);
+	[[self class] ensureAddonDict:obj];
 	// the setting should be an NSNumber * containing a BOOL
 	[[obj addonData] setObject:@([(NSNumber *)settings boolValue]) forKey:ContentColumnKey];
 	[self updateCanBeImported];
@@ -147,19 +155,15 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 
 - (void)updateIncludeStateForAllSchemaObjects:(BOOL)newState
 {
-	// ok, then
-	for(id<SPExportSchemaObject> obj in [[self controller] allSchemaObjects]) {
-		EnsureAddonDict(obj);
-		[[obj addonData] setObject:@(newState) forKey:ContentColumnKey];
-	}
-	[self updateCanBeImported];
-	[self updateValidForExport];
+	[self updateIncludeState:newState forSchemaObjects:[[self controller] allSchemaObjects]];
 }
 
-- (void)updateIncludeState:(BOOL)newState forSchemaObject:(id <SPExportSchemaObject>)object
+- (void)updateIncludeState:(BOOL)newState forSchemaObjects:(NSArray *)objects
 {
-	EnsureAddonDict(object);
-	[[object addonData] setObject:@(newState) forKey:ContentColumnKey];
+	for(id <SPExportSchemaObject> object in objects) {
+		[[self class] ensureAddonDict:object];
+		[[object addonData] setObject:@(newState) forKey:ContentColumnKey];
+	}
 
 	[self updateCanBeImported];
 	[self updateValidForExport];
@@ -184,7 +188,7 @@ static inline void EnsureAddonDict(id<SPExportSchemaObject> obj) {
 - (void)setIncludedSchemaObjects:(NSArray *)objectNames
 {
 	for(id<SPExportSchemaObject> obj in [[self controller] allSchemaObjects]) {
-		EnsureAddonDict(obj);
+		[[self class] ensureAddonDict:obj];
 		[[obj addonData] setObject:@([objectNames containsObject:[obj name]]) forKey:ContentColumnKey];
 	}
 	[self updateCanBeImported];

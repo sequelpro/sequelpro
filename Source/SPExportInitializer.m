@@ -120,6 +120,11 @@
  */
 - (void)initializeExportUsingSelectedOptions
 {
+	// this is down here because the table export can show a message dialog that returns to the export sheet on a shortcut
+	if([[self currentExportHandler] respondsToSelector:@selector(didBecomeInactive)]) {
+		[[self currentExportHandler] didBecomeInactive];
+	}
+
 	NSArray *dataArray = nil;
 
 	// Get rid of the cached connection encoding
@@ -149,7 +154,7 @@
 				if([[self currentExportHandler] wouldIncludeSchemaObject:object])
 					[exportTables addObject:object];
 			}
-			currentExportFileCountEstimate = ([exportTables count])? (([self exportToMultipleFiles])? [exportTables count] : 1) : 0;
+			currentExportFileCountEstimate = ([exportTables count])? (([[[self currentExportHandler] factory] supportsExportToMultipleFiles] && [self exportToMultipleFiles])? [exportTables count] : 1) : 0;
 			break;
 		case SPDatabaseExport:
 			currentExportFileCountEstimate = 0; //can't say what will happen

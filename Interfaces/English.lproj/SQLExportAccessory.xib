@@ -34,7 +34,7 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <action selector="toggleSQLIncludeStructure:" target="-2" id="vmL-lx-COp"/>
+                        <binding destination="-2" name="value" keyPath="representedObject.sqlIncludeStructure" id="lch-Gj-Ual"/>
                     </connections>
                 </button>
                 <textField verticalHuggingPriority="750" id="5EJ-Qz-NSp">
@@ -71,7 +71,7 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <action selector="toggleSQLIncludeContent:" target="-2" id="sU3-ir-vAj"/>
+                        <binding destination="-2" name="value" keyPath="representedObject.sqlIncludeContent" id="XWA-vO-2Gc"/>
                     </connections>
                 </button>
                 <button id="VIu-96-Nhq">
@@ -132,6 +132,9 @@
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
+                    <connections>
+                        <binding destination="-2" name="enabled" keyPath="representedObject.sqlIncludeStructure" id="Qo7-vq-68X"/>
+                    </connections>
                 </button>
                 <button id="0fx-W9-2av">
                     <rect key="frame" x="35" y="172" width="215" height="18"/>
@@ -141,11 +144,13 @@
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
                     <connections>
-                        <action selector="toggleSQLIncludeDropSyntax:" target="-2" id="ZMb-zv-XiU"/>
+                        <binding destination="-2" name="enabled" keyPath="representedObject.sqlIncludeStructure" id="KfL-We-p2d"/>
+                        <binding destination="-2" name="value" keyPath="representedObject.sqlIncludeDropSyntax" id="2CP-iu-hI8"/>
                     </connections>
                 </button>
             </subviews>
             <point key="canvasLocation" x="146.5" y="164.5"/>
         </view>
+        <userDefaultsController representsSharedInstance="YES" id="YrO-tZ-OSN"/>
     </objects>
 </document>

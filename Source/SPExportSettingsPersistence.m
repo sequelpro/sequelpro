@@ -35,18 +35,6 @@
 #import "SPExportHandlerFactory.h"
 #import "SPExporterRegistry.h"
 
-/**
- * converts a ([obj state] == NSOnState) to @YES / @NO
- * (because doing @([obj state] == NSOnState) will result in an integer 0/1)
- */
-static inline NSNumber *IsOn(id obj);
-/**
- * Sets the state of obj to NSOnState or NSOffState based on the value of ref
- */
-static inline void SetOnOff(NSNumber *ref,id obj);
-
-#pragma mark -
-
 @interface SPExportController (SPExportSettingsPersistence_Private)
 
 // those methods will convert the name of a C enum constant to a NSString
@@ -421,15 +409,3 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 }
 
 @end
-
-#pragma mark -
-
-NSNumber *IsOn(id obj)
-{
-	return (([obj state] == NSOnState)? @YES : @NO);
-}
-
-void SetOnOff(NSNumber *ref,id obj)
-{
-	[obj setState:([ref boolValue] ? NSOnState : NSOffState)];
-}

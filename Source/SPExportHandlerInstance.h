@@ -57,19 +57,36 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 @optional
 
-// use this to add observers on the controller.
-// will be called right before this handler will become the current export handler
+/**
+ * Use this method to add observers on the controller.
+ * Will be called right before this handler will become the current export handler
+ */
 - (void)willBecomeActive;
+
+/**
+ * Use this method to undo whatever you did in -willBecomeActive
+ * Will be called after
+ *   - the handler is no longer the current handler
+ *   - the export dialog was cancelled
+ *   - the export was started
+ */
+- (void)didBecomeInactive;
 
 // the following methods are only needed if you want to support SPTableExport
 
-// decides whether objects of this type will be displayed to the user at all
-// If you want to signal a change in the list of supported types, post a
-// SPExportHandlerSchemaObjectTypeSupportChangedNotification.
-//
-// This is an instance method because it can depend on other options. E.g.:
-//   In SQL mode if "Include Structure" is disabled, things like procs/funcs/events/… cannot be exported,
-//   because they don't have "contents".
+/**
+ * decides whether objects of this type will be displayed to the user at all
+ *
+ * @param type The type
+ * @return YES if type is supported
+ *
+ * If you want to signal a change in the list of supported types, post a
+ * SPExportHandlerSchemaObjectTypeSupportChanged notification.
+ *
+ * This is an instance method because it can depend on other options. E.g.:
+ *   In SQL mode if "Include Structure" is disabled, things like procs/funcs/events/… cannot be exported,
+ *   because they don't have "contents".
+ */
 - (BOOL)canExportSchemaObjectsOfType:(SPTableType)type;
 
 // must be KVO compliant
@@ -109,16 +126,18 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 /**
  * You can optionally implement this method to enable the "Select all" / "Select none" buttons
  * at the bottom of the export table.
+ *
  * @param newState the new state for all objects
  */
 - (void)updateIncludeStateForAllSchemaObjects:(BOOL)newState;
 
 /**
  * You can optionally implement this method to enable advanced selection options in the GUI
- * @param newState the new state for the object
- * @param object the schema object to toggle
+ *
+ * @param newState the new state for the objects
+ * @param object the schema objects to toggle
  */
-- (void)updateIncludeState:(BOOL)newState forSchemaObject:(id<SPExportSchemaObject>)object;
+- (void)updateIncludeState:(BOOL)newState forSchemaObjects:(NSArray *)objects;
 
 /**
  * You can optionally implement this method to enable a basic selection of items that will be made initially
@@ -133,6 +152,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 /**
  * Implement this method if you support SPTableExport!
+ *
  * @param schemaObjects An array of SPExportSchemaObject *s that you declared for export
  * @return An array of exporters and files
  */
@@ -140,6 +160,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 /**
  * Implement this method if you support SPFilteredExport and/or SPQueryExport!
+ *
  * @param data The content data rows
  * @return An array of exporters and files
  */
@@ -147,6 +168,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 /**
  * Implement this method if you support SPDatabaseExport!
+ *
  * @return An array of exporters and files
  */
 - (SPExportersAndFiles)allExporters;

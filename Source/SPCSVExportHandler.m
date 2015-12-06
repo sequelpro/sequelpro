@@ -39,6 +39,7 @@
 #import "SPExportFile.h"
 #import "SPExportInitializer.h"
 #import "SPDatabaseDocument.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 @interface SPCSVExportHandlerFactory : NSObject  <SPExportHandlerFactory>
 
@@ -189,7 +190,7 @@ static void *_KVOContext;
 {
 	return @{
 			@"exportToMultipleFiles": @([[self controller] exportToMultipleFiles]),
-			@"CSVIncludeFieldNames":  (([avc->exportCSVIncludeFieldNamesCheck state] == NSOnState)? @YES : @NO),
+			@"CSVIncludeFieldNames":  IsOn(avc->exportCSVIncludeFieldNamesCheck),
 			@"CSVFieldsTerminated":   [avc->exportCSVFieldsTerminatedField stringValue],
 			@"CSVFieldsWrapped":      [avc->exportCSVFieldsWrappedField stringValue],
 			@"CSVLinesTerminated":    [avc->exportCSVLinesTerminatedField stringValue],
@@ -203,7 +204,7 @@ static void *_KVOContext;
 	id o;
 	if((o = [settings objectForKey:@"exportToMultipleFiles"])) [[self controller] setExportToMultipleFiles:[o boolValue]];
 
-	if((o = [settings objectForKey:@"CSVIncludeFieldNames"]))  [avc->exportCSVIncludeFieldNamesCheck setState:([o boolValue]? NSOnState : NSOffState)];
+	if((o = [settings objectForKey:@"CSVIncludeFieldNames"]))  SetOnOff(o, avc->exportCSVIncludeFieldNamesCheck);
 	if((o = [settings objectForKey:@"CSVFieldsTerminated"]))   [avc->exportCSVFieldsTerminatedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVFieldsWrapped"]))      [avc->exportCSVFieldsWrappedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVLinesTerminated"]))    [avc->exportCSVLinesTerminatedField setStringValue:o];
@@ -251,6 +252,16 @@ static void *_KVOContext;
 	                       options:NSKeyValueObservingOptionInitial
 	                       context:&_KVOContext];
 }
+
+- (void)didBecomeInactive
+{
+	[super didBecomeInactive];
+	
+	[[self controller] removeObserver:self
+	                       forKeyPath:@"exportToMultipleFiles"
+	                          context:&_KVOContext];
+}
+
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {

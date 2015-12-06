@@ -47,4 +47,9 @@
  */
 - (void)updateValidForExport;
 
+/**
+ * This will set the addonData of obj to a NSMutableDictionary if not set already
+ */
++ (void)ensureAddonDict:(id<SPExportSchemaObject>)obj;
+
 @end

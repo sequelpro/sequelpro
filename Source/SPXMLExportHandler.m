@@ -39,6 +39,7 @@
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 @class SPXMLExportViewController;
 
@@ -116,16 +117,6 @@
 @end
 
 #pragma mark -
-
-static inline NSNumber *IsOn(id obj)
-{
-	return (([obj state] == NSOnState)? @YES : @NO);
-}
-
-static inline void SetOnOff(NSNumber *ref,id obj)
-{
-	[obj setState:([ref boolValue] ? NSOnState : NSOffState)];
-}
 
 #define avc ((SPXMLExportViewController *)[self accessoryViewController])
 
