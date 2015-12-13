@@ -29,25 +29,14 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportInitializer.h"
-#import "SPTableData.h"
 #import "SPDatabaseDocument.h"
-#import "SPTablesList.h"
 #import "SPGrowlController.h"
-#import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
-#import "SPAlertSheets.h"
 #import "SPTableContent.h"
 #import "SPCSVExporter.h"
-#import "SPSQLExporter.h"
-#import "SPXMLExporter.h"
-#import "SPDotExporter.h"
 #import "SPExportFile.h"
 #import "SPExportFileUtilities.h"
-#import "SPExportFilenameUtilities.h"
-#import "SPExportFileNameTokenObject.h"
-#import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportController+SharedPrivateAPI.h"
-#import "SPExportHandlerInstance.h"
 #import "SPExportHandlerFactory.h"
 
 #import <SPMySQL/SPMySQL.h>
@@ -120,11 +109,6 @@
  */
 - (void)initializeExportUsingSelectedOptions
 {
-	// this is down here because the table export can show a message dialog that returns to the export sheet on a shortcut
-	if([[self currentExportHandler] respondsToSelector:@selector(didBecomeInactive)]) {
-		[[self currentExportHandler] didBecomeInactive];
-	}
-
 	NSArray *dataArray = nil;
 
 	// Get rid of the cached connection encoding
@@ -151,7 +135,7 @@
 			{
 				if([object isGroupRow]) continue;
 
-				if([[self currentExportHandler] wouldIncludeSchemaObject:object])
+				if([(id<SPTableExportHandler>)[self currentExportHandler] wouldIncludeSchemaObject:object])
 					[exportTables addObject:object];
 			}
 			currentExportFileCountEstimate = ([exportTables count])? (([[[self currentExportHandler] factory] supportsExportToMultipleFiles] && [self exportToMultipleFiles])? [exportTables count] : 1) : 0;
@@ -213,15 +197,15 @@
 	SPExportersAndFiles pair;
 	if(exportTables) {
 		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExportersForSchemaObjects:)],@"Current exporter handler %@ does not implement method for exporting schema objects!",[self currentExportHandler]);
-		pair = [[self currentExportHandler] allExportersForSchemaObjects:exportTables];
+		pair = [(id<SPTableExportHandler>)[self currentExportHandler] allExportersForSchemaObjects:exportTables];
 	}
 	else if(dataArray) {
 		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExportersForData:)],@"Current exporter handler %@ does not implement method for exporting table data!",[self currentExportHandler]);
-		pair = [[self currentExportHandler] allExportersForData:dataArray];
+		pair = [(id<SPResultExportHandler>)[self currentExportHandler] allExportersForData:dataArray];
 	}
 	else {
 		NSAssert([[self currentExportHandler] respondsToSelector:@selector(allExporters)],@"Current exporter handler %@ does not implement method for exporting databases!",[self currentExportHandler]);
-		pair = [[self currentExportHandler] allExporters];
+		pair = [(id<SPDatabaseExportHandler>)[self currentExportHandler] allExporters];
 	}
 
 	[exporters addObjectsFromArray:pair.exporters];

@@ -276,17 +276,19 @@
 	if([[exportCustomFilenameTokenField stringValue] length] > 0) {
 		[root setObject:[self currentCustomFilenameAsArray] forKey:@"customFilename"];
 	}
-	
+
+	NSAssert([[self currentExportHandler] respondsToSelector:@selector(settings)],@"export handler %@ is missing mandatory method settings!",[self currentExportHandler]);
 	[root setObject:[[self currentExportHandler] settings] forKey:@"settings"];
 	
 	if(exportSource == SPTableExport) {
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(specificSettingsForSchemaObject:)],@"export handler %@ is missing method specificSettingsForSchemaObject: mandatory for table export!",[self currentExportHandler]);
 		NSMutableDictionary *perObjectSettings = [NSMutableDictionary dictionaryWithCapacity:[exportObjectList count]];
 		
 		for (_SPExportListItem *item in exportObjectList) {
 			// skip visual only objects
 			if([item isGroupRow]) continue;
 			NSString *key = [item name];
-			id settings = [[self currentExportHandler] specificSettingsForSchemaObject:item];
+			id settings = [(id<SPTableExportHandler>)[self currentExportHandler] specificSettingsForSchemaObject:item];
 			if(settings)
 				[perObjectSettings setObject:settings forKey:key];
 		}
@@ -377,17 +379,19 @@
 	}
 
 	// set exporter specific settings
+	NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySettings:)],@"export handler %@ is missing mandatory method applySettings:",[self currentExportHandler]);
 	[[self currentExportHandler] applySettings:[dict objectForKey:@"settings"]];
 
 	// load schema object settings
 	if(exportSource == SPTableExport) {
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySpecificSettings:forSchemaObject:)],@"export handler %@ is missing mandatory method applySpecificSettings:forSchemaObject: for table export!",[self currentExportHandler]);
 		NSDictionary *perObjectSettings = [dict objectForKey:@"schemaObjects"];
 		
 		for (NSString *table in [perObjectSettings allKeys]) {
 			id settings = [perObjectSettings objectForKey:table];
 			//we have to find the current object to apply the settings onto
 			id<SPExportSchemaObject> obj = [self schemaObjectNamed:table];
-			if (obj) [[self currentExportHandler] applySpecificSettings:settings forSchemaObject:obj];
+			if (obj) [(id<SPTableExportHandler>)[self currentExportHandler] applySpecificSettings:settings forSchemaObject:obj];
 		}
 		
 		[exportTableList reloadData];

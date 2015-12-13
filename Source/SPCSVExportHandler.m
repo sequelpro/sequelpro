@@ -33,7 +33,6 @@
 #import "SPCSVExportHandler.h"
 #import "SPExporterRegistry.h"
 #import "SPExportController.h"
-#import "SPExportFilenameUtilities.h"
 #import "SPCSVExporter.h"
 #import "SPTableBaseExportHandler_Protected.h"
 #import "SPExportFile.h"
@@ -296,10 +295,9 @@ static void *_KVOContext;
 - (void)csvExportProcessComplete:(SPCSVExporter *)exporter
 {
 	NSArray *waiting = [[self controller] waitingExporters];
-	NSUInteger exportCount = [waiting count];
 
 	// If required add the next exporter to the operation queue
-	if ((exportCount > 0) && ([[self controller] exportSource] == SPTableExport)) {
+	if (([waiting count] > 0) && ([[self controller] exportSource] == SPTableExport)) {
 
 		// If we're only exporting to a single file then write a header for the next table
 		if (![[self controller] exportToMultipleFiles]) {
@@ -390,6 +388,8 @@ static void *_KVOContext;
 		case SPQueryExport:
 		case SPFilteredExport:
 			return YES;
+		case SPDatabaseExport:
+			;
 	}
 	return NO;
 }

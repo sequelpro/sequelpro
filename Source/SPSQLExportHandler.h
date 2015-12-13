@@ -36,10 +36,12 @@
 @class SPExportController;
 @class SPSQLExportViewController;
 
-@interface SPSQLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPSQLExporterProtocol> {
+@interface SPSQLExportHandler : SPTableBaseExportHandler <SPTableExportHandler, SPSQLExporterProtocol> {
 	BOOL sqlIncludeStructure;
 	BOOL sqlIncludeContent;
 	BOOL sqlIncludeDropSyntax;
+
+	BOOL _discardKVOEvents;
 }
 
 @end

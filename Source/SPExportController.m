@@ -223,7 +223,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	[self _refreshTableListKeepingState:NO fromServer:NO];
 
 	// overwrite defaults with user settings from last export
-	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:NULL];
+	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:nil];
 	
 	// overwrite those with settings for the current export
 	
@@ -248,7 +248,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 	// If tables were supplied, select them
 	if(exportTables && source == SPTableExport && [[self currentExportHandler] respondsToSelector:@selector(setIncludedSchemaObjects:)]) {
-		[[self currentExportHandler] setIncludedSchemaObjects:exportTables];
+		[(id<SPTableExportHandler>)[self currentExportHandler] setIncludedSchemaObjects:exportTables];
 		[exportTableList reloadData];
 	}
 
@@ -672,35 +672,39 @@ set_input:
 - (void)changeTableListWithSavedState:(void (^)(void))block
 {
 	NSMutableArray *objectStateBackupArray = [[NSMutableArray alloc] initWithCapacity:[exportObjectList count]];
+	id<SPTableExportHandler> handler = (id<SPTableExportHandler>)[self currentExportHandler];
 	
-	for(_SPExportListItem *item in exportObjectList) {
-		// skip those
-		if([item isGroupRow]) continue;
-		// get a saved state from the exporthandler
-		id savedState = [[self currentExportHandler] specificSettingsForSchemaObject:item];
-		if(savedState) {
-			[objectStateBackupArray addObject:@{
+	if([self exportSource] == SPTableExport) {
+		for(_SPExportListItem *item in exportObjectList) {
+			// skip those
+			if([item isGroupRow]) continue;
+			// get a saved state from the exporthandler
+			id savedState = [handler specificSettingsForSchemaObject:item];
+			if(savedState) {
+				[objectStateBackupArray addObject:@{
 					@"name" :       [item name],
 					@"type" :       @([item type]),
 					@"savedState" : savedState
-			}];
+				}];
+			}
 		}
 	}
 	
 	block();
 
 	// Restore the user's table selection
-	for(NSDictionary *backup in objectStateBackupArray) {
-		NSString *name = [backup objectForKey:@"name"];
-		_SPExportListItem *item = [self schemaObjectNamed:name]; //find the new list item for the old name
-
-		// perhaps the item no longer exists (after refreshing, changing handler configuration)?
-		if(item) {
-			id savedState = [backup objectForKey:@"savedState"];
-			[[self currentExportHandler] applySpecificSettings:savedState forSchemaObject:item];
+	if([self exportSource] == SPTableExport) {
+		for(NSDictionary *backup in objectStateBackupArray) {
+			NSString *name = [backup objectForKey:@"name"];
+			_SPExportListItem *item = [self schemaObjectNamed:name]; //find the new list item for the old name
+			
+			// perhaps the item no longer exists (after refreshing, changing handler configuration)?
+			if(item) {
+				id savedState = [backup objectForKey:@"savedState"];
+				[handler applySpecificSettings:savedState forSchemaObject:item];
+			}
 		}
 	}
-
 	// reload again after restoring state from backup
 	[exportTableList reloadData];
 
@@ -721,11 +725,11 @@ set_input:
 		[selection enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
 			[objectList addObject:[exportObjectList objectAtIndex:idx]];
 		}];
-		[handler updateIncludeState:([sender tag] == 1) forSchemaObjects:objectList];
+		[(id<SPTableExportHandler>)handler updateIncludeState:([sender tag] == 1) forSchemaObjects:objectList];
 		[objectList release];
 	}
 	else {
-		[handler updateIncludeStateForAllSchemaObjects:([sender tag] == 1)];
+		[(id<SPTableExportHandler>)handler updateIncludeStateForAllSchemaObjects:([sender tag] == 1)];
 	}
 
 	[exportTableList reloadData];
@@ -831,11 +835,6 @@ set_input:
 			[self performSelector:@selector(initializeExportUsingSelectedOptions) withObject:nil afterDelay:0.5];
 		}
 	}
-	else {
-		if([[self currentExportHandler] respondsToSelector:@selector(didBecomeInactive)]) {
-			[[self currentExportHandler] didBecomeInactive];
-		}
-	}
 }
 
 - (void)tableListChangedAlertDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
@@ -878,7 +877,7 @@ set_input:
 			NSArray *selectedTypes = [tablesListInstance selectedTableTypes];
 
 			for (NSNumber *type in selectedTypes) {
-				if ([handler canExportSchemaObjectsOfType:(SPTableType) [type integerValue]]) return YES;
+				if ([(id<SPTableExportHandler>)handler canExportSchemaObjectsOfType:(SPTableType) [type integerValue]]) return YES;
 			}
 
 			return NO;
@@ -907,11 +906,21 @@ set_input:
 	NSObject<SPExportHandlerInstance> *oldHandler = [self currentExportHandler];
 	NSString *handlerName = [[exportTypeTabBar selectedTabViewItem] identifier];
 	NSObject<SPExportHandlerInstance> *newHandler = [exportHandlers objectForKey:handlerName];
-
+	NSMutableArray *oldSelection = nil;
+	
 	if(oldHandler != newHandler) {
 		//remove old KVO listeners
 		if(oldHandler) {
-
+			// try to carry over selection
+			if([self exportSource] == SPTableExport) {
+				oldSelection = [NSMutableArray array];
+				for(id<SPExportSchemaObject> item in [self allSchemaObjects]) {
+					if([(id<SPTableExportHandler>)oldHandler wouldIncludeSchemaObject:item]) {
+						[oldSelection addObject:[item name]];
+					}
+				}
+			}
+			
 			[oldHandler removeObserver:self forKeyPath:@"fileExtension" context:&_KVOContext];
 			[oldHandler removeObserver:self forKeyPath:@"tableColumns"  context:&_KVOContext];
 
@@ -948,6 +957,11 @@ set_input:
 			[self setExportSourceIfPossible:[self exportSource]]; //try to keep the prev. source if possible
 
 			// the call above will have updated the table layout and contents already
+			
+			// try to carry over selection from previous exporter
+			if([self exportSource] == SPTableExport && oldSelection && [newHandler respondsToSelector:@selector(setIncludedSchemaObjects:)]) {
+				[(id<SPTableExportHandler>)newHandler setIncludedSchemaObjects:oldSelection];
+			}
 
 			//we have to subscribe to some KVO notifications for the export handler, to act on changes
 			[newHandler addObserver:self forKeyPath:@"fileExtension" options:0 context:&_KVOContext];
@@ -977,10 +991,12 @@ set_input:
 	// This list is only valid for table export mode
 	// Also any exportHandler that does not support table exports might not have the methods called below.
 	if([self exportSource] != SPTableExport) goto after_update;
+	
+	id<SPTableExportHandler> handler = (id<SPTableExportHandler>)[self currentExportHandler];
 
 	//add tables and views if supported
-	BOOL supportsTables = [[self currentExportHandler] canExportSchemaObjectsOfType:SPTableTypeTable];
-	BOOL supportsViews  = [[self currentExportHandler] canExportSchemaObjectsOfType:SPTableTypeView];
+	BOOL supportsTables = [handler canExportSchemaObjectsOfType:SPTableTypeTable];
+	BOOL supportsViews  = [handler canExportSchemaObjectsOfType:SPTableTypeView];
 	if(supportsTables || supportsViews) {
 		// mix tables and views together in an array so we can sort them
 		NSMutableArray *tablesAndViews = [NSMutableArray array];
@@ -1012,8 +1028,8 @@ set_input:
 	}
 
 	//add funcs and procs if supported
-	BOOL supportsFuncs = [[self currentExportHandler] canExportSchemaObjectsOfType:SPTableTypeFunc];
-	BOOL supportsProcs = [[self currentExportHandler] canExportSchemaObjectsOfType:SPTableTypeProc];
+	BOOL supportsFuncs = [handler canExportSchemaObjectsOfType:SPTableTypeFunc];
+	BOOL supportsProcs = [handler canExportSchemaObjectsOfType:SPTableTypeProc];
 	if(supportsFuncs || supportsProcs) {
 		// mix Funcs and Procs together in an array so we can sort them
 		NSMutableArray *funcsAndProcs = [NSMutableArray array];
@@ -1045,7 +1061,7 @@ set_input:
 	}
 
 	//add events if supported
-	if([[self currentExportHandler] canExportSchemaObjectsOfType:SPTableTypeEvent]) {
+	if([handler canExportSchemaObjectsOfType:SPTableTypeEvent]) {
 		NSMutableArray *events = [NSMutableArray array];
 		for(NSString *event in [tablesListInstance allEventNames]) {
 			[events addObject:MakeExportListItem(SPTableTypeEvent,event)];
@@ -1070,39 +1086,44 @@ after_update:
 //rebuild the table to fit the current export handler
 - (void)_rebuildTableGeometry
 {
-	[exportObjectList removeAllObjects]; //can't use that anymore
-	[exportTableList reloadData]; // otherwise the table view will think it still has rows during the calls below
-
-	//remove all columns (copy or we'd get a concurrent modification exception)
-	for(NSTableColumn *col in [[[exportTableList tableColumns] copy] autorelease]) {
-		// keep the name column, but hide it for now, so the table looks empty on early return below
-		if([[col identifier] isEqualToString:@"name"]) {
-			[col setHidden:YES];
-			continue;
+	[self changeTableListWithSavedState:^{
+		[exportObjectList removeAllObjects]; //can't use that anymore
+		[exportTableList reloadData]; // otherwise the table view will think it still has rows during the calls below
+		
+		//remove all columns (copy or we'd get a concurrent modification exception)
+		for(NSTableColumn *col in [[[exportTableList tableColumns] copy] autorelease]) {
+			// keep the name column, but hide it for now, so the table looks empty on early return below
+			if([[col identifier] isEqualToString:@"name"]) {
+				[col setHidden:YES];
+				continue;
+			}
+			[exportTableList removeTableColumn:col];
 		}
-		[exportTableList removeTableColumn:col];
-	}
-
-	BOOL isTableExport = ([self exportSource] == SPTableExport);
-	BOOL handlerSupportCheckAll = [[self currentExportHandler] respondsToSelector:@selector(updateIncludeStateForAllSchemaObjects:)];
-	[exportTableList setEnabled:isTableExport];
-	[exportSelectAllTablesButton setEnabled:(isTableExport && handlerSupportCheckAll)];
-	[exportDeselectAllTablesButton setEnabled:(isTableExport && handlerSupportCheckAll)];
-	[exportRefreshTablesButton setEnabled:isTableExport];
-	//it's easy if our current export source is not based on the table list
-	if(!isTableExport) return;
-
-	//unhide the name column
-	[[exportTableList tableColumnWithIdentifier:@"name"] setHidden:NO];
-
-	//all the others can be configured by the export handler
-	for(NSString *colId in [[self currentExportHandler] tableColumns]) {
-		NSAssert(([colId length]) && ([exportTableList tableColumnWithIdentifier:colId] == nil),@"The column id <%@> is either empty/nil or a duplicate!",colId);
-		NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:colId];
-		[[self currentExportHandler] configureTableColumn:col];
-		[exportTableList addTableColumn:[col autorelease]];
-	}
-
+		
+		BOOL isTableExport = ([self exportSource] == SPTableExport);
+		BOOL handlerSupportCheckAll = [[self currentExportHandler] respondsToSelector:@selector(updateIncludeStateForAllSchemaObjects:)];
+		[exportTableList setEnabled:isTableExport];
+		[exportSelectAllTablesButton setEnabled:(isTableExport && handlerSupportCheckAll)];
+		[exportDeselectAllTablesButton setEnabled:(isTableExport && handlerSupportCheckAll)];
+		[exportRefreshTablesButton setEnabled:isTableExport];
+		//it's easy if our current export source is not based on the table list
+		if(!isTableExport) return;
+		
+		id<SPTableExportHandler> handler = (id<SPTableExportHandler>)[self currentExportHandler];
+		
+		//unhide the name column
+		[[exportTableList tableColumnWithIdentifier:@"name"] setHidden:NO];
+		
+		//all the others can be configured by the export handler
+		for(NSString *colId in [handler tableColumns]) {
+			NSAssert(([colId length]) && ([exportTableList tableColumnWithIdentifier:colId] == nil),@"The column id <%@> is either empty/nil or a duplicate!",colId);
+			NSTableColumn *col = [[NSTableColumn alloc] initWithIdentifier:colId];
+			[handler configureTableColumn:col];
+			[exportTableList addTableColumn:[col autorelease]];
+		}
+		
+		[exportTableList sizeToFit];
+	}];
 }
 
 /**
@@ -1110,6 +1131,9 @@ after_update:
  */
 - (void)_checkForDatabaseChanges
 {
+	NSAssert([self exportSource] == SPTableExport,@"must not use %s when source is not a table export! (SPExportSource=%lu)",__PRETTY_FUNCTION__,[self exportSource]);
+	id<SPTableExportHandler> handler = (id<SPTableExportHandler>)[self currentExportHandler];
+	
 	NSUInteger i = 0;
 	// count everything that is not a group row
 	for(_SPExportListItem *item in exportObjectList) {
@@ -1134,7 +1158,7 @@ after_update:
 	NSUInteger j = 0;
 	for (unsigned int k = 0; k < COUNT_OF(addIfList); ++k) {
 		struct _addIfListItem *item = &addIfList[k];
-		if([[self currentExportHandler] canExportSchemaObjectsOfType:item->type]) j += item->count;
+		if([handler canExportSchemaObjectsOfType:item->type]) j += item->count;
 	}
 
 	if (j > i) {

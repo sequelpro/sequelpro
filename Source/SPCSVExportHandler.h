@@ -35,6 +35,6 @@
 @protocol SPExportHandlerInstance;
 @class SPCSVExportViewController;
 
-@interface SPCSVExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPCSVExporterProtocol>
+@interface SPCSVExportHandler : SPTableBaseExportHandler <SPResultExportHandler, SPTableExportHandler, SPCSVExporterProtocol>
 
 @end

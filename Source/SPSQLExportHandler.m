@@ -40,6 +40,7 @@
 #import "SPExportController+SharedPrivateAPI.h"
 #import "MGTemplateEngine.h"
 #import "SPDatabaseDocument.h"
+#import "SPFunctions.h"
 
 static NSString * const SPTableViewStructureColumnID = @"structure";
 static NSString * const SPTableViewContentColumnID   = @"content";
@@ -124,22 +125,36 @@ static void *_KVOContext;
 		[self setAccessoryViewController:viewController];
 		[self setFileExtension:SPFileExtensionSQL];
 		[self updateTableColumns];
-
-		// we subscribe to our own properties to notice IB value changes
-		[self addObserver:self forKeyPath:@"sqlIncludeStructure" options:0 context:&_KVOContext];
-		[self addObserver:self forKeyPath:@"sqlIncludeContent" options:0 context:&_KVOContext];
-		[self addObserver:self forKeyPath:@"sqlIncludeDropSyntax" options:0 context:&_KVOContext];
+		_discardKVOEvents = NO;
 	}
 	return self;
 }
 
-- (void)dealloc
+- (void)willBecomeActive
 {
-	[self removeObserver:self forKeyPath:@"sqlIncludeStructure" context:&_KVOContext];
-	[self removeObserver:self forKeyPath:@"sqlIncludeContent" context:&_KVOContext];
-	[self removeObserver:self forKeyPath:@"sqlIncludeDropSyntax" context:&_KVOContext];
+	[super willBecomeActive];
 
-	[super dealloc];
+	// we subscribe to our own properties to notice IB value changes
+	[self addObserver:self forKeyPath:@"sqlIncludeStructure" options:0 context:&_KVOContext];
+	[self addObserver:self forKeyPath:@"sqlIncludeContent" options:0 context:&_KVOContext];
+	[self addObserver:self forKeyPath:@"sqlIncludeDropSyntax" options:0 context:&_KVOContext];
+}
+
+- (void)didBecomeInactive
+{
+	[super didBecomeInactive];
+
+	if([self respondsToSelector:@selector(removeObserver:forKeyPath:context:)]) {
+		[self removeObserver:self forKeyPath:@"sqlIncludeStructure" context:&_KVOContext];
+		[self removeObserver:self forKeyPath:@"sqlIncludeContent" context:&_KVOContext];
+		[self removeObserver:self forKeyPath:@"sqlIncludeDropSyntax" context:&_KVOContext];
+	}
+	// 10.6 backwards compatibility
+	else {
+		[self removeObserver:self forKeyPath:@"sqlIncludeStructure"];
+		[self removeObserver:self forKeyPath:@"sqlIncludeContent"];
+		[self removeObserver:self forKeyPath:@"sqlIncludeDropSyntax"];
+	}
 }
 
 - (BOOL)canExportSchemaObjectsOfType:(SPTableType)type
@@ -150,6 +165,9 @@ static void *_KVOContext;
 		case SPTableTypeFunc:
 		case SPTableTypeProc:
 			return YES;
+		case SPTableTypeNone:
+		case SPTableTypeEvent:
+			;
 	}
 	return NO;
 }
@@ -166,13 +184,13 @@ static void *_KVOContext;
 	[sqlExporter setSqlDatabaseName:[tdi database]];
 	[sqlExporter setSqlDatabaseVersion:[tdi mySQLVersion]];
 
-	[sqlExporter setSqlOutputIncludeUTF8BOM:[avc->exportUseUTF8BOMButton state]];
-	[sqlExporter setSqlOutputEncodeBLOBasHex:[avc->exportSQLBLOBFieldsAsHexCheck state]];
-	[sqlExporter setSqlOutputIncludeErrors:[avc->exportSQLIncludeErrorsCheck state]];
+	[sqlExporter setSqlOutputIncludeUTF8BOM:([avc->exportUseUTF8BOMButton state] == NSOnState)];
+	[sqlExporter setSqlOutputEncodeBLOBasHex:([avc->exportSQLBLOBFieldsAsHexCheck state] == NSOnState)];
+	[sqlExporter setSqlOutputIncludeErrors:([avc->exportSQLIncludeErrorsCheck state] == NSOnState)];
 	[sqlExporter setSqlOutputIncludeAutoIncrement:([avc->exportSQLIncludeStructureCheck state] && [avc->exportSQLIncludeAutoIncrementValueButton state])];
 
-	[sqlExporter setSqlInsertAfterNValue:[avc->exportSQLInsertNValueTextField integerValue]];
-	[sqlExporter setSqlInsertDivider:[avc->exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
+	[sqlExporter setSqlInsertAfterNValue:SPIntS2U([avc->exportSQLInsertNValueTextField integerValue])];
+	[sqlExporter setSqlInsertDivider:(SPSQLExportInsertDivider)[avc->exportSQLInsertDividerPopUpButton indexOfSelectedItem]];
 
 	NSMutableArray *names = [NSMutableArray arrayWithCapacity:[schemaObjects count]];
 	// reformat for sqlexporter
@@ -225,10 +243,11 @@ static void *_KVOContext;
 	id o;
 	SPSQLExportInsertDivider div;
 
+	_discardKVOEvents = YES; // we'll batch the call to updateTableColumns, so it's not invoked three times in a row
+
 	if((o = [settings objectForKey:@"SQLIncludeContent"]))   [self setSqlIncludeContent:[o boolValue]];
 
 	if((o = [settings objectForKey:@"SQLIncludeStructure"])) [self setSqlIncludeStructure:[o boolValue]];
-	// todo kvo update notwendig?
 
 	if((o = [settings objectForKey:@"SQLIncludeErrors"]))    SetOnOff(o, avc->exportSQLIncludeErrorsCheck);
 	if((o = [settings objectForKey:@"SQLUseUTF8BOM"]))       SetOnOff(o, avc->exportUseUTF8BOMButton);
@@ -240,8 +259,9 @@ static void *_KVOContext;
 		if((o = [settings objectForKey:@"SQLIncludeAutoIncrementValue"]))  SetOnOff(o, avc->exportSQLIncludeAutoIncrementValueButton);
 		if((o = [settings objectForKey:@"SQLIncludeDropSyntax"]))  [self setSqlIncludeDropSyntax:[o boolValue]];
 	}
-	
+
 	[self updateTableColumns];
+	_discardKVOEvents = NO;
 }
 
 - (id)specificSettingsForSchemaObject:(id <SPExportSchemaObject>)obj
@@ -460,6 +480,8 @@ static void *_KVOContext;
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 		return;
 	}
+
+	if(_discardKVOEvents) return;
 
 	if([keyPath isInArray:@[@"sqlIncludeStructure",@"sqlIncludeContent",@"sqlIncludeDropSyntax"]]) {
 		[self updateTableColumns];

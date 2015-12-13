@@ -103,7 +103,7 @@
 	NSUInteger i = 0;
 	for (_SPExportListItem *item in exportObjectList)
 	{
-		if ([[self currentExportHandler] wouldIncludeSchemaObject:item]) {
+		if ([(id<SPTableExportHandler>)[self currentExportHandler] wouldIncludeSchemaObject:item]) {
 			i++;
 			if (i == 2) break;
 		}

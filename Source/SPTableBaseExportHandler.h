@@ -43,7 +43,7 @@
  *
  * Note that this class makes the addonData of SPExportSchemaObject an NSMutableDictionary.
  */
-@interface SPTableBaseExportHandler : SPBaseExportHandler {
+@interface SPTableBaseExportHandler : SPBaseExportHandler <SPTableExportHandler> {
 	NSArray *_tableColumns;
 }
 

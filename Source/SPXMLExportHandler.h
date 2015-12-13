@@ -35,7 +35,7 @@
 
 @class SPXMLExportViewController;
 
-@interface SPXMLExportHandler : SPTableBaseExportHandler <SPExportHandlerInstance, SPXMLExporterProtocol> {
+@interface SPXMLExportHandler : SPTableBaseExportHandler <SPResultExportHandler, SPTableExportHandler, SPXMLExporterProtocol> {
 	BOOL writeHeaderForCurrentFile;
 }
 

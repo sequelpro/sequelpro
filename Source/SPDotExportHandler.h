@@ -36,7 +36,7 @@
 @class SPExportController;
 @class SPDotExportViewController;
 
-@interface SPDotExportHandler : SPBaseExportHandler <SPExportHandlerInstance, SPDotExporterProtocol> {
+@interface SPDotExportHandler : SPBaseExportHandler <SPDatabaseExportHandler, SPDotExporterProtocol> {
 	/**
 	 * The server's lower_case_table_names setting
 	 */

@@ -133,24 +133,6 @@
 	if((o = [settings objectForKey:@"DotForceLowerTableNames"])) [self setServerLowerCaseTableNameValue:[o boolValue]];
 }
 
-- (id)specificSettingsForSchemaObject:(id<SPExportSchemaObject>)obj
-{
-	// Dot is a graph of the whole database - nothing to pick from
-	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
-	return nil;
-}
-
-- (void)applySpecificSettings:(id)settings forSchemaObject:(id<SPExportSchemaObject>)obj
-{
-	//should never be called
-	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
-}
-
-- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
-	SPLog(@"call to %s on an export handler that does not support SPTableExport!",__PRETTY_FUNCTION__);
-	return NO;
-}
-
 #pragma mark - Exporter delegate
 
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter

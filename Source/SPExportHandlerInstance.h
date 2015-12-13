@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 @protocol SPExportHandlerFactory;
+
 typedef struct {
 	NSArray *exporters;
 	NSArray *exportFiles;
@@ -72,8 +73,58 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  */
 - (void)didBecomeInactive;
 
-// the following methods are only needed if you want to support SPTableExport
+@required
 
+- (NSViewController *)accessoryViewController;
+
+// must be KVO compliant
+@property(readonly, nonatomic) BOOL canBeImported;
+
+// must be KVO compliant
+@property(readonly, nonatomic) BOOL isValidForExport;
+
+- (NSDictionary *)settings;
+- (void)applySettings:(NSDictionary *)settings;
+
+// must be KVO compliant
+@property(readonly, nonatomic, copy) NSString *fileExtension;
+
+/**
+ * A reference to the factory instance that originally created this object.
+ *
+ * This is assign because the factory should always outlive the export handler!
+ */
+@property(readonly, nonatomic, assign) id<SPExportHandlerFactory> factory;
+
+@end
+
+@protocol SPResultExportHandler <SPExportHandlerInstance>
+
+/**
+ * Implement this method if you support SPFilteredExport and/or SPQueryExport!
+ *
+ * @param data The content data rows
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExportersForData:(NSArray *)data;
+
+@end
+
+@protocol SPDatabaseExportHandler <SPExportHandlerInstance>
+
+/**
+ * Implement this method if you support SPDatabaseExport!
+ *
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExporters;
+
+@end
+
+
+@protocol SPTableExportHandler <SPExportHandlerInstance>
+
+@required
 /**
  * decides whether objects of this type will be displayed to the user at all
  *
@@ -124,6 +175,16 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 - (BOOL)wouldIncludeSchemaObject:(id<SPExportSchemaObject>)obj;
 
 /**
+ * Implement this method if you support SPTableExport!
+ *
+ * @param schemaObjects An array of SPExportSchemaObject *s that you declared for export
+ * @return An array of exporters and files
+ */
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects;
+
+@optional
+
+/**
  * You can optionally implement this method to enable the "Select all" / "Select none" buttons
  * at the bottom of the export table.
  *
@@ -150,50 +211,5 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  */
 - (void)setIncludedSchemaObjects:(NSArray *)objectNames;
 
-/**
- * Implement this method if you support SPTableExport!
- *
- * @param schemaObjects An array of SPExportSchemaObject *s that you declared for export
- * @return An array of exporters and files
- */
-- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects;
-
-/**
- * Implement this method if you support SPFilteredExport and/or SPQueryExport!
- *
- * @param data The content data rows
- * @return An array of exporters and files
- */
-- (SPExportersAndFiles)allExportersForData:(NSArray *)data;
-
-/**
- * Implement this method if you support SPDatabaseExport!
- *
- * @return An array of exporters and files
- */
-- (SPExportersAndFiles)allExporters;
-
-@required
-
-- (NSViewController *)accessoryViewController;
-
-// must be KVO compliant
-@property(readonly, nonatomic) BOOL canBeImported;
-
-// must be KVO compliant
-@property(readonly, nonatomic) BOOL isValidForExport;
-
-- (NSDictionary *)settings;
-- (void)applySettings:(NSDictionary *)settings;
-
-// must be KVO compliant
-@property(readonly, nonatomic, copy) NSString *fileExtension;
-
-/**
- * A reference to the factory instance that originally created this object.
- *
- * This is assign because the factory should always outlive the export handler!
- */
-@property(readonly, nonatomic, assign) id<SPExportHandlerFactory> factory;
 
 @end
