@@ -32,7 +32,7 @@
 #import "SPTablesList.h"
 #import "SPDatabaseViewController.h"
 #import "SPExportFileNameTokenObject.h"
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 #import "SPExportHandlerFactory.h"
 #import "SPExportController+SharedPrivateAPI.h"
 #import "SPExportSettingsPersistence.h"

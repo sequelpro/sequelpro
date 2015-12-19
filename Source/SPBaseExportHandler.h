@@ -29,11 +29,11 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Foundation/Foundation.h>
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 
 @class SPExportController;
 
-@interface SPBaseExportHandler : NSObject <SPExportHandlerInstance> {
+@interface SPBaseExportHandler : NSObject <SPExportHandler> {
 	BOOL _canBeImported;
 	BOOL _isValidForExport;
 	SPExportController *_controller;

@@ -31,7 +31,7 @@
 #import <Foundation/Foundation.h>
 
 @class SPExportController;
-@protocol SPExportHandlerInstance;
+@protocol SPExportHandler;
 
 @protocol SPExportHandlerFactory
 
@@ -42,6 +42,6 @@
 - (BOOL)supportsExportToMultipleFiles;
 - (BOOL)supportsExportSource:(SPExportSource)source;
 
-- (id<SPExportHandlerInstance>)makeInstanceWithController:(SPExportController *)ctr;
+- (id<SPExportHandler>)makeInstanceWithController:(SPExportController *)ctr;
 
 @end

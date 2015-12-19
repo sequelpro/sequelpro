@@ -41,8 +41,6 @@
 #import "SPTableContent.h"
 #import "SPExportController+SharedPrivateAPI.h"
 
-@class SPXMLExportViewController;
-
 @interface SPXMLExportHandler ()
 
 + (NSString *)describeXMLExportFormat:(SPXMLExportFormat)xf;
@@ -52,6 +50,7 @@
 
 - (void)writeXMLHeaderForExporter:(SPXMLExporter *)exporter;
 - (void)writeXMLFooterForExporter:(SPXMLExporter *)exporter;
+
 @end
 
 @interface SPXMLExportHandlerFactory : NSObject  <SPExportHandlerFactory>
@@ -80,9 +79,9 @@
 	[[SPExporterRegistry sharedRegistry] registerExportHandler:[[[self alloc] init] autorelease]];
 }
 
-- (id<SPExportHandlerInstance>)makeInstanceWithController:(SPExportController *)ctr
+- (id<SPExportHandler>)makeInstanceWithController:(SPExportController *)ctr
 {
-	id instance = [[SPXMLExportHandler alloc] initWithFactory:self];
+	SPXMLExportHandler *instance = [[SPXMLExportHandler alloc] initWithFactory:self];
 	[instance setController:ctr];
 	return [instance autorelease];
 }
@@ -109,6 +108,8 @@
 		case SPFilteredExport:
 		case SPQueryExport:
 			return YES;
+		case SPDatabaseExport:
+			;
 	}
 	return NO;
 }
@@ -144,7 +145,8 @@
 #undef NAMEOF
 #undef VALUEOF
 
-- (instancetype)initWithFactory:(SPXMLExportHandlerFactory *)factory {
+- (instancetype)initWithFactory:(SPXMLExportHandlerFactory *)factory
+{
 	if ((self = [super initWithFactory:factory])) {
 		[self setCanBeImported:NO];
 		SPXMLExportViewController *viewController = [[[SPXMLExportViewController alloc] init] autorelease];
@@ -157,12 +159,18 @@
 	return self;
 }
 
-- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type {
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type
+{
 	// we can only export what provides a data table
 	switch (type) {
 		case SPTableTypeTable:
 		case SPTableTypeView:
 			return YES;
+		case SPTableTypeNone:;
+		case SPTableTypeProc:;
+		case SPTableTypeFunc:;
+		case SPTableTypeEvent:
+			;
 	}
 	return NO;
 }

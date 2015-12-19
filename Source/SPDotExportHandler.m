@@ -58,7 +58,8 @@
 
 @synthesize serverLowerCaseTableNameValue = serverLowerCaseTableNameValue;
 
-- (instancetype)initWithFactory:(SPDotExportHandlerFactory *)factory {
+- (instancetype)initWithFactory:(SPDotExportHandlerFactory *)factory
+{
 	if ((self = [super initWithFactory:factory])) {
 		[self setServerLowerCaseTableNameValue:NSMixedState];
 		[self setCanBeImported:NO];
@@ -173,31 +174,36 @@
 
 @implementation SPDotExportHandlerFactory
 
-+ (void)load {
++ (void)load
+{
 	[super load];
 	[[SPExporterRegistry sharedRegistry] registerExportHandler:[[[self alloc] init] autorelease]];
 }
 
-- (id<SPExportHandlerInstance>)makeInstanceWithController:(SPExportController *)ctr
+- (id<SPExportHandler>)makeInstanceWithController:(SPExportController *)ctr
 {
-	id instance = [[SPDotExportHandler alloc] initWithFactory:self];
+	SPDotExportHandler *instance = [[SPDotExportHandler alloc] initWithFactory:self];
 	[instance setController:ctr];
 	return [instance autorelease];
 }
 
-- (NSString *)uniqueName {
+- (NSString *)uniqueName
+{
 	return @"SPDotExporter";
 }
 
-- (NSString *)localizedShortName {
+- (NSString *)localizedShortName
+{
 	return NSLocalizedString(@"Dot","dot exporter short name");
 }
 
-- (BOOL)supportsExportToMultipleFiles {
+- (BOOL)supportsExportToMultipleFiles
+{
 	return NO;
 }
 
-- (BOOL)supportsExportSource:(SPExportSource)source {
+- (BOOL)supportsExportSource:(SPExportSource)source
+{
 	return (source == SPDatabaseExport);
 }
 

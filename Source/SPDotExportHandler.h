@@ -29,7 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Foundation/Foundation.h>
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 #import "SPBaseExportHandler.h"
 #import "SPDotExporterProtocol.h"
 

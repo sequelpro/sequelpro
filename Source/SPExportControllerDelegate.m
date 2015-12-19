@@ -32,7 +32,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPExportController+SharedPrivateAPI.h"
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 #import "SPFunctions.h"
 
 // Defined to suppress warnings

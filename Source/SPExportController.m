@@ -40,7 +40,7 @@
 #import "SPCustomQuery.h"
 #import "SPExportController+SharedPrivateAPI.h"
 #import "SPExportSettingsPersistence.h"
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 #import "SPExporterRegistry.h"
 #import "SPExportHandlerFactory.h"
 #import "SPExportInterfaceController.h"
@@ -56,7 +56,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 @interface SPExportController ()
 
-@property(readwrite, retain, nonatomic) id<SPExportHandlerInstance> currentExportHandler;
+@property(readwrite, retain, nonatomic) id<SPExportHandler> currentExportHandler;
 @property(readwrite, assign, nonatomic) SPExportSource exportSource;
 
 - (IBAction)closeSheet:(id)sender;
@@ -160,7 +160,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 
 		[exportHandlers removeAllObjects];
 		for(id<SPExportHandlerFactory> handler in [[SPExporterRegistry sharedRegistry] registeredHandlers]) {
-			id<SPExportHandlerInstance> instance = [handler makeInstanceWithController:self];
+			id<SPExportHandler> instance = [handler makeInstanceWithController:self];
 			NSTabViewItem *tvi = [[NSTabViewItem alloc] init];
 			[tvi setLabel:[handler localizedShortName]];
 			[tvi setIdentifier:[handler uniqueName]];
@@ -289,7 +289,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	SPExportSource es[] = {SPTableExport,SPQueryExport,SPFilteredExport,SPDatabaseExport};
 	// go through all tab views
 	for(NSTabViewItem *item in hiddenTabViewStorage) {
-		id<SPExportHandlerInstance> handler = [exportHandlers objectForKey:[item identifier]];
+		id<SPExportHandler> handler = [exportHandlers objectForKey:[item identifier]];
 		// handler is valid if there is any data it can be used with
 		for (unsigned int i = 0; i < COUNT_OF(es); i++) {
 			if([self _hasDataForSource:es[i] handler:handler]) {
@@ -718,7 +718,7 @@ set_input:
 {
 	// if there currently is a selection of more than one item let's assume the user wants to
 	// toggle the selected items instead of all items.
-	id<SPExportHandlerInstance> handler = [self currentExportHandler];
+	id<SPExportHandler> handler = [self currentExportHandler];
 	NSIndexSet *selection = [exportTableList selectedRowIndexes];
 	if([selection count] > 1 && [handler respondsToSelector:@selector(updateIncludeState:forSchemaObjects:)]) {
 		NSMutableArray *objectList = [[NSMutableArray alloc] init];
@@ -793,7 +793,7 @@ set_input:
 	[self window]; //export handlers is populated in awakeFromNib when our window is loaded
 
 	for(NSString *name in [exportHandlers allKeys]) {
-		id<SPExportHandlerInstance> instance = [exportHandlers objectForKey:name];
+		id<SPExportHandler> instance = [exportHandlers objectForKey:name];
 
 		// don't add them if they can't handle that mode
 		if(![[instance factory] supportsExportSource:source]) continue;
@@ -865,7 +865,7 @@ set_input:
 {
 	if ([menuItem action] == @selector(exportFromMenuItem:)) {
 		SPExportSource source = (SPExportSource)[menuItem tag];
-		id<SPExportHandlerInstance> handler = [exportHandlers objectForKey:[menuItem representedObject]];
+		id<SPExportHandler> handler = [exportHandlers objectForKey:[menuItem representedObject]];
 
 		if([tableDocumentInstance isProcessing] || !handler) return NO;
 
@@ -903,9 +903,9 @@ set_input:
 - (void)_switchTab
 {
 	// NSObject because KVO methods are not defined for id
-	NSObject<SPExportHandlerInstance> *oldHandler = [self currentExportHandler];
+	NSObject<SPExportHandler> *oldHandler = [self currentExportHandler];
 	NSString *handlerName = [[exportTypeTabBar selectedTabViewItem] identifier];
-	NSObject<SPExportHandlerInstance> *newHandler = [exportHandlers objectForKey:handlerName];
+	NSObject<SPExportHandler> *newHandler = [exportHandlers objectForKey:handlerName];
 	NSMutableArray *oldSelection = nil;
 	
 	if(oldHandler != newHandler) {
@@ -1240,7 +1240,7 @@ after_update:
 	return [self _hasDataForSource:src handler:[self currentExportHandler]];
 }
 
-- (BOOL)_hasDataForSource:(SPExportSource)src handler:(id<SPExportHandlerInstance>)handler
+- (BOOL)_hasDataForSource:(SPExportSource)src handler:(id<SPExportHandler>)handler
 {
 	//if the handler can't use this source there is never data available
 	if(![[handler factory] supportsExportSource:src]) return NO;

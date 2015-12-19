@@ -46,6 +46,8 @@ static NSString * const SPTableViewStructureColumnID = @"structure";
 static NSString * const SPTableViewContentColumnID   = @"content";
 static NSString * const SPTableViewDropColumnID      = @"drop";
 
+// we just need an unique value of type 'void *' to identify our KVO messages.
+// The memory address of this variable will do just that, the value is never used.
 static void *_KVOContext;
 
 @interface SPSQLExportViewController : NSViewController {
@@ -532,31 +534,36 @@ static void *_KVOContext;
 
 @implementation SPSQLExportHandlerFactory
 
-+ (void)load {
++ (void)load
+{
 	[super load];
 	[[SPExporterRegistry sharedRegistry] registerExportHandler:[[[self alloc] init] autorelease]];
 }
 
-- (id<SPExportHandlerInstance>)makeInstanceWithController:(SPExportController *)ctr
+- (id<SPExportHandler>)makeInstanceWithController:(SPExportController *)ctr
 {
-	id instance = [[SPSQLExportHandler alloc] initWithFactory:self];
+	SPSQLExportHandler *instance = [[SPSQLExportHandler alloc] initWithFactory:self];
 	[instance setController:ctr];
 	return [instance autorelease];
 }
 
-- (NSString *)uniqueName {
+- (NSString *)uniqueName
+{
 	return @"SPSQLExporter";
 }
 
-- (NSString *)localizedShortName {
+- (NSString *)localizedShortName
+{
 	return NSLocalizedString(@"SQL","sql exporter short name");
 }
 
-- (BOOL)supportsExportToMultipleFiles {
+- (BOOL)supportsExportToMultipleFiles
+{
 	return NO;
 }
 
-- (BOOL)supportsExportSource:(SPExportSource)source {
+- (BOOL)supportsExportSource:(SPExportSource)source
+{
 	// When exporting to SQL, only the selected tables option should be enabled
 	return (source == SPTableExport);
 }

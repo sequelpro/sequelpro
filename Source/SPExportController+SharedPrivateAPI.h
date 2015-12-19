@@ -29,7 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportController.h"
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 
 @interface SPExportController (SharedPrivateAPI)
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;

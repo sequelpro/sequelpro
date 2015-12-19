@@ -47,7 +47,6 @@
 		173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */ = {isa = PBXBuildFile; fileRef = 173C4360104455CA001F3A30 /* QueryFavoriteManager.xib */; };
 		173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */; };
 		173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C44D71044A6B0001F3A30 /* SPOutlineView.m */; };
-		173C837211AAD26E00B8B084 /* SPExportUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 173C837011AAD26E00B8B084 /* SPExportUtilities.m */; };
 		1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */ = {isa = PBXBuildFile; fileRef = 1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */; };
 		1748D50C15A4444F003562F2 /* SPTableStructureLoading.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748D50B15A4444F003562F2 /* SPTableStructureLoading.m */; };
 		1748D58615A83E54003562F2 /* SPWindowManagement.m in Sources */ = {isa = PBXBuildFile; fileRef = 1748D58515A83E54003562F2 /* SPWindowManagement.m */; };
@@ -148,6 +147,7 @@
 		1A56441467256377BAA0B977 /* SPTableBaseExportHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A564B35CCFD2B13AE906F5D /* SPTableBaseExportHandler.m */; };
 		1A5644CF6BC979982C4E4CD7 /* SPExportInterfaceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A564E0B8A47A8CEC718626C /* SPExportInterfaceController.m */; };
 		1A5646363CB0305372B5C2FD /* SPExportControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A564A4A0EE67C1807D80E95 /* SPExportControllerDelegate.m */; };
+		1A56471D9AE5CD8A7CC97EE9 /* SPExportUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A564C3BA7E8221F4055E97C /* SPExportUtilities.m */; };
 		1A5648ECA757B1DA1FD85C1F /* SPExportFileUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A56426AC7EA0B5BDB91558D /* SPExportFileUtilities.m */; };
 		1A564A51A4FA7FAA137E9A05 /* SPDotExportHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A56475393D5C739B778AEA4 /* SPDotExportHandler.m */; };
 		1A564C2C218159112FD34289 /* SPExportInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A5640E8A7B3D1FE57D323B3 /* SPExportInitializer.m */; };
@@ -681,8 +681,6 @@
 		173C4365104455E0001F3A30 /* SPQueryFavoriteManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPQueryFavoriteManager.m; sourceTree = "<group>"; };
 		173C44D61044A6AF001F3A30 /* SPOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPOutlineView.h; sourceTree = "<group>"; };
 		173C44D71044A6B0001F3A30 /* SPOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPOutlineView.m; sourceTree = "<group>"; };
-		173C836F11AAD26E00B8B084 /* SPExportUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportUtilities.h; sourceTree = "<group>"; };
-		173C837011AAD26E00B8B084 /* SPExportUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportUtilities.m; sourceTree = "<group>"; };
 		173C838311AAD2FF00B8B084 /* SPXMLExporterProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPXMLExporterProtocol.h; sourceTree = "<group>"; };
 		1740FAB90FC4372F00CF3699 /* SPDatabaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDatabaseData.h; sourceTree = "<group>"; };
 		1740FABA0FC4372F00CF3699 /* SPDatabaseData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDatabaseData.m; sourceTree = "<group>"; };
@@ -880,18 +878,21 @@
 		1A5649FF592F9EB3744CF3C1 /* SPExportInterfaceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportInterfaceController.h; sourceTree = "<group>"; };
 		1A564A31BFCA5AFE7A5CA01C /* SPXMLExportHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPXMLExportHandler.m; sourceTree = "<group>"; };
 		1A564A4A0EE67C1807D80E95 /* SPExportControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportControllerDelegate.m; sourceTree = "<group>"; };
+		1A564A5C48CB60EE06176FFC /* SPExportUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportUtilities.h; sourceTree = "<group>"; };
 		1A564B35CCFD2B13AE906F5D /* SPTableBaseExportHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableBaseExportHandler.m; sourceTree = "<group>"; };
 		1A564B4BF642B8DF423F53A7 /* SPDotExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPDotExporter.m; sourceTree = "<group>"; };
 		1A564C0C0FFB444D2E5CA447 /* SPPillAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPillAttachmentCell.h; sourceTree = "<group>"; };
+		1A564C3BA7E8221F4055E97C /* SPExportUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportUtilities.m; sourceTree = "<group>"; };
 		1A564C486C957AC67B6E72ED /* SPCSVExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPCSVExporter.h; sourceTree = "<group>"; };
 		1A564CBC09F9D6ECAD383CCE /* SPExportFilenameUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportFilenameUtilities.h; sourceTree = "<group>"; };
 		1A564CD8FCEC4E6ADECC558C /* SPExporterRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExporterRegistry.h; sourceTree = "<group>"; };
 		1A564CDE3E9295A84D0034F0 /* SPDotExportHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPDotExportHandler.h; sourceTree = "<group>"; };
+		1A564D3C32CF9E46DBE61B40 /* SPExportHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportHandler.h; sourceTree = "<group>"; };
 		1A564D4808495EDFFB3354B9 /* SPBaseExportHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBaseExportHandler.h; sourceTree = "<group>"; };
 		1A564D6741954E78AB2F5509 /* SPSQLExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSQLExporter.h; sourceTree = "<group>"; };
 		1A564D7100C4A988C50E1B72 /* SPBaseExportHandler_Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBaseExportHandler_Protected.h; sourceTree = "<group>"; };
 		1A564E0B8A47A8CEC718626C /* SPExportInterfaceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportInterfaceController.m; sourceTree = "<group>"; };
-		1A564EA4795B8E3C09B4C150 /* SPExportHandlerInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportHandlerInstance.h; sourceTree = "<group>"; };
+		1A564E2629040158213F6488 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = "Controllers/Data Export/README.md"; sourceTree = "<group>"; };
 		1A564F0DB4EFBD65119FF5DB /* SPExporterRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExporterRegistry.m; sourceTree = "<group>"; };
 		1A564F31DB0511DECFD9092E /* SPExportController+SharedPrivateAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SPExportController+SharedPrivateAPI.h"; sourceTree = "<group>"; };
 		1A564FB5EF0D58CAF4742CDC /* SPExportHandlerFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportHandlerFactory.h; sourceTree = "<group>"; };
@@ -2270,13 +2271,14 @@
 		17F5B1491048C4C000FC794F /* Data Export */ = {
 			isa = PBXGroup;
 			children = (
-				173C836F11AAD26E00B8B084 /* SPExportUtilities.h */,
-				173C837011AAD26E00B8B084 /* SPExportUtilities.m */,
-				17F90E451210B41100274C98 /* Model */,
-				173C836C11AAD24300B8B084 /* Exporters */,
-				1A564FB5EF0D58CAF4742CDC /* SPExportHandlerFactory.h */,
-				1A564EA4795B8E3C09B4C150 /* SPExportHandlerInstance.h */,
 				1A56427EBA94E8AFDD47A116 /* Export Controller */,
+				173C836C11AAD24300B8B084 /* Exporters */,
+				17F90E451210B41100274C98 /* Model */,
+				1A564E2629040158213F6488 /* README.md */,
+				1A564D3C32CF9E46DBE61B40 /* SPExportHandler.h */,
+				1A564FB5EF0D58CAF4742CDC /* SPExportHandlerFactory.h */,
+				1A564A5C48CB60EE06176FFC /* SPExportUtilities.h */,
+				1A564C3BA7E8221F4055E97C /* SPExportUtilities.m */,
 			);
 			name = "Data Export";
 			sourceTree = "<group>";
@@ -3371,7 +3373,6 @@
 				11B55BFE1189E3B2009EF465 /* SPDatabaseAction.m in Sources */,
 				58A8A79111A036C000B95749 /* SPWindowController.m in Sources */,
 				5806B76411A991EC00813A88 /* SPDocumentController.m in Sources */,
-				173C837211AAD26E00B8B084 /* SPExportUtilities.m in Sources */,
 				50805B0D1BF2A068005F7A99 /* SPPopUpButtonCell.m in Sources */,
 				17A7773411C52D8E001E27B4 /* SPIndexesController.m in Sources */,
 				17F90E481210B42700274C98 /* SPExportFile.m in Sources */,
@@ -3468,6 +3469,7 @@
 				1A5644CF6BC979982C4E4CD7 /* SPExportInterfaceController.m in Sources */,
 				1A564CC09D5B96B7D6512B71 /* SPExportSettingsPersistence.m in Sources */,
 				1A56420982864F72B3EAE75F /* SPBaseExportHandler.m in Sources */,
+				1A56471D9AE5CD8A7CC97EE9 /* SPExportUtilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

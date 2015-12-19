@@ -1,5 +1,5 @@
 //
-//  SPExportHandlerInstance.h
+//  SPExportHandler.h
 //  sequel-pro
 //
 //  Created by Max Lohrmann on 24.11.15.
@@ -54,7 +54,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 @end
 
 
-@protocol SPExportHandlerInstance <NSObject>
+@protocol SPExportHandler <NSObject>
 
 @optional
 
@@ -98,7 +98,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 @end
 
-@protocol SPResultExportHandler <SPExportHandlerInstance>
+@protocol SPResultExportHandler <SPExportHandler>
 
 /**
  * Implement this method if you support SPFilteredExport and/or SPQueryExport!
@@ -110,7 +110,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 @end
 
-@protocol SPDatabaseExportHandler <SPExportHandlerInstance>
+@protocol SPDatabaseExportHandler <SPExportHandler>
 
 /**
  * Implement this method if you support SPDatabaseExport!
@@ -122,7 +122,7 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 @end
 
 
-@protocol SPTableExportHandler <SPExportHandlerInstance>
+@protocol SPTableExportHandler <SPExportHandler>
 
 @required
 /**

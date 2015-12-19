@@ -32,7 +32,7 @@
 #import "SPTableBaseExportHandler.h"
 #import "SPCSVExporterProtocol.h"
 
-@protocol SPExportHandlerInstance;
+@protocol SPExportHandler;
 @class SPCSVExportViewController;
 
 @interface SPCSVExportHandler : SPTableBaseExportHandler <SPResultExportHandler, SPTableExportHandler, SPCSVExporterProtocol>

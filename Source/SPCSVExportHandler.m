@@ -29,7 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPExportHandlerFactory.h"
-#import "SPExportHandlerInstance.h"
+#import "SPExportHandler.h"
 #import "SPCSVExportHandler.h"
 #import "SPExporterRegistry.h"
 #import "SPExportController.h"
@@ -44,7 +44,7 @@
 
 @end
 
-@interface SPCSVExportViewController : NSViewController {
+@interface SPCSVExportViewController : NSViewController <NSComboBoxDelegate> {
 
 @public
 	// CSV
@@ -58,6 +58,8 @@
 
 @end
 
+// we just need an unique value of type 'void *' to identify our KVO messages.
+// The memory address of this variable will do just that, the value is never used.
 static void *_KVOContext;
 
 #pragma mark -
@@ -86,6 +88,11 @@ static void *_KVOContext;
 		case SPTableTypeTable:
 		case SPTableTypeView:
 			return YES;
+		case SPTableTypeNone:
+		case SPTableTypeProc:
+		case SPTableTypeFunc:
+		case SPTableTypeEvent:
+			;
 	}
 	return NO;
 }
@@ -188,13 +195,13 @@ static void *_KVOContext;
 -(NSDictionary *)settings
 {
 	return @{
-			@"exportToMultipleFiles": @([[self controller] exportToMultipleFiles]),
-			@"CSVIncludeFieldNames":  IsOn(avc->exportCSVIncludeFieldNamesCheck),
-			@"CSVFieldsTerminated":   [avc->exportCSVFieldsTerminatedField stringValue],
-			@"CSVFieldsWrapped":      [avc->exportCSVFieldsWrappedField stringValue],
-			@"CSVLinesTerminated":    [avc->exportCSVLinesTerminatedField stringValue],
-			@"CSVFieldsEscaped":      [avc->exportCSVFieldsEscapedField stringValue],
-			@"CSVNULLValuesAsText":   [avc->exportCSVNULLValuesAsTextField stringValue]
+		@"exportToMultipleFiles": @([[self controller] exportToMultipleFiles]),
+		@"CSVIncludeFieldNames":  IsOn(avc->exportCSVIncludeFieldNamesCheck),
+		@"CSVFieldsTerminated":   [avc->exportCSVFieldsTerminatedField stringValue],
+		@"CSVFieldsWrapped":      [avc->exportCSVFieldsWrappedField stringValue],
+		@"CSVLinesTerminated":    [avc->exportCSVLinesTerminatedField stringValue],
+		@"CSVFieldsEscaped":      [avc->exportCSVFieldsEscapedField stringValue],
+		@"CSVNULLValuesAsText":   [avc->exportCSVNULLValuesAsTextField stringValue]
 	};
 }
 
@@ -255,15 +262,20 @@ static void *_KVOContext;
 - (void)didBecomeInactive
 {
 	[super didBecomeInactive];
-	
-	[[self controller] removeObserver:self
-	                       forKeyPath:@"exportToMultipleFiles"
-	                          context:&_KVOContext];
+
+	if([[self controller] respondsToSelector:@selector(removeObserver:forKeyPath:context:)]) {
+		[[self controller] removeObserver:self forKeyPath:@"exportToMultipleFiles" context:&_KVOContext];
+	}
+	// 10.6 backward compatibility
+	else {
+		[[self controller] removeObserver:self forKeyPath:@"exportToMultipleFiles"];
+	}
 }
 
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
+	// not our context -> not our resposibility
 	if(context != &_KVOContext) {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 		return;
@@ -354,14 +366,15 @@ static void *_KVOContext;
 
 @implementation SPCSVExportHandlerFactory
 
-+ (void)load {
++ (void)load
+{
 	[super load];
 	[[SPExporterRegistry sharedRegistry] registerExportHandler:[[[self alloc] init] autorelease]];
 }
 
-- (id<SPExportHandlerInstance>)makeInstanceWithController:(SPExportController *)ctr
+- (id<SPExportHandler>)makeInstanceWithController:(SPExportController *)ctr
 {
-	id<SPExportHandlerInstance> instance = [[SPCSVExportHandler alloc] initWithFactory:self];
+	SPCSVExportHandler *instance = [[SPCSVExportHandler alloc] initWithFactory:self];
 	[instance setController:ctr];
 	return [instance autorelease];
 }
@@ -421,7 +434,7 @@ static void *_KVOContext;
 - (void)comboBoxSelectionDidChange:(NSNotification *)notification
 {
 	if ([notification object] == exportCSVFieldsTerminatedField) {
-		[[self representedObject] setFileExtension:(([exportCSVFieldsTerminatedField indexOfSelectedItem] == 2) ? @"tsv" : @"csv")];
+		[(SPCSVExportHandler *)[self representedObject] setFileExtension:(([exportCSVFieldsTerminatedField indexOfSelectedItem] == 2) ? @"tsv" : @"csv")];
 	}
 }
 

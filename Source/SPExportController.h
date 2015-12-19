@@ -35,7 +35,7 @@
 @class SPTableData;
 @class SPMySQLConnection;
 @class SPServerSupport;
-@protocol SPExportHandlerInstance;
+@protocol SPExportHandler;
 @protocol SPExportSchemaObject;
 @class SPExportFile;
 
@@ -188,7 +188,7 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	NSDictionary *localizedTokenNames;
 
 	NSMutableDictionary *exportHandlers;
-	id<SPExportHandlerInstance> currentExportHandler;
+	id<SPExportHandler> currentExportHandler;
 	NSMutableArray *exportObjectList;
 	NSMutableArray *hiddenTabViewStorage;
 
@@ -203,7 +203,7 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 /**
  * The current export handler that is responsible for implementing a certain export format
  */
-@property (readonly, nonatomic, retain) id<SPExportHandlerInstance> currentExportHandler;
+@property (readonly, nonatomic, retain) id<SPExportHandler> currentExportHandler;
 
 /**
  * @property exportCancelled Export cancellation flag
