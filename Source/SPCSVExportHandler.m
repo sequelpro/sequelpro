@@ -77,6 +77,7 @@ static void *_KVOContext;
 		[viewController setRepresentedObject:self];
 		[self setAccessoryViewController:viewController];
 		[self setFileExtension:@"csv"];
+		writeInitialHeaderForCurrentFile = YES;
 	}
 	return self;
 }
@@ -238,8 +239,18 @@ static void *_KVOContext;
 
 - (void)updateValidForExport
 {
-	[super updateValidForExport];
-	if([self isValidForExport]) {
+	BOOL superValid;
+	if([[self controller] exportSource] == SPTableExport) {
+		//super is only useful for table exports
+		[super updateValidForExport];
+		superValid = [self isValidForExport];
+	}
+	else {
+		// for filtered and query exports the input is always valid if they can be selected
+		superValid = YES;
+	}
+	
+	if(superValid) {
 		// Check that we have all the required info before allowing the export
 		[self setIsValidForExport:(
 			([[avc->exportCSVFieldsTerminatedField stringValue] length]) &&
@@ -291,6 +302,15 @@ static void *_KVOContext;
 - (void)csvExportProcessWillBegin:(SPCSVExporter *)exporter
 {
 	[[self controller] setExportProgressIndeterminate:YES];
+	
+	if(writeInitialHeaderForCurrentFile) {
+		[self writeInitialCSVHeaderForExporter:exporter];
+		writeInitialHeaderForCurrentFile = NO;
+	}
+	// If we're only exporting to a single file then write a header for the next table
+	else {
+		[self writeContinuationCSVHeaderForExporter:exporter];
+	}
 
 	// Only update the progress text if this is a table export
 	if ([[self controller] exportSource] == SPTableExport) {
@@ -306,34 +326,12 @@ static void *_KVOContext;
 
 - (void)csvExportProcessComplete:(SPCSVExporter *)exporter
 {
-	NSArray *waiting = [[self controller] waitingExporters];
-
-	// If required add the next exporter to the operation queue
-	if (([waiting count] > 0) && ([[self controller] exportSource] == SPTableExport)) {
-
-		// If we're only exporting to a single file then write a header for the next table
-		if (![[self controller] exportToMultipleFiles]) {
-
-			// If we're exporting multiple tables to a single file then append some space and the next table's
-			// name, but only if there is at least 2 exportes left.
-			[[exporter exportOutputFile] writeData:[[NSString stringWithFormat:@"%@%@%@ %@%@%@",
-														   [exporter csvLineEndingString],
-														   [exporter csvLineEndingString],
-														   NSLocalizedString(@"Table", @"csv export table heading"),
-														   [(SPCSVExporter *)[waiting objectAtIndex:0] csvTableName],
-														   [exporter csvLineEndingString],
-														   [exporter csvLineEndingString]] dataUsingEncoding:[exporter exportOutputEncoding]]];
-		}
-		// Otherwise close the file handle of the exporter that just finished
-		// ensuring it's data is written to disk.
-		else {
-			[[exporter exportOutputFile] close];
-		}
-	}
-	// Otherwise if the exporter list is empty, close the progress sheet
-	else {
-		// Close the last exporter's file handle
+	// If this was the last exporter left OR
+	// we are exporting to multiple files
+	// => close the export file
+	if (![[[self controller] waitingExporters] count] || [[self controller] exportToMultipleFiles]) {
 		[[exporter exportOutputFile] close];
+		writeInitialHeaderForCurrentFile = YES; //for next file
 	}
 
 	[[self controller] exportEnded:exporter];
@@ -356,6 +354,38 @@ static void *_KVOContext;
 - (void)csvExportProcessProgressUpdated:(SPCSVExporter *)exporter
 {
 	[[self controller] setExportProgress:[exporter exportProgressValue]];
+}
+
+- (void)writeInitialCSVHeaderForExporter:(SPCSVExporter *)exporter
+{
+	// Write the file header and the first table name
+	[exporter writeString:[NSString stringWithFormat:@"%@: %@   %@: %@    %@: %@",
+	                                                 NSLocalizedString(@"Host", @"export header host label"),
+	                                                 [exporter databaseHost],
+	                                                 NSLocalizedString(@"Database", @"export header database label"),
+	                                                 [exporter databaseName],
+	                                                 NSLocalizedString(@"Generation Time", @"export header generation time label"),
+	                                                 [NSDate date]]];
+	
+	[self writeContinuationCSVHeaderForExporter:exporter];
+}
+
+- (void)writeContinuationCSVHeaderForExporter:(SPCSVExporter *)exporter
+{
+	// If we're exporting multiple tables to a single file then append some space and the next table's name
+	NSMutableString *header = [NSMutableString stringWithString:@"\n\n"];
+	
+	if([[exporter csvTableName] length]) {
+		[header appendFormat:@"%@ %@\n\n",
+		                     NSLocalizedString(@"Table", @"csv export table heading"),
+		                     [exporter csvTableName]];
+	}
+	
+	if(![@"\n" isEqualToString:[exporter csvLineEndingString]]) {
+		[header replaceOccurrencesOfString:@"\n" withString:[exporter csvLineEndingString] options:NSLiteralSearch range:NSMakeRange(0, [header length])];
+	}
+	
+	[exporter writeString:header];
 }
 
 @end

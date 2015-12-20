@@ -32,10 +32,6 @@
 #import "SPExportHandler.h"
 #import "SPBaseExportHandler.h"
 
-@class SPExportController;
-@protocol SPExportSchemaObject;
-@protocol SPExportHandlerFactory;
-
 /**
  * This class implements a basic export handler with support for selecting schema objects
  * via checkbox.

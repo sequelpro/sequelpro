@@ -73,6 +73,16 @@ static NSString *ContentColumnKey = @"content";
 	[self updateValidForExport];
 }
 
+- (BOOL)canExportSchemaObjectsOfType:(SPTableType)type
+{
+	// needs to be overridden by child class
+	return NO;
+}
+
+- (SPExportersAndFiles)allExportersForSchemaObjects:(NSArray *)schemaObjects
+{
+	@throw [NSException exceptionWithName:SPNotImplementedExceptionName reason:@"method must be overridden by child class!" userInfo:nil];
+}
 
 - (void)configureTableColumn:(NSTableColumn *)col
 {

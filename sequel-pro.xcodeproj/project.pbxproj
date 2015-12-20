@@ -2382,14 +2382,14 @@
 		1A56447A36F424BA7A4A5B3E /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				1A5645AD4988BA34EBD3E431 /* SPTableBaseExportHandler.h */,
-				1A564B35CCFD2B13AE906F5D /* SPTableBaseExportHandler.m */,
+				1A564D7100C4A988C50E1B72 /* SPBaseExportHandler_Protected.h */,
+				1A564D4808495EDFFB3354B9 /* SPBaseExportHandler.h */,
+				1A5642FA6E102B8E948FC9F8 /* SPBaseExportHandler.m */,
 				1A56456F1689003EB01A6B9A /* SPExporter.h */,
 				1A5645E62AB0D615F3C016AF /* SPExporter.m */,
-				1A5642FA6E102B8E948FC9F8 /* SPBaseExportHandler.m */,
-				1A564D4808495EDFFB3354B9 /* SPBaseExportHandler.h */,
-				1A564D7100C4A988C50E1B72 /* SPBaseExportHandler_Protected.h */,
 				1A56426888AA183EE5731B16 /* SPTableBaseExportHandler_Protected.h */,
+				1A5645AD4988BA34EBD3E431 /* SPTableBaseExportHandler.h */,
+				1A564B35CCFD2B13AE906F5D /* SPTableBaseExportHandler.m */,
 			);
 			name = Base;
 			sourceTree = "<group>";

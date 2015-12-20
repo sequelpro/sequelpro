@@ -31,6 +31,9 @@
 #import <Foundation/Foundation.h>
 #import "SPExportHandler.h"
 
+/**
+ * This is an abstract base class for export handlers.
+ */
 @class SPExportController;
 
 @interface SPBaseExportHandler : NSObject <SPExportHandler> {

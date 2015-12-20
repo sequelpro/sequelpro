@@ -48,6 +48,20 @@
  */
 - (BOOL)setExportSourceIfPossible:(SPExportSource)input;
 
+/**
+ * Tries to set the export handler to a given value or uses a fallback if not valid
+ * @param handler The name of the handler
+ * @return The name of the handler that was actually choosen
+ */
+- (NSString *)setExportHandlerIfPossible:(NSString *)handler;
+
+/**
+ * Reload the list of tables/views/...
+ * @param keepState The export handler will be asked to save/load the selection state before/after the refresh
+ * @param fromServer Does the cached list need to be refreshed by querying the server?
+ */
+- (void)_refreshTableListKeepingState:(BOOL)keepState fromServer:(BOOL)fromServer;
+
 @end
 
 #pragma mark -
@@ -90,5 +104,5 @@ static inline NSNumber *IsOn(id obj)
  */
 static inline void SetOnOff(NSNumber *ref,id obj)
 {
-	[obj setState:([ref boolValue] ? NSOnState : NSOffState)];
+	[(NSCell *)obj setState:([ref boolValue] ? NSOnState : NSOffState)];
 }

@@ -166,9 +166,9 @@
 		case SPTableTypeTable:
 		case SPTableTypeView:
 			return YES;
-		case SPTableTypeNone:;
-		case SPTableTypeProc:;
-		case SPTableTypeFunc:;
+		case SPTableTypeNone:
+		case SPTableTypeProc:
+		case SPTableTypeFunc:
 		case SPTableTypeEvent:
 			;
 	}
@@ -281,10 +281,19 @@
 	[avc toggleXMLOutputFormat:avc->exportXMLFormatPopUpButton];
 }
 
-- (void)updateValidForExport {
-	// let super check for selection
-	[super updateValidForExport];
-	if([self isValidForExport]) {
+- (void)updateValidForExport
+{
+	BOOL superIsValid;
+	if([[self controller] exportSource] == SPTableExport) {
+		// let super check for non-empty selection
+		[super updateValidForExport];
+		superIsValid = [self isValidForExport];
+	}
+	else {
+		superIsValid = YES;
+	}
+
+	if(superIsValid) {
 		BOOL enable = NO;
 		SPXMLExportFormat fmt = (SPXMLExportFormat)[avc->exportXMLFormatPopUpButton indexOfSelectedItem];
 		// we also need to make sure that at least one of structure, content is selected
@@ -334,7 +343,7 @@
 
 	[self writeXMLFooterForExporter:exporter];
 	[[exporter exportOutputFile] close];
-	writeHeaderForCurrentFile = YES;
+	writeHeaderForCurrentFile = YES; //for next file
 	
 skip_footer:
 	[[self controller] exportEnded:exporter];
@@ -375,7 +384,7 @@ skip_footer:
 	[header appendFormat:@"- %@\n- %@\n-\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
 	[header appendFormat:@"- %@: %@ (MySQL %@)\n", NSLocalizedString(@"Host", @"export header host label"), [[[self controller] tableDocumentInstance] host], [[[self controller] tableDocumentInstance] mySQLVersion]];
 	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Database", @"export header database label"), [[[self controller] tableDocumentInstance] database]];
-	[header appendFormat:@"- %@ Time: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
+	[header appendFormat:@"- %@: %@\n", NSLocalizedString(@"Generation Time", @"export header generation time label"), [NSDate date]];
 	[header appendString:@"-\n-->\n\n"];
 
 	if ([exporter xmlFormat] == SPXMLExportMySQLFormat) {

@@ -35,6 +35,8 @@
 @protocol SPExportHandler;
 @class SPCSVExportViewController;
 
-@interface SPCSVExportHandler : SPTableBaseExportHandler <SPResultExportHandler, SPTableExportHandler, SPCSVExporterProtocol>
+@interface SPCSVExportHandler : SPTableBaseExportHandler <SPResultExportHandler, SPTableExportHandler, SPCSVExporterProtocol> {
+	BOOL writeInitialHeaderForCurrentFile;
+}
 
 @end

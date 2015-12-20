@@ -56,6 +56,48 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 @protocol SPExportHandler <NSObject>
 
+/**
+ * The view controller that will be used to provide an UI for settings specific
+ * to your export handler
+ */
+- (NSViewController *)accessoryViewController;
+
+/**
+ * If the user were to start an export now, would it be possible to import the
+ * exported data with Sequel Pro at a later point?
+ * @attention must be KVO compliant
+ */
+@property(readonly, nonatomic) BOOL canBeImported;
+
+/**
+ * Could an export be started with the current selection and settings?
+ * @attention must be KVO compliant
+ */
+@property(readonly, nonatomic) BOOL isValidForExport;
+
+/**
+ * Serialize the current settings of your export handler so they can be persisted and restored later
+ * @return A dictionary or nil
+ */
+- (NSDictionary *)settings;
+
+/**
+ * Restore previously peristed settings
+ */
+- (void)applySettings:(NSDictionary *)settings;
+
+/**
+ * The default file extension for data exported with the current settings
+ * @attention must be KVO compliant
+ */
+@property(readonly, nonatomic, copy) NSString *fileExtension;
+
+/**
+ * A reference to the factory instance that originally created this object.
+ * @note This is marked assign because the factory should always outlive the export handler!
+ */
+@property(readonly, nonatomic, assign) id<SPExportHandlerFactory> factory;
+
 @optional
 
 /**
@@ -72,29 +114,6 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  *   - the export was started
  */
 - (void)didBecomeInactive;
-
-@required
-
-- (NSViewController *)accessoryViewController;
-
-// must be KVO compliant
-@property(readonly, nonatomic) BOOL canBeImported;
-
-// must be KVO compliant
-@property(readonly, nonatomic) BOOL isValidForExport;
-
-- (NSDictionary *)settings;
-- (void)applySettings:(NSDictionary *)settings;
-
-// must be KVO compliant
-@property(readonly, nonatomic, copy) NSString *fileExtension;
-
-/**
- * A reference to the factory instance that originally created this object.
- *
- * This is assign because the factory should always outlive the export handler!
- */
-@property(readonly, nonatomic, assign) id<SPExportHandlerFactory> factory;
 
 @end
 
@@ -124,7 +143,6 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
 
 @protocol SPTableExportHandler <SPExportHandler>
 
-@required
 /**
  * decides whether objects of this type will be displayed to the user at all
  *
@@ -140,27 +158,45 @@ extern NSString *SPExportHandlerSchemaObjectTypeSupportChangedNotification;
  */
 - (BOOL)canExportSchemaObjectsOfType:(SPTableType)type;
 
-// must be KVO compliant
-// An array of NSString *s.
-// The items must be unique. Every item is the internal identifier of an additional table column you need
-// to show for the users export options.
+/**
+ * An array of NSString *s.
+ * The items must be unique. Every item is the internal identifier of an additional table column you need
+ * to show for the users export options.
+ * @attention must be KVO compliant
+ */
 @property(readonly, nonatomic, copy) NSArray *tableColumns;
 
-// use this to configure the table columns you requested via the property above.
-// The identifier will already be set.
+/**
+ * use this to configure the table columns you requested via the property above.
+ * The identifier will already be set.
+ */
 - (void)configureTableColumn:(NSTableColumn *)col;
 
-// data source getter for your additional table columns
+/**
+ * data source getter for your additional table columns
+ */
 - (id)objectValueForTableColumn:(NSTableColumn *)aTableColumn schemaObject:(id<SPExportSchemaObject>)obj;
 
-// data source setter for your additional table columns
+/**
+ * data source setter for your additional table columns
+ */
 - (void)setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn schemaObject:(id<SPExportSchemaObject>)obj;
 
+/**
+ * Save schema object-specific settings for your export handler
+ * @param obj The schema object for which settings should be returned
+ * @return nil|NSString|NSNumber|NSArray|NSDictionary
+ */
 - (id)specificSettingsForSchemaObject:(id<SPExportSchemaObject>)obj;
 
-// re-apply specific settings for a certain schema object.
-// NOTE: It is YOUR responsibility to ensure that the object actually exists and that whatever you try to import is valid
-//       for its current type. (i.e. gracefully handle changes to the db structure between save and apply)
+/**
+ * re-apply specific settings for a certain schema object.
+ * @param settings An object returned by -specificSettingsForSchemaObject:
+ * @oaram obj      The corresponding schema object the settings should be applied to.
+ *
+ * NOTE: It is YOUR responsibility to ensure that the object actually exists and that whatever you try to import is valid
+ *       for its current type. (i.e. gracefully handle changes to the db structure between save and apply)
+ */
 - (void)applySpecificSettings:(id)settings forSchemaObject:(id<SPExportSchemaObject>)obj;
 
 /**

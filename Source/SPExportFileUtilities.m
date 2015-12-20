@@ -237,14 +237,8 @@ SPExportErrorChoice;
 				
 				if ([file createExportFileHandle:YES] == SPExportFileHandleCreated) {
 					[file setCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
-
-//					if ([file exportFileNeedsCSVHeader]) {
-//						[self writeCSVHeaderToExportFile:file];
-//					}
-//					else if ([file exportFileNeedsXMLHeader]) {
-//						[self writeXMLHeaderToExportFile:file];
-//					}
 				}
+				//TODO doesn't handle failure during file creation
 			}
 		}
 		

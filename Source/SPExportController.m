@@ -70,7 +70,6 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender;
 - (IBAction)exportFromMenuItem:(id)sender;
 
-- (void)_refreshTableListKeepingState:(BOOL)keepState fromServer:(BOOL)fromServer;
 - (void)_checkForDatabaseChanges;
 - (void)_displayExportTypeOptions:(BOOL)display;
 
@@ -219,8 +218,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
 	}
 	
-	// initially popuplate the tables list from the main view
-	[self _refreshTableListKeepingState:NO fromServer:NO];
+	[self _updateVisibleTabsForValidHandlers];
 
 	// overwrite defaults with user settings from last export
 	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:nil];
@@ -230,7 +228,6 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
 
-	[self _updateVisibleTabsForValidHandlers];
 	// Select the correct tab.
 	if(format) {
 		NSAssert(([exportHandlers objectForKey:format] != nil),@"<%@> is not a known export handler!",format);
@@ -242,12 +239,11 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 	}
 
 	// Ensure interface validation
-	[self _switchTab];
 	[self _updateExportAdvancedOptionsLabel];
 	[self setExportSourceIfPossible:source]; // will also update the tokens and filename preview
 
 	// If tables were supplied, select them
-	if(exportTables && source == SPTableExport && [[self currentExportHandler] respondsToSelector:@selector(setIncludedSchemaObjects:)]) {
+	if(exportTables && [self exportSource] == SPTableExport && [[self currentExportHandler] respondsToSelector:@selector(setIncludedSchemaObjects:)]) {
 		[(id<SPTableExportHandler>)[self currentExportHandler] setIncludedSchemaObjects:exportTables];
 		[exportTableList reloadData];
 	}
@@ -264,6 +260,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		actualHandler = [[exportTypeTabBar selectedTabViewItem] identifier];
 	}
 	[exportTypeTabBar selectTabViewItemWithIdentifier:actualHandler];
+	[self _switchTab];
 	return actualHandler;
 }
 
@@ -539,9 +536,10 @@ set_input:
 
 	[exportFilePerTableCheck setHidden:(!isSelectedTables) || (![[[self currentExportHandler] factory] supportsExportToMultipleFiles])];
 
-
-	[self _rebuildTableGeometry];
-	[self _evaluateShownObjectTypes];
+	[self changeTableListWithSavedState:^{
+		[self _rebuildTableGeometry];
+		[self _evaluateShownObjectTypes];
+	}];
 
 	[self updateAvailableExportFilenameTokens]; // will also update the filename itself
 

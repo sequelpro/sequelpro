@@ -354,9 +354,10 @@
 	if((o = [dict objectForKey:@"exportPath"])) [exportPathField setStringValue:o];
 	
 	// check that we actually know that export handler or abort
+	BOOL peristedHandlerIsValid = NO;
 	if((o = [dict objectForKey:@"exportType"]) && [[SPExporterRegistry sharedRegistry] handlerNamed:o]) {
-		[exportTypeTabBar selectTabViewItemWithIdentifier:o];
-		[self _switchTab]; //changes the currentExportHandler
+		NSString *actual = [self setExportHandlerIfPossible:o];
+		if([actual isEqualToString:o]) peristedHandlerIsValid = YES;
 	}
 	else {
 		if(err) {
@@ -377,24 +378,36 @@
 	if((o = [dict objectForKey:@"exportSource"]) && [[self class] copyExportSourceForDescription:o to:&es]) {
 		[self setExportSourceIfPossible:es]; //try to set it. might fail e.g. if the settings were saved with "query result" but right now no custom query result exists
 	}
+	else if(exportSource == SPTableExport) {
+		// setExportSourceIfPossible: would update the schema objects to which we apply specific settings below.
+		// if it is not called we have to do that
+		[self _refreshTableListKeepingState:NO fromServer:NO];
+	}
 
-	// set exporter specific settings
-	NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySettings:)],@"export handler %@ is missing mandatory method applySettings:",[self currentExportHandler]);
-	[[self currentExportHandler] applySettings:[dict objectForKey:@"settings"]];
-
-	// load schema object settings
-	if(exportSource == SPTableExport) {
-		NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySpecificSettings:forSchemaObject:)],@"export handler %@ is missing mandatory method applySpecificSettings:forSchemaObject: for table export!",[self currentExportHandler]);
-		NSDictionary *perObjectSettings = [dict objectForKey:@"schemaObjects"];
+	// the handler we have settings for might not be valid right now. E.g.
+	//  User does SQL export (-> settings are persisted for SQL),
+	//  Closes connection, opens a new one,
+	//  Without having a DB selected, does a custom query and wants to export the results
+	//  => SQL export is not valid, no point in trying to apply settings
+	if(peristedHandlerIsValid) {
+		// set exporter specific settings
+		NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySettings:)],@"export handler %@ is missing mandatory method applySettings:",[self currentExportHandler]);
+		[[self currentExportHandler] applySettings:[dict objectForKey:@"settings"]];
 		
-		for (NSString *table in [perObjectSettings allKeys]) {
-			id settings = [perObjectSettings objectForKey:table];
-			//we have to find the current object to apply the settings onto
-			id<SPExportSchemaObject> obj = [self schemaObjectNamed:table];
-			if (obj) [(id<SPTableExportHandler>)[self currentExportHandler] applySpecificSettings:settings forSchemaObject:obj];
+		// load schema object settings
+		if(exportSource == SPTableExport) {
+			NSAssert([[self currentExportHandler] respondsToSelector:@selector(applySpecificSettings:forSchemaObject:)],@"export handler %@ is missing mandatory method applySpecificSettings:forSchemaObject: for table export!",[self currentExportHandler]);
+			NSDictionary *perObjectSettings = [dict objectForKey:@"schemaObjects"];
+			
+			for (NSString *table in [perObjectSettings allKeys]) {
+				id settings = [perObjectSettings objectForKey:table];
+				//we have to find the current object to apply the settings onto
+				id<SPExportSchemaObject> obj = [self schemaObjectNamed:table];
+				if (obj) [(id<SPTableExportHandler>)[self currentExportHandler] applySpecificSettings:settings forSchemaObject:obj];
+			}
+			
+			[exportTableList reloadData];
 		}
-		
-		[exportTableList reloadData];
 	}
 	
 	if((o = [dict objectForKey:@"lowMemoryStreaming"])) [exportProcessLowMemoryButton setState:([o boolValue] ? NSOnState : NSOffState)];

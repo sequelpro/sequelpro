@@ -66,7 +66,7 @@
 	}
 
 	// all other values are provided by the export handler
-	return [[self currentExportHandler] objectValueForTableColumn:tableColumn schemaObject:item];
+	return [(id<SPTableExportHandler>)[self currentExportHandler] objectValueForTableColumn:tableColumn schemaObject:item];
 }
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
@@ -77,7 +77,7 @@
 	}
 	
 	_SPExportListItem *item = NSArrayObjectAtIndex(exportObjectList,SPIntS2U(rowIndex));
-	[[self currentExportHandler] setObjectValue:anObject forTableColumn:tableColumn schemaObject:item];
+	[(id<SPTableExportHandler>)[self currentExportHandler] setObjectValue:anObject forTableColumn:tableColumn schemaObject:item];
 	// changing the selection most likely will change the availability of the "table" token
 	[self updateAvailableExportFilenameTokens];
 }

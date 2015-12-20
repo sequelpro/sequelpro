@@ -112,52 +112,6 @@
 	{
 		return;
 	}
-					
-	// Inform the delegate that the export process is about to begin
-	[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBegin:) withObject:self waitUntilDone:NO];
-				
-	// Mark the process as running
-	[self setExportProcessIsRunning:YES];
-
-	[self writeCSVHeaderToExportFile];
-	
-	lastProgressValue = 0;
-
-	// Before the streaming query is started, build an array of numeric columns if a table
-	// is being exported
-	if ([self csvTableName] && (![self csvDataArray])) {
-		NSDictionary *tableDetails = nil;
-		
-		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
-		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
-		[queryResult setReturnDataAsStrings:YES];
-		
-		if ([queryResult numberOfRows]) {
-			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
-			
-			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
-		}
-		
-		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
-		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
-		{
-			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
-			
-			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:
-				([tableColumnTypeGrouping isEqualToString:@"bit"]
-					|| [tableColumnTypeGrouping isEqualToString:@"integer"]
-					|| [tableColumnTypeGrouping isEqualToString:@"float"])
-			]]; 
-		}
-		
-		[tableDetails release];
-	}
-
-	// Make a streaming request for the data if the data array isn't set
-	if ((![self csvDataArray]) && [self csvTableName]) {
-		totalRows		= [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] integerValue];
-		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
-	}
 	
 	// Detect and restore special characters being used as terminating or line end strings
 	NSMutableString *tempSeparatorString = [NSMutableString stringWithString:[self csvFieldSeparatorString]];
@@ -196,6 +150,50 @@
 	
 	// Set the new line ending string
 	[self setCsvLineEndingString:[NSString stringWithString:tempLineEndString]];
+					
+	// Inform the delegate that the export process is about to begin
+	[delegate performSelectorOnMainThread:@selector(csvExportProcessWillBegin:) withObject:self waitUntilDone:YES];
+				
+	// Mark the process as running
+	[self setExportProcessIsRunning:YES];
+	
+	lastProgressValue = 0;
+
+	// Before the streaming query is started, build an array of numeric columns if a table
+	// is being exported
+	if ([self csvTableName] && (![self csvDataArray])) {
+		NSDictionary *tableDetails = nil;
+		
+		// Determine whether the supplied table is actually a table or a view via the CREATE TABLE command, and get the table details
+		SPMySQLResult *queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [[self csvTableName] backtickQuotedString]]];
+		[queryResult setReturnDataAsStrings:YES];
+		
+		if ([queryResult numberOfRows]) {
+			id object = [[queryResult getRowAsDictionary] objectForKey:@"Create View"];
+			
+			tableDetails = [[NSDictionary alloc] initWithDictionary:(object) ? [[self csvTableData] informationForView:[self csvTableName]] : [[self csvTableData] informationForTable:[self csvTableName]]];
+		}
+		
+		// Retrieve the table details via the data class, and use it to build an array containing column numeric status
+		for (NSDictionary *column in [tableDetails objectForKey:@"columns"])
+		{
+			NSString *tableColumnTypeGrouping = [column objectForKey:@"typegrouping"];
+			
+			[tableColumnNumericStatus addObject:[NSNumber numberWithBool:
+				([tableColumnTypeGrouping isEqualToString:@"bit"]
+					|| [tableColumnTypeGrouping isEqualToString:@"integer"]
+					|| [tableColumnTypeGrouping isEqualToString:@"float"])
+			]]; 
+		}
+		
+		[tableDetails release];
+	}
+
+	// Make a streaming request for the data if the data array isn't set
+	if ((![self csvDataArray]) && [self csvTableName]) {
+		totalRows		= [[connection getFirstFieldFromQuery:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [[self csvTableName] backtickQuotedString]]] integerValue];
+		streamingResult = [connection streamingQueryString:[NSString stringWithFormat:@"SELECT * FROM %@", [[self csvTableName] backtickQuotedString]] useLowMemoryBlockingStreaming:[self exportUsingLowMemoryBlockingStreaming]];
+	}
 	
 	// Set up escaped versions of strings for substitution within the loop
 	escapedEscapeString         = [[self csvEscapeString] stringByAppendingString:[self csvEscapeString]];
@@ -400,48 +398,9 @@
 	[self setExportProcessIsRunning:NO];
 	
 	// Inform the delegate that the export process is complete
-	[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:NO];
+	[delegate performSelectorOnMainThread:@selector(csvExportProcessComplete:) withObject:self waitUntilDone:YES];
 	
 	[csvExportPool release];
-}
-
-/**
- * Writes the CSV file header to the supplied export file.
- *
- * @param file The export file to write the header to.
- */
-- (void)writeCSVHeaderToExportFile
-{
-	NSMutableString *lineEnding = [NSMutableString stringWithString:[self csvLineEndingString]];
-
-	// Escape tabs, line endings and carriage returns
-	[lineEnding replaceOccurrencesOfString:@"\\t" withString:@"\t"
-	                               options:NSLiteralSearch
-	                                 range:NSMakeRange(0, [lineEnding length])];
-
-
-	[lineEnding replaceOccurrencesOfString:@"\\n" withString:@"\n"
-	                               options:NSLiteralSearch
-	                                 range:NSMakeRange(0, [lineEnding length])];
-
-	[lineEnding replaceOccurrencesOfString:@"\\r" withString:@"\r"
-	                               options:NSLiteralSearch
-	                                 range:NSMakeRange(0, [lineEnding length])];
-
-	// Write the file header and the first table name
-	[self writeString:[NSString stringWithFormat:@"%@: %@   %@: %@    %@: %@%@%@%@ %@%@%@",
-					NSLocalizedString(@"Host", @"export header host label"),
-					                                   [self databaseHost],
-					NSLocalizedString(@"Database", @"export header database label"),
-					                                   [self databaseName],
-					NSLocalizedString(@"Generation Time", @"export header generation time label"),
-					                                   [NSDate date],
-					                                   lineEnding,
-					                                   lineEnding,
-					NSLocalizedString(@"Table", @"csv export table heading"),
-					                                   csvTableName,
-					                                   lineEnding,
-					                                   lineEnding]];
 }
 
 #pragma mark -
