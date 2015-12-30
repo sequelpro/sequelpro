@@ -39,6 +39,7 @@
                 <outlet property="exportTablelistScrollView" destination="1087" id="1275"/>
                 <outlet property="exportTypeTabBar" destination="573" id="1257"/>
                 <outlet property="exporterView" destination="1086" id="1255"/>
+                <outlet property="includeDefaultExtensionPopUpButton" destination="HZZ-fj-qcN" id="Or5-sI-AFR"/>
                 <outlet property="window" destination="1" id="390"/>
             </connections>
         </customObject>
@@ -459,18 +460,18 @@ Gw
                     </connections>
                 </button>
                 <customView hidden="YES" id="1102">
-                    <rect key="frame" x="0.0" y="207" width="730" height="108"/>
+                    <rect key="frame" x="0.0" y="187" width="730" height="128"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <subviews>
                         <box autoresizesSubviews="NO" title="Box" borderType="line" titlePosition="noTitle" id="1109">
-                            <rect key="frame" x="-11" y="-4" width="748" height="114"/>
+                            <rect key="frame" x="-11" y="-4" width="748" height="134"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                             <view key="contentView" id="vui-ZR-K9X">
-                                <rect key="frame" x="1" y="1" width="746" height="112"/>
+                                <rect key="frame" x="1" y="1" width="746" height="132"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <textField verticalHuggingPriority="750" id="1110" customClass="NSTokenField">
-                                        <rect key="frame" x="29" y="59" width="699" height="19"/>
+                                        <rect key="frame" x="29" y="79" width="699" height="19"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="1116">
                                             <font key="font" metaFont="smallSystem"/>
@@ -482,7 +483,7 @@ Gw
                                         </connections>
                                     </textField>
                                     <textField verticalHuggingPriority="750" id="1112">
-                                        <rect key="frame" x="29" y="86" width="702" height="14"/>
+                                        <rect key="frame" x="29" y="106" width="702" height="14"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Type or drag the tokens to customize the filename format." id="1113">
                                             <font key="font" metaFont="smallSystem"/>
@@ -491,14 +492,14 @@ Gw
                                         </textFieldCell>
                                     </textField>
                                     <box autoresizesSubviews="NO" title="Box" borderType="line" titlePosition="noTitle" id="1111">
-                                        <rect key="frame" x="26" y="10" width="705" height="40"/>
+                                        <rect key="frame" x="26" y="30" width="705" height="40"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <view key="contentView" id="4aI-1I-j0w">
                                             <rect key="frame" x="1" y="1" width="703" height="38"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <textField verticalHuggingPriority="750" id="1114" customClass="NSTokenField">
-                                                    <rect key="frame" x="21" y="4" width="667" height="22"/>
+                                                    <rect key="frame" x="18" y="8" width="667" height="22"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                     <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" alignment="left" id="1115">
                                                         <font key="font" metaFont="smallSystem"/>
@@ -514,6 +515,33 @@ Gw
                                         <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                         <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                     </box>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="UMF-o4-c1M">
+                                        <rect key="frame" x="29" y="12" width="138" height="14"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Include Default Extension" id="K3s-ih-uV9">
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                    <popUpButton verticalHuggingPriority="750" id="HZZ-fj-qcN">
+                                        <rect key="frame" x="170" y="7" width="105" height="22"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <popUpButtonCell key="cell" type="push" title="Automatically" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="TWT-tM-0SN" id="HpJ-8W-1ZP">
+                                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="smallSystem"/>
+                                            <menu key="menu" id="xKr-jU-uPJ">
+                                                <items>
+                                                    <menuItem title="Automatically" state="on" id="TWT-tM-0SN"/>
+                                                    <menuItem title="Always" tag="1" id="RRt-fB-D25"/>
+                                                    <menuItem title="Never" tag="2" id="WYw-xP-zOP"/>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                        <connections>
+                                            <action selector="changeDefaultExtensionInclusion:" target="-2" id="kQ8-gu-r2l"/>
+                                        </connections>
+                                    </popUpButton>
                                 </subviews>
                             </view>
                             <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
