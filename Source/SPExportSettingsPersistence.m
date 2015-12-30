@@ -96,9 +96,9 @@
 + (NSString *)describeIncludeDefaultExtension:(SPIncludeDefaultExtension)ide
 {
 	switch (ide) {
-			NAMEOF(SPAutomaticallyInclude);
-			NAMEOF(SPAlwaysInclude);
-			NAMEOF(SPNeverInclude);
+		NAMEOF(SPAutomaticallyInclude);
+		NAMEOF(SPAlwaysInclude);
+		NAMEOF(SPNeverInclude);
 	}
 	return nil;
 }
