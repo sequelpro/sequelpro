@@ -55,13 +55,26 @@
 		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectOrNilAtIndex:1]];
 		
 		
-		if (![[self customFilenamePathExtension] length] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
+		if ([self shouldAppendDefaultExtension] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
 	}
 	else {
 		filename = [self generateDefaultExportFilename];
 	} 
 	
 	[exportCustomFilenameViewLabelButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Customize Filename (%@)", @"customize file name label"), filename]];
+}
+
+- (BOOL)shouldAppendDefaultExtension
+{
+	switch ([includeDefaultExtensionPopUpButton selectedTag]) {
+		case SPAutomaticallyInclude:
+			return ![[self customFilenamePathExtension] length];
+		case SPAlwaysInclude:
+			return true;
+		case SPNeverInclude:
+		default:
+			return false;
+	}
 }
 
 - (NSString *)customFilenamePathExtension

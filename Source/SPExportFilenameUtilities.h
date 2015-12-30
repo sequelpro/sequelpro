@@ -48,5 +48,6 @@
 - (NSString *)customFilenamePathExtension;
 - (BOOL)isTableTokenAllowed;
 - (BOOL)isTableTokenIncludedForCustomFilename;
+- (BOOL)shouldAppendDefaultExtension;
 
 @end
