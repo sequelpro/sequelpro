@@ -101,6 +101,7 @@ extern NSString *SPExportControllerSchemaObjectsChangedNotification;
 	IBOutlet NSView *exportCustomFilenameView;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
 	IBOutlet NSTokenField *exportCustomFilenameTokenPool;
+    IBOutlet NSPopUpButton *includeDefaultExtensionPopUpButton;
 	
 	IBOutlet NSBox *accessoryViewContainer;
 

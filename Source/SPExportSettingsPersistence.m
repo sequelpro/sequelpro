@@ -93,6 +93,24 @@
 	return NO;
 }
 
++ (NSString *)describeIncludeDefaultExtension:(SPIncludeDefaultExtension)ide
+{
+	switch (ide) {
+			NAMEOF(SPAutomaticallyInclude);
+			NAMEOF(SPAlwaysInclude);
+			NAMEOF(SPNeverInclude);
+	}
+	return nil;
+}
+
++ (BOOL)copyIncludeDefaultExtensionForDescription:(NSString *)ided to:(SPIncludeDefaultExtension *)dst
+{
+	VALUEOF(SPAutomaticallyInclude, ided, dst);
+	VALUEOF(SPAlwaysInclude,        ided, dst);
+	VALUEOF(SPNeverInclude,         ided, dst);
+	return NO;
+}
+
 
 
 #undef NAMEOF
@@ -277,6 +295,8 @@
 		[root setObject:[self currentCustomFilenameAsArray] forKey:@"customFilename"];
 	}
 
+	[root setObject:[[self class] describeIncludeDefaultExtension:(SPIncludeDefaultExtension)[includeDefaultExtensionPopUpButton selectedTag]] forKey:@"includeDefaultExtension"];
+	
 	NSAssert([[self currentExportHandler] respondsToSelector:@selector(settings)],@"export handler %@ is missing mandatory method settings!",[self currentExportHandler]);
 	[root setObject:[[self currentExportHandler] settings] forKey:@"settings"];
 	
@@ -417,6 +437,9 @@
 
 	// might have changed
 	[self _updateExportAdvancedOptionsLabel];
+	
+	SPIncludeDefaultExtension ide;
+	if((o = [dict objectForKey:@"includeDefaultExtension"]) && [[self class] copyIncludeDefaultExtensionForDescription:o to:&ide]) [includeDefaultExtensionPopUpButton selectItemWithTag:ide];
 
 	// token pool is only valid once the schema object selection is done
 	[self updateAvailableExportFilenameTokens];

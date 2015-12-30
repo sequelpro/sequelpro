@@ -407,7 +407,7 @@ static void *_KVOContext; // we only need this to get a unique number ( = the ad
 		
 		// the logic for finding the extension is a bit more difficult because the pattern can include e.g. dates with "."
 		NSString *extension = [self currentDefaultExportFileExtension];
-		if (![[self customFilenamePathExtension] length] && [extension length] > 0) [exportFilename setString:[exportFilename stringByAppendingPathExtension:extension]];
+		if ([self shouldAppendDefaultExtension] && [extension length] > 0) [exportFilename setString:[exportFilename stringByAppendingPathExtension:extension]];
 	}
 	else {
 		[exportFilename setString:[self generateDefaultExportFilename]];
@@ -737,6 +737,14 @@ set_input:
  * Updates the default filename extenstion based on the selected output compression format.
  */
 - (IBAction)changeExportCompressionFormat:(id)sender
+{
+	[self updateDisplayedExportFilename];
+}
+
+/**
+ * Updates the custom filename based when the option to include default extension changes.
+ */
+- (IBAction)changeDefaultExtensionInclusion:(id)sender
 {
 	[self updateDisplayedExportFilename];
 }

@@ -72,6 +72,16 @@ typedef NS_ENUM(NSUInteger, SPExportSource) {
 	SPDatabaseExport = 3
 };
 
+// Export include extension constants
+typedef NS_ENUM(NSUInteger, SPIncludeDefaultExtension) {
+	// Automatically detect if the extensions should be included.
+	SPAutomaticallyInclude = 0,
+	// Always include the extension.
+	SPAlwaysInclude        = 1,
+	// Never include the extension.
+	SPNeverInclude         = 2
+};
+
 // SQL export INSERT statment divider constants
 typedef NS_ENUM(NSUInteger , SPSQLExportInsertDivider) {
 	SPSQLInsertEveryNDataBytes = 0,
