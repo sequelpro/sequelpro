@@ -128,9 +128,6 @@ cp -R "${SRCROOT}/SharedSupport/Default Themes" "${SHARED_SUPPORT_DIR}"
 
 # Add a SpotLight comment (can't use applescript from a continuous integration server, so we manually set the binaryplist with xattr - but if this fails fall back to applescript)
 xattr -wx com.apple.metadata:kMDItemFinderComment "62 70 6C 69 73 74 30 30 5F 10 22 4D 79 53 51 4C 20 64 61 74 61 62 61 73 65 20 70 61 6E 63 61 6B 65 73 20 77 69 74 68 20 73 79 72 75 70 08 00 00 00 00 00 00 01 01 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 2D" "${BUILD_PRODUCT}"
-if [ $? -ne 0 ] ; then
-	osascript -e "tell application \"Finder\" to set comment of (alias (POSIX file \"${BUILD_PRODUCT}\")) to \"MySQL database pancakes with syrup\""
-fi
 
 
 FRAMEWORKS_LIST="/tmp/sp.frameworks.$$"
