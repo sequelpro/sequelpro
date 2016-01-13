@@ -1149,7 +1149,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
 
-		if(![dbName isNSNull]) {
+		// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
+		if(dbName && ![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
 				if (selectedDatabase) SPClear(selectedDatabase);
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
