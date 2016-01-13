@@ -465,8 +465,8 @@ asm(".desc ___crashreporter_info__, 0x10");
 	// If the connection was cancelled, clean up and don't continue
 	if (userTriggeredDisconnect) {
 		mysql_close(mySQLConnection);
-		[self _unlockConnection];
 		mySQLConnection = NULL;
+		[self _unlockConnection];
 		return NO;
 	}
 
