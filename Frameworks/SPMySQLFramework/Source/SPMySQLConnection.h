@@ -128,6 +128,8 @@
 	BOOL retryQueriesOnConnectionFailure;
 	
 	SPMySQLClientFlags clientFlags;
+	
+	NSString *_debugLastConnectedEvent;
 }
 
 #pragma mark -

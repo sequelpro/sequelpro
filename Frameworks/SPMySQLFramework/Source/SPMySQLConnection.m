@@ -199,6 +199,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		// while running them
 		retryQueriesOnConnectionFailure = YES;
 
+		_debugLastConnectedEvent = nil;
+
 		// Start the ping keepalive timer
 		keepAliveTimer = [[SPMySQLKeepAliveTimer alloc] initWithInterval:10 target:self selector:@selector(_keepAlive)];
 		
@@ -252,6 +254,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	if (queryErrorMessage) [queryErrorMessage release], queryErrorMessage = nil;
 	if (querySqlstate) [querySqlstate release], querySqlstate = nil;
 	[delegateDecisionLock release];
+
+	[_debugLastConnectedEvent release];
 
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
@@ -428,6 +432,14 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 const char *__crashreporter_info__ = NULL;
 asm(".desc ___crashreporter_info__, 0x10");
 
+static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
+{
+	uint64_t elapsedTime_t = mach_absolute_time() - comparisonTime;
+	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
+
+	return (UnsignedWideToUInt64(elapsedTime) / 1000ULL);
+}
+
 @implementation SPMySQLConnection (PrivateAPI)
 
 /**
@@ -438,8 +450,11 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
-		asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state);
-		__builtin_trap();
+		@synchronized (self) {
+			uint64_t diff = _elapsedMicroSecondsSinceAbsoluteTime(initialConnectTime);
+			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lluµs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
+			__builtin_trap();
+		}
 		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state];
 		return NO;
 	}
@@ -472,7 +487,13 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// Successfully connected - record connected state and reset tracking variables
 	state = SPMySQLConnected;
-	initialConnectTime = mach_absolute_time();
+
+	@synchronized (self) {
+		initialConnectTime = mach_absolute_time();
+		[_debugLastConnectedEvent release];
+		_debugLastConnectedEvent = [[NSString alloc] initWithFormat:@"thread=%@ stack=%@",[NSThread currentThread],[NSThread callStackSymbols]];
+	}
+
 	mysqlConnectionThreadId = mySQLConnection->thread_id;
 	lastConnectionUsedTime = initialConnectTime;
 
