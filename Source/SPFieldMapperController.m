@@ -788,7 +788,10 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 		if([importFieldNamesHeaderSwitch state] == NSOnState) {
 			headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
 			for (i = 0; i < numberOfImportColumns; i++) {
-				[fieldMappingTableColumnNames addObject:NSArrayObjectAtIndex(headerRow, i)];
+				id headerCol = NSArrayObjectAtIndex(headerRow, i);
+				// we don't want a NSNull in the column headers to mess stuff up (issue #2375)
+				if([headerCol isNSNull]) headerCol = [prefs stringForKey:SPNullValue];
+				[fieldMappingTableColumnNames addObject:headerCol];
 			}
 		} else {
 			for (i = 1; i <= numberOfImportColumns; i++) {
@@ -876,11 +879,13 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	
 	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
 	BOOL importFirstRowAsFieldNames = ([importFieldNamesHeaderSwitch state] == NSOnState);
-	NSString *headerName;
 
+	NSArray *headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
 	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
 		if (importFirstRowAsFieldNames) {
-			headerName = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, 0), columnCounter);
+			id headerName = NSArrayObjectAtIndex(headerRow, columnCounter);
+			// we don't want a NSNull in the column headers to mess stuff up (issue #2375)
+			if([headerName isNSNull]) headerName = [prefs stringForKey:SPNullValue];
 			[fieldMappingTableColumnNames addObject:headerName];
 		} else {
 			[fieldMappingTableColumnNames addObject:[NSString stringWithFormat:@"col_%ld", (long)(columnCounter + 1)]];
@@ -1476,9 +1481,9 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	if (!fieldMappingArray) {
 		fieldMappingArray = [[NSMutableArray alloc] init];
+		NSArray *currentRowValues = NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow);
 		for (i = 0; i < [fieldMappingTableColumnNames count]; i++) {
-			if (i < [NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow) count]
-					&& ![NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), i) isNSNull]) {
+			if (i < [currentRowValues count]) {
 				value = i;
 			} else {
 				value = 0;
@@ -1572,7 +1577,9 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 			return;
 		}
 		for (NSUInteger i = 0; i < [fieldMappingTableColumnNames count]; i++) {
-			if (![[fieldMappingTableColumnNames objectAtIndex:i] length] && [doImportKey isEqualToNumber:[fieldMappingOperatorArray objectAtIndex:i]]) {
+			NSString *colName = [fieldMappingTableColumnNames objectAtIndex:i];
+			BOOL shouldImport = [doImportKey isEqualToNumber:[fieldMappingOperatorArray objectAtIndex:i]];
+			if (shouldImport && ![colName length]) {
 				[importButton setEnabled:NO];
 				return;
 			}
