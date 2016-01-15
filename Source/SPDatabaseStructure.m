@@ -288,6 +288,7 @@
 		if(![aTableName isKindOfClass:[NSString class]] || ![aTableName length]) continue;
 
 		// check the connection.
+		// also NO if thread is cancelled which is fine, too (same consequence).
 		if(![self _checkConnection]) {
 			goto cleanup_thread_and_pool;
 		}
@@ -345,6 +346,7 @@
 	// If the MySQL version is higher than 5, also retrieve function/procedure details via the information_schema table
 	if ([mySQLConnection serverMajorVersion] >= 5) {
 		// check the connection.
+		// also NO if thread is cancelled which is fine, too (same consequence).
 		if(![self _checkConnection]) {
 			goto cleanup_thread_and_pool;
 		}
@@ -536,6 +538,9 @@ cleanup_thread_and_pool:
  *
  * **Unsafe** means this function holds no lock on connectionCheckLock.
  * You MUST obtain that lock before calling this method!
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)_ensureConnectionUnsafe
 {
@@ -543,6 +548,9 @@ cleanup_thread_and_pool:
 
 	// Check the connection state
 	if ([mySQLConnection isConnected] && [mySQLConnection checkConnection]) return YES;
+	
+	// the result of checkConnection may be meaningless if the thread was cancelled during execution. (issue #2353)
+	if([[NSThread currentThread] isCancelled]) return NO;
 
 	// The connection isn't connected.  Check the parent connection state, and if that
 	// also isn't connected, return.
@@ -630,6 +638,8 @@ cleanup_thread_and_pool:
 /**
  * @return YES if the connection is available
  *         NO  if either the connection failed, or this thread was cancelled
+ *
+ * You MUST check the thread's isCancelled flag before doing other stuff on negative return!
  */
 - (BOOL)_checkConnection
 {
@@ -659,7 +669,7 @@ cleanup_thread_and_pool:
 	
 	if (!cancelThread) {
 		// Check connection state before use
-		connected = [self _ensureConnectionUnsafe];
+		connected = [self _ensureConnectionUnsafe]; // also does a thread canellation check
 	}
 	
 	pthread_mutex_unlock(&connectionCheckLock);
