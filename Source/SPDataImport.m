@@ -322,10 +322,40 @@
 		}
 
 		if (importFileName == nil) return;
-
-		// Begin the import process
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:importFileName];
+		
+		// Check to see if current connection has existing tables, if so warn
+		if(tablesListInstance != nil){
+			SPTablesList *tablesList = tablesListInstance;
+			if(tablesList.tables.count > 1){
+				SPBeginAlertSheet(NSLocalizedString(@"The current database already has existing tables, importing may overwrite data. Are you sure you want to continue?", @"title of warning when trying to import data when tables already exist"),
+								  NSLocalizedString(@"Yes, continue anyway", @"Yes, continue anyway"),	// Main button
+								  NSLocalizedString(@"Cancel import", @"Cancel import"),	// Alternate button
+								  nil,	// Other button
+								  [tableDocumentInstance parentWindow],	// Window to attach to
+								  self,	// Modal delegate
+								  @selector(importOverwriteWarningSheetDidEnd:returnCode:contextInfo:),	// Did end selector
+								  importFileName,	// Contextual info for selectors
+								  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceding with the import.", @"message of warning when trying to import data when tables already exist."));
+				
+				
+				NSLog(@"Tables list %@", tablesList.tables);
+				return;
+			}
+		}
+		
+		[self startImportProcessWithFile:importFileName];
 	}];
+}
+
+/**
+ * Alert sheet callback method - invoked when the error sheet is closed.
+ */
+- (void)importOverwriteWarningSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)importFileName
+{
+	if (returnCode == NSAlertDefaultReturn) {
+		// Begin the import process
+		[self startImportProcessWithFile:importFileName];
+	}
 }
 
 /**
@@ -334,8 +364,18 @@
 - (void)startSQLImportProcessWithFile:(NSString *)filename
 {
 	[importFormatPopup selectItemWithTitle:@"SQL"];
+	[self startImportProcessWithFile:filename];
+}
+
+/**
+ * Invoked when the user opens a large file, and when warned, chooses "Import".
+ */
+- (void)startImportProcessWithFile:(NSString *)filename
+{
 	[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:filename];
 }
+
+
 
 #pragma mark -
 #pragma mark SQL import
