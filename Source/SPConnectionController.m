@@ -1509,9 +1509,16 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 - (BOOL)_checkHost
 {
 	if ([self type] != SPSocketConnection && [[self host] isEqualToString:@"localhost"]) {
+		
+		// Add socket button only when in TCIP mode
+		NSString *alternateButtonText = nil;
+		if([self type] == SPTCPIPConnection){
+			alternateButtonText = NSLocalizedString(@"Connect via socket", @"Connect via socket button");
+		}
+		
 		SPBeginAlertSheet(NSLocalizedString(@"You have entered 'localhost' for a non-socket connection", @"title of error when using 'localhost' for a network connection"),
 						  NSLocalizedString(@"Use 127.0.0.1", @"Use 127.0.0.1 button"),	// Main button
-						  NSLocalizedString(@"Connect via socket", @"Connect via socket button"),	// Alternate button
+						  alternateButtonText,	// Alternate button
 						  nil,	// Other button
 						  [dbDocument parentWindow],	// Window to attach to
 						  self,	// Modal delegate
