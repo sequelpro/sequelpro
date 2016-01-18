@@ -165,6 +165,11 @@
 				[info addObject:NSLocalizedString(@"error occurred", @"error occurred")];
 				return;
 			}
+			
+			// Check for 'Comment' == NULL
+			if (![[tableStatus objectForKey:@"Comment"] isNSNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"comment: %@", @"Table Info Section : Table Comment"),[tableStatus objectForKey:@"Comment"]]];
+			}
 
 			// Check for 'Create_time' == NULL
 			if (![[tableStatus objectForKey:@"Create_time"] isNSNull]) {
