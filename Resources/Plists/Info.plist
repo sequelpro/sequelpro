@@ -173,6 +173,14 @@
 				<string>sequelpro</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>MySQL URL scheme</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mysql</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string></string>
@@ -194,7 +202,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2002-2015 Sequel Pro and CocoaMySQL team.</string>
+	<string>Copyright 2002-2016 Sequel Pro and CocoaMySQL team.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

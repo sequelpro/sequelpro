@@ -119,7 +119,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	if ([currentType isEqualToString:newType]) return;
 
 	// If the table is empty, perform the change directly
-	if ([[[tableDataInstance statusValues] objectForKey:SPMySQLRowsField] isEqualToString:@"0"]) {
+	if ([[tableDataInstance statusValueForKey:SPMySQLRowsField] isEqualToString:@"0"]) {
 		[self _changeCurrentTableTypeFrom:currentType to:newType];
 		return;
 	}
@@ -171,9 +171,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	else {
 		[sender selectItemWithTitle:currentEncoding];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error changing table encoding", @"error changing table encoding message"),
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error changing table encoding", @"error changing table encoding message"),
+			[NSApp mainWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table encoding to '%@'.\n\nMySQL said: %@", @"error changing table encoding informative message"), newEncoding, [connection lastErrorMessage]]
+		);
 	}
 }
 
@@ -198,9 +200,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	else {
 		[sender selectItemWithTitle:currentCollation];
 
-		SPBeginAlertSheet(NSLocalizedString(@"Error changing table collation", @"error changing table collation message"),
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error changing table collation", @"error changing table collation message"),
+			[NSApp mainWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table collation to '%@'.\n\nMySQL said: %@", @"error changing table collation informative message"), newCollation, [connection lastErrorMessage]]
+		);
 	}
 }
 
@@ -546,9 +550,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 				[self reloadTable:self];
 			}
 			else {
-				SPBeginAlertSheet(NSLocalizedString(@"Error changing table comment", @"error changing table comment message"),
-								  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection lastErrorMessage]]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Error changing table comment", @"error changing table comment message"),
+					[NSApp mainWindow],
+					[NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table's comment to '%@'.\n\nMySQL said: %@", @"error changing table comment informative message"), newComment, [connection lastErrorMessage]]
+				);
 			}
 		}
 	}
@@ -650,9 +656,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 
 		[tableTypePopUpButton selectItemWithTitle:currentType];
 		
-		SPBeginAlertSheet(NSLocalizedString(@"Error changing table type", @"error changing table type message"),
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [NSApp mainWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error changing table type", @"error changing table type message"),
+			[NSApp mainWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred when trying to change the table type to '%@'.\n\nMySQL said: %@", @"error changing table type informative message"), newType, [connection lastErrorMessage]]
+		);
 		
 		return;
 	}

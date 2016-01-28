@@ -344,6 +344,44 @@ static NSInteger _smallestOf(NSInteger a, NSInteger b, NSInteger c);
 	return lineRangesArray;
 }
 
+- (NSString *)stringByReplacingCharactersInSet:(NSCharacterSet *)set withString:(NSString *)string
+{
+	NSUInteger len = [self length];
+	NSMutableString *newString = [NSMutableString string];
+	
+	NSRange range = NSMakeRange (0, len);
+	
+	while (true) {
+		NSRange substringRange;
+		NSUInteger pos = range.location;
+		BOOL endAfterInsert = NO;
+		
+		range = [self rangeOfCharacterFromSet:set options:0 range:range];
+		
+		if(range.location == NSNotFound) {
+			// insert the current substring up to the end
+			substringRange = NSMakeRange(pos, len - pos);
+			endAfterInsert = YES;
+		}
+		else {
+			// insert the current substring up to range.location
+			substringRange = NSMakeRange(pos, range.location - pos);
+		}
+		
+		[newString appendString:[self substringWithRange:substringRange]];
+		
+		if(endAfterInsert) break;
+		
+		// insert the replacement character
+		[newString appendStringOrNil:string];
+		
+		// continue after the replaced characters
+		range.location += range.length;
+		range.length = len - range.location;
+	}
+	return newString;
+}
+
 /**
  * Returns the string by removing the characters in the supplied set and options.
  */

@@ -42,6 +42,7 @@
 #import "SPThreadAdditions.h"
 #import "SPCustomQuery.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPExportSettingsPersistence.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -63,7 +64,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_displayExportTypeOptions:(BOOL)display;
 - (void)_updateExportFormatInformation;
 - (void)_updateExportAdvancedOptionsLabel;
-- (void)_setPreviousExportFilenameAndPath;
 
 - (void)_toggleExportButton:(id)uiStateDict;
 - (void)_toggleExportButtonOnBackgroundThread;
@@ -72,14 +72,15 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (void)_resizeWindowForCustomFilenameViewByHeightDelta:(NSInteger)delta;
 - (void)_resizeWindowForAdvancedOptionsViewByHeightDelta:(NSInteger)delta;
 
-- (void)_waitUntilQueueIsEmpty:(id)sender;
-- (void)_queueIsEmpty:(id)sender;
+- (void)_waitUntilQueueIsEmptyAfterCancelling:(id)sender;
+- (void)_queueIsEmptyAfterCancelling:(id)sender;
 
 @end
 
 @implementation SPExportController
 
 @synthesize connection;
+@synthesize serverSupport = serverSupport;
 @synthesize exportToMultipleFiles;
 @synthesize exportCancelled;
 
@@ -120,10 +121,20 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 
 		heightOffset1 = 0;
 		heightOffset2 = 0;
-		windowMinWidth = [[self window] minSize].width;
-		windowMinHeigth = [[self window] minSize].height;
 		
 		prefs = [NSUserDefaults standardUserDefaults];
+		
+		localizedTokenNames = [@{
+			SPFileNameHostTokenName:     NSLocalizedString(@"Host", @"export filename host token"),
+			SPFileNameDatabaseTokenName: NSLocalizedString(@"Database", @"export filename database token"),
+			SPFileNameTableTokenName:    NSLocalizedString(@"Table", @"table"),
+			SPFileNameDateTokenName:     NSLocalizedString(@"Date", @"export filename date token"),
+			SPFileNameYearTokenName:     NSLocalizedString(@"Year", @"export filename date token"),
+			SPFileNameMonthTokenName:    NSLocalizedString(@"Month", @"export filename date token"),
+			SPFileNameDayTokenName:      NSLocalizedString(@"Day", @"export filename date token"),
+			SPFileNameTimeTokenName:     NSLocalizedString(@"Time", @"export filename time token"),
+			SPFileNameFavoriteTokenName: NSLocalizedString(@"Favorite", @"export filename favorite name token")
+		} retain];
 	}
 	
 	return self;
@@ -138,13 +149,17 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	if (mainNibLoaded) return;
 	
 	mainNibLoaded = YES;
+	
+	windowMinWidth = [[self window] minSize].width;
+	windowMinHeigth = [[self window] minSize].height;
 
 	// Select the 'selected tables' option
 	[exportInputPopUpButton selectItemAtIndex:SPTableExport];
 	
 	// Select the SQL tab
 	[[exportTypeTabBar tabViewItemAtIndex:0] setView:exporterView];
-		
+	[exportTypeTabBar selectTabViewItemAtIndex:0];
+	
 	// By default a new SQL INSERT statement should be created every 250KiB of data
 	[exportSQLInsertNValueTextField setIntegerValue:250];
 	
@@ -174,21 +189,32 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  * @param source       The source of the export. See SPExportSource constants.
  */
 - (void)exportTables:(NSArray *)exportTables asFormat:(SPExportType)format usingSource:(SPExportSource)source
-{	
-	// Select the correct tab
-	[exportTypeTabBar selectTabViewItemAtIndex:format];
+{
+	// set some defaults
+	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
+	if(![[exportPathField stringValue] length]) {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
+		// If found the set the default path to the user's desktop, otherwise use their home directory
+		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
+	}
 	
-	[self _setPreviousExportFilenameAndPath];
+	// initially popuplate the tables list
+	[self refreshTableList:nil];
+	
+	// overwrite defaults with user settings from last export
+	[self applySettingsFromDictionary:[prefs objectForKey:SPLastExportSettings] error:NULL];
+	
+	// overwrite those with settings for the current export
+	
+	// Select the correct tab
+	if(format != SPAnyExportType) [exportTypeTabBar selectTabViewItemAtIndex:format];
 	
 	[self updateDisplayedExportFilename];
-	[self refreshTableList:nil];
 	
 	[exporters removeAllObjects];
 	[exportFiles removeAllObjects];
 			
-	// Select the 'selected tables' source option
-	[exportInputPopUpButton selectItemAtIndex:source];
-	
 	// If tables were supplied, select them
 	if (exportTables) {
 		
@@ -219,6 +245,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	// Ensure interface validation
 	[self _switchTab];
 	[self _updateExportAdvancedOptionsLabel];
+	[self setExportInput:source];
 	
 	[NSApp beginSheet:[self window]
 	   modalForWindow:[tableDocumentInstance parentWindow]
@@ -271,7 +298,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
  */
 - (IBAction)export:(id)sender
 {
-	SPExportType selectedExportType = SPSQLExport;
+	SPExportType selectedExportType = SPAnyExportType;
 	SPExportSource selectedExportSource = SPTableExport;
 	
 	NSArray *selectedTables = [tablesListInstance selectedTableItems];
@@ -294,9 +321,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	}
 	
 	[self exportTables:selectedTables asFormat:selectedExportType usingSource:selectedExportSource];
-	
-	// Ensure UI validation
-	[self switchInput:exportInputPopUpButton];
 }
 
 /**
@@ -325,27 +349,50 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	[[sender window] orderOut:self];
 }
 
+- (BOOL)setExportInput:(SPExportSource)input
+{
+	SPExportSource actualInput = input;
+	// Dot will always be a TableExport
+	if(exportType == SPDotExport) {
+		actualInput = SPTableExport;
+	}
+	//check if the type actually is valid
+	else if(![[exportInputPopUpButton itemAtIndex:input] isEnabled]) {
+		//...no, pick a valid one instead
+		for (NSMenuItem *item in [exportInputPopUpButton itemArray]) {
+			if([item isEnabled]) {
+				actualInput = [exportInputPopUpButton indexOfItem:item];
+				goto set_input;
+			}
+		}
+		// nothing found (should not happen)
+		SPLog(@"did not find any valid export input!?");
+		return NO;
+	}
+set_input:
+	exportSource = actualInput;
+	
+	[exportInputPopUpButton selectItemAtIndex:exportSource];
+	
+	BOOL isSelectedTables = (exportSource == SPTableExport);
+	
+	[exportFilePerTableCheck setHidden:(!isSelectedTables) || (exportType == SPSQLExport)];
+	[exportTableList setEnabled:isSelectedTables];
+	[exportSelectAllTablesButton setEnabled:isSelectedTables];
+	[exportDeselectAllTablesButton setEnabled:isSelectedTables];
+	[exportRefreshTablesButton setEnabled:isSelectedTables];
+	
+	[self updateAvailableExportFilenameTokens]; // will also update the filename itself
+	
+	return (actualInput == input);
+}
+
 /**
  * Enables/disables and shows/hides various interface controls depending on the selected item.
  */
 - (IBAction)switchInput:(id)sender
 {
-	if ([sender isKindOfClass:[NSPopUpButton class]]) {
-		
-		// Determine what data to use (filtered result, custom query result or selected table(s)) for the export operation
-		exportSource = (exportType == SPDotExport) ? SPTableExport : [exportInputPopUpButton indexOfSelectedItem];
-				
-		BOOL isSelectedTables = ([sender indexOfSelectedItem] == SPTableExport);
-				
-		[exportFilePerTableCheck setHidden:(!isSelectedTables) || (exportType == SPSQLExport)];		
-		[exportTableList setEnabled:isSelectedTables];
-		[exportSelectAllTablesButton setEnabled:isSelectedTables];
-		[exportDeselectAllTablesButton setEnabled:isSelectedTables];
-		[exportRefreshTablesButton setEnabled:isSelectedTables];
-		
-		[self updateAvailableExportFilenameTokens];
-		[self updateDisplayedExportFilename];
-	}
+	[self setExportInput:(SPExportSource)[exportInputPopUpButton indexOfSelectedItem]];
 }
 
 /**
@@ -368,18 +415,18 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	
 	// Cancel all of the currently running operations
 	[operationQueue cancelAllOperations]; // async call
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmpty:) object:sender];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPExportController cancelExport: waiting for empty queue", tableDocumentInstance) target:self selector:@selector(_waitUntilQueueIsEmptyAfterCancelling:) object:sender];
 }
 
-- (void)_waitUntilQueueIsEmpty:(id)sender
+- (void)_waitUntilQueueIsEmptyAfterCancelling:(id)sender
 {
 	[sender retain];
 	[operationQueue waitUntilAllOperationsAreFinished];
-	[self performSelectorOnMainThread:@selector(_queueIsEmpty:) withObject:sender waitUntilDone:NO];
+	[self performSelectorOnMainThread:@selector(_queueIsEmptyAfterCancelling:) withObject:sender waitUntilDone:NO];
 	[sender release];
 }
 
-- (void)_queueIsEmpty:(id)sender
+- (void)_queueIsEmptyAfterCancelling:(id)sender
 {
 	// Loop the cached export file paths and remove them from disk if they exist
 	for (SPExportFile *file in exportFiles)
@@ -387,20 +434,28 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		[file delete];
 	}
 	
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
-	
-	// Stop the progress indicator
-	[exportProgressIndicator stopAnimation:self];
-	[exportProgressIndicator setUsesThreadedAnimation:NO];
-	
+	[self _hideExportProgress];
+
+	// Restore the connection encoding to it's pre-export value
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
+
 	// Re-enable the cancel button for future exports
 	[sender setEnabled:YES];
 	
 	// Finally get rid of all the exporters and files
 	[exportFiles removeAllObjects];
 	[exporters removeAllObjects];
+}
+
+- (void)_hideExportProgress
+{
+	// Close the progress sheet
+	[NSApp endSheet:exportProgressWindow returnCode:0];
+	[exportProgressWindow orderOut:self];
+
+	// Stop the progress indicator
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
 }
 
 /**
@@ -416,9 +471,14 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
     
     [panel setDirectoryURL:[NSURL URLWithString:[exportPathField stringValue]]];
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
-        if (returnCode == NSOKButton) {
-            [exportPathField setStringValue:[[panel directoryURL] path]];
-            [prefs setObject:[[panel directoryURL] path] forKey:SPExportLastDirectory];
+        if (returnCode == NSFileHandlingPanelOKButton) {
+			NSString *path = [[panel directoryURL] path];
+			if(!path) {
+				@throw [NSException exceptionWithName:NSInternalInconsistencyException
+											   reason:[NSString stringWithFormat:@"File panel ended with OK, but returned nil for path!? directoryURL=%@,isFileURL=%d",[panel directoryURL],[[panel directoryURL] isFileURL]]
+											 userInfo:nil];
+			}
+            [exportPathField setStringValue:path];
         }
     }];		
 }
@@ -655,9 +715,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 - (IBAction)exportCustomQueryResultAsFormat:(id)sender
 {	
 	[self exportTables:nil asFormat:[sender tag] usingSource:SPQueryExport];
-
-	// Ensure UI validation
-	[self switchInput:exportInputPopUpButton];
 }
 
 #pragma mark -
@@ -670,24 +727,8 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 {
 	// Perform the export
 	if (returnCode == NSOKButton) {
-
-		// Check whether to save the export filename.  Save it if it's not blank and contains at least one
-		// token - this suggests it's not a one-off filename
-		if ([[exportCustomFilenameTokenField stringValue] length] < 1) {
-			[prefs removeObjectForKey:SPExportFilenameFormat];
-		} 
-		else {
-			BOOL saveFilename = NO;
-			
-			NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-			
-			for (id aToken in representedObjects) 
-			{
-				if ([aToken isKindOfClass:[SPExportFileNameTokenObject class]]) saveFilename = YES;
-			}
-			
-			if (saveFilename) [prefs setObject:[NSKeyedArchiver archivedDataWithRootObject:representedObjects] forKey:SPExportFilenameFormat];
-		}
+		
+		[prefs setObject:[self currentSettingsAsDictionary] forKey:SPLastExportSettings];
 
 		// If we are about to perform a table export, cache the current number of tables within the list, 
 		// refresh the list and then compare the numbers to accommodate situations where new tables are
@@ -752,11 +793,11 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	BOOL isSQL  = (exportType == SPSQLExport);
 	BOOL isCSV  = (exportType == SPCSVExport);
 	BOOL isXML  = (exportType == SPXMLExport);
-	BOOL isHTML = (exportType == SPHTMLExport);
-	BOOL isPDF  = (exportType == SPPDFExport);
+	//BOOL isHTML = (exportType == SPHTMLExport);
+	//BOOL isPDF  = (exportType == SPPDFExport);
 	BOOL isDot  = (exportType == SPDotExport);
 	
-	BOOL enable = (isCSV || isXML || isHTML || isPDF || isDot);
+	BOOL enable = (isCSV || isXML /* || isHTML || isPDF  */ || isDot);
 	
 	[exportFilePerTableCheck setHidden:(isSQL || isDot)];		
 	[exportTableList setEnabled:(!isDot)];
@@ -810,9 +851,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		
 		[exportDotForceLowerTableNamesCheck setState:(serverLowerCaseTableNameValue == 0)?NSOffState:NSOnState];
 	}
-
-	[exportCSVNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]]; 
-	[exportXMLNULLValuesAsTextField setStringValue:[prefs stringForKey:SPNullValue]];
 	
 	[self _displayExportTypeOptions:(isSQL || isCSV || isXML || isDot)];
 	[self updateAvailableExportFilenameTokens];
@@ -843,7 +881,7 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		SPBeginAlertSheet(NSLocalizedString(@"The list of tables has changed", @"table list change alert message"), 
 						  NSLocalizedString(@"Continue", @"continue button"), 
 						  NSLocalizedString(@"Cancel", @"cancel button"), nil, [tableDocumentInstance parentWindow], self, 
-						  @selector(tableListChangedAlertDidEnd:returnCode:contextInfo:), nil, 
+						  @selector(tableListChangedAlertDidEnd:returnCode:contextInfo:), NULL,
 						  [NSString stringWithFormat:NSLocalizedString(@"The number of tables in this database has changed since the export dialog was opened. There are now %d additional table(s), most likely added by an external application.\n\nHow would you like to proceed?", @"table list change alert informative message"), diff]);
 	}
 	else {
@@ -937,28 +975,6 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	}
 
 	[exportAdvancedOptionsViewLabelButton setTitle:[NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Advanced", @"Advanced options short title"), [optionsSummary componentsJoinedByString:@", "]]];
-}
-
-/**
- * Sets the previous export filename and path if available.
- */
-- (void)_setPreviousExportFilenameAndPath
-{
-	// Restore the export filename if it exists, and update the display
-	if ([prefs objectForKey:SPExportFilenameFormat]) {
-		[exportCustomFilenameTokenField setObjectValue:[NSKeyedUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPExportFilenameFormat]]];
-	}
-	
-	// If a directory has previously been selected, reselect it
-	if ([prefs objectForKey:SPExportLastDirectory]) {
-		[exportPathField setStringValue:[prefs objectForKey:SPExportLastDirectory]];
-	} 
-	else {
-		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSAllDomainsMask, YES);
-		
-		// If found the set the default path to the user's desktop, otherwise use their home directory
-		[exportPathField setStringValue:([paths count] > 0) ? [paths objectAtIndex:0] : NSHomeDirectory()];
-	}
 }
 
 /**
@@ -1065,8 +1081,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 	SPClear(exportFiles);
 	SPClear(operationQueue);
 	SPClear(exportFilename);
-	
-	if (previousConnectionEncoding) SPClear(previousConnectionEncoding);
+	SPClear(localizedTokenNames);
+	SPClear(previousConnectionEncoding);
+	[self setServerSupport:nil];
 	
 	[super dealloc];
 }

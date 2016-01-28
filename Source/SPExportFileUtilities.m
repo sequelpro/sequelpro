@@ -102,7 +102,7 @@ SPExportErrorChoice;
 {
 	NSMutableString *header = [NSMutableString string];
 	
-	[header setString:@"<?xml version=\"1.0\"?>\n\n"];
+	[header setString:@"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n"];
 	[header appendString:@"<!--\n-\n"];
 	[header appendString:@"- Sequel Pro XML dump\n"];
 	[header appendFormat:@"- %@ %@\n-\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
@@ -129,7 +129,7 @@ SPExportErrorChoice;
 		[header appendFormat:@"<%@>\n\n", [[tableDocumentInstance database] HTMLEscapeString]];
 	}
 	
-	[file writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];	
+	[file writeData:[header dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 /**
@@ -269,9 +269,7 @@ SPExportErrorChoice;
 		}
 	}
 
-	// Close the progress sheet
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
+	[self _hideExportProgress];
 	
 	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:files];
 	[alert autorelease];

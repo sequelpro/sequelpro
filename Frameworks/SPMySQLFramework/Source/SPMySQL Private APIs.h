@@ -82,6 +82,7 @@
 @interface SPMySQLConnection (Querying_and_Preparation_Private_API)
 
 - (void)_flushMultipleResultSets;
+- (void)_updateLastErrorInfos;
 - (void)_updateLastErrorMessage:(NSString *)theErrorMessage;
 - (void)_updateLastErrorID:(NSUInteger)theErrorID;
 - (void)_updateLastSqlstate:(NSString *)theSqlstate;
@@ -99,12 +100,7 @@
 @end
 
 // SPMySQLResult Data Conversion Private API
-@interface SPMySQLResult (Data_Conversion_Private_API)
-
-+ (void)_initializeDataConversion;
-- (id)_getObjectFromBytes:(char *)bytes ofLength:(NSUInteger)length fieldDefinitionIndex:(NSUInteger)fieldIndex previewLength:(NSUInteger)previewLength;
-
-@end
+#import "Data Conversion.h"
 
 /**
  * Set up a static function to allow fast calling of SPMySQLResult data conversion with cached selectors

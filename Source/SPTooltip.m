@@ -317,16 +317,7 @@ static CGFloat slow_in_out (CGFloat t)
 	NSPoint pos = NSMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
 
 	// Find the screen which we are displaying on
-	NSRect screenFrame = [[NSScreen mainScreen] frame];
-	NSScreen* candidate;
-	for(candidate in [NSScreen screens])
-	{
-		NSRect cf = [candidate frame];
-		if(NSPointInRect(pos,cf)) {
-			screenFrame = cf;
-			break;
-		}
-	}
+	NSRect screenFrame = [NSScreen rectOfScreenAtPoint:pos];
 
 	// is contentView a webView calculate actual rendered size via JavaScript
 	if([[[[self contentView] class] description] isEqualToString:@"WebView"]) {

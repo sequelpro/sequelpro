@@ -32,7 +32,27 @@
 
 @implementation SPExportFileNameTokenObject
 
-@synthesize tokenContent;
+@synthesize tokenId;
+
++ (id)tokenWithId:(NSString *)token
+{
+	SPExportFileNameTokenObject *obj = [[SPExportFileNameTokenObject alloc] init];
+	[obj setTokenId:token];
+	return [obj autorelease];
+}
+
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"<%p {%@}>",self,[self tokenId]];
+}
+
+- (BOOL)isEqual:(id)object
+{
+	if([object isKindOfClass:[SPExportFileNameTokenObject class]]) {
+		return [[self tokenId] isEqualToString:[object tokenId]];
+	}
+	return [super isEqual:object];
+}
 
 #pragma mark -
 #pragma mark NSCoding compatibility
@@ -40,7 +60,7 @@
 - (id)initWithCoder:(NSCoder *)decoder
 {
 	if ((self = [super init])) {
-		[self setTokenContent:[decoder decodeObjectForKey:@"TokenContent"]];
+		[self setTokenId:[decoder decodeObjectForKey:@"tokenId"]];
 	}
 	
 	return self;
@@ -48,7 +68,7 @@
 
 - (void)encodeWithCoder:(NSCoder *)encoder
 {
-	[encoder encodeObject:[self tokenContent] forKey:@"TokenContent"];
+	[encoder encodeObject:[self tokenId] forKey:@"tokenId"];
 }
 
 @end

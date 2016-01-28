@@ -610,7 +610,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 	if (![[doc getConnection] isConnected]) return;
 
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", doc) target:[doc databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[doc databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 
 - (IBAction)outlineViewAction:(id)sender

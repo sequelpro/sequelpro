@@ -51,12 +51,12 @@
 // Setup and teardown
 - (id)initWithDelegate:(SPDatabaseDocument *)theDelegate;
 - (void)setConnectionToClone:(SPMySQLConnection *)aConnection;
-- (void)destroy:(NSNotification *)notification;
 
 // Information
 - (SPMySQLConnection *)connection;
 
 // Structure retrieval from the server
+- (void)queryDbStructureInBackgroundWithUserInfo:(NSDictionary *)userInfo;
 - (void)queryDbStructureWithUserInfo:(NSDictionary*)userInfo;
 - (BOOL)isQueryingDatabaseStructure;
 

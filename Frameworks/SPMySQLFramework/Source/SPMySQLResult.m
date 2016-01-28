@@ -318,7 +318,7 @@ static id NSNullPointer;
 {
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:stringEncoding] autorelease];
 }
-
+#warning duplicate code with Data Conversion.m stringForDataBytes:length:encoding: (↑, ↓)
 - (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy
 {
 	if(!bytes || !length) return @""; //to match -[NSString initWithBytes:length:encoding:]

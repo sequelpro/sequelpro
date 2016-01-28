@@ -53,11 +53,12 @@
  * explicity called.
  */
 
-@class SPMySQLConnection, SPExportFile;
+@class SPMySQLConnection, SPExportFile, SPServerSupport;
 
 @interface SPExporter : NSOperation
 {	
 	SPMySQLConnection *connection;
+	SPServerSupport *serverSupport;
 	
 	double exportProgressValue;
 	double exportMaxProgress;
@@ -79,6 +80,11 @@
  * @property connection The MySQL connection to use
  */
 @property(readwrite, retain) SPMySQLConnection *connection;
+
+/**
+ * @property serverSupport Information about the features supported by this mysql version
+ */
+@property(readwrite, retain) SPServerSupport *serverSupport;
 
 /**
  * @property exportProgressValue The export's current progress value
@@ -123,5 +129,27 @@
 - (BOOL)exportOutputCompressFile;
 
 - (void)setExportOutputCompressFile:(BOOL)compress;
+
+#pragma mark Shared Private
+
+/**
+ * This is the method you should override in every concrete exporter implementation.
+ */
+- (void)exportOperation;
+
+/**
+ * Write a string to the current output file using the current output encoding
+ * @param input The string to write
+ */
+- (void)writeString:(NSString *)input;
+
+/**
+ * Write a string to the current output file using UTF-8 encoding
+ * @param input The string to write
+ */
+#warning This method mainly exists to shorten some old code which sometimes uses [self exportOutputEncoding] and sometimes NSUTF8StringEncoding. \
+	     In general there should be no need to have more than one encoding in a file. \
+         Someone needs to check if that was an oversight or intentional.
+- (void)writeUTF8String:(NSString *)input;
 
 @end

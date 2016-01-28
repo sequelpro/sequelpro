@@ -36,8 +36,6 @@
 #import "SPSplitView.h"
 #import "SPAppController.h"
 
-static NSString *SPSaveBundleAction = @"SPSaveBundle";
-
 #define kBundleNameKey @"bundleName"
 #define kChildrenKey @"_children_"
 #define kInputFieldScopeArrayIndex 0
@@ -722,9 +720,47 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 	[panel setNameFieldStringValue:[[self _currentSelectedObject] objectForKey:kBundleNameKey]];
 
-	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger	returnCode)
-	{
-		[self sheetDidEnd:panel returnCode:returnCode contextInfo:SPSaveBundleAction];
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
+		if (returnCode != NSFileHandlingPanelOKButton) return;
+		
+		// Panel is still on screen. Hide it first. (This is Apple's recommended way)
+		[panel orderOut:nil];
+		
+		id aBundle = [self _currentSelectedObject];
+		
+		NSString *bundleFileName = [aBundle objectForKey:kBundleNameKey];
+		NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
+		NSAssert(possibleExisitingBundleFilePath != nil, @"source bundle path must be non-nil!");
+		
+		NSString *savePath = [[panel URL] path];
+		NSAssert(savePath != nil, @"destination bundle path must be non-nil! (URL=%@)",[panel URL]);
+		
+		BOOL isDir;
+		BOOL copyingWasSuccessful = YES;
+		NSError *err = nil;
+		
+		// Copy possible existing bundle with content
+		if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
+			//FIXME This will fail if savePath exists, but the user already consented overwriting in the save panel. We should use trashItemAtURL:... once we are 10.8+
+			if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:savePath error:&err]) {
+				//if we have an NSError that will provide the nicest error message.
+				if(err) {
+					[[NSAlert alertWithError:err] runModal];
+					return;
+				}
+				NSLog(@"copy(%@ -> %@) failed!",possibleExisitingBundleFilePath,savePath);
+				copyingWasSuccessful = NO;
+			}
+		}
+		
+		if(!copyingWasSuccessful || ![self saveBundle:aBundle atPath:savePath]) {
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert setMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"Bundle Editor : Save-Bundle-Error : error dialog title")];
+			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"Bundle Editor : Save-Bundle-Error : OK button")];
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal]; //blocks
+			[alert release];
+		}
 	}];
 }
 
@@ -1005,37 +1041,6 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 		}
 	}
-	else if([contextInfo isEqualToString:@"saveBundle"]) {
-		if (returnCode == NSOKButton) {
-
-			id aBundle = [self _currentSelectedObject];
-
-			NSString *bundleFileName = [aBundle objectForKey:kBundleNameKey];
-			NSString *possibleExisitingBundleFilePath = [NSString stringWithFormat:@"%@/%@.%@", bundlePath, bundleFileName, SPUserBundleFileExtension];
-
-			NSString *savePath = [[sheet URL] path];
-
-			BOOL isDir;
-			BOOL copyingWasSuccessful = YES;
-
-			// Copy possible existing bundle with content
-			if([[NSFileManager defaultManager] fileExistsAtPath:possibleExisitingBundleFilePath isDirectory:&isDir] && isDir) {
-				if(![[NSFileManager defaultManager] copyItemAtPath:possibleExisitingBundleFilePath toPath:savePath error:nil])
-					copyingWasSuccessful = NO;
-			}
-
-			if(!copyingWasSuccessful || ![self saveBundle:aBundle atPath:savePath]) {
-				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while saving the Bundle.", @"Bundle Editor : Save-Bundle-Error : error dialog title")
-												 defaultButton:NSLocalizedString(@"OK", @"Bundle Editor : Save-Bundle-Error : OK button") 
-											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:@""];
-			
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-			}
-		}
-	}
 	else if([contextInfo isEqualToString:@"undeleteSelectedDefaultBundles"]) {
 		if(returnCode == 1) {
 
@@ -1057,6 +1062,10 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 			[self reloadBundles:self];
 
 		}
+	}
+	else {
+		NSBeep();
+		NSLog(@"%s: unhandled case! (contextInfo=%p)",__func__,contextInfo);
 	}
 
 }
@@ -1325,7 +1334,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 
 		//abort editing
 		[control abortEditing];
-		[[NSApp mainWindow] makeFirstResponder:commandsOutlineView];
+		[[commandsOutlineView window] makeFirstResponder:commandsOutlineView];
 		return YES;
 	} else{
 		return NO;
@@ -1443,7 +1452,7 @@ static NSString *SPSaveBundleAction = @"SPSaveBundle";
 		(action == @selector(displayBundleMetaInfo:))) 
 	{
 		// Allow to record short-cuts used by the Bundle Editor
-		if([[NSApp mainWindow] firstResponder] == keyEquivalentField) return NO;
+		if([[NSApp keyWindow] firstResponder] == keyEquivalentField) return NO;
 		
 		return ([[commandBundleTreeController selectedObjects] count] == 1 && ![[[commandBundleTreeController selectedObjects] objectAtIndex:0] objectForKey:kChildrenKey]);
 	}

@@ -47,6 +47,7 @@ NSString *SPFavoritesPasteboardDragType          = @"SPFavoritesPasteboard";
 NSString *SPContentFilterPasteboardDragType      = @"SPContentFilterPasteboard";
 NSString *SPNavigatorPasteboardDragType          = @"SPNavigatorPasteboardDragType";
 NSString *SPNavigatorTableDataPasteboardDragType = @"SPNavigatorTableDataPasteboardDragType"; 
+NSString *SPExportCustomFileNameTokenPlistType   = @"SPExportCustomFileNameTokenPlist";
 
 // File extensions
 NSString *SPFileExtensionDefault                 = @"spf";
@@ -54,6 +55,12 @@ NSString *SPBundleFileExtension                  = @"spfs";
 NSString *SPFileExtensionSQL                     = @"sql";
 NSString *SPColorThemeFileExtension              = @"spTheme";
 NSString *SPUserBundleFileExtension              = @"spBundle";
+
+// SPF File types
+NSString *SPFExportSettingsContentType           = @"export settings";
+NSString *SPFContentFiltersContentType           = @"content filters";
+NSString *SPFQueryFavoritesContentType           = @"query favorites";
+NSString *SPFConnectionContentType               = @"connection";
 
 // File names
 NSString *SPFavoritesDataFile                    = @"Favorites.plist";
@@ -195,10 +202,18 @@ NSString *SPCSVImportFirstLineIsHeader           = @"CSVImportFirstLineIsHeader"
 NSString *SPCSVImportLineTerminator              = @"CSVImportLineTerminator";
 NSString *SPCSVFieldImportMappingAlignment       = @"CSVFieldImportMappingAlignment";
 NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_File_";
-NSString *SPSQLExportUseCompression              = @"SQLExportUseCompression";
-NSString *SPNoBOMforSQLdumpFile                  = @"NoBOMforSQLdumpFile";
-NSString *SPExportLastDirectory                  = @"SPExportLastDirectory";
-NSString *SPExportFilenameFormat                 = @"SPExportFilenameFormat";
+NSString *SPLastExportSettings                   = @"LastExportSettings";
+
+// Export filename tokens
+NSString *SPFileNameDatabaseTokenName = @"database";
+NSString *SPFileNameHostTokenName     = @"host";
+NSString *SPFileNameDateTokenName     = @"date";
+NSString *SPFileNameYearTokenName     = @"year";
+NSString *SPFileNameMonthTokenName    = @"month";
+NSString *SPFileNameDayTokenName      = @"day";
+NSString *SPFileNameTimeTokenName     = @"time";
+NSString *SPFileNameFavoriteTokenName = @"favorite";
+NSString *SPFileNameTableTokenName    = @"table";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
@@ -301,6 +316,9 @@ NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocati
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
 NSString *SPFavoriteUseCompressionKey                    = @"useCompression";
 NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
+
+NSString *SPFFormatKey = @"format";
+NSString *SPFVersionKey = @"version";
 
 // Favorites import/export
 NSString *SPFavoritesDataRootKey                            = @"SPConnectionFavorites";
@@ -415,6 +433,11 @@ NSString *SPBundleShellVariableSelectedText                 = @"SP_SELECTED_TEXT
 NSString *SPBundleShellVariableSelectedTextRange            = @"SP_SELECTED_TEXT_RANGE";
 NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
 
+#define OWS @"\\s*" /* optional whitespace */
+//                                                CURRENT_TIMESTAMP    [            (           [n]          )    ]
+NSString *SPCurrentTimestampPattern = (@"^" OWS @"CURRENT_TIMESTAMP" @"(?:" OWS @"\\(" OWS @"(\\d*)" OWS @"\\)" @")?" OWS @"$");
+#undef OWS
+
 // URL scheme
 NSString *SPURLSchemeQueryInputPathHeader          = @"/tmp/SP_QUERY_";
 NSString *SPURLSchemeQueryResultPathHeader         = @"/tmp/SP_QUERY_RESULT_";
@@ -422,6 +445,7 @@ NSString *SPURLSchemeQueryResultStatusPathHeader   = @"/tmp/SP_QUERY_RESULT_STAT
 NSString *SPURLSchemeQueryResultMetaPathHeader     = @"/tmp/SP_QUERY_META_";
 
 NSString *SPCommonCryptoExceptionName = @"SPCommonCryptoException";
+NSString *SPErrorDomain = @"SPErrorDomain";
 
 void inline _SPClear(id *addr) {
 	[*addr release], *addr = nil;

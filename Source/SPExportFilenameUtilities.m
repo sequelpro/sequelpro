@@ -50,7 +50,8 @@
 		//note that there will be no tableName if the export is done from a query result without a database selected (or empty).
 		filename = [self expandCustomFilenameFormatUsingTableName:[[tablesListInstance tables] objectOrNilAtIndex:1]];
 		
-		if (![[filename pathExtension] length] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
+		
+		if (![[self customFilenamePathExtension] length] && [extension length] > 0) filename = [filename stringByAppendingPathExtension:extension];
 	}
 	else {
 		filename = [self generateDefaultExportFilename];
@@ -59,11 +60,29 @@
 	[exportCustomFilenameViewLabelButton setTitle:[NSString stringWithFormat:NSLocalizedString(@"Customize Filename (%@)", @"customize file name label"), filename]];
 }
 
-/**
- * Updates the available export filename tokens based on the currently selected options.
- */
-- (void)updateAvailableExportFilenameTokens
-{		
+- (NSString *)customFilenamePathExtension
+{
+	NSMutableString *flatted = [NSMutableString string];
+	
+	// This time we replace every token with "/a". This has the following effect:
+	// "{host}.{database}"     -> "/a./a"     -> extension=""
+	// "{database}_{date}.sql" -> "/a_/a.sql" -> extension="sql"
+	// That seems to be the easiest way to let NSString correctly determine if an extension is present
+	for (id filenamePart in [exportCustomFilenameTokenField objectValue])
+	{
+		if([filenamePart isKindOfClass:[NSString class]])
+			[flatted appendString:filenamePart];
+		else if([filenamePart isKindOfClass:[SPExportFileNameTokenObject class]])
+			[flatted appendString:@"/a"];
+		else
+			[NSException raise:NSInternalInconsistencyException format:@"unknown object in token list: %@",filenamePart];
+	}
+	
+	return [flatted pathExtension];
+}
+
+- (BOOL)isTableTokenAllowed
+{
 	NSUInteger i = 0;
 	BOOL removeTable = NO;
 	
@@ -71,19 +90,7 @@
 	BOOL isCSV = exportType == SPCSVExport;
 	BOOL isDot = exportType == SPDotExport;
 	BOOL isXML = exportType == SPXMLExport;
-
-	NSMutableArray *exportTokens = [NSMutableArray arrayWithObjects:
-										NSLocalizedString(@"host", @"export filename host token"),
-										NSLocalizedString(@"database", @"export filename database token"),
-										NSLocalizedString(@"table", @"table"),
-										NSLocalizedString(@"date", @"export filename date token"),
-										NSLocalizedString(@"year", @"export filename date token"),
-										NSLocalizedString(@"month", @"export filename date token"),
-										NSLocalizedString(@"day", @"export filename date token"),
-										NSLocalizedString(@"time", @"export filename time token"),
-										NSLocalizedString(@"favorite", @"export filename favorite name token"),
-									nil];
-
+	
 	// Determine whether to remove the table from the tokens list
 	if (exportSource == SPQueryExport || isDot) {
 		removeTable = YES;
@@ -102,150 +109,60 @@
 		}
 	}
 	
-	if (removeTable) {
-		[exportTokens removeObject:NSLocalizedString(@"table", @"table")];
+	return (removeTable == NO);
+}
+
+/**
+ * Updates the available export filename tokens based on the currently selected options.
+ */
+- (void)updateAvailableExportFilenameTokens
+{		
+	SPExportFileNameTokenObject *tableObject;
+	NSMutableArray *exportTokens = [NSMutableArray arrayWithObjects:
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameDatabaseTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameHostTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameDateTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameYearTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameMonthTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameDayTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameTimeTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameFavoriteTokenName],
+		(tableObject = [SPExportFileNameTokenObject tokenWithId:SPFileNameTableTokenName]),
+		nil
+	];
+	
+	if (![self isTableTokenAllowed]) {
+		[exportTokens removeObject:tableObject];
 		NSArray *tokenParts = [exportCustomFilenameTokenField objectValue];
 		
-		for (id token in [exportCustomFilenameTokenField objectValue])
+		for (id token in tokenParts)
 		{
-			if ([token isKindOfClass:[SPExportFileNameTokenObject class]]) {
-				if ([[token tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) {
-					NSMutableArray *newTokens = [NSMutableArray arrayWithArray:tokenParts];
-					
-					[newTokens removeObjectAtIndex:[tokenParts indexOfObject:token]];
-					
-					[exportCustomFilenameTokenField setObjectValue:newTokens];
-					break;
-				}
-			}
-		}
-	}
-
-	[exportCustomFilenameTokensField setStringValue:[exportTokens componentsJoinedByString:@","]];
-}
-
-/**
- * Take a supplied string and return the token for it - a SPExportFileNameTokenObject if the token
- * has been recognized, or the supplied NSString if unmatched.
- */
-- (id)tokenObjectForString:(NSString *)stringToTokenize
-{
-	if ([[exportCustomFilenameTokensField objectValue] containsObject:stringToTokenize]) {
-		SPExportFileNameTokenObject *newToken = [[SPExportFileNameTokenObject alloc] init];
-		
-		[newToken setTokenContent:stringToTokenize];
-		
-		return [newToken autorelease];
-	}
-
-	return stringToTokenize;
-}
-
-/**
- * Tokenize the filename field.
- *
- * This is called on a delay after text entry to update the tokens during text entry.
- * There's no API to perform tokenizing, but the same result can be achieved by using the return key;
- * however, this only works if the cursor is after text, not after a token.
- */
-- (void)tokenizeCustomFilenameTokenField
-{
-	NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
-
-	if ([exportCustomFilenameTokenField currentEditor] == nil) return;
-
-	NSRange selectedRange = [[exportCustomFilenameTokenField currentEditor] selectedRange];
-	
-	if (selectedRange.location == NSNotFound) return;
-	if (selectedRange.length > 0) return;
-
-	// Retrieve the object value of the token field.  This consists of plain text and recognised tokens interspersed.
-	NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
-
-	// Walk through the strings - not the tokens - and determine whether any need tokenizing,
-	// including scanning for groups of strings which make up a single token
-	BOOL tokenizingRequired = NO;
-	NSUInteger i, j;
-	NSInteger k;
-	id tokenCheck;
-	NSMutableArray *tokenParts = [NSMutableArray array];
-
-	// Add all tokens, words, and separators to the array to process
-	for (id eachObject in representedObjects) {
-		if ([eachObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
-			[tokenParts addObject:eachObject];
-		} else {
-			for (i = 0, j = 0; i < [(NSString *)eachObject length]; i++) {
-				if ([alphanumericSet characterIsMember:[eachObject characterAtIndex:i]]) {
-					continue;
-				}
-				if (i > j) {
-					[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
-				}
-				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(i, 1)]];
-				j = i + 1;
-			}
-			if (j < i) {
-				[tokenParts addObject:[eachObject substringWithRange:NSMakeRange(j, i - j)]];
-			}
-		}
-	}
-
-	// Walk through the array to process, scanning it for words or groups which are tokens
-	for (i = 0; i < [tokenParts count]; i++) {
-		for (k = i; k >= 0; k--) {
-
-			// Don't process existing token objects
-			if ([[tokenParts objectAtIndex:k] isKindOfClass:[SPExportFileNameTokenObject class]]) {
+			if([token isEqual:tableObject]) {
+				NSMutableArray *newTokens = [NSMutableArray arrayWithArray:tokenParts];
+				
+				[newTokens removeObject:tableObject]; //removes all occurances
+				
+				[exportCustomFilenameTokenField setObjectValue:newTokens];
 				break;
 			}
-
-			// Check whether this item, or group of adjacent items, make up a token
-			tokenCheck = [self tokenObjectForString:[[tokenParts subarrayWithRange:NSMakeRange(k, 1 + i - k)] componentsJoinedByString:@""]];
-			if ([tokenCheck isKindOfClass:[SPExportFileNameTokenObject class]]) {
-				tokenizingRequired = YES;
-			}
 		}
 	}
 
-	// If no tokenizing is required, don't process any further.
-	if (!tokenizingRequired) return;
-
-	// Detect where the cursor is currently located.  If it's at the end of a token, also return -
-	// or the enter key would result in closing the sheet.
-	NSUInteger stringPosition = 0;
-	
-	for (id representedObject in representedObjects) 
-	{
-		if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) {
-			stringPosition++;
-		} 
-		else {
-			stringPosition += [(NSString *)representedObject length];
-		}
-		
-		if (selectedRange.location <= stringPosition) {
-			if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]]) return;
-			break;
-		}
-	}
-
-	// All conditions met - synthesize the return key to trigger tokenization.
-	NSEvent *tokenizingEvent = [NSEvent keyEventWithType:NSKeyDown 
-												location:NSMakePoint(0,0) 
-										   modifierFlags:0 
-											   timestamp:0 
-											windowNumber:[[exportCustomFilenameTokenField window] windowNumber] 
-												 context:[NSGraphicsContext currentContext] 
-											  characters:nil 
-							 charactersIgnoringModifiers:nil 
-											   isARepeat:NO 
-												 keyCode:0x24];
-	
-	[NSApp postEvent:tokenizingEvent atStart:NO];
-
-	// Update the filename preview
+	[exportCustomFilenameTokenPool setObjectValue:exportTokens];
+	//update preview name as programmatically changing the exportCustomFilenameTokenField does not fire a notification
 	[self updateDisplayedExportFilename];
+}
+
+- (NSArray *)currentAllowedExportFilenameTokens
+{
+	NSArray *mixed = [exportCustomFilenameTokenPool objectValue];
+	NSMutableArray *tokens = [NSMutableArray arrayWithCapacity:[mixed count]]; // ...or less
+	
+	for (id obj in mixed) {
+		if([obj isKindOfClass:[SPExportFileNameTokenObject class]]) [tokens addObject:obj];
+	}
+	
+	return tokens;
 }
 
 /**
@@ -343,43 +260,43 @@
 	for (id filenamePart in representedFilenameParts) 
 	{
 		if ([filenamePart isKindOfClass:[SPExportFileNameTokenObject class]]) {
-			NSString *tokenContent = [filenamePart tokenContent];
+			NSString *tokenContent = [filenamePart tokenId];
 
-			if ([tokenContent isEqualToString:NSLocalizedString(@"host", @"export filename host token")]) {
+			if ([tokenContent isEqualToString:SPFileNameHostTokenName]) {
 				[string appendStringOrNil:[tableDocumentInstance host]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"database", @"export filename database token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameDatabaseTokenName]) {
 				[string appendStringOrNil:[tableDocumentInstance database]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"table", @"table")]) {
+			else if ([tokenContent isEqualToString:SPFileNameTableTokenName]) {
 				[string appendStringOrNil:table];
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"date", @"export filename date token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameDateTokenName]) {
 				[dateFormatter setDateStyle:NSDateFormatterShortStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"year", @"export filename date token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameYearTokenName]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%Y" timeZone:nil locale:nil]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"month", @"export filename date token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameMonthTokenName]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%m" timeZone:nil locale:nil]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"day", @"export filename date token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameDayTokenName]) {
 				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%d" timeZone:nil locale:nil]];
 
 			} 
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"time", @"export filename time token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameTimeTokenName]) {
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 			}
-			else if ([tokenContent isEqualToString:NSLocalizedString(@"favorite", @"export filename favorite name token")]) {
+			else if ([tokenContent isEqualToString:SPFileNameFavoriteTokenName]) {
 				[string appendStringOrNil:[tableDocumentInstance name]];
 			}
 		} 

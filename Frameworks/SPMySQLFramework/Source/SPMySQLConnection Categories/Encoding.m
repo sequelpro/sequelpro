@@ -213,7 +213,7 @@
 	if (!strcmp(mysqlCharset, "utf8")) {
 		return NSUTF8StringEncoding;
 	} else if (!strcmp(mysqlCharset, "latin1")) {
-		return NSISOLatin1StringEncoding;
+		return NSWindowsCP1252StringEncoding; // Warning: This is NOT the same as ISO-8859-1 (aka "ISO Latin 1")
 	} else if (!strcmp(mysqlCharset, "ascii")) {
 		return NSASCIIStringEncoding;
 
@@ -289,7 +289,7 @@
 	} else if (!strcmp(mysqlCharset, "dos")) {
 		return CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingDOSLatin1);
 	} else if (!strcmp(mysqlCharset, "german1")) {
-		return NSISOLatin1StringEncoding;
+		return NSWindowsCP1252StringEncoding;
 	} else if (!strcmp(mysqlCharset, "usa7")) {
 		return NSASCIIStringEncoding;
 	} else if (!strcmp(mysqlCharset, "danish")) {
@@ -313,7 +313,7 @@
 	} else if (!strcmp(mysqlCharset, "croat")) {
 		return NSISOLatin2StringEncoding;
 	} else if (!strcmp(mysqlCharset, "latin1_de")) {
-		return NSISOLatin1StringEncoding;
+		return NSWindowsCP1252StringEncoding;
 	}
 
 	/**

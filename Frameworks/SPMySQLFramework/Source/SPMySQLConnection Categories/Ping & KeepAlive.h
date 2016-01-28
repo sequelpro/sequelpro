@@ -32,8 +32,8 @@
 
 typedef struct {
 	MYSQL	*mySQLConnection;
-	BOOL	*keepAlivePingActivePointer;
-	BOOL	*keepAliveLastPingSuccessPointer;
+	volatile BOOL *keepAlivePingThreadActivePointer;
+	volatile BOOL *keepAliveLastPingSuccessPointer;
 } SPMySQLConnectionPingDetails;
 
 @interface SPMySQLConnection (Ping_and_KeepAlive)
@@ -51,6 +51,6 @@ void _forceThreadExit(int signalNumber);
 void _pingThreadCleanup(void *pingDetails);
 
 // Cancellation
-- (void)_cancelKeepAlives;
+- (BOOL)_cancelKeepAlives;
 
 @end

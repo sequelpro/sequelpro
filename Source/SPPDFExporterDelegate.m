@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPPDFExporterDelegate.h"
+#import "SPExportInitializer.h"
 
 @implementation SPExportController (SPPDFExporterDelegate)
 
@@ -37,7 +38,8 @@
 }
 
 - (void)pdfExportProcessComplete:(SPPDFExporter *)exporter
-{	
+{
+	[self exportEnded];
 }
 
 - (void)pdfExportProcessWillBeginWritingData:(SPPDFExporter *)exporter

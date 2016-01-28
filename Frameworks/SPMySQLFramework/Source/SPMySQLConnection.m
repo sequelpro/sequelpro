@@ -145,9 +145,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		keepAlivePingFailures = 0;
 		lastKeepAliveTime = 0;
 		keepAliveThread = nil;
-		keepAlivePingThread_t = NULL;
 		keepAlivePingThreadActive = NO;
-		keepAliveLastPingSuccess = NO;
 		keepAliveLastPingBlocked = NO;
 
 		// Set up default encoding variables
@@ -176,6 +174,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 		// Ensure the server detail records are initialised
 		serverVariableVersion = nil;
+		serverVersionNumber = 0;
 
 		// Start with a blank error state
 		queryErrorID = 0;
@@ -199,6 +198,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 		// Default to allowing queries to be automatically retried if the connection drops
 		// while running them
 		retryQueriesOnConnectionFailure = YES;
+
+		_debugLastConnectedEvent = nil;
 
 		// Start the ping keepalive timer
 		keepAliveTimer = [[SPMySQLKeepAliveTimer alloc] initWithInterval:10 target:self selector:@selector(_keepAlive)];
@@ -254,6 +255,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	if (querySqlstate) [querySqlstate release], querySqlstate = nil;
 	[delegateDecisionLock release];
 
+	[_debugLastConnectedEvent release];
+
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
 
 	[super dealloc];
@@ -279,6 +282,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either a connection has been established or
  * the connection and document have been closed.
+ *
+ * WARNING: This method may exit early returning NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)reconnect
 {
@@ -327,10 +333,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * Checks whether the connection to the server is still active.  This verifies
  * the connection using a ping, and if the connection is found to be down attempts
  * to quickly restore it, including the previous state.
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)checkConnection
 {
-
 	// If the connection is not seen as active, don't proceed
 	if (state != SPMySQLConnected) return NO;
 
@@ -429,6 +437,14 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 const char *__crashreporter_info__ = NULL;
 asm(".desc ___crashreporter_info__, 0x10");
 
+static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
+{
+	uint64_t elapsedTime_t = mach_absolute_time() - comparisonTime;
+	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
+
+	return (UnsignedWideToUInt64(elapsedTime) / 1000ULL);
+}
+
 @implementation SPMySQLConnection (PrivateAPI)
 
 /**
@@ -439,8 +455,11 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
-		asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state);
-		__builtin_trap();
+		@synchronized (self) {
+			uint64_t diff = _elapsedMicroSecondsSinceAbsoluteTime(initialConnectTime);
+			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lluµs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
+			__builtin_trap();
+		}
 		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state];
 		return NO;
 	}
@@ -466,16 +485,35 @@ asm(".desc ___crashreporter_info__, 0x10");
 	// If the connection was cancelled, clean up and don't continue
 	if (userTriggeredDisconnect) {
 		mysql_close(mySQLConnection);
-		[self _unlockConnection];
 		mySQLConnection = NULL;
+		[self _unlockConnection];
 		return NO;
 	}
 
 	// Successfully connected - record connected state and reset tracking variables
 	state = SPMySQLConnected;
-	initialConnectTime = mach_absolute_time();
+
+	@synchronized (self) {
+		initialConnectTime = mach_absolute_time();
+		[_debugLastConnectedEvent release];
+		_debugLastConnectedEvent = [[NSString alloc] initWithFormat:@"thread=%@ stack=%@",[NSThread currentThread],[NSThread callStackSymbols]];
+	}
+
 	mysqlConnectionThreadId = mySQLConnection->thread_id;
 	lastConnectionUsedTime = initialConnectTime;
+
+	// Copy the server version string to the instance variable
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
+	// the mysql_get_server_info() function
+	//   * returns the version name that is part of the initial connection handshake.
+	//   * Unless the connection failed, it will always return a non-null buffer containing at least a '\0'.
+	//   * It will never affect the error variables (since it only returns a struct member)
+	//
+	// At that point (handshake) there is no charset and it's highly unlikely this will ever contain something other than ASCII,
+	// but to be safe, we'll use the Latin1 encoding which won't bail on invalid chars.
+	serverVariableVersion = [[NSString alloc] initWithCString:mysql_get_server_info(mySQLConnection) encoding:NSISOLatin1StringEncoding];
+	// this one can actually change the error state, but only if the server version string is not set (ie. no connection)
+	serverVersionNumber = mysql_get_server_version(mySQLConnection);
 
 	// Update SSL state
 	connectedWithSSL = NO;
@@ -491,9 +529,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	keepAlivePingFailures = 0;
 
 	// Clear the connection error record
-	[self _updateLastErrorID:NSNotFound];
-	[self _updateLastErrorMessage:nil];
-	[self _updateLastSqlstate:nil];
+	[self _updateLastErrorInfos];
 
 	// Unlock the connection
 	[self _unlockConnection];
@@ -526,10 +562,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// Calling mysql_init will have automatically installed per-thread variables if necessary,
 	// so track their installation for removal and to avoid recreating again.
-	if (!pthread_getspecific(mySQLThreadInitFlagKey)) {
-		pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
-		[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
-	}
+	[self _validateThreadSetup];
 
 	// Disable automatic reconnection, as it's handled in-framework to preserve
 	// options, encodings and connection state.
@@ -619,6 +652,9 @@ asm(".desc ___crashreporter_info__, 0x10");
  * the connection and document have been closed.
  * Runs its own autorelease pool as sometimes called in a thread following proxy changes
  * (where the return code doesn't matter).
+ *
+ * WARNING: This method may exit early returning NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)_reconnectAllowingRetries:(BOOL)canRetry
 {
@@ -897,6 +933,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	[self _unlockConnection];
 	[self _cancelKeepAlives];
 
+	[self _lockConnection];
 	// Close the underlying MySQL connection if it still appears to be active, and not reading
 	// or writing.  While this may result in a leak of the MySQL object, it prevents crashes
 	// due to attempts to close a blocked/stuck connection.
@@ -904,17 +941,16 @@ asm(".desc ___crashreporter_info__, 0x10");
 		mysql_close(mySQLConnection);
 	}
 	mySQLConnection = NULL;
+	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
+	serverVersionNumber = 0;
+	if (database) [database release], database = nil;
+	state = SPMySQLDisconnected;
+	[self _unlockConnection];
 
 	// If using a connection proxy, disconnect that too
 	if (proxy) {
 		[proxy performSelectorOnMainThread:@selector(disconnect) withObject:nil waitUntilDone:YES];
 	}
-
-	// Clear host-specific information
-	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
-	if (database) [database release], database = nil;
-
-	state = SPMySQLDisconnected;
 }
 
 /**
@@ -938,10 +974,6 @@ asm(".desc ___crashreporter_info__, 0x10");
 	for (NSArray *variableRow in theResult) {
 		[variables setObject:[variableRow objectAtIndex:1] forKey:[variableRow objectAtIndex:0]];
 	}
-
-	// Copy the server version string to the instance variable
-	if (serverVariableVersion) [serverVariableVersion release], serverVariableVersion = nil;
-	serverVariableVersion = [[variables objectForKey:@"version"] retain];
 
 	// Get the connection encoding.  Although a specific encoding may have been requested on
 	// connection, it may be overridden by init_connect commands or connection state changes.
@@ -995,6 +1027,9 @@ asm(".desc ___crashreporter_info__, 0x10");
  * each of which requires a round trip to the server - but handles most
  * network issues.
  * Returns whether the connection is considered still valid.
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)_checkConnectionIfNecessary
 {
@@ -1018,21 +1053,22 @@ asm(".desc ___crashreporter_info__, 0x10");
  * Ensure that the thread this method is called on has been registered for
  * use with MySQL.  MySQL requires thread-specific variables for safe
  * execution.
+ *
+ * Calling this multiple times per thread is OK.
  */
 - (void)_validateThreadSetup
 {
-
 	// Check to see whether the handler has already been installed
 	if (pthread_getspecific(mySQLThreadInitFlagKey)) return;
 
 	// If not, install it
-	mysql_thread_init();
+	mysql_thread_init(); // multiple calls per thread OK.
 
 	// Mark the thread to avoid multiple installs
 	pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
 
 	// Set up the notification handler to deregister it
-	[(NSNotificationCenter *)[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
+	[[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
 }
 
 /**

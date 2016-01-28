@@ -1364,8 +1364,11 @@ static const NSInteger kBlobAsImageFile = 4;
 			
 			if(inputFileError != nil) {
 				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Bundle Error", @"bundle error"),
+					[self window],
+					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+				);
 				if (cmdData) [cmdData release];
 				return;
 			}
@@ -1424,8 +1427,11 @@ static const NSInteger kBlobAsImageFile = 4;
 			
 			if(inputFileError != nil) {
 				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"Bundle Error", @"bundle error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Bundle Error", @"bundle error"),
+					[self window],
+					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+				);
 				if (cmdData) [cmdData release];
 				return;
 			}
@@ -1516,8 +1522,11 @@ static const NSInteger kBlobAsImageFile = 4;
 				}
 			} else if([err code] != 9) { // Suppress an error message if command was killed
 				NSString *errorMessage  = [err localizedDescription];
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-								  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"BASH Error", @"bash error"),
+					[self window],
+					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+				);
 			}
 		}
 

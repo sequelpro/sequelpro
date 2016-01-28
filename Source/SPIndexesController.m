@@ -166,8 +166,8 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 	// Check whether a save of the current field row is required.
 	if (![tableStructure saveRowOnDeselect]) return;
 
-	isMyISAMTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"MyISAM"];
-	isInnoDBTable = [[[tableData statusValues] objectForKey:@"Engine"] isEqualToString:@"InnoDB"];
+	isMyISAMTable = [[tableData statusValueForKey:@"Engine"] isEqualToString:@"MyISAM"];
+	isInnoDBTable = [[tableData statusValueForKey:@"Engine"] isEqualToString:@"InnoDB"];
 	
 	// Reset visibility of the primary key item
 	[[[indexTypePopUpButton menu] itemWithTag:SPPrimaryKeyMenuTag] setHidden:NO];
@@ -909,8 +909,11 @@ static const NSString *SPNewIndexKeyBlockSize   = @"IndexKeyBlockSize";
 
 		// Check for errors, but only if the query wasn't cancelled
 		if ([connection queryErrored] && ![connection lastQueryWasCancelled]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Unable to add index", @"add index error message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection lastErrorMessage]]);
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Unable to add index", @"add index error message"),
+				[dbDocument parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to add the index.\n\nMySQL said: %@", @"add index error informative message"), [connection lastErrorMessage]]
+			);
 		}
 		else {
 			[tableData resetAllData];

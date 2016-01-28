@@ -47,7 +47,7 @@
 #endif
 ;
 
-@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate>
+@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
@@ -228,7 +228,7 @@
 
 #ifndef SP_CODA
 // Interface interaction
-- (IBAction)nodeDoubleClicked:(id)sender;
+- (void)nodeDoubleClicked:(id)sender;
 - (IBAction)chooseKeyLocation:(id)sender;
 - (IBAction)showHelp:(id)sender;
 - (IBAction)updateSSLInterface:(id)sender;
@@ -255,6 +255,7 @@
 - (IBAction)duplicateFavorite:(id)sender;
 - (IBAction)renameNode:(id)sender;
 - (IBAction)makeSelectedFavoriteDefault:(id)sender;
+- (void)selectQuickConnectItem;
 
 // Import/export favorites
 - (IBAction)importFavorites:(id)sender;

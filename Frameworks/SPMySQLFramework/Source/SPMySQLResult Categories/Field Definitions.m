@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "Field Definitions.h"
+#import "SPMySQL Private APIs.h"
 
 @interface SPMySQLResult (Field_Definitions_Private_API)
 
@@ -37,14 +38,6 @@
 - (NSString *)_charsetCollationForMySQLNumber:(NSUInteger)charsetnr;
 - (NSString *)_mysqlTypeToStringForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags withLength:(unsigned long long)length;
 - (NSString *)_mysqlTypeToGroupForType:(NSUInteger)type withCharsetNr:(NSUInteger)charsetnr withFlags:(NSUInteger)flags;
-
-@end
-
-// Import a private declaration from the SPMySQLResult file for use
-@interface SPMySQLResult (Private_API)
-
-- (NSString *)_stringWithBytes:(const void *)bytes length:(NSUInteger)length;
-- (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy;
 
 @end
 
@@ -379,7 +372,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 
 	switch (type) {
 
-		case FIELD_TYPE_BIT:
+		case MYSQL_TYPE_BIT:
 			return @"BIT";
 
 		case MYSQL_TYPE_DECIMAL:
@@ -482,6 +475,9 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 
 		case MYSQL_TYPE_GEOMETRY:
 			return @"GEOMETRY";
+			
+		case MYSQL_TYPE_JSON:
+			return @"JSON";
 
 		default:
 			return @"UNKNOWN";

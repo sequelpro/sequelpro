@@ -67,7 +67,8 @@ typedef NS_ENUM(NSUInteger, SPExportType) {
 	SPDotExport   = 3,
 	SPPDFExport   = 4,
 	SPHTMLExport  = 5,
-	SPExcelExport = 6
+	SPExcelExport = 6,
+	SPAnyExportType = NSUIntegerMax, // this is a transient type to indicate "no specific choice"
 };
 
 // Export source constants
@@ -259,6 +260,7 @@ extern NSString *SPFavoritesPasteboardDragType;
 extern NSString *SPContentFilterPasteboardDragType;
 extern NSString *SPNavigatorPasteboardDragType;
 extern NSString *SPNavigatorTableDataPasteboardDragType;
+extern NSString *SPExportCustomFileNameTokenPlistType;
 
 // File extensions
 extern NSString *SPFileExtensionDefault;
@@ -272,6 +274,12 @@ extern NSString *SPFavoritesDataFile;
 extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
+
+// SPF file types
+extern NSString *SPFExportSettingsContentType;
+extern NSString *SPFContentFiltersContentType;
+extern NSString *SPFQueryFavoritesContentType;
+extern NSString *SPFConnectionContentType;
 
 // Folder names
 extern NSString *SPThemesSupportFolder;
@@ -395,10 +403,18 @@ extern NSString *SPCSVImportFieldEscapeCharacter;
 extern NSString *SPCSVImportFirstLineIsHeader;
 extern NSString *SPCSVFieldImportMappingAlignment;
 extern NSString *SPImportClipboardTempFileNamePrefix;
-extern NSString *SPSQLExportUseCompression;
-extern NSString *SPNoBOMforSQLdumpFile;
-extern NSString *SPExportLastDirectory;
-extern NSString *SPExportFilenameFormat;
+extern NSString *SPLastExportSettings;
+
+// Export filename tokens
+extern NSString *SPFileNameDatabaseTokenName;
+extern NSString *SPFileNameHostTokenName;
+extern NSString *SPFileNameDateTokenName;
+extern NSString *SPFileNameYearTokenName;
+extern NSString *SPFileNameMonthTokenName;
+extern NSString *SPFileNameDayTokenName;
+extern NSString *SPFileNameTimeTokenName;
+extern NSString *SPFileNameFavoriteTokenName;
+extern NSString *SPFileNameTableTokenName;
 
 // Misc
 extern NSString *SPContentFilters;
@@ -491,6 +507,9 @@ extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
 extern NSString *SPFavoriteUseCompressionKey;
 extern NSString *SPConnectionFavoritesChangedNotification;
+
+extern NSString *SPFFormatKey;
+extern NSString *SPFVersionKey;
 
 // Favorites import/export
 extern NSString *SPFavoritesDataRootKey;
@@ -604,6 +623,8 @@ extern NSString *SPBundleShellVariableAllFunctions;
 extern NSString *SPBundleShellVariableAllViews;
 extern NSString *SPBundleShellVariableAllTables;
 
+extern NSString *SPCurrentTimestampPattern;
+
 typedef NS_ENUM(NSInteger, SPBundleRedirectAction) {
 	SPBundleRedirectActionNone                 = 200,
 	SPBundleRedirectActionReplaceSection       = 201,
@@ -623,6 +644,16 @@ extern NSString *SPURLSchemeQueryResultStatusPathHeader;
 extern NSString *SPURLSchemeQueryResultMetaPathHeader;
 
 extern NSString *SPCommonCryptoExceptionName;
+extern NSString *SPErrorDomain; // generic SP error domain for NSError
+
+typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
+	/** When plist deserialization fails with nil return and no NSError or the returned object has the wrong type */
+	SPErrorWrongTypeOrNil = 110001,
+	/** Parsed data is syntactically correct, but semantically wrong (e.g. a SPF file with the wrong content format */
+	SPErrorWrongContentType = 110002,
+	/** Some data has a version that we don't know how to handle (can be used with e.g. SPF files, which have explicit version numbers) */
+	SPErrorWrongContentVersion = 110003,
+};
 
 #define SPAppDelegate ((SPAppController *)[NSApp delegate])
 
@@ -654,3 +685,12 @@ typedef NSUInteger NSCellHitResult;
 
 // See http://stackoverflow.com/questions/4415524
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+// This definition is mostly for legibility
+#ifndef ESUCCESS
+	#define ESUCCESS 0
+#else
+	#if ESUCCESS != 0
+		#error 'ESUCCESS' must be defined as zero!
+	#endif
+#endif

@@ -156,7 +156,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="254835918">
 							<int key="NSCellFlags">-1804599231</int>
-							<int key="NSCellFlags2">-2076048384</int>
+							<int key="NSCellFlags2">-2076048320</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="26"/>
 							<object class="NSNumberFormatter" key="NSFormatter" id="582659696">
@@ -374,7 +374,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="929555576">
 							<int key="NSCellFlags">-1804599231</int>
-							<int key="NSCellFlags2">67240960</int>
+							<int key="NSCellFlags2">67241024</int>
 							<integer value="1" key="NSContents"/>
 							<reference key="NSSupport" ref="26"/>
 							<object class="NSNumberFormatter" key="NSFormatter" id="20983387">

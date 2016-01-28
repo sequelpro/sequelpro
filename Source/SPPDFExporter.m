@@ -53,15 +53,4 @@
 	return self;
 }
 
-/**
- * Start the PDF export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	[pool release];
-}
-
 @end

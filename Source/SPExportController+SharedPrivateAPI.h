@@ -32,4 +32,5 @@
 
 @interface SPExportController (SharedPrivateAPI)
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)_hideExportProgress;
 @end

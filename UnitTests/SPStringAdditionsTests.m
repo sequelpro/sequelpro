@@ -39,6 +39,7 @@
 - (void)testStringWithNewUUID;
 - (void)testCreateViewSyntaxPrettifier;
 - (void)testNonConsecutivelySearchStringMatchingRanges;
+- (void)testStringByReplacingCharactersInSetWithString;
 
 @end
 
@@ -193,6 +194,26 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 	// However Apple doesn't correctly handle characters in the 4-Byte UTF range, so let's use this test to check for changes in Apples behaviour :)
 	STAssertTrue([@":\xF0\x9F\x98\x84:\xF0\xA0\x98\x84:" nonConsecutivelySearchString:@"\xF0\x9F\x98\x84" matchingRanges:NULL], @"Mismatch of composed characters (4-byte) with same prefix");
 	
+}
+
+- (void)testStringByReplacingCharactersInSetWithString
+{
+	{
+		//test against empty string
+		STAssertEqualObjects([@"" stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"x"], @"", @"replacement on empty string must result in empty string");
+	}
+	{
+		//test match at begin, middle, end / consecutive matches
+		STAssertEqualObjects([@" ab  c " stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"_"], @"_ab__c_", @"Testing matches at both end, replacement of consecutive matches");
+	}
+	{
+		//test replacement of different characters
+		STAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:@"*"], @"ab**cd", @"Testing replacement of different characters in set");
+	}
+	{
+		// nil for replacement char
+		STAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:nil], @"abcd", @"testing replacement with nil");
+	}
 }
 
 @end

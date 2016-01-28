@@ -1844,8 +1844,11 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 						[theHintString replaceCharactersInRange:tagRange withString:cmdResult];
 					} else if([err code] != 9) { // Suppress an error message if command was killed
 						NSString *errorMessage  = [err localizedDescription];
-						SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self window], self, nil, nil,
-										  [NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [theHintString substringWithRange:cmdRange], errorMessage]);
+						SPOnewayAlertSheet(
+							NSLocalizedString(@"BASH Error", @"bash error"),
+							[self window],
+							[NSString stringWithFormat:NSLocalizedString(@"Error for “%1$@”:\n%2$@", @"error for bash command ($1), $2=message"), [theHintString substringWithRange:cmdRange], errorMessage]
+						);
 					}
 				} else {
 					[theHintString replaceCharactersInRange:tagRange withString:@""];

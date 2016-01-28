@@ -37,7 +37,13 @@
 #include <zlib.h>
 #include <CommonCrypto/CommonCrypto.h>
 #include <stdlib.h>
+#import "SPFunctions.h"
 
+/** Limit an NSUInteger to unsigned 32 bit max.
+ * @return Whatever is smaller: UINT32_MAX or i
+ *
+ * This is pretty much a NOOP on 32 bit platforms.
+ */
 uint32_t LimitUInt32(NSUInteger i);
 
 #pragma mark -
@@ -74,11 +80,12 @@ uint32_t LimitUInt32(NSUInteger i);
 {
 	// Create a random 128-bit initialization vector
 	// IV is block "-1" of plaintext data, therefore it is blockSize long
-	srand((unsigned int)time(NULL));
-	NSInteger ivIndex;
 	unsigned char iv[kCCBlockSizeAES128];
-	for (ivIndex = 0; ivIndex < kCCBlockSizeAES128; ivIndex++)
-		iv[ivIndex] = rand() & 0xff;
+	if(SPBetterRandomBytes(iv,sizeof(iv)) != 0)
+		@throw [NSException exceptionWithName:NSInternalInconsistencyException
+									   reason:@"Getting random data bytes failed!"
+									 userInfo:@{@"errno":@(errno)}];
+
 	NSData *ivData = [NSData dataWithBytes:iv length:sizeof(iv)];
 	
 	// Create the key from first 128-bits of the 160-bit password hash
@@ -429,6 +436,54 @@ uint32_t LimitUInt32(NSUInteger i);
 	}
 	
 	return string;
+}
+
+- (void)enumerateLinesBreakingAt:(SPLineTerminator)lbChars withBlock:(void (^)(NSRange line,BOOL *stop))block
+{
+	if(lbChars == SPLineTerminatorAny) lbChars = SPLineTerminatorCR|SPLineTerminatorLF|SPLineTerminatorCRLF;
+	
+	const uint8_t *bytes = [self bytes];
+	NSUInteger length = [self length];
+	
+	NSUInteger curStart = 0;
+	SPLineTerminator terminatorFound = 0;
+	NSUInteger i;
+	for (i = 0; i < length; i++) {
+		uint8_t chr = bytes[i];
+		// if looking for cr and/or crlf we look for cr otherwise for lf
+		if(((lbChars & SPLineTerminatorCRLF) || (lbChars & SPLineTerminatorCR)) && chr == '\r') {
+			//if we are looking for CRLF check for the following LF
+			if((lbChars & SPLineTerminatorCRLF) && ((i+1) < length) && bytes[i+1] == '\n') {
+				terminatorFound = SPLineTerminatorCRLF;
+			}
+			//if we were looking for CR we've found one
+			else if((lbChars & SPLineTerminatorCR)) {
+				terminatorFound = SPLineTerminatorCR;
+			}
+		}
+		else if((lbChars & SPLineTerminatorLF) && chr == '\n') {
+			terminatorFound = SPLineTerminatorLF;
+		}
+		// no linebreak yet ?
+		if(!terminatorFound) continue;
+		
+		// found one. call the block.
+		BOOL stop = NO;
+		NSRange lineRange = NSMakeRange(curStart, (i-curStart));
+		block(lineRange,&stop);
+		if(stop) return;
+		
+		// reset vars for next line
+		if(terminatorFound == SPLineTerminatorCRLF) i++; //skip the \n in CRLF
+		curStart = (i+1);
+		terminatorFound = 0;
+	}
+	// there could we one unterminated line left in buffer
+	if(curStart < i) {
+		NSRange lineRange = NSMakeRange(curStart, (i-curStart));
+		BOOL iDontCare = NO;
+		block(lineRange,&iDontCare);
+	}
 }
 
 @end

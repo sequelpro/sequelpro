@@ -30,7 +30,7 @@
 
 @interface SPTableInfo : NSObject 
 {
-	IBOutlet id infoTable;
+	IBOutlet NSTableView *infoTable;
 	IBOutlet id tableList;
 	IBOutlet id tableListInstance;
 	IBOutlet id tableDataInstance;

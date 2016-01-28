@@ -53,6 +53,7 @@
 #import "SPFavoriteColorSupport.h"
 #import "SPNamedNode.h"
 #import "SPWindowController.h"
+#import "SPFavoritesOutlineView.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -62,11 +63,24 @@ static NSString *SPRemoveNode              = @"RemoveNode";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #endif
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_6
 @interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
 
 - (void)setShowsHiddenFiles:(BOOL)flag;
 
 @end
+#endif
+
+/**
+ * This is a utility function to validate SSL key/certificate files
+ * @param fileData   The contents of the file
+ * @param first      Buffer with Data that has to occur on a line
+ * @param first_len  Length of first
+ * @param second     Buffer with Data that has to occur on a line after first
+ * @param second_len Length of second
+ * @return True if file contains two lines matching first and second and second comes after first
+ */
+static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len);
 
 @interface SPConnectionController ()
 
@@ -169,13 +183,21 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message"));		
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Insufficient connection details", @"insufficient details message"),
+			[dbDocument parentWindow],
+			NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter at least the hostname.", @"insufficient details informative message")
+		);
 		return;
 	}
 
 	// If SSH is enabled, ensure that the SSH host is not nil
 	if ([self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Insufficient connection details", @"insufficient details message"),
+			[dbDocument parentWindow],
+			NSLocalizedString(@"Insufficient details provided to establish a connection. Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"insufficient SSH tunnel details informative message")
+		);
 		return;
 	}
 
@@ -183,7 +205,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if ([self type] == SPSSHTunnelConnection && sshKeyLocationEnabled && sshKeyLocation) {
 		if (![[NSFileManager defaultManager] fileExistsAtPath:[sshKeyLocation stringByExpandingTildeInPath]]) {
 			[self setSshKeyLocationEnabled:NSOffState];
-			SPBeginAlertSheet(NSLocalizedString(@"SSH Key not found", @"SSH key check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSH key location was specified, but no file was found in the specified location.  Please re-select the key and try again.", @"SSH key not found message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"SSH Key not found", @"SSH key check error"),
+				[dbDocument parentWindow],
+				NSLocalizedString(@"A SSH key location was specified, but no file was found in the specified location.  Please re-select the key and try again.", @"SSH key not found message")
+			);
 			return;
 		}
 	}
@@ -200,7 +226,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslKeyFileLocationEnabled:NSOffState];
 			[self setSslKeyFileLocation:nil];
 			
-			SPBeginAlertSheet(NSLocalizedString(@"SSL Key File not found", @"SSL key file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL key file location was specified, but no file was found in the specified location.  Please re-select the key file and try again.", @"SSL key file not found message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"SSL Key File not found", @"SSL key file check error"),
+				[dbDocument parentWindow],
+				NSLocalizedString(@"A SSL key file location was specified, but no file was found in the specified location.  Please re-select the key file and try again.", @"SSL key file not found message")
+			);
 			
 			return;
 		}
@@ -211,7 +241,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslCertificateFileLocationEnabled:NSOffState];
 			[self setSslCertificateFileLocation:nil];
 			
-			SPBeginAlertSheet(NSLocalizedString(@"SSL Certificate File not found", @"SSL certificate file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL certificate location was specified, but no file was found in the specified location.  Please re-select the certificate and try again.", @"SSL certificate file not found message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"SSL Certificate File not found", @"SSL certificate file check error"),
+				[dbDocument parentWindow],
+				NSLocalizedString(@"A SSL certificate location was specified, but no file was found in the specified location.  Please re-select the certificate and try again.", @"SSL certificate file not found message")
+			);
 			
 			return;
 		}
@@ -222,7 +256,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self setSslCACertFileLocationEnabled:NSOffState];
 			[self setSslCACertFileLocation:nil];
 			
-			SPBeginAlertSheet(NSLocalizedString(@"SSL Certificate Authority File not found", @"SSL certificate authority file check error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], self, nil, nil, NSLocalizedString(@"A SSL Certificate Authority certificate location was specified, but no file was found in the specified location.  Please re-select the Certificate Authority certificate and try again.", @"SSL CA certificate file not found message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"SSL Certificate Authority File not found", @"SSL certificate authority file check error"),
+				[dbDocument parentWindow],
+				NSLocalizedString(@"A SSL Certificate Authority certificate location was specified, but no file was found in the specified location.  Please re-select the Certificate Authority certificate and try again.", @"SSL CA certificate file not found message")
+			);
 			
 			return;
 		}
@@ -343,10 +381,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 /**
  * Registered to be the double click action of the favorites outline view.
  */
-- (IBAction)nodeDoubleClicked:(id)sender
+- (void)nodeDoubleClicked:(id)sender
 {
 #ifndef SP_CODA
-	SPTreeNode *node = [self selectedFavoriteNode];
+	SPTreeNode *node = [favoritesOutlineView itemForDoubleAction];
 		
 	if (node) {
 		if (node == quickConnectItem) {
@@ -430,7 +468,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	keySelectionPanel = [[NSOpenPanel openPanel] retain]; // retain/release needed on OS X ≤ 10.6 according to Apple doc
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 	[keySelectionPanel setAccessoryView:accessoryView];
-
+	[keySelectionPanel setDelegate:self];
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{
 		NSString *abbreviatedFileName = [[[keySelectionPanel URL] path] stringByAbbreviatingWithTildeInPath];
@@ -483,6 +521,68 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		[self _startEditingConnection];
 	}];
 #endif
+}
+
+- (BOOL)panel:(id)sender validateURL:(NSURL *)url error:(NSError **)outError
+{
+	// mysql limits yaSSL to PEM format files (it would support DER)
+	if([keySelectionPanel accessoryView] == sslKeyFileLocationHelp) {
+		// and yaSSL only supports RSA type keys, with the exact string below on a single line
+		NSError *err = nil;
+		NSData *file = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:&err];
+		if(err) {
+			*outError = err;
+			return NO;
+		}
+
+		// see PemToDer() in crypto_wrapper.cpp in yaSSL
+		const char rsaHead[] = "-----BEGIN RSA PRIVATE KEY-----";
+		const char rsaFoot[] = "-----END RSA PRIVATE KEY-----";
+		
+		if(FindLinesInFile(file, rsaHead, strlen(rsaHead), rsaFoot, strlen(rsaFoot)))
+			return YES;
+
+		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{
+			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid private key file.", @"connection view : ssl : key file picker : wrong format error title"),[url lastPathComponent]],
+			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains a RSA private key and is using PEM encoding.", @"connection view : ssl : key file picker : wrong format error description"),
+			NSURLErrorKey: url
+		}];
+		return NO;
+	}
+	else if([keySelectionPanel accessoryView] == sslCertificateLocationHelp) {
+		NSError *err = nil;
+		NSData *file = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:&err];
+		if(err) {
+			*outError = err;
+			return NO;
+		}
+		
+		// see PemToDer() in crypto_wrapper.cpp in yaSSL
+		const char cerHead[] = "-----BEGIN CERTIFICATE-----";
+		const char cerFoot[] = "-----END CERTIFICATE-----";
+		
+		if(FindLinesInFile(file, cerHead, strlen(cerHead), cerFoot, strlen(cerFoot)))
+			return YES;
+		
+		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:0 userInfo:@{
+			NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedString(@"“%@” is not a valid client certificate file.", @"connection view : ssl : client cert file picker : wrong format error title"),[url lastPathComponent]],
+			NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Make sure the file contains a X.509 client certificate and is using PEM encoding.", @"connection view : ssl : client cert picker : wrong format error description"),
+			NSURLErrorKey: url
+		}];
+		return NO;
+	}
+	//unknown, accept by default
+	return YES;
+	
+	/* And now, an intermission from the mysql source code:
+	 
+  if (!cert_file &&  key_file)
+	 cert_file= key_file;
+  
+  if (!key_file &&  cert_file)
+	 key_file= cert_file;
+
+	 */
 }
 
 /**
@@ -1013,6 +1113,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	[prefs setInteger:favoriteID forKey:SPDefaultFavorite];
 }
+
+- (void)selectQuickConnectItem
+{
+	return [self _selectNode:quickConnectItem];
+}
 	
 #pragma mark -
 #pragma mark Import/export favorites
@@ -1143,17 +1248,21 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	// Ensure that host is not empty if this is a TCP/IP or SSH connection
 	if (validateDetails && ([self type] == SPTCPIPConnection || [self type] == SPSSHTunnelConnection) && ![[self host] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil,
-						  NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message"));		
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Insufficient connection details", @"insufficient details message"),
+			[dbDocument parentWindow],
+			NSLocalizedString(@"Insufficient details provided to establish a connection. Please provide at least a host.", @"insufficient details informative message")
+		);
 		return;
 	}
 	
 	// If SSH is enabled, ensure that the SSH host is not nil
 	if (validateDetails && [self type] == SPSSHTunnelConnection && ![[self sshHost] length]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Insufficient connection details", @"insufficient details message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, [dbDocument parentWindow], nil, nil, nil,
-						  NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete"));		
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Insufficient connection details", @"insufficient details message"),
+			[dbDocument parentWindow],
+			NSLocalizedString(@"Please enter the hostname for the SSH Tunnel, or disable the SSH Tunnel.", @"message of panel when ssh details are incomplete")
+		);
 		return;
 	}
 
@@ -1407,7 +1516,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 						  [dbDocument parentWindow],	// Window to attach to
 						  self,	// Modal delegate
 						  @selector(localhostErrorSheetDidEnd:returnCode:contextInfo:),	// Did end selector
-						  nil,	// Contextual info for selectors
+						  NULL,	// Contextual info for selectors
 						  NSLocalizedString(@"To MySQL, 'localhost' is a special host and means that a socket connection should be used.\n\nDid you mean to use a socket connection, or to connect to the local machine via a port?  If you meant to connect via a port, '127.0.0.1' should be used instead of 'localhost'.", @"message of error when using 'localhost' for a network connection"));
 		return NO;
 	}
@@ -1704,7 +1813,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self _reloadFavoritesViewData];
 
 	// Select Quick Connect item to prevent empty selection
-	[self _selectNode:quickConnectItem];
+	[self selectQuickConnectItem];
 	
 	[connectionResizeContainer setHidden:NO];
 	[connectionInstructionsTextField setStringValue:NSLocalizedString(@"Enter connection details below, or choose a favorite", @"enter connection details label")];
@@ -1942,3 +2051,28 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 }
 
 @end
+
+#pragma mark -
+
+BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,const void *second,size_t second_len)
+{
+	__block BOOL firstMatch = NO;
+	__block BOOL secondMatch = NO;
+	[fileData enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+		if(!firstMatch) {
+			if(line.length != first_len) return;
+			if(memcmp(first, ([fileData bytes]+line.location), first_len) == 0) {
+				firstMatch = YES;
+			}
+		}
+		else {
+			if(line.length != second_len) return;
+			if(memcmp(second, ([fileData bytes]+line.location), second_len) == 0) {
+				secondMatch = YES;
+				*stop = YES;
+			}
+		}
+	}];
+	
+	return (firstMatch && secondMatch);
+}

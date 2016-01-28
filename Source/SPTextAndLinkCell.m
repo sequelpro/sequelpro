@@ -183,7 +183,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	// Fast case for no link - make entire cell editable click area
 	if (!hasLink || !linkActive) return NSCellHitContentArea | NSCellHitEditableTextArea;
 
-	NSPoint p = [[[NSApp  mainWindow] contentView] convertPoint:[event locationInWindow] toView:controlView];
+	NSPoint p = [[[controlView window] contentView] convertPoint:[event locationInWindow] toView:controlView];
 	NSRect linkRect = SPTextLinkRectFromCellRect(cellFrame);
 
 	// Hit the link if it falls within the link rectangle for this cell, set when drawing
@@ -233,7 +233,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 
 				// Capture the clicked row and cell
 				NSTableView *tableView = (NSTableView *)[self controlView];
-				p = [[[NSApp mainWindow] contentView] convertPoint:[theEvent locationInWindow] toView:tableView];
+				p = [[[tableView window] contentView] convertPoint:[theEvent locationInWindow] toView:tableView];
 				lastLinkColumn = [tableView columnAtPoint:p];
 				lastLinkRow = [tableView rowAtPoint:p];
 

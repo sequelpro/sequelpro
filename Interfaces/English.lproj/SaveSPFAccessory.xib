@@ -156,7 +156,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSSecureTextFieldCell" key="NSCell" id="23878540">
 							<int key="NSCellFlags">342884416</int>
-							<int key="NSCellFlags2">272761856</int>
+							<int key="NSCellFlags2">272761920</int>
 							<string key="NSContents"/>
 							<object class="NSFont" key="NSSupport" id="26">
 								<bool key="IBIsSystemFont">YES</bool>

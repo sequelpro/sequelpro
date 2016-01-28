@@ -110,6 +110,7 @@ enum {
 
 #import "SPCharsetCollationHelper.h"
 #import "SPGotoDatabaseController.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -301,6 +302,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Set collapsible behaviour on the table list so collapsing behaviour handles resize issus
 	[contentViewSplitter setCollapsibleSubviewIndex:0];
+	
+	// Set a minimum size on both text views on the table info page
+	[tableInfoSplitView setMinSize:20 ofSubviewAtIndex:0];
+	[tableInfoSplitView setMinSize:20 ofSubviewAtIndex:1];
 
 	// Set up the connection controller
 	connectionController = [[SPConnectionController alloc] initWithDocument:self];
@@ -544,6 +549,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[tableDumpInstance setConnection:mySQLConnection];
 #ifndef SP_CODA
 	[exportControllerInstance setConnection:mySQLConnection];
+	[exportControllerInstance setServerSupport:serverSupport];
 #endif
 	[tableDataInstance setConnection:mySQLConnection];
 	[extendedTableInfoInstance setConnection:mySQLConnection];
@@ -804,6 +810,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	// Setup the charset and collation dropdowns
 	[addDatabaseCharsetHelper setDatabaseData:databaseDataInstance];
+	[addDatabaseCharsetHelper setDefaultCharsetFormatString:NSLocalizedString(@"Server Default (%@)", @"Add Database : Charset dropdown : default item ($1 = charset name)")];
+	[addDatabaseCharsetHelper setDefaultCollationFormatString:NSLocalizedString(@"Server Default (%@)", @"Add Database : Collation dropdown : default item ($1 = collation name)")];
 	[addDatabaseCharsetHelper setServerSupport:serverSupport];
 	[addDatabaseCharsetHelper setPromoteUTF8:YES];
 	[addDatabaseCharsetHelper setSelectedCharset:nil];
@@ -961,6 +969,40 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	[processListController displayProcessListWindow];
 }
+
+- (IBAction)shutdownServer:(id)sender
+{
+	// confirm user action
+	SPBeginAlertSheet(
+		NSLocalizedString(@"Do you really want to shutdown the server?", @"shutdown server : confirmation dialog : title"),
+		NSLocalizedString(@"Shutdown", @"shutdown server : confirmation dialog : shutdown button"),
+		NSLocalizedString(@"Cancel", @"shutdown server : confirmation dialog : cancel button"),
+		nil,
+		parentWindow,
+		self,
+		@selector(shutdownAlertDidEnd:returnCode:contextInfo:),
+		NULL,
+		NSLocalizedString(@"This will wait for open transactions to complete and then quit the mysql daemon. Afterwards neither you nor anyone else can connect to this database!\n\nFull management access to the server's operating system is required to restart MySQL!", @"shutdown server : confirmation dialog : message")
+	);
+}
+
+- (void)shutdownAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	if(returnCode != NSAlertDefaultReturn) return; //cancelled by user
+	
+	if(![mySQLConnection serverShutdown]) {
+		if([mySQLConnection isConnected]) {
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Shutdown failed!", @"shutdown server : error dialog : title"),
+				parentWindow,
+				[NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n%@", @"shutdown server : error dialog : message"),[mySQLConnection lastErrorMessage]]
+			);
+		}
+	}
+	// shutdown successful.
+	// Until s.o. has a good UI idea, do nothing. Sequel Pro should figure out the connection loss soon enough
+}
+
 #endif
 
 /**
@@ -1027,7 +1069,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[self _addDatabase];
 
 			// Query the structure of all databases in the background (mainly for completion)
-			[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",self) target:databaseStructureRetrieval selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+			[databaseStructureRetrieval queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 		}
 		else {
 			// Reset chooseDatabaseButton
@@ -1081,12 +1123,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  * Show Error sheet (can be called from inside of a endSheet selector)
  * via [self performSelector:@selector(showErrorSheetWithTitle:) withObject: afterDelay:]
  */
--(void)showErrorSheetWith:(id)error
+-(void)showErrorSheetWith:(NSArray *)error
 {
 	// error := first object is the title , second the message, only one button OK
-	SPBeginAlertSheet([error objectAtIndex:0], NSLocalizedString(@"OK", @"OK button"), 
-			nil, nil, parentWindow, self, nil, nil,
-			[error objectAtIndex:1]);
+	SPOnewayAlertSheet([error objectAtIndex:0], parentWindow, [error objectAtIndex:1]);
 }
 #endif
 
@@ -1109,7 +1149,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
 
-		if(![dbName isNSNull]) {
+		// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
+		if(dbName && ![dbName isNSNull]) {
 			if(![dbName isEqualToString:selectedDatabase]) {
 				if (selectedDatabase) SPClear(selectedDatabase);
 				selectedDatabase = [[NSString alloc] initWithString:dbName];
@@ -1726,20 +1767,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	_supportsEncoding = YES;
 
-	NSString *mysqlEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
+	NSString *mysqlEncoding = [[databaseDataInstance getDatabaseDefaultCharacterSet] retain];
 
 	SPClear(selectedDatabaseEncoding);
 
 	// Fallback or older version? -> set encoding to mysql default encoding latin1
 	if ( !mysqlEncoding ) {
-		NSLog(@"Error: no character encoding found, mysql version is %@", [self mySQLVersion]);
+		NSLog(@"Error: no character encoding found for db, mysql version is %@", [self mySQLVersion]);
 		
 		selectedDatabaseEncoding = [[NSString alloc] initWithString:@"latin1"];
 		
 		_supportsEncoding = NO;
 	} 
 	else {
-		selectedDatabaseEncoding = [mysqlEncoding retain];
+		selectedDatabaseEncoding = mysqlEncoding;
 	}
 }
 
@@ -2535,10 +2576,18 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	if (![mySQLConnection queryErrored]) {
 		//flushed privileges without errors
-		SPBeginAlertSheet(NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Flushed Privileges", @"title of panel when successfully flushed privs"),
+			parentWindow,
+			NSLocalizedString(@"Successfully flushed privileges.", @"message of panel when successfully flushed privs")
+		);
 	} else {
 		//error while flushing privileges
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't flush privileges.\nMySQL said: %@", @"message of panel when flushing privs failed"), [mySQLConnection lastErrorMessage]]
+		);
 	}
 }
 
@@ -3143,8 +3192,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_password"] boolValue]] forKey:@"save_password"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"include_session"] boolValue]] forKey:@"include_session"];
 			[info setObject:[NSNumber numberWithBool:[[spfDocData_temp objectForKey:@"save_editor_content"] boolValue]] forKey:@"save_editor_content"];
-			[info setObject:@1 forKey:@"version"];
-			[info setObject:@"connection bundle" forKey:@"format"];
+			[info setObject:@1 forKey:SPFVersionKey];
+			[info setObject:@"connection bundle" forKey:SPFFormatKey];
 
 			// Loop through all windows
 			for(NSWindow *window in [SPAppDelegate orderedDatabaseConnectionWindows]) {
@@ -3303,7 +3352,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		// For dispatching later
-		if(![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
+		if(![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
 			NSLog(@"SPF file format is not 'connection'.");
 			[spf release];
 			return NO;
@@ -3352,8 +3401,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSMutableDictionary *spfData = [NSMutableDictionary dictionary];
 
 	// Add basic details
-	[spfStructure setObject:@1 forKey:@"version"];
-	[spfStructure setObject:@"connection" forKey:@"format"];
+	[spfStructure setObject:@1 forKey:SPFVersionKey];
+	[spfStructure setObject:SPFConnectionContentType forKey:SPFFormatKey];
 	[spfStructure setObject:@"mysql" forKey:@"rdbms_type"];
 	if([self mySQLVersion])
 		[spfStructure setObject:[self mySQLVersion] forKey:@"rdbms_version"];
@@ -4632,12 +4681,17 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	return stateDetails;
 }
 
+- (BOOL)setState:(NSDictionary *)stateDetails
+{
+	return [self setState:stateDetails fromFile:YES];
+}
+
 /**
  * Set the state of the document to the supplied dictionary, which should
  * at least contain a "connection" dictionary of details.
  * Returns whether the state was set successfully.
  */
-- (BOOL)setState:(NSDictionary *)stateDetails
+- (BOOL)setState:(NSDictionary *)stateDetails fromFile:(BOOL)spfBased
 {
 	NSDictionary *connection = nil;
 	NSInteger connectionType = -1;
@@ -4654,15 +4708,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	[self updateWindowTitle:self];
 
-	// Deselect all favorites on the connection controller,
-	// and clear and reset the connection state.
-	[[connectionController favoritesOutlineView] deselectAll:connectionController];
-	[connectionController updateFavoriteSelection:self];
-
-	// Suppress the possibility to choose an other connection from the favorites
-	// if a connection should initialized by SPF file. Otherwise it could happen
-	// that the SPF file runs out of sync.
-	[[connectionController favoritesOutlineView] setEnabled:NO];
+	if(spfBased) {
+		// Deselect all favorites on the connection controller,
+		// and clear and reset the connection state.
+		[[connectionController favoritesOutlineView] deselectAll:connectionController];
+		[connectionController updateFavoriteSelection:self];
+		
+		// Suppress the possibility to choose an other connection from the favorites
+		// if a connection should initialized by SPF file. Otherwise it could happen
+		// that the SPF file runs out of sync.
+		[[connectionController favoritesOutlineView] setEnabled:NO];
+	}
+	else {
+		[connectionController selectQuickConnectItem];
+	}
 
 	// Set the correct connection type
 	if ([connection objectForKey:@"type"]) {
@@ -4773,7 +4832,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Autoconnect if appropriate
 	if ([stateDetails objectForKey:@"auto_connect"] && [[stateDetails valueForKey:@"auto_connect"] boolValue]) {
-		[connectionController initiateConnection:self];
+		[self connect];
 	}
 
 	if (keychain) [keychain release];
@@ -4817,12 +4876,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// If the .spf format is unhandled, error.
-	if (![[spf objectForKey:@"format"] isEqualToString:@"connection"]) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Warning", @"warning")]
+	if (![[spf objectForKey:SPFFormatKey] isEqualToString:SPFConnectionContentType]) {
+		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Unknown file format", @"warning")]
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										  otherButton:nil 
-							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:@"format"]];
+							informativeTextWithFormat:NSLocalizedString(@"The chosen file “%@” contains ‘%@’ data.", @"message while reading a spf file which matches non-supported formats."), path, [spf objectForKey:SPFFormatKey]];
 
 		[alert setAlertStyle:NSWarningAlertStyle];
 		[spf release];
@@ -5038,21 +5097,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	}
 
-	// Select view
-	if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
-		[self viewStructure:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
-		[self viewContent:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
-		[self viewQuery:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
-		[self viewStatus:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
-		[self viewRelations:self];
-	else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
-		[self viewTriggers:self];
-
-	[self updateWindowTitle:self];
+	// update UI on main thread
+	SPMainQSync(^{
+		// Select view
+		if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STRUCTURE"])
+			[self viewStructure:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CONTENT"])
+			[self viewContent:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_CUSTOMQUERY"])
+			[self viewQuery:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_STATUS"])
+			[self viewStatus:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_RELATIONS"])
+			[self viewRelations:self];
+		else if([[spfSession objectForKey:@"view"] isEqualToString:@"SP_VIEW_TRIGGERS"])
+			[self viewTriggers:self];
+		
+		[self updateWindowTitle:self];
+	});
 
 	// dealloc spfSession data
 	SPClear(spfSession);
@@ -5218,8 +5280,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Authenticate command
 	if(![docProcessID isEqualToString:[commandDict objectForKey:@"id"]]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-						  NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Remote Error", @"remote error"),
+			[self parentWindow],
+			NSLocalizedString(@"URL scheme command couldn't authenticated", @"URL scheme command couldn't authenticated")
+		);
 		return;
 	}
 
@@ -5264,8 +5329,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if([command isEqualToString:@"SelectTableRows"]) {
-		if([params count] > 1 && [[[NSApp mainWindow] firstResponder] respondsToSelector:@selector(selectTableRows:)]) {
-			[(SPCopyTable *)[[NSApp mainWindow] firstResponder] selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
+		id firstResponder = [[NSApp keyWindow] firstResponder];
+		if([params count] > 1 && [firstResponder respondsToSelector:@selector(selectTableRows:)]) {
+			[(SPCopyTable *)firstResponder selectTableRows:[params subarrayWithRange:NSMakeRange(1, [params count]-1)]];
 		}
 		return;
 	}
@@ -5404,8 +5470,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 				if ( ![queryResult numberOfRows] ) {
 					//error while getting table structure
-					SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Error", @"error"),
+						[self parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]
+					);
 
 					status = @"1";
 
@@ -5446,8 +5515,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 			if(!succeed) {
 				NSBeep();
-				SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-								  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"BASH Error", @"bash error"),
+					[self parentWindow],
+					NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message")
+				);
 			}
 			
 		}
@@ -5619,16 +5691,20 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		BOOL succeed = [status writeToFile:statusFileName atomically:YES encoding:NSUTF8StringEncoding error:nil];
 		if(!succeed) {
 			NSBeep();
-			SPBeginAlertSheet(NSLocalizedString(@"BASH Error", @"bash error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-							  NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message"));
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"BASH Error", @"bash error"),
+				[self parentWindow],
+				NSLocalizedString(@"Status file for sequelpro url scheme command couldn't be written!", @"status file for sequelpro url scheme command couldn't be written error message")
+			);
 		}
 		return;
 	}
 
-	SPBeginAlertSheet(NSLocalizedString(@"Remote Error", @"remote error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [self parentWindow], self, nil, nil,
-					  [NSString stringWithFormat:NSLocalizedString(@"URL scheme command “%@” unsupported", @"URL scheme command “%@” unsupported"), command]);
-	
-
+	SPOnewayAlertSheet(
+		NSLocalizedString(@"Remote Error", @"remote error"),
+		[self parentWindow],
+		[NSString stringWithFormat:NSLocalizedString(@"URL scheme command “%@” unsupported", @"URL scheme command “%@” unsupported"), command]
+	);
 }
 
 - (void)registerActivity:(NSDictionary*)commandDict
@@ -5932,7 +6008,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (void)_copyDatabase 
 {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -5947,9 +6023,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[self selectDatabase:[databaseCopyNameField stringValue] item:nil];
 	}
 	else {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to copy database", @"unable to copy database message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to copy database", @"unable to copy database message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to copy the database '%@' to '%@'.", @"unable to copy database message informative message"), [self database], [databaseCopyNameField stringValue]]
+		);
 	}
 	
 	[dbActionCopy release];
@@ -5964,7 +6042,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSString *newDatabaseName = [databaseRenameNameField stringValue];
 	
 	if ([newDatabaseName isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 	
@@ -5979,9 +6057,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[self selectDatabase:newDatabaseName item:nil];
 	}
 	else {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to rename database", @"unable to rename database message"), 
-						  NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, 
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], newDatabaseName]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Unable to rename database", @"unable to rename database message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to rename the database '%@' to '%@'.", @"unable to rename database message informative message"), [self database], newDatabaseName]
+		);
 	}
 	
 	[dbActionRename release];
@@ -6007,7 +6087,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// This check is not necessary anymore as the add database button is now only enabled if the name field
 	// has a length greater than zero. We'll leave it in just in case.
 	if ([[databaseNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, NSLocalizedString(@"Database must have a name.", @"message of panel when no db name is given"));
 		return;
 	}
 
@@ -6023,7 +6103,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if (!res) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, [NSString stringWithFormat:NSLocalizedString(@"Couldn't create database.\nMySQL said: %@", @"message of panel when creation of db failed"), [mySQLConnection lastErrorMessage]]);
 		return;
 	}
 
@@ -6061,7 +6141,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if ([mySQLConnection queryErrored]) {
 		// An error occurred
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, parentWindow, self, nil, nil, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), parentWindow, [NSString stringWithFormat:NSLocalizedString(@"Couldn't alter database.\nMySQL said: %@", @"Alter Database : Query Failed ($1 = mysql error message)"), [mySQLConnection lastErrorMessage]]);
 		return;
 	}
 	
@@ -6160,10 +6240,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 				SPOnewayAlertSheet(
 					NSLocalizedString(@"Error", @"error"),
-					nil,
 					parentWindow,
-					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName],
-					NSWarningAlertStyle
+					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
 				);
 			}
 
@@ -6268,17 +6346,18 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			if(!correspondingWindowFound) stopTrigger = YES;
 		}
 		if(!stopTrigger) {
+			id firstResponder = [[NSApp keyWindow] firstResponder];
 			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
 				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
-				if ([[[[[NSApp mainWindow] firstResponder] class] description] isEqualToString:@"SPCopyTable"]) {
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForDataTable:aMenuItem];
+				if ([[[firstResponder class] description] isEqualToString:@"SPCopyTable"]) {
+					[[firstResponder onMainThread] executeBundleItemForDataTable:aMenuItem];
 			}
 			}
 			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
-				if ([[[NSApp mainWindow] firstResponder] isKindOfClass:[NSTextView class]]) {
-					[[[[NSApp mainWindow] firstResponder] onMainThread] executeBundleItemForInputField:aMenuItem];
+				if ([firstResponder isKindOfClass:[NSTextView class]]) {
+					[[firstResponder onMainThread] executeBundleItemForInputField:aMenuItem];
 			}
 		}
 	}
@@ -6290,6 +6369,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)dealloc
 {
+	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!",__func__);
 #ifndef SP_CODA /* Unregister observers */
 	// Unregister observers
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];

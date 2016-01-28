@@ -42,6 +42,7 @@
 @interface SPTableData (PrivateAPI)
 
 - (void)_loopWhileWorking;
+- (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType;
 
 @end
 
@@ -437,21 +438,12 @@
 }
 
 /**
- * Retrieve the CREATE TABLE string for a table and analyse it to extract the field
- * details, primary key, unique keys, and table encoding.
- * In future this could also be used to retrieve the majority of index information
- * assuming information like cardinality isn't needed.
- * This function is rather long due to the painful parsing required, but is fast.
- * Returns a boolean indicating success.
+ * Retrieve the CREATE statement for a table/view and return extracted table
+ * structure information.
+ * @attention This method will interact with the UI on errors/connection loss!
  */
 - (NSDictionary *) informationForTable:(NSString *)tableName
 {
-	SPSQLParser *createTableParser, *fieldsParser, *fieldParser;
-	NSMutableArray *tableColumns, *fieldStrings;
-	NSMutableDictionary *tableColumn, *tableData;
-	NSString *encodingString = nil;
-	NSUInteger i, stringStart;
-	unichar quoteCharacter;
 	BOOL changeEncoding = ![[mySQLConnection encoding] isEqualToString:@"utf8"];
 
 	// Catch unselected tables and return nil
@@ -490,10 +482,8 @@
 
 			SPOnewayAlertSheet(
 			   NSLocalizedString(@"Error retrieving table information", @"error retrieving table information message"),
-			   nil,
 			   [NSApp mainWindow],
-			   errorMessage,
-			   NSWarningAlertStyle
+			   errorMessage
 			);
 
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -516,10 +506,8 @@
 	if ([[syntaxResult objectAtIndex:1] isNSNull]) {
 		SPOnewayAlertSheet(
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
-		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
-		   NSWarningAlertStyle
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
 		);
 
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -527,27 +515,46 @@
 	}
 
 	tableCreateSyntax = [[NSString alloc] initWithString:[syntaxResult objectAtIndex:1]];
-	createTableParser = [[SPSQLParser alloc] initWithString:[syntaxResult objectAtIndex:1]];
+	
+	NSDictionary *tableData = [self parseCreateStatement:tableCreateSyntax ofType:[resultFieldNames objectAtIndex:0]];
+	
+	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
+	return tableData;
+}
+
+/**
+ * Analyse a CREATE TABLE tring to extract the field details, primary key, unique keys, and table encoding.
+ * @param tableDef @"CREATE TABLE ..."
+ * @param tableType Can either be Table or View. Value is copied to the result and not used otherwise
+ * @return A dict containing info about the table's structure
+ *
+ * In future this could also be used to retrieve the majority of index information
+ * assuming information like cardinality isn't needed.
+ * This function is rather long due to the painful parsing required, but is fast.
+ */
+- (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType
+{
+	SPSQLParser *createTableParser = [[SPSQLParser alloc] initWithString:tableDef];
 
 	// Extract the fields definition string from the CREATE TABLE syntax
-	fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
+	SPSQLParser *fieldsParser = [[SPSQLParser alloc] initWithString:[createTableParser trimAndReturnStringFromCharacter:'(' toCharacter:')' trimmingInclusively:YES returningInclusively:NO skippingBrackets:YES]];
 
 	// Split the fields and keys string into an array of individual elements
-	fieldStrings = [[NSMutableArray alloc] initWithArray:[fieldsParser splitStringByCharacter:',' skippingBrackets:YES]];
+	NSMutableArray *fieldStrings = [[NSMutableArray alloc] initWithArray:[fieldsParser splitStringByCharacter:',' skippingBrackets:YES]];
 
 	// fieldStrings should now hold unparsed field and key strings, while tableProperty string holds unparsed
 	// table information.  Proceed further by parsing the field strings.
-	tableColumns = [[NSMutableArray alloc] init];
-	tableColumn = [[NSMutableDictionary alloc] init];
-	fieldParser = [[SPSQLParser alloc] init];
+	NSMutableArray *tableColumns = [[NSMutableArray alloc] init];
+	NSMutableDictionary *tableColumn = [[NSMutableDictionary alloc] init];
 
 	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	NSCharacterSet *quoteSet = [NSCharacterSet characterSetWithCharactersInString:@"`'\""];
 	NSCharacterSet *bracketSet = [NSCharacterSet characterSetWithCharactersInString:@"()"];
 
-	tableData = [NSMutableDictionary dictionary];
+	NSMutableDictionary *tableData = [NSMutableDictionary dictionary];
 
-	for (i = 0; i < [fieldStrings count]; i++) {
+	for (NSUInteger i = 0; i < [fieldStrings count]; i++) {
 
 		// Take this field/key string, trim whitespace from both ends and remove comments
 		[fieldsParser setString:[NSArrayObjectAtIndex(fieldStrings, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet]];
@@ -559,7 +566,7 @@
 
 		// If the first character is a quote character, this is a field definition.
 		if ([quoteSet characterIsMember:[fieldsParser characterAtIndex:0]]) {
-			quoteCharacter = [fieldsParser characterAtIndex:0];
+			unichar quoteCharacter = [fieldsParser characterAtIndex:0];
 
 			// Capture the area between the two backticks as the name
 			// Set the parser to ignoreCommentStrings since a field name can contain # or /*
@@ -571,7 +578,7 @@
 														   ignoringQuotedStrings: NO];
 			if(fieldName == nil || [fieldName length] == 0) {
 				NSBeep();
-				SPOnewayAlertSheet(
+				SPOnewayAlertSheetWithStyle(
 				   NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
 				   nil,
 				   nil,
@@ -734,11 +741,11 @@
 						[primaryKeyFields addObject:primaryFieldName];
 						for (NSMutableDictionary *theTableColumn in tableColumns) {
 							if ([[theTableColumn objectForKey:@"name"] isEqualToString:primaryFieldName]) {
-							[theTableColumn setObject:@1 forKey:@"isprimarykey"];
-							break;
+								[theTableColumn setObject:@1 forKey:@"isprimarykey"];
+								break;
+							}
 						}
-				}
-			}
+					}
 					[tableData setObject:primaryKeyFields forKey:@"primarykeyfield"];
 				}
 			}
@@ -752,9 +759,9 @@
 					NSString *uniqueFieldName = [[SPSQLParser stringWithString:quotedUniqueKey] unquotedString];
 					for (NSMutableDictionary *theTableColumn in tableColumns) {
 						if ([[theTableColumn objectForKey:@"name"] isEqualToString:uniqueFieldName]) {
-								[theTableColumn setObject:@1 forKey:@"unique"];
-								break;
-							}
+							[theTableColumn setObject:@1 forKey:@"unique"];
+							break;
+						}
 					}
 				}
 			}
@@ -769,12 +776,14 @@
 	[tableColumn release];
 
 	// Extract the encoding from the table properties string - other details come from TABLE STATUS.
+	NSString *encodingString = nil;
 	NSRange charsetDefinitionRange = [createTableParser rangeOfString:@"CHARSET=" options:NSCaseInsensitiveSearch];
 	if (charsetDefinitionRange.location == NSNotFound) {
 		charsetDefinitionRange = [createTableParser rangeOfString:@"CHARACTER SET=" options:NSCaseInsensitiveSearch];
 	}
 	if (charsetDefinitionRange.location != NSNotFound) {
-		stringStart = NSMaxRange(charsetDefinitionRange);
+		NSUInteger stringStart = NSMaxRange(charsetDefinitionRange);
+		NSUInteger i;
 		for (i = stringStart; i < [createTableParser length]; i++) {
 			if ([createTableParser characterAtIndex:i] == ' ') break;
 		}
@@ -795,18 +804,15 @@
 	}
 
 	[createTableParser release];
-	[fieldParser release];
 
 	// this will be 'Table' or 'View'
-	[tableData setObject:[resultFieldNames objectAtIndex:0] forKey:@"type"];
+	[tableData setObject:tableType forKey:@"type"];
 	[tableData setObject:[NSString stringWithString:encodingString] forKey:@"encoding"];
 	[tableData setObject:[NSArray arrayWithArray:tableColumns] forKey:@"columns"];
 	[tableData setObject:[NSArray arrayWithArray:constraints] forKey:@"constraints"];
 
 	[encodingString release];
 	[tableColumns release];
-
-	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 
 	return tableData;
 }
@@ -847,10 +853,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error", @"error"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"),[mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -860,15 +864,19 @@
 	// Retrieve the table syntax string
 	if (tableCreateSyntax) SPClear(tableCreateSyntax);
 	NSString *syntaxString = [[theResult getRowAsArray] objectAtIndex:1];
+	
+	// Crash reports indicate that this does happen, however I'm not sure why.
+	if (!syntaxString) {
+		NSLog(@"%s: query for 'SHOW CREATE TABLE' returned nil but there was no connection error!? queryErrored=%d, userTriggeredDisconnect=%d, isConnected=%d, theResult=%@",__func__,[mySQLConnection queryErrored],[mySQLConnection userTriggeredDisconnect],[mySQLConnection isConnected],theResult);
+		return nil;
+	}
 
 	// A NULL value indicates that the user does not have permission to view the syntax
 	if ([syntaxString isNSNull]) {
 		SPOnewayAlertSheet(
 		   NSLocalizedString(@"Permission Denied", @"Permission Denied"),
-		   nil,
 		   [NSApp mainWindow],
-		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail"),
-		   NSWarningAlertStyle
+		   NSLocalizedString(@"The creation syntax could not be retrieved due to a permissions error.\n\nPlease check your user permissions with an administrator.", @"Create syntax permission denied detail")
 		);
 		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		return nil;
@@ -885,10 +893,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 			   NSLocalizedString(@"Error", @"error"),
-			   nil,
 			   [NSApp mainWindow],
-			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]],
-			   NSWarningAlertStyle
+			   [NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving information.\nMySQL said: %@", @"message of panel when retrieving information failed"), [mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -997,10 +1003,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error", @"error"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving status data.\n\nMySQL said: %@", @"message of panel when retrieving view information failed"), [mySQLConnection lastErrorMessage]]
 			);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
 		}
@@ -1037,9 +1041,19 @@
 		// this happens e.g. for db "information_schema"
 		if([[status objectForKey:@"Rows"] isNSNull]) {
 			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [escapedTableName backtickQuotedString] ]];
-			if (![mySQLConnection queryErrored])
+			// this query can fail e.g. if a table is damaged
+			if (tableStatusResult && ![mySQLConnection queryErrored]) {
 				[status setObject:[[tableStatusResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
+			}
+			else {
+				//FIXME that error should really show only when trying to view the table content, but we don't even try to load that if Rows==NULL
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Querying row count failed", @"table status : row count query failed : error title"),
+					[NSApp mainWindow],
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to determine the number of rows for “%@”.\nMySQL said: %@ (%lu)", @"table status : row count query failed : error message"),[tableListInstance tableName],[mySQLConnection lastErrorMessage],[mySQLConnection lastErrorID]]
+				);
+			}
 		}
 
 	}
@@ -1085,10 +1099,8 @@
 		if ([mySQLConnection isConnected]) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Error retrieving trigger information", @"error retrieving trigger information message"),
-				nil,
 				[NSApp mainWindow],
-				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]],
-				NSWarningAlertStyle
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while retrieving the trigger information for table '%@'. Please try again.\n\nMySQL said: %@", @"error retrieving table information informative message"), [tableListInstance tableName], [mySQLConnection lastErrorMessage]]
 			);
 			if (triggers) SPClear(triggers);
 			if (changeEncoding) [mySQLConnection restoreStoredEncoding];
@@ -1255,7 +1267,8 @@
 	} else if ([detailString isEqualToString:@"ENUM"] || [detailString isEqualToString:@"SET"]) {
 		[fieldDetails setObject:@"enum" forKey:@"typegrouping"];
 	} else if ([detailString isEqualToString:@"TINYTEXT"] || [detailString isEqualToString:@"TEXT"]
-				|| [detailString isEqualToString:@"MEDIUMTEXT"] || [detailString isEqualToString:@"LONGTEXT"]) {
+				|| [detailString isEqualToString:@"MEDIUMTEXT"] || [detailString isEqualToString:@"LONGTEXT"]
+	            || [detailString isEqualToString:@"JSON"]) { // JSON is seen as a text type by us, but works a bit different (e.g. encoding is always "utf8mb4")
 		[fieldDetails setObject:@"textdata" forKey:@"typegrouping"];
 	} else if ([detailString isEqualToString:@"POINT"] || [detailString isEqualToString:@"GEOMETRY"]
 				|| [detailString isEqualToString:@"LINESTRING"] || [detailString isEqualToString:@"POLYGON"]
@@ -1347,7 +1360,8 @@
 		// Special timestamp/datetime case - Whether fields are set to update the current timestamp
 		} else if ([detailString isEqualToString:@"ON"] && (definitionPartsIndex + 2 < partsArrayLength)
 					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+1) uppercaseString] isEqualToString:@"UPDATE"]
-					&& [[NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
+					&& [NSArrayObjectAtIndex(definitionParts, definitionPartsIndex+2) isMatchedByRegex:SPCurrentTimestampPattern]) {
+			// mysql requires the CURRENT_TIMESTAMP(n) to be exactly the same as the column types length, so we don't need to keep it, we can just restore it later
 			[fieldDetails setValue:@YES forKey:@"onupdatetimestamp"];
 			definitionPartsIndex += 2;
 

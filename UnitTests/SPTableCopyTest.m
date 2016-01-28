@@ -39,52 +39,62 @@
 @interface SPTableCopyTest : SenTestCase
 
 - (void)testCopyTableFromToWithData;
+- (void)testCopyTableFromTo_NoPermissions;
 
 @end
 
 @implementation SPTableCopyTest
 
-- (id)mockConnection 
-{
-	return [[OCMockObject niceMockForClass:[SPMySQLConnection class]] autorelease];
-}
-
-- (id)mockResult 
-{
-	return [[OCMockObject niceMockForClass:[SPMySQLResult class]] autorelease];
-}
-
 - (void)testCopyTableFromToWithData 
 {
-	id mockResult = [self mockResult];
+	id mockResult = OCMClassMock([SPMySQLResult class]);
 	
-	unsigned long long varOne = 1;
-	NSValue *valueOne = [NSValue value:&varOne withObjCType:@encode(__typeof__(varOne))];
-	BOOL varNo = NO;
-	
-	NSValue *valueNo = [NSValue value:&varNo withObjCType:@encode(BOOL)];
 	NSArray *resultArray = [[NSArray alloc] initWithObjects:@"", @"CREATE TABLE `table_name` ()", nil];
 	
-	id mockConnection = [self mockConnection];
+	id mockConnection = OCMClassMock([SPMySQLConnection class]);
 	
-	[(SPMySQLResult *)[[mockResult expect] andReturn:valueOne] numberOfRows];
-	[[[mockResult expect] andReturn:resultArray] getRowAsArray];
+	OCMExpect([mockResult numberOfRows]).andReturn(1);
+	OCMExpect([mockResult getRowAsArray]).andReturn(resultArray);
 	
-	[[[mockConnection expect] andReturn:mockResult] queryString:@"SHOW CREATE TABLE `source_db`.`table_name`"];
-	[[mockConnection expect] queryString:@"CREATE TABLE `target_db`.`table_name` ()"];
-	[[mockConnection expect] queryString:@"INSERT INTO `target_db`.`table_name` SELECT * FROM `source_db`.`table_name`"];
-	[[[mockConnection stub] andReturnValue:valueNo] queryErrored];
+	OCMExpect([mockConnection queryString:@"SHOW CREATE TABLE `source_db`.`table_name`"]).andReturn(mockResult);
+	OCMExpect([mockConnection queryString:@"CREATE TABLE `target_db`.`table_name` ()"]);
+	OCMExpect([mockConnection queryString:@"INSERT INTO `target_db`.`table_name` SELECT * FROM `source_db`.`table_name`"]);
+	OCMStub([mockConnection queryErrored]).andReturn(NO);
 
-	SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
+	{
+		SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
+		
+		[tableCopy setConnection:mockConnection];
+		[tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db" withContent:YES];
+		
+		[tableCopy release];
+	}
 	
-	[tableCopy setConnection:mockConnection];
-	[tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db" withContent:YES];
+	OCMVerifyAll(mockResult);
+	OCMVerifyAll(mockConnection);
 	
-	[mockResult verify];
-	[mockConnection verify];
-	
-	[tableCopy release];
 	[resultArray release];
+}
+
+- (void)testCopyTableFromTo_NoPermissions
+{
+	id mockConnection = OCMStrictClassMock([SPMySQLConnection class]);
+	
+	OCMExpect([mockConnection queryString:@"SHOW CREATE TABLE `source_db`.`table_name`"]).andReturn(nil);
+	OCMStub([mockConnection queryErrored]).andReturn(YES);
+	OCMStub([mockConnection lastErrorMessage]).andReturn(@"SHOW command denied to user 'alice'@'localhost' for table 'table_name'");
+	OCMStub([mockConnection lastErrorID]).andReturn(1142);
+	OCMStub([mockConnection lastSqlstate]).andReturn(@"42000");
+	
+	{
+		SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
+		
+		STAssertFalse([tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db"],@"copy operation must fail.");
+		
+		[tableCopy release];
+	}
+	
+	[mockConnection verify];
 }
 
 @end

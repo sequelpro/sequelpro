@@ -930,8 +930,8 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			NSMutableArray *filterData = [NSMutableArray array];
 
 
-			[spfdata setObject:@1 forKey:@"version"];
-			[spfdata setObject:@"content filters" forKey:@"format"];
+			[spfdata setObject:@1 forKey:SPFVersionKey];
+			[spfdata setObject:SPFContentFiltersContentType forKey:SPFFormatKey];
 			[spfdata setObject:@NO forKey:@"encrypted"];
 
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];

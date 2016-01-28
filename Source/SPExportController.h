@@ -33,7 +33,8 @@
 @class SPCustomQuery;
 @class SPTablesList;
 @class SPTableData;
-@class SPMySQLConnection; 
+@class SPMySQLConnection;
+@class SPServerSupport;
 
 /**
  * @class SPExportController SPExportController.h
@@ -92,7 +93,7 @@
 	IBOutlet NSButton *exportCustomFilenameViewLabelButton;
 	IBOutlet NSView *exportCustomFilenameView;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
-	IBOutlet NSTokenField *exportCustomFilenameTokensField;
+	IBOutlet NSTokenField *exportCustomFilenameTokenPool;
 	
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
@@ -170,6 +171,7 @@
 	 * Database connection
 	 */
 	SPMySQLConnection *connection;
+	SPServerSupport *serverSupport;
 	
 	/**
 	 * Concurrent operation queue
@@ -230,6 +232,9 @@
 	NSInteger heightOffset2;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
+	
+	NSDictionary *localizedTokenNames;
+	
 }
 
 /**
@@ -246,10 +251,19 @@
  * @property connection Database connection
  */
 @property(readwrite, assign) SPMySQLConnection *connection;
+@property(readwrite, assign) SPServerSupport *serverSupport;
 
 - (void)exportTables:(NSArray *)table asFormat:(SPExportType)format usingSource:(SPExportSource)source;
 - (void)openExportErrorsSheetWithString:(NSString *)errors;
 - (void)displayExportFinishedGrowlNotification;
+
+/**
+ * Tries to set the export input to a given value or falls back to a default if not valid
+ * @param input The source to use
+ * @return YES if the source was accepted, NO otherwise
+ * @pre _switchTab needs to have been run before this method to decide valid inputs
+ */
+- (BOOL)setExportInput:(SPExportSource)input;
 
 // IB action methods
 - (IBAction)export:(id)sender;

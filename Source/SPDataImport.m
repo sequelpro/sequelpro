@@ -47,6 +47,7 @@
 #import "SPFileHandle.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPThreadAdditions.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -159,15 +160,12 @@
  */
 - (void)closeAndStopProgressSheet
 {
-	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(closeAndStopProgressSheet) withObject:nil waitUntilDone:YES];
-		return;
-	}
-
-	[NSApp endSheet:singleProgressSheet];
-	[singleProgressSheet orderOut:nil];
-	[[singleProgressBar onMainThread] stopAnimation:self];
-	[[singleProgressBar onMainThread] setMaxValue:100];
+	SPMainQSync(^{
+		[NSApp endSheet:singleProgressSheet];
+		[singleProgressSheet orderOut:nil];
+		[singleProgressBar stopAnimation:self];
+		[singleProgressBar setMaxValue:100];
+	});
 }
 
 #pragma mark -
@@ -383,15 +381,16 @@
 	// Open a filehandle for the SQL file
 	sqlFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
 	if (!sqlFileHandle) {
-		SPBeginAlertSheet(NSLocalizedString(@"Import Error", @"Import Error title"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  NSLocalizedString(@"The SQL file you selected could not be found or read.", @"SQL file open error"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Import Error", @"Import Error title"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The SQL file you selected could not be found or read.", @"SQL file open error")
+		);
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
 	}
-	fileIsCompressed = [sqlFileHandle isCompressed];
+	fileIsCompressed = ([sqlFileHandle compressionFormat] != SPNoCompression);
 
 	// Grab the file length
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
@@ -401,18 +400,20 @@
 	BOOL useIndeterminate = NO;
 	if ([sqlFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
-	// Reset progress interface
-	[errorsView setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
-	[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	[[singleProgressBar onMainThread] startAnimation:self];
-
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
+	SPMainQSync(^{
+		// Reset progress interface
+		[errorsView setString:@""];
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
+		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+		[singleProgressBar setIndeterminate:useIndeterminate];
+		[singleProgressBar setMaxValue:fileTotalLength];
+		[singleProgressBar setUsesThreadedAnimation:YES];
+		[singleProgressBar startAnimation:self];
+		
+		// Open the progress sheet
+		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
+	});
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -448,10 +449,11 @@
 				[mySQLConnection queryString:[NSString stringWithFormat:@"SET NAMES '%@'", connectionEncodingToRestore]];
 			}
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)", @"SQL read error, including detail from system"), (long)queriesPerformed, [exception reason]]);
+			SPOnewayAlertSheet(
+				SP_FILE_READ_ERROR_STRING,
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld queries were executed.\n\n(%@)", @"SQL read error, including detail from system"), (long)queriesPerformed, [exception reason]]
+			);
 			[sqlParser release];
 			[sqlDataBuffer release];
 			[importPool drain];
@@ -498,10 +500,11 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:sqlEncoding];
 					}
-					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]);
+					SPOnewayAlertSheet(
+						SP_FILE_READ_ERROR_STRING,
+						[tableDocumentInstance parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read in the encoding you selected (%@).\n\nOnly %ld queries were executed.", @"SQL encoding read error"), displayEncoding, (long)queriesPerformed]
+					);
 					[sqlParser release];
 					[sqlDataBuffer release];
 					[importPool drain];
@@ -568,18 +571,18 @@
 				// If not set to ignore errors, ask what to do.  Use NSAlert rather than
 				// SPBeginWaitingAlertSheet as there is already a modal sheet in progress.
 				if (!ignoreSQLErrors) {
-					NSInteger sqlImportErrorSheetReturnCode;
+					__block NSInteger sqlImportErrorSheetReturnCode;
 
-					NSAlert *sqlErrorAlert = [NSAlert
-							alertWithMessageText:NSLocalizedString(@"An error occurred while importing SQL", @"sql import error message")
-								   defaultButton:NSLocalizedString(@"Continue", @"continue button")
-								 alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
-									 otherButton:NSLocalizedString(@"Stop", @"stop button")
-					   informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]
-					];
-					[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
-					sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
-
+					SPMainQSync(^{
+						NSAlert *sqlErrorAlert = [NSAlert alertWithMessageText:NSLocalizedString(@"An error occurred while importing SQL", @"sql import error message")
+												                 defaultButton:NSLocalizedString(@"Continue", @"continue button")
+												               alternateButton:NSLocalizedString(@"Ignore All Errors", @"ignore errors button")
+												                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+													 informativeTextWithFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]];
+						[sqlErrorAlert setAlertStyle:NSWarningAlertStyle];
+						sqlImportErrorSheetReturnCode = [sqlErrorAlert runModal];
+					});
+					
 					switch (sqlImportErrorSheetReturnCode) {
 					
 						// On "continue", no additional action is required
@@ -667,7 +670,7 @@
 	[tablesListInstance updateTables:self];
 	
 	// Re-query the structure of all databases in the background
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 	
     // Import finished Growl notification
     [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
@@ -740,10 +743,11 @@
 	csvFileHandle = [SPFileHandle fileHandleForReadingAtPath:filename];
 	
 	if (!csvFileHandle) {
-		SPBeginAlertSheet(NSLocalizedString(@"Import Error", @"Import Error title"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  NSLocalizedString(@"The CSV file you selected could not be found or read.", @"CSV file open error"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Import Error", @"Import Error title"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The CSV file you selected could not be found or read.", @"CSV file open error")
+		);
 		if([filename hasPrefix:SPImportClipboardTempFileNamePrefix])
 			[[NSFileManager defaultManager] removeItemAtPath:filename error:nil];
 		return;
@@ -752,23 +756,25 @@
 	// Grab the file length and status
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
-	fileIsCompressed = [csvFileHandle isCompressed];
+	fileIsCompressed = ([csvFileHandle compressionFormat] != SPNoCompression);
 
 	// If importing a bzipped file, use indeterminate progress bars as no progress is available
 	BOOL useIndeterminate = NO;
 	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
 
 	// Reset progress interface
-	[[errorsView onMainThread] setString:@""];
-	[[singleProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
-	[[singleProgressText onMainThread] setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-	[[singleProgressBar onMainThread] setIndeterminate:YES];
-	[[singleProgressBar onMainThread] setUsesThreadedAnimation:YES];
-	[[singleProgressBar onMainThread] startAnimation:self];
-
-	// Open the progress sheet
-	[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-	[[singleProgressSheet onMainThread] makeKeyWindow];
+	SPMainQSync(^{
+		[errorsView setString:@""];
+		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
+		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
+		[singleProgressBar setIndeterminate:YES];
+		[singleProgressBar setUsesThreadedAnimation:YES];
+		[singleProgressBar startAnimation:self];
+		
+		// Open the progress sheet
+		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[singleProgressSheet makeKeyWindow];
+	});
 
 	[tableDocumentInstance setQueryMode:SPImportExportQueryMode];
 
@@ -820,10 +826,11 @@
 		// Report file read errors, and bail
 		@catch (NSException *exception) {
 			[self closeAndStopProgressSheet];
-			SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)", @"CSV read error, including detail string from system"), (long)rowsImported, [exception reason]]);
+			SPOnewayAlertSheet(
+				SP_FILE_READ_ERROR_STRING,
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file.\n\nOnly %ld rows were imported.\n\n(%@)", @"CSV read error, including detail string from system"), (long)rowsImported, [exception reason]]
+			);
 			[csvParser release];
 			[csvDataBuffer release];
 			[parsedRows release];
@@ -869,10 +876,11 @@
 					} else {
 						displayEncoding = [NSString localizedNameOfStringEncoding:csvEncoding];
 					}
-					SPBeginAlertSheet(SP_FILE_READ_ERROR_STRING,
-									  NSLocalizedString(@"OK", @"OK button"),
-									  nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-									  [NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]);
+					SPOnewayAlertSheet(
+						SP_FILE_READ_ERROR_STRING,
+						[tableDocumentInstance parentWindow],
+						[NSString stringWithFormat:NSLocalizedString(@"An error occurred when reading the file, as it could not be read using the encoding you selected (%@).\n\nOnly %ld rows were imported.", @"CSV encoding read error"), displayEncoding, (long)rowsImported]
+					);
 					[csvParser release];
 					[csvDataBuffer release];
 					[parsedRows release];
@@ -933,11 +941,13 @@
 				}
 
 				// Reset progress interface and open the progress sheet
-				[[singleProgressBar onMainThread] setIndeterminate:useIndeterminate];
-				[[singleProgressBar onMainThread] setMaxValue:fileTotalLength];
-				[[singleProgressBar onMainThread] startAnimation:self];
-				[[NSApp onMainThread] beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
-				[[singleProgressSheet onMainThread] makeKeyWindow];
+				SPMainQSync(^{
+					[singleProgressBar setIndeterminate:useIndeterminate];
+					[singleProgressBar setMaxValue:fileTotalLength];
+					[singleProgressBar startAnimation:self];
+					[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+					[singleProgressSheet makeKeyWindow];
+				});
 
 				// Set up index sets for use during row enumeration
 				for (i = 0; i < [fieldMappingArray count]; i++) {
@@ -1180,10 +1190,10 @@
 		// Select the new table
 
 		// Update current database tables 
-		[tablesListInstance performSelectorOnMainThread:@selector(updateTables:) withObject:self waitUntilDone:YES];
+		[[tablesListInstance onMainThread] updateTables:self];
 	
 		// Re-query the structure of all databases in the background
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier",tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 
 		// Select the new table
 		[tablesListInstance selectItemWithName:selectedTableTarget];
@@ -1213,26 +1223,22 @@
 	// Ensure data was provided, or alert than an import error occurred and return false.
 	if (![importData count]) {
 		[self closeAndStopProgressSheet];
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  [tableDocumentInstance parentWindow], self,
-						  nil, nil,
-						  NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
-						  );
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"Could not parse file as CSV", @"Error when we can't parse/split file as CSV")
+		);
 		return YES;
 	}
 
 	// Sanity check the first row of the CSV to prevent hang loops caused by wrong line ending entry
 	if ([[importData objectAtIndex:0] count] > 512) {
 		[self closeAndStopProgressSheet];
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"),
-						  NSLocalizedString(@"OK", @"OK button"),
-						  nil, nil,
-						  [tableDocumentInstance parentWindow], self,
-						  nil, nil,
-						  NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
-						  );
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"The CSV was read as containing more than 512 columns, more than the maximum columns permitted for speed reasons by Sequel Pro.\n\nThis usually happens due to errors reading the CSV; please double-check the CSV to be imported and the line endings and escape characters at the bottom of the CSV selection dialog.", @"Error when CSV appears to have too many columns to import, probably due to line ending mismatch")
+		);
 		return NO;
 	}
 	fieldMappingImportArrayIsPreview = dataIsPreviewData;
@@ -1671,7 +1677,7 @@ cleanup:
 - (void)showErrorSheetWithMessage:(NSString*)message
 {
 	if (![NSThread isMainThread]) {
-		[self performSelectorOnMainThread:@selector(showErrorSheetWithMessage:) withObject:message waitUntilDone:YES];
+		[[self onMainThread] showErrorSheetWithMessage:message];
 		return;
 	}
 	

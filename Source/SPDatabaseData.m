@@ -58,6 +58,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 {
 	if ((self = [super init])) {
 		characterSetEncoding = nil;
+		defaultCollationForCharacterSet = nil;
 		defaultCollation = nil;
 		defaultCharacterSetEncoding = nil;
 		serverDefaultCollation = nil;
@@ -83,6 +84,7 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 - (void)resetAllData
 {
 	if (characterSetEncoding != nil) SPClear(characterSetEncoding);
+	if (defaultCollationForCharacterSet != nil) SPClear(defaultCollationForCharacterSet);
 	if (defaultCollation != nil) SPClear(defaultCollation);
 	if (defaultCharacterSetEncoding != nil) SPClear(defaultCharacterSetEncoding);
 	if (serverDefaultCharacterSetEncoding) SPClear(serverDefaultCharacterSetEncoding);
@@ -117,13 +119,18 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		// If that failed, get the list of collations from the hard-coded list
 		if (![collations count]) {
 			const SPDatabaseCharSets *c = SPGetDatabaseCharacterSets();
-			
+#warning This probably won't work as intended. See my comment in getDatabaseCollationsForEncoding:
 			do {
-				[collations addObject:[NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]];
+				[collations addObject:@{
+					@"ID"                 : @(c->nr),
+					@"CHARACTER_SET_NAME" : [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding],
+					@"COLLATION_NAME"     : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding],
+					// description is not present in information_schema.collations
+				}];
 				
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 	}
 		
@@ -139,12 +146,16 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	if (encoding && ((characterSetEncoding == nil) || (![characterSetEncoding isEqualToString:encoding]) || ([characterSetCollations count] == 0))) {
 		
 		[characterSetEncoding release];
+		SPClear(defaultCollationForCharacterSet); //depends on encoding
 		[characterSetCollations removeAllObjects];
 		
 		characterSetEncoding = [[NSString alloc] initWithString:encoding];
 
-		if([cachedCollationsByEncoding objectForKey:characterSetEncoding] && [[cachedCollationsByEncoding objectForKey:characterSetEncoding] count])
-			return [cachedCollationsByEncoding objectForKey:characterSetEncoding];
+		NSArray *cachedCollations = [cachedCollationsByEncoding objectForKey:characterSetEncoding];
+		if([cachedCollations count]) {
+			[characterSetCollations addObjectsFromArray:cachedCollations];
+			goto copy_return;
+		}
 
 		// Try to retrieve the available collations for the supplied encoding from the database
 		if ([serverSupport supportsInformationSchema]) {
@@ -162,26 +173,72 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		// If that failed, get the list of collations matching the supplied encoding from the hard-coded list
 		if (![characterSetCollations count]) {
 			const SPDatabaseCharSets *c = SPGetDatabaseCharacterSets();
-			
+#warning I don't think this will work. The hardcoded list is supposed to be used with pre 4.1 mysql servers, \
+         which don't have information_schema or SHOW COLLATION. But before 4.1 there were no real collations and \
+         even the charsets had different names (e.g. charset "latin1_de" which now is "latin1" + "latin1_german2_ci")
 			do {
 				NSString *charSet = [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding];
 
 				if ([charSet isEqualToString:characterSetEncoding]) {
-					[characterSetCollations addObject:@{@"COLLATION_NAME" : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]}];
+					[characterSetCollations addObject:@{
+						@"COLLATION_NAME" : [NSString stringWithCString:c->collation encoding:NSUTF8StringEncoding]
+					}];
 				}
 
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 
-		if (characterSetCollations && [characterSetCollations count]) {
+		if ([characterSetCollations count]) {
 			[cachedCollationsByEncoding setObject:[NSArray arrayWithArray:characterSetCollations] forKey:characterSetEncoding];
 		}
 
 	}
-	
-	return characterSetCollations;
+copy_return:
+	return [NSArray arrayWithArray:characterSetCollations]; //copy because it is a mutable array and we keep changing it
+}
+
+/** Get the collation that is marked as default for a given encoding by the server
+ * @param encoding The encoding, e.g. @"latin1"
+ * @return The default collation (e.g. @"latin1_swedish_ci") or 
+ *         nil if either encoding was nil or the server does not provide the neccesary details
+ */
+- (NSString *)getDefaultCollationForEncoding:(NSString *)encoding
+{
+	if(!encoding) return nil;
+	// if (
+	//   - we have not yet fetched info about the default collation OR
+	//   - encoding is different than the one we currently know about
+	// ) => we need to load it from server, otherwise just return cached value
+	if ((defaultCollationForCharacterSet == nil) || (![characterSetEncoding isEqualToString:encoding])) {
+		NSArray *cols = [self getDatabaseCollationsForEncoding:encoding]; //will clear stored encoding and collation if neccesary
+		for (NSDictionary *collation in cols) {
+#warning This won't work for the hardcoded list (see above)
+			if([[[collation objectForKey:@"IS_DEFAULT"] lowercaseString] isEqualToString:@"yes"]) {
+				defaultCollationForCharacterSet = [[NSString alloc] initWithString:[collation objectForKey:@"COLLATION_NAME"]];
+				break;
+			}
+		}
+	}
+	return defaultCollationForCharacterSet;
+}
+
+/** Get the name of the mysql charset a given collation belongs to.
+ * @param collation Name of the collation (e.g. "latin1_swedish_ci")
+ * @return name of the charset (e.g. "latin1") or nil if unknown
+ *
+ * According to the MySQL doc every collation can only ever belong to a single charset.
+ */
+- (NSString *)getEncodingFromCollation:(NSString *)collation {
+	if([collation length]) { //shortcut for nil and @""
+		for(NSDictionary *coll in [self getDatabaseCollations]) {
+			if([[coll objectForKey:@"COLLATION_NAME"] isEqualToString:collation]) {
+				return [coll objectForKey:@"CHARACTER_SET_NAME"];
+			}
+		}
+	}
+	return nil;
 }
 
 /**
@@ -283,11 +340,11 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 			for (NSDictionary *anEncoding in supportedEncodings) 
 			{
 				NSDictionary *convertedEncoding = [NSDictionary dictionaryWithObjectsAndKeys:
-													[anEncoding objectForKey:@"Charset"], @"CHARACTER_SET_NAME",
-													[anEncoding objectForKey:@"Description"], @"DESCRIPTION",
-													[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
-													[anEncoding objectForKey:@"Maxlen"], @"MAXLEN",
-													nil];
+					[anEncoding objectForKey:@"Charset"],           @"CHARACTER_SET_NAME",
+					[anEncoding objectForKey:@"Description"],       @"DESCRIPTION",
+					[anEncoding objectForKey:@"Default collation"], @"DEFAULT_COLLATE_NAME",
+					[anEncoding objectForKey:@"Maxlen"],            @"MAXLEN",
+				nil];
 				
 				[characterSetEncodings addObject:convertedEncoding];
 			}
@@ -296,16 +353,16 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 		// If that failed, get the list of character set encodings from the hard-coded list
 		if (![characterSetEncodings count]) {			
 			const SPDatabaseCharSets *c = SPGetDatabaseCharacterSets();
-
+#warning This probably won't work as intended. See my comment in getDatabaseCollationsForEncoding:
 			do {
-				[characterSetEncodings addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-					[NSString stringWithCString:c->name encoding:NSUTF8StringEncoding], @"CHARACTER_SET_NAME",
-					[NSString stringWithCString:c->description encoding:NSUTF8StringEncoding], @"DESCRIPTION",
-				nil]];
+				[characterSetEncodings addObject:@{
+					@"CHARACTER_SET_NAME" : [NSString stringWithCString:c->name encoding:NSUTF8StringEncoding],
+					@"DESCRIPTION"        : [NSString stringWithCString:c->description encoding:NSUTF8StringEncoding]
+				}];
 
 				++c;
 			} 
-			while (c[0].nr != 0);
+			while (c->nr != 0);
 		}
 	}
 		
@@ -413,6 +470,9 @@ NSInteger _sortStorageEngineEntry(NSDictionary *itemOne, NSDictionary *itemTwo, 
 	SPMySQLResult *result = [connection queryString:[NSString stringWithFormat:@"SHOW VARIABLES LIKE %@", [variable tickQuotedString]]];;
 	
 	[result setReturnDataAsStrings:YES];
+	
+	if([connection queryErrored])
+		SPLog(@"server variable lookup failed for '%@': %@ (%lu)",variable,[connection lastErrorMessage],[connection lastErrorID]);
 	
 	if ([result numberOfRows] != 1)
 		return nil;

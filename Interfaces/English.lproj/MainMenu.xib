@@ -1845,6 +1845,14 @@
 									<reference key="NSOnImage" ref="325032718"/>
 									<reference key="NSMixedImage" ref="674471825"/>
 								</object>
+								<object class="NSMenuItem" id="682123491">
+									<reference key="NSMenu" ref="762880388"/>
+									<string key="NSTitle">Shutdown Server…</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="325032718"/>
+									<reference key="NSMixedImage" ref="674471825"/>
+								</object>
 							</array>
 						</object>
 						<object class="NSAttributedString" key="NSAttributedTitle">
@@ -3420,6 +3428,14 @@
 					<string key="id">mhI-Hy-VAZ</string>
 				</object>
 				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">shutdownServer:</string>
+						<reference key="source" ref="1005713010"/>
+						<reference key="destination" ref="682123491"/>
+					</object>
+					<string key="id">S1h-UE-mTv</string>
+				</object>
+				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">delegate</string>
 						<reference key="source" ref="524643114"/>
@@ -4385,6 +4401,7 @@
 							<reference ref="607642194"/>
 							<reference ref="859280893"/>
 							<reference ref="346403677"/>
+							<reference ref="682123491"/>
 						</array>
 						<reference key="parent" ref="19149132"/>
 					</object>
@@ -5130,6 +5147,11 @@
 						<reference key="object" ref="121594454"/>
 						<reference key="parent" ref="655178834"/>
 					</object>
+					<object class="IBObjectRecord">
+						<string key="id">jZI-ad-FsC</string>
+						<reference key="object" ref="682123491"/>
+						<reference key="parent" ref="762880388"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -5766,6 +5788,7 @@
 				<string key="c7b-hr-jQv.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="elh-eq-jVU.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="fCE-bz-bNv.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="jZI-ad-FsC.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="mGA-xh-Uwq.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="nXE-rI-RyI.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="oqd-zp-I6d.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6069,17 +6092,6 @@
 							<string key="candidateClassName">id</string>
 						</object>
 					</dictionary>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">bundleEditorWindow</string>
-						<string key="NS.object.0">NSWindow</string>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<string key="NS.key.0">bundleEditorWindow</string>
-						<object class="IBToOneOutletInfo" key="NS.object.0">
-							<string key="name">bundleEditorWindow</string>
-							<string key="candidateClassName">NSWindow</string>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">../Source/SPAppController.h</string>
@@ -6741,7 +6753,6 @@
 						<string key="importFavorites:">id</string>
 						<string key="initiateConnection:">id</string>
 						<string key="makeSelectedFavoriteDefault:">id</string>
-						<string key="nodeDoubleClicked:">id</string>
 						<string key="removeNode:">id</string>
 						<string key="renameNode:">id</string>
 						<string key="reverseSortFavorites:">NSMenuItem</string>
@@ -6790,10 +6801,6 @@
 						</object>
 						<object class="IBActionInfo" key="makeSelectedFavoriteDefault:">
 							<string key="name">makeSelectedFavoriteDefault:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="nodeDoubleClicked:">
-							<string key="name">nodeDoubleClicked:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="removeNode:">
@@ -7111,7 +7118,6 @@
 						<string key="importFavorites:">id</string>
 						<string key="initiateConnection:">id</string>
 						<string key="makeSelectedFavoriteDefault:">id</string>
-						<string key="nodeDoubleClicked:">id</string>
 						<string key="removeNode:">id</string>
 						<string key="renameNode:">id</string>
 						<string key="saveFavorite:">id</string>
@@ -7158,10 +7164,6 @@
 						</object>
 						<object class="IBActionInfo" key="makeSelectedFavoriteDefault:">
 							<string key="name">makeSelectedFavoriteDefault:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="nodeDoubleClicked:">
-							<string key="name">nodeDoubleClicked:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="removeNode:">
@@ -7855,6 +7857,7 @@
 						<string key="showServerProcesses:">id</string>
 						<string key="showServerVariables:">id</string>
 						<string key="showUserManager:">id</string>
+						<string key="shutdownServer:">id</string>
 						<string key="toggleNavigator:">id</string>
 						<string key="validateSaveConnectionAccessory:">id</string>
 					</dictionary>
@@ -8027,6 +8030,10 @@
 							<string key="name">showUserManager:</string>
 							<string key="candidateClassName">id</string>
 						</object>
+						<object class="IBActionInfo" key="shutdownServer:">
+							<string key="name">shutdownServer:</string>
+							<string key="candidateClassName">id</string>
+						</object>
 						<object class="IBActionInfo" key="toggleNavigator:">
 							<string key="name">toggleNavigator:</string>
 							<string key="candidateClassName">id</string>
@@ -8093,6 +8100,7 @@
 						<string key="tableDataInstance">SPTableData</string>
 						<string key="tableDumpInstance">id</string>
 						<string key="tableInfoScrollView">NSScrollView</string>
+						<string key="tableInfoSplitView">SPSplitView</string>
 						<string key="tableInfoTable">NSTableView</string>
 						<string key="tableRelationsInstance">id</string>
 						<string key="tableSourceInstance">SPTableStructure</string>
@@ -8332,6 +8340,10 @@
 							<string key="name">tableInfoScrollView</string>
 							<string key="candidateClassName">NSScrollView</string>
 						</object>
+						<object class="IBToOneOutletInfo" key="tableInfoSplitView">
+							<string key="name">tableInfoSplitView</string>
+							<string key="candidateClassName">SPSplitView</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="tableInfoTable">
 							<string key="name">tableInfoTable</string>
 							<string key="candidateClassName">NSTableView</string>
@@ -8435,6 +8447,7 @@
 						<string key="showServerProcesses:">id</string>
 						<string key="showServerVariables:">id</string>
 						<string key="showUserManager:">id</string>
+						<string key="shutdownServer:">id</string>
 						<string key="toggleNavigator:">id</string>
 						<string key="validateSaveConnectionAccessory:">id</string>
 					</dictionary>
@@ -8605,6 +8618,10 @@
 						</object>
 						<object class="IBActionInfo" key="showUserManager:">
 							<string key="name">showUserManager:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="shutdownServer:">
+							<string key="name">shutdownServer:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="toggleNavigator:">
@@ -8862,7 +8879,7 @@
 						<string key="exportCSVLinesTerminatedField">NSComboBox</string>
 						<string key="exportCSVNULLValuesAsTextField">NSTextField</string>
 						<string key="exportCustomFilenameTokenField">NSTokenField</string>
-						<string key="exportCustomFilenameTokensField">NSTokenField</string>
+						<string key="exportCustomFilenameTokenPool">NSTokenField</string>
 						<string key="exportCustomFilenameView">NSView</string>
 						<string key="exportCustomFilenameViewButton">NSButton</string>
 						<string key="exportCustomFilenameViewLabelButton">NSButton</string>
@@ -8962,8 +8979,8 @@
 							<string key="name">exportCustomFilenameTokenField</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
-						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokensField">
-							<string key="name">exportCustomFilenameTokensField</string>
+						<object class="IBToOneOutletInfo" key="exportCustomFilenameTokenPool">
+							<string key="name">exportCustomFilenameTokenPool</string>
 							<string key="candidateClassName">NSTokenField</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="exportCustomFilenameView">
@@ -9228,12 +9245,54 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="exportCurrentSettings:">id</string>
+						<string key="importCurrentSettings:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="exportCurrentSettings:">
+							<string key="name">exportCurrentSettings:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="importCurrentSettings:">
+							<string key="name">importCurrentSettings:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPExportSettingsPersistence.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SPExportController</string>
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="exportCurrentSettings:">id</string>
+						<string key="importCurrentSettings:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="exportCurrentSettings:">
+							<string key="name">exportCurrentSettings:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="importCurrentSettings:">
+							<string key="name">importCurrentSettings:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../Source/SPExportSettingsPersistence.m</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">SPExtendedTableInfo</string>
 					<string key="superclassName">NSObject</string>
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="reloadTable:">id</string>
 						<string key="resetAutoIncrement:">id</string>
-						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="tableRowAutoIncrementWasEdited:">id</string>
 						<string key="updateTableCollation:">id</string>
 						<string key="updateTableEncoding:">id</string>
 						<string key="updateTableType:">id</string>
@@ -9247,8 +9306,8 @@
 							<string key="name">resetAutoIncrement:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
-							<string key="name">resetAutoIncrementValueWasEdited:</string>
+						<object class="IBActionInfo" key="tableRowAutoIncrementWasEdited:">
+							<string key="name">tableRowAutoIncrementWasEdited:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="updateTableCollation:">
@@ -9383,7 +9442,7 @@
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="reloadTable:">id</string>
 						<string key="resetAutoIncrement:">id</string>
-						<string key="resetAutoIncrementValueWasEdited:">id</string>
+						<string key="tableRowAutoIncrementWasEdited:">id</string>
 						<string key="updateTableCollation:">id</string>
 						<string key="updateTableEncoding:">id</string>
 						<string key="updateTableType:">id</string>
@@ -9397,8 +9456,8 @@
 							<string key="name">resetAutoIncrement:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="resetAutoIncrementValueWasEdited:">
-							<string key="name">resetAutoIncrementValueWasEdited:</string>
+						<object class="IBActionInfo" key="tableRowAutoIncrementWasEdited:">
+							<string key="name">tableRowAutoIncrementWasEdited:</string>
 							<string key="candidateClassName">id</string>
 						</object>
 						<object class="IBActionInfo" key="updateTableCollation:">
@@ -10868,7 +10927,7 @@
 					<string key="superclassName">NSObject</string>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="activitiesTable">NSTableView</string>
-						<string key="infoTable">id</string>
+						<string key="infoTable">NSTableView</string>
 						<string key="tableDataInstance">id</string>
 						<string key="tableDocumentInstance">id</string>
 						<string key="tableInfoScrollView">NSScrollView</string>
@@ -10882,7 +10941,7 @@
 						</object>
 						<object class="IBToOneOutletInfo" key="infoTable">
 							<string key="name">infoTable</string>
-							<string key="candidateClassName">id</string>
+							<string key="candidateClassName">NSTableView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="tableDataInstance">
 							<string key="name">tableDataInstance</string>
@@ -10978,6 +11037,8 @@
 						<string key="resetAutoIncrementSheet">id</string>
 						<string key="resetAutoIncrementValue">id</string>
 						<string key="structureGrabber">id</string>
+						<string key="structureHelpPanel">NSPanel</string>
+						<string key="structureHelpText">NSTextView</string>
 						<string key="tableDataInstance">SPTableData</string>
 						<string key="tableDocumentInstance">SPDatabaseDocument</string>
 						<string key="tableInfoInstance">SPTableInfo</string>
@@ -11066,6 +11127,14 @@
 						<object class="IBToOneOutletInfo" key="structureGrabber">
 							<string key="name">structureGrabber</string>
 							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="structureHelpPanel">
+							<string key="name">structureHelpPanel</string>
+							<string key="candidateClassName">NSPanel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="structureHelpText">
+							<string key="name">structureHelpText</string>
+							<string key="candidateClassName">NSTextView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="tableDataInstance">
 							<string key="name">tableDataInstance</string>
@@ -12321,6 +12390,33 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">Quartz.framework/Frameworks/PDFKit.framework/Headers/PDFView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">PSMTabBarControl</string>
+					<string key="superclassName">NSControl</string>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="delegate">id</string>
+						<string key="partnerView">id</string>
+						<string key="tabView">NSTabView</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="delegate">
+							<string key="name">delegate</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="partnerView">
+							<string key="name">partnerView</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="tabView">
+							<string key="name">tabView</string>
+							<string key="candidateClassName">NSTabView</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">PSMTabBar.framework/Headers/PSMTabBarControl.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

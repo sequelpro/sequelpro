@@ -155,6 +155,7 @@
 	
 	IBOutlet NSTableView *tableInfoTable;
 	IBOutlet SPSplitView *contentViewSplitter;
+	IBOutlet SPSplitView *tableInfoSplitView;
 	
 	IBOutlet NSPopUpButton *encodingPopUp;
 #endif
@@ -358,6 +359,7 @@
 - (IBAction) makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
+- (IBAction)shutdownServer:(id)sender;
 - (IBAction)openCurrentConnectionInNewWindow:(id)sender;
 - (IBAction)showGotoDatabase:(id)sender;
 #endif
@@ -515,6 +517,7 @@
 // State saving and setting
 - (NSDictionary *) stateIncludingDetails:(NSDictionary *)detailsToReturn;
 - (BOOL)setState:(NSDictionary *)stateDetails;
+- (BOOL)setState:(NSDictionary *)stateDetails fromFile:(BOOL)spfBased;
 - (BOOL)setStateFromConnectionFile:(NSString *)path;
 - (void)restoreSession;
 #endif

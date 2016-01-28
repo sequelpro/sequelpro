@@ -37,6 +37,12 @@
 // waits until some has been written out.  This can affect speed and memory usage.
 #define SPFH_MAX_WRITE_BUFFER_SIZE 1048576
 
+union SPSomeFileHandle {
+	FILE *file;
+	BZFILE *bzfile;
+	gzFile *gzfile;
+};
+
 @interface SPFileHandle ()
 
 - (void)_writeBufferToData;
@@ -57,14 +63,14 @@
  * theFile is a FILE when compression is disabled, a gzFile when gzip compression is enabled
  * or a BZFILE when bzip2 compression is enabled.
  */
-- (id)initWithFile:(void *)theFile fromPath:(const char *)path mode:(int)mode
+- (id)initWithFile:(FILE *)theFile fromPath:(const char *)path mode:(int)mode
 {
 	if ((self = [super init])) {
 		dataWritten = NO;
 		allDataWritten = YES;
 		fileIsClosed = NO;
 
-		wrappedFile = theFile;
+		wrappedFile = malloc(sizeof(*wrappedFile)); //FIXME ivar can be moved to .m file with "modern objc", replacing the opaque struct pointer
 		wrappedFilePath = malloc(strlen(path) + 1);
 		strcpy(wrappedFilePath, path);
 
@@ -83,65 +89,63 @@
 		bufferPosition = 0;
 		endOfFile = NO;
 		
-		useCompression = NO;
 		compressionFormat = SPNoCompression;
+		processingThread = nil;
 
 		// If in read mode, set up the buffer
 		if (fileMode == O_RDONLY) {
-			
-			int i, c;
-			char bzbuf[4];
-			const char *charFileMode = fileMode == O_WRONLY ? "wb" : "rb";
-			
-			BZFILE *bzfile;
-			gzFile *gzfile = gzopen(path, charFileMode);
-						
-			// Set gzip buffer
-			gzbuffer(gzfile, 131072);
-			
-			// Get the first 4 bytes from the file
-			for (i = 0; (c = getc(wrappedFile)) != EOF && i < 4; bzbuf[i++] = c);
-
-			rewind(wrappedFile);
-			
-			// Test to see if the file is gzip compressed
-			BOOL isGzip = !gzdirect(gzfile);
-			
-			// Test to see if the first 2 bytes extracted from the file match the Bzip2 signature/magic number
-			// (BZ). The 3rd byte should be either 'h' (Huffman encoding) or 0 (Bzip1 - deprecated) to 
-			// indicate the Bzip version. Finally, the 4th byte should be a number between 1 and 9 that indicates
-			// the block size used.
-
-			BOOL isBzip2 = ((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')) &&
-			               ((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
-			               ((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39));
-			
-			if (isBzip2) bzfile = BZ2_bzopen(path, charFileMode);
-						
-			useCompression = isGzip || isBzip2;
-									
-			if (useCompression) {
-				if (isGzip) {
+			// Test for GZIP (by opening the file with gz and checking what happens)
+			{
+				gzFile *gzfile = gzopen(path, "rb");
+				
+				// Set gzip buffer
+				gzbuffer(gzfile, 131072);
+				
+				// Test to see if the file is gzip compressed
+				if(!gzdirect(gzfile)) {
 					compressionFormat = SPGzipCompression;
-					wrappedFile = gzfile;
+					wrappedFile->gzfile = gzfile;
 				}
-				else if (isBzip2) {
-					compressionFormat = SPBzip2Compression;
-					wrappedFile = bzfile;
+				else {
+					// ...not gzip
 					gzclose(gzfile);
 				}
+			}
+			// Test for BZ (by checking the file header)
+			if(compressionFormat == SPNoCompression) {
+				char bzbuf[4];
+				int i, c;
 				
-				fclose(theFile);
+				// Get the first 4 bytes from the file
+				for (i = 0; (c = getc(theFile)) != EOF && i < 4; bzbuf[i++] = c);
+				
+				rewind(theFile);
+				
+				// Test to see if the first 2 bytes extracted from the file match the Bzip2 signature/magic number
+				// (BZ). The 3rd byte should be either 'h' (Huffman encoding) or 0 (Bzip1 - deprecated) to
+				// indicate the Bzip version. Finally, the 4th byte should be a number between 1 and 9 that indicates
+				// the block size used.
+				
+				BOOL isBzip2 = ((bzbuf[0] == 'B')  && (bzbuf[1] == 'Z')) &&
+				               ((bzbuf[2] == 'h')  || (bzbuf[2] == '0')) &&
+				               ((bzbuf[3] >= 0x31) && (bzbuf[3] <= 0x39));
+				
+				if (isBzip2) {
+					compressionFormat = SPBzip2Compression;
+					wrappedFile->bzfile = BZ2_bzopen(path, "rb");
+				}
+			}
+			// Default to plain
+			if(compressionFormat == SPNoCompression) {
+				wrappedFile->file = theFile;
 			}
 			else {
-				gzclose(gzfile);
+				fclose(theFile);
 			}
-			
-			processingThread = nil;
 		} 
 		// In write mode, set up a thread to handle writing in the background
 		else if (fileMode == O_WRONLY) {
-			useCompression = NO;
+			wrappedFile->file = theFile; // can be changed later via setCompressionFormat:
 			processingThread = [[NSThread alloc] initWithTarget:self selector:@selector(_writeBufferToData) object:nil];
 			[processingThread setName:@"SPFileHandle data writing thread"];
 			[processingThread start];
@@ -204,17 +208,15 @@
 {	
 	long dataLength = 0;
 	void *data = malloc(length);
-			
-	if (useCompression) {
-		if (compressionFormat == SPGzipCompression) {
-			dataLength = gzread(wrappedFile, data, (unsigned)length);
-		}
-		else if (compressionFormat == SPBzip2Compression) {
-			dataLength = BZ2_bzread(wrappedFile, data, (int)length);
-		}		
+	
+	if (compressionFormat == SPGzipCompression) {
+		dataLength = gzread(wrappedFile->gzfile, data, (unsigned)length);
+	}
+	else if (compressionFormat == SPBzip2Compression) {
+		dataLength = BZ2_bzread(wrappedFile->bzfile, data, (int)length);
 	}
 	else {
-		dataLength = fread(data, 1, length, wrappedFile);
+		dataLength = fread(data, 1, length, wrappedFile->file);
 	}
 		
 	return [NSMutableData dataWithBytesNoCopy:data length:dataLength freeWhenDone:YES];
@@ -235,13 +237,16 @@
  */
 - (NSUInteger)realDataReadLength
 {
-	if ((fileMode == O_WRONLY) || (compressionFormat == SPBzip2Compression)) return 0;
+	if (fileMode == O_WRONLY) return 0;
 	
-	if (useCompression && (compressionFormat == SPGzipCompression)) {
-		return gzoffset(wrappedFile);
+	if (compressionFormat == SPGzipCompression) {
+		return gzoffset(wrappedFile->gzfile);
+	}
+	else if(compressionFormat == SPBzip2Compression) {
+		return 0;
 	}
 	else {
-		return ftell(wrappedFile);
+		return ftell(wrappedFile->file);
 	}
 }
 
@@ -253,40 +258,34 @@
  * to NO on a fresh object. If this is called after data has been
  * written, an exception is thrown.
  */
-- (void)setShouldWriteWithCompressionFormat:(SPFileCompressionFormat)useCompressionFormat
+- (void)setCompressionFormat:(SPFileCompressionFormat)useCompressionFormat
 {
 	if (compressionFormat == useCompressionFormat) return;
 
 	// Regardless of the supplied argument, close the current file according to how it was previously opened
-	if (useCompression) {
-		if (compressionFormat == SPGzipCompression) {
-			gzclose(wrappedFile);
-		}
-		else if (compressionFormat == SPBzip2Compression) {
-			BZ2_bzclose(wrappedFile);
-		}
+	if (compressionFormat == SPGzipCompression) {
+		gzclose(wrappedFile->gzfile);
+	}
+	else if (compressionFormat == SPBzip2Compression) {
+		BZ2_bzclose(wrappedFile->bzfile);
 	}
 	else {
-		fclose(wrappedFile);
+		fclose(wrappedFile->file);
 	}
 	
 	if (dataWritten) [NSException raise:NSInternalInconsistencyException format:@"Cannot change compression settings when data has already been written."];
 
-	useCompression = ((useCompressionFormat == SPGzipCompression) || (useCompressionFormat == SPBzip2Compression));
-	
 	compressionFormat = useCompressionFormat;
 	
-	if (useCompression) {		
-		if (compressionFormat == SPGzipCompression) {
-			wrappedFile = gzopen(wrappedFilePath, "wb");
-			gzbuffer(wrappedFile, 131072);
-		}
-		else if (compressionFormat == SPBzip2Compression) {
-			wrappedFile = BZ2_bzopen(wrappedFilePath, "wb");
-		}
-	} 
+	if (compressionFormat == SPGzipCompression) {
+		wrappedFile->gzfile = gzopen(wrappedFilePath, "wb");
+		gzbuffer(wrappedFile->gzfile, 131072);
+	}
+	else if (compressionFormat == SPBzip2Compression) {
+		wrappedFile->bzfile = BZ2_bzopen(wrappedFilePath, "wb");
+	}
 	else {
-		wrappedFile = fopen(wrappedFilePath, "wb");
+		wrappedFile->file = fopen(wrappedFilePath, "wb");
 	}
 }
 
@@ -299,9 +298,10 @@
 	// Throw an exception if the file is closed
 	if (fileIsClosed) [NSException raise:NSInternalInconsistencyException format:@"Cannot write to a file handle after it has been closed"];
 
+	pthread_mutex_lock(&bufferLock);
+	
 	// Add the data to the buffer
 	if ([data length]) {
-		pthread_mutex_lock(&bufferLock);
 		[buffer appendData:data];
 		allDataWritten = NO;
 		bufferDataLength += [data length];
@@ -344,16 +344,14 @@
 	if (!fileIsClosed) {
 		[self synchronizeFile];
 		
-		if (useCompression) {
-			if (compressionFormat == SPGzipCompression) {
-				gzclose(wrappedFile);
-			}
-			else if (compressionFormat == SPBzip2Compression) {
-				BZ2_bzclose(wrappedFile);
-			}
-		} 
+		if (compressionFormat == SPGzipCompression) {
+			gzclose(wrappedFile->gzfile);
+		}
+		else if (compressionFormat == SPBzip2Compression) {
+			BZ2_bzclose(wrappedFile->bzfile);
+		}
 		else {
-			fclose(wrappedFile);
+			fclose(wrappedFile->file);
 		}
 		
 		if (processingThread) {
@@ -369,14 +367,6 @@
 
 #pragma mark -
 #pragma mark File information
-
-/**
- * Returns whether compression is enabled on the file.
- */
-- (BOOL)isCompressed
-{
-	return useCompression;
-}
 
 /**
  * Returns the compression format being used. Currently gzip or bzip2 only.
@@ -417,22 +407,16 @@
 
 		// Write out the data
 		long bufferLengthWrittenOut = 0;
-				
-		if (useCompression) {
-			switch (compressionFormat) 
-			{
-				case SPGzipCompression:
-					bufferLengthWrittenOut = gzwrite(wrappedFile, [dataToBeWritten bytes], (unsigned)[dataToBeWritten length]);
-					break;
-				case SPBzip2Compression:
-					bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile, (void *)[dataToBeWritten bytes], (int)[dataToBeWritten length]);
-					break;
-				default:
-					break;
-			}
-		} 
-		else {
-			bufferLengthWrittenOut = fwrite([dataToBeWritten bytes], 1, [dataToBeWritten length], wrappedFile);
+		
+		switch (compressionFormat) {
+			case SPGzipCompression:
+				bufferLengthWrittenOut = gzwrite(wrappedFile->gzfile, [dataToBeWritten bytes], (unsigned)[dataToBeWritten length]);
+				break;
+			case SPBzip2Compression:
+				bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile->bzfile, (void *)[dataToBeWritten bytes], (int)[dataToBeWritten length]);
+				break;
+			default:
+				bufferLengthWrittenOut = fwrite([dataToBeWritten bytes], 1, [dataToBeWritten length], wrappedFile->file);
 		}
 
 		// Restore data to the buffer if it wasn't written out
@@ -469,6 +453,7 @@
 	
 	if (processingThread) SPClear(processingThread);
 	
+	free(wrappedFile);
 	free(wrappedFilePath);
 	SPClear(buffer);
 	

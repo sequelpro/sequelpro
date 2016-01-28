@@ -32,6 +32,7 @@
 #import "SPXMLExporter.h"
 #import "SPDatabaseDocument.h"
 #import "SPExportFile.h"
+#import "SPExportInitializer.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -39,25 +40,25 @@
 
 - (void)xmlExportProcessWillBegin:(SPXMLExporter *)exporter
 {
-	[[exportProgressText onMainThread] displayIfNeeded];
-	
-	[[exportProgressIndicator onMainThread] setIndeterminate:YES];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:YES];
-	[[exportProgressIndicator onMainThread] startAnimation:self];
-	
+	[exportProgressText displayIfNeeded];
+
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
+	[exportProgressIndicator startAnimation:self];
+
 	// Only update the progress text if this is a table export
 	if (exportSource == SPTableExport) {
-		
+
 		// Update the current table export index
 		currentTableExportIndex = (exportTableCount - [exporters count]);
-		
-		[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching data...", @"export label showing that the app is fetching data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
 	}
 	else {
-		[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Fetching data...", @"export label showing that the app is fetching data")];
+		[exportProgressText setStringValue:NSLocalizedString(@"Fetching data...", @"export label showing that the app is fetching data")];
 	}
-	
-	[[exportProgressText onMainThread] displayIfNeeded];
+
+	[exportProgressText displayIfNeeded];
 }
 
 - (void)xmlExportProcessComplete:(SPXMLExporter *)exporter
@@ -103,14 +104,7 @@
 		[[exporter exportOutputFile] writeData:[string dataUsingEncoding:[connection stringEncoding]]];
 		[[exporter exportOutputFile] close]; 
 		
-		[NSApp endSheet:exportProgressWindow returnCode:0];
-		[exportProgressWindow orderOut:self];
-		
-		// Restore query mode
-		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-		
-		// Display Growl notification
-		[self displayExportFinishedGrowlNotification];
+		[self exportEnded];
 	}
 }
 
@@ -123,18 +117,18 @@
 {
 	// Only update the progress text if this is a table export
 	if (exportSource == SPTableExport) {
-		[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
+		[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Writing data...", @"export label showing app if writing data for a specific table"), currentTableExportIndex, exportTableCount, [exporter xmlTableName]]];
 	}
 	else {
-		[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
+		[exportProgressText setStringValue:NSLocalizedString(@"Writing data...", @"export label showing app is writing data")];
 	}
-	
-	[[exportProgressText onMainThread] displayIfNeeded];
-	
-	[[exportProgressIndicator onMainThread] stopAnimation:self];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:NO];
-	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
-	[[exportProgressIndicator onMainThread] setDoubleValue:0];
+
+	[exportProgressText displayIfNeeded];
+
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setUsesThreadedAnimation:NO];
+	[exportProgressIndicator setIndeterminate:NO];
+	[exportProgressIndicator setDoubleValue:0];
 }
 
 @end

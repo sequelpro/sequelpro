@@ -63,14 +63,8 @@
 	return self;
 }
 
-/**
- * Start the XML export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
+- (void)exportOperation
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
 	BOOL isTableExport = NO;
 	
 	NSArray *xmlRow = nil;
@@ -96,7 +90,6 @@
 		(([self xmlFormat] == SPXMLExportMySQLFormat) && ((![self xmlOutputIncludeStructure]) && (![self xmlOutputIncludeContent]))) ||
 		(([self xmlFormat] == SPXMLExportPlainFormat) && (![self xmlNULLString])))
 	{
-		[pool release];
 		return;
 	}
 			
@@ -164,7 +157,7 @@
 			[xmlString appendFormat:@"\t<table_data name=\"%@\">\n\n", [self xmlTableName]];
 		}
 		
-		[[self exportOutputFile] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
+		[self writeString:xmlString];
 	}
 	else {
 		totalRows = [[self xmlDataArray] count];
@@ -186,7 +179,7 @@
 		
 		// If required, write an opening tag in the form of the table name
 		if ([self xmlFormat] == SPXMLExportPlainFormat) {
-			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
+			[self writeString:[NSString stringWithFormat:@"\t<%@>\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"]];
 		}
 		
 		// Set up the starting row, which is 0 for streaming result sets and
@@ -213,7 +206,6 @@
 				}
 				
 				[xmlExportPool release];
-				[pool release];
 				
 				return;
 			}
@@ -245,7 +237,6 @@
 					}
 					
 					[xmlExportPool release];
-					[pool release];
 					
 					return;
 				}
@@ -304,7 +295,7 @@
 			currentPoolDataLength += [xmlString length];
 			
 			// Write the row to the filehandle
-			[[self exportOutputFile] writeData:[xmlString dataUsingEncoding:[self exportOutputEncoding]]];
+			[self writeString:xmlString];
 			
 			// Update the progress counter and progress bar
 			currentRowIndex++;
@@ -333,10 +324,10 @@
 		}
 		
 		if (([self xmlFormat] == SPXMLExportMySQLFormat) && isTableExport) {
-			[[self exportOutputFile] writeData:[@"\t</table_data>\n\n" dataUsingEncoding:[self exportOutputEncoding]]];
+			[self writeString:@"\t</table_data>\n\n"];
 		}
 		else if ([self xmlFormat] == SPXMLExportPlainFormat) {
-			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"] dataUsingEncoding:[self exportOutputEncoding]]];
+			[self writeString:[NSString stringWithFormat:@"\t</%@>\n\n", ([self xmlTableName]) ? [[self xmlTableName] HTMLEscapeString] : @"custom"]];
 		}
 		
 		[xmlExportPool release];
@@ -350,8 +341,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(xmlExportProcessComplete:) withObject:self waitUntilDone:NO];
-	
-	[pool release];
 }
 
 #pragma mark -

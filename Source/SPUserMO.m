@@ -29,13 +29,14 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPUserMO.h"
+#import "SPUserManager.h"
 
 static NSString *SPUserMOParentKey   = @"parent";
 static NSString *SPUserMOUserKey     = @"user";
 static NSString *SPUserMOHostKey     = @"host";
 static NSString *SPUserMOChildrenKey = @"children";
 
-@implementation NSManagedObject (CoreDataGeneratedAccessors)
+@implementation SPUserMO
 
 @dynamic user;
 @dynamic host;
@@ -64,7 +65,7 @@ static NSString *SPUserMOChildrenKey = @"children";
     }
 }
 
-- (void)addChildrenObject:(NSManagedObject *)value 
+- (void)addChildrenObject:(SPUserMO *)value
 {    
     NSSet *changedObjects = [[NSSet alloc] initWithObjects:&value count:1];
 
@@ -77,7 +78,7 @@ static NSString *SPUserMOChildrenKey = @"children";
 	value.user = self.user;
 }
 
-- (void)removeChildrenObject:(NSManagedObject *)value 
+- (void)removeChildrenObject:(SPUserMO *)value
 {
     NSSet *changedObjects = [[NSSet alloc] initWithObjects:&value count:1];
     
@@ -86,6 +87,33 @@ static NSString *SPUserMOChildrenKey = @"children";
     [self didChangeValueForKey:SPUserMOChildrenKey withSetMutation:NSKeyValueMinusSetMutation usingObjects:changedObjects];
     
     [changedObjects release];
+}
+
+- (BOOL)validateForInsert:(NSError **)error
+{
+	if(![super validateForInsert:error]) return NO;
+
+	SPUserManager *mgr = [self valueForKey:@"userManager"];
+	
+	return [mgr insertUser:self];
+}
+
+- (BOOL)validateForDelete:(NSError **)error
+{
+	if(![super validateForDelete:error]) return NO;
+	
+	SPUserManager *mgr = [self valueForKey:@"userManager"];
+	
+	return [mgr deleteUser:self];
+}
+
+- (BOOL)validateForUpdate:(NSError **)error
+{
+	if(![super validateForUpdate:error]) return NO;
+	
+	SPUserManager *mgr = [self valueForKey:@"userManager"];
+	
+	return [mgr updateUser:self];
 }
 
 @end

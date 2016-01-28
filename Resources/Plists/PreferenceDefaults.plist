@@ -149,8 +149,6 @@
 	<real>3</real>
 	<key>NewFieldsAllowNulls</key>
 	<true/>
-	<key>NoBOMforSQLdumpFile</key>
-	<true/>
 	<key>NullValue</key>
 	<string>NULL</string>
 	<key>PrintBackground</key>
@@ -189,8 +187,6 @@
 	<true/>
 	<key>SPFirstRun</key>
 	<true/>
-	<key>SQLExportUseCompression</key>
-	<false/>
 	<key>SSHMultiplexingEnabled</key>
 	<false/>
 	<key>TableInformationPanelCollapsed</key>

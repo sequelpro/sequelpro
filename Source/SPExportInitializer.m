@@ -46,6 +46,7 @@
 #import "SPExportFilenameUtilities.h"
 #import "SPExportFileNameTokenObject.h"
 #import "SPConnectionControllerDelegateProtocol.h"
+#import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -65,7 +66,7 @@
 	[exportProgressIndicator setIndeterminate:NO];
 	[exportProgressIndicator setDoubleValue:0];
 
-	// If it's not already displayed, open the progress sheet open the progress sheet.
+	// If it's not already displayed, open the progress sheet
 	if (![exportProgressWindow isVisible]) {
 		[NSApp beginSheet:exportProgressWindow
 		   modalForWindow:[tableDocumentInstance parentWindow]
@@ -74,14 +75,9 @@
 			  contextInfo:nil];
 	}
 
-	// If using an export type that requires the connection to start in UTF8, cache the current connection
-	// encoding and then set it here.
-	if (exportType == SPSQLExport || exportType == SPDotExport) {
-		previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
-		previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
-				
-		[tableDocumentInstance setConnectionEncoding:@"utf8" reloadingViews:NO];	
-	}
+	// cache the current connection encoding so the exporter can do what it wants.
+	previousConnectionEncoding = [[NSString alloc] initWithString:[connection encoding]];
+	previousConnectionEncodingViaLatin1 = [connection encodingUsesLatin1Transport];
 		
 	// Add the first exporter to the operation queue
 	[operationQueue addOperation:[exporters objectAtIndex:0]];
@@ -89,6 +85,23 @@
 	// Remove the exporter we just added to the operation queue from our list of exporters 
 	// so we know it's already been done.
 	[exporters removeObjectAtIndex:0];	
+}
+
+/**
+ * @see _queueIsEmptyAfterCancelling:
+ */
+- (void)exportEnded
+{
+	[self _hideExportProgress];
+
+	// Restore query mode
+	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+
+	// Display Growl notification
+	[self displayExportFinishedGrowlNotification];
+
+	// Restore the connection encoding to it's pre-export value
+	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
 }
 
 /**
@@ -304,7 +317,8 @@
 		[sqlExporter setSqlExportTables:exportTables];
 		
 		// Create custom filename if required
-		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:nil] : [self generateDefaultExportFilename]];
+		NSString *selectedTableName = (exportSource == SPTableExport && [exportTables count] == 1)? [[exportTables objectAtIndex:0] objectAtIndex:0] : nil;
+		[exportFilename setString:(createCustomFilename) ? [self expandCustomFilenameFormatUsingTableName:selectedTableName] : [self generateDefaultExportFilename]];
 		
 		// Only append the extension if necessary
 		if (![[exportFilename pathExtension] length]) {
@@ -425,9 +439,10 @@
 	for (SPExporter *exporter in exporters)
 	{
 		[exporter setConnection:connection];
+		[exporter setServerSupport:[self serverSupport]];
 		[exporter setExportOutputEncoding:[connection stringEncoding]];
 		[exporter setExportMaxProgress:(NSInteger)[exportProgressIndicator bounds].size.width];
-		[exporter setExportUsingLowMemoryBlockingStreaming:[exportProcessLowMemoryButton state]];
+		[exporter setExportUsingLowMemoryBlockingStreaming:([exportProcessLowMemoryButton state] == NSOnState)];
 		[exporter setExportOutputCompressionFormat:(SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem]];
 		[exporter setExportOutputCompressFile:([exportOutputCompressionFormatPopupButton indexOfSelectedItem] != SPNoCompression)];
 	}
@@ -504,7 +519,7 @@
 				BOOL tableNameInTokens = NO;
 				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
 				}
 				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}
@@ -566,7 +581,7 @@
 				BOOL tableNameInTokens = NO;
 				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenContent] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
 				}
 				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}

@@ -482,7 +482,7 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSSearchFieldCell" key="NSCell" id="92933437">
 								<int key="NSCellFlags">342884416</int>
-								<int key="NSCellFlags2">268567552</int>
+								<int key="NSCellFlags2">268567616</int>
 								<string key="NSContents"/>
 								<reference key="NSSupport" ref="26"/>
 								<string key="NSPlaceholderString">Filter</string>
@@ -1019,7 +1019,7 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="437242737">
 								<int key="NSCellFlags">-1804599231</int>
-								<int key="NSCellFlags2">272630784</int>
+								<int key="NSCellFlags2">272630848</int>
 								<reference key="NSSupport" ref="421083426"/>
 								<object class="NSNumberFormatter" key="NSFormatter" id="59013685">
 									<dictionary class="NSMutableDictionary" key="NS.attributes">

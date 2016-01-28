@@ -84,13 +84,8 @@
 	return self;
 }
 
-/**
- * Start the SQL export process. This method is automatically called when an instance of this class
- * is placed on an NSOperationQueue. Do not call it directly as there is no manual multithreading.
- */
-- (void)main
+- (void)exportOperation
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	sqlTableDataInstance = [[[SPTableData alloc] init] autorelease];
 	[sqlTableDataInstance setConnection:connection];
 			
@@ -128,7 +123,6 @@
 	{
 		[errors release];
 		[sqlString release];
-		[pool release];
 		return;
 	}
 			
@@ -150,7 +144,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -161,6 +154,7 @@
 			case SPTableTypeFunc:
 				targetArray = funcs;
 				break;
+			case SPTableTypeTable:
 			default:
 				targetArray = tables;
 				break;
@@ -171,14 +165,16 @@
 			
 	// If required write the UTF-8 Byte Order Mark (BOM)
 	if ([self sqlOutputIncludeUTF8BOM]) {
-		[metaString setString:@"\xef\xbb\xbf"];
-		[metaString appendString:@"# ************************************************************\n"];
+		[metaString appendString:@"\xef\xbb\xbf"];
 	}
-	else {
-		[metaString setString:@"# ************************************************************\n"];
-	}
+
+	// we require utf8
+	[connection setEncoding:@"utf8"];
+	// …but utf8mb4 (aka "really" utf8) would be even better.
+	BOOL utf8mb4 = [connection setEncoding:@"utf8mb4"];
 	
 	// Add the dump header to the dump file
+	[metaString appendString:@"# ************************************************************\n"];
 	[metaString appendString:@"# Sequel Pro SQL dump\n"];
 	[metaString appendFormat:@"# %@ %@\n#\n", NSLocalizedString(@"Version", @"export header version label"), [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
 	[metaString appendFormat:@"# %@\n# %@\n#\n", SPLOCALIZEDURL_HOMEPAGE, SPDevURL];
@@ -192,12 +188,21 @@
 	[metaString appendString:@"/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n"];
 	[metaString appendString:@"/*!40101 SET NAMES utf8 */;\n"];
+	if(utf8mb4) {
+		// !! This being outside of a conditional comment is FULLY INTENTIONAL !!
+		// We *absolutely* want that to fail if the export includes utf8mb4 data, but the server can't handle it.
+		// MySQL would _normally_ just drop-replace such characters with "?" (a literal questionmark) without any (visible) complaint.
+		// Since that means irreversible (and often hard to notice) data corruption,
+		//   the user should CONSCIOUSLY make a decision for that to happen!
+		//TODO we should link to a website explaining the risk here
+		[metaString appendString:@"SET NAMES utf8mb4;\n"];
+	}
 	
 	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
 	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
 	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
-	
-	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
+
+	[self writeString:metaString];
 			
 	// Loop through the selected tables
 	for (NSArray *table in tables) 
@@ -206,7 +211,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -231,7 +235,7 @@
 		lastProgressValue = 0;
 		
 		// Add the name of table
-		[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName] dataUsingEncoding:[self exportOutputEncoding]]];
+		[self writeString:[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName]];
 		
 		// Determine whether this table is a table or a view via the CREATE TABLE command, and keep the create table syntax
 		queryResult = [connection queryString:[NSString stringWithFormat:@"SHOW CREATE TABLE %@", [tableName backtickQuotedString]]];
@@ -257,15 +261,14 @@
 		if ([connection queryErrored]) {
 			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 			
-			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+			[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]]];
 			
 			continue;
 		}
 		
 		// Add a 'DROP TABLE' command if required
 		if (sqlOutputIncludeDropSyntax) {
-			[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable) ? @"TABLE" : @"VIEW"), [tableName backtickQuotedString]]
-												dataUsingEncoding:[self exportOutputEncoding]]];
+			[self writeString:[NSString stringWithFormat:@"DROP %@ IF EXISTS %@;\n\n", ((tableType == SPTableTypeTable) ? @"TABLE" : @"VIEW"), [tableName backtickQuotedString]]];
 		}
 		
 		// Add the create syntax for the table if specified in the export dialog
@@ -279,9 +282,9 @@
 			if (![self sqlOutputIncludeAutoIncrement]) {
 				createTableSyntax = [createTableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"AUTO_INCREMENT=[0-9]+ "] withString:@""];
 			}
-			
-			[[self exportOutputFile] writeData:[createTableSyntax dataUsingEncoding:NSUTF8StringEncoding]];
-			[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
+
+			[self writeUTF8String:createTableSyntax];
+			[self writeUTF8String:@";\n\n"];
 		}
 					
 		// Add the table content if required
@@ -316,9 +319,8 @@
 					useRawHexDataForColumnAtIndex[j] = YES;
 				}
 
-				// Floats, integers and bits can be output directly assuming they're non-binary
-				if (![[theColumnDetail objectForKey:@"binary"] boolValue]
-					&& ([theTypeGrouping isEqualToString:@"bit"] || [theTypeGrouping isEqualToString:@"integer"] || [theTypeGrouping isEqualToString:@"float"]))
+				// Floats, integers can be output directly assuming they're non-binary
+				if (![[theColumnDetail objectForKey:@"binary"] boolValue] && ([@[@"integer",@"float"] containsObject:theTypeGrouping]))
 				{
 					useRawDataForColumnAtIndex[j] = YES;
 				}
@@ -339,7 +341,7 @@
 			
 			if ([connection queryErrored] || ![rowArray count]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n\n\n", [connection lastErrorMessage]]];
 				free(useRawDataForColumnAtIndex);
 				free(useRawHexDataForColumnAtIndex);
 				continue;
@@ -361,10 +363,10 @@
 				[metaString setString:@""];
 				[metaString appendFormat:@"LOCK TABLES %@ WRITE;\n/*!40000 ALTER TABLE %@ DISABLE KEYS */;\n\n", [tableName backtickQuotedString], [tableName backtickQuotedString]];
 				
-				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:[self exportOutputEncoding]]];
+				[self writeString:metaString];
 				
 				// Construct the start of the insertion command
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]]];
 				
 				// Iterate through the rows to construct a VALUES group for each
 				j = 0, k = 0;
@@ -384,7 +386,6 @@
 						[sqlExportPool release];
 						[errors release];
 						[sqlString release];
-						[pool release];
 						free(useRawDataForColumnAtIndex);
 						free(useRawHexDataForColumnAtIndex);
 
@@ -474,6 +475,7 @@
 								NSString *data = [[NSString alloc] initWithData:object encoding:[self exportOutputEncoding]];
 								
 								if (data == nil) {
+#warning This can corrupt data! Check if this case ever happens and if so, export as hex-string
 									data = [[NSString alloc] initWithData:object encoding:NSASCIIStringEncoding];
 								}
 								
@@ -496,7 +498,7 @@
 					queryLength += [sqlString length];
 										
 					// Write this row to the file
-					[[self exportOutputFile] writeData:[sqlString dataUsingEncoding:NSUTF8StringEncoding]];
+					[self writeUTF8String:sqlString];
 
 					// Clean autorelease pool if so decided earlier
 					if (cleanAutoReleasePool) {
@@ -507,13 +509,13 @@
 				}
 				
 				// Complete the command
-				[[self exportOutputFile] writeData:[@";\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:@";\n\n"];
 				
 				// Unlock the table and re-enable keys if supported
 				[metaString setString:@""];
 				[metaString appendFormat:@"/*!40000 ALTER TABLE %@ ENABLE KEYS */;\nUNLOCK TABLES;\n", [tableName backtickQuotedString]];
 				
-				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:metaString];
 				
 				// Drain the autorelease pool
 				[sqlExportPool release];
@@ -529,8 +531,7 @@
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
-					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]
-										   dataUsingEncoding:NSUTF8StringEncoding]];
+					[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]];
 				}
 			}
 		}
@@ -552,7 +553,6 @@
 					if ([self isCancelled]) {
 						[errors release];
 						[sqlString release];
-						[pool release];
 						return;
 					}
 					
@@ -577,20 +577,20 @@
 				
 				[metaString appendString:@"DELIMITER ;\n/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;\n"];
 				
-				[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:metaString];
 			}
 			
 			if ([connection queryErrored]) {
 				[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 				
 				if ([self sqlOutputIncludeErrors]) {
-					[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+					[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]];
 				}
 			}
 		}
 		
-		// Add an additional separator between tables
-		[[self exportOutputFile] writeData:[@"\n\n" dataUsingEncoding:NSUTF8StringEncoding]];
+		// Add an additional separat or between tables
+		[self writeUTF8String:@"\n\n"];
 	}
 	
 	// Process any deferred views, adding commands to delete the placeholder tables and add the actual views
@@ -600,7 +600,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -610,8 +609,8 @@
 		[metaString appendFormat:@"# Replace placeholder table for %@ with correct view syntax\n# ------------------------------------------------------------\n\n", tableName];
 		[metaString appendFormat:@"DROP TABLE %@;\n\n", [tableName backtickQuotedString]];
 		[metaString appendFormat:@"%@;\n", [viewSyntaxes objectForKey:tableName]];
-		
-		[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+
+		[self writeUTF8String:metaString];
 	}
 	
 	// Export procedures and functions
@@ -621,7 +620,6 @@
 		if ([self isCancelled]) {
 			[errors release];
 			[sqlString release];
-			[pool release];
 			return;
 		}
 		
@@ -653,7 +651,6 @@
 				if ([self isCancelled]) {
 					[errors release];
 					[sqlString release];
-					[pool release];
 					return;
 				}
 
@@ -669,7 +666,6 @@
 						[proceduresList release];
 						[errors release];
 						[sqlString release];
-						[pool release];
 						return;
 					}
 					
@@ -716,7 +712,7 @@
 					[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 					
 					if ([self sqlOutputIncludeErrors]) {
-						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+						[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]];
 					}
 					[proceduresList release];
 					continue;
@@ -733,7 +729,7 @@
 					NSString *errorString = [NSString stringWithFormat:NSLocalizedString(@"Could not export the %@ '%@' because of a permissions error.\n", @"Procedure/function export permission error"), procedureType, procedureName];
 					[errors appendString:errorString];
 					if ([self sqlOutputIncludeErrors]) {
-						[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", errorString] dataUsingEncoding:NSUTF8StringEncoding]];
+						[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n", errorString]];
 					}
 					[proceduresList release];
 					[procedureInfo release];
@@ -758,14 +754,14 @@
 			
 			[metaString appendString:@"DELIMITER ;\n"];
 			
-			[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+			[self writeUTF8String:metaString];
 		}
 		
 		if ([connection queryErrored]) {
 			[errors appendFormat:@"%@\n", [connection lastErrorMessage]];
 			
 			if ([self sqlOutputIncludeErrors]) {
-				[[self exportOutputFile] writeData:[[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]] dataUsingEncoding:NSUTF8StringEncoding]];
+				[self writeUTF8String:[NSString stringWithFormat:@"# Error: %@\n", [connection lastErrorMessage]]];
 			}
 		}
 	}
@@ -782,7 +778,7 @@
 	[metaString appendString:@"/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n"];
 	
 	// Write footer-type information to the file
-	[[self exportOutputFile] writeData:[metaString dataUsingEncoding:NSUTF8StringEncoding]];
+	[self writeUTF8String:metaString];
 			
 	// Set export errors
 	[self setSqlExportErrors:errors];
@@ -798,8 +794,6 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
-	
-	[pool release];
 }
 
 /**
@@ -809,7 +803,7 @@
  */
 - (BOOL)didExportErrorsOccur
 {
-	return [[self sqlExportErrors] length];
+	return ([[self sqlExportErrors] length] != 0);
 }
 
 /**
@@ -885,8 +879,8 @@
 					[fieldString appendString:@" DEFAULT NULL"];
 				}
 			} 
-			else if (([[column objectForKey:@"type"] isEqualToString:@"TIMESTAMP"] || [[column objectForKey:@"type"] isEqualToString:@"DATETIME"]) && [column objectForKey:@"default"] != [NSNull null] && [[[column objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) {
-				[fieldString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
+			else if (([[column objectForKey:@"type"] isInArray:@[@"TIMESTAMP",@"DATETIME"]]) && [[column objectForKey:@"default"] isMatchedByRegex:SPCurrentTimestampPattern]) {
+				[fieldString appendFormat:@" DEFAULT %@",[column objectForKey:@"default"]];
 			} 
 			else {
 				[fieldString appendFormat:@" DEFAULT %@", [connection escapeAndQuoteString:[column objectForKey:@"default"]]];

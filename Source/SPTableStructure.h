@@ -41,6 +41,18 @@
 @class SPExtendedTableInfo;
 @class SPTableInfo;
 
+@interface SPFieldTypeHelp : NSObject {
+	NSString *typeName;
+	NSString *typeDefinition;
+	NSString *typeRange;
+	NSString *typeDescription;
+}
+@property(readonly) NSString *typeName;
+@property(readonly) NSString *typeDefinition;
+@property(readonly) NSString *typeRange;
+@property(readonly) NSString *typeDescription;
+@end
+
 @interface SPTableStructure : NSObject 
 #ifdef SP_CODA
 <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxCellDataSource>
@@ -55,7 +67,10 @@
 #endif
 	IBOutlet SPIndexesController *indexesController;
 	IBOutlet SPDatabaseData *databaseDataInstance;
-
+	
+	IBOutlet NSPanel *structureHelpPanel;
+	IBOutlet NSTextView *structureHelpText;
+	
 #ifndef SP_CODA /* ivars */
 	IBOutlet id keySheet;
 	IBOutlet id resetAutoIncrementSheet;
@@ -157,5 +172,7 @@
 
 // Split view interaction
 - (IBAction)unhideIndexesView:(id)sender;
+
++ (SPFieldTypeHelp *)helpForFieldType:(NSString *)typeName;
 
 @end

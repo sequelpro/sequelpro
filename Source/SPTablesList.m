@@ -357,10 +357,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Query the structure of all databases in the background
 	if (sender == self)
 		// Invoked by SP
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:nil];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:nil];
 	else
 		// User press refresh button ergo force update
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES, @"cancelQuerying" : @YES}];
 }
 
 /**
@@ -391,6 +391,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[addTableCharsetHelper setServerSupport:[tableDocumentInstance serverSupport]];
 	[addTableCharsetHelper setPromoteUTF8:YES];
 	[addTableCharsetHelper setDefaultCharsetFormatString:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Encoding Dropdown : Default inherited from database")];
+	[addTableCharsetHelper setDefaultCollationFormatString:NSLocalizedString(@"Inherit from database (%@)", @"New Table Sheet : Table Collation Dropdown : Default inherited from database")];
 	[addTableCharsetHelper setDefaultCharset:[databaseDataInstance getDatabaseDefaultCharacterSet]];
 	[addTableCharsetHelper setDefaultCollation:[databaseDataInstance getDatabaseDefaultCollation]];
 	[addTableCharsetHelper setSelectedCharset:nil]; //reset to not carry over state from last time sheet was shown
@@ -1577,7 +1578,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Since we trimmed whitespace and checked for empty string, this means there is already a table with that name
 		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), 
 				NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self,
-				@selector(sheetDidEnd:returnCode:contextInfo:), nil,
+				@selector(sheetDidEnd:returnCode:contextInfo:), NULL,
 				[NSString stringWithFormat: NSLocalizedString(@"The name '%@' is already used.", @"message when trying to rename a table/view/proc/etc to an already used name"), newTableName]);
 		return;
 	}
@@ -1602,7 +1603,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 	@catch (NSException * myException) {
-		SPBeginAlertSheet( NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, [myException reason]);
+		SPOnewayAlertSheet(NSLocalizedString(@"Error", @"error"), [tableDocumentInstance parentWindow], [myException reason]);
 	}
 
 #ifndef SP_CODA
@@ -1611,7 +1612,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA
@@ -1634,7 +1635,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
 
 		[control abortEditing];
-		[[NSApp mainWindow] makeFirstResponder:tablesListView];
+		[[tablesListView window] makeFirstResponder:tablesListView];
 
 		return YES;
 	} else{
@@ -2266,10 +2267,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
-							   target:[tableDocumentInstance databaseStructureRetrieval]
-							 selector:@selector(queryDbStructureWithUserInfo:)
-							   object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 
 #ifndef SP_CODA /* operations performed on whole tables */
@@ -2417,10 +2415,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 #endif
 
 		// Query the structure of all databases in the background (mainly for completion)
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance)
-								   target:[tableDocumentInstance databaseStructureRetrieval]
-								 selector:@selector(queryDbStructureWithUserInfo:)
-								   object:@{@"forceUpdate" : @YES}];
+		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 	}
 	else {
 		// Error while creating new table
@@ -2452,7 +2447,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	NSString *tableType = @"";
 
 	if ([[copyTableNameField stringValue] isEqualToString:@""]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil, NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table"));
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			NSLocalizedString(@"Table must have a name.", @"message of panel when no name is given for table")
+		);
 		return;
 	}
 
@@ -2493,8 +2492,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	if ( ![queryResult numberOfRows] ) {
 
 		//error while getting table structure
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't get create syntax.\nMySQL said: %@", @"message of panel when table information cannot be retrieved"), [mySQLConnection lastErrorMessage]]
+		);
 
 		return;
     }
@@ -2542,8 +2544,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// Check for errors, only displaying if the connection hasn't been terminated
 		if ([mySQLConnection queryErrored]) {
 			if ([mySQLConnection isConnected]) {
-				SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-								  [NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]);
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Error", @"error"),
+					[tableDocumentInstance parentWindow],
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while retrieving the create syntax for '%@'.\nMySQL said: %@", @"message of panel when create syntax cannot be retrieved"), selectedTableName, [mySQLConnection lastErrorMessage]]
+				);
 			}
 			return;
 		}
@@ -2555,16 +2560,22 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		[mySQLConnection queryString:[tableSyntax stringByReplacingOccurrencesOfRegex:[NSString stringWithFormat:@"(?<=%@ )(`[^`]+?`)", [tableType uppercaseString]] withString:[[copyTableNameField stringValue] backtickQuotedString]]];
 
 		if ([mySQLConnection queryErrored]) {
-			SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-							  [NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't duplicate '%@'.\nMySQL said: %@", @"message of panel when an item cannot be renamed"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]
+			);
 		}
 
 	}
 
 	if ([mySQLConnection queryErrored]) {
 		//error while creating new table
-		SPBeginAlertSheet(NSLocalizedString(@"Error", @"error"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error", @"error"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"Couldn't create '%@'.\nMySQL said: %@", @"message of panel when table cannot be created"), [copyTableNameField stringValue], [mySQLConnection lastErrorMessage]]
+		);
 		return;
 	}
 
@@ -2577,17 +2588,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 									  ]];
 
 		if ([mySQLConnection queryErrored]) {
-			SPBeginAlertSheet(
-							  NSLocalizedString(@"Warning", @"warning"),
-							  NSLocalizedString(@"OK", @"OK button"),
-							  nil,
-							  nil,
-							  [tableDocumentInstance parentWindow],
-							  self,
-							  nil,
-							  nil,
-							  NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
-							  );
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Warning", @"warning"),
+				[tableDocumentInstance parentWindow],
+				NSLocalizedString(@"There have been errors while copying table content. Please control the new table.", @"message of panel when table content cannot be copied")
+			);
 		}
 	}
 
@@ -2630,7 +2635,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[tableDocumentInstance loadTable:selectedTableName ofType:selectedTableType];
 
 	// Query the structure of all databases in the background (mainly for completion)
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPNavigatorController database structure querier", tableDocumentInstance) target:[tableDocumentInstance databaseStructureRetrieval] selector:@selector(queryDbStructureWithUserInfo:) object:@{@"forceUpdate" : @YES}];
+	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
 }
 #endif
 

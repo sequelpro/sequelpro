@@ -28,6 +28,13 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+typedef NS_OPTIONS(NSUInteger, SPLineTerminator) {
+	SPLineTerminatorAny = 0,
+	SPLineTerminatorCR = 1,
+	SPLineTerminatorLF = 2,
+	SPLineTerminatorCRLF = 4,
+};
+
 @interface NSData (SPDataAdditions)
 
 - (NSData *)sha1Hash;
@@ -45,5 +52,7 @@
 
 - (NSString *)stringRepresentationUsingEncoding:(NSStringEncoding)encoding;
 - (NSString *)shortStringRepresentationUsingEncoding:(NSStringEncoding)encoding;
+
+- (void)enumerateLinesBreakingAt:(SPLineTerminator)lbChars withBlock:(void (^)(NSRange line,BOOL *stop))block;
 
 @end

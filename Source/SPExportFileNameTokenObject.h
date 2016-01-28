@@ -30,9 +30,11 @@
 
 @interface SPExportFileNameTokenObject : NSObject<NSCoding> 
 {
-	NSString *tokenContent;
+	NSString *tokenId;
 }
 
-@property (retain) NSString *tokenContent;
++ (id)tokenWithId:(NSString *)token;
+
+@property (nonatomic,copy) NSString *tokenId;
 
 @end

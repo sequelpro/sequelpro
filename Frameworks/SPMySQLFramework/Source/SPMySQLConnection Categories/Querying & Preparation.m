@@ -58,6 +58,9 @@
  * Take a string and escapes any special character for safe use within a query; correctly
  * escapes any characters within the string using the current connection encoding.
  * Allows control over whether to also wrap the string in single quotes.
+ *
+ * WARNING: This method may return nil if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (NSString *)escapeString:(NSString *)theString includingQuotes:(BOOL)includeQuotes
 {
@@ -72,10 +75,11 @@
 		}
 		return nil;
 	}
-	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Ensure per-thread variables are set up
 	[self _validateThreadSetup];
+
+	if (![self _checkConnectionIfNecessary]) return nil;
 
 	// Perform a lossy conversion to bytes, using NSData to do the hard work.  Preserves
 	// nul characters correctly.
@@ -221,6 +225,9 @@
  * the connection encoding.
  * The result type desired can be specified, supporting either standard or streaming
  * result sets.
+ *
+ * WARNING: This method may return nil if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType
 {
@@ -288,6 +295,7 @@
 	// Lock the connection while it's actively in use
 	[self _lockConnection];
 
+	unsigned long long theAffectedRowCount;
 	while (queryAttemptsAllowed > 0) {
 
 		// While recording the overall execution time (including network lag!), run
@@ -296,6 +304,11 @@
 		queryStatus = mysql_real_query(mySQLConnection, queryBytes, queryBytesLength);
 		queryExecutionTime = _elapsedSecondsSinceAbsoluteTime(queryStartTime);
 		lastConnectionUsedTime = mach_absolute_time();
+		
+		// "An integer greater than zero indicates the number of rows affected or retrieved.
+		//  Zero indicates that no records were updated for an UPDATE statement, no rows matched the WHERE clause in the query or that no query has yet been executed.
+		//  -1 indicates that the query returned an error or that, for a SELECT query, mysql_affected_rows() was called prior to calling mysql_store_result()."
+		theAffectedRowCount = mysql_affected_rows(mySQLConnection);
 
 		// If the query succeeded, no need to re-attempt.
 		if (!queryStatus) {
@@ -313,7 +326,7 @@
 			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
 
 			// Prevent retries if the query was cancelled or not a connection error
-			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:mysql_errno(mySQLConnection)]) {
+			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:theErrorID]) {
 				break;
 			}
 		}
@@ -327,11 +340,11 @@
 			return nil;
 		}
 		[self _lockConnection];
+		NSAssert(mySQLConnection != NULL, @"mySQLConnection has disappeared while checking it!");
 
 		queryAttemptsAllowed--;
 	}
 
-	unsigned long long theAffectedRowCount = mysql_affected_rows(mySQLConnection);
 	id theResult = nil;
 
 	// On success, if there is a query result, retrieve the result data type
@@ -657,6 +670,16 @@
 			mysql_free_result(eachResult);
 		}
 	}
+}
+
+/**
+ * Update lastErrorID, lastErrorMessage and lastSqlstate from connection
+ */
+- (void)_updateLastErrorInfos
+{
+	[self _updateLastErrorID:NSNotFound];
+	[self _updateLastErrorMessage:nil];
+	[self _updateLastSqlstate:nil];
 }
 
 /**

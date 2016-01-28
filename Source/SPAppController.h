@@ -40,10 +40,6 @@
 
 @interface SPAppController : NSObject <FRFeedbackReporterDelegate, NSApplicationDelegate, NSOpenSavePanelDelegate, NSFileManagerDelegate>
 {
-	IBOutlet NSWindow* bundleEditorWindow;
-
-	BOOL isNewFavorite;
-
 	SPAboutController *aboutController;
 	SPPreferenceController *prefsController;
 	SPBundleEditorController *bundleEditorController;

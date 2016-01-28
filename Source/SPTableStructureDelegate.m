@@ -37,12 +37,36 @@
 #import "SPTableFieldValidation.h"
 #import "SPTableStructureLoading.h"
 #import "SPServerSupport.h"
+#import "SPTablesList.h"
+#import "SPPillAttachmentCell.h"
+#import "SPIdMenu.h"
+#import "SPComboBoxCell.h"
 
 #import <SPMySQL/SPMySQL.h>
+
+struct _cmpMap {
+	NSString *title; // the title of the "pill"
+	NSString *tooltipPart; // the tooltip of the menuitem
+	NSString *cmpWith; // the string to match against
+};
+
+/**
+ * This function will compare the representedObject of every item in menu against
+ * every map->cmpWith. If they match it will append a pill-like (similar to a TokenFieldCell's token)
+ * element labelled map->title to the menu item's title. If map->tooltipPart is set,
+ * it will also be added to the menu item's tooltip.
+ *
+ * This is used with the encoding/collation popup menus to add visual indicators for the
+ * table-level and default encoding/collation.
+ */
+static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries);
 
 @interface SPTableStructure (PrivateAPI)
 
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
+- (NSString *)_buildPartialColumnDefinitionString:(NSDictionary *)theRow;
+
+- (void)_displayFieldTypeHelpIfPossible:(SPComboBoxCell *)cell;
 
 @end
 
@@ -60,57 +84,68 @@
 {
 	// Return a placeholder if the table is reloading
 	if ((NSUInteger)rowIndex >= [tableFields count]) return @"...";
+
+	NSDictionary *rowData = NSArrayObjectAtIndex(tableFields, rowIndex);
 	
 	if ([[tableColumn identifier] isEqualToString:@"collation"]) {
-		NSInteger idx = 0;
-		
-		if ((idx = [[NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:@"encoding"] integerValue]) > 0 && idx < [encodingPopupCell numberOfItems]) {
-			NSString *enc = [[encodingPopupCell itemAtIndex:idx] title];
+		NSString *tableEncoding = [tableDataInstance tableEncoding];
+		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
+		NSString *columnCollation = [rowData objectForKey:@"collationName"]; // loadTable: has already inferred it, if not set explicit
 
-			NSUInteger start = [enc rangeOfString:@"("].location + 1;
-			
-			collations = [databaseDataInstance getDatabaseCollationsForEncoding:[enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)]];
-		} 
-		else {
-			// If the structure has loaded (not still loading!) and the table encoding
-			// is set, use the appropriate collations.
-			collations = ([tableDocumentInstance structureLoaded] && [tableDataInstance tableEncoding] != nil) ? [databaseDataInstance getDatabaseCollationsForEncoding:[tableDataInstance tableEncoding]] : @[];
-		}
-		
-		[[tableColumn dataCell] removeAllItems];
-		
-		if ([collations count] > 0) {
-			NSString *defaultCollation = [[tableDataInstance statusValues] objectForKey:@"collation"];
-			
-			if (!defaultCollation) {
-				defaultCollation = [databaseDataInstance getDatabaseDefaultCollation];
-			}
-			
-			[[tableColumn dataCell] addItemWithTitle:@""];
+#warning Building the collation menu here is a big performance hog. This should be done in menuNeedsUpdate: below!
+		NSPopUpButtonCell *collationCell = [tableColumn dataCell];
+		[collationCell removeAllItems];
+		[collationCell addItemWithTitle:@"dummy"];
+		//copy the default style of menu items and add gray color for default item
+		NSMutableDictionary *menuAttrs = [NSMutableDictionary dictionaryWithDictionary:[[collationCell attributedTitle] attributesAtIndex:0 effectiveRange:NULL]];
+		[menuAttrs setObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
+		[[collationCell lastItem] setTitle:@""];
 
-			BOOL useMonospacedFont = [prefs boolForKey:SPUseMonospacedFonts];
-			CGFloat monospacedFontSize = [prefs floatForKey:SPMonospacedFontSize] > 0 ? [prefs floatForKey:SPMonospacedFontSize] : [NSFont smallSystemFontSize];
-			
-			// Populate collation popup button
-			for (NSDictionary *collation in collations)
-			{
-				NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
-				
-				[[tableColumn dataCell] addItemWithTitle:collationName];
+		//if this is not set the column either has no encoding (numeric etc.) or retrieval failed. Either way we can't provide collations
+		if([columnEncoding length]) {
+			collations = [databaseDataInstance getDatabaseCollationsForEncoding:columnEncoding];
 
-				// If this matches the table's collation, draw in gray
-				if ([collationName length] && [collationName isEqualToString:defaultCollation]) {
-					NSMenuItem *collationMenuItem = [(NSPopUpButtonCell *)[tableColumn dataCell] itemAtIndex:([[tableColumn dataCell] numberOfItems] - 1)];
-					NSMutableDictionary *menuAttributes = [NSMutableDictionary dictionaryWithObject:[NSColor lightGrayColor] forKey:NSForegroundColorAttributeName];
-										
-					[menuAttributes setObject:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]] forKey:NSFontAttributeName];
-					
-					NSAttributedString *itemString = [[[NSAttributedString alloc] initWithString:collationName attributes:menuAttributes] autorelease];
-					
-					[collationMenuItem setAttributedTitle:itemString];
+			if ([collations count] > 0) {
+				NSString *tableCollation = [[tableDataInstance statusValues] objectForKey:@"Collation"];
+
+				if (![tableCollation length]) {
+					tableCollation = [databaseDataInstance getDefaultCollationForEncoding:tableEncoding];
 				}
+
+				BOOL columnUsesTableDefaultEncoding = ([columnEncoding isEqualToString:tableEncoding]);
+				// Populate collation popup button
+				for (NSDictionary *collation in collations)
+				{
+					NSString *collationName = [collation objectForKey:@"COLLATION_NAME"];
+
+					[collationCell addItemWithTitle:collationName];
+					NSMenuItem *item = [collationCell lastItem];
+					[item setRepresentedObject:collationName];
+
+					// If this matches the table's collation, draw in gray
+					if (columnUsesTableDefaultEncoding && [collationName isEqualToString:tableCollation]) {
+						NSAttributedString *itemString = [[NSAttributedString alloc] initWithString:[item title] attributes:menuAttrs];
+						[item setAttributedTitle:[itemString autorelease]];
+					}
+				}
+
+				// the popup cell is subclassed to take the representedObject instead of the item index
+				return columnCollation;
 			}
 		}
+
+		return nil;
+	}
+	else if ([[tableColumn identifier] isEqualToString:@"encoding"]) {
+		// the encoding menu was already configured during setTableDetails:
+		NSString *columnEncoding = [rowData objectForKey:@"encodingName"];
+
+		if([columnEncoding length]) {
+			NSInteger idx = [encodingPopupCell indexOfItemWithRepresentedObject:columnEncoding];
+			if(idx > 0) return @(idx);
+		}
+
+		return @0;
 	}
 	else if ([[tableColumn identifier] isEqualToString:@"Extra"]) {
 		id dataCell = [tableColumn dataCell];
@@ -126,34 +161,51 @@
 		}
 	}
 
-	return [NSArrayObjectAtIndex(tableFields, rowIndex) objectForKey:[tableColumn identifier]];
+	return [rowData objectForKey:[tableColumn identifier]];
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	// Make sure that the drag operation is for the right table view
+	// Make sure that the operation is for the right table view
 	if (aTableView != tableSourceView) return;
+
+	NSMutableDictionary *currentRow = NSArrayObjectAtIndex(tableFields,rowIndex);
 	
 	if (!isEditingRow) {
-		[oldRow setDictionary:[tableFields objectAtIndex:rowIndex]];
+		[oldRow setDictionary:currentRow];
 		isEditingRow = YES;
 		currentlyEditingRow = rowIndex;
 	}
-	
-	NSMutableDictionary *currentRow = [tableFields objectAtIndex:rowIndex];
-	
+
 	// Reset collation if encoding was changed
 	if ([[aTableColumn identifier] isEqualToString:@"encoding"]) {
-		if ([[currentRow objectForKey:@"encoding"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:@0 forKey:@"collation"];
+		NSString *oldEncoding = [currentRow objectForKey:@"encodingName"];
+		NSString *newEncoding = [[encodingPopupCell itemAtIndex:[anObject integerValue]] representedObject];
+		if (![oldEncoding isEqualToString:newEncoding]) {
+			[currentRow removeObjectForKey:@"collationName"];
 			[tableSourceView reloadData];
 		}
+		if(!newEncoding)
+			[currentRow removeObjectForKey:@"encodingName"];
+		else
+			[currentRow setObject:newEncoding forKey:@"encodingName"];
+		return;
+	}
+	else if ([[aTableColumn identifier] isEqualToString:@"collation"]) {
+		//the popup button is subclassed to return the representedObject instead of the item index
+		NSString *newCollation = anObject;
+
+		if(!newCollation)
+			[currentRow removeObjectForKey:@"collationName"];
+		else
+			[currentRow setObject:newCollation forKey:@"collationName"];
+		return;
 	}
 	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
 	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
 		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
-			[currentRow setObject:@0 forKey:@"collation"];
-			
+			[currentRow removeObjectForKey:@"collationName"];
+
 			[tableSourceView reloadData];
 		}
 	}
@@ -205,9 +257,8 @@
 			[tableSourceView reloadData];
 		}
 	}
-	
 	// Store new value but not if user choose "---" for type and reset values if required
-	if ([[aTableColumn identifier] isEqualToString:@"type"]) {
+	else if ([[aTableColumn identifier] isEqualToString:@"type"]) {
 		if (anObject && [(NSString*)anObject length] && ![(NSString*)anObject hasPrefix:@"--"]) {
 			[currentRow setObject:[(NSString*)anObject uppercaseString] forKey:@"type"];
 			
@@ -223,10 +274,10 @@
 			
 			[tableSourceView reloadData];
 		}
+		return;
 	} 
-	else {
-		[currentRow setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
-	}
+
+	[currentRow setObject:(anObject) ? anObject : @"" forKey:[aTableColumn identifier]];
 }
 
 /**
@@ -255,7 +306,7 @@
 	
 	if ([rows count] == 1) {
 		[pboard declareTypes:@[SPDefaultPasteboardDragType] owner:nil];
-		[pboard setString:[[NSNumber numberWithInteger:[rows firstIndex]] stringValue] forType:SPDefaultPasteboardDragType];
+		[pboard setString:[NSString stringWithFormat:@"%lu",[rows firstIndex]] forType:SPDefaultPasteboardDragType];
 		
 		return YES;
 	} 
@@ -271,7 +322,7 @@
 - (NSDragOperation)tableView:(NSTableView*)tableView validateDrop:(id <NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)operation
 {
     // Make sure that the drag operation is for the right table view
-    if (tableView!=tableSourceView) return NO;
+    if (tableView!=tableSourceView) return NSDragOperationNone;
 	
 	NSArray *pboardTypes = [[info draggingPasteboard] types];
 	NSInteger originalRow;
@@ -305,104 +356,30 @@
 	NSDictionary *originalRow = [[NSDictionary alloc] initWithDictionary:[tableFields objectAtIndex:originalRowIndex]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
-	
-	NSString *fieldType = [[originalRow objectForKey:@"type"] uppercaseString];
-	
-	// Begin construction of the reordering query
-	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@ %@", [selectedTable backtickQuotedString],
-									[[originalRow objectForKey:@"name"] backtickQuotedString], fieldType];
-	
-	// Add the length parameter if necessary
-	if ([originalRow objectForKey:@"length"] && ![[originalRow objectForKey:@"length"] isEqualToString:@""]) {
-		[queryString appendFormat:@"(%@)", [originalRow objectForKey:@"length"]];
-	}
-	
-	NSString *fieldEncoding = @"";
-			
-	if ([[originalRow objectForKey:@"encoding"] integerValue] > 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling]) {
-		NSString *enc = [[encodingPopupCell itemAtIndex:[[originalRow objectForKey:@"encoding"] integerValue]] title];
-		
-		NSInteger start = [enc rangeOfString:@"("].location + 1;
-		
-		fieldEncoding = [enc substringWithRange:NSMakeRange(start, [enc length] - start - 1)];
-		
-		[queryString appendFormat:@" CHARACTER SET %@", fieldEncoding];
-	}
-	
-	if (![fieldEncoding length] && [tableDataInstance tableEncoding]) {
-		fieldEncoding = [tableDataInstance tableEncoding];
-	}
-	
-	if ([fieldEncoding length] && [[originalRow objectForKey:@"collation"] integerValue] > 0 && ![[originalRow objectForKey:@"binary"] integerValue]) {
-		NSArray *theCollations = [databaseDataInstance getDatabaseCollationsForEncoding:fieldEncoding];
-		NSString *col = [[theCollations objectAtIndex:[[originalRow objectForKey:@"collation"] integerValue] - 1] objectForKey:@"COLLATION_NAME"];
-		
-		[queryString appendFormat:@" COLLATE %@", col];
-	}
 
-	// Add unsigned, zerofill, binary, not null if necessary
-	if ([[originalRow objectForKey:@"unsigned"] integerValue]) {
-		[queryString appendString:@" UNSIGNED"];
-	}
-	
-	if ([[originalRow objectForKey:@"zerofill"] integerValue]) {
-		[queryString appendString:@" ZEROFILL"];
-	}
-	
-	if ([[originalRow objectForKey:@"binary"] integerValue]) {
-		[queryString appendString:@" BINARY"];
-	}
-	
-	if (![[originalRow objectForKey:@"null"] integerValue]) {
-		[queryString appendString:@" NOT NULL"];
-	}
-	
-	if (![[originalRow objectForKey:@"Extra"] isEqualToString:@"None"] ) {
-		[queryString appendString:@" "];
-		[queryString appendString:[[originalRow objectForKey:@"Extra"] uppercaseString]];
-	}
-	
-	BOOL isTimestampType = [fieldType isEqualToString:@"TIMESTAMP"];
-	
-	// Add the default value, skip it for auto_increment
-	if ([originalRow objectForKey:@"Extra"] && ![[originalRow objectForKey:@"Extra"] isEqualToString:@"auto_increment"]) {
-		if ([[originalRow objectForKey:@"default"] isEqualToString:[prefs objectForKey:SPNullValue]]) {
-			if ([[originalRow objectForKey:@"null"] integerValue] == 1) {
-				[queryString appendString:(isTimestampType) ? @" NULL DEFAULT NULL" : @" DEFAULT NULL"];
-			}
-		}
-		else if (isTimestampType && ([[[originalRow objectForKey:@"default"] uppercaseString] isEqualToString:@"CURRENT_TIMESTAMP"]) ) {
-			[queryString appendString:@" DEFAULT CURRENT_TIMESTAMP"];
-		}
-		else if ([(NSString *)[originalRow objectForKey:@"default"] length]) {
-			[queryString appendFormat:@" DEFAULT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"default"]]];
-		}
-	}
-	
-	// Any column comments
-	if ([(NSString *)[originalRow objectForKey:@"comment"] length]) {
-		[queryString appendFormat:@" COMMENT %@", [mySQLConnection escapeAndQuoteString:[originalRow objectForKey:@"comment"]]];
-	}
-	
-	// Unparsed details - column formats, storage, reference definitions
-	if ([originalRow objectForKey:@"unparsed"]) {
-		[queryString appendString:[originalRow objectForKey:@"unparsed"]];
-	}
-	
+	// Begin construction of the reordering query
+	NSMutableString *queryString = [NSMutableString stringWithFormat:@"ALTER TABLE %@ MODIFY COLUMN %@",
+	                                                                 [selectedTable backtickQuotedString],
+	                                                                 [self _buildPartialColumnDefinitionString:originalRow]];
+
+	[queryString appendString:@" "];
 	// Add the new location
 	if (destinationRowIndex == 0) {
-		[queryString appendString:@" FIRST"];
+		[queryString appendString:@"FIRST"];
 	} 
 	else {
-		[queryString appendFormat:@" AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
+		[queryString appendFormat:@"AFTER %@", [[[tableFields objectAtIndex:destinationRowIndex - 1] objectForKey:@"name"] backtickQuotedString]];
 	}
 	
 	// Run the query; report any errors, or reload the table on success
 	[mySQLConnection queryString:queryString];
 	
 	if ([mySQLConnection queryErrored]) {
-		SPBeginAlertSheet(NSLocalizedString(@"Error moving field", @"error moving field message"), NSLocalizedString(@"OK", @"OK button"), nil, nil, [tableDocumentInstance parentWindow], self, nil, nil,
-						  [NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection lastErrorMessage]]);
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Error moving field", @"error moving field message"),
+			[tableDocumentInstance parentWindow],
+			[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to move the field.\n\nMySQL said: %@", @"error moving field informative message"), [mySQLConnection lastErrorMessage]]
+		);
 	} 
 	else {
 		[tableDataInstance resetAllData];
@@ -439,10 +416,8 @@
  */
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification
 {
-	id object = [aNotification object];
-	
 	// Check for which table view the selection changed
-	if (object == tableSourceView) {
+	if ([aNotification object] == tableSourceView) {
 		
 		// If we are editing a row, attempt to save that row - if saving failed, reselect the edit row.
 		if (isEditingRow && [tableSourceView selectedRow] != currentlyEditingRow && ![self saveRowOnDeselect]) return;
@@ -539,10 +514,9 @@
 		[self cancelRowEditing];
 		
 		return YES;
-	} 
-	else {
-		return NO;
 	}
+
+	return NO;
 }
 
 /**
@@ -559,20 +533,21 @@
 	} 
 	else {
 		// Validate cell against current field type
-		NSString *rowType = @"";
+		NSString *rowType;
 		NSDictionary *row = NSArrayObjectAtIndex(tableFields, rowIndex);
 		
 		if ((rowType = [row objectForKey:@"type"])) {
 			rowType = [[rowType stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] uppercaseString];
 		}
 		
-		// Only string fields allow encoding settings
+		// Only string fields allow encoding settings, but JSON only uses utf8mb4
 		if (([[tableColumn identifier] isEqualToString:@"encoding"])) {
-			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
+			[aCell setEnabled:(![rowType isEqualToString:@"JSON"] && [fieldValidation isFieldTypeString:rowType] && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
 		// Only string fields allow collation settings and string field is not set to BINARY since BINARY sets the collation to *_bin
 		else if ([[tableColumn identifier] isEqualToString:@"collation"]) {
+			// JSON always uses utf8mb4_bin which is already covered by this logic
  			[aCell setEnabled:([fieldValidation isFieldTypeString:rowType] && [[row objectForKey:@"binary"] integerValue] == 0 && [[tableDocumentInstance serverSupport] supportsPost41CharacterSetHandling])];
 		}
 		
@@ -583,12 +558,13 @@
 		
 		// Check if BINARY is allowed
 		else if ([[tableColumn identifier] isEqualToString:@"binary"]) {
-			[aCell setEnabled:([fieldValidation isFieldTypeAllowBinary:rowType])];
+			// JSON always uses utf8mb4_bin
+			[aCell setEnabled:(![rowType isEqualToString:@"JSON"] && [fieldValidation isFieldTypeAllowBinary:rowType])];
 		}
 		
-		// TEXT, BLOB, and GEOMETRY fields don't allow a DEFAULT
+		// TEXT, BLOB, GEOMETRY and JSON fields don't allow a DEFAULT
 		else if ([[tableColumn identifier] isEqualToString:@"default"]) {
-			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
+			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || [rowType hasSuffix:@"BLOB"] || [rowType isEqualToString:@"JSON"] || [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
 		
 		// Check allow NULL
@@ -598,10 +574,11 @@
 							   [[[tableDataInstance statusValueForKey:@"Engine"] uppercaseString] isEqualToString:@"CSV"]) ? NO : YES];
 		}
 		
-		// TEXT, BLOB, date, and GEOMETRY fields don't allow a length
+		// TEXT, BLOB, date, GEOMETRY and JSON fields don't allow a length
 		else if ([[tableColumn identifier] isEqualToString:@"length"]) {
 			[aCell setEnabled:([rowType hasSuffix:@"TEXT"] || 
-							   [rowType hasSuffix:@"BLOB"] || 
+							   [rowType hasSuffix:@"BLOB"] ||
+			                   [rowType isEqualToString:@"JSON"] ||
 							   ([fieldValidation isFieldTypeDate:rowType] && ![[tableDocumentInstance serverSupport] supportsFractionalSeconds] && ![rowType isEqualToString:@"YEAR"]) || 
 							   [fieldValidation isFieldTypeGeometry:rowType]) ? NO : YES];
 		}
@@ -674,9 +651,217 @@
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH[c] %@", [uncompletedString uppercaseString]];
 	NSArray *result = [typeSuggestions filteredArrayUsingPredicate:predicate];
 	
-	if (result && [result count]) return [result objectAtIndex:0];
+	if ([result count]) return [result objectAtIndex:0];
 	
 	return @"";
 }
 
+- (void)comboBoxCell:(SPComboBoxCell *)cell willPopUpWindow:(NSWindow *)win
+{
+	// the selected item in the popup list is independent of the displayed text, we have to explicitly set it, too
+	NSInteger pos = [typeSuggestions indexOfObject:[cell stringValue]];
+	if(pos != NSNotFound) {
+		[cell selectItemAtIndex:pos];
+		[cell scrollItemAtIndexToTop:pos];
+	}
+	
+	//set up the help window to the right position
+	NSRect listFrame = [win frame];
+	NSRect helpFrame = [structureHelpPanel frame];
+	helpFrame.origin.y = listFrame.origin.y;
+	helpFrame.size.height = listFrame.size.height;
+	[structureHelpPanel setFrame:helpFrame display:YES];
+	
+	[self _displayFieldTypeHelpIfPossible:cell];
+}
+
+- (void)comboBoxCell:(SPComboBoxCell *)cell willDismissWindow:(NSWindow *)win
+{
+	//hide the window if it is still visible
+	[structureHelpPanel orderOut:nil];
+}
+
+- (void)comboBoxCellSelectionDidChange:(SPComboBoxCell *)cell
+{
+	[self _displayFieldTypeHelpIfPossible:cell];
+}
+
+- (void)_displayFieldTypeHelpIfPossible:(SPComboBoxCell *)cell
+{
+	NSString *selected = [typeSuggestions objectOrNilAtIndex:[cell indexOfSelectedItem]];
+	
+	const SPFieldTypeHelp *help = [[self class] helpForFieldType:selected];
+	
+	if(help) {
+		NSMutableAttributedString *as = [[NSMutableAttributedString alloc] init];
+		
+		//title
+		{
+			NSDictionary *titleAttr = @{NSFontAttributeName: [NSFont boldSystemFontOfSize:[NSFont systemFontSize]]};
+			NSAttributedString *title = [[NSAttributedString alloc] initWithString:[help typeDefinition] attributes:titleAttr];
+			[as appendAttributedString:[title autorelease]];
+			[[as mutableString] appendString:@"\n"];
+		}
+		
+		//range
+		if([[help typeRange] length]) {
+			NSDictionary *rangeAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]};
+			NSAttributedString *range = [[NSAttributedString alloc] initWithString:[help typeRange] attributes:rangeAttr];
+			[as appendAttributedString:[range autorelease]];
+			[[as mutableString] appendString:@"\n"];
+		}
+		
+		[[as mutableString] appendString:@"\n"];
+		
+		//description
+		{
+			NSDictionary *descAttr = @{NSFontAttributeName: [NSFont systemFontOfSize:[NSFont systemFontSize]]};
+			NSAttributedString *desc = [[NSAttributedString alloc] initWithString:[help typeDescription] attributes:descAttr];
+			[as appendAttributedString:[desc autorelease]];
+		}
+		
+		[as addAttribute:NSParagraphStyleAttributeName value:[NSParagraphStyle defaultParagraphStyle] range:NSMakeRange(0, [as length])];
+		
+		[[structureHelpText textStorage] setAttributedString:[as autorelease]];
+
+		NSRect rect = [as boundingRectWithSize:NSMakeSize([structureHelpText frame].size.width-2, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading|NSStringDrawingUsesLineFragmentOrigin];
+		
+		NSRect winRect = [structureHelpPanel frame];
+		
+		CGFloat winAddonSize = (winRect.size.height - [[structureHelpPanel contentView] frame].size.height) + (6*2);
+		
+		NSRect popUpFrame = [[cell spPopUpWindow] frame];
+		
+		//determine the side on which to add our window based on the space left on screen
+		NSPoint topRightCorner = NSMakePoint(popUpFrame.origin.x, NSMaxY(popUpFrame));
+		NSRect screenRect = [NSScreen rectOfScreenAtPoint:topRightCorner];
+		
+		if(NSMaxX(popUpFrame)+10+winRect.size.width > NSMaxX(screenRect)-10) {
+			// exceeds right border, display on the left
+			winRect.origin.x = popUpFrame.origin.x - 10 - winRect.size.width;
+		}
+		else {
+			// display on the right
+			winRect.origin.x = NSMaxX(popUpFrame)+10;
+		}
+		
+		winRect.size.height = rect.size.height + winAddonSize;
+		winRect.origin.y = NSMaxY(popUpFrame) - winRect.size.height;
+		[structureHelpPanel setFrame:winRect display:YES];
+		
+		[structureHelpPanel orderFront:nil];
+	}
+	else {
+		[structureHelpPanel orderOut:nil];
+	}
+}
+
+#pragma mark -
+#pragma mark Menu delegate methods (encoding/collation dropdown menu)
+
+- (void)menuNeedsUpdate:(NSMenu *)menu
+{
+	if(![menu isKindOfClass:[SPIdMenu class]]) return;
+	//NOTE: NSTableView will usually copy the menu and call this method on the copy. Matching with == won't work!
+
+	//walk through the menu and clear the attributedTitle if set. This will remove the gray color from the default items
+	for(NSMenuItem *item in [menu itemArray]) {
+		if([item attributedTitle]) {
+			[item setAttributedTitle:nil];
+		}
+	}
+
+	NSDictionary *rowData = NSArrayObjectAtIndex(tableFields, [tableSourceView selectedRow]);
+	
+	if([[menu menuId] isEqualToString:@"encodingPopupMenu"]) {
+		NSString *tableEncoding = [tableDataInstance tableEncoding];
+		//NSString *databaseEncoding = [databaseDataInstance getDatabaseDefaultCharacterSet];
+		//NSString *serverEncoding = [databaseDataInstance getServerDefaultCharacterSet];
+
+		struct _cmpMap defaultCmp[] = {
+			{
+				NSLocalizedString(@"Table",@"Table Structure : Encoding dropdown : 'item is table default' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default encoding of table “%@”.", @"Table Structure : Encoding dropdown : table marker tooltip"),selectedTable],
+				tableEncoding
+			},
+			/* //we could, but that might confuse users even more plus there is no inheritance between a columns charset and the db/server default
+			{
+				NSLocalizedString(@"Database",@"Table Structure : Encoding dropdown : 'item is database default' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default encoding of database “%@”.", @"Table Structure : Encoding dropdown : database marker tooltip"),[tableDocumentInstance database]],
+				databaseEncoding
+			},
+			{
+				NSLocalizedString(@"Server",@"Table Structure : Encoding dropdown : 'item is server default' marker"),
+				NSLocalizedString(@"This is the default encoding of this server.", @"Table Structure : Encoding dropdown : server marker tooltip"),
+				serverEncoding
+			} */
+		};
+
+		_BuildMenuWithPills(menu, defaultCmp, COUNT_OF(defaultCmp));
+	}
+	else if([[menu menuId] isEqualToString:@"collationPopupMenu"]) {
+		NSString *encoding = [rowData objectForKey:@"encodingName"];
+		NSString *encodingDefaultCollation = [databaseDataInstance getDefaultCollationForEncoding:encoding];
+		NSString *tableCollation = [tableDataInstance statusValueForKey:@"Collation"];
+		//NSString *databaseCollation = [databaseDataInstance getDatabaseDefaultCollation];
+		//NSString *serverCollation = [databaseDataInstance getServerDefaultCollation];
+		
+		struct _cmpMap defaultCmp[] = {
+			{
+				NSLocalizedString(@"Default",@"Table Structure : Collation dropdown : 'item is the same as the default collation of the row's charset' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of encoding “%@”.", @"Table Structure : Collation dropdown : default marker tooltip"),encoding],
+				encodingDefaultCollation
+			},
+			{
+				NSLocalizedString(@"Table",@"Table Structure : Collation dropdown : 'item is the same as the collation of table' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of table “%@”.", @"Table Structure : Collation dropdown : table marker tooltip"),selectedTable],
+				tableCollation
+			},
+			/* // see the comment for charset above
+			{
+				NSLocalizedString(@"Database",@"Table Structure : Collation dropdown : 'item is the same as the collation of database' marker"),
+				[NSString stringWithFormat:NSLocalizedString(@"This is the default collation of database “%@”.", @"Table Structure : Collation dropdown : database marker tooltip"),[tableDocumentInstance database]],
+				databaseCollation
+			},
+			{
+				NSLocalizedString(@"Server",@"Table Structure : Collation dropdown : 'item is the same as the collation of server' marker"),
+				NSLocalizedString(@"This is the default collation of this server.", @"Table Structure : Collation dropdown : server marker tooltip"),
+				serverCollation
+			} */
+		};
+		
+		_BuildMenuWithPills(menu, defaultCmp, COUNT_OF(defaultCmp));
+	}
+}
+
 @end
+
+void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntries)
+{
+	NSDictionary *baseAttrs = @{NSFontAttributeName:[menu font],NSParagraphStyleAttributeName: [NSParagraphStyle defaultParagraphStyle]};
+	
+	for(NSMenuItem *item in [menu itemArray]) {
+		NSMutableAttributedString *itemStr = [[NSMutableAttributedString alloc] initWithString:[item title] attributes:baseAttrs];
+		NSString *value = [item representedObject];
+		
+		NSMutableArray *tooltipParts = [NSMutableArray array];
+		for (unsigned int i = 0; i < mapEntries; ++i) {
+			struct _cmpMap *cmp = &map[i];
+			if([cmp->cmpWith isEqualToString:value]) {
+				SPPillAttachmentCell *cell = [[SPPillAttachmentCell alloc] init];
+				[cell setStringValue:cmp->title];
+				NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+				[attachment setAttachmentCell:[cell autorelease]];
+				NSAttributedString *attachmentString = [NSAttributedString attributedStringWithAttachment:[attachment autorelease]];
+				
+				[[itemStr mutableString] appendString:@" "];
+				[itemStr appendAttributedString:attachmentString];
+				
+				if(cmp->tooltipPart) [tooltipParts addObject:cmp->tooltipPart];
+			}
+		}
+		if([tooltipParts count]) [item setToolTip:[tooltipParts componentsJoinedByString:@" "]];
+		
+		[item setAttributedTitle:[itemStr autorelease]];
+	}
+}

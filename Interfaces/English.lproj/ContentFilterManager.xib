@@ -828,7 +828,7 @@
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSTextFieldCell" key="NSCell" id="474077606">
 												<int key="NSCellFlags">-1804599231</int>
-												<int key="NSCellFlags2">272761856</int>
+												<int key="NSCellFlags2">272761920</int>
 												<string key="NSContents"/>
 												<reference key="NSSupport" ref="26"/>
 												<string key="NSPlaceholderString">[no selection]</string>

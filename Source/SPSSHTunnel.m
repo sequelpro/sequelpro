@@ -317,7 +317,8 @@ static unsigned short getRandomPort();
 
 	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
-
+#define TA(_name,_value) [taskArguments addObjectsFromArray:@[_name,_value]]
+	
 	// Enable verbose mode for message parsing
 	[taskArguments addObject:@"-v"];
 
@@ -329,7 +330,7 @@ static unsigned short getRandomPort();
 	if (connectionMuxingEnabled) {
 
 		// Enable automatic connection muxing/sharing, for faster connections
-		[taskArguments addObject:@"-o ControlMaster=auto"];
+		TA(@"-o",@"ControlMaster=auto");
 
 		// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
 		// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
@@ -337,39 +338,39 @@ static unsigned short getRandomPort();
 		unsigned char hashedPathResult[16];
 		NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, (long)(sshPort?sshPort:0)];
 		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
-		[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
+		NSString *hashedString = [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8];
+		TA(@"-o",([NSString stringWithFormat:@"ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], hashedString]));
 	} else {
 
 		// Disable muxing if requested
-		[taskArguments addObject:@"-S none"];
-		[taskArguments addObject:@"-o ControlMaster=no"];
+		TA(@"-S", @"none");
+		TA(@"-o", @"ControlMaster=no");
 	}
 
 	// If the port forwarding fails, exit - as this is the primary use case for the instance
-	[taskArguments addObject:@"-o ExitOnForwardFailure=yes"];
+	TA(@"-o",@"ExitOnForwardFailure=yes");
 
 	// Specify a connection timeout based on the preferences value
-	[taskArguments addObject:[NSString stringWithFormat:@"-o ConnectTimeout=%ld", (long)connectionTimeout]];
+	TA(@"-o",([NSString stringWithFormat:@"ConnectTimeout=%ld", (long)connectionTimeout]));
 
 	// Allow three password prompts
-	[taskArguments addObject:@"-o NumberOfPasswordPrompts=3"];
+	TA(@"-o",@"NumberOfPasswordPrompts=3");
 
 	// Specify an identity file if available
 	if (identityFilePath) {
-		[taskArguments addObject:@"-i"];
-		[taskArguments addObject:identityFilePath];
+		TA(@"-i", identityFilePath);
 	}
 
 	// If keepalive is set in the preferences, use the same value for the SSH tunnel
 	if (useKeepAlive && keepAliveInterval) {
-		[taskArguments addObject:@"-o TCPKeepAlive=no"];		
-		[taskArguments addObject:[NSString stringWithFormat:@"-o ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]];		
-		[taskArguments addObject:@"-o ServerAliveCountMax=1"];		
+		TA(@"-o", @"TCPKeepAlive=no");
+		TA(@"-o", ([NSString stringWithFormat:@"ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]));
+		TA(@"-o", @"ServerAliveCountMax=1");
 	}
 
 	// Specify the port, host, and authentication details
 	if (sshPort) {
-		[taskArguments addObject:[NSString stringWithFormat:@"-p %ld", (long)sshPort]];
+		TA(@"-p", ([NSString stringWithFormat:@"%ld", (long)sshPort]));
 	}
 	if ([sshLogin length]) {
 		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
@@ -377,10 +378,10 @@ static unsigned short getRandomPort();
 		[taskArguments addObject:sshHost];
 	}
 	if (useHostFallback) {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]];
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]];
+		TA(@"-L",([NSString stringWithFormat:@"%ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]));
+		TA(@"-L",([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]));
 	} else {
-		[taskArguments addObject:[NSString stringWithFormat:@"-L %ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]];
+		TA(@"-L", ([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]));
 	}
 
 	[task setArguments:taskArguments];
@@ -451,6 +452,7 @@ static unsigned short getRandomPort();
 	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 
 	SPClear(taskEnvironment);
+#undef TA
 	SPClear(taskArguments);
 
 	[pool release];

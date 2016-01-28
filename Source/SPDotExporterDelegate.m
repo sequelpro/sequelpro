@@ -30,33 +30,24 @@
 
 #import "SPDotExporterDelegate.h"
 #import "SPDotExporter.h"
-#import "SPDatabaseDocument.h"
+#import "SPExportInitializer.h"
 
 @implementation SPExportController (SPDotExporterDelegate)
 
 - (void)dotExportProcessWillBegin:(SPDotExporter *)exporter
 {
-	[[exportProgressTitle onMainThread] setStringValue:NSLocalizedString(@"Exporting Dot File", @"text showing that the application is exporting a Dot file")];
-	[[exportProgressText onMainThread] setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
-	
-	[[exportProgressTitle onMainThread] displayIfNeeded];
-	[[exportProgressText onMainThread] displayIfNeeded];
-	[[exportProgressIndicator onMainThread] stopAnimation:self];
-	[[exportProgressIndicator onMainThread] setIndeterminate:NO];
+	[exportProgressTitle setStringValue:NSLocalizedString(@"Exporting Dot File", @"text showing that the application is exporting a Dot file")];
+	[exportProgressText setStringValue:NSLocalizedString(@"Dumping...", @"text showing that app is writing dump")];
+
+	[exportProgressTitle displayIfNeeded];
+	[exportProgressText displayIfNeeded];
+	[exportProgressIndicator stopAnimation:self];
+	[exportProgressIndicator setIndeterminate:NO];
 }
 
 - (void)dotExportProcessComplete:(SPDotExporter *)exporter
 {
-	[NSApp endSheet:exportProgressWindow returnCode:0];
-	[exportProgressWindow orderOut:self];
-	
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
-		
-	// Restore the connection encoding to it's pre-export value
-	[tableDocumentInstance setConnectionEncoding:[NSString stringWithFormat:@"%@%@", previousConnectionEncoding, (previousConnectionEncodingViaLatin1) ? @"-" : @""] reloadingViews:NO];
-
-	// Display Growl notification
-	[self displayExportFinishedGrowlNotification];
+	[self exportEnded];
 }
 
 - (void)dotExportProcessProgressUpdated:(SPDotExporter *)exporter
@@ -76,12 +67,12 @@
 
 - (void)dotExportProcessWillBeginFetchingRelationsData:(SPDotExporter *)exporter
 {
-	[[exportProgressText onMainThread] setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
+	[exportProgressText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Table %lu of %lu (%@): Fetching relations data...", @"export label showing app is fetching relations data for a specific table"), currentTableExportIndex, exportTableCount, [exporter dotExportCurrentTable]]];
 	
-	[[exportProgressText onMainThread] displayIfNeeded];
-	[[exportProgressIndicator onMainThread] setIndeterminate:YES];
-	[[exportProgressIndicator onMainThread] setUsesThreadedAnimation:YES];
-	[[exportProgressIndicator onMainThread] startAnimation:self];
+	[exportProgressText displayIfNeeded];
+	[exportProgressIndicator setIndeterminate:YES];
+	[exportProgressIndicator setUsesThreadedAnimation:YES];
+	[exportProgressIndicator startAnimation:self];
 }
 
 @end
