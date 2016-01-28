@@ -83,6 +83,7 @@
 	
 	// SSL details
 	NSInteger useSSL;
+	NSInteger enableClearTextPlugin;
 	NSInteger sslKeyFileLocationEnabled;
 	NSString *sslKeyFileLocation;
 	NSInteger sslCertificateFileLocationEnabled;
@@ -193,6 +194,7 @@
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
 @property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger enableClearTextPlugin;
 @property (readwrite, assign) NSInteger colorIndex;
 @property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;

@@ -146,6 +146,8 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			[mySQLConnection setSslCACertificatePath:[self sslCACertFileLocation]];
 		}
 		
+		[mySQLConnection setEnableClearTextPlugin:[self enableClearTextPlugin]];
+		
 		NSString *userSSLCipherList = [prefs stringForKey:SPSSLCipherListKey];
 		if(userSSLCipherList) {
 			//strip out disabled ciphers (e.g. in "foo:bar:--:baz")

@@ -48,6 +48,7 @@
 
 	// SSL connection details
 	BOOL useSSL;
+    NSInteger enableClearTextPlugin;
 	NSString *sslKeyFilePath;
 	NSString *sslCertificatePath;
 	NSString *sslCACertificatePath;
@@ -143,6 +144,7 @@
 @property (readwrite, retain) NSString *socketPath;
 
 @property (readwrite, assign) BOOL useSSL;
+@property (readwrite, assign) NSInteger enableClearTextPlugin;
 @property (readwrite, retain) NSString *sslKeyFilePath;
 @property (readwrite, retain) NSString *sslCertificatePath;
 @property (readwrite, retain) NSString *sslCACertificatePath;

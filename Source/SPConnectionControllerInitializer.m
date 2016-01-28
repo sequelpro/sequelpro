@@ -253,6 +253,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
 			  context:NULL];
 	
+	[self addObserver:self
+		   forKeyPath:SPFavoriteEnableClearTextPluginKey
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
+			  context:NULL];
+	
 	[self addObserver:self 
 		   forKeyPath:SPFavoriteSSHHostKey 
 			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 

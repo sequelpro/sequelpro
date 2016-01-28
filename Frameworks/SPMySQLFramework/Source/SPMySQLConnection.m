@@ -62,6 +62,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize useSocket;
 @synthesize socketPath;
 @synthesize useSSL;
+@synthesize enableClearTextPlugin;
 @synthesize sslKeyFilePath;
 @synthesize sslCertificatePath;
 @synthesize sslCACertificatePath;
@@ -620,6 +621,11 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 			theSSLCiphers = [sslCipherList UTF8String];
 		}
 
+        //Enable the ClearText plugin if selected by the user
+        if (enableClearTextPlugin) {
+            mysql_options(theConnection, MYSQL_ENABLE_CLEARTEXT_PLUGIN, &enableClearTextPlugin);
+        }
+        
 		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, theSSLCiphers);
 	}
 
