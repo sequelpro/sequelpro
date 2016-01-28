@@ -240,7 +240,7 @@
 	<key>SUEnableSystemProfiling</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>http://www.sequelpro.com/appcast/app-releases.xml</string>
+	<string>https://www.sequelpro.com/appcast/app-releases.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle-public-key.pem</string>
 	<key>UTExportedTypeDeclarations</key>
