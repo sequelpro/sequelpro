@@ -37,10 +37,9 @@
 #import "SPCategoryAdditions.h"
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
-
-#define SP_NUMBER_OF_RECORDS_STRING NSLocalizedString(@"%ld of %@%lu records", @"Label showing the index of the selected CSV row")
 
 // Constants
 static NSString *SPTableViewImportValueColumnID = @"import_value";
@@ -204,8 +203,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[advancedUpdateView setHidden:YES];
 	[advancedInsertView setHidden:YES];
 
-	[self changeHasHeaderCheckbox:self];
 	[self changeTableTarget:self];
+	[self changeHasHeaderCheckbox:self];
 	[[self window] makeFirstResponder:fieldMapperTableView];
 	if([fieldMappingTableColumnNames count])
 		[fieldMapperTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -214,7 +213,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[insertNULLValueButton setEnabled:([globalValuesTableView numberOfSelectedRows] == 1)];
 
 	[self updateFieldNameAlignment];
-
+	
+	[self validateImportButton];
 }
 
 - (void)dealloc
@@ -337,7 +337,18 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 - (BOOL)importFieldNamesHeader
 {
-	return ([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO;
+	if(importFieldNamesHeaderSwitch) {
+		return ([importFieldNamesHeaderSwitch state] == NSOnState);
+	}
+	else {
+		//this is a provisional field for the initial value of the checkbox until the window is actually loaded
+		return importFieldNamesHeader;
+	}
+}
+
+- (BOOL)hasContentRows
+{
+	return (([fieldMappingImportArray count] - ([self importFieldNamesHeader]? 1 : 0)) > 0);
 }
 
 - (BOOL)insertRemainingRowsAfterUpdate
@@ -607,9 +618,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	fieldMappingCurrentRow = 0;
 	if (fieldMappingArray) SPClear(fieldMappingArray);
 	[self setupFieldMappingArray];
-	[rowDownButton setEnabled:NO];
-	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
+	[self updateRowNavigation];
 
 	[self updateFieldMappingButtonCell];
 	[self updateFieldMappingOperatorOptions];
@@ -714,7 +723,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 - (IBAction)changeFieldAlignment:(id)sender
 {
 
-	if(![fieldMappingImportArray count]) return;
+	if(![self hasContentRows]) return;
 
 	NSUInteger i;
 	NSInteger j;
@@ -767,12 +776,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[self updateFieldMappingButtonCell];
 
 	[fieldMapperTableView reloadData];
-
-	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-
-	// enable/disable buttons
-	[rowDownButton setEnabled:(fieldMappingCurrentRow != 0)];
-	[rowUpButton setEnabled:(fieldMappingCurrentRow != (NSInteger)([fieldMappingImportArray count]-1))];
+	
+	[self updateRowNavigation];
 }
 
 - (IBAction)changeHasHeaderCheckbox:(id)sender
@@ -780,12 +785,12 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	NSInteger i;
 	NSArray *headerRow;
 
-	[matchingNameMenuItem setEnabled:([importFieldNamesHeaderSwitch state] == NSOnState)?YES:NO];
+	[matchingNameMenuItem setEnabled:[self importFieldNamesHeader]];
 
 	// In New Table mode reset new field name according to importFieldNamesHeaderSwitch's state
 	if (newTableMode) {
 		[fieldMappingTableColumnNames removeAllObjects];
-		if([importFieldNamesHeaderSwitch state] == NSOnState) {
+		if([self importFieldNamesHeader]) {
 			headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
 			for (i = 0; i < numberOfImportColumns; i++) {
 				id headerCol = NSArrayObjectAtIndex(headerRow, i);
@@ -800,6 +805,13 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 		}
 		[fieldMapperTableView reloadData];
 	}
+
+	[self updateFieldMappingButtonCell];
+	[fieldMapperTableView reloadData];
+	
+	[self updateRowNavigation];
+	
+	[self validateImportButton];
 }
 
 - (IBAction)goBackToFileChooserFromPathControl:(id)sender
@@ -853,7 +865,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	}
 
 	// Step through the currently known data and get the types and values
-	NSUInteger i = (importFieldNamesHeader ? 1 : 0);
+	NSUInteger i = ([self importFieldNamesHeader] ? 1 : 0);
 	NSArray *row;
 	id col;
 	for ( ; i < [fieldMappingImportArray count]; i++) {
@@ -878,7 +890,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[fieldMappingTableTypes removeAllObjects];
 	
 	BOOL serverGreaterThanVersion4 = ([mySQLConnection serverMajorVersion] >= 5) ? YES : NO;
-	BOOL importFirstRowAsFieldNames = ([importFieldNamesHeaderSwitch state] == NSOnState);
+	BOOL importFirstRowAsFieldNames = [self importFieldNamesHeader];
 
 	NSArray *headerRow = NSArrayObjectAtIndex(fieldMappingImportArray, 0);
 	for (columnCounter = 0; columnCounter < numberOfImportColumns; columnCounter++) {
@@ -919,10 +931,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	fieldMappingCurrentRow = 0;
 	if (fieldMappingArray) SPClear(fieldMappingArray);
 	[self setupFieldMappingArray];
-	[rowDownButton setEnabled:NO];
-	[rowUpButton setEnabled:([fieldMappingImportArray count] > 1)];
-	[recordCountLabel setStringValue:[NSString stringWithFormat:SP_NUMBER_OF_RECORDS_STRING, (long)(fieldMappingCurrentRow+1), fieldMappingImportArrayIsPreview?@"first ":@"", (unsigned long)[fieldMappingImportArray count]]];
-
+	[self updateRowNavigation];
+	
 	[self updateFieldMappingButtonCell];
 	[self updateFieldMappingOperatorOptions];
 
@@ -1105,8 +1115,8 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	// Add column placeholder
 	NSInteger i = 0;
-	if([fieldMappingImportArray count] && [[fieldMappingImportArray objectAtIndex:0] count]) {
-		for(id item in [fieldMappingImportArray objectAtIndex:0]) {
+	if([self hasContentRows]) {
+		for(id item in [fieldMappingImportArray objectAtIndex:([self importFieldNamesHeader]? 1 : 0)]) {
 			i++;
 			if ([item isNSNull]) {
 				[insertPullDownButton addItemWithTitle:[NSString stringWithFormat:@"%li. <%@>", (long)i, [prefs objectForKey:SPNullValue]]];
@@ -1388,7 +1398,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 - (void)matchHeaderNames
 {
-	if(![fieldMappingImportArray count]) return;
+	if(![self hasContentRows]) return;
 
 	NSMutableArray *fileHeaderNames = [NSMutableArray array];
 	[fileHeaderNames setArray:NSArrayObjectAtIndex(fieldMappingImportArray, 0)];
@@ -1502,7 +1512,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 - (void)updateFieldMappingButtonCell
 {
 	NSUInteger i;
-	if([fieldMappingImportArray count] == 0) return;
+	if(![self hasContentRows]) return;
 	[fieldMappingButtonOptions setArray:[fieldMappingImportArray objectAtIndex:fieldMappingCurrentRow]];
 	for (i = 0; i < [fieldMappingButtonOptions count]; i++) {
 		if ([[fieldMappingButtonOptions objectAtIndex:i] isNSNull])
@@ -1555,27 +1565,59 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	}
 #endif
 
-	// Set matching names only if csv file has an header
-	if(importFieldNamesHeader && alignment == 2)
-		[alignByPopup selectItemWithTag:2];
-	else if(!importFieldNamesHeader && alignment == 2)
-		[alignByPopup selectItemWithTag:0];
-	else
+	if(alignment == 2) {
+		// Set matching names only if csv file has a header
+		if([self importFieldNamesHeader])
+			[alignByPopup selectItemWithTag:2];
+		else
+			[alignByPopup selectItemWithTag:0];
+	}
+	else {
 		[alignByPopup selectItemWithTag:alignment];
+	}
 
 	[self changeFieldAlignment:nil];
 
 }
 
+- (void)updateRowNavigation
+{
+	int firstRowIsHeader = [self importFieldNamesHeader] ? 1 : 0;
+
+	// if the first row becomes a header row it can no longer be a content row
+	if(!fieldMappingCurrentRow && firstRowIsHeader && [self hasContentRows]) {
+		fieldMappingCurrentRow++;
+		[self updateFieldMappingButtonCell];
+		[fieldMapperTableView reloadData];
+	}
+
+	NSUInteger countRows = [fieldMappingImportArray count];
+	[rowDownButton setEnabled:(fieldMappingCurrentRow > firstRowIsHeader)];
+	[rowUpButton setEnabled:(SPIntS2U(fieldMappingCurrentRow) < (countRows - 1))];
+	
+	long displayedCurrentRow = fieldMappingCurrentRow+1-firstRowIsHeader;
+	unsigned long displayedTotalRows = (countRows? (countRows - firstRowIsHeader) : 0); //avoid negative values on empty array
+	
+	NSString *fmt;
+	if(fieldMappingImportArrayIsPreview)
+		fmt = NSLocalizedString(@"%ld of first %lu record(s)", @"Label showing the index of the selected CSV row (csv partially loaded)");
+	else
+		fmt = NSLocalizedString(@"%ld of %lu record(s)", @"Label showing the index of the selected CSV row");
+	
+	[recordCountLabel setStringValue:[NSString stringWithFormat:fmt, displayedCurrentRow, displayedTotalRows]];
+}
+
 - (void)validateImportButton
 {
 	BOOL enableImportButton = YES;
-
+	
 	if (newTableMode) {
 		if (![tablesListInstance isTableNameValid:[newTableNameTextField stringValue] forType:SPTableTypeTable ignoringSelectedTable:NO]) {
 			[importButton setEnabled:NO];
 			return;
 		}
+		
+		BOOL hasImportColumns = NO;
 		for (NSUInteger i = 0; i < [fieldMappingTableColumnNames count]; i++) {
 			NSString *colName = [fieldMappingTableColumnNames objectAtIndex:i];
 			BOOL shouldImport = [doImportKey isEqualToNumber:[fieldMappingOperatorArray objectAtIndex:i]];
@@ -1583,12 +1625,27 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 				[importButton setEnabled:NO];
 				return;
 			}
+			if(!hasImportColumns && shouldImport) hasImportColumns = YES;
 		}
+		
+		if(!hasImportColumns) {
+			// new table without any columns is not valid
+			[importButton setEnabled:NO];
+			return;
+		}
+		
 		for (NSString* fieldType in fieldMappingTableTypes) {
 			if(![fieldType length]) {
 				[importButton setEnabled:NO];
 				return;
 			}
+		}
+	}
+	else {
+		// we don't want to create a new table and have no rows to import either => can't import nothing
+		if(![self hasContentRows]) {
+			[importButton setEnabled:NO];
+			return;
 		}
 	}
 

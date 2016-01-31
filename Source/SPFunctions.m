@@ -69,3 +69,10 @@ int SPBetterRandomBytes(uint8_t *buf, size_t count)
 	
 	return 0;
 }
+
+NSUInteger SPIntS2U(NSInteger i)
+{
+	if(i < 0) [NSException raise:NSRangeException format:@"NSInteger %ld does not fit in NSUInteger",i];
+	
+	return (NSUInteger)i;
+}
