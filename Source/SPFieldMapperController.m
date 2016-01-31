@@ -1768,11 +1768,16 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 			}
 			else if([importFieldNamesHeaderSwitch state] == NSOffState) {
-				if([NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue]>=[NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
-					return NSArrayObjectAtIndex(fieldMappingGlobalValues, [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
+				NSUInteger colIndex = [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) unsignedIntegerValue];
+				NSString *retval;
+				if(colIndex >= [NSArrayObjectAtIndex(fieldMappingImportArray, 0) count])
+					retval = NSArrayObjectAtIndex(fieldMappingGlobalValues, colIndex);
 				else
-					return NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), [NSArrayObjectAtIndex(fieldMappingArray, rowIndex) integerValue]);
+					retval = NSArrayObjectAtIndex(NSArrayObjectAtIndex(fieldMappingImportArray, fieldMappingCurrentRow), colIndex);
+				
+				if([retval isNSNull]) retval = NSLocalizedString(@"Value will be imported as MySQL NULL", @"CSV Field Mapping : Table View : Tooltip for fields with NULL value");
 
+				return retval;
 			}
 		}
 
