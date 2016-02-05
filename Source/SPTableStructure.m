@@ -1745,31 +1745,31 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 				SPMySQLDateType,
 				@"DATE",
 				NSLocalizedString(@"Range: 1000-01-01 to 9999-12-31", @"range for date type"),
-				NSLocalizedString(@"Stores a date without time information. The representation is YYYY-MM-DD. Invalid values are converted to 0000-00-00.",@"description of date")
+				NSLocalizedString(@"Stores a date without time information. The representation is YYYY-MM-DD. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00.",@"description of date")
 			),
 			MakeFieldTypeHelp(
 				SPMySQLDatetimeType,
 				@"DATETIME[(F)]",
 				NSLocalizedString(@"Range: 1000-01-01 00:00:00.0 to 9999-12-31 23:59:59.999999\nF (precision): 0 (1s) to 6 (1µs)", @"range for datetime type"),
-				NSLocalizedString(@"Stores a date and time of day. The representation is YYYY-MM-DD HH:MM:SS[.I*], I being fractional seconds. Invalid values are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.",@"description of datetime")
+				NSLocalizedString(@"Stores a date and time of day. The representation is YYYY-MM-DD HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.",@"description of datetime")
 			),
 			MakeFieldTypeHelp(
 				SPMySQLTimestampType,
 				@"TIMETSTAMP[(F)]",
 				NSLocalizedString(@"Range: 1970-01-01 00:00:01.0 to 2038-01-19 03:14:07.999999\nF (precision): 0 (1s) to 6 (1µs)", @"range for timestamp type"),
-				NSLocalizedString(@"Stores a date and time of day as seconds since the beginning of the UNIX epoch (1970-01-01 00:00:00). The representation is the same as for DATETIME. Invalid values, as well as \"second zero\", are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F. Some additional rules may apply.",@"description of timestamp")
+				NSLocalizedString(@"Stores a date and time of day as seconds since the beginning of the UNIX epoch (1970-01-01 00:00:00). The values displayed/stored are affected by the connection's @@time_zone setting.\nThe representation is the same as for DATETIME. Invalid values, as well as \"second zero\", are converted to 0000-00-00 00:00:00.0. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F. Some additional rules may apply.",@"description of timestamp")
 			),
 			MakeFieldTypeHelp(
 				SPMySQLTimeType,
 				@"TIME[(F)]",
 				NSLocalizedString(@"Range: -838:59:59.0 to 838:59:59.0\nF (precision): 0 (1s) to 6 (1µs)", @"range for time type"),
-				NSLocalizedString(@"Stores a time of day, duration or time interval. The representation is HH:MM:SS[.I*], I being fractional seconds.Invalid values are converted to 00:00:00. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.",@"description of time")
+				NSLocalizedString(@"Stores a time of day, duration or time interval. The representation is HH:MM:SS[.I*], I being fractional seconds. The value is not affected by any time zone setting. Invalid values are converted to 00:00:00. Fractional seconds were added in MySQL 5.6.4 with a precision down to microseconds (6), specified by F.",@"description of time")
 			),
 			MakeFieldTypeHelp(
 				SPMySQLYearType,
 				@"YEAR(4)",
 				NSLocalizedString(@"Range: 0000, 1901 to 2155", @"range for year type"),
-				NSLocalizedString(@"Represents a 4 digit year value, stored as 1 byte. Invalid values are converted to 0000 and two digit values 0 to 69 will be converted to years 2000 to 2069, resp. 70 to 99 to years 1970 to 1999.\nThe YEAR(2) type was removed in MySQL 5.7.5.",@"description of year")
+				NSLocalizedString(@"Represents a 4 digit year value, stored as 1 byte. Invalid values are converted to 0000 and two digit values 0 to 69 will be converted to years 2000 to 2069, resp. values 70 to 99 to years 1970 to 1999.\nThe YEAR(2) type was removed in MySQL 5.7.5.",@"description of year")
 			),
 			// --------------------------------------------------------------------------
 			MakeFieldTypeHelp(
