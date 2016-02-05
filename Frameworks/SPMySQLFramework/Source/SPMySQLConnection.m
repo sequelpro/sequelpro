@@ -979,11 +979,28 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	// connection, it may be overridden by init_connect commands or connection state changes.
 	// Default to latin1 for older server versions.
 	NSString *retrievedEncoding = @"latin1";
+	// character_set_results is the charset the strings received from the server will be in
 	if ([variables objectForKey:@"character_set_results"]) {
 		retrievedEncoding = [variables objectForKey:@"character_set_results"];
-	} else if ([variables objectForKey:@"character_set"]) {
+	}
+	// not used in 4.1+ (?)
+	else if ([variables objectForKey:@"character_set"]) {
 		retrievedEncoding = [variables objectForKey:@"character_set"];
 	}
+	// character_set_client is the charset the server expects strings transmitted by us to be in
+	else if ([variables objectForKey:@"character_set_client"]) {
+		retrievedEncoding = [variables objectForKey:@"character_set_client"]; // fallback for sphinxql
+	}
+	// character_set_connection is used internally by the server for comparisons.
+	// String literals (without a cast) will always be converted from character_set_client to character_set_connection first.
+	// As an example:
+	//   * Use a client with "SET NAMES utf8"
+	//   * Do a "set @@session.character_set_connection = 'latin1';"
+	//   * Finally try a "SELECT '犬';" (also try "select _utf8'犬';" for completeness)
+	//   * The result will just show a "?"
+	// So even though we told the server that the client uses utf8 and the results
+	// should be encoded in utf8, too, the character got lost.
+	// This happened because the server did a roundtrip of utf8 -> latin1 -> utf8.
 
 	// Update instance variables
 	if (encoding) [encoding release];
