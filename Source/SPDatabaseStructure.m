@@ -39,9 +39,16 @@
 
 @interface SPDatabaseStructure (Private_API)
 
+- (void)_destroy:(NSNotification *)notification;
+
 - (void)_updateGlobalVariablesWithStructure:(NSDictionary *)aStructure keys:(NSArray *)theKeys;
 - (void)_cloneConnectionFromConnection:(SPMySQLConnection *)aConnection;
-- (BOOL)_ensureConnection;
+- (BOOL)_ensureConnectionUnsafe; // Use _checkConnection instead, where possible
+
+- (void)_addToListAndWaitForFrontCancellingOtherThreads:(BOOL)killOthers;
+- (void)_removeThreadFromList;
+- (void)_cancelAllThreadsAndWait;
+- (BOOL)_checkConnection;
 
 @end
 
@@ -81,9 +88,9 @@
 		allKeysofDbStructure = [[NSMutableArray alloc] initWithCapacity:20];
 
 		[[NSNotificationCenter defaultCenter] addObserver:self
-												 selector:@selector(destroy:) 
-													 name:SPDocumentWillCloseNotification 
-												   object:delegate];
+		                                         selector:@selector(_destroy:)
+		                                             name:SPDocumentWillCloseNotification
+		                                           object:delegate];
 
 		// Set up the connection, thread management and data locks
 		pthread_mutex_init(&threadManagementLock, NULL);
@@ -108,40 +115,16 @@
 							   object:aConnection];
 }
 
-/**
- * Ensure that processing is completed.
- */
-- (void)destroy:(NSNotification *)notification
-{
-	delegate = nil;
-
-	// Ensure all the retrieval threads have ended
-	pthread_mutex_lock(&threadManagementLock);
-	
-	if ([structureRetrievalThreads count]) {
-		for (NSThread *eachThread in structureRetrievalThreads) 
-		{
-			[eachThread cancel];
-		}
-		
-		while ([structureRetrievalThreads count]) 
-		{
-			pthread_mutex_unlock(&threadManagementLock);
-			usleep(100000);
-			pthread_mutex_lock(&threadManagementLock);
-		}
-	}
-	
-	pthread_mutex_unlock(&threadManagementLock);
-
-}
-
 #pragma mark -
 #pragma mark Information
 
 - (SPMySQLConnection *)connection
 {
-	return mySQLConnection;
+	// this much is needed to make the accessor atomic and thread-safe
+	pthread_mutex_lock(&connectionCheckLock);
+	SPMySQLConnection *c = [mySQLConnection retain];
+	pthread_mutex_unlock(&connectionCheckLock);
+	return [c autorelease];
 }
 
 #pragma mark -
@@ -157,43 +140,14 @@
 	NSAutoreleasePool *queryPool = [[NSAutoreleasePool alloc] init];
 	BOOL structureWasUpdated = NO;
 
-	// Lock the management lock
-	pthread_mutex_lock(&threadManagementLock);
-
-	// If 'cancelQuerying' is set try to interrupt any current querying
-	if (userInfo && [userInfo objectForKey:@"cancelQuerying"]) {
-		for (NSThread *eachThread in structureRetrievalThreads) {
-			[eachThread cancel];
-		}
-	}
-
-	// Add this thread to the group
-	[structureRetrievalThreads addObject:[NSThread currentThread]];
-
-	// Only allow one request to be running against the server at any one time, to prevent
-	// escessive server i/o or slowdown.  Loop until this is the first thread in the array
-	while ([structureRetrievalThreads objectAtIndex:0] != [NSThread currentThread]) {
-		if ([[NSThread currentThread] isCancelled]) {
-			[structureRetrievalThreads removeObject:[NSThread currentThread]];
-			pthread_mutex_unlock(&threadManagementLock);
-			[queryPool release];
-			return;
-		}
-			
-		pthread_mutex_unlock(&threadManagementLock);
-		usleep(1000000);
-		pthread_mutex_lock(&threadManagementLock);
-	}
-	pthread_mutex_unlock(&threadManagementLock);
+	[self _addToListAndWaitForFrontCancellingOtherThreads:[[userInfo objectForKey:@"cancelQuerying"] boolValue]];
+	if([[NSThread currentThread] isCancelled]) goto cleanup_thread_and_pool;
 
 	// This thread is now first on the stack, and about to process the structure.
+#warning Should not set delegate as the notification source object
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
 
-	NSString *connectionID;
-	if([delegate respondsToSelector:@selector(connectionID)])
-		connectionID = [NSString stringWithString:[delegate connectionID]];
-	else
-		connectionID = @"_";
+	NSString *connectionID = ([delegate respondsToSelector:@selector(connectionID)])? [NSString stringWithString:[delegate connectionID]] : @"_";
 
 	// Re-init with already cached data from navigator controller
 	NSMutableDictionary *queriedStructure = [NSMutableDictionary dictionary];
@@ -234,33 +188,31 @@
 		}
 	}
 
-	NSString *currentDatabase = nil;
-	if ([delegate respondsToSelector:@selector(database)])
-		currentDatabase = [delegate database];
+	NSString *currentDatabase = ([delegate respondsToSelector:@selector(database)])? [delegate database] : nil;
 
 	// Determine whether the database details need to be queried.
 	BOOL shouldQueryStructure = YES;
 	NSString *db_id = nil;
 
 	// If no database is selected, no need to check further
-	if(!currentDatabase || (currentDatabase && ![currentDatabase length])) {
+	if(![currentDatabase length]) {
 		shouldQueryStructure = NO;
-
+	}
 	// Otherwise, build up the schema key for the database to be retrieved.
-	} else {
+	else {
 		db_id = [NSString stringWithFormat:@"%@%@%@", connectionID, SPUniqueSchemaDelimiter, currentDatabase];
 
 		// Check to see if a cache already exists for the database.
-		if ([queriedStructure objectForKey:db_id] && [[queriedStructure objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
+		if ([[queriedStructure objectForKey:db_id] isKindOfClass:[NSDictionary class]]) {
 
 			// The cache is available. If the `mysql` or `information_schema` databases are being queried,
 			// never requery as their structure will never change.
 			// 5.5.3+ also has performance_schema meta database
 			if ([currentDatabase isEqualToString:@"mysql"] || [currentDatabase isEqualToString:@"information_schema"] || [currentDatabase isEqualToString:@"performance_schema"]) {
 				shouldQueryStructure = NO;
-
+			}
 			// Otherwise, if the forceUpdate flag wasn't supplied or evaluates to false, also don't update.
-			} else if (userInfo == nil || ![userInfo objectForKey:@"forceUpdate"] || ![[userInfo objectForKey:@"forceUpdate"] boolValue]) {
+			else if (![[userInfo objectForKey:@"forceUpdate"] boolValue]) {
 				shouldQueryStructure = NO;
 			}
 		}
@@ -268,20 +220,7 @@
 
 	// If it has been determined that no new structure needs to be retrieved, clean up and return.
 	if (!shouldQueryStructure) {
-
-		// Update the global variables
-		[self _updateGlobalVariablesWithStructure:queriedStructure keys:queriedStructureKeys];
-
-		if (structureWasUpdated) {
-			[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
-		}
-
-		pthread_mutex_lock(&threadManagementLock);
-		[structureRetrievalThreads removeObject:[NSThread currentThread]];
-		pthread_mutex_unlock(&threadManagementLock);
-
-		[queryPool release];
-		return;
+		goto update_globals_and_cleanup;
 	}
 
 	// Retrieve the tables and views for this database from SPTablesList
@@ -305,19 +244,14 @@
 	if ([tablesAndViews count] > 2000) {
 		NSLog(@"%lu items in database %@. Only 2000 items can be parsed. Stopped parsing.", (unsigned long)[tablesAndViews count], currentDatabase);
 
-		pthread_mutex_lock(&threadManagementLock);
-		[structureRetrievalThreads removeObject:[NSThread currentThread]];
-		pthread_mutex_unlock(&threadManagementLock);
-
-		[queryPool release];
-		return;
+		goto cleanup_thread_and_pool;
 	}
 
 	// For future usage - currently unused
 	// If the affected item name and type - for example, table type and table name - were supplied, extract it.
 	NSString *affectedItem = nil;
 	NSInteger affectedItemType = -1;
-	if(userInfo && [userInfo objectForKey:@"affectedItem"]) {
+	if([userInfo objectForKey:@"affectedItem"]) {
 		affectedItem = [userInfo objectForKey:@"affectedItem"];
 		if([userInfo objectForKey:@"affectedItemType"])
 			affectedItemType = [[userInfo objectForKey:@"affectedItemType"] intValue];
@@ -334,8 +268,6 @@
 	[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
 	NSMutableDictionary *databaseStructure = [queriedStructure objectForKey:db_id];
 
-	NSString *currentDatabaseEscaped = [currentDatabase stringByReplacingOccurrencesOfString:@"`" withString:@"``"];
-
 	NSUInteger uniqueCounter = 0; // used to make field data unique
 	SPMySQLResult *theResult;
 
@@ -345,48 +277,16 @@
 		// Extract the name
 		NSString *aTableName = [aTableDict objectForKey:@"name"];
 
-		if(!aTableName) continue;
-		if(![aTableName isKindOfClass:[NSString class]]) continue;
-		if(![aTableName length]) continue;
+		if(![aTableName isKindOfClass:[NSString class]] || ![aTableName length]) continue;
 
-		BOOL cancelThread = NO;
-
-		// If the thread has been cancelled, abort without saving
-		if ([[NSThread currentThread] isCancelled]) cancelThread = YES;
-
-		// Check connection state before use
-		while (!cancelThread && pthread_mutex_trylock(&connectionCheckLock)) {
-			usleep(100000);
-			if ([[NSThread currentThread] isCancelled]) {
-				cancelThread = YES;
-				break;
-			}
+		// check the connection.
+		// also NO if thread is cancelled which is fine, too (same consequence).
+		if(![self _checkConnection]) {
+			goto cleanup_thread_and_pool;
 		}
-
-		if (cancelThread) {
-			pthread_mutex_trylock(&connectionCheckLock);
-			pthread_mutex_unlock(&connectionCheckLock);
-			pthread_mutex_lock(&threadManagementLock);
-			[structureRetrievalThreads removeObject:[NSThread currentThread]];
-			pthread_mutex_unlock(&threadManagementLock);
-
-			[queryPool release];
-			return;
-		}
-
-		if (![self _ensureConnection]) {
-			pthread_mutex_unlock(&connectionCheckLock);
-			pthread_mutex_lock(&threadManagementLock);
-			[structureRetrievalThreads removeObject:[NSThread currentThread]];
-			pthread_mutex_unlock(&threadManagementLock);
-
-			[queryPool release];
-			return;
-		}
-		pthread_mutex_unlock(&connectionCheckLock);
 
 		// Retrieve the column details
-		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW FULL COLUMNS FROM `%@` FROM `%@`", [aTableName stringByReplacingOccurrencesOfString:@"`" withString:@"``"], currentDatabaseEscaped]];
+		theResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SHOW FULL COLUMNS FROM %@ FROM %@", [aTableName backtickQuotedString], [currentDatabase backtickQuotedString]]];
 		if (!theResult) {
 			continue;
 		}
@@ -398,8 +298,8 @@
 		[queriedStructureKeys addObject:table_id];
 
 		// Add a mutable dictionary to the structure and store a reference
-		[databaseStructure setObject:[NSMutableDictionary dictionary] forKey:table_id];
-		NSMutableDictionary *tableStructure = [databaseStructure objectForKey:table_id];
+		NSMutableDictionary *tableStructure = [NSMutableDictionary dictionary];
+		[databaseStructure setObject:tableStructure forKey:table_id];
 
 		// Loop through the fields, extracting details for each
 		for (NSArray *row in theResult) {
@@ -437,34 +337,10 @@
 
 	// If the MySQL version is higher than 5, also retrieve function/procedure details via the information_schema table
 	if ([mySQLConnection serverMajorVersion] >= 5) {
-		BOOL cancelThread = NO;
-
-		if ([[NSThread currentThread] isCancelled]) cancelThread = YES;
-
-		// Check connection state before use
-		while (!cancelThread && pthread_mutex_trylock(&connectionCheckLock)) {
-			usleep(100000);
-			if ([[NSThread currentThread] isCancelled]) {
-				cancelThread = YES;
-				break;
-			}
-		}
-
-		if (!cancelThread) {
-			if (![self _ensureConnection]) cancelThread = YES;
-			pthread_mutex_unlock(&connectionCheckLock);
-		};
-
-		// Return if the thread is due to be cancelled
-		if (cancelThread) {
-			pthread_mutex_trylock(&connectionCheckLock);
-			pthread_mutex_unlock(&connectionCheckLock);
-			pthread_mutex_lock(&threadManagementLock);
-			[structureRetrievalThreads removeObject:[NSThread currentThread]];
-			pthread_mutex_unlock(&threadManagementLock);
-
-			[queryPool release];
-			return;
+		// check the connection.
+		// also NO if thread is cancelled which is fine, too (same consequence).
+		if(![self _checkConnection]) {
+			goto cleanup_thread_and_pool;
 		}
 
 		// Retrieve the column details (only those we need so we don't fetch the whole function body which might be huge)
@@ -499,17 +375,19 @@
 		}
 	}
 
+update_globals_and_cleanup:
 	// Update the global variables
 	[self _updateGlobalVariablesWithStructure:queriedStructure keys:queriedStructureKeys];
 
-	// Notify that the structure querying has been performed
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+	if(structureWasUpdated) {
+		// Notify that the structure querying has been performed
+#warning Should not set delegate as the notification source object
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+	}
 
+cleanup_thread_and_pool:
 	// Remove this thread from the processing stack
-	pthread_mutex_lock(&threadManagementLock);
-	[structureRetrievalThreads removeObject:[NSThread currentThread]];
-	pthread_mutex_unlock(&threadManagementLock);
-	
+	[self _removeThreadFromList];
 	[queryPool release];
 }
 
@@ -566,7 +444,7 @@
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	
-	[self destroy:nil];
+	[self _destroy:nil];
 	SPClear(structureRetrievalThreads);
 	
 	pthread_mutex_destroy(&threadManagementLock);
@@ -586,6 +464,17 @@
 #pragma mark Private API
 
 @implementation SPDatabaseStructure (Private_API)
+
+/**
+ * Ensure that processing is completed.
+ */
+- (void)_destroy:(NSNotification *)notification
+{
+	delegate = nil;
+	
+	// Ensure all the retrieval threads have ended
+	[self _cancelAllThreadsAndWait];
+}
 
 /**
  * Update the global variables, using the data lock for multithreading safety.
@@ -617,20 +506,9 @@
 
 	// If a connection is already set, ensure it's idle before releasing it
 	if (mySQLConnection) {
-		pthread_mutex_lock(&threadManagementLock);
-		if ([structureRetrievalThreads count]) {
-			for (NSThread *eachThread in structureRetrievalThreads) {
-				[eachThread cancel];
-			}
-			while ([structureRetrievalThreads count]) {
-				pthread_mutex_unlock(&threadManagementLock);
-				usleep(100000);
-				pthread_mutex_lock(&threadManagementLock);
-			}
-		}
-		pthread_mutex_unlock(&threadManagementLock);
+		[self _cancelAllThreadsAndWait];
 
-		SPClear(mySQLConnection);
+		[mySQLConnection autorelease], mySQLConnection = nil; // note: aConnection could be == mySQLConnection
 	}
 
 	// Create a copy of the supplied connection
@@ -640,19 +518,31 @@
 	[mySQLConnection setDelegate:self];
 
 	// Trigger the connection
-	[self _ensureConnection];
+	[self _ensureConnectionUnsafe];
 
 	pthread_mutex_unlock(&connectionCheckLock);
 
 	[connectionPool drain];
 }
 
-- (BOOL)_ensureConnection
+/**
+ * Check if the MySQL connection is still available (reconnecting if possible)
+ *
+ * **Unsafe** means this function holds no lock on connectionCheckLock.
+ * You MUST obtain that lock before calling this method!
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
+ */
+- (BOOL)_ensureConnectionUnsafe
 {
 	if (!mySQLConnection || !delegate) return NO;
 
 	// Check the connection state
 	if ([mySQLConnection isConnected] && [mySQLConnection checkConnection]) return YES;
+	
+	// the result of checkConnection may be meaningless if the thread was cancelled during execution. (issue #2353)
+	if([[NSThread currentThread] isCancelled]) return NO;
 
 	// The connection isn't connected.  Check the parent connection state, and if that
 	// also isn't connected, return.
@@ -669,6 +559,114 @@
 
 	// Return success
 	return YES;
+}
+
+/**
+ * Wait until either
+ *   * there are no other threads of this object doing structure retrievals
+ *   * or the current thread was cancelled
+ *
+ * @param killOthers Whether to cancel all other running threads first
+ */
+- (void)_addToListAndWaitForFrontCancellingOtherThreads:(BOOL)killOthers
+{
+	// Lock the management lock
+	pthread_mutex_lock(&threadManagementLock);
+	
+	// If 'cancelQuerying' is set try to interrupt any current querying
+	if (killOthers) {
+		for (NSThread *eachThread in structureRetrievalThreads) {
+			[eachThread cancel];
+		}
+	}
+	
+	// Add this thread to the group
+	[structureRetrievalThreads addObject:[NSThread currentThread]];
+	
+	// Only allow one request to be running against the server at any one time, to prevent
+	// escessive server i/o or slowdown.  Loop until this is the first thread in the array
+	while ([structureRetrievalThreads objectAtIndex:0] != [NSThread currentThread]) {
+		pthread_mutex_unlock(&threadManagementLock);
+		
+		if ([[NSThread currentThread] isCancelled]) return;
+		
+		usleep(1000000);
+		
+		pthread_mutex_lock(&threadManagementLock);
+	}
+	pthread_mutex_unlock(&threadManagementLock);
+}
+
+/**
+ * Remove the current thread from the list of running threads
+ */
+- (void)_removeThreadFromList
+{
+	pthread_mutex_lock(&threadManagementLock);
+	[structureRetrievalThreads removeObject:[NSThread currentThread]];
+	pthread_mutex_unlock(&threadManagementLock);
+}
+
+/**
+ * Cancel all running threads and wait until they have exited
+ */
+- (void)_cancelAllThreadsAndWait
+{
+	pthread_mutex_lock(&threadManagementLock);
+	
+	for (NSThread *eachThread in structureRetrievalThreads) {
+		[eachThread cancel];
+	}
+	
+	while ([structureRetrievalThreads count]) {
+		pthread_mutex_unlock(&threadManagementLock);
+		usleep(100000);
+		pthread_mutex_lock(&threadManagementLock);
+	}
+	
+	pthread_mutex_unlock(&threadManagementLock);
+}
+
+/**
+ * @return YES if the connection is available
+ *         NO  if either the connection failed, or this thread was cancelled
+ *
+ * You MUST check the thread's isCancelled flag before doing other stuff on negative return!
+ */
+- (BOOL)_checkConnection
+{
+	while (1) {
+		// we can fail to get the lock for two reasons
+		//   1. another thread is running this code
+		//        => a regular pthread_mutex_lock() would be fine, it would succeed once the other thread is done
+		//   2. another thread is running _cloneConnectionFromConnection
+		//        => that method will not let go of the lock until all other threads have exited.
+		//           Since we are an "other thread", calling pthread_mutex_lock() would result in a deadlock!
+		// That is why we try to get the lock and if that fails check if we are cancelled (indicating the 2. case).
+		if(pthread_mutex_trylock(&connectionCheckLock) == 0 /* ESUCCESS */) {
+			break;
+		}
+		
+		// If this thread has been cancelled, abort
+		if([[NSThread currentThread] isCancelled]) {
+			return NO;
+		}
+		
+		usleep(100000);
+	}
+	// we now hold the connectionCheckLock!
+	
+	BOOL cancelThread = ([[NSThread currentThread] isCancelled]);
+	BOOL connected = NO;
+	
+	if (!cancelThread) {
+		// Check connection state before use
+		connected = [self _ensureConnectionUnsafe]; // also does a thread canellation check
+	}
+	
+	pthread_mutex_unlock(&connectionCheckLock);
+	
+	return connected; // cancelThread → ¬connected
 }
 
 @end

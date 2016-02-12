@@ -263,6 +263,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * Error checks extensively - if this method fails, it will ask how to proceed and loop depending
  * on the status, not returning control until either a connection has been established or
  * the connection and document have been closed.
+ *
+ * WARNING: This method may exit early returning NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)reconnect
 {
@@ -311,10 +314,12 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * Checks whether the connection to the server is still active.  This verifies
  * the connection using a ping, and if the connection is found to be down attempts
  * to quickly restore it, including the previous state.
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)checkConnection
 {
-
 	// If the connection is not seen as active, don't proceed
 	if (state != SPMySQLConnected) return NO;
 
@@ -607,6 +612,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * the connection and document have been closed.
  * Runs its own autorelease pool as sometimes called in a thread following proxy changes
  * (where the return code doesn't matter).
+ *
+ * WARNING: This method may exit early returning NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)_reconnectAllowingRetries:(BOOL)canRetry
 {
@@ -996,6 +1004,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  * each of which requires a round trip to the server - but handles most
  * network issues.
  * Returns whether the connection is considered still valid.
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (BOOL)_checkConnectionIfNecessary
 {

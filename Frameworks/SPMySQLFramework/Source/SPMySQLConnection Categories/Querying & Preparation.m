@@ -58,6 +58,9 @@
  * Take a string and escapes any special character for safe use within a query; correctly
  * escapes any characters within the string using the current connection encoding.
  * Allows control over whether to also wrap the string in single quotes.
+ *
+ * WARNING: This method may return nil if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (NSString *)escapeString:(NSString *)theString includingQuotes:(BOOL)includeQuotes
 {
@@ -221,6 +224,9 @@
  * the connection encoding.
  * The result type desired can be specified, supporting either standard or streaming
  * result sets.
+ *
+ * WARNING: This method may return nil if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (id)queryString:(NSString *)theQueryString usingEncoding:(NSStringEncoding)theEncoding withResultType:(SPMySQLResultType)theReturnType
 {

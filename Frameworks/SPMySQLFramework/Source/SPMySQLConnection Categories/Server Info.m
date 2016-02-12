@@ -124,6 +124,9 @@
  * the resulting process list defaults to the short form; run a manual SHOW FULL PROCESSLIST
  * to retrieve tasks in non-truncated form.
  * Returns nil on error.
+ *
+ * WARNING: This method may return nil if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
  */
 - (SPMySQLResult *)listProcesses
 {
