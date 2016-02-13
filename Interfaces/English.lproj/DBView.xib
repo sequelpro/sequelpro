@@ -5403,79 +5403,6 @@
 																<int key="NSCellFlags">68157504</int>
 																<int key="NSCellFlags2">272761856</int>
 																<reference key="NSSupport" ref="26"/>
-																<object class="NSNumberFormatter" key="NSFormatter" id="597232718">
-																	<dictionary class="NSMutableDictionary" key="NS.attributes">
-																		<boolean value="YES" key="allowsFloats"/>
-																		<boolean value="NO" key="alwaysShowsDecimalSeparator"/>
-																		<string key="currencyDecimalSeparator">.</string>
-																		<string key="decimalSeparator">.</string>
-																		<string key="exponentSymbol">E</string>
-																		<integer value="0" key="formatWidth"/>
-																		<integer value="1040" key="formatterBehavior"/>
-																		<boolean value="NO" key="generatesDecimalNumbers"/>
-																		<string key="groupingSeparator">,</string>
-																		<integer value="3" key="groupingSize"/>
-																		<boolean value="YES" key="lenient"/>
-																		<integer value="3" key="maximumFractionDigits"/>
-																		<integer value="309" key="maximumIntegerDigits"/>
-																		<real value="1" key="minimum"/>
-																		<integer value="0" key="minimumFractionDigits"/>
-																		<integer value="1" key="minimumIntegerDigits"/>
-																		<string key="minusSign">-</string>
-																		<string key="negativeFormat">#,##0.###</string>
-																		<string key="negativeInfinitySymbol">-∞</string>
-																		<string key="negativePrefix">-</string>
-																		<string key="negativeSuffix"/>
-																		<string key="nilSymbol"/>
-																		<string key="notANumberSymbol">NaN</string>
-																		<integer value="1" key="numberStyle"/>
-																		<string key="paddingCharacter">*</string>
-																		<integer value="0" key="paddingPosition"/>
-																		<string key="perMillSymbol">‰</string>
-																		<string key="percentSymbol">%</string>
-																		<string key="plusSign">+</string>
-																		<string key="positiveFormat">#,##0.###</string>
-																		<string key="positiveInfinitySymbol">+∞</string>
-																		<string key="positivePrefix"/>
-																		<string key="positiveSuffix"/>
-																		<real value="0.0" key="roundingIncrement"/>
-																		<integer value="4" key="roundingMode"/>
-																		<integer value="0" key="secondaryGroupingSize"/>
-																		<boolean value="YES" key="usesGroupingSeparator"/>
-																	</dictionary>
-																	<string key="NS.positiveformat">#,##0.###</string>
-																	<string key="NS.negativeformat">#,##0.###</string>
-																	<nil key="NS.positiveattrs"/>
-																	<nil key="NS.negativeattrs"/>
-																	<nil key="NS.zero"/>
-																	<object class="NSAttributedString" key="NS.nil">
-																		<string key="NSString"/>
-																	</object>
-																	<object class="NSAttributedString" key="NS.nan">
-																		<string key="NSString">NaN</string>
-																		<dictionary key="NSAttributes" id="10305650"/>
-																	</object>
-																	<real value="1" key="NS.min"/>
-																	<object class="NSDecimalNumberPlaceholder" key="NS.max" id="581212392">
-																		<int key="NS.exponent">0</int>
-																		<int key="NS.length">0</int>
-																		<bool key="NS.negative">YES</bool>
-																		<bool key="NS.compact">NO</bool>
-																		<int key="NS.mantissa.bo">1</int>
-																		<bytes key="NS.mantissa">AAAAAAAAAAAAAAAAAAAAAA</bytes>
-																	</object>
-																	<object class="NSDecimalNumberHandler" key="NS.rounding">
-																		<int key="NS.roundingmode">3</int>
-																		<bool key="NS.raise.overflow">YES</bool>
-																		<bool key="NS.raise.underflow">YES</bool>
-																		<bool key="NS.raise.dividebyzero">YES</bool>
-																	</object>
-																	<string key="NS.decimal">.</string>
-																	<string key="NS.thousand">,</string>
-																	<bool key="NS.hasthousands">YES</bool>
-																	<bool key="NS.localized">YES</bool>
-																	<bool key="NS.allowsfloats">YES</bool>
-																</object>
 																<reference key="NSControlView" ref="735808692"/>
 																<reference key="NSBackgroundColor" ref="647098198"/>
 																<reference key="NSTextColor" ref="667308713"/>
@@ -8136,10 +8063,17 @@ IGRvIHlvdSB3YW50IHRvIGFkZCBmb3IgdGhpcyBmaWVsZD8</string>
 									</object>
 									<object class="NSAttributedString" key="NS.nan">
 										<string key="NSString">NaN</string>
-										<reference key="NSAttributes" ref="10305650"/>
+										<dictionary key="NSAttributes"/>
 									</object>
 									<real value="1" key="NS.min"/>
-									<reference key="NS.max" ref="581212392"/>
+									<object class="NSDecimalNumberPlaceholder" key="NS.max">
+										<int key="NS.exponent">0</int>
+										<int key="NS.length">0</int>
+										<bool key="NS.negative">YES</bool>
+										<bool key="NS.compact">NO</bool>
+										<int key="NS.mantissa.bo">1</int>
+										<bytes key="NS.mantissa">AAAAAAAAAAAAAAAAAAAAAA</bytes>
+									</object>
 									<object class="NSDecimalNumberHandler" key="NS.rounding">
 										<int key="NS.roundingmode">3</int>
 										<bool key="NS.raise.overflow">YES</bool>
@@ -19990,15 +19924,8 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 					<object class="IBObjectRecord">
 						<string key="id">5782</string>
 						<reference key="object" ref="105876720"/>
-						<array class="NSMutableArray" key="children">
-							<reference ref="597232718"/>
-						</array>
+						<array class="NSMutableArray" key="children"/>
 						<reference key="parent" ref="735808692"/>
-					</object>
-					<object class="IBObjectRecord">
-						<string key="id">6879</string>
-						<reference key="object" ref="597232718"/>
-						<reference key="parent" ref="105876720"/>
 					</object>
 					<object class="IBObjectRecord">
 						<string key="id">5793</string>
@@ -26134,10 +26061,6 @@ AAEAAQAAAT0AAwAAAAEAAgAAAVIAAwAAAAEAAQAAAVMAAwAAAAIAAQABAAAAAA</bytes>
 				<boolean value="NO" key="6877.showNotes"/>
 				<string key="6878.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<boolean value="NO" key="6878.showNotes"/>
-				<integer value="1041" key="6879.IBNumberFormatterBehaviorMetadataKey"/>
-				<boolean value="YES" key="6879.IBNumberFormatterLocalizesFormatMetadataKey"/>
-				<string key="6879.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
-				<boolean value="NO" key="6879.showNotes"/>
 				<string key="6885.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<reference key="6885.IBUserGuides" ref="0"/>
 				<boolean value="NO" key="6885.showNotes"/>
