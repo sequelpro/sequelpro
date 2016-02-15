@@ -224,7 +224,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	[tableRowAutoIncrement setEditable:NO];
 	
-	[tableSourceInstance takeAutoIncrementFrom:tableRowAutoIncrement];
+	NSNumberFormatter *fmt = [[[NSNumberFormatter alloc] init] autorelease];
+	[fmt setNumberStyle:NSNumberFormatterDecimalStyle];
+	NSNumber *value = [fmt numberFromString:[tableRowAutoIncrement stringValue]];
+	
+	[tableSourceInstance setAutoIncrementTo:value];
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
@@ -232,6 +236,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	// Listen to ESC to abort editing of auto increment input field
 	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
 		[tableRowAutoIncrement abortEditing];
+		[tableRowAutoIncrement setEditable:NO];
 		return YES;
 	}
 
