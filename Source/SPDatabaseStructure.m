@@ -275,6 +275,7 @@
 	// Set up the database as an empty mutable dictionary ready for tables, and store a reference
 	[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
 	NSMutableDictionary *databaseStructure = [queriedStructure objectForKey:db_id];
+	structureWasUpdated = YES;
 
 	NSUInteger uniqueCounter = 0; // used to make field data unique
 	SPMySQLResult *theResult;
