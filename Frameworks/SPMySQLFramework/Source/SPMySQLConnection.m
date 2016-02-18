@@ -928,7 +928,10 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	uint64_t disconnectStartTime_t = mach_absolute_time();
 	while (![self _tryLockConnection]) {
 		usleep(100000);
-		if (_elapsedSecondsSinceAbsoluteTime(disconnectStartTime_t) > 10) break;
+		if (_elapsedSecondsSinceAbsoluteTime(disconnectStartTime_t) > 10) {
+			NSLog(@"%s: Could not acquire connection lock within time limit (10s). Forcing unlock!",__PRETTY_FUNCTION__);
+			break;
+		}
 	}
 	[self _unlockConnection];
 	[self _cancelKeepAlives];

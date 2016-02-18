@@ -296,7 +296,7 @@
 	[self _lockConnection];
 
 	unsigned long long theAffectedRowCount;
-	while (queryAttemptsAllowed > 0) {
+	do {
 
 		// While recording the overall execution time (including network lag!), run
 		// the raw query
@@ -342,8 +342,7 @@
 		[self _lockConnection];
 		NSAssert(mySQLConnection != NULL, @"mySQLConnection has disappeared while checking it!");
 
-		queryAttemptsAllowed--;
-	}
+	} while (--queryAttemptsAllowed > 0);
 
 	id theResult = nil;
 
