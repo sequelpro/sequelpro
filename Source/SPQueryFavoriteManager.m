@@ -488,7 +488,7 @@
 #ifndef SP_CODA
 - (IBAction)showHelp:(id)sender
 {
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
+	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:NSLocalizedString(@"http://www.sequelpro.com/docs/Working_with_Query_Favorites", @"Localized help page for query favourites - do not localize if no translated webpage is available")]];
 }
 #endif
 
