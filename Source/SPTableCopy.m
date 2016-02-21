@@ -44,9 +44,9 @@
 - (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 
 {
 	NSString *createTableResult = [self _createTableStatementFor:tableName inDatabase:sourceDB];
-	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 	
-	if ([[createTableStatement substringToIndex:12] isEqualToString:@"CREATE TABLE"]) {
+	if ([createTableResult hasPrefix:@"CREATE TABLE"]) {
+		NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 		
 		// Add the target DB name and the separator dot after "CREATE TABLE ".
 		[createTableStatement insertString:@"." atIndex:13];
@@ -58,8 +58,6 @@
 		
 		return ![connection queryErrored];
 	}
-	
-	[createTableStatement release];
 	
 	return NO;
 }
@@ -151,7 +149,10 @@
 	
 	SPMySQLResult *theResult = [connection queryString:showCreateTableStatment];
 	
-	return [theResult numberOfRows] > 0 ? [[theResult getRowAsArray] objectAtIndex:1] : @"";
+	if([theResult numberOfRows] > 0) return [[theResult getRowAsArray] objectAtIndex:1];
+	
+	NSLog(@"query <%@> failed to return the expected result.\n  Error state: %@ (%lu)",showCreateTableStatment,[connection lastErrorMessage],[connection lastErrorID]);
+	return nil;
 }
 
 @end
