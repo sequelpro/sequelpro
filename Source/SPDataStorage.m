@@ -62,41 +62,46 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) setDataStorage:(SPMySQLStreamingResultStore *)newDataStorage updatingExisting:(BOOL)updateExistingStore
 {
-	NSUInteger i;
-	editedRowCount = 0;
-	SPClear(editedRows);
-	@synchronized(self) {
-		if (unloadedColumns) {
-			[self _recordClearingUnloadedColumnsAt:mach_absolute_time() from:[NSThread callStackSymbols]];
-			free(unloadedColumns), unloadedColumns = NULL;
-		}
-	}
-	
+	SPMySQLStreamingResultStore *oldDataStorage = dataStorage;
 
-	if (dataStorage) {
-
+	if (oldDataStorage) {
 		// If the table is reloading data, link to the current data store for smoother loads
 		if (updateExistingStore) {
-			[newDataStorage replaceExistingResultStore:dataStorage];
+			[newDataStorage replaceExistingResultStore:oldDataStorage];
 		}
-
-		SPClear(dataStorage);
 	}
 
-	dataStorage = [newDataStorage retain];
-	[dataStorage setDelegate:self];
+	[newDataStorage retain];
 
-	numberOfColumns = [dataStorage numberOfFields];
-	editedRows = [NSPointerArray new];
-	if ([dataStorage dataDownloaded]) {
-		[self resultStoreDidFinishLoadingData:dataStorage];
+	NSPointerArray *newEditedRows = [[NSPointerArray alloc] init];
+	NSUInteger newNumberOfColumns = [newDataStorage numberOfFields];
+	BOOL *newUnloadedColumns = calloc(newNumberOfColumns, sizeof(BOOL));
+	for (NSUInteger i = 0; i < newNumberOfColumns; i++) {
+		newUnloadedColumns[i] = NO;
 	}
-
+	
+	BOOL *oldUnloadedColumns = unloadedColumns;
+	NSPointerArray *oldEditedRows = editedRows;
 	@synchronized(self) {
-		unloadedColumns = calloc(numberOfColumns, sizeof(BOOL));
-		for (i = 0; i < numberOfColumns; i++) {
-			unloadedColumns[i] = NO;
-		}
+		dataStorage = newDataStorage;
+		numberOfColumns = newNumberOfColumns;
+		unloadedColumns = newUnloadedColumns;
+		editedRowCount = 0;
+		editedRows = newEditedRows;
+	}
+	free(oldUnloadedColumns);
+	[oldEditedRows release];
+	[oldDataStorage release];
+	
+	// the only delegate callback is resultStoreDidFinishLoadingData:.
+	// We can't set the delegate before exchanging the dataStorage ivar since then
+	// the message would come from an unknown object.
+	// But if we set it afterwards, we risk losing the callback event (since it could've
+	// happened in the meantime) - this is what the following if() is for.
+	[newDataStorage setDelegate:self];
+	
+	if ([newDataStorage dataDownloaded]) {
+		[self resultStoreDidFinishLoadingData:newDataStorage];
 	}
 }
 
@@ -109,30 +114,30 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (NSMutableArray *) rowContentsAtIndex:(NSUInteger)anIndex
 {
-
-	// If an edited row exists for the supplied index, return it
-	if (anIndex < editedRowCount) {
-		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, anIndex);
-
-		if (editedRow != NULL) {
-			return editedRow;
-		}
-	}
-
-	// Otherwise, prepare to return the underlying storage row
-	NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex);
-
-	// Modify unloaded cells as appropriate
+	SPNotLoaded *notLoaded = [SPNotLoaded notLoaded];
 	@synchronized(self) {
+		// If an edited row exists for the supplied index, return it
+		if (anIndex < editedRowCount) {
+			NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, anIndex);
+			
+			if (editedRow != NULL) {
+				return editedRow;
+			}
+		}
+		
+		// Otherwise, prepare to return the underlying storage row
+		NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex);
+		
+		// Modify unloaded cells as appropriate
 		[self _assesUnloadedColumnsIsSet];
 		for (NSUInteger i = 0; i < numberOfColumns; i++) {
 			if (unloadedColumns[i]) {
-				CFArraySetValueAtIndex((CFMutableArrayRef)dataArray, i, [SPNotLoaded notLoaded]);
+				CFArraySetValueAtIndex((CFMutableArrayRef)dataArray, i, notLoaded);
 			}
 		}
+		
+		return dataArray;
 	}
-
-	return dataArray;
 }
 
 /**
@@ -140,30 +145,31 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (id) cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
-	// If an edited row exists at the supplied index, return it
-	if (rowIndex < editedRowCount) {
-		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
-
-		if (editedRow != NULL) {
-			return CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
-		}
-	}
-
-	// Throw an exception if the column index is out of bounds
-	if (columnIndex >= numberOfColumns) {
-		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
-	}
-
-	// If the specified column is not loaded, return a SPNotLoaded reference
+	SPNotLoaded *notLoaded = [SPNotLoaded notLoaded];
 	@synchronized(self) {
+		// If an edited row exists at the supplied index, return it
+		if (rowIndex < editedRowCount) {
+			NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
+			if (editedRow != NULL) {
+				return CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
+			}
+		}
+
+		// Throw an exception if the column index is out of bounds
+		if (columnIndex >= numberOfColumns) {
+			[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+		}
+
+		// If the specified column is not loaded, return a SPNotLoaded reference
 		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
-			return [SPNotLoaded notLoaded];
+			return notLoaded;
 		}
-	}
 
-	// Return the content
-	return SPMySQLResultStoreObjectAtRowAndColumn(dataStorage, rowIndex, columnIndex);
+		// Return the content
+		return SPMySQLResultStoreObjectAtRowAndColumn(dataStorage, rowIndex, columnIndex);
+	}
 }
 
 /**
@@ -172,35 +178,35 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (id) cellPreviewAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex previewLength:(NSUInteger)previewLength
 {
-
-	// If an edited row exists at the supplied index, return it
-	if (rowIndex < editedRowCount) {
-		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
-
-		if (editedRow != NULL) {
-			id anObject = CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
-			if ([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > 150) {
-				return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);
-			}
-			return anObject;
-		}
-	}
-
-	// Throw an exception if the column index is out of bounds
-	if (columnIndex >= numberOfColumns) {
-		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
-	}
-
-	// If the specified column is not loaded, return a SPNotLoaded reference
+	SPNotLoaded *notLoaded = [SPNotLoaded notLoaded];
 	@synchronized(self) {
+		// If an edited row exists at the supplied index, return it
+		if (rowIndex < editedRowCount) {
+			NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
+			if (editedRow != NULL) {
+				id anObject = CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex);
+				if ([anObject isKindOfClass:[NSString class]] && [(NSString *)anObject length] > 150) {
+					return ([NSString stringWithFormat:@"%@...", [anObject substringToIndex:147]]);
+				}
+				return anObject;
+			}
+		}
+
+		// Throw an exception if the column index is out of bounds
+		if (columnIndex >= numberOfColumns) {
+			[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+		}
+
+		// If the specified column is not loaded, return a SPNotLoaded reference
 		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
-			return [SPNotLoaded notLoaded];
+			return notLoaded;
 		}
-	}
 
-	// Return the content
-	return SPMySQLResultStorePreviewAtRowAndColumn(dataStorage, rowIndex, columnIndex, previewLength);
+		// Return the content
+		return SPMySQLResultStorePreviewAtRowAndColumn(dataStorage, rowIndex, columnIndex, previewLength);
+	}
 }
 
 /**
@@ -208,28 +214,29 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (BOOL) cellIsNullOrUnloadedAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
-	// If an edited row exists at the supplied index, check it for a NULL.
-	if (rowIndex < editedRowCount) {
-		NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
-
-		if (editedRow != NULL) {
-			return [(id)CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex) isNSNull];
-		}
-	}
-
-	// Throw an exception if the column index is out of bounds
-	if (columnIndex >= numberOfColumns) {
-		[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
-	}
-
 	@synchronized(self) {
+		// If an edited row exists at the supplied index, check it for a NULL.
+		if (rowIndex < editedRowCount) {
+			NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+
+			if (editedRow != NULL) {
+				return [(id)CFArrayGetValueAtIndex((CFArrayRef)editedRow, columnIndex) isNSNull];
+			}
+		}
+
+		// Throw an exception if the column index is out of bounds
+		if (columnIndex >= numberOfColumns) {
+			[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+		}
+
+
 		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
 			return YES;
 		}
-	}
 
-	return [dataStorage cellIsNullAtRow:rowIndex column:columnIndex];
+		return [dataStorage cellIsNullAtRow:rowIndex column:columnIndex];
+	}
 }
 
 #pragma mark -
@@ -242,26 +249,29 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
-	NSMutableArray *targetRow = NULL;
+	NSMutableArray *targetRow = nil;
+	size_t srcObject;
+	
+	SPNotLoaded *notLoaded = [SPNotLoaded notLoaded];
+	@synchronized(self) {
+		srcObject = (size_t)dataStorage ^ (size_t)editedRows ^ editedRowCount;
+		// If the start index is out of bounds, return 0 to indicate end of results
+		if (state->state >= SPMySQLResultStoreGetRowCount(dataStorage)) return 0;
 
-	// If the start index is out of bounds, return 0 to indicate end of results
-	if (state->state >= SPMySQLResultStoreGetRowCount(dataStorage)) return 0;
+		// If an edited row exists for the supplied index, use that; otherwise use the underlying
+		// storage row
+		if (state->state < editedRowCount) {
+			targetRow = SPDataStorageGetEditedRow(editedRows, state->state);
+		}
 
-	// If an edited row exists for the supplied index, use that; otherwise use the underlying
-	// storage row
-	if (state->state < editedRowCount) {
-		targetRow = SPDataStorageGetEditedRow(editedRows, state->state);
-	}
+		if (targetRow == nil) {
+			targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state);
 
-	if (targetRow == NULL) {
-		targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state);
-
-		// Modify unloaded cells as appropriate
-		@synchronized(self) {
+			// Modify unloaded cells as appropriate
 			[self _assesUnloadedColumnsIsSet];
 			for (NSUInteger i = 0; i < numberOfColumns; i++) {
 				if (unloadedColumns[i]) {
-					CFArraySetValueAtIndex((CFMutableArrayRef)targetRow, i, [SPNotLoaded notLoaded]);
+					CFArraySetValueAtIndex((CFMutableArrayRef)targetRow, i, notLoaded);
 				}
 			}
 		}
@@ -272,7 +282,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 	state->state += 1;
 	state->itemsPtr = stackbuf;
-	state->mutationsPtr = (unsigned long *)self;
+	state->mutationsPtr = (unsigned long *)srcObject;
 
 	return 1;
 }
@@ -287,16 +297,17 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) addRowWithContents:(NSMutableArray *)aRow
 {
+	@synchronized(self) {
+		// Verify the row is of the correct length
+		[self _checkNewRow:aRow];
 
-	// Verify the row is of the correct length
-	[self _checkNewRow:aRow];
+		// Add the new row to the editable store
+		[editedRows addPointer:aRow];
+		editedRowCount++;
 
-	// Add the new row to the editable store
-	[editedRows addPointer:aRow];
-	editedRowCount++;
-
-	// Update the underlying store as well to keep counts correct
-	[dataStorage addDummyRow];
+		// Update the underlying store as well to keep counts correct
+		[dataStorage addDummyRow];
+	}
 }
 
 /**
@@ -306,27 +317,29 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) insertRowContents:(NSMutableArray *)aRow atIndex:(NSUInteger)anIndex
 {
-	unsigned long long numberOfRows = SPMySQLResultStoreGetRowCount(dataStorage);
+	@synchronized(self) {
+		unsigned long long numberOfRows = SPMySQLResultStoreGetRowCount(dataStorage);
 
-	// Verify the row is of the correct length
-	[self _checkNewRow:aRow];
+		// Verify the row is of the correct length
+		[self _checkNewRow:aRow];
 
-	// Throw an exception if the index is out of bounds
-	if (anIndex > numberOfRows) {
-		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
+		// Throw an exception if the index is out of bounds
+		if (anIndex > numberOfRows) {
+			[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
+		}
+
+		// If "inserting" at the end of the array just add a row
+		if (anIndex == numberOfRows) {
+			return [self addRowWithContents:aRow];
+		}
+
+		// Add the new row to the editable store
+		[editedRows insertPointer:aRow atIndex:anIndex];
+		editedRowCount++;
+
+		// Update the underlying store to keep counts and indices correct
+		[dataStorage insertDummyRowAtIndex:anIndex];
 	}
-
-	// If "inserting" at the end of the array just add a row
-	if (anIndex == numberOfRows) {
-		return [self addRowWithContents:aRow];
-	}
-
-	// Add the new row to the editable store
-	[editedRows insertPointer:aRow atIndex:anIndex];
-	editedRowCount++;
-
-	// Update the underlying store to keep counts and indices correct
-	[dataStorage insertDummyRowAtIndex:anIndex];
 }
 
 /**
@@ -334,8 +347,10 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) replaceRowAtIndex:(NSUInteger)anIndex withRowContents:(NSMutableArray *)aRow
 {
-	[self _checkNewRow:aRow];
-	[editedRows replacePointerAtIndex:anIndex withPointer:aRow];
+	@synchronized(self) {
+		[self _checkNewRow:aRow];
+		[editedRows replacePointerAtIndex:anIndex withPointer:aRow];
+	}
 }
 
 /**
@@ -343,16 +358,18 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) replaceObjectInRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex withObject:(id)anObject
 {
-	NSMutableArray *editableRow = NULL;
+	NSMutableArray *editableRow = nil;
 
-	if (rowIndex < editedRowCount) {
-		editableRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
-	}
+	@synchronized(self) {
+		if (rowIndex < editedRowCount) {
+			editableRow = SPDataStorageGetEditedRow(editedRows, rowIndex);
+		}
 
-	// Make sure that the row in question is editable
-	if (editableRow == NULL) {
-		editableRow = [self rowContentsAtIndex:rowIndex];
-		[editedRows replacePointerAtIndex:rowIndex withPointer:editableRow];
+		// Make sure that the row in question is editable
+		if (editableRow == nil) {
+			editableRow = [self rowContentsAtIndex:rowIndex];
+			[editedRows replacePointerAtIndex:rowIndex withPointer:editableRow];
+		}
 	}
 
 	// Modify the cell
@@ -364,18 +381,19 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) removeRowAtIndex:(NSUInteger)anIndex
 {
+	@synchronized(self) {
+		// Throw an exception if the index is out of bounds
+		if (anIndex >= SPMySQLResultStoreGetRowCount(dataStorage)) {
+			[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, SPMySQLResultStoreGetRowCount(dataStorage)];
+		}
 
-	// Throw an exception if the index is out of bounds
-	if (anIndex >= SPMySQLResultStoreGetRowCount(dataStorage)) {
-		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, SPMySQLResultStoreGetRowCount(dataStorage)];
+		// Remove the row from the edited list and underlying storage
+		if (anIndex < editedRowCount) {
+			editedRowCount--;
+			[editedRows removePointerAtIndex:anIndex];
+		}
+		[dataStorage removeRowAtIndex:anIndex];
 	}
-
-	// Remove the row from the edited list and underlying storage
-	if (anIndex < editedRowCount) {
-		editedRowCount--;
-		[editedRows removePointerAtIndex:anIndex];
-	}
-	[dataStorage removeRowAtIndex:anIndex];
 }
 
 /**
@@ -384,19 +402,20 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) removeRowsInRange:(NSRange)rangeToRemove
 {
+	@synchronized(self) {
+		// Throw an exception if the range is out of bounds
+		if (NSMaxRange(rangeToRemove) > SPMySQLResultStoreGetRowCount(dataStorage)) {
+			[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), SPMySQLResultStoreGetRowCount(dataStorage)];
+		}
 
-	// Throw an exception if the range is out of bounds
-	if (NSMaxRange(rangeToRemove) > SPMySQLResultStoreGetRowCount(dataStorage)) {
-		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), SPMySQLResultStoreGetRowCount(dataStorage)];
+		// Remove the rows from the edited list and underlying storage
+		NSUInteger i = MIN(editedRowCount, NSMaxRange(rangeToRemove));
+		while (--i >= rangeToRemove.location) {
+			editedRowCount--;
+			[editedRows removePointerAtIndex:i];
+		}
+		[dataStorage removeRowsInRange:rangeToRemove];
 	}
-
-	// Remove the rows from the edited list and underlying storage
-	NSUInteger i = MIN(editedRowCount, NSMaxRange(rangeToRemove));
-	while (--i >= rangeToRemove.location) {
-		editedRowCount--;
-		[editedRows removePointerAtIndex:i];
-	}
-	[dataStorage removeRowsInRange:rangeToRemove];
 }
 
 /**
@@ -404,9 +423,11 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) removeAllRows
 {
-	editedRowCount = 0;
-	[editedRows setCount:0];
-	[dataStorage removeAllRows];
+	@synchronized(self) {
+		editedRowCount = 0;
+		[editedRows setCount:0];
+		[dataStorage removeAllRows];
+	}
 }
 
 #pragma mark - Unloaded columns
@@ -417,10 +438,10 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) setColumnAsUnloaded:(NSUInteger)columnIndex
 {
-	if (columnIndex >= numberOfColumns) {
-		[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
-	}
 	@synchronized(self) {
+		if (columnIndex >= numberOfColumns) {
+			[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
+		}
 		[self _assesUnloadedColumnsIsSet];
 		unloadedColumns[columnIndex] = YES;
 	}
@@ -433,7 +454,9 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (NSUInteger) count
 {
-	return (NSUInteger)[dataStorage numberOfRows];
+	@synchronized(self) {
+		return (NSUInteger)[dataStorage numberOfRows];
+	}
 }
 
 /**
@@ -441,7 +464,9 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (NSUInteger) columnCount
 {
-	return numberOfColumns;
+	@synchronized(self) {
+		return numberOfColumns;
+	}
 }
 
 /**
@@ -449,7 +474,9 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (BOOL) dataDownloaded
 {
-	return !dataStorage || [dataStorage dataDownloaded];
+	@synchronized(self) {
+		return !dataStorage || [dataStorage dataDownloaded];
+	}
 }
 
 #pragma mark - Delegate callback methods
@@ -459,8 +486,10 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore
 {
-	[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
-	editedRowCount = [editedRows count];
+	@synchronized(self) {
+		[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
+		editedRowCount = [editedRows count];
+	}
 }
 
 /**
@@ -468,7 +497,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 #pragma mark -
 
-- (id) init {
+- (id) init
+{
 	if ((self = [super init])) {
 		dataStorage = nil;
 		editedRows = nil;
@@ -483,10 +513,11 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	return self;
 }
 
-- (void) dealloc {
-	SPClear(dataStorage);
-	SPClear(editedRows);
+- (void) dealloc
+{
 	@synchronized(self) {
+		SPClear(dataStorage);
+		SPClear(editedRows);
 		if (unloadedColumns) {
 			[self _recordClearingUnloadedColumnsAt:mach_absolute_time() from:[NSThread callStackSymbols]];
 			free(unloadedColumns), unloadedColumns = NULL;
@@ -506,6 +537,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 @implementation SPDataStorage (PrivateAPI)
 
+// DO NOT CALL THIS METHOD UNLESS YOU CURRENTLY HAVE A LOCK ON SELF!!!
 - (void) _checkNewRow:(NSMutableArray *)aRow
 {
 	if ([aRow count] != numberOfColumns) {
