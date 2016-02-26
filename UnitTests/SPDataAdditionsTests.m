@@ -29,11 +29,11 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <Cocoa/Cocoa.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import "SPDataAdditions.h"
 #import <errno.h>
 
-@interface SPDataAdditionsTests : SenTestCase
+@interface SPDataAdditionsTests : XCTestCase
 
 - (void)testSha1Hash;
 - (void)testDataEncryptedWithPassword;
@@ -53,7 +53,7 @@
 		NSString *input  = @"Hello World!";
 		unsigned char bytes[] = {0x2e,0xf7,0xbd,0xe6,0x08,0xce,0x54,0x04,0xe9,0x7d,0x5f,0x04,0x2f,0x95,0xf8,0x9f,0x1c,0x23,0x28,0x71};
 		
-		STAssertTrue(memcmp([[[input dataUsingEncoding:NSUTF8StringEncoding] sha1Hash] bytes], bytes, 20) == 0, @"SHA1 simple hash from ASCII text");
+		XCTAssertTrue(memcmp([[[input dataUsingEncoding:NSUTF8StringEncoding] sha1Hash] bytes], bytes, 20) == 0, @"SHA1 simple hash from ASCII text");
 	}
 	// 16MB of all 8bit values
 	{
@@ -65,14 +65,14 @@
 		NSData *input = [NSData dataWithBytesNoCopy:buf length:bufSz];
 		NSString *result = @"25E05EB8E9E2B06036DF4026630FE01A19BF0F16";
 		
-		STAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash from full ASCII range");
+		XCTAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash from full ASCII range");
 	}
 	// empty hash
 	{
 		NSData *input = [NSData data];
 		NSString *result = @"DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
 		
-		STAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash from empty data");
+		XCTAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash from empty data");
 	}
 	// test with > 4GB data (other code path)
 	// HFS+ does not support sparse files, so enable this one only if you have enough disk space.
@@ -109,7 +109,7 @@
 		NSData *input = [@"føöbärbãz" dataUsingEncoding:NSUTF8StringEncoding];
 		NSString *result = @"8A8B6142281950CBB9B01C9DF0DADB0BDAE2D0E1";
 		
-		STAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash of UTF-8 string");
+		XCTAssertEqualObjects([[input sha1Hash] dataToHexString], result, @"SHA1 hash of UTF-8 string");
 	}
 	
 }
@@ -123,11 +123,11 @@
 	NSData *encrypted = [raw dataEncryptedWithPassword:password];
 	//check that our encrypted data is not the plaintext data
 	NSData *encCore = [encrypted subdataWithRange:NSMakeRange(16, [raw length])];
-	STAssertFalse([encCore isEqualToData:raw], @"encrypted equal to plain text!");
+	XCTAssertFalse([encCore isEqualToData:raw], @"encrypted equal to plain text!");
 	
 	//decrypt again and verify
 	NSData *decrypted = [encrypted dataDecryptedWithPassword:password];
-	STAssertEqualObjects(decrypted, raw, @"decrypted data not equal to plaintext data!");
+	XCTAssertEqualObjects(decrypted, raw, @"decrypted data not equal to plaintext data!");
 }
 
 - (void)testDataEncryptedWithKeyIV
@@ -144,7 +144,7 @@
 	{
 		@try {
 			[raw dataEncryptedWithKey:[@"password" dataUsingEncoding:NSASCIIStringEncoding] IV:iv];
-			STFail(@"Password should not be a valid key!");
+			XCTFail(@"Password should not be a valid key!");
 		}
 		@catch (NSException *exception) {
 			//expected
@@ -154,7 +154,7 @@
 	{
 		@try {
 			[raw dataEncryptedWithKey:key IV:[NSData data]];
-			STFail(@"Empty IV should throw exception!");
+			XCTFail(@"Empty IV should throw exception!");
 		}
 		@catch (NSException *exception) {
 			// expected
@@ -171,7 +171,7 @@
 			0x1d, 0x9f, 0x0c, 0x7a
 		}; // reference data generated with OpenSSL
 		NSData *expData = [NSData dataWithBytesNoCopy:expect length:sizeof(expect) freeWhenDone:NO];
-		STAssertEqualObjects(enc, expData, @"Encryption of empty data");
+		XCTAssertEqualObjects(enc, expData, @"Encryption of empty data");
 	}
 	//simple encryption test
 	{
@@ -185,7 +185,7 @@
 			0x44, 0x32, 0xb3, 0xda, 0x42, 0x58, 0x29, 0x78, 0xc3
 		}; // reference data generated with OpenSSL
 		NSData *expData = [NSData dataWithBytesNoCopy:expect length:sizeof(expect) freeWhenDone:NO];
-		STAssertEqualObjects(enc, expData, @"Simple encryption test");
+		XCTAssertEqualObjects(enc, expData, @"Simple encryption test");
 	}
 }
 
@@ -205,7 +205,7 @@
 	
 	NSData *decrypted = [encData dataDecryptedWithPassword:@""];
 	
-	STAssertEqualObjects(decrypted, raw, @"Decrypt simple data encrypted with empty password");
+	XCTAssertEqualObjects(decrypted, raw, @"Decrypt simple data encrypted with empty password");
 }
 
 - (void)testDataDecryptedWithKey
@@ -229,7 +229,7 @@
 	{
 		@try {
 			[encData dataDecryptedWithKey:[NSData data]];
-			STFail(@"Invalid key length!");
+			XCTFail(@"Invalid key length!");
 		}
 		@catch (NSException *exception) {
 			//expected
@@ -239,7 +239,7 @@
 	{
 		@try {
 			[[@"Hello World!" dataUsingEncoding:NSASCIIStringEncoding] dataDecryptedWithKey:key];
-			STFail(@"Invalid data length!");
+			XCTFail(@"Invalid data length!");
 		}
 		@catch (NSException *exception) {
 			//expected
@@ -248,17 +248,17 @@
 	// wrong data with valid length
 	{
 		NSData *inp = [@"12345678901234567890123456789012" dataUsingEncoding:NSASCIIStringEncoding];
-		STAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt invalid data.");
+		XCTAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt invalid data.");
 	}
 	// wrong data with invalid length
 	{
 		NSData *inp = [@"12345678901234567890123456789012345678901234567" dataUsingEncoding:NSASCIIStringEncoding];
-		STAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt data with invalid length.");
+		XCTAssertNil([inp dataDecryptedWithKey:key], @"Trying to decrypt data with invalid length.");
 	}
 	// simple decryption test
 	{
 		NSData *decrypted = [encData dataDecryptedWithKey:key];
-		STAssertEqualObjects(decrypted, raw, @"Simple Decryption test");
+		XCTAssertEqualObjects(decrypted, raw, @"Simple Decryption test");
 	}
 	// malicious message test
 	{
@@ -274,7 +274,7 @@
 		
 		@try {
 			[_encData dataDecryptedWithKey:key];
-			STFail(@"Malicious message with invalid data length");
+			XCTFail(@"Malicious message with invalid data length");
 		}
 		@catch (NSException *exception) {
 			//expected
@@ -291,85 +291,102 @@
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
 			invocations++;
 		}];
-		STAssertTrue(invocations==0, @"Empty data never invokes block");
+		XCTAssertTrue(invocations==0, @"Empty data never invokes block");
 	}
 	//simple unix file
 	{
 		const char inp[] = "Two\nLines\n";
+		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 3)];
+		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(4, 5)];
+
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					STAssertEquals(line, NSMakeRange(0, 3), @"range of first line");
+					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
 					break;
 				case 1:
-					STAssertEquals(line, NSMakeRange(4, 5), @"range of second line");
+					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
 					break;
 			}
 			invocations++;
 		}];
-		STAssertTrue(invocations==2, @"File with two lines, terminated with empty line");
+		XCTAssertTrue(invocations==2, @"File with two lines, terminated with empty line");
 	}
 	//simple windows file without ending empty line
 	{
 		const char inp[] = "A\r\nWindows\r\nfile";
+		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 1)];
+		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(3, 7)];
+		NSValue *line3 = [NSValue valueWithRange:NSMakeRange(12, 4)];
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					STAssertEquals(line, NSMakeRange(0, 1), @"range of first line");
+					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
 					break;
 				case 1:
-					STAssertEquals(line, NSMakeRange(3, 7), @"range of second line");
+					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
 					break;
 				case 2:
-					STAssertEquals(line, NSMakeRange(12, 4), @"range of third line");
+					XCTAssertTrue([lineValue isEqualToValue:line3], @"range of third line");
 					break;
 			}
 			invocations++;
 		}];
-		STAssertTrue(invocations==3, @"File with three lines, CRLF, terminated with empty line");
+		XCTAssertTrue(invocations==3, @"File with three lines, CRLF, terminated with empty line");
 	}
 	//empty lines with all 3 endings
 	{
 		const char inp[] = "\n\r\n\r";
+		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 0)];
+		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(1, 0)];
+		NSValue *line3 = [NSValue valueWithRange:NSMakeRange(3, 0)];
+
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
+			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					STAssertEquals(line, NSMakeRange(0, 0), @"range of first line");
+					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
 					break;
 				case 1:
-					STAssertEquals(line, NSMakeRange(1, 0), @"range of second line");
+					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
 					break;
 				case 2:
-					STAssertEquals(line, NSMakeRange(3, 0), @"range of third line");
+					XCTAssertTrue([lineValue isEqualToValue:line3], @"range of third line");
 					break;
 			}
 			invocations++;
 		}];
-		STAssertTrue(invocations==3, @"LF, CRLF and CR mixed");
+		XCTAssertTrue(invocations==3, @"LF, CRLF and CR mixed");
 	}
 	//looking for specific line breaks only
 	{
 		const char inp[] = "foo\nbar\r\nbaz\r";
+		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 7)];
+		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(9, 4)];
+
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorCRLF withBlock:^(NSRange line, BOOL *stop) {
+			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					STAssertEquals(line, NSMakeRange(0, 7), @"range of first line");
+					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
 					break;
 				case 1:
-					STAssertEquals(line, NSMakeRange(9, 4), @"range of second line");
+					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
 					break;
 			}
 			invocations++;
 		}];
-		STAssertTrue(invocations==2, @"other line breaks when only CRLF is expected");
+		XCTAssertTrue(invocations==2, @"other line breaks when only CRLF is expected");
 	}
 	//stopping early
 	{
@@ -380,7 +397,7 @@
 			invocations++;
 			*stop = YES;
 		}];
-		STAssertTrue(invocations==1, @"File with two lines, stopped after first");
+		XCTAssertTrue(invocations==1, @"File with two lines, stopped after first");
 	}
 }
 

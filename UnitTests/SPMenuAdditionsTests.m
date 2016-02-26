@@ -30,7 +30,7 @@
 
 #import "SPMenuAdditions.h"
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 /**
  * @class SPMenuAdditionsTests SPMenuAdditionsTests.h
@@ -39,7 +39,7 @@
  *
  * SPMenuAdditionsTests tests class.
  */
-@interface SPMenuAdditionsTests : SenTestCase
+@interface SPMenuAdditionsTests : XCTestCase
 {
 	NSMenu *menu;
 }
@@ -71,7 +71,7 @@ static NSString *SPTestMenuItemTitle = @"Menu Item";
 {
 	[menu compatibleRemoveAllItems];
 	
-	STAssertFalse([menu numberOfItems], @"The menu should have no menu items.");
+	XCTAssertFalse([menu numberOfItems], @"The menu should have no menu items.");
 }
 
 @end
