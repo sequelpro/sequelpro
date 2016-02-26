@@ -11,7 +11,7 @@ Build Instructions
 ==================
 
  * Install the [latest version of Xcode](https://itunes.apple.com/au/app/xcode/id497799835)
- * Install [Github for Mac](http://mac.github.com) (or [Tower](http://www.git-tower.com), or [SourceTree](http://www.sourcetreeapp.com), or […](http://git-scm.com/downloads/guis))
+ * Install [Github for Mac](https://desktop.github.com/) (or [Tower](https://www.git-tower.com/), or [SourceTree](https://www.sourcetreeapp.com/), or […](http://git-scm.com/downloads/guis))
  * Click "Clone in Desktop" on the right sidebar of our [github page](https://github.com/sequelpro/sequelpro)
  * Open `sequel-pro.xcodeproj`
  * Click the `Run` button in the toolbar
@@ -22,4 +22,4 @@ License
 
 Copyright (c) 2002-2016 Sequel Pro & CocoaMySQL Teams. All rights reserved.
 
-Sequel Pro is free and open source software, licensed under [MIT](http://opensource.org/licenses/MIT). See [LICENSE](https://github.com/sequelpro/sequelpro/blob/master/LICENSE) for full details.
+Sequel Pro is free and open source software, licensed under [MIT](https://opensource.org/licenses/MIT). See [LICENSE](https://github.com/sequelpro/sequelpro/blob/master/LICENSE) for full details.
