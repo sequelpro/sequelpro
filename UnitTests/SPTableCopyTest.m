@@ -88,9 +88,8 @@
 	
 	{
 		SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
-		[tableCopy setConnection:mockConnection];
 		
-		XCTAssertFalse([tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db"], @"copy operation must fail.");
+		XCTAssertFalse([tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db"],@"copy operation must fail.");
 		
 		[tableCopy release];
 	}
