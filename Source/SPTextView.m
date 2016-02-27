@@ -1879,6 +1879,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			mirroredCounter++;
 			if(mirroredCounter > 19) {
 				NSLog(@"Only 20 mirrored snippet placeholders allowed.");
+				mirroredCounter--; //go back by one or the code below will do an out-of-bounds array access
 				NSBeep();
 				break;
 			} else {
@@ -1913,8 +1914,9 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		if(mirroredCounter > -1) {
 			for(i=0; i<=mirroredCounter; i++) {
 				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1] > 0) {
-					[snip replaceCharactersInRange:NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]) 
-										withString:[snip substringWithRange:NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1])]];
+					NSRange copyToRange   = NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]);
+					NSRange copyFromRange = NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1]);
+					[snip replaceCharactersInRange:copyToRange withString:[snip substringWithRange:copyFromRange]];
 					snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
 				}
 				// Adjust successive snippets
