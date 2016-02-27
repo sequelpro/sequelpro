@@ -1554,16 +1554,16 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 		// Go through each defined mirrored snippet and update it
 		for(i=0; i<=mirroredCounter; i++) {
-			if(snippetMirroredControlArray[i][0] == currentSnippetIndex) {
+			if(snippetMirroredControlArray[i].snippet == currentSnippetIndex) {
 
-				deltaLength = snippetControlArray[currentSnippetIndex][1]-snippetMirroredControlArray[i][2];
+				deltaLength = snippetControlArray[currentSnippetIndex].length-snippetMirroredControlArray[i].length;
 
-				mirroredRange = NSMakeRange(snippetMirroredControlArray[i][1], snippetMirroredControlArray[i][2]);
+				mirroredRange = NSMakeRange(snippetMirroredControlArray[i].location, snippetMirroredControlArray[i].length);
 				NSString *mirroredString = nil;
 
 				// For safety reasons
 				@try{
-					mirroredString = [[self string] substringWithRange:NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1])];
+					mirroredString = [[self string] substringWithRange:NSMakeRange(snippetControlArray[currentSnippetIndex].location, snippetControlArray[currentSnippetIndex].length)];
 				}
 				@catch(id ae) {
 					NSLog(@"Error while parsing for mirrored snippets. %@", [ae description]);
@@ -1576,26 +1576,26 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				[self shouldChangeTextInRange:mirroredRange replacementString:mirroredString];
 
 				[self replaceCharactersInRange:mirroredRange withString:mirroredString];
-				snippetMirroredControlArray[i][2] = snippetControlArray[currentSnippetIndex][1];
+				snippetMirroredControlArray[i].length = snippetControlArray[currentSnippetIndex].length;
 
 				// If a completion list is open adjust the theCharRange and theParseRange if a mirrored snippet
 				// was updated which is located before the initial position 
-				if(completionIsOpen && snippetMirroredControlArray[i][1] < (NSInteger)completionParseRangeLocation)
+				if(completionIsOpen && snippetMirroredControlArray[i].location < (NSInteger)completionParseRangeLocation)
 					[completionPopup adjustWorkingRangeByDelta:deltaLength];
 
 				// Adjust all other snippets accordingly
 				for(j=0; j<=snippetControlMax; j++) {
-					if(snippetControlArray[j][0] > -1) {
-						if(snippetControlArray[j][0]+snippetControlArray[j][1]>=snippetMirroredControlArray[i][1]) {
-							snippetControlArray[j][0] += deltaLength;
+					if(snippetControlArray[j].location > -1) {
+						if(snippetControlArray[j].location+snippetControlArray[j].length>=snippetMirroredControlArray[i].location) {
+							snippetControlArray[j].location += deltaLength;
 						}
 					}
 				}
 				// Adjust all mirrored snippets accordingly
 				for(k=0; k<=mirroredCounter; k++) {
 					if(i != k) {
-						if(snippetMirroredControlArray[k][1] > snippetMirroredControlArray[i][1]) {
-							snippetMirroredControlArray[k][1] += deltaLength;
+						if(snippetMirroredControlArray[k].location > snippetMirroredControlArray[i].location) {
+							snippetMirroredControlArray[k].location += deltaLength;
 						}
 					}
 				}
@@ -1625,15 +1625,15 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// Place the caret at the end of the query favorite snippet
 		// and finish snippet editing
 		if(currentSnippetIndex == snippetControlMax) {
-			[self setSelectedRange:NSMakeRange(snippetControlArray[snippetControlMax][0] + snippetControlArray[snippetControlMax][1], 0)];
+			[self setSelectedRange:NSMakeRange(snippetControlArray[snippetControlMax].location + snippetControlArray[snippetControlMax].length, 0)];
 			[self endSnippetSession];
 			return;
 		}
 
 		if(currentSnippetIndex >= 0 && currentSnippetIndex < 20) {
-			if(snippetControlArray[currentSnippetIndex][2] == 0) {
+			if(snippetControlArray[currentSnippetIndex].task == 0) {
 
-				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex][0], snippetControlArray[currentSnippetIndex][1]);
+				NSRange r1 = NSMakeRange(snippetControlArray[currentSnippetIndex].location, snippetControlArray[currentSnippetIndex].length);
 
 				NSRange r2;
 				// Ensure the selection for nested snippets if it is at very end of the text buffer
@@ -1719,12 +1719,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	// reset snippet array
 	for(i=0; i<20; i++) {
-		snippetControlArray[i][0] = -1; // snippet location
-		snippetControlArray[i][1] = -1; // snippet length
-		snippetControlArray[i][2] = -1; // snippet task : -1 not valid, 0 select snippet
-		snippetMirroredControlArray[i][0] = -1; // mirrored snippet index
-		snippetMirroredControlArray[i][1] = -1; // mirrored snippet location
-		snippetMirroredControlArray[i][2] = -1; // mirrored snippet length
+		snippetControlArray[i] = (SnippetControlInfo){ -1, -1, -1};
+		snippetMirroredControlArray[i] = (MirrorControlInfo){-1, -1, -1};
 	}
 
 	if(theSnippet == nil || ![theSnippet length]) return;
@@ -1861,16 +1857,16 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			[snip flushCachedRegexData];
 
 			// Store found snippet range
-			snippetControlArray[snipCnt][0] = snipRange.location + targetRange.location;
-			snippetControlArray[snipCnt][1] = [theHintString length];
-			snippetControlArray[snipCnt][2] = 0;
+			snippetControlArray[snipCnt].location = snipRange.location + targetRange.location;
+			snippetControlArray[snipCnt].length   = [theHintString length];
+			snippetControlArray[snipCnt].task     = 0;
 
 			[theHintString release];
 
 			// Adjust successive snippets
 			for(i=0; i<20; i++)
-				if(snippetControlArray[i][0] > -1 && i != snipCnt && snippetControlArray[i][0] > snippetControlArray[snipCnt][0])
-					snippetControlArray[i][0] -= 3+((snipCnt>9)?2:1);
+				if(snippetControlArray[i].location > -1 && i != snipCnt && snippetControlArray[i].location > snippetControlArray[snipCnt].location)
+					snippetControlArray[i].location -= 3+((snipCnt>9)?2:1);
 
 		}
 
@@ -1898,14 +1894,14 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				[snip flushCachedRegexData];
 
 				// Store found mirrored snippet range
-				snippetMirroredControlArray[mirroredCounter][0] = snipCnt;
-				snippetMirroredControlArray[mirroredCounter][1] = snipRange.location + targetRange.location;
-				snippetMirroredControlArray[mirroredCounter][2] = 0;
+				snippetMirroredControlArray[mirroredCounter].snippet  = snipCnt;
+				snippetMirroredControlArray[mirroredCounter].location = snipRange.location + targetRange.location;
+				snippetMirroredControlArray[mirroredCounter].length   = 0;
 
 				// Adjust successive snippets
 				for(i=0; i<20; i++)
-					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > snippetMirroredControlArray[mirroredCounter][1])
-						snippetControlArray[i][0] -= 1+((snipCnt>9)?2:1);
+					if(snippetControlArray[i].location > -1 && snippetControlArray[i].location > snippetMirroredControlArray[mirroredCounter].location)
+						snippetControlArray[i].location -= 1+((snipCnt>9)?2:1);
 
 				[snip flushCachedRegexData];
 			}
@@ -1913,29 +1909,27 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// Preset mirrored snippets with according snippet content
 		if(mirroredCounter > -1) {
 			for(i=0; i<=mirroredCounter; i++) {
-				if(snippetControlArray[snippetMirroredControlArray[i][0]][0] > -1 && snippetControlArray[snippetMirroredControlArray[i][0]][1] > 0) {
-					NSRange copyToRange   = NSMakeRange(snippetMirroredControlArray[i][1]-targetRange.location, snippetMirroredControlArray[i][2]);
-					NSRange copyFromRange = NSMakeRange(snippetControlArray[snippetMirroredControlArray[i][0]][0]-targetRange.location, snippetControlArray[snippetMirroredControlArray[i][0]][1]);
+				if(snippetControlArray[snippetMirroredControlArray[i].snippet].location > -1 && snippetControlArray[snippetMirroredControlArray[i].snippet].length > 0) {
+					NSRange copyToRange   = NSMakeRange(snippetMirroredControlArray[i].location-targetRange.location, snippetMirroredControlArray[i].length);
+					NSRange copyFromRange = NSMakeRange(snippetControlArray[snippetMirroredControlArray[i].snippet].location-targetRange.location, snippetControlArray[snippetMirroredControlArray[i].snippet].length);
 					[snip replaceCharactersInRange:copyToRange withString:[snip substringWithRange:copyFromRange]];
-					snippetMirroredControlArray[i][2] = snippetControlArray[snippetMirroredControlArray[i][0]][1];
+					snippetMirroredControlArray[i].length = snippetControlArray[snippetMirroredControlArray[i].snippet].length;
 				}
 				// Adjust successive snippets
 				for(j=0; j<20; j++)
-					if(snippetControlArray[j][0] > -1 && snippetControlArray[j][0] > snippetMirroredControlArray[i][1])
-						snippetControlArray[j][0] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+					if(snippetControlArray[j].location > -1 && snippetControlArray[j].location > snippetMirroredControlArray[i].location)
+						snippetControlArray[j].location += snippetControlArray[snippetMirroredControlArray[i].snippet].length;
 				// Adjust successive mirrored snippets
 				for(j=0; j<=mirroredCounter; j++)
-					if(snippetMirroredControlArray[j][1] > snippetMirroredControlArray[i][1])
-						snippetMirroredControlArray[j][1] += snippetControlArray[snippetMirroredControlArray[i][0]][1];
+					if(snippetMirroredControlArray[j].location > snippetMirroredControlArray[i].location)
+						snippetMirroredControlArray[j].location += snippetControlArray[snippetMirroredControlArray[i].snippet].length;
 			}
 		}
 
 		if(snippetControlCounter > -1) {
 			// Store the end for tab out
 			snippetControlMax++;
-			snippetControlArray[snippetControlMax][0] = targetRange.location + [snip length];
-			snippetControlArray[snippetControlMax][1] = 0;
-			snippetControlArray[snippetControlMax][2] = 0;
+			snippetControlArray[snippetControlMax] = (SnippetControlInfo){targetRange.location + [snip length], 0, 0};
 		}
 
 		// unescape escaped snippets and re-adjust successive snippet locations : \${1:a} → ${1:a}
@@ -1947,13 +1941,13 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				NSInteger loc = escapeRange.location + targetRange.location;
 				[snip flushCachedRegexData];
 				for(i=0; i<=snippetControlMax; i++)
-					if(snippetControlArray[i][0] > -1 && snippetControlArray[i][0] > loc)
-						snippetControlArray[i][0]--;
+					if(snippetControlArray[i].location > -1 && snippetControlArray[i].location > loc)
+						snippetControlArray[i].location--;
 				// Adjust mirrored snippets
 				if(mirroredCounter > -1)
 					for(i=0; i<=mirroredCounter; i++)
-						if(snippetMirroredControlArray[i][0] > -1 && snippetMirroredControlArray[i][1] > loc)
-							snippetMirroredControlArray[i][1]--;
+						if(snippetMirroredControlArray[i].snippet > -1 && snippetMirroredControlArray[i].location > loc)
+							snippetMirroredControlArray[i].location--;
 			}
 		}
 
@@ -1983,7 +1977,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			// Find and select first defined snippet
 			currentSnippetIndex = 0;
 			// Look for next defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
-			while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+			while(snippetControlArray[currentSnippetIndex].location == -1 && currentSnippetIndex < 20)
 				currentSnippetIndex++;
 			[self selectCurrentSnippet];
 		}
@@ -2028,9 +2022,9 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	for(i=0; i<=snippetControlMax; i++) {
 		j++;
 		foundSnippetIndices[j] = 0;
-		if(snippetControlArray[i][0] != -1 
-			&& caretPos >= snippetControlArray[i][0]
-			&& caretPos <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
+		if(snippetControlArray[i].location != -1
+			&& caretPos >= snippetControlArray[i].location
+			&& caretPos <= snippetControlArray[i].location + snippetControlArray[i].length) {
 
 			foundSnippetIndices[j] = 1;
 			if(i == currentSnippetIndex)
@@ -2051,11 +2045,11 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			if(foundSnippetIndices[i] == 1) {
 				if(curIndex == -1) {
 					curIndex = i;
-					smallestLength = snippetControlArray[i][1];
+					smallestLength = snippetControlArray[i].length;
 				} else {
-					if(smallestLength > snippetControlArray[i][1]) {
+					if(smallestLength > snippetControlArray[i].length) {
 						curIndex = i;
-						smallestLength = snippetControlArray[i][1];
+						smallestLength = snippetControlArray[i].length;
 					}
 				}
 			}
@@ -2195,12 +2189,12 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				currentSnippetIndex--;
 
 				// Look for previous defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
-				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex > -2)
+				while(snippetControlArray[currentSnippetIndex].location == -1 && currentSnippetIndex > -2)
 					currentSnippetIndex--;
 
 				if(currentSnippetIndex < 0) {
 					currentSnippetIndex = 0;
-					while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+					while(snippetControlArray[currentSnippetIndex].location == -1 && currentSnippetIndex < 20)
 						currentSnippetIndex++;
 					NSBeep();
 				}
@@ -2213,7 +2207,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				currentSnippetIndex++;
 
 				// Look for next defined snippet since snippet numbers must not serial like 1, 5, and 12 e.g.
-				while(snippetControlArray[currentSnippetIndex][0] == -1 && currentSnippetIndex < 20)
+				while(snippetControlArray[currentSnippetIndex].location == -1 && currentSnippetIndex < 20)
 					currentSnippetIndex++;
 
 				if(currentSnippetIndex > snippetControlMax) { // for safety reasons
@@ -2980,7 +2974,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 				// Is the caret still inside a snippet
 				if([self checkForCaretInsideSnippet]) {
 					for(NSInteger i=0; i<snippetControlMax; i++) {
-						if(snippetControlArray[i][0] > -1) {
+						if(snippetControlArray[i].location > -1) {
 							// choose the colors for the snippet parts
 							if(i == currentSnippetIndex) {
 								[[NSColor colorWithCalibratedRed:1.0f green:0.6f blue:0.0f alpha:0.4f] setFill];
@@ -2989,7 +2983,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 								[[NSColor colorWithCalibratedRed:1.0f green:0.8f blue:0.2f alpha:0.2f] setFill];
 								[[NSColor colorWithCalibratedRed:1.0f green:0.8f blue:0.2f alpha:0.5f] setStroke];
 							}
-							NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i][0],snippetControlArray[i][1]) ];
+							NSBezierPath *snippetPath = [self roundedBezierPathAroundRange: NSMakeRange(snippetControlArray[i].location,snippetControlArray[i].length) ];
 							[snippetPath fill];
 							[snippetPath stroke];
 						}
@@ -3336,20 +3330,18 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		// Re-calculate snippet ranges if snippet session is active
 		if(snippetControlCounter > -1 && !snippetWasJustInserted && !isProcessingMirroredSnippets) {
 			// Remove any fully nested snippets relative to the current snippet which was edited
-			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex][0];
-			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex][0] + snippetControlArray[currentSnippetIndex][1];
+			NSInteger currentSnippetLocation = snippetControlArray[currentSnippetIndex].location;
+			NSInteger currentSnippetMaxRange = snippetControlArray[currentSnippetIndex].location + snippetControlArray[currentSnippetIndex].length;
 			NSInteger i;
 			for(i=0; i<snippetControlMax; i++) {
-				if(snippetControlArray[i][0] > -1
+				if(snippetControlArray[i].location > -1
 					&& i != currentSnippetIndex
-					&& snippetControlArray[i][0] >= currentSnippetLocation
-					&& snippetControlArray[i][0] <= currentSnippetMaxRange
-					&& snippetControlArray[i][0] + snippetControlArray[i][1] >= currentSnippetLocation
-					&& snippetControlArray[i][0] + snippetControlArray[i][1] <= currentSnippetMaxRange
+					&& snippetControlArray[i].location >= currentSnippetLocation
+					&& snippetControlArray[i].location <= currentSnippetMaxRange
+					&& snippetControlArray[i].location + snippetControlArray[i].length >= currentSnippetLocation
+					&& snippetControlArray[i].location + snippetControlArray[i].length <= currentSnippetMaxRange
 					) {
-						snippetControlArray[i][0] = -1;
-						snippetControlArray[i][1] = -1;
-						snippetControlArray[i][2] = -1;
+						snippetControlArray[i] = (SnippetControlInfo){-1, -1, -1};
 				}
 			}
 
@@ -3357,26 +3349,26 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 			NSUInteger changeInLength = [textStore changeInLength];
 
 			// Adjust length change to current snippet
-			snippetControlArray[currentSnippetIndex][1] += changeInLength;
+			snippetControlArray[currentSnippetIndex].length += changeInLength;
 			// If length < 0 break snippet input
-			if(snippetControlArray[currentSnippetIndex][1] < 0) {
+			if(snippetControlArray[currentSnippetIndex].length < 0) {
 				[self endSnippetSession];
 			} else {
 				// Adjust start position of snippets after caret position
 				for(i=0; i<=snippetControlMax; i++) {
-					if(snippetControlArray[i][0] > -1 && i != currentSnippetIndex) {
-						if(editStartPosition < snippetControlArray[i][0]) {
-							snippetControlArray[i][0] += changeInLength;
-						} else if(editStartPosition >= snippetControlArray[i][0] && editStartPosition <= snippetControlArray[i][0] + snippetControlArray[i][1]) {
-							snippetControlArray[i][1] += changeInLength;
+					if(snippetControlArray[i].location > -1 && i != currentSnippetIndex) {
+						if(editStartPosition < snippetControlArray[i].location) {
+							snippetControlArray[i].location += changeInLength;
+						} else if(editStartPosition >= snippetControlArray[i].location && editStartPosition <= snippetControlArray[i].location + snippetControlArray[i].length) {
+							snippetControlArray[i].length += changeInLength;
 						}
 					}
 				}
 				// Adjust start position of mirrored snippets after caret position
 				if(mirroredCounter > -1)
 					for(i=0; i<=mirroredCounter; i++) {
-						if(editStartPosition < snippetMirroredControlArray[i][1]) {
-							snippetMirroredControlArray[i][1] += changeInLength;
+						if(editStartPosition < snippetMirroredControlArray[i].location) {
+							snippetMirroredControlArray[i].location += changeInLength;
 						}
 					}
 			}

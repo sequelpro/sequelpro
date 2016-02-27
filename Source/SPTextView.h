@@ -38,6 +38,18 @@
 @class SPCopyTable;
 @class NoodleLineNumberView;
 
+typedef struct {
+	NSInteger location; // snippet location
+	NSInteger length;   // snippet length
+	NSInteger task;     // snippet task : -1 not valid, 0 select snippet
+} SnippetControlInfo;
+
+typedef struct {
+	NSInteger snippet;  // mirrored snippet index
+	NSInteger location; // mirrored snippet location
+	NSInteger length;   // mirrored snippet length
+} MirrorControlInfo;
+
 @interface SPTextView : NSTextView <NSTextStorageDelegate>
 {
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
@@ -71,8 +83,8 @@
 	SPMySQLConnection *mySQLConnection;
 	NSInteger mySQLmajorVersion;
 
-	NSInteger snippetControlArray[20][3];
-	NSInteger snippetMirroredControlArray[20][3];
+	SnippetControlInfo snippetControlArray[20];
+	MirrorControlInfo snippetMirroredControlArray[20];
 	NSInteger snippetControlCounter;
 	NSInteger snippetControlMax;
 	NSInteger currentSnippetIndex;
