@@ -296,19 +296,15 @@
 	//simple unix file
 	{
 		const char inp[] = "Two\nLines\n";
-		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 3)];
-		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(4, 5)];
-
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
-			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(0, 3)), @"range of first line");
 					break;
 				case 1:
-					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(4, 5)), @"range of second line");
 					break;
 			}
 			invocations++;
@@ -318,22 +314,18 @@
 	//simple windows file without ending empty line
 	{
 		const char inp[] = "A\r\nWindows\r\nfile";
-		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 1)];
-		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(3, 7)];
-		NSValue *line3 = [NSValue valueWithRange:NSMakeRange(12, 4)];
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
-			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(0, 1)), @"range of first line");
 					break;
 				case 1:
-					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(3, 7)), @"range of second line");
 					break;
 				case 2:
-					XCTAssertTrue([lineValue isEqualToValue:line3], @"range of third line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(12, 4)), @"range of third line");
 					break;
 			}
 			invocations++;
@@ -343,23 +335,18 @@
 	//empty lines with all 3 endings
 	{
 		const char inp[] = "\n\r\n\r";
-		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 0)];
-		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(1, 0)];
-		NSValue *line3 = [NSValue valueWithRange:NSMakeRange(3, 0)];
-
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorAny withBlock:^(NSRange line, BOOL *stop) {
-			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(0, 0)), @"range of first line");
 					break;
 				case 1:
-					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(1, 0)), @"range of second line");
 					break;
 				case 2:
-					XCTAssertTrue([lineValue isEqualToValue:line3], @"range of third line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(3, 0)), @"range of third line");
 					break;
 			}
 			invocations++;
@@ -369,19 +356,15 @@
 	//looking for specific line breaks only
 	{
 		const char inp[] = "foo\nbar\r\nbaz\r";
-		NSValue *line1 = [NSValue valueWithRange:NSMakeRange(0, 7)];
-		NSValue *line2 = [NSValue valueWithRange:NSMakeRange(9, 4)];
-
 		__block NSUInteger invocations = 0;
 		NSData *data = [NSData dataWithBytes:inp length:strlen(inp)];
 		[data enumerateLinesBreakingAt:SPLineTerminatorCRLF withBlock:^(NSRange line, BOOL *stop) {
-			NSValue *lineValue = [NSValue valueWithRange:line];
 			switch (invocations) {
 				case 0:
-					XCTAssertTrue([lineValue isEqualToValue:line1], @"range of first line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(0, 7)), @"range of first line");
 					break;
 				case 1:
-					XCTAssertTrue([lineValue isEqualToValue:line2], @"range of second line");
+					XCTAssertTrue(NSEqualRanges(line, NSMakeRange(9, 4)), @"range of second line");
 					break;
 			}
 			invocations++;
