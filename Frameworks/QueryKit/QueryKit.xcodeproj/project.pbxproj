@@ -436,6 +436,7 @@
 		17E5952D14F302740054EE08 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+                ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -672,6 +673,7 @@
 		1DEB91B208733DA50010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+                ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -706,6 +708,7 @@
 		1DEB91B308733DA50010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+                ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				CLANG_WARN_BOOL_CONVERSION = YES;
