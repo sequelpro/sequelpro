@@ -67,7 +67,7 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[_connection setPassword:PGTestDatabasePassword];
 	
 	if (![_connection connect]) {
-		STFail(@"Request to establish connection to local database failed.");
+		XCTFail(@"Request to establish connection to local database failed.");
 		
 		exit(1);
 	}	
