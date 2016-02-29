@@ -80,6 +80,9 @@
 	BOOL isSaving;
 	BOOL isInitializing;
 	NSMutableString *errorsString;
+	
+	// MySQL 5.7.6 removes the "Password" columns and only uses the "plugin"+"authentication_string" columns
+	BOOL requiresPost576PasswordHandling;
 }
 
 @property (nonatomic, retain) SPMySQLConnection *connection;

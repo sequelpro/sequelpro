@@ -159,6 +159,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// Select users from the mysql.user table
 	SPMySQLResult *result = [connection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 	[result setReturnDataAsStrings:YES];
+	//TODO: improve user feedback
+	NSAssert(([[result fieldNames] firstObjectCommonWithArray:@[@"Password",@"authentication_string"]] != nil), @"Resultset from mysql.user contains neither 'Password' nor 'authentication_string' column!?");
+	requiresPost576PasswordHandling = ![[result fieldNames] containsObject:@"Password"];
 	[usersResultArray addObjectsFromArray:[result getAllRows]];
 
 	[self _initializeTree:usersResultArray];
@@ -244,9 +247,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// for each user currently in the database.
 	for (NSUInteger i = 0; i < [items count]; i++)
 	{
-		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
-		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
+		NSString *username = [item objectForKey:@"User"];
+		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		SPUserMO *parent;
 		SPUserMO *child;
 		
@@ -266,8 +269,16 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			// original values for comparison purposes
 			[parent setPrimitiveValue:username forKey:@"user"];
 			[parent setPrimitiveValue:username forKey:@"originaluser"];
-			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
-			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+			if(requiresPost576PasswordHandling) {
+				[parent setPrimitiveValue:[item objectForKey:@"plugin"] forKey:@"plugin"];
+				NSString *pwHash = [item objectForKey:@"authentication_string"];
+				[parent setPrimitiveValue:pwHash forKey:@"authentication_string"];
+				if([pwHash length]) [parent setPrimitiveValue:@"sequelpro_dummy_password" forKey:@"password"]; // for the UI dialog
+			}
+			else {
+				[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
+				[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+			}
 		}
 
 		// Setup the NSManagedObject with values from the dictionary
@@ -360,7 +371,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			NSNumber *value = [NSNumber numberWithInteger:[[item objectForKey:key] integerValue]];
 			[child setValue:value forKey:key];
 		}
-		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
+		else if (![key isInArray:@[@"User",@"Password",@"plugin",@"authentication_string"]])
 		{
 			NSString *value = [item objectForKey:key];
 			[child setValue:value forKey:key];
@@ -807,7 +818,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	{
 		if (![user parent]) {
 			[user setPrimitiveValue:[user valueForKey:@"user"] forKey:@"originaluser"];
-			[user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+			if(!requiresPost576PasswordHandling) [user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
 		}
 	}
 }
@@ -961,18 +972,41 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		}
 		
 		// If the password has been changed, use the same password on all hosts
-		if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
-			
-			for (SPUserMO *child in hosts)
-			{
-				NSString *changePasswordStatement = [NSString stringWithFormat:
-													 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
-													 [[user valueForKey:@"user"] tickQuotedString],
-													 [[child host] tickQuotedString],
-													 ([user valueForKey:@"password"]) ? [[user valueForKey:@"password"] tickQuotedString] : @"''"];
-				
-				[connection queryString:changePasswordStatement];
+		if(requiresPost576PasswordHandling) {
+			// the UI password field is bound to the password field, so this is still where the new plaintext value comes from
+			NSString *newPass = [[user changedValues] objectForKey:@"password"];
+			if(newPass) {
+				// 5.7.6+ can update all users at once
+				NSMutableString *alterStmt = [NSMutableString stringWithString:@"ALTER USER "];
+				BOOL first = YES;
+				for (SPUserMO *child in hosts)
+				{
+					if(!first) [alterStmt appendString:@", "];
+					[alterStmt appendFormat:@"%@@%@ IDENTIFIED WITH %@ BY %@", //note: "BY" -> plaintext, "AS" -> hash
+					                        [[user valueForKey:@"user"] tickQuotedString],
+					                        [[child host] tickQuotedString],
+					                        [[user valueForKey:@"plugin"] tickQuotedString],
+					                        (![newPass isNSNull] && [newPass length]) ? [newPass tickQuotedString] : @"''"];
+					first = NO;
+				}
+				[connection queryString:alterStmt];
 				if(![self _checkAndDisplayMySqlError]) return NO;
+			}
+		}
+		else {
+			if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
+				
+				for (SPUserMO *child in hosts)
+				{
+					NSString *changePasswordStatement = [NSString stringWithFormat:
+														 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
+														 [[user valueForKey:@"user"] tickQuotedString],
+														 [[child host] tickQuotedString],
+														 ([user valueForKey:@"password"]) ? [[user valueForKey:@"password"] tickQuotedString] : @"''"];
+					
+					[connection queryString:changePasswordStatement];
+					if(![self _checkAndDisplayMySqlError]) return NO;
+				}
 			}
 		}
 	}
@@ -1038,14 +1072,25 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// same affect as CREATE USER. That is, a new user with no privleges.
 	NSString *host = [[user valueForKey:@"host"] tickQuotedString];
 	
-	if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
+	if ([user parent] && [[user parent] valueForKey:@"user"] && ([[user parent] valueForKey:@"password"] || [[user parent] valueForKey:@"authentication_string"])) {
 		
 		NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
-		NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+		
+		NSString *idString;
+		if(requiresPost576PasswordHandling) {
+			//copy the hash from the parent. if the parent password changes at the same time, updateUser: will take care of it afterwards
+			NSString *plugin = [[[user parent] valueForKey:@"plugin"] tickQuotedString];
+			NSString *hash = [[[user parent] valueForKey:@"authentication_string"] tickQuotedString];
+			idString = [NSString stringWithFormat:@"IDENTIFIED WITH %@ AS %@",plugin,hash];
+		}
+		else {
+			NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			idString = [NSString stringWithFormat:@"IDENTIFIED BY %@%@",[[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
+		}
 		
 		createStatement = ([serverSupport supportsCreateUser]) ?
-		[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password] :
-		[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
+		[NSString stringWithFormat:@"CREATE USER %@@%@ %@", username, host, idString] :
+		[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ %@", username, host, idString];
 	}
 	else if ([user parent] && [[user parent] valueForKey:@"user"]) {
 		
