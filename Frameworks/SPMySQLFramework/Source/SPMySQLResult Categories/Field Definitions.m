@@ -44,6 +44,7 @@
 @interface SPMySQLResult (Private_API)
 
 - (NSString *)_stringWithBytes:(const void *)bytes length:(NSUInteger)length;
+- (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy;
 
 @end
 
@@ -231,24 +232,33 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 		// Record the original column position within the result set
 		[eachField setObject:[NSString stringWithFormat:@"%llu", (unsigned long long)i] forKey:@"datacolumnindex"];
 
+		// mysqlField.name might point to an empty string or NULL (theoretically).
+		// _stringWithBytes:... will return @"" if either bytes is NULL or length is 0.
+		// For now let's interpret (bytes != NULL) as a valid string (possibly empty)
+		// and otherwise as 'value not set'.
+		
 		// Record the column name, or alias if one is being used
-		[eachField setObject:[self _stringWithBytes:mysqlField.name length:mysqlField.name_length] forKey:@"name"];
+		if (mysqlField.name) {
+			[eachField setObject:[self _lossyStringWithBytes:mysqlField.name length:mysqlField.name_length wasLossy:NULL] forKey:@"name"];
+		}
 
 		// Record the original column name if using an alias
-		[eachField setObject:[self _stringWithBytes:mysqlField.org_name length:mysqlField.org_name_length] forKey:@"org_name"];
+		if (mysqlField.org_name) {
+			[eachField setObject:[self _stringWithBytes:mysqlField.org_name length:mysqlField.org_name_length] forKey:@"org_name"];
+		}
 
 		// If the column had an underlying table, record the table name, respecting aliases
-		if (mysqlField.table_length) {
+		if (mysqlField.table) {
 			[eachField setObject:[self _stringWithBytes:mysqlField.table length:mysqlField.table_length] forKey:@"table"];
 		}
 
 		// If the column had an underlying table, record the original table name, ignoring aliases
-		if (mysqlField.org_table_length) {
+		if (mysqlField.org_table) {
 			[eachField setObject:[self _stringWithBytes:mysqlField.org_table length:mysqlField.org_table_length] forKey:@"org_table"];
 		}
 
 		// If the column had an underlying database, record the database name
-		if (mysqlField.db_length) {
+		if (mysqlField.db) {
 			[eachField setObject:[self _stringWithBytes:mysqlField.db length:mysqlField.db_length] forKey:@"db"];
 		}
 

@@ -318,6 +318,35 @@ static id NSNullPointer;
 	return [[[NSString alloc] initWithBytes:bytes length:length encoding:stringEncoding] autorelease];
 }
 
+- (NSString *)_lossyStringWithBytes:(const void *)bytes length:(NSUInteger)length wasLossy:(BOOL *)outLossy
+{
+	//mysql protocol limits column names to 256 bytes.
+	//with inline columns and multibyte charsets this can result in a character
+	//being split in half at which the method above will fail.
+	//Let's first try removing stuff from the end to create something valid.
+	NSUInteger removed = 0;
+	do {
+		NSString *res = [self _stringWithBytes:bytes length:(length-removed)];
+		if(res) {
+			if(outLossy) *outLossy = (removed != 0);
+			return (removed? [res stringByAppendingString:@"…"] : res);
+		}
+		removed++;
+	} while(removed <= 10 && removed < length); // 10 is arbitrary
+
+	//if that fails, ascii should accept all values from 0-255 as input
+	NSString *ascii = [[NSString alloc] initWithBytes:bytes length:length encoding:NSASCIIStringEncoding];
+	if(ascii){
+		if(outLossy) *outLossy = YES;
+		return [ascii autorelease];
+	}
+
+	//if even that failed we lose.
+	NSDictionary *info = @{ @"data": [NSData dataWithBytes:bytes length:length] };
+	NSString *reason = [NSString stringWithFormat:@"Failed to convert byte sequence %@ to string (encoding = %lu)",info[@"data"],stringEncoding];
+	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:info];
+}
+
 /**
  * Allow setting the execution time for the original query (including connection lag)
  * so it can be requested later without relying on connection state.
