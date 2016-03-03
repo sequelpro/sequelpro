@@ -1084,8 +1084,24 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			idString = [NSString stringWithFormat:@"IDENTIFIED WITH %@ AS %@",plugin,hash];
 		}
 		else {
-			NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
-			idString = [NSString stringWithFormat:@"IDENTIFIED BY %@%@",[[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
+			BOOL passwordIsHash;
+			NSString *password;
+			// there are three situations to cover here:
+			//   1) host added, parent user unchanged
+			//   2) host added, parent user password changed
+			//   3) host added, parent user is new
+			if([[user parent] valueForKey:@"originaluser"]) {
+				// 1 & 2: If the parent user already exists we always use the old password hash.
+				// This works because -updateUser: will be called after -insertUser: and update the password for this host, anyway.
+				passwordIsHash = YES;
+				password = [[[user parent] valueForKey:@"originalpassword"] tickQuotedString];
+			}
+			else {
+				// 3: If the user is new, we take the plaintext password value from the UI
+				passwordIsHash = NO;
+				password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			}
+			idString = [NSString stringWithFormat:@"IDENTIFIED BY %@%@",(passwordIsHash? @"PASSWORD " : @""), password];
 		}
 		
 		createStatement = ([serverSupport supportsCreateUser]) ?
