@@ -1045,9 +1045,20 @@
 		// this happens e.g. for db "information_schema"
 		if([[status objectForKey:@"Rows"] isNSNull]) {
 			tableStatusResult = [mySQLConnection queryString:[NSString stringWithFormat:@"SELECT COUNT(1) FROM %@", [escapedTableName backtickQuotedString] ]];
-			if (![mySQLConnection queryErrored])
+			// this query can fail e.g. if a table is damaged
+			if (tableStatusResult && ![mySQLConnection queryErrored]) {
 				[status setObject:[[tableStatusResult getRowAsArray] objectAtIndex:0] forKey:@"Rows"];
 				[status setObject:@"y" forKey:@"RowsCountAccurate"];
+			}
+			else {
+				//FIXME that error should really show only when trying to view the table content, but we don't even try to load that if Rows==NULL
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Querying row count failed", @"table status : row count query failed : error title"),
+					nil,
+					[NSApp mainWindow],
+					[NSString stringWithFormat:NSLocalizedString(@"An error occured while trying to determine the number of rows for “%@”.\nMySQL said: %@ (%lu)", @"table status : row count query failed : error message"),[tableListInstance tableName],[mySQLConnection lastErrorMessage],[mySQLConnection lastErrorID]]
+				);
+			}
 		}
 
 	}

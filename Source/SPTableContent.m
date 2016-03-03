@@ -437,7 +437,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[tableContentView scrollColumnToVisible:0];
 
 		// Set the maximum table rows to an estimated count pre-load
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
+		NSString *rows = [tableDataInstance statusValueForKey:@"Rows"];
+		maxNumRows = (rows && ![rows isNSNull])? [rows integerValue] : 0;
 		maxNumRowsIsEstimate = YES;
 	}
 	
@@ -3978,17 +3979,18 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
 
 		// If the state is now accurate, use it
+		NSString *rows = [tableDataInstance statusValueForKey:@"Rows"];
 		if ([[tableDataInstance statusValueForKey:@"RowsCountAccurate"] boolValue]) {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = NO;
-		checkStatusCount = YES;
-
+			maxNumRows = [rows integerValue];
+			maxNumRowsIsEstimate = NO;
+			checkStatusCount = YES;
+		}
 		// Otherwise, use the estimate count
-	} else {
-		maxNumRows = [[tableDataInstance statusValueForKey:@"Rows"] integerValue];
-		maxNumRowsIsEstimate = YES;
-		checkStatusCount = YES;
-	}
+		else {
+			maxNumRows = (rows && ![rows isNSNull])? [rows integerValue] : 0;
+			maxNumRowsIsEstimate = YES;
+			checkStatusCount = YES;
+		}
 	}
 
 	// Check whether the estimated count requires updating, ie if the retrieved count exceeds it
