@@ -1082,11 +1082,28 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
 			
 			NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
-			NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			BOOL passwordIsHash;
+			NSString *password;
+			// there are three situations to cover here:
+			//   1) host added, parent user unchanged
+			//   2) host added, parent user password changed
+			//   3) host added, parent user is new
+			if([[user parent] valueForKey:@"originaluser"]) {
+				// 1 & 2: If the parent user already exists we always use the old password hash.
+				// This works because -updateUser: will be called after -insertUser: and update the password for this host, anyway.
+				passwordIsHash = YES;
+				password = [[[user parent] valueForKey:@"originalpassword"] tickQuotedString];
+			}
+			else {
+				// 3: If the user is new, we take the plaintext password value from the UI
+				passwordIsHash = NO;
+				password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			}
+			NSString *idString = [NSString stringWithFormat:@"IDENTIFIED BY %@%@",(passwordIsHash? @"PASSWORD " : @""), password];
 
-            createStatement = ([serverSupport supportsCreateUser]) ? 
-				[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password] : 
-				[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
+            createStatement = ([serverSupport supportsCreateUser]) ?
+				[NSString stringWithFormat:@"CREATE USER %@@%@ %@", username, host, idString] :
+				[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ %@", username, host, idString];
 		}
         else if ([user parent] && [[user parent] valueForKey:@"user"]) {
 				
