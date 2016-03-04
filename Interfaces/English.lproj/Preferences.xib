@@ -1262,7 +1262,7 @@
 						<object class="NSTextFieldCell" key="NSCell" id="710086132">
 							<int key="NSCellFlags">68157504</int>
 							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">queries</string>
+							<string key="NSContents">queries (100 max)</string>
 							<reference key="NSSupport" ref="320262838"/>
 							<reference key="NSControlView" ref="95243153"/>
 							<reference key="NSBackgroundColor" ref="700609571"/>
