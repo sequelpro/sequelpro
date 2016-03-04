@@ -411,6 +411,9 @@
 		58FEEF471676D160009CD478 /* SQL.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58FEEF441676D160009CD478 /* SQL.icns */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
+		8B6FACFA1C86035800F2805A /* SPHoverButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B6FACF91C86035800F2805A /* SPHoverButton.m */; };
+		8B6FAD011C8652C400F2805A /* button_first.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B6FACFF1C8652C400F2805A /* button_first.png */; };
+		8B6FAD021C8652C400F2805A /* button_last.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B6FAD001C8652C400F2805A /* button_last.png */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */ = {isa = PBXBuildFile; fileRef = B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */; };
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
@@ -586,6 +589,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 58CDB3350FCE13C900F8ACA3;
 			remoteInfo = TunnelPassphraseRequester;
+		};
+		8B6FACFD1C86035800F2805A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 584D876015140D3500F24774 /* SPMySQLFramework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 507FF1D51BC0D7D300104523;
+			remoteInfo = "SPMySQL Unit Tests";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1200,6 +1210,10 @@
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
 		58FEF57C0F3B4E9700518E8E /* SPTableData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableData.h; sourceTree = "<group>"; };
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
+		8B6FACF81C86035700F2805A /* SPHoverButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPHoverButton.h; sourceTree = "<group>"; };
+		8B6FACF91C86035800F2805A /* SPHoverButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPHoverButton.m; sourceTree = "<group>"; };
+		8B6FACFF1C8652C400F2805A /* button_first.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_first.png; sourceTree = "<group>"; };
+		8B6FAD001C8652C400F2805A /* button_last.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_last.png; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-triggers.png"; sourceTree = "<group>"; };
 		B52460D30F8EF92300171639 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
@@ -2162,6 +2176,8 @@
 			isa = PBXGroup;
 			children = (
 				17BFC80D10D3FF5200A3B112 /* Icons */,
+				8B6FACFF1C8652C400F2805A /* button_first.png */,
+				8B6FAD001C8652C400F2805A /* button_last.png */,
 				C9AD7C8116761B3300234EEE /* button_action.png */,
 				C9AD7C8216761B3300234EEE /* button_action@2x.png */,
 				582E93F5168298C6003459FD /* button_add_folder.png */,
@@ -2348,6 +2364,8 @@
 		17FDB0AC1280938000DBBBC2 /* Controls */ = {
 			isa = PBXGroup;
 			children = (
+				8B6FACF81C86035700F2805A /* SPHoverButton.h */,
+				8B6FACF91C86035800F2805A /* SPHoverButton.m */,
 				50E217B118174246009D3580 /* SPColorSelectorView.h */,
 				50E217B218174246009D3580 /* SPColorSelectorView.m */,
 				17FDB04A1280778B00DBBBC2 /* SPFontPreviewTextField.h */,
@@ -2487,6 +2505,7 @@
 			isa = PBXGroup;
 			children = (
 				584D876815140D3500F24774 /* SPMySQL.framework */,
+				8B6FACFE1C86035800F2805A /* SPMySQL Unit Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2910,6 +2929,13 @@
 			remoteRef = 584D876715140D3500F24774 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		8B6FACFE1C86035800F2805A /* SPMySQL Unit Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SPMySQL Unit Tests.xctest";
+			remoteRef = 8B6FACFD1C86035800F2805A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -2960,6 +2986,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				17E641D10EF02036001BC333 /* grabber-horizontal.png in Resources */,
+				8B6FAD021C8652C400F2805A /* button_last.png in Resources */,
 				17E641D20EF02036001BC333 /* grabber-vertical.png in Resources */,
 				17E641F20EF02036001BC333 /* toolbar-switch-to-structure.png in Resources */,
 				17E641F30EF02036001BC333 /* toolbar-switch-to-table-info.png in Resources */,
@@ -2998,6 +3025,7 @@
 				BC8B0DAF104004F900FC02EC /* EncodingPopupView.xib in Resources */,
 				BCCBD7FC104408B000D4C50A /* SaveSPFAccessory.xib in Resources */,
 				173C4362104455CA001F3A30 /* QueryFavoriteManager.xib in Resources */,
+				8B6FAD011C8652C400F2805A /* button_first.png in Resources */,
 				BCB56197106F893F00167321 /* ContentFilters.plist in Resources */,
 				BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */,
 				BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */,
@@ -3392,6 +3420,7 @@
 				584D88A91515034200F24774 /* NSNotificationCenterThreadingAdditions.m in Sources */,
 				584D899D15162CBE00F24774 /* SPDataBase64EncodingAdditions.m in Sources */,
 				17386E0B15192526002DC206 /* SPTableContentDataSource.m in Sources */,
+				8B6FACFA1C86035800F2805A /* SPHoverButton.m in Sources */,
 				17386E0E1519257E002DC206 /* SPTableContentDelegate.m in Sources */,
 				17381856151FB34E0078FFE2 /* SPUserManagerDelegate.m in Sources */,
 				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,

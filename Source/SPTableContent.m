@@ -42,6 +42,7 @@
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
 #import "SPTextAndLinkCell.h"
+#import "SPHoverButton.h"
 #ifndef SP_CODA
 #import "SPSplitView.h"
 #endif
@@ -274,6 +275,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 
 	[tableContentView setFieldEditorSelectedRange:NSMakeRange(0,0)];
+
+	[paginationNextButton setHoverStateImageName:@"button_last"];
+	[paginationNextButton setToolTip:NSLocalizedString((@"View last page of results"), @"Tooltip message for go to last page button")];
+	[paginationPreviousButton setHoverStateImageName:@"button_first"];
+	[paginationPreviousButton setToolTip:NSLocalizedString((@"View first page of results"), @"Tooltip message for go to first page button")];
 
 #ifndef SP_CODA
 	// Init Filter Table GUI
@@ -1608,10 +1614,18 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
-		[paginationPageField setIntegerValue:(contentPage - 1)];
+		if (paginationPreviousButton.hover) {
+			[paginationPageField setIntegerValue:0];
+		} else {
+			[paginationPageField setIntegerValue:(contentPage - 1)];
+		}
 	} else if (sender == paginationNextButton) {
 		if ((NSInteger)contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
-		[paginationPageField setIntegerValue:(contentPage + 1)];
+		if (paginationNextButton.hover) {
+			[paginationPageField setIntegerValue:ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue])];
+		} else {
+			[paginationPageField setIntegerValue:(contentPage + 1)];
+		}
 	}
 
 	[self filterTable:sender];

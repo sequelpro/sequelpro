@@ -49,6 +49,7 @@
 @class SPSplitView;
 #endif
 @class SPTableContentFilterController;
+@class SPHoverButton;
 
 #import "SPDatabaseContentViewDelegate.h"
 
@@ -84,12 +85,12 @@
 	IBOutlet id secondBetweenField;
 	IBOutlet id betweenTextField;
 
-	IBOutlet NSButton *paginationPreviousButton;
+	IBOutlet SPHoverButton *paginationPreviousButton;
 #ifndef SP_CODA
 	IBOutlet NSButton *paginationButton;
 	IBOutlet NSButton *paginationGoButton;
 #endif
-	IBOutlet NSButton *paginationNextButton;
+	IBOutlet SPHoverButton *paginationNextButton;
 #ifndef SP_CODA
 	IBOutlet NSView *contentViewPane;
 	IBOutlet NSViewController *paginationViewController;
