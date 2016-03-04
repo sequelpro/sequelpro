@@ -129,9 +129,9 @@
 
 	CGContextSaveGState(context);
 	CGContextSetStrokeColor(context, lineColorParts);
-	CGContextAddRect(context, CGRectMake(boundingLinePosition - 0.5, boundsRect.origin.y + heightIndent, 1.f, boundsRect.size.height - abs(2 * heightIndent)));
+	CGContextAddRect(context, CGRectMake(boundingLinePosition - 0.5, boundsRect.origin.y + heightIndent, 1.f, boundsRect.size.height - fabs(2 * heightIndent)));
 	CGContextClip(context);
-	CGContextDrawLinearGradient(context, lineGradient, CGPointMake(boundingLinePosition - 0.5, boundsRect.origin.y + heightIndent), CGPointMake(boundingLinePosition - 0.5, boundsRect.origin.y + boundsRect.size.height - abs(heightIndent)), 0);
+	CGContextDrawLinearGradient(context, lineGradient, CGPointMake(boundingLinePosition - 0.5, boundsRect.origin.y + heightIndent), CGPointMake(boundingLinePosition - 0.5, boundsRect.origin.y + boundsRect.size.height - fabs(heightIndent)), 0);
 	CGContextRestoreGState(context);
 
 	CGGradientRelease(lineGradient);
@@ -281,7 +281,7 @@
 
 
 	// Custom tracking to be performed - indent the vertical button area slightly
-	activeRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + heightIndent, cellFrame.size.width - [(SPComboPopupButton *)controlView lineOffset] + 1, cellFrame.size.height - fabsf(2 * heightIndent));
+	activeRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + heightIndent, cellFrame.size.width - [(SPComboPopupButton *)controlView lineOffset] + 1, cellFrame.size.height - fabs(2 * heightIndent));
 
 	// Continue tracking the mouse while it's down, updating the state as it enters and leaves the cell,
 	// until it is released; if still within the cell, perform a click.

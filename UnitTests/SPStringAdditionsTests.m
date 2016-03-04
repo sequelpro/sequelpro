@@ -31,9 +31,9 @@
 #import "SPStringAdditions.h"
 #import "RegexKitLite.h"
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
-@interface SPStringAdditionsTests : SenTestCase
+@interface SPStringAdditionsTests : XCTestCase
 
 - (void)testStringByRemovingCharactersInSet;
 - (void)testStringWithNewUUID;
@@ -65,12 +65,12 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 	NSString *expectedUTFString = @"In der Krze liegt die Wrz";
 	NSString *expectedASCIIString = @"this is  ig rzy test string  with some rndom  spes nd quotes";
 	
-	STAssertEqualObjects([actualASCIIString stringByRemovingCharactersInSet:junk], 
+	XCTAssertEqualObjects([actualASCIIString stringByRemovingCharactersInSet:junk], 
 						 expectedASCIIString, 
 						 @"The following characters should have been removed %@", 
 						 charsToRemove);
 	
-	STAssertEqualObjects([actualUTFString stringByRemovingCharactersInSet:junk], 
+	XCTAssertEqualObjects([actualUTFString stringByRemovingCharactersInSet:junk], 
 						 expectedUTFString, 
 						 @"The following characters should have been removed %@", 
 						 charsToRemove);
@@ -83,7 +83,7 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 {	
 	NSString *uuid = [NSString stringWithNewUUID];
 		
-	STAssertTrue([uuid isMatchedByRegex:@"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}"], @"UUID %@ doesn't match regex", uuid);
+	XCTAssertTrue([uuid isMatchedByRegex:@"[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}"], @"UUID %@ doesn't match regex", uuid);
 }
 
 /**
@@ -96,7 +96,7 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 	
 	NSString *actualSyntax = [originalSyntax createViewSyntaxPrettifier];
 	
-	STAssertEqualObjects([actualSyntax description], [expectedSyntax description], @"Actual view syntax '%@' does not equal expected syntax '%@'", actualSyntax, expectedSyntax);
+	XCTAssertEqualObjects([actualSyntax description], [expectedSyntax description], @"Actual view syntax '%@' does not equal expected syntax '%@'", actualSyntax, expectedSyntax);
 }
 
 - (void)testNonConsecutivelySearchStringMatchingRanges
@@ -104,48 +104,48 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 	//basic tests
 	{
 		NSArray *matches = nil;
-		STAssertTrue([@"" nonConsecutivelySearchString:@"" matchingRanges:&matches], @"Equality of empty strings");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 0), RangeFromArray(matches, 0)), @"Returned matches in empty string");
+		XCTAssertTrue([@"" nonConsecutivelySearchString:@"" matchingRanges:&matches], @"Equality of empty strings");
+		XCTAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 0), RangeFromArray(matches, 0)), @"Returned matches in empty string");
 	}
 	
 	{
 		NSArray *matches = (void *)0xdeadbeef;
-		STAssertFalse([@"" nonConsecutivelySearchString:@"R" matchingRanges:&matches], @"Inequality with empty left side");
-		STAssertTrue((matches == (void *)0xdeadbeef), @"out variable not touched by mismatch");
+		XCTAssertFalse([@"" nonConsecutivelySearchString:@"R" matchingRanges:&matches], @"Inequality with empty left side");
+		XCTAssertTrue((matches == (void *)0xdeadbeef), @"out variable not touched by mismatch");
 	}
 	
-	STAssertFalse([@"L" nonConsecutivelySearchString:@"" matchingRanges:NULL], @"Inequality with empty right side");
+	XCTAssertFalse([@"L" nonConsecutivelySearchString:@"" matchingRanges:NULL], @"Inequality with empty right side");
 	
 	{
 		NSArray *matches = nil;
-		STAssertTrue([@"left" nonConsecutivelySearchString:@"le" matchingRanges:&matches], @"Anchored match left");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 2), RangeFromArray(matches, 0)), @"Returned matches in anchored left match");
+		XCTAssertTrue([@"left" nonConsecutivelySearchString:@"le" matchingRanges:&matches], @"Anchored match left");
+		XCTAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(0, 2), RangeFromArray(matches, 0)), @"Returned matches in anchored left match");
 	}
 	
 	{
 		NSArray *matches = nil;
-		STAssertTrue([@"right" nonConsecutivelySearchString:@"ht" matchingRanges:&matches], @"Anchored match right");
-		STAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(3, 2), RangeFromArray(matches, 0)), @"Returned matches in anchroed right match");
+		XCTAssertTrue([@"right" nonConsecutivelySearchString:@"ht" matchingRanges:&matches], @"Anchored match right");
+		XCTAssertTrue(([matches count] == 1) && NSEqualRanges(NSMakeRange(3, 2), RangeFromArray(matches, 0)), @"Returned matches in anchroed right match");
 	}
 	
-	STAssertFalse([@"ht" nonConsecutivelySearchString:@"right" matchingRanges:NULL], @"Left and Right are not commutative");
+	XCTAssertFalse([@"ht" nonConsecutivelySearchString:@"right" matchingRanges:NULL], @"Left and Right are not commutative");
 	
 	//real tests
 	{
 		NSArray *matches = nil;
-		STAssertTrue([@"... is not secure anymore!" nonConsecutivelySearchString:@"NSA"  matchingRanges:&matches], @"Non-consecutive match, ignoring case");
-		STAssertTrue(([matches count] == 3) &&
+		XCTAssertTrue([@"... is not secure anymore!" nonConsecutivelySearchString:@"NSA"  matchingRanges:&matches], @"Non-consecutive match, ignoring case");
+		XCTAssertTrue(([matches count] == 3) &&
 					 NSEqualRanges(NSMakeRange( 7, 1), RangeFromArray(matches, 0)) &&
 					 NSEqualRanges(NSMakeRange(11, 1), RangeFromArray(matches, 1)) &&
 					 NSEqualRanges(NSMakeRange(18, 1), RangeFromArray(matches, 2)), @"Returned matches in non-consecutive string");
 	}
 	
-	STAssertFalse([@"Deoxyribonucleic Acid" nonConsecutivelySearchString:@"DNS"  matchingRanges:NULL], @"Non-consecutive mismatch");
+	XCTAssertFalse([@"Deoxyribonucleic Acid" nonConsecutivelySearchString:@"DNS"  matchingRanges:NULL], @"Non-consecutive mismatch");
 	
 	{
 		NSArray *matches = nil;
-		STAssertTrue([@"Turn left, then right at the corner" nonConsecutivelySearchString:@"left right" matchingRanges:&matches], @"Partly consecutive match");
-		STAssertTrue(([matches count] == 2) &&
+		XCTAssertTrue([@"Turn left, then right at the corner" nonConsecutivelySearchString:@"left right" matchingRanges:&matches], @"Partly consecutive match");
+		XCTAssertTrue(([matches count] == 2) &&
 					 (NSEqualRanges(NSMakeRange( 5, 4), RangeFromArray(matches, 0))) &&
 					 (NSEqualRanges(NSMakeRange(15, 6), RangeFromArray(matches, 1))), @"Returned matches in partly-consecutive string");
 	}
@@ -159,8 +159,8 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 		//                ^^^^^^^ ^   ^   ^         ^ = 5 (after optimizing consecutive atomic matches)
 		//  Desired:     "central_private_rabbit_park"
 		//                ^^^^^^^                ^^^^ = 2
-		STAssertTrue([@"central_private_rabbit_park" nonConsecutivelySearchString:@"centralpark" matchingRanges:&matches], @"Optimization partly consecutive match");
-		STAssertTrue((([matches count] == 2) &&
+		XCTAssertTrue([@"central_private_rabbit_park" nonConsecutivelySearchString:@"centralpark" matchingRanges:&matches], @"Optimization partly consecutive match");
+		XCTAssertTrue((([matches count] == 2) &&
 					  (NSEqualRanges(NSMakeRange( 0, 7), RangeFromArray(matches, 0))) &&
 					  (NSEqualRanges(NSMakeRange(23, 4), RangeFromArray(matches, 1)))), @"Returned matches set is minimal");
 	}
@@ -172,8 +172,8 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 		//   Unoptimized:   ^ ^  ^   ^ ^  ^   ^ = 7
 		//   Desired:       ^      ^^^      ^^^ = 3
 		NSArray *matches = nil;
-		STAssertTrue([@"a.?a?ab?abc?1?12?123?" nonConsecutivelySearchString:@".abc123" matchingRanges:&matches], @"Optimization non-consecutive match");
-		STAssertTrue((([matches count] == 3) &&
+		XCTAssertTrue([@"a.?a?ab?abc?1?12?123?" nonConsecutivelySearchString:@".abc123" matchingRanges:&matches], @"Optimization non-consecutive match");
+		XCTAssertTrue((([matches count] == 3) &&
 					  (NSEqualRanges(NSMakeRange( 1, 1), RangeFromArray(matches, 0))) &&
 					  (NSEqualRanges(NSMakeRange( 8, 3), RangeFromArray(matches, 1))) &&
 					  (NSEqualRanges(NSMakeRange(17, 3), RangeFromArray(matches, 2)))), @"Returned matches set is minimal (2)");
@@ -184,15 +184,15 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 	// LATIN CAPITAL LETTER A              == LATIN SMALL LETTER A
 	// LATIN SMALL LETTER O WITH DIAERESIS == LATIN SMALL LETTER O
 	// FULLWIDTH LATIN SMALL LETTER b      == LATIN SMALL LETTER B
-	STAssertTrue([@"A:\xC3\xB6:\xEF\xBD\x82" nonConsecutivelySearchString:@"aob" matchingRanges:NULL], @"Fuzzy matching of defined characters");
+	XCTAssertTrue([@"A:\xC3\xB6:\xEF\xBD\x82" nonConsecutivelySearchString:@"aob" matchingRanges:NULL], @"Fuzzy matching of defined characters");
 	
 	//all bytes on the right are contained on the left, but on a character level "ä" is not contained in "Hütte Ф"
-	STAssertFalse([@"H\xC3\xBCtte \xD0\xA4" nonConsecutivelySearchString:@"\xC3\xA4" matchingRanges:NULL], @"Mismatch of composed characters with same prefix");
+	XCTAssertFalse([@"H\xC3\xBCtte \xD0\xA4" nonConsecutivelySearchString:@"\xC3\xA4" matchingRanges:NULL], @"Mismatch of composed characters with same prefix");
 	
 	// ":😥:𠘄:" vs "😄" (according to wikipedia "𠘄" is the arachic variant of "印")
 	// TECHNICALLY THIS SHOULD NOT MATCH!
 	// However Apple doesn't correctly handle characters in the 4-Byte UTF range, so let's use this test to check for changes in Apples behaviour :)
-	STAssertTrue([@":\xF0\x9F\x98\x84:\xF0\xA0\x98\x84:" nonConsecutivelySearchString:@"\xF0\x9F\x98\x84" matchingRanges:NULL], @"Mismatch of composed characters (4-byte) with same prefix");
+	XCTAssertTrue([@":\xF0\x9F\x98\x84:\xF0\xA0\x98\x84:" nonConsecutivelySearchString:@"\xF0\x9F\x98\x84" matchingRanges:NULL], @"Mismatch of composed characters (4-byte) with same prefix");
 	
 }
 
@@ -200,19 +200,19 @@ static NSRange RangeFromArray(NSArray *a,NSUInteger idx);
 {
 	{
 		//test against empty string
-		STAssertEqualObjects([@"" stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"x"], @"", @"replacement on empty string must result in empty string");
+		XCTAssertEqualObjects([@"" stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"x"], @"", @"replacement on empty string must result in empty string");
 	}
 	{
 		//test match at begin, middle, end / consecutive matches
-		STAssertEqualObjects([@" ab  c " stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"_"], @"_ab__c_", @"Testing matches at both end, replacement of consecutive matches");
+		XCTAssertEqualObjects([@" ab  c " stringByReplacingCharactersInSet:[NSCharacterSet whitespaceCharacterSet] withString:@"_"], @"_ab__c_", @"Testing matches at both end, replacement of consecutive matches");
 	}
 	{
 		//test replacement of different characters
-		STAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:@"*"], @"ab**cd", @"Testing replacement of different characters in set");
+		XCTAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:@"*"], @"ab**cd", @"Testing replacement of different characters in set");
 	}
 	{
 		// nil for replacement char
-		STAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:nil], @"abcd", @"testing replacement with nil");
+		XCTAssertEqualObjects([@"ab\r\ncd" stringByReplacingCharactersInSet:[NSCharacterSet newlineCharacterSet] withString:nil], @"abcd", @"testing replacement with nil");
 	}
 }
 

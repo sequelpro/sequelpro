@@ -36,7 +36,7 @@
 
 + (id)defaultTestSuite
 {
-    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:NSStringFromClass(self)];
+    XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:NSStringFromClass(self)];
 	
 	[self addTestForDatabase:QKDatabaseUnknown withIdentifierQuote:EMPTY_STRING toTestSuite:testSuite];
 	[self addTestForDatabase:QKDatabaseMySQL withIdentifierQuote:QKMySQLIdentifierQuote toTestSuite:testSuite];
@@ -45,11 +45,11 @@
     return [testSuite autorelease];
 }
 
-+ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(XCTestSuite *)testSuite
 {		
     for (NSInvocation *invocation in [self testInvocations]) 
 	{
-		SenTestCase *test = [[QKSelectQueryTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
+		XCTestCase *test = [[QKSelectQueryTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
 		
 		[testSuite addTest:test];
 		
@@ -82,14 +82,14 @@
 
 - (void)testSelectQueryTypeIsCorrect
 {
-	STAssertTrue([[[self query] query] hasPrefix:@"SELECT"], nil);
+	XCTAssertTrue([[[self query] query] hasPrefix:@"SELECT"]);
 }
 
 - (void)testSelectQueryFieldIsCorrect
 {	
 	NSString *query = [NSString stringWithFormat:@"SELECT %1$@%2$@%1$@", [self identifierQuote], QKTestFieldOne];
 			
-	STAssertTrue([[[self query] query] hasPrefix:query], nil);
+	XCTAssertTrue([[[self query] query] hasPrefix:query]);
 }
 
 - (void)testSelectQueryFromDatabaseAndTableIsCorrect
@@ -98,21 +98,21 @@
 	
 	NSString *query = [NSString stringWithFormat:@"FROM %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
 			
-	STAssertTrue([[[self query] query] rangeOfString:query].location != NSNotFound, nil);
+	XCTAssertTrue([[[self query] query] rangeOfString:query].location != NSNotFound);
 }
 
 - (void)testSelectQueryMultipleFieldsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"SELECT %1$@%2$@%1$@, %1$@%3$@%1$@, %1$@%4$@%1$@, %1$@%5$@%1$@", [self identifierQuote], QKTestFieldOne, QKTestFieldTwo, QKTestFieldThree, QKTestFieldFour];
 	
-	STAssertTrue([[[self query] query] hasPrefix:query], nil);
+	XCTAssertTrue([[[self query] query] hasPrefix:query]);
 }
 
 - (void)testSelectQueryConstraintsAreCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"WHERE %1$@%2$@%1$@ %3$@ %4$@", [self identifierQuote], QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 			
-	STAssertTrue(([[[self query] query] rangeOfString:query].location != NSNotFound), nil);
+	XCTAssertTrue(([[[self query] query] rangeOfString:query].location != NSNotFound));
 }
 
 @end

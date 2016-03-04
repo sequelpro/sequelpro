@@ -33,7 +33,7 @@
 + (void)_addTestForField:(NSString *)field 
 	  withExpectedResult:(id)result 
 			  connection:(PGPostgresConnection *)connection 
-			 toTestSuite:(SenTestSuite *)testSuite;
+			 toTestSuite:(XCTestSuite *)testSuite;
 
 @end
 
@@ -48,7 +48,7 @@
 
 + (id)defaultTestSuite
 {
-    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:[self className]];
+    XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:[self className]];
 	
 	PGPostgresConnection *connection = [[PGPostgresConnection alloc] init];
 	
@@ -109,12 +109,12 @@
 
 - (void)testResultValueIsNotNil
 {
-	STAssertNotNil(_result, nil);
+	XCTAssertNotNil(_result);
 }
 
 - (void)testResultIsOfCorrectTypeAndValue
 {		
-	STAssertEqualObjects(_result, _expectedResult, nil);
+	XCTAssertEqualObjects(_result, _expectedResult);
 }
 
 #pragma mark -
@@ -123,11 +123,11 @@
 + (void)_addTestForField:(NSString *)field 
 	  withExpectedResult:(id)result 
 			  connection:(PGPostgresConnection *)connection 
-			 toTestSuite:(SenTestSuite *)testSuite
+			 toTestSuite:(XCTestSuite *)testSuite
 {		
     for (NSInvocation *invocation in [self testInvocations]) 
 	{
-		SenTestCase *test = [[[self class] alloc] initWithInvocation:invocation connection:connection expectedResult:result field:field];
+		XCTestCase *test = [[[self class] alloc] initWithInvocation:invocation connection:connection expectedResult:result field:field];
 		
 		[testSuite addTest:test];
 		

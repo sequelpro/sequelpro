@@ -42,7 +42,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "380F4ED80FC0B50500B0BFD7"
-               BuildableName = "Unit Tests.octest"
+               BuildableName = "Unit Tests.xctest"
                BlueprintName = "Unit Tests"
                ReferencedContainer = "container:sequel-pro.xcodeproj">
             </BuildableReference>
@@ -57,6 +57,8 @@
             ReferencedContainer = "container:sequel-pro.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
@@ -66,6 +68,7 @@
       buildConfiguration = "Distribution"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">

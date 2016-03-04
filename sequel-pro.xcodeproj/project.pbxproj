@@ -538,6 +538,13 @@
 			remoteGlobalIDString = 17E5969E14F307CE0054EE08;
 			remoteInfo = Tests;
 		};
+		29B70BD51C805B2A00D1BE0C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 584D876015140D3500F24774 /* SPMySQLFramework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 507FF1D51BC0D7D300104523;
+			remoteInfo = "SPMySQL Unit Tests";
+		};
 		5847571D120A1C6D0057631F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2A37F4A9FDCFA73011CA2CEA /* Project object */;
@@ -910,7 +917,7 @@
 		29FA88221114619E00D1AF3D /* SPTableTriggers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTriggers.m; sourceTree = "<group>"; };
 		2A37F4C4FDCFA73011CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		2A37F4C5FDCFA73011CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		380F4ED90FC0B50500B0BFD7 /* Unit Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Unit Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditionsTests.m; sourceTree = "<group>"; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
@@ -2364,7 +2371,7 @@
 			isa = PBXGroup;
 			children = (
 				8D15AC370486D014006FF6A4 /* Sequel Pro.app */,
-				380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */,
+				380F4ED90FC0B50500B0BFD7 /* Unit Tests.xctest */,
 				58CDB3360FCE13C900F8ACA3 /* SequelProTunnelAssistant */,
 				58B906E611BD989A000826E5 /* PSMTabBar.framework */,
 				58B9096111C3A42B000826E5 /* xibLocalizationPostprocessor */,
@@ -2487,6 +2494,7 @@
 			isa = PBXGroup;
 			children = (
 				584D876815140D3500F24774 /* SPMySQL.framework */,
+				29B70BD61C805B2A00D1BE0C /* SPMySQL Unit Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2746,8 +2754,8 @@
 			);
 			name = "Unit Tests";
 			productName = "Unit Tests";
-			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productReference = 380F4ED90FC0B50500B0BFD7 /* Unit Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		584754C1120A04560057631F /* Sequel Pro QLGenerator */ = {
 			isa = PBXNativeTarget;
@@ -2901,6 +2909,13 @@
 			fileType = wrapper.cfbundle;
 			path = Tests.octest;
 			remoteRef = 17E596A114F307CE0054EE08 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		29B70BD61C805B2A00D1BE0C /* SPMySQL Unit Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "SPMySQL Unit Tests.xctest";
+			remoteRef = 29B70BD51C805B2A00D1BE0C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		584D876815140D3500F24774 /* SPMySQL.framework */ = {
@@ -3846,7 +3861,7 @@
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"$(inherited)",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -3861,13 +3876,9 @@
 					"-framework",
 					Cocoa,
 					"-framework",
-					SenTestingKit,
-					"-framework",
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
-				TEST_AFTER_BUILD = YES;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -3879,7 +3890,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"$(inherited)",
 				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
@@ -3892,13 +3903,9 @@
 					"-framework",
 					Cocoa,
 					"-framework",
-					SenTestingKit,
-					"-framework",
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
-				TEST_AFTER_BUILD = YES;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -3909,7 +3916,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+					"$(inherited)",
 				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G5;
@@ -3922,13 +3929,9 @@
 					"-framework",
 					Foundation,
 					"-framework",
-					SenTestingKit,
-					"-framework",
 					OCMock,
 				);
 				PRODUCT_NAME = "Unit Tests";
-				TEST_AFTER_BUILD = YES;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Distribution;
 		};
