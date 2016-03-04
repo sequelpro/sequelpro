@@ -170,8 +170,8 @@
 		380F4EF50FC0B68F00B0BFD7 /* SPStringAdditionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTests.m */; };
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
+		386083461C8A3D97006D1B47 /* zlib.1.2.4.h in Headers */ = {isa = PBXBuildFile; fileRef = 386083451C8A3D97006D1B47 /* zlib.1.2.4.h */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
-		38C613731C8977E600B3B6EF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 38C613721C8977E600B3B6EF /* libz.tbd */; };
 		4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B799101E0CDF00D116A1 /* SPUserManager.m */; };
 		4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */; };
 		4D90B79F101E0CF200D116A1 /* SPUserMO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79D101E0CF200D116A1 /* SPUserMO.m */; };
@@ -922,6 +922,7 @@
 		380F4EF40FC0B68F00B0BFD7 /* SPStringAdditionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPStringAdditionsTests.m; sourceTree = "<group>"; };
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
+		386083451C8A3D97006D1B47 /* zlib.1.2.4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zlib.1.2.4.h; path = Frameworks/zlib/zlib.1.2.4.h; sourceTree = "<group>"; };
 		387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelations.h; sourceTree = "<group>"; };
 		387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableRelations.m; sourceTree = "<group>"; };
 		38C613701C89777B00B3B6EF /* libz.1.2.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.5.tbd; path = usr/lib/libz.1.2.5.tbd; sourceTree = SDKROOT; };
@@ -1378,7 +1379,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				38C613731C8977E600B3B6EF /* libz.tbd in Frameworks */,
 				503CDBB21ACDC204004F8A2F /* Quartz.framework in Frameworks */,
 				17AED4161888BD67008E380F /* Security.framework in Frameworks */,
 				296DC8BF0F9091DF002A3258 /* libicucore.dylib in Frameworks */,
@@ -2338,6 +2338,7 @@
 		17FC36AE141425D600AC3602 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				386083441C8A3D89006D1B47 /* zlib */,
 				17E5954E14F304000054EE08 /* QueryKit.xcodeproj */,
 				584D876015140D3500F24774 /* SPMySQLFramework.xcodeproj */,
 				58B906F811BD9B34000826E5 /* PSMTabBar */,
@@ -2431,6 +2432,14 @@
 			);
 			name = "Unit Tests";
 			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		386083441C8A3D89006D1B47 /* zlib */ = {
+			isa = PBXGroup;
+			children = (
+				386083451C8A3D97006D1B47 /* zlib.1.2.4.h */,
+			);
+			name = zlib;
 			sourceTree = "<group>";
 		};
 		507FF10E1BBCC4A900104523 /* Utility */ = {
@@ -2701,6 +2710,7 @@
 				58B9075811BD9B34000826E5 /* NSString_AITruncation.h in Headers */,
 				58B9075A11BD9B34000826E5 /* PSMOverflowPopUpButton.h in Headers */,
 				58B9075C11BD9B34000826E5 /* PSMProgressIndicator.h in Headers */,
+				386083461C8A3D97006D1B47 /* zlib.1.2.4.h in Headers */,
 				58B9075E11BD9B34000826E5 /* PSMRolloverButton.h in Headers */,
 				58B9076011BD9B34000826E5 /* PSMTabBarCell.h in Headers */,
 				58B9076211BD9B34000826E5 /* PSMTabBarControl.h in Headers */,
@@ -4046,7 +4056,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4246,7 +4256,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
@@ -4270,7 +4280,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Frameworks/zlib";
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = "$(SRCROOT)/Frameworks/zlib/libz.a";
 				PRODUCT_NAME = "Sequel Pro";
 				SEPARATE_STRIP = NO;
 			};
