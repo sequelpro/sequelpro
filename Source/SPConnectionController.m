@@ -135,6 +135,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize port;
 @synthesize colorIndex;
 @synthesize useSSL;
+@synthesize enableClearTextPlugin;
 @synthesize sslKeyFileLocationEnabled;
 @synthesize sslKeyFileLocation;
 @synthesize sslCertificateFileLocationEnabled;
@@ -600,8 +601,17 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 {
 #ifndef SP_CODA
 	[self _startEditingConnection];
+	[self _updateClearTextPluginOption];
 	[self resizeTabViewToConnectionType:[self type] animating:YES];
 #endif
+}
+
+/**
+ * Sets editing mode
+ */
+- (IBAction)enterEditMode:(id)sender
+{
+	[self _startEditingConnection];
 }
 
 /**
@@ -754,6 +764,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	
 	// SSL details
 	[self setUseSSL:([fav objectForKey:SPFavoriteUseSSLKey] ? [[fav objectForKey:SPFavoriteUseSSLKey] intValue] : NSOffState)];
+	[self setEnableClearTextPlugin:([fav objectForKey:SPFavoriteEnableClearTextPluginKey] ? [[fav objectForKey:SPFavoriteEnableClearTextPluginKey] intValue] : NSOffState)];
 	[self setSslKeyFileLocationEnabled:([fav objectForKey:SPFavoriteSSLKeyFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLKeyFileLocationEnabledKey] intValue] : NSOffState)];
 	[self setSslKeyFileLocation:([fav objectForKey:SPFavoriteSSLKeyFileLocationKey] ? [fav objectForKey:SPFavoriteSSLKeyFileLocationKey] : @"")];
 	[self setSslCertificateFileLocationEnabled:([fav objectForKey:SPFavoriteSSLCertificateFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLCertificateFileLocationEnabledKey] intValue] : NSOffState)];
@@ -902,6 +913,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 						@(NSOffState),
 						@(NSOffState),
 						@(NSOffState),
+						@(NSOffState),
 						@"",
 						@"",
 						@"",
@@ -919,7 +931,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 					 SPFavoriteUserKey,
 					 SPFavoriteColorIndexKey,
 					 SPFavoritePortKey, 
-					 SPFavoriteUseSSLKey, 
+					 SPFavoriteUseSSLKey,
+					 SPFavoriteEnableClearTextPluginKey,
 					 SPFavoriteSSLKeyFileLocationEnabledKey,
 					 SPFavoriteSSLCertificateFileLocationEnabledKey, 
 					 SPFavoriteSSLCACertFileLocationEnabledKey, 
@@ -1323,6 +1336,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[theFavorite setObject:[NSNumber numberWithInteger:[self colorIndex]] forKey:SPFavoriteColorIndexKey];
 	// SSL details
 	[theFavorite setObject:[NSNumber numberWithInteger:[self useSSL]] forKey:SPFavoriteUseSSLKey];
+	[theFavorite setObject:[NSNumber numberWithInteger:[self enableClearTextPlugin]] forKey:SPFavoriteEnableClearTextPluginKey];
 	[theFavorite setObject:[NSNumber numberWithInteger:[self sslKeyFileLocationEnabled]] forKey:SPFavoriteSSLKeyFileLocationEnabledKey];
 	if ([self sslKeyFileLocation]) {
 		[theFavorite setObject:[self sslKeyFileLocation] forKey:SPFavoriteSSLKeyFileLocationKey];
@@ -1991,6 +2005,17 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (sshTunnel) [sshTunnel setConnectionStateChangeSelector:nil delegate:nil], SPClear(sshTunnel);
 }
 
+/**
+ * Forces ClearText plugin option to be turned off if the connection does not use SSL
+ */
+- (void) _updateClearTextPluginOption
+{
+	if (!useSSL) {
+		[self setEnableClearTextPlugin:useSSL];
+	}
+
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -2009,6 +2034,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self removeObserver:self forKeyPath:SPFavoriteSocketKey];
 	[self removeObserver:self forKeyPath:SPFavoritePortKey];
 	[self removeObserver:self forKeyPath:SPFavoriteUseSSLKey];
+	[self removeObserver:self forKeyPath:SPFavoriteEnableClearTextPluginKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSHHostKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSHUserKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSHPortKey];
