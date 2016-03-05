@@ -30,7 +30,7 @@
 #import "QKTestCase.h"
 
 #import <QueryKit/QueryKit.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 @interface QKQueryTests : QKTestCase
 @end
@@ -68,19 +68,19 @@
 {
 	[[self query] clear];
 	
-	STAssertNil([[self query] table], @"query table");
-	STAssertNil([[self query] database], @"query database");
+	XCTAssertNil([[self query] table], @"query table");
+	XCTAssertNil([[self query] database], @"query database");
 	
-	STAssertTrue([[self query] useQuotedIdentifiers], @"query use quoted identifiers");
-	STAssertTrue([[[self query] identifierQuote] isEqualToString:EMPTY_STRING], @"query identifier quote");
-	STAssertTrue([[[self query] fields] count] == 0, @"query fields");
-	STAssertTrue([[[self query] parameters] count] == 0, @"query parameters");
-	STAssertTrue([[[self query] updateParameters] count] == 0, @"query update parameters");
-	STAssertTrue([[[self query] groupByFields] count] == 0, @"query group by fields");
-	STAssertTrue([[[self query] orderByFields] count] == 0, @"query order by fields");
+	XCTAssertTrue([[self query] useQuotedIdentifiers], @"query use quoted identifiers");
+	XCTAssertTrue([[[self query] identifierQuote] isEqualToString:EMPTY_STRING], @"query identifier quote");
+	XCTAssertTrue([[[self query] fields] count] == 0, @"query fields");
+	XCTAssertTrue([[[self query] parameters] count] == 0, @"query parameters");
+	XCTAssertTrue([[[self query] updateParameters] count] == 0, @"query update parameters");
+	XCTAssertTrue([[[self query] groupByFields] count] == 0, @"query group by fields");
+	XCTAssertTrue([[[self query] orderByFields] count] == 0, @"query order by fields");
 	
-	STAssertEquals([[self query] queryType], QKUnknownQuery, @"query type");
-	STAssertEquals([[self query] queryDatabase], QKDatabaseUnknown, @"query database");
+	XCTAssertEqual([[self query] queryType], QKUnknownQuery, @"query type");
+	XCTAssertEqual([[self query] queryDatabase], QKDatabaseUnknown, @"query database");
 }
 
 @end

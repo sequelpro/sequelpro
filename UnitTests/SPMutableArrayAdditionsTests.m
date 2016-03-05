@@ -30,7 +30,7 @@
 
 #import "SPMutableArrayAdditions.h"
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 /**
  * @class SPMutableArrayAdditionsTest SPMutableArrayAdditionsTest.h
@@ -39,7 +39,7 @@
  *
  * SPMutableArrayAdditions tests class.
  */
-@interface SPMutableArrayAdditionsTests : SenTestCase
+@interface SPMutableArrayAdditionsTests : XCTestCase
 
 @end
 
@@ -55,7 +55,7 @@
 	
 	[testArray reverse];
 	
-	STAssertEqualObjects(testArray, expectedArray, @"The reversed array should look like: %@, but actually looks like: %@", expectedArray, testArray);
+	XCTAssertEqualObjects(testArray, expectedArray, @"The reversed array should look like: %@, but actually looks like: %@", expectedArray, testArray);
 }
 
 @end

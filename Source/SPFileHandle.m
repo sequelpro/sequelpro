@@ -29,8 +29,8 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFileHandle.h"
-#import "zlib.1.2.4.h"
 #import "bzlib.h"
+#import "zlib.1.2.4.h"
 #import "pthread.h"
 
 // Define the maximum size of the background write buffer before the writing thread

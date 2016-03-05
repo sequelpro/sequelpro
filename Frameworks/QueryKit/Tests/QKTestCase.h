@@ -27,9 +27,9 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 
 #import <QueryKit/QueryKit.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
-@interface QKTestCase : SenTestCase 
+@interface QKTestCase : XCTestCase 
 {
 @private
 	QKQuery *_query;
