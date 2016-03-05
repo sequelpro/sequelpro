@@ -3084,7 +3084,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)saveConnectionPanelDidEnd:(NSSavePanel *)panel returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
-	if (returnCode) {
+	[panel orderOut:nil]; // by default OS X hides the panel only after the current method is done
+	
+	if (returnCode == NSFileHandlingPanelOKButton) {
 
 		NSString *fileName = [[panel URL] path];
 		NSError *error = nil;
@@ -3120,7 +3122,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[self saveDocumentWithFilePath:fileName inBackground:NO onlyPreferences:NO contextInfo:nil];
 
 			// Manually loaded nibs don't have their top-level objects released automatically - do that here.
-			SPClear(saveConnectionAccessory);
+			[saveConnectionAccessory autorelease];
+			saveConnectionAccessory = nil;
 
 			if(contextInfo == @"saveSPFfileAndClose")
 				[self closeAndDisconnect];
