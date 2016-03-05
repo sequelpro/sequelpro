@@ -4447,8 +4447,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)setFileURL:(NSURL *)theURL
 {
-	if (spfFileURL) SPClear(spfFileURL);
-	spfFileURL  = [theURL retain];
+	[theURL retain];
+	[spfFileURL release];
+	spfFileURL  = theURL;
 	if ([parentWindowController selectedTableDocument] == self) {
 		if (spfFileURL && [spfFileURL isFileURL])
 			[parentWindow setRepresentedURL:spfFileURL];
