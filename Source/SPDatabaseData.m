@@ -221,7 +221,7 @@ copy_return:
 			}
 		}
 	}
-	return defaultCollationForCharacterSet;
+	return [[defaultCollationForCharacterSet copy] autorelease]; // -copy accepts nil, -stringWithString: does not
 }
 
 /** Get the name of the mysql charset a given collation belongs to.
