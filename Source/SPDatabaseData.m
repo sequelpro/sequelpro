@@ -219,7 +219,7 @@ copy_return:
 			}
 		}
 	}
-	return defaultCollationForCharacterSet;
+	return [[defaultCollationForCharacterSet copy] autorelease]; // -copy accepts nil, -stringWithString: does not
 }
 
 /**
