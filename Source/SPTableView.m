@@ -190,8 +190,7 @@
 				return;
 			} 
 			else {
-				[super keyDown:theEvent];
-				return;
+				goto pass_keyDown_to_super;
 			}
 
 		}
@@ -227,8 +226,17 @@
 		
 		return;
 	}
-	
-	[super keyDown:theEvent];
+
+pass_keyDown_to_super:
+	@try {
+		[super keyDown:theEvent];
+	}
+	@catch (NSException *ex) {
+		// debug code for #2445
+		NSString *ownId = [NSString stringWithFormat:@"%@(%@)",self,([self respondsToSelector:@selector(identifier)]? [self identifier] : @"-N/A-")];
+		[NSException raise:NSInternalInconsistencyException
+					format:@"%s: passing event to super failed! (issue #2445)\n\nOriginal exception:\n%@\n\nEvent:\n  %@\nDelegate:\n  %@\nself:\n  %@",__PRETTY_FUNCTION__,ex,theEvent,[self delegate],ownId];
+	}
 }
 
 /**
