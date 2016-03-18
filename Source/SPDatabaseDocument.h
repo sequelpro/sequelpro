@@ -522,9 +522,10 @@
 - (void)restoreSession;
 #endif
 
+- (SPConnectionController*)connectionController;
+
 #ifdef SP_CODA /* method decls */
 - (SPConnectionController*)createConnectionController;
-- (SPConnectionController*)connectionController;
 - (void)connect;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;

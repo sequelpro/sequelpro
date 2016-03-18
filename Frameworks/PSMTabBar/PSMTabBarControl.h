@@ -15,11 +15,11 @@
 #define PSMTabDragDidEndNotification @"PSMTabDragDidEndNotification"
 #define PSMTabDragDidBeginNotification @"PSMTabDragDidBeginNotification"
 
-#define kPSMTabBarControlHeight 22
-#define kPSMTabBarControlHeightCollapsed 1
+#define kPSMTabBarControlHeight 34
+#define kPSMTabBarControlDefaultHeightCollapsed 0 // can be changed with a property
 // internal cell border
 #define MARGIN_X        6
-#define MARGIN_Y        3
+#define MARGIN_Y        5
 // padding between objects
 #define kPSMTabBarCellPadding 4
 // fixed size objects
@@ -185,6 +185,7 @@ enum {
 - (void)setUsesSafariStyleDragging:(BOOL)value;
 - (PSMTabBarTearOffStyle)tearOffStyle;
 - (void)setTearOffStyle:(PSMTabBarTearOffStyle)tearOffStyle;
+@property CGFloat heightCollapsed;
 
 // accessors
 - (NSTabView *)tabView;
