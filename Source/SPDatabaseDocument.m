@@ -3886,6 +3886,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Set the titles
 	[parentTabViewItem setLabel:tabTitle];
 	[parentTabViewItem setColor:tabColor];
+	[parentWindowController updateTabBar];
+	
 	if ([parentWindowController selectedTableDocument] == self) {
 		[parentWindow setTitle:windowTitle];
 	}
@@ -5163,13 +5165,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 #endif
 }
 
-
-#ifdef SP_CODA
-
 - (SPConnectionController*)connectionController
 {
 	return connectionController;
 }
+
+#ifdef SP_CODA
 
 - (void)databaseDocumentConnectionFailed:(id)sender
 {

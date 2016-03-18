@@ -34,6 +34,7 @@
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"
 #import "PSMTabDragAssistant.h"
+#import "SPConnectionController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
@@ -181,6 +182,7 @@ enum {
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
 		[tabView removeTabViewItem:[tabView selectedTabViewItem]];
+		
 	} 
 	else {
 		[[self window] performClose:self];
@@ -359,6 +361,23 @@ enum {
 }
 
 #pragma mark -
+#pragma mark Tab Bar
+- (void)updateTabBar
+{
+	BOOL collapse = NO;
+ 
+	if (selectedTableDocument.getConnection) {
+		if (selectedTableDocument.connectionController.colorIndex != -1) {
+			collapse = YES;
+		}
+	}
+	
+	tabBar.heightCollapsed = collapse ? 8 : 1;
+	
+	[tabBar update];
+}
+
+#pragma mark -
 #pragma mark First responder forwarding to active tab
 
 /**
@@ -453,8 +472,8 @@ enum {
 	[tabBar setShowAddTabButton:YES];
 	[tabBar setSizeCellsToFit:NO];
 	[tabBar setCellMinWidth:100];
-	[tabBar setCellMaxWidth:250];
-	[tabBar setCellOptimumWidth:250];
+	[tabBar setCellMaxWidth:25000];
+	[tabBar setCellOptimumWidth:25000];
 	[tabBar setSelectsTabsOnMouseDown:YES];
 	[tabBar setCreatesTabOnDoubleClick:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
@@ -552,6 +571,8 @@ enum {
 		[nc addObserver:self selector:@selector(_selectedTableDocumentDeallocd:) name:SPDocumentWillCloseNotification object:newDoc];
 		selectedTableDocument = newDoc;
 	}
+	
+	[self updateTabBar];
 }
 
 - (void)_selectedTableDocumentDeallocd:(NSNotification *)notification
