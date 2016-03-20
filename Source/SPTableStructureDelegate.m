@@ -201,7 +201,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 			[currentRow setObject:newCollation forKey:@"collationName"];
 		return;
 	}
-	// Reset collation if BINARY was set changed, as enabling BINARY sets collation to *_bin
+	// Reset collation if BINARY was changed, as enabling BINARY sets collation to *_bin
 	else if ([[aTableColumn identifier] isEqualToString:@"binary"]) {
 		if ([[currentRow objectForKey:@"binary"] integerValue] != [anObject integerValue]) {
 			[currentRow removeObjectForKey:@"collationName"];
@@ -264,7 +264,8 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 			
 			// If type is BLOB or TEXT reset DEFAULT since these field types don't allow a default
 			if ([[currentRow objectForKey:@"type"] hasSuffix:@"TEXT"] || 
-				[[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] || 
+				[[currentRow objectForKey:@"type"] hasSuffix:@"BLOB"] ||
+				[[currentRow objectForKey:@"type"] isEqualToString:@"JSON"] ||
 				[fieldValidation isFieldTypeGeometry:[currentRow objectForKey:@"type"]] ||
 				([fieldValidation isFieldTypeDate:[currentRow objectForKey:@"type"]] && ![[currentRow objectForKey:@"type"] isEqualToString:@"YEAR"])) 
 			{
