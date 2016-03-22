@@ -371,6 +371,7 @@
 	BOOL fileIsCompressed;
 	BOOL allDataRead = NO;
 	BOOL ignoreSQLErrors = ([importSQLErrorHandlingPopup selectedTag] == SPSQLImportIgnoreErrors);
+	BOOL ignoreCharsetError = NO;
 	NSStringEncoding sqlEncoding = NSUTF8StringEncoding;
 	NSString *connectionEncodingToRestore = nil;
 	NSCharacterSet *whitespaceAndNewlineCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
@@ -568,9 +569,37 @@
 			if ([mySQLConnection queryErrored] && ![[mySQLConnection lastErrorMessage] isEqualToString:@"Query was empty"]) {
 				[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"), (long)(queriesPerformed+1), [mySQLConnection lastErrorMessage]];
 
+				// if the error is about utf8mb4 not being supported by the server display a more helpful message.
+				// Note: the same error will occur when doing CREATE TABLE... with utf8mb4.
+				if([mySQLConnection lastErrorID] == 1115 && [[mySQLConnection lastErrorMessage] rangeOfString:@"utf8mb4" options:NSCaseInsensitiveSearch].location != NSNotFound && [query rangeOfString:@"SET NAMES" options:NSCaseInsensitiveSearch].location != NSNotFound) {
+					if(!ignoreCharsetError) {
+						__block NSInteger charsetErrorSheetReturnCode;
+						
+						SPMainQSync(^{
+							NSAlert *charsetErrorAlert = [NSAlert alertWithMessageText:NSLocalizedString(@"Incompatible encoding in SQL file", @"sql import error message")
+							                                             defaultButton:NSLocalizedString(@"Import Anyway", @"sql import : charset error alert : continue button")
+							                                           alternateButton:NSLocalizedString(@"Cancel Import", @"sql import : charset error alert : cancel button")
+																		   otherButton:nil
+							                                 informativeTextWithFormat:NSLocalizedString(@"The SQL file uses utf8mb4 encoding, but your MySQL version only supports the limited utf8 subset.\n\nYou can continue the import, but any non-BMP characters in the SQL file (eg. some typographic and scientific special characters, archaic CJK logograms, emojis) will be unrecoverably lost!", @"sql import : charset error alert : detail message")];
+							[charsetErrorAlert setAlertStyle:NSWarningAlertStyle];
+							charsetErrorSheetReturnCode = [charsetErrorAlert runModal];
+						});
+						
+						switch (charsetErrorSheetReturnCode) {
+							// don't display the message a second time
+							case NSAlertDefaultReturn:
+								ignoreCharsetError = YES;
+								break;
+							// Otherwise, stop
+							default:
+								[errors appendString:NSLocalizedString(@"Import cancelled!\n", @"import cancelled message")];
+								progressCancelled = YES;
+						}
+					}
+				}
 				// If not set to ignore errors, ask what to do.  Use NSAlert rather than
 				// SPBeginWaitingAlertSheet as there is already a modal sheet in progress.
-				if (!ignoreSQLErrors) {
+				else if (!ignoreSQLErrors) {
 					__block NSInteger sqlImportErrorSheetReturnCode;
 
 					SPMainQSync(^{
