@@ -1167,7 +1167,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		if (returnCode == NSOKButton) {
 			SPFavoritesExporter *exporter = [[[SPFavoritesExporter alloc] init] autorelease];
 
-			[exporter setDelegate:(NSObject<SPFavoritesExportProtocol> *)self];
+			[exporter setDelegate:self];
 
 			[exporter writeFavorites:[self selectedFavoriteNodes] toFile:[[savePanel URL] path]];
 		 }

@@ -286,7 +286,7 @@
 					[filePaths addObject:[obj path]];
 				}];
 
-				[self application:nil openFiles:filePaths];
+				[self application:NSApp openFiles:filePaths];
 			}
 		}];
 	} 
@@ -301,7 +301,7 @@
 				 [filePaths addObject:[obj path]];
 			}];
 
-			[self application:nil openFiles:filePaths];
+			[self application:NSApp openFiles:filePaths];
 		}
 	}
 

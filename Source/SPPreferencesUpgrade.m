@@ -32,6 +32,7 @@
 #import "SPKeychain.h"
 #import "SPFavoritesController.h"
 #import "SPTreeNode.h"
+#import "SPFavoriteNode.h"
 
 static NSString *SPOldFavoritesKey       = @"favorites";
 static NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
@@ -354,7 +355,7 @@ void SPApplyRevisionChanges(void)
 		for(SPTreeNode *node in favs) {
 			if([node isGroup])
 				continue;
-			NSMutableDictionary *data = [[node representedObject] nodeFavorite];
+			NSMutableDictionary *data = [(SPFavoriteNode *)[node representedObject] nodeFavorite];
 			if(![data objectForKey:SPFavoriteColorIndexKey])
 				[data setObject:@(-1) forKey:SPFavoriteColorIndexKey];
 		}

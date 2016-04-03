@@ -47,6 +47,7 @@
 #import "SPExportFileNameTokenObject.h"
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPExportController+SharedPrivateAPI.h"
+#import "SPSQLExporterDelegate.h"
 
 #import <SPMySQL/SPMySQL.h>
 

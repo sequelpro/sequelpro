@@ -1598,18 +1598,18 @@ cleanup:
 /**
  * Called when the selection within an open/save panel changes.
  */
-- (void)panelSelectionDidChange:(id)sender
+- (void)panelSelectionDidChange:(NSOpenPanel *)sender
 {
-	NSArray *selectedFilenames = [sender filenames];
+	NSArray *selectedUrls = sender.URLs;
 	NSString *pathExtension;
 
 	// If a single file is selected and the extension is recognised, change the format dropdown automatically
-	if ( [selectedFilenames count] != 1 ) return;
-	pathExtension = [[[selectedFilenames objectAtIndex:0] pathExtension] uppercaseString];
+	if ( selectedUrls.count != 1 ) return;
+	pathExtension = [[selectedUrls[0] pathExtension] uppercaseString];
 
 	// If the file has an extension '.gz' or '.bz2' indicating gzip or bzip2 compression, fetch the next extension
 	if ([pathExtension isEqualToString:@"GZ"] || [pathExtension isEqualToString:@"BZ2"]) {
-		NSMutableString *pathString = [NSMutableString stringWithString:[selectedFilenames objectAtIndex:0]];
+		NSMutableString *pathString = [NSMutableString stringWithString:[selectedUrls[0] path]];
 		
 		BOOL isGzip = [pathExtension isEqualToString:@"GZ"];
 		
@@ -1637,7 +1637,7 @@ cleanup:
 		NSPipe *filePipe = [[NSPipe alloc] init];
 
 		[fileTask setLaunchPath:@"/usr/bin/file"];
-		[fileTask setArguments:[NSArray arrayWithObjects:@"-L", @"-b", [selectedFilenames objectAtIndex:0], nil]];
+		[fileTask setArguments:[NSArray arrayWithObjects:@"-L", @"-b", [selectedUrls[0] path], nil]];
 		[fileTask setStandardOutput:filePipe];
 		NSFileHandle *fileHandle = [filePipe fileHandleForReading];
 

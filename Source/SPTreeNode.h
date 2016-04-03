@@ -40,23 +40,25 @@
 	BOOL isGroup;
 }
 
+@property (nullable, readonly, copy) NSArray<SPTreeNode *> *childNodes;
+
 /**
  * @property isGroup Indicates whether or not the node is a group.
  */
 @property (readwrite, assign) BOOL isGroup;
 
-- (void)removeObjectFromChildren:(id)object;
+- (void)removeObjectFromChildren:(nonnull id)object;
 
-- (NSMutableArray *)descendants;
-- (NSMutableArray *)childLeafs;
-- (NSMutableArray *)allChildLeafs;
-- (NSMutableArray *)groupChildren;
+- (nonnull NSMutableArray *)descendants;
+- (nonnull NSMutableArray *)childLeafs;
+- (nonnull NSMutableArray *)allChildLeafs;
+- (nonnull NSMutableArray *)groupChildren;
 
-- (SPTreeNode *)parentFromArray:(NSArray *)array;
+- (nullable SPTreeNode *)parentFromArray:(nonnull NSArray *)array;
 
-- (BOOL)isDescendantOfOrOneOfNodes:(NSArray *)nodes;
-- (BOOL)isDescendantOfNodes:(NSArray *)nodes;
+- (BOOL)isDescendantOfOrOneOfNodes:(nonnull NSArray *)nodes;
+- (BOOL)isDescendantOfNodes:(nonnull NSArray *)nodes;
 
-- (NSDictionary *)dictionaryRepresentation;
+- (nonnull NSDictionary *)dictionaryRepresentation;
 
 @end

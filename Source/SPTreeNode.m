@@ -37,6 +37,7 @@ static NSString *SPTreeNodeIsGroupKey = @"SPTreeNodeIsGroup";
 
 @implementation SPTreeNode
 
+@dynamic childNodes;
 @synthesize isGroup;
 
 #pragma mark -

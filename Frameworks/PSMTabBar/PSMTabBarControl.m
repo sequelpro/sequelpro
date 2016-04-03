@@ -1408,8 +1408,8 @@
 			return;
 		}
 		
-		CGFloat dx = fabsf(currentPoint.x - trackingStartPoint.x);
-		CGFloat dy = fabsf(currentPoint.y - trackingStartPoint.y);
+		CGFloat dx = fabs(currentPoint.x - trackingStartPoint.x);
+		CGFloat dy = fabs(currentPoint.y - trackingStartPoint.y);
 		CGFloat distance = sqrtf(dx * dx + dy * dy);
 		
 		if (distance >= 10 && !_didDrag && ![[PSMTabDragAssistant sharedDragAssistant] isDragging] &&

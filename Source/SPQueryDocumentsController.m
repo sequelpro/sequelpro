@@ -31,6 +31,7 @@
 #import "SPQueryDocumentsController.h"
 #import "SPCustomQuery.h"
 #import "SPAppController.h"
+#import "SPAppleScriptSupport.h"
 
 @implementation SPQueryController (SPQueryDocumentsController)
 

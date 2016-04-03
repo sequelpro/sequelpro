@@ -30,7 +30,7 @@
 
 #import <WebKit/WebKit.h>
 
-@interface SPTooltip : NSWindow
+@interface SPTooltip : NSWindow <WebFrameLoadDelegate>
 {
 	WebView*		webView;
 	WebPreferences*	webPreferences;

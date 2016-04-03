@@ -97,13 +97,13 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 		if(!iconImages || [iconImages count] < 1)
 			iconImages = @[[NSImage imageNamed:NSImageNameStopProgressTemplate]];
 		
-#warning Shouldn't that be "> 1"?
-		if([iconImages count] > 0)
+		if([iconImages count] > 1)
 			iconImage = [iconImages objectAtIndex:1];
 		else
 			iconImage = [iconImages objectAtIndex:0];
 		
 #warning This can cause a runtime error: "This application is assuming that a particular image contains an NSBitmapImageRep, which is not a good assumption.  We are instantiating a bitmap so that whatever this is keeps working, but please do not do this. (...)  This may break in the future."
+		// TODO: draw the image into a bitmap context and grab the jpeg representation?
 		NSData *image = [iconImage TIFFRepresentation];
 		
 		NSMutableDictionary *props    = [[NSMutableDictionary alloc] initWithCapacity:6];

@@ -55,7 +55,7 @@
 	if (!sourceExists || targetExists) return NO;
 
 	NSArray *tables = [tablesList allTableNames];
-	NSArray *views  = [tablesList allViewNames];
+//	NSArray *views  = [tablesList allViewNames]; // TODO: handle views when renaming database
 	
 	BOOL success = [self createDatabase:targetDatabase
 						   withEncoding:[sourceDatabase defaultEncoding]

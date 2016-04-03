@@ -760,7 +760,7 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
 #pragma mark -
 #pragma mark Menu delegate methods (encoding/collation dropdown menu)
 
-- (void)menuNeedsUpdate:(NSMenu *)menu
+- (void)menuNeedsUpdate:(SPIdMenu *)menu
 {
 	if(![menu isKindOfClass:[SPIdMenu class]]) return;
 	//NOTE: NSTableView will usually copy the menu and call this method on the copy. Matching with == won't work!

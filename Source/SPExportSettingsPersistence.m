@@ -127,6 +127,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 		NAMEOF(SPPDFExport);
 		NAMEOF(SPHTMLExport);
 		NAMEOF(SPExcelExport);
+		NAMEOF(SPAnyExportType);
 	}
 	return nil;
 }

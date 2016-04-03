@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPConnectionControllerDelegateProtocol.h"
+#import "SPFavoritesExportProtocol.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -47,7 +48,7 @@
 #endif
 ;
 
-@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate>
+@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate, SPFavoritesExportProtocol, NSSplitViewDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	

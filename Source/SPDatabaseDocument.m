@@ -5752,7 +5752,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)setActivityPaneHidden:(NSNumber*)hide
 {
-	if(![hide integerValue] == 1) {
+	if(hide.boolValue) {
 		[tableInfoScrollView setHidden:YES];
 		[documentActivityScrollView setHidden:NO];
 	} else {

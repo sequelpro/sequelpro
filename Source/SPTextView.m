@@ -1122,8 +1122,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
 	NSTextStorage *textStorage = [self textStorage];
-	NSData *rtf = [textStorage RTFFromRange:[self selectedRange]
-		documentAttributes:nil];
+	NSData *rtf = [textStorage RTFFromRange:[self selectedRange] documentAttributes:@{}];
 	
 	if (rtf)
 	{

@@ -81,7 +81,10 @@ static NSString *SPFavoriteNodeKey = @"SPFavoriteNode";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-#warning This is not a valid initializer.
+	if (!(self = [super init])) {
+		return nil;
+	}
+	
 	[self setNodeFavorite:[coder decodeObjectForKey:SPFavoriteNodeKey]];
 	
 	return self;

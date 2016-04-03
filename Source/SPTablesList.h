@@ -143,66 +143,66 @@
 }
 
 // IBAction methods
-- (IBAction)updateTables:(id)sender;
-- (IBAction)addTable:(id)sender;
-- (IBAction)closeSheet:(id)sender;
-- (IBAction)removeTable:(id)sender;
+- (IBAction)updateTables:(nullable id)sender;
+- (IBAction)addTable:(nullable id)sender;
+- (IBAction)closeSheet:(nullable id)sender;
+- (IBAction)removeTable:(nullable id)sender;
 
 #ifndef SP_CODA /* method decls */
-- (IBAction)copyTable:(id)sender;
-- (IBAction)renameTable:(id)sender;
-- (IBAction)truncateTable:(id)sender;
-- (IBAction)openTableInNewTab:(id)sender;
-- (IBAction)openTableInNewWindow:(id)sender;
-- (IBAction)togglePaneCollapse:(id)sender;
+- (IBAction)copyTable:(nullable id)sender;
+- (IBAction)renameTable:(nullable id)sender;
+- (IBAction)truncateTable:(nullable id)sender;
+- (IBAction)openTableInNewTab:(nullable id)sender;
+- (IBAction)openTableInNewWindow:(nullable id)sender;
+- (IBAction)togglePaneCollapse:(nullable id)sender;
 #endif
 
 // Additional methods
-- (void)setConnection:(SPMySQLConnection *)theConnection;
-- (void)setSelectionState:(NSDictionary *)selectionDetails;
+- (void)setConnection:(nonnull SPMySQLConnection *)theConnection;
+- (void)setSelectionState:(nullable NSDictionary *)selectionDetails;
 
 #ifndef SP_CODA /* method decls */
-- (void)selectTableAtIndex:(NSNumber *)row;
+- (void)selectTableAtIndex:(nullable NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
 - (void)makeTableListHaveFocus;
 #endif
 
 // Getters
-- (NSArray *)selectedTableNames;
-- (NSArray *)selectedTableItems;
-- (NSArray *)selectedTableTypes;
-- (NSString *)tableName;
+- (nonnull NSArray *)selectedTableNames;
+- (nonnull NSArray *)selectedTableItems;
+- (nonnull NSArray *)selectedTableTypes;
+- (nullable NSString *)tableName;
 - (SPTableType)tableType;
-- (NSArray *)tables;
-- (NSArray *)tableTypes;
-- (NSArray *)allTableAndViewNames;
-- (NSArray *)allTableNames;
-- (NSArray *)allViewNames;
-- (NSArray *)allFunctionNames;
-- (NSArray *)allProcedureNames;
-- (NSArray *)allEventNames;
-- (NSArray *)allDatabaseNames;
-- (NSArray *)allSystemDatabaseNames;
-- (NSString *)selectedDatabase;
+- (nonnull NSArray *)tables;
+- (nonnull NSArray *)tableTypes;
+- (nonnull NSArray *)allTableAndViewNames;
+- (nonnull NSArray *)allTableNames;
+- (nonnull NSArray *)allViewNames;
+- (nonnull NSArray *)allFunctionNames;
+- (nonnull NSArray *)allProcedureNames;
+- (nonnull NSArray *)allEventNames;
+- (nonnull NSArray *)allDatabaseNames;
+- (nonnull NSArray *)allSystemDatabaseNames;
+- (nullable NSString *)selectedDatabase;
 
 // Setters
-- (BOOL)selectItemWithName:(NSString *)theName;
+- (BOOL)selectItemWithName:(nullable NSString *)theName;
 #ifndef SP_CODA /* method decls */
-- (BOOL)selectItemsWithNames:(NSArray *)theNames;
+- (BOOL)selectItemsWithNames:(nonnull NSArray *)theNames;
 
 // Table list filter interaction
 - (void)showFilter;
 - (void)hideFilter;
 - (void)clearFilter;
 #endif
-- (IBAction) updateFilter:(id)sender;
+- (IBAction) updateFilter:(nullable id)sender;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(nullable NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(nullable NSNotification *)aNotification;
 - (void)setTableListSelectability:(BOOL)isSelectable;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+- (BOOL)isTableNameValid:(nullable NSString *)tableName forType:(SPTableType)tableType;
+- (BOOL)isTableNameValid:(nullable NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
 
 #ifdef SP_CODA /* method decls */
 @property (assign) SPTableStructure* tableSourceInstance;
@@ -224,4 +224,7 @@
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 
 #endif
+
+- (BOOL)selectionShouldChangeInTableView:(nullable NSTableView *)aTableView;
+
 @end

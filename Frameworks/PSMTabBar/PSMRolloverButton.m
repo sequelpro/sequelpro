@@ -124,7 +124,7 @@
 }
 
 // override for rollover effect
-- (void)mouseEntered:(NSEvent *)theEvent;
+- (void)mouseEntered:(nullable NSEvent *)theEvent
 {
     // set rollover image
     [self setImage:_rolloverImage];
@@ -132,7 +132,7 @@
 	[super mouseEntered:theEvent];
 }
 
-- (void)mouseExited:(NSEvent *)theEvent;
+- (void)mouseExited:(nullable NSEvent *)theEvent
 {
     // restore usual image
 	[self setImage:_usualImage];

@@ -182,7 +182,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Loads all table names in array tables and reload the tableView
  */
-- (IBAction)updateTables:(id)sender
+- (IBAction)updateTables:(nullable id)sender
 {
 	SPMySQLResult *theResult;
 	NSString *previousSelectedTable = nil;
@@ -1647,7 +1647,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Table view delegate method
  */
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView
+- (BOOL)selectionShouldChangeInTableView:(nullable NSTableView *)aTableView
 {
 	// Don't allow selection changes while performing a task.
 	if (!tableListIsSelectable) return NO;

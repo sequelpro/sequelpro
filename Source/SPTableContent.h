@@ -305,7 +305,7 @@
 - (void)setFilterTableData:(NSData *)arcData;
 - (NSData *)filterTableData;
 
-- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
+//- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
 
 - (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;

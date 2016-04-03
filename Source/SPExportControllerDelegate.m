@@ -335,8 +335,8 @@ static inline BOOL IS_STRING(id x);
 											   timestamp:0
 											windowNumber:[[exportCustomFilenameTokenField window] windowNumber]
 												 context:[NSGraphicsContext currentContext]
-											  characters:nil
-							 charactersIgnoringModifiers:nil
+											  characters:@""
+							 charactersIgnoringModifiers:@""
 											   isARepeat:NO
 												 keyCode:0x24];
 	
