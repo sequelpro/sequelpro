@@ -39,6 +39,7 @@
 #import "SPLogger.h"
 #import "SPTooltip.h"
 #import "SPAppController.h"
+#import "SPAppleScriptSupport.h"
 #import "SPDatabaseViewController.h"
 #import "SPDatabaseStructure.h"
 #import "SPThreadAdditions.h"
