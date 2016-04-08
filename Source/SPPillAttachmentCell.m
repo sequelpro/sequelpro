@@ -30,6 +30,11 @@
 
 #import "SPPillAttachmentCell.h"
 
+@interface SPPillAttachmentCell ()
+
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView characterIndex:(NSUInteger)charIndex layoutManager:(NSLayoutManager *)layoutManager;
+
+@end
 
 @implementation SPPillAttachmentCell
 
