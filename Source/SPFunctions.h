@@ -49,3 +49,10 @@ int SPBetterRandomBytes(uint8_t *buf, size_t count);
  * @return the same value, casted to unsigned integer
  */
 NSUInteger SPIntS2U(NSInteger i);
+
+/**
+ * Converts nil to NSNull for passing into arrays
+ * @return The object that was passed in or [NSNull null] if object == nil
+ * @see -[SPObjectAdditions unboxNull]
+ */
+id SPBoxNil(id object);

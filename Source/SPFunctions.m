@@ -76,3 +76,10 @@ NSUInteger SPIntS2U(NSInteger i)
 	
 	return (NSUInteger)i;
 }
+
+id SPBoxNil(id object)
+{
+	if(object == nil) return [NSNull null];
+	
+	return object;
+}

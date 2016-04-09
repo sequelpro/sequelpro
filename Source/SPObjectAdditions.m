@@ -44,6 +44,13 @@
 	return (self == null);
 }
 
+- (instancetype)unboxNull
+{
+	if([self isNSNull]) return nil;
+	
+	return self;
+}
+
 - (BOOL)isInArray:(NSArray *)list
 {
 	return [list containsObject:self];

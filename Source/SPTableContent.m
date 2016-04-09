@@ -62,6 +62,7 @@
 #import "SPCustomQuery.h"
 #import "SPThreadAdditions.h"
 #import "SPTableFilterParser.h"
+#import "SPFunctions.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -721,7 +722,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		if ([fieldField itemWithTitle:filterFieldToRestore]
 			&& ((!filterComparisonToRestore && filterValueToRestore)
-				|| [compareField itemWithTitle:filterComparisonToRestore]))
+				|| (filterComparisonToRestore && [compareField itemWithTitle:filterComparisonToRestore])))
 		{
 			if (filterComparisonToRestore) [compareField selectItemWithTitle:filterComparisonToRestore];
 			if([filterComparisonToRestore isEqualToString:@"BETWEEN"]) {
@@ -1118,7 +1119,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	NSDictionary *filter = [[contentFilters objectForKey:compareType] objectAtIndex:[[compareField selectedItem] tag]];
 
 	if(![filter objectForKey:@"NumberOfArguments"]) {
-		NSLog(@"Error while retrieving filter clause. No “Clause” or/and “NumberOfArguments” key found.");
+		NSLog(@"Error while retrieving filter clause. No “NumberOfArguments” key found.");
 		NSBeep();
 		return nil;
 	}
@@ -2487,6 +2488,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[self clickLinkArrowTask:theArrowCell];
 	}
 }
+
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell
 {
 	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
@@ -2494,7 +2496,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	BOOL tableFilterRequired = NO;
 
 	// Ensure the clicked cell has foreign key details available
-	NSDictionary *refDictionary = [[dataColumns objectAtIndex:dataColumnIndex] objectForKey:@"foreignkeyreference"];
+	NSDictionary *columnDefinition = [dataColumns objectAtIndex:dataColumnIndex];
+	NSDictionary *refDictionary = [columnDefinition objectForKey:@"foreignkeyreference"];
 	if (!refDictionary) {
 		[linkPool release];
 		return;
@@ -2508,24 +2511,35 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
 
+	//when navigating binary relations (eg. raw UUID) do so via a hex-encoded value for charset safety
+	BOOL navigateAsHex = ([targetFilterValue isKindOfClass:[NSData class]] && [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"]);
+	if(navigateAsHex) targetFilterValue = [mySQLConnection escapeData:(NSData *)targetFilterValue includingQuotes:NO];
+	
 	// If the link is within the current table, apply filter settings manually
 	if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
-		[fieldField selectItemWithTitle:[refDictionary objectForKey:@"column"]];
-		[self setCompareTypes:self];
-		if ([targetFilterValue isNSNull]) {
-			[compareField selectItemWithTitle:@"IS NULL"];
-		} else {
-			[argumentField setStringValue:targetFilterValue];
-		}
+		SPMainQSync(^{
+			[fieldField selectItemWithTitle:[refDictionary objectForKey:@"column"]];
+			[self setCompareTypes:self];
+			if ([targetFilterValue isNSNull]) {
+				[compareField selectItemWithTitle:@"IS NULL"];
+			}
+			else {
+				if(navigateAsHex) [compareField selectItemWithTitle:@"= (Hex String)"];
+				[argumentField setStringValue:targetFilterValue];
+			}
+		});
 		tableFilterRequired = YES;
 	} else {
-
+		NSString *filterComparison = nil;
+		if([targetFilterValue isNSNull]) filterComparison = @"IS NULL";
+		else if(navigateAsHex) filterComparison = @"= (Hex String)";
+		
 		// Store the filter details to use when loading the target table
-		NSDictionary *filterSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-											[refDictionary objectForKey:@"column"], @"filterField",
-											targetFilterValue, @"filterValue",
-											([targetFilterValue isNSNull]?@"IS NULL":nil), @"filterComparison",
-											nil];
+		NSDictionary *filterSettings = @{
+			@"filterField": [refDictionary objectForKey:@"column"],
+			@"filterValue": targetFilterValue,
+			@"filterComparison": SPBoxNil(filterComparison)
+		};
 		[self setFiltersToRestore:filterSettings];
 
 		// Attempt to switch to the target table
@@ -3880,10 +3894,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if (firstBetweenValueToRestore) SPClear(firstBetweenValueToRestore);
 	if (secondBetweenValueToRestore) SPClear(secondBetweenValueToRestore);
 
-	if (filterSettings) {
+	if ([filterSettings count]) {
 		if ([filterSettings objectForKey:@"filterField"])
 			filterFieldToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterField"]];
-		if ([filterSettings objectForKey:@"filterComparison"]) {
+		if ([[filterSettings objectForKey:@"filterComparison"] unboxNull]) {
 			// Check if operator is BETWEEN, if so set up input fields
 			if([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]) {
 				[argumentField setHidden:YES];
@@ -3896,17 +3910,18 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 			filterComparisonToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterComparison"]];
 		}
-		if([[filterSettings objectForKey:@"filterComparison"] isEqualToString:@"BETWEEN"]) {
+		if([filterComparisonToRestore isEqualToString:@"BETWEEN"]) {
 			if ([filterSettings objectForKey:@"firstBetweenField"])
 				firstBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"firstBetweenField"]];
 			if ([filterSettings objectForKey:@"secondBetweenField"])
 				secondBetweenValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"secondBetweenField"]];
 		} else {
-			if ([filterSettings objectForKey:@"filterValue"] && ![[filterSettings objectForKey:@"filterValue"] isNSNull]) {
-				if ([[filterSettings objectForKey:@"filterValue"] isKindOfClass:[NSData class]]) {
-					filterValueToRestore = [[NSString alloc] initWithData:[filterSettings objectForKey:@"filterValue"] encoding:[mySQLConnection stringEncoding]];
+			id filterValue = [filterSettings objectForKey:@"filterValue"];
+			if ([filterValue unboxNull]) {
+				if ([filterValue isKindOfClass:[NSData class]]) {
+					filterValueToRestore = [[NSString alloc] initWithData:(NSData *)filterValue encoding:[mySQLConnection stringEncoding]];
 				} else {
-					filterValueToRestore = [[NSString alloc] initWithString:[filterSettings objectForKey:@"filterValue"]];
+					filterValueToRestore = [[NSString alloc] initWithString:(NSString *)filterValue];
 				}
 			}
 		}

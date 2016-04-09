@@ -219,6 +219,14 @@ Do quote strings manually.</string>
 			<key>Clause</key>
 			<string>NOT LIKE &apos;&apos;</string>
 		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>= (Hex String)</string>
+			<key>NumberOfArguments</key>
+			<integer>1</integer>
+			<key>Clause</key>
+			<string>= $BINARY UNHEX(&apos;${}&apos;)</string>
+		</dict>
 	</array>
 	<key>date</key>
 	<array>
