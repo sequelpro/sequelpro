@@ -928,6 +928,10 @@
 		case NSImageOverlaps:
 
 			break;
+		
+		case NSNoImage:
+			
+			break;
 	}
 
 	// Create Rounded Rect Path
