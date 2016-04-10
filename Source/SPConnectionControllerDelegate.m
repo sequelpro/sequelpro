@@ -680,25 +680,6 @@ static NSString *SPQuickConnectImageWhite = @"quick-connect-icon-white.pdf";
 #ifndef SP_CODA
 
 /**
- * Called by the favorites exporter when the export completes.
- */
-- (void)favoritesExportCompletedWithError:(NSError *)error
-{
-	if (error) {
-		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites export error", @"favorites export error message")
-										 defaultButton:NSLocalizedString(@"OK", @"OK")
-									   alternateButton:nil 
-										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the export process:\n\n%@", @"favorites export error informative message"), [error localizedDescription]];
-	
-		[alert beginSheetModalForWindow:[dbDocument parentWindow] 
-						  modalDelegate:self
-						 didEndSelector:NULL
-							contextInfo:NULL];			
-	}
-}
-
-/**
  * Called by the favorites importer when the imported data is available.
  */
 - (void)favoritesImportData:(NSArray *)data

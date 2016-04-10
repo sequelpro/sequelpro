@@ -2049,6 +2049,28 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[super dealloc];
 }
 
+#ifndef SP_CODA
+
+/**
+ * Called by the favorites exporter when the export completes.
+ */
+- (void)favoritesExportCompletedWithError:(NSError *)error
+{
+	if (error) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Favorites export error", @"favorites export error message")
+																		 defaultButton:NSLocalizedString(@"OK", @"OK")
+																	 alternateButton:nil
+																			 otherButton:nil
+												 informativeTextWithFormat:NSLocalizedString(@"The following error occurred during the export process:\n\n%@", @"favorites export error informative message"), [error localizedDescription]];
+		
+		[alert beginSheetModalForWindow:[dbDocument parentWindow]
+											modalDelegate:self
+										 didEndSelector:NULL
+												contextInfo:NULL];			
+	}
+}
+#endif
+
 @end
 
 #pragma mark -

@@ -152,8 +152,7 @@
 	if([[NSThread currentThread] isCancelled]) goto cleanup_thread_and_pool;
 
 	// This thread is now first on the stack, and about to process the structure.
-#warning Should not set delegate as the notification source object
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:self];
 
 	NSString *connectionID = ([delegate respondsToSelector:@selector(connectionID)])? [NSString stringWithString:[delegate connectionID]] : @"_";
 
@@ -390,8 +389,7 @@ update_globals_and_cleanup:
 
 	if(structureWasUpdated) {
 		// Notify that the structure querying has been performed
-#warning Should not set delegate as the notification source object
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:self];
 	}
 
 cleanup_thread_and_pool:
