@@ -555,10 +555,10 @@
                                                                             <action selector="duplicateField:" target="69" id="7834"/>
                                                                         </connections>
                                                                     </button>
-                                                                    <button toolTip="Delete selected field (⌫)" id="5136">
-                                                                        <rect key="frame" x="30" y="-1" width="32" height="25"/>
+                                                                    <button toolTip="Delete selected field (⌫)" verticalHuggingPriority="750" id="5136">
+                                                                        <rect key="frame" x="30" y="-2" width="32" height="26"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="overlaps" alignment="center" enabled="NO" state="on" inset="2" id="5137">
+                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" enabled="NO" state="on" borderStyle="border" inset="2" id="5137">
                                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent"></string>
@@ -580,10 +580,10 @@
                                                                             <action selector="reloadTable:" target="69" id="5142"/>
                                                                         </connections>
                                                                     </button>
-                                                                    <button toolTip="Add field (⌥⌘A)" id="5131">
-                                                                        <rect key="frame" x="-1" y="-1" width="32" height="25"/>
+                                                                    <button toolTip="Add field (⌥⌘A)" verticalHuggingPriority="750" id="5131">
+                                                                        <rect key="frame" x="-1" y="-2" width="32" height="26"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="5132">
+                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" enabled="NO" state="on" borderStyle="border" inset="2" id="5132">
                                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">a</string>
@@ -637,7 +637,7 @@
                                                                                             </comboBoxCell>
                                                                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                                                                         </tableColumn>
-                                                                                        <tableColumn identifier="length" width="42" minWidth="25" maxWidth="1000" id="654">
+                                                                                        <tableColumn identifier="length" width="41" minWidth="25" maxWidth="1000" id="654">
                                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Length">
                                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -711,7 +711,7 @@
                                                                                             </textFieldCell>
                                                                                             <tableColumnResizingMask key="resizingMask" userResizable="YES"/>
                                                                                         </tableColumn>
-                                                                                        <tableColumn identifier="default" width="43.5" minWidth="34" maxWidth="1000" id="248">
+                                                                                        <tableColumn identifier="default" width="42.5" minWidth="34" maxWidth="1000" id="248">
                                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Default">
                                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -5636,12 +5636,14 @@ Gw
         <image name="8A84264F-2AAA-441A-84CB-02820F5C6FC1" width="128" height="128"/>
         <image name="A4B5929C-AB4D-4ABB-AB4F-8F7E17D2FB49" width="128" height="128"/>
         <image name="BD7FAE47-1BD9-41DA-ADBF-6E5D1CB5EB44" width="128" height="128"/>
+        <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSApplicationIcon" width="128" height="128"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
         <image name="NSLeftFacingTriangleTemplate" width="9" height="12"/>
         <image name="NSListViewTemplate" width="14" height="10"/>
+        <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="NSRightFacingTriangleTemplate" width="9" height="12"/>
         <image name="button_action" width="32" height="23"/>
         <image name="button_add" width="32" height="23"/>
