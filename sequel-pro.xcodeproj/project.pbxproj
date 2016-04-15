@@ -171,6 +171,9 @@
 		384582C40FB95FF800DDACB6 /* func-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C30FB95FF800DDACB6 /* func-small.png */; };
 		384582C70FB9603600DDACB6 /* proc-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 384582C60FB9603600DDACB6 /* proc-small.png */; };
 		386083461C8A3D97006D1B47 /* zlib.1.2.4.h in Headers */ = {isa = PBXBuildFile; fileRef = 386083451C8A3D97006D1B47 /* zlib.1.2.4.h */; };
+		3876E1501CC0B26000D85154 /* button_add@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3876E14F1CC0B26000D85154 /* button_add@2x.png */; };
+		3876E1541CC0B26700D85154 /* button_add_folder@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3876E1531CC0B26700D85154 /* button_add_folder@2x.png */; };
+		3876E15D1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3876E15C1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m */; };
 		387BBBA80FBCB6CB00B31746 /* SPTableRelations.m in Sources */ = {isa = PBXBuildFile; fileRef = 387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */; };
 		4D90B79A101E0CDF00D116A1 /* SPUserManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B799101E0CDF00D116A1 /* SPUserManager.m */; };
 		4D90B79E101E0CF200D116A1 /* SPUserManager.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 4D90B79B101E0CF200D116A1 /* SPUserManager.xcdatamodel */; };
@@ -923,6 +926,10 @@
 		384582C30FB95FF800DDACB6 /* func-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "func-small.png"; sourceTree = "<group>"; };
 		384582C60FB9603600DDACB6 /* proc-small.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "proc-small.png"; sourceTree = "<group>"; };
 		386083451C8A3D97006D1B47 /* zlib.1.2.4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zlib.1.2.4.h; path = Frameworks/zlib/zlib.1.2.4.h; sourceTree = "<group>"; };
+		3876E14F1CC0B26000D85154 /* button_add@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_add@2x.png"; sourceTree = "<group>"; };
+		3876E1531CC0B26700D85154 /* button_add_folder@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_add_folder@2x.png"; sourceTree = "<group>"; };
+		3876E15B1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableFooterPopUpButtonCell.h; sourceTree = "<group>"; };
+		3876E15C1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableFooterPopUpButtonCell.m; sourceTree = "<group>"; };
 		387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelations.h; sourceTree = "<group>"; };
 		387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableRelations.m; sourceTree = "<group>"; };
 		38C613701C89777B00B3B6EF /* libz.1.2.5.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.5.tbd; path = usr/lib/libz.1.2.5.tbd; sourceTree = SDKROOT; };
@@ -2166,7 +2173,9 @@
 				C9AD7C8116761B3300234EEE /* button_action.png */,
 				C9AD7C8216761B3300234EEE /* button_action@2x.png */,
 				582E93F5168298C6003459FD /* button_add_folder.png */,
+				3876E1531CC0B26700D85154 /* button_add_folder@2x.png */,
 				582E93FF168299E3003459FD /* button_add.png */,
+				3876E14F1CC0B26000D85154 /* button_add@2x.png */,
 				582E940116829B0A003459FD /* button_bar_handle.png */,
 				C9C9943F1678A439001F5DA8 /* button_bar_spacer.png */,
 				582E940D1682A2AD003459FD /* button_bar_spacer@2x.png */,
@@ -2358,6 +2367,8 @@
 				58D2A6A616FBDEFF002EB401 /* SPComboPopupButton.m */,
 				50805B0B1BF2A068005F7A99 /* SPPopUpButtonCell.h */,
 				50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */,
+				3876E15B1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.h */,
+				3876E15C1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m */,
 			);
 			name = Controls;
 			sourceTree = "<group>";
@@ -2987,6 +2998,7 @@
 				17E6420A0EF020CB001BC333 /* DBView.xib in Resources */,
 				17E641FA0EF02088001BC333 /* Growl Registration Ticket.growlRegDict in Resources */,
 				17E641FC0EF02088001BC333 /* sequel-pro.scriptSuite in Resources */,
+				3876E1501CC0B26000D85154 /* button_add@2x.png in Resources */,
 				17E641FD0EF02088001BC333 /* sequel-pro.scriptTerminology in Resources */,
 				1761FD480EF03A6F00331368 /* MainMenu.xib in Resources */,
 				B5E2C5FA0F2353B5007446E0 /* table-property.png in Resources */,
@@ -3047,6 +3059,7 @@
 				58A137CD123ED5E6000B1B75 /* titlebarlock.png in Resources */,
 				BCCB747A128D4FD100339E25 /* BundleEditor.xib in Resources */,
 				BC77C5E1129AA67F009AD832 /* BundleHTMLOutput.xib in Resources */,
+				3876E1541CC0B26700D85154 /* button_add_folder@2x.png in Resources */,
 				BC09D7DE12A786FB0030DB64 /* cancel-clicked-highlighted.png in Resources */,
 				BC09D7DF12A786FB0030DB64 /* cancel-clicked.png in Resources */,
 				BC09D7E012A786FB0030DB64 /* cancel-highlighted.png in Resources */,
@@ -3316,6 +3329,7 @@
 				BCA6271C1031B9D40047E5D5 /* SPTooltip.m in Sources */,
 				58DA8863103E15B5000B98DF /* SPLogger.m in Sources */,
 				BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */,
+				3876E15D1CC0BA0300D85154 /* SPTableFooterPopUpButtonCell.m in Sources */,
 				50EAB5B81A8FBB08008F627A /* SPOSInfo.m in Sources */,
 				173C4366104455E0001F3A30 /* SPQueryFavoriteManager.m in Sources */,
 				173C44D81044A6B0001F3A30 /* SPOutlineView.m in Sources */,
