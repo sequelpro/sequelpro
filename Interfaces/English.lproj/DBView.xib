@@ -147,6 +147,7 @@
                                                                     </searchFieldCell>
                                                                     <connections>
                                                                         <action selector="updateFilter:" target="68" id="6285"/>
+                                                                        <outlet property="delegate" destination="68" id="3S3-Wq-23P"/>
                                                                         <outlet property="nextKeyView" destination="22" id="6322"/>
                                                                     </connections>
                                                                 </searchField>

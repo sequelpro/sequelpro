@@ -1624,23 +1624,42 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
  */
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
 {
-
-	// When enter/return is used, save the row.
-	if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ) {
-		[[control window] makeFirstResponder:control];
-		return YES;
-
-	// When the escape key is used, abort the rename.
-	} else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
-		[textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
-
-		[control abortEditing];
-		[[tablesListView window] makeFirstResponder:tablesListView];
-
-		return YES;
-	} else{
-		return NO;
+	
+	if(control == listFilterField) {
+		NSInteger newRow = NSNotFound;
+		// Arrow down/up will usually go to start/end of the text field. we want to change the selected table row.
+		if (command == @selector(moveDown:)) {
+			newRow = [tablesListView selectedRow] + 1;
+		}
+		
+		if (command == @selector(moveUp:)) {
+			newRow = [tablesListView selectedRow] - 1;
+		}
+		
+		if(newRow != NSNotFound) {
+			//we can't go below 1 or we'll select the table header
+			[tablesListView selectRowIndexes:[NSIndexSet indexSetWithIndex:(newRow > 0 ? newRow : 1)] byExtendingSelection:NO];
+			return YES;
+		}
 	}
+	else {
+		// When enter/return is used, save the row.
+		if ( [textView methodForSelector:command] == [textView methodForSelector:@selector(insertNewline:)] ) {
+			[[control window] makeFirstResponder:control];
+			return YES;
+		}
+		// When the escape key is used, abort the rename.
+		else if ( [[control window] methodForSelector:command] == [[control window] methodForSelector:@selector(cancelOperation:)] ||
+				   [textView methodForSelector:command] == [textView methodForSelector:@selector(complete:)] ) {
+			
+			[control abortEditing];
+			[[tablesListView window] makeFirstResponder:tablesListView];
+			
+			return YES;
+		}
+	}
+	
+	return NO;
 }
 #endif
 
