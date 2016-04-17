@@ -92,7 +92,7 @@
                                     </connections>
                                 </button>
                                 <button id="5851">
-                                    <rect key="frame" x="34" y="3" width="34" height="23"/>
+                                    <rect key="frame" x="34" y="4" width="34" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add_folder" imagePosition="only" alignment="center" alternateImage="button_add_folder" inset="2" id="5852">
                                         <behavior key="behavior" lightByContents="YES"/>
@@ -204,7 +204,7 @@
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" autosaveColumns="NO" id="4913" customClass="SPFavoritesOutlineView">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="19"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
