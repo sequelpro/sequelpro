@@ -703,6 +703,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Store the current first responder so filter field doesn't steal focus
 	id currentFirstResponder = [[tableDocumentInstance parentWindow] firstResponder];
+	// For text inputs the window's fieldEditor will be the actual firstResponder, but that is useless for setting.
+	// We need the visible view object, which is the delegate of the field editor.
+	if([currentFirstResponder respondsToSelector:@selector(isFieldEditor)] && [currentFirstResponder isFieldEditor]) {
+		currentFirstResponder = [currentFirstResponder delegate];
+	}
 
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[fieldField setEnabled:YES];
