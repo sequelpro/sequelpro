@@ -813,7 +813,14 @@
 		pathComponents = [[[url absoluteString] substringToIndex:[[url absoluteString] length]-1] pathComponents];
 	else
 		pathComponents = [[url absoluteString] pathComponents];
-
+	
+	// remove percent encoding
+	NSMutableArray *decodedPathComponents = [NSMutableArray arrayWithCapacity:pathComponents.count];
+	for (NSString *component in pathComponents) {
+		[decodedPathComponents addObject:component.stringByRemovingPercentEncoding];
+	}
+	pathComponents = decodedPathComponents.copy;
+	
 	if([pathComponents count] > 2)
 		parameter = [pathComponents subarrayWithRange:NSMakeRange(2, [pathComponents count]-2)];
 	else
