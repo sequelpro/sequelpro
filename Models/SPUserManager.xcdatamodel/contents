@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="13F1507" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="13F1507" minimumToolsVersion="Xcode 4.5" macOSVersion="Mac OS X 10.6" iOSVersion="Automatic">
     <entity name="Privileges" representedClassName="SPPrivilegesMO" syncable="YES">
         <attribute name="alter_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="alter_routine_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
