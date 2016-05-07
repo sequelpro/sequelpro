@@ -281,6 +281,12 @@
                                                 <action selector="selectCurrentLine:" target="-1" id="896"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Active Query" keyEquivalent="y" id="kPp-CM-X9x">
+                                            <modifierMask key="keyEquivalentModifierMask" control="YES"/>
+                                            <connections>
+                                                <action selector="selectCurrentQuery:" target="-1" id="ree-o4-Jbl"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem title="Enclosing Brackets" keyEquivalent="B" id="932">
                                             <connections>
                                                 <action selector="selectEnclosingBrackets:" target="-1" id="933"/>
