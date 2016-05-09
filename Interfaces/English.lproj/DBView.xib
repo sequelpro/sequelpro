@@ -333,13 +333,13 @@
                                 <imageView id="7848">
                                     <rect key="frame" x="199" y="0.0" width="15" height="23"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES"/>
-                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_handle" id="7849"/>
+                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="7849"/>
                                 </imageView>
                                 <button toolTip="Add new table" id="7850">
-                                    <rect key="frame" x="-1" y="-1" width="32" height="25"/>
+                                    <rect key="frame" x="-1" y="1" width="32" height="22"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" inset="2" id="7851">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" inset="2" id="7851">
+                                        <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
                                     <connections>
@@ -448,10 +448,10 @@
                                     </popUpButtonCell>
                                 </popUpButton>
                                 <button toolTip="Refresh table list" id="7954">
-                                    <rect key="frame" x="61" y="-1" width="32" height="25"/>
+                                    <rect key="frame" x="61" y="1" width="32" height="22"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES"/>
-                                    <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="only" alignment="center" inset="2" id="7955">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_refresh" imagePosition="only" alignment="center" alternateImage="button_refresh" inset="2" id="7955">
+                                        <behavior key="behavior" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
                                     <connections>
@@ -495,7 +495,7 @@
                                                                         </connections>
                                                                     </button>
                                                                     <imageView id="5129">
-                                                                        <rect key="frame" x="125" y="0.0" width="507" height="23"/>
+                                                                        <rect key="frame" x="-1" y="0.0" width="692" height="23"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5130"/>
                                                                     </imageView>
@@ -546,8 +546,8 @@
                                                                     <button toolTip="Duplicate selected or last field definition (⌘D)" id="5138">
                                                                         <rect key="frame" x="61" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicate" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="5139">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicate" imagePosition="only" alignment="center" alternateImage="button_duplicate" enabled="NO" state="on" inset="2" id="5139">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">d</string>
                                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -557,10 +557,10 @@
                                                                         </connections>
                                                                     </button>
                                                                     <button toolTip="Delete selected field (⌫)" verticalHuggingPriority="750" id="5136">
-                                                                        <rect key="frame" x="30" y="-2" width="32" height="26"/>
+                                                                        <rect key="frame" x="30" y="-1" width="32" height="24"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" enabled="NO" state="on" borderStyle="border" inset="2" id="5137">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_remove" imagePosition="overlaps" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5137">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent"></string>
                                                                         </buttonCell>
@@ -571,8 +571,8 @@
                                                                     <button toolTip="Refresh table structure (⌘R)" id="5134">
                                                                         <rect key="frame" x="93" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" state="on" inset="2" id="5135">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5135">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">r</string>
                                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -582,10 +582,10 @@
                                                                         </connections>
                                                                     </button>
                                                                     <button toolTip="Add field (⌥⌘A)" verticalHuggingPriority="750" id="5131">
-                                                                        <rect key="frame" x="-1" y="-2" width="32" height="26"/>
+                                                                        <rect key="frame" x="-1" y="-1" width="32" height="24"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" enabled="NO" state="on" borderStyle="border" inset="2" id="5132">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" enabled="NO" state="on" inset="2" id="5132">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">a</string>
                                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
@@ -602,7 +602,7 @@
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <tableView identifier="TableStructureColumnsTableView" focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" multipleSelection="NO" autosaveName="SPTableStructureSource" rowHeight="16" headerView="3926" id="232" customClass="SPTableView">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="692" height="282"/>
+                                                                                    <rect key="frame" x="0.0" y="0.0" width="688" height="18"/>
                                                                                     <autoresizingMask key="autoresizingMask"/>
                                                                                     <size key="intercellSpacing" width="3" height="2"/>
                                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -801,7 +801,7 @@
                                                                             </subviews>
                                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                         </clipView>
-                                                                        <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="3925">
+                                                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="3925">
                                                                             <rect key="frame" x="1" y="289" width="690" height="16"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
@@ -823,8 +823,8 @@
                                                                     <button hidden="YES" toolTip="Reveal the collapsed indexes pane" id="7457">
                                                                         <rect key="frame" x="124" y="-1" width="33" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_info_pane_show" imagePosition="overlaps" alignment="center" state="on" inset="2" id="7458">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_info_pane_show" imagePosition="overlaps" alignment="center" alternateImage="button_info_pane_show" state="on" inset="2" id="7458">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
                                                                         <connections>
@@ -838,15 +838,15 @@
                                                                 <autoresizingMask key="autoresizingMask"/>
                                                                 <subviews>
                                                                     <imageView id="5148">
-                                                                        <rect key="frame" x="93" y="0.0" width="602" height="23"/>
+                                                                        <rect key="frame" x="-1" y="0.0" width="692" height="23"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5149"/>
                                                                     </imageView>
                                                                     <button toolTip="Delete selected index" id="5152">
                                                                         <rect key="frame" x="30" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="overlaps" alignment="center" enabled="NO" state="on" inset="2" id="5153">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="overlaps" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5153">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
                                                                         <connections>
@@ -856,8 +856,8 @@
                                                                     <button toolTip="Refresh table indexes (⌘R)" id="5151">
                                                                         <rect key="frame" x="61" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" state="on" inset="2" id="5154">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5154">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                             <string key="keyEquivalent">r</string>
                                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -869,8 +869,8 @@
                                                                     <button toolTip="Add index" id="5150">
                                                                         <rect key="frame" x="-1" y="-1" width="32" height="25"/>
                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="5155">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" enabled="NO" state="on" inset="2" id="5155">
+                                                                            <behavior key="behavior" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
                                                                         <connections>
@@ -1070,11 +1070,16 @@
                                                 <rect key="frame" x="10" y="7" width="706" height="544"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
+                                                    <imageView id="5179">
+                                                        <rect key="frame" x="6" y="10" width="696" height="23"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5180"/>
+                                                    </imageView>
                                                     <button toolTip="Add row (⌥⌘A)" id="5175">
                                                         <rect key="frame" x="6" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" enabled="NO" inset="2" id="5184">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" enabled="NO" inset="2" id="5184">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">a</string>
                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
@@ -1086,8 +1091,8 @@
                                                     <button toolTip="Refresh table contents (⌘R)" id="5176">
                                                         <rect key="frame" x="100" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" inset="2" id="5183">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" inset="2" id="5183">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">r</string>
                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -1099,8 +1104,8 @@
                                                     <button toolTip="Delete selected row(s) (⌫)" id="5177">
                                                         <rect key="frame" x="37" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" enabled="NO" inset="2" id="5182">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" inset="2" id="5182">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent"></string>
                                                         </buttonCell>
@@ -1111,8 +1116,8 @@
                                                     <button toolTip="Duplicate selected row (⌘D)" id="5178">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicate" imagePosition="overlaps" alignment="center" enabled="NO" inset="2" id="5181">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_duplicate" imagePosition="overlaps" alignment="center" alternateImage="button_duplicate" enabled="NO" inset="2" id="5181">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">d</string>
                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -1121,11 +1126,6 @@
                                                             <action selector="duplicateRow:" target="67" id="7838"/>
                                                         </connections>
                                                     </button>
-                                                    <imageView id="5179">
-                                                        <rect key="frame" x="163" y="10" width="539" height="23"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5180"/>
-                                                    </imageView>
                                                     <button toolTip="Toggle between editing simple text cells as a spreadsheet or in pop-up sheets" id="5201">
                                                         <rect key="frame" x="131" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1149,8 +1149,8 @@
                                                     <button toolTip="View next page of results" id="6647">
                                                         <rect key="frame" x="654" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_right" imagePosition="only" alignment="center" inset="2" id="6648">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_right" imagePosition="only" alignment="center" alternateImage="button_right" inset="2" id="6648">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
                                                         <connections>
@@ -1160,8 +1160,8 @@
                                                     <button toolTip="View previous page of results" id="6650">
                                                         <rect key="frame" x="592" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_left" imagePosition="only" alignment="center" inset="2" id="6651">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_left" imagePosition="only" alignment="center" alternateImage="button_left" inset="2" id="6651">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
                                                         <connections>
@@ -1551,12 +1551,12 @@
                                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                                 <subviews>
                                                                                     <imageView id="7222">
-                                                                                        <rect key="frame" x="26" y="214" width="670" height="23"/>
+                                                                                        <rect key="frame" x="0.0" y="214" width="696" height="23"/>
                                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="7230"/>
                                                                                     </imageView>
                                                                                     <popUpButton id="7221">
-                                                                                        <rect key="frame" x="-13" y="214" width="48" height="23"/>
+                                                                                        <rect key="frame" x="0.0" y="214" width="35" height="23"/>
                                                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                         <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" inset="2" pullsDown="YES" arrowPosition="noArrow" autoenablesItems="NO" selectedItem="7236" id="7231">
                                                                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -2341,6 +2341,11 @@ Gw
                                                 <rect key="frame" x="10" y="7" width="706" height="544"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
+                                                    <imageView id="5562">
+                                                        <rect key="frame" x="6" y="10" width="696" height="23"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5563"/>
+                                                    </imageView>
                                                     <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="5544">
                                                         <rect key="frame" x="6" y="32" width="696" height="474"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2472,8 +2477,8 @@ Gw
                                                     <button toolTip="Add table relation (⌥⌘A)" id="5559">
                                                         <rect key="frame" x="6" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="5566">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" enabled="NO" state="on" inset="2" id="5566">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">a</string>
                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
@@ -2485,8 +2490,8 @@ Gw
                                                     <button toolTip="Refresh table relations (⌘R)" id="5560">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" state="on" inset="2" id="5565">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="5565">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">r</string>
                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -2498,8 +2503,8 @@ Gw
                                                     <button toolTip="Delete selected relation(s) (⌫)" id="5561">
                                                         <rect key="frame" x="37" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="5564">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="5564">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent"></string>
                                                         </buttonCell>
@@ -2507,11 +2512,6 @@ Gw
                                                             <action selector="removeRelation:" target="5567" id="5910"/>
                                                         </connections>
                                                     </button>
-                                                    <imageView id="5562">
-                                                        <rect key="frame" x="100" y="10" width="602" height="23"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="5563"/>
-                                                    </imageView>
                                                     <textField verticalHuggingPriority="750" id="5589">
                                                         <rect key="frame" x="14" y="515" width="687" height="14"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -2529,6 +2529,11 @@ Gw
                                                 <rect key="frame" x="10" y="7" width="706" height="544"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
+                                                    <imageView id="6695">
+                                                        <rect key="frame" x="6" y="10" width="696" height="23"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="6719"/>
+                                                    </imageView>
                                                     <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="6698">
                                                         <rect key="frame" x="6" y="32" width="696" height="474"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2660,8 +2665,8 @@ Gw
                                                     <button toolTip="Add table relation (⌥⌘A)" id="6699">
                                                         <rect key="frame" x="6" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="6700">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_add" imagePosition="only" alignment="center" alternateImage="button_add" enabled="NO" state="on" inset="2" id="6700">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">a</string>
                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
@@ -2673,8 +2678,8 @@ Gw
                                                     <button toolTip="Refresh table relations (⌘R)" id="6697">
                                                         <rect key="frame" x="68" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" state="on" inset="2" id="6717">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_refresh" imagePosition="overlaps" alignment="center" alternateImage="button_refresh" state="on" inset="2" id="6717">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent">r</string>
                                                             <modifierMask key="keyEquivalentModifierMask" command="YES"/>
@@ -2686,8 +2691,8 @@ Gw
                                                     <button toolTip="Delete selected relation(s) (⌫)" id="6696">
                                                         <rect key="frame" x="37" y="9" width="32" height="25"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" enabled="NO" state="on" inset="2" id="6718">
-                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_remove" imagePosition="only" alignment="center" alternateImage="button_remove" enabled="NO" state="on" inset="2" id="6718">
+                                                            <behavior key="behavior" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                             <string key="keyEquivalent"></string>
                                                         </buttonCell>
@@ -2695,11 +2700,6 @@ Gw
                                                             <action selector="removeTrigger:" target="6691" id="6748"/>
                                                         </connections>
                                                     </button>
-                                                    <imageView id="6695">
-                                                        <rect key="frame" x="100" y="10" width="602" height="23"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="button_bar_spacer" id="6719"/>
-                                                    </imageView>
                                                     <textField verticalHuggingPriority="750" id="6694">
                                                         <rect key="frame" x="14" y="515" width="687" height="14"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -5637,31 +5637,29 @@ Gw
         <image name="8A84264F-2AAA-441A-84CB-02820F5C6FC1" width="128" height="128"/>
         <image name="A4B5929C-AB4D-4ABB-AB4F-8F7E17D2FB49" width="128" height="128"/>
         <image name="BD7FAE47-1BD9-41DA-ADBF-6E5D1CB5EB44" width="128" height="128"/>
-        <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSApplicationIcon" width="128" height="128"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
         <image name="NSLeftFacingTriangleTemplate" width="9" height="12"/>
         <image name="NSListViewTemplate" width="14" height="10"/>
-        <image name="NSRemoveTemplate" width="11" height="11"/>
         <image name="NSRightFacingTriangleTemplate" width="9" height="12"/>
-        <image name="button_action" width="32" height="23"/>
-        <image name="button_add" width="32" height="23"/>
-        <image name="button_bar_handle" width="15" height="23"/>
+        <image name="button_action" width="30" height="22"/>
+        <image name="button_add" width="30" height="22"/>
+        <image name="button_bar_handle" width="11" height="23"/>
         <image name="button_bar_spacer" width="10" height="23"/>
-        <image name="button_duplicate" width="33" height="23"/>
-        <image name="button_edit" width="32" height="23"/>
-        <image name="button_edit_mode" width="32" height="23"/>
-        <image name="button_edit_mode_selected" width="32" height="23"/>
-        <image name="button_info_pane_show" width="33" height="23"/>
-        <image name="button_left" width="32" height="23"/>
-        <image name="button_pagination" width="32" height="23"/>
-        <image name="button_pane_hide" width="32" height="23"/>
-        <image name="button_pane_show" width="32" height="23"/>
-        <image name="button_refresh" width="32" height="23"/>
-        <image name="button_remove" width="32" height="23"/>
-        <image name="button_right" width="32" height="23"/>
+        <image name="button_duplicate" width="30" height="22"/>
+        <image name="button_edit" width="30" height="22"/>
+        <image name="button_edit_mode" width="30" height="22"/>
+        <image name="button_edit_mode_selected" width="30" height="22"/>
+        <image name="button_info_pane_show" width="30" height="22"/>
+        <image name="button_left" width="30" height="22"/>
+        <image name="button_pagination" width="30" height="22"/>
+        <image name="button_pane_hide" width="30" height="22"/>
+        <image name="button_pane_show" width="30" height="22"/>
+        <image name="button_refresh" width="30" height="22"/>
+        <image name="button_remove" width="30" height="22"/>
+        <image name="button_right" width="30" height="22"/>
         <image name="grabber-horizontal" width="10" height="8"/>
     </resources>
 </document>
