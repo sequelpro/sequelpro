@@ -876,16 +876,23 @@
 		}
 	} else {
 		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected, taking %@", @"text showing one row has been affected by a single query"),
-								statusErrorString,
-								[NSString stringForTimeInterval:executionTime]
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
+								statusErrorString
 							];
 		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
 								statusErrorString,
-								(long)totalAffectedRows,
-								[NSString stringForTimeInterval:executionTime]
+								(long)totalAffectedRows
 							];
+		}
+		if(resultDataCount) {
+			// we were running a query that returns a result set (ie. SELECT).
+			// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
+			//       and that makes our query time measurement pretty useless (see #264)
+			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+		}
+		else {
+			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
 		}
 	}
 

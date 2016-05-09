@@ -169,7 +169,7 @@ typedef struct {
 - (void) doAutoCompletion;
 - (void) refreshCompletion;
 - (NSArray *)suggestionsForSQLCompletionWith:(NSString *)currentWord dictMode:(BOOL)isDictMode browseMode:(BOOL)dbBrowseMode withTableName:(NSString*)aTableName withDbName:(NSString*)aDbName;
-- (void) selectCurrentQuery;
+- (IBAction) selectCurrentQuery:(id)sender;
 - (void) processMirroredSnippets;
 
 - (BOOL)checkForCaretInsideSnippet;

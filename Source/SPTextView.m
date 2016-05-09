@@ -1131,7 +1131,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 }
 
-- (void) selectCurrentQuery
+- (IBAction) selectCurrentQuery:(id)sender
 {
 	if([self isEditable])
 		[customQueryInstance selectCurrentQuery];
@@ -2244,12 +2244,6 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 #endif
 	}
   
-	if([charactersIgnMod isEqualToString:@"y"]) // ^Y select current query
-		if(curFlags==(NSControlKeyMask))
-		{
-			[self selectCurrentQuery];
-			return;
-		}
 	if(curFlags & NSCommandKeyMask) {
 		if([charactersIgnMod isEqualToString:@"+"] || [charactersIgnMod isEqualToString:@"="]) // increase text size by 1; ⌘+, ⌘=, and ⌘ numpad +
 		{
@@ -3112,9 +3106,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	}
 	if ([[[self class] defaultMenu] itemWithTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG] == nil)
 	{
-		NSMenuItem *selectCurrentQueryMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Select Active Query", @"Select Active Query") action:@selector(selectCurrentQuery) keyEquivalent:@"y"];
+		NSMenuItem *selectCurrentQueryMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Select Active Query", @"Select Active Query") action:@selector(selectCurrentQuery:) keyEquivalent:@""];
 		[selectCurrentQueryMenuItem setTag:SP_CQ_SELECT_CURRENT_QUERY_MENU_ITEM_TAG];
-		[selectCurrentQueryMenuItem setKeyEquivalentModifierMask:NSControlKeyMask];
 		[menu insertItem:selectCurrentQueryMenuItem atIndex:4];
 		[selectCurrentQueryMenuItem release];
 	}
@@ -3222,7 +3215,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 		return ([self selectedRange].length>0);
 	}
 	// Validate Select Active Query
-	if ([menuItem action] == @selector(selectCurrentQuery)) {
+	if ([menuItem action] == @selector(selectCurrentQuery:)) {
 		return ([self isEditable] && [[self delegate] isKindOfClass:[SPCustomQuery class]]);
 	}
 	// Disable "Copy with Column Names" and "Copy as SQL INSERT"
