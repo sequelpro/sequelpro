@@ -54,6 +54,7 @@
 
 // Information
 - (SPMySQLConnection *)connection;
+- (SPDatabaseDocument *)delegate;
 
 // Structure retrieval from the server
 - (void)queryDbStructureInBackgroundWithUserInfo:(NSDictionary *)userInfo;

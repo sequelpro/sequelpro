@@ -127,6 +127,11 @@
 	return [c autorelease];
 }
 
+- (SPDatabaseDocument *)delegate
+{
+	return delegate;
+}
+
 #pragma mark -
 #pragma mark Structure retrieval from the server
 

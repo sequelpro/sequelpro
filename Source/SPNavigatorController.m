@@ -168,8 +168,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	functionIcon = [[NSImage imageNamed:@"func-small"] retain];
 	fieldIcon = [[NSImage imageNamed:@"field-small-square"] retain];
 
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:)
-												 name:@"SPDBStructureWasUpdated" object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateNavigator:) name:@"SPDBStructureWasUpdated" object:nil];
 
 }
 
@@ -408,16 +407,12 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 
 - (void)updateNavigator:(NSNotification *)aNotification
 {
+	SPDatabaseDocument *object = [(SPDatabaseStructure *)[aNotification object] delegate];
 
-	id object = [aNotification object];
-
-	if([object isKindOfClass:[SPDatabaseDocument class]])
-		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:object waitUntilDone:NO];
-	else
-		[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:nil waitUntilDone:NO];
+	[self performSelectorOnMainThread:@selector(updateEntriesForConnection:) withObject:object waitUntilDone:NO];
 }
 
-- (void)updateEntriesForConnection:(id)doc
+- (void)updateEntriesForConnection:(SPDatabaseDocument *)doc
 {
 
 	if(ignoreUpdate) {
@@ -431,8 +426,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 		[cachedSortedKeys removeAllObjects];
 	}
 
-
-	if (doc && [doc isKindOfClass:[SPDatabaseDocument class]]) {
+	if (doc) {
 
 		SPMySQLConnection *theConnection = [doc getConnection];
 		if(!theConnection || ![theConnection isConnected]) return;
@@ -488,7 +482,7 @@ static NSComparisonResult compareStrings(NSString *s1, NSString *s2, void* conte
 	if(isFiltered && [[self window] isVisible])
 		[self filterTree:self];
 
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPNavigatorStructureWasUpdated" object:doc];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPNavigatorStructureWasUpdated" object:self];
 
 }
 
