@@ -40,7 +40,6 @@
 @interface SPWindowController (SPDeclaredAPI)
 
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
-- (void)_updateLineHidingViewState;
 - (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc;
 
 @end
@@ -128,14 +127,10 @@
  */
 - (void)windowDidBecomeMain:(NSNotification *)notification
 {
-	[self _updateLineHidingViewState];
+	
 }
 - (void)windowDidResignMain:(NSNotification *)notification
 {
-	[self _updateLineHidingViewState];
-
-	// Update the state again after a short delay to catch attached sheets being main
-	[self performSelector:@selector(_updateLineHidingViewState) withObject:nil afterDelay:0.1];
 }
 
 /**
@@ -157,7 +152,6 @@
 - (void)windowWillEnterFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:YES];
-	[self _updateLineHidingViewState];
 }
 
 /**
@@ -166,7 +160,6 @@
 - (void)windowDidExitFullScreen:(NSNotification *)notification
 {
 	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:NO];
-	[self _updateLineHidingViewState];
 }
 
 #pragma mark -
