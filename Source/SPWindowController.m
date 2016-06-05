@@ -52,8 +52,6 @@ enum {
 
 - (void)_setUpTabBar;
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
-- (void)_createTitleBarLineHidingView;
-- (void)_updateLineHidingViewState;
 - (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc;
 - (void)_selectedTableDocumentDeallocd:(NSNotification *)notification;
 @end
@@ -68,9 +66,6 @@ enum {
 	[self _switchOutSelectedTableDocument:nil];
 	
 	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
-
-	// Add a line to the window to hide the line below the title bar when the toolbar is collapsed
-	[self _createTitleBarLineHidingView];
 
 	// Disable automatic cascading - this occurs before the size is set, so let the app
 	// controller apply cascading after frame autosaving.
@@ -88,7 +83,6 @@ enum {
 	// Register for drag start and stop notifications - used to show/hide tab bars
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:PSMTabDragDidEndNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateLineHidingViewState) name:SPWindowToolbarDidToggleNotification object:nil];
 
 	// Because we are a document-based app we automatically adopt window restoration on 10.7+.
 	// However that causes a race condition with our own window setup code.
@@ -508,49 +502,6 @@ enum {
 	[[theCell indicator] bind:@"hidden" toObject:theDocument withKeyPath:@"isProcessing" options:bindingOptions];
 	
 	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
-}
-
-/**
- * Create a view which is used to hide the line underneath the window title bar when the
- * toolbar is hidden, improving appearance when tabs are visible (or collapsed!)
- */
-- (void)_createTitleBarLineHidingView
-{
-	float titleBarHeight = 21.f;
-	NSSize windowSize = [self window].frame.size;
-
-	titleBarLineHidingView = [[[NSClipView alloc] init] autorelease];
-
-	// Set the original size and the autosizing mask to preserve it
-	[titleBarLineHidingView setFrame:NSMakeRect(0, windowSize.height - titleBarHeight - 1, windowSize.width, 1)];
-	[titleBarLineHidingView setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
-
-	[self _updateLineHidingViewState];
-
-	// Add the view to the window
-	[[[[self window] contentView] superview] addSubview:titleBarLineHidingView];
-}
-
-/**
- * Update the visibility and colour of the title bar line hiding view
- */
-- (void)_updateLineHidingViewState
-{
-	// Set the background colour to match the titlebar window state
-	if ((([[self window] isMainWindow] || [[[self window] attachedSheet] isMainWindow]) && [NSApp isActive])) {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.66f : 0.63f alpha:1.0]];
-	} 
-	else {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.87f : 0.84f alpha:1.0]];
-	}
-
-	// If the window is fullscreen or the toolbar is showing, hide the view; otherwise show it
-	if (([[self window] styleMask] & NSFullScreenWindowMask) || [[[self window] toolbar] isVisible] || ![[self window] toolbar]) {
-		[titleBarLineHidingView setHidden:YES];
-	} 
-	else {
-		[titleBarLineHidingView setHidden:NO];
-	}
 }
 
 
