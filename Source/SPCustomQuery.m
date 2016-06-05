@@ -1670,6 +1670,7 @@
 	// Remove all existing columns from the table
 	theColumns = [customQueryView tableColumns];
 	while ([theColumns count]) {
+		[NSArrayObjectAtIndex(theColumns, 0) setHeaderToolTip:nil]; // prevent crash #2414
 		[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 	}
 

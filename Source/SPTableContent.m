@@ -447,6 +447,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if (!newTableName) {
 		// Remove existing columns from the table
 		while ([[tableContentView tableColumns] count]) {
+			[NSArrayObjectAtIndex([tableContentView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
 			[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 		}
 
@@ -505,6 +506,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 		// Clear filter table
 		while ([[filterTableView tableColumns] count]) {
+			[NSArrayObjectAtIndex([filterTableView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
 			[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
 		}
 		// Clear filter table data
@@ -519,12 +521,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Remove existing columns from the table
 	while ([[tableContentView tableColumns] count]) {
+		[NSArrayObjectAtIndex([tableContentView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
 		[tableContentView removeTableColumn:NSArrayObjectAtIndex([tableContentView tableColumns], 0)];
 	}
 #ifndef SP_CODA
 	// Remove existing columns from the filter table
 	[filterTableView abortEditing];
 	while ([[filterTableView tableColumns] count]) {
+		[NSArrayObjectAtIndex([filterTableView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
 		[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
 	}
 	// Clear filter table data
