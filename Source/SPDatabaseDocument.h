@@ -106,7 +106,7 @@
 
 	IBOutlet NSView *parentView;
 	
-	IBOutlet id titleAccessoryView;
+	IBOutlet NSView *titleAccessoryView;
 	IBOutlet id titleImageView;
 	IBOutlet id titleStringView;
 	
