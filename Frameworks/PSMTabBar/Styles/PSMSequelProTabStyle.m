@@ -93,9 +93,9 @@ typedef struct {
         sequelProCloseDirtyButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Pressed"]];
         sequelProCloseDirtyButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Rollover"]];
                 
-        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButton"]];
-        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButtonPushed"]];
-        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"AddTabButtonRollover"]];
+        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
+        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
+        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
 		
 		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
 																					[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName,
