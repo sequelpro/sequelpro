@@ -6303,22 +6303,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 #ifndef SP_CODA /* update selected table in SPTablesList */
 
-	BOOL focusOnFilter = YES;
-	if (targetItemName) focusOnFilter = NO;
-
-	// If a the table has changed, update the selection
-	if (![targetItemName isEqualToString:[self table]] && targetItemName) {
-		focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
-	}
-
-	// Ensure the window focus is on the table list or the filter as appropriate
-	[[tablesListInstance onMainThread] setTableListSelectability:YES];
-	if (focusOnFilter) {
-		[[tablesListInstance onMainThread] makeTableListFilterHaveFocus];
-	} else {
-		[[tablesListInstance onMainThread] makeTableListHaveFocus];
-	}
-	[[tablesListInstance onMainThread] setTableListSelectability:NO];
+	SPMainQSync(^{
+		BOOL focusOnFilter = YES;
+		if (targetItemName) focusOnFilter = NO;
+		
+		// If a the table has changed, update the selection
+		if (![targetItemName isEqualToString:[self table]] && targetItemName) {
+			focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
+		}
+		
+		// Ensure the window focus is on the table list or the filter as appropriate
+		[tablesListInstance setTableListSelectability:YES];
+		if (focusOnFilter) {
+			[tablesListInstance makeTableListFilterHaveFocus];
+		} else {
+			[tablesListInstance makeTableListHaveFocus];
+		}
+		[tablesListInstance setTableListSelectability:NO];
+	});
 
 #endif
 	[self endTask];
