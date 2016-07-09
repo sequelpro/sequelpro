@@ -20,7 +20,7 @@
                 <outlet property="removeButton" destination="387" id="389"/>
                 <outlet property="resultingClauseContentLabel" destination="352" id="363"/>
                 <outlet property="resultingClauseLabel" destination="361" id="364"/>
-                <outlet property="suppressLeadingFiledPlaceholderCheckbox" destination="369" id="377"/>
+                <outlet property="suppressLeadingFieldPlaceholderCheckbox" destination="369" id="gfj-J2-MZl"/>
                 <outlet property="window" destination="1" id="310"/>
             </connections>
         </customObject>
@@ -189,7 +189,7 @@ Gw
                                             <font key="font" metaFont="miniSystem"/>
                                         </buttonCell>
                                         <connections>
-                                            <action selector="suppressLeadingFiledPlaceholderWasChanged:" target="-2" id="378"/>
+                                            <action selector="suppressLeadingFieldPlaceholderWasChanged:" target="-2" id="qgF-WQ-540"/>
                                             <binding destination="284" name="value" keyPath="selection.SuppressLeadingFieldPlaceholder" id="379">
                                                 <dictionary key="options">
                                                     <integer key="NSNullPlaceholder" value="0"/>

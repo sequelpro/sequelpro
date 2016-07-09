@@ -418,7 +418,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
  * It triggers an update of contentFilterTextView and 
  * resultingClauseContentLabel by inserting @"" into contentFilterTextView
  */
-- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
+- (IBAction)suppressLeadingFieldPlaceholderWasChanged:(id)sender
 {
 	[contentFilterTextView insertText:@""];
 }
@@ -761,7 +761,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			[c flushCachedRegexData];
 			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:@"<field>"];
 			[c flushCachedRegexData];
-			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFiledPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
+			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFieldPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
 			[c release];
 		}
 
