@@ -1148,7 +1148,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[parser setArgument:[argumentField stringValue]];
 	[parser setFirstBetweenArgument:[firstBetweenField stringValue]];
 	[parser setSecondBetweenArgument:[secondBetweenField stringValue]];
-	[parser setSuppressLeadingTablePlaceholder:(!![filter objectForKey:@"SuppressLeadingFieldPlaceholder"])];
+	[parser setSuppressLeadingTablePlaceholder:[[filter objectForKey:@"SuppressLeadingFieldPlaceholder"] boolValue]];
 	[parser setCaseSensitive:caseSensitive];
 	[parser setCurrentField:[fieldField titleOfSelectedItem]];
 	
