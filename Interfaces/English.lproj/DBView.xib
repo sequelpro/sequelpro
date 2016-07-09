@@ -1563,7 +1563,7 @@
                                                                                             <font key="font" metaFont="menu"/>
                                                                                             <menu key="menu" title="OtherViews" autoenablesItems="NO" id="7232">
                                                                                                 <items>
-                                                                                                    <menuItem image="button_action" onStateImage="67DEAE3B-36D8-4354-8A9D-3F5321D4DD08" mixedStateImage="042FBEB4-6486-42A0-9D5E-C853A7B3691F" hidden="YES" id="7247"/>
+                                                                                                    <menuItem image="button_action" hidden="YES" id="7247"/>
                                                                                                     <menuItem title="Previous Query from History" tag="3" keyEquivalent="" toolTip="Replaces the current query by the previous one coming from the history." id="7243">
                                                                                                         <modifierMask key="keyEquivalentModifierMask" control="YES"/>
                                                                                                         <connections>
@@ -1700,7 +1700,7 @@ Gw
                                                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                                                             <menu key="menu" title="OtherViews" id="7263">
                                                                                                 <items>
-                                                                                                    <menuItem title="Query Favorites" onStateImage="BD7FAE47-1BD9-41DA-ADBF-6E5D1CB5EB44" mixedStateImage="8A84264F-2AAA-441A-84CB-02820F5C6FC1" hidden="YES" id="7264"/>
+                                                                                                    <menuItem title="Query Favorites" hidden="YES" id="7264"/>
                                                                                                     <menuItem title="Save Query to Favorites" tag="100000" toolTip="Save current query, selection, or - if no selection or current query could be found - the entire content to Favorite." id="7265">
                                                                                                         <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                                                                                     </menuItem>
@@ -1736,7 +1736,7 @@ Gw
                                                                                             <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                                                                             <menu key="menu" title="OtherViews" id="7272">
                                                                                                 <items>
-                                                                                                    <menuItem title="Query History" onStateImage="61CB6A24-92F9-4EDA-869D-0E72829279E1" mixedStateImage="A4B5929C-AB4D-4ABB-AB4F-8F7E17D2FB49" hidden="YES" id="7273"/>
+                                                                                                    <menuItem title="Query History" hidden="YES" id="7273"/>
                                                                                                     <menuItem title="Copy History" tag="300000" toolTip="Copy all history items onto the clipboard." id="7279">
                                                                                                         <modifierMask key="keyEquivalentModifierMask" option="YES"/>
                                                                                                         <connections>
@@ -5631,12 +5631,6 @@ Gw
         </window>
     </objects>
     <resources>
-        <image name="042FBEB4-6486-42A0-9D5E-C853A7B3691F" width="128" height="128"/>
-        <image name="61CB6A24-92F9-4EDA-869D-0E72829279E1" width="128" height="128"/>
-        <image name="67DEAE3B-36D8-4354-8A9D-3F5321D4DD08" width="128" height="128"/>
-        <image name="8A84264F-2AAA-441A-84CB-02820F5C6FC1" width="128" height="128"/>
-        <image name="A4B5929C-AB4D-4ABB-AB4F-8F7E17D2FB49" width="128" height="128"/>
-        <image name="BD7FAE47-1BD9-41DA-ADBF-6E5D1CB5EB44" width="128" height="128"/>
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSApplicationIcon" width="128" height="128"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>

@@ -173,7 +173,7 @@
                             <font key="font" metaFont="system"/>
                             <menu key="menu" title="OtherViews" id="79">
                                 <items>
-                                    <menuItem image="button_action" onStateImage="1CA4248E-2727-4AFE-A0DA-BA4EAA538FF9" mixedStateImage="46D35375-DB27-414F-97D8-252C4EA36D4C" hidden="YES" id="83"/>
+                                    <menuItem image="button_action" hidden="YES" id="83"/>
                                     <menuItem title="Show Time Stamps" state="on" id="80">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>

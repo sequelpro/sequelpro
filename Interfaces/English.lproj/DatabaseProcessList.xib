@@ -236,7 +236,7 @@
                             <font key="font" metaFont="smallSystem"/>
                             <menu key="menu" title="OtherViews" id="78">
                                 <items>
-                                    <menuItem image="button_action" onStateImage="7E5A238B-1949-4ED6-AA15-B64276A2F202" mixedStateImage="02E4CFBB-8815-4C7D-9AE3-3316442C0BED" hidden="YES" id="82"/>
+                                    <menuItem image="button_action" hidden="YES" id="82"/>
                                     <menuItem title="Show Process ID" state="on" toolTip="Toggle the display of the Process ID column" id="84">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                         <connections>

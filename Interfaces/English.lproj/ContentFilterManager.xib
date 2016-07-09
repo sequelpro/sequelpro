@@ -235,12 +235,12 @@ Gw
                                                     <menuItem title="Insert Placeholder" hidden="YES" id="358">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                     </menuItem>
-                                                    <menuItem title="Argument" state="on" onStateImage="6A85AD1A-885D-4D16-AC15-8786C8D35FDA" toolTip="${} – Argument placeholder." id="343"/>
-                                                    <menuItem title="Quoted Argument" onStateImage="1C761C23-527F-4B5F-8337-C5313D964BC8" toolTip="'${}' – quoted argument placeholder." id="357">
+                                                    <menuItem title="Argument" state="on" toolTip="${} – Argument placeholder." id="343"/>
+                                                    <menuItem title="Quoted Argument" toolTip="'${}' – quoted argument placeholder." id="357">
                                                         <modifierMask key="keyEquivalentModifierMask"/>
                                                     </menuItem>
-                                                    <menuItem title="Current Field" onStateImage="F75421D7-350C-4075-9E3A-2C237F11269D" toolTip="$CURRENT_FIELD – placeholder. That placeholder will be replaced by the current field name." id="344"/>
-                                                    <menuItem title="BINARY" onStateImage="A6F4461A-E379-45EE-9AC9-4D9F304173C9" toolTip="$BINARY – placeholder. The keyword BINARY will be inserted if ⇧ is pressed while invoking “Filter”." id="345"/>
+                                                    <menuItem title="Current Field" toolTip="$CURRENT_FIELD – placeholder. That placeholder will be replaced by the current field name." id="344"/>
+                                                    <menuItem title="BINARY" toolTip="$BINARY – placeholder. The keyword BINARY will be inserted if ⇧ is pressed while invoking “Filter”." id="345"/>
                                                 </items>
                                             </menu>
                                         </popUpButtonCell>

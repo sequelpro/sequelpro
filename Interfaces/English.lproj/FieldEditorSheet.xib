@@ -200,7 +200,7 @@ Gw
                             <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                             <menu key="menu" title="OtherViews" id="21">
                                 <items>
-                                    <menuItem image="NSQuickLookTemplate" onStateImage="C97CFF6E-D288-4F4D-8189-B1B96C6532E7" mixedStateImage="1EAAA127-20D6-462D-8F10-A06C37838274" hidden="YES" id="30">
+                                    <menuItem image="NSQuickLookTemplate" hidden="YES" id="30">
                                         <modifierMask key="keyEquivalentModifierMask"/>
                                     </menuItem>
                                 </items>
