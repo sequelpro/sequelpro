@@ -37,12 +37,8 @@
 @interface SPDataStorage (Private_API)
 
 - (void) _checkNewRow:(NSMutableArray *)aRow;
-- (void)_recordClearingUnloadedColumnsAt:(uint64_t)now from:(NSArray *)callStack;
-- (void)_assesUnloadedColumnsIsSet;
 
 @end
-
-static uint64_t _elapsedMilliSecondsSinceAbsoluteTime(uint64_t comparisonTime);
 
 @implementation SPDataStorage
 
@@ -129,7 +125,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex);
 		
 		// Modify unloaded cells as appropriate
-		[self _assesUnloadedColumnsIsSet];
 		for (NSUInteger i = 0; i < numberOfColumns; i++) {
 			if (unloadedColumns[i]) {
 				CFArraySetValueAtIndex((CFMutableArrayRef)dataArray, i, notLoaded);
@@ -162,7 +157,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		}
 
 		// If the specified column is not loaded, return a SPNotLoaded reference
-		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
 			return notLoaded;
 		}
@@ -199,7 +193,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		}
 
 		// If the specified column is not loaded, return a SPNotLoaded reference
-		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
 			return notLoaded;
 		}
@@ -229,8 +222,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			[NSException raise:NSRangeException format:@"Requested storage column (col %llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 		}
 
-
-		[self _assesUnloadedColumnsIsSet];
 		if (unloadedColumns[columnIndex]) {
 			return YES;
 		}
@@ -268,7 +259,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state);
 
 			// Modify unloaded cells as appropriate
-			[self _assesUnloadedColumnsIsSet];
 			for (NSUInteger i = 0; i < numberOfColumns; i++) {
 				if (unloadedColumns[i]) {
 					CFArraySetValueAtIndex((CFMutableArrayRef)targetRow, i, notLoaded);
@@ -442,7 +432,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		if (columnIndex >= numberOfColumns) {
 			[NSException raise:NSRangeException format:@"Invalid column set as unloaded; requested column index (%llu) beyond bounds (%llu)", (unsigned long long)columnIndex, (unsigned long long)numberOfColumns];
 		}
-		[self _assesUnloadedColumnsIsSet];
 		unloadedColumns[columnIndex] = YES;
 	}
 }
@@ -506,9 +495,6 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 		numberOfColumns = 0;
 		editedRowCount = 0;
-		
-		_debugInfo = nil;
-		_debugTime = mach_absolute_time();
 	}
 	return self;
 }
@@ -519,15 +505,8 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		SPClear(dataStorage);
 		SPClear(editedRows);
 		if (unloadedColumns) {
-			[self _recordClearingUnloadedColumnsAt:mach_absolute_time() from:[NSThread callStackSymbols]];
 			free(unloadedColumns), unloadedColumns = NULL;
 		}
-	}
-	// this is very very unlikely, but if another thread had been waiting on the lock
-	// right before we free'd unloadedColumns, it should get it before we can release
-	// _debugInfo, too.
-	@synchronized(self) {
-		SPClear(_debugInfo);
 	}
 	
 	[super dealloc];
@@ -545,37 +524,4 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	}
 }
 
-// DO NOT CALL THIS METHOD UNLESS YOU CURRENTLY HAVE A LOCK ON SELF!!!
-- (void)_recordClearingUnloadedColumnsAt:(uint64_t)now from:(NSArray *)callStack
-{
-	_debugTime = now;
-	SPClear(_debugInfo);
-	_debugInfo = [[NSString alloc] initWithFormat:@"Thread: %@, Stack: %@",[NSThread currentThread],callStack];
-}
-
-// DO NOT CALL THIS METHOD UNLESS YOU CURRENTLY HAVE A LOCK ON SELF!!!
-- (void)_assesUnloadedColumnsIsSet
-{
-	if(unloadedColumns != NULL)
-		return;
-	
-	uint64_t timeDiff = _elapsedMilliSecondsSinceAbsoluteTime(_debugTime);
-	
-	NSString *msg;
-	if(!_debugInfo)
-		msg = [NSString stringWithFormat:@"unloadedColumns is not set and never has been since the object was created %llums ago.",timeDiff];
-	else
-		msg = [NSString stringWithFormat:@"unloadedColumns was last cleared %llums ago at %@",timeDiff,_debugInfo];
-	
-	@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:msg userInfo:nil];
-}
-
 @end
-
-static uint64_t _elapsedMilliSecondsSinceAbsoluteTime(uint64_t comparisonTime)
-{
-	uint64_t elapsedTime_t = mach_absolute_time() - comparisonTime;
-	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
-	
-	return (UnsignedWideToUInt64(elapsedTime) / 1000000ULL);
-}
