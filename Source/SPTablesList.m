@@ -59,6 +59,7 @@
 #import "SPSplitView.h"
 #endif
 #import "SPThreadAdditions.h"
+#import "SPFunctions.h"
 
 #ifdef SP_CODA
 #import "SQLSidebarViewController.h"
@@ -208,8 +209,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[[tablesListView onMainThread] deselectAll:self];
 	tableListIsSelectable = previousTableListIsSelectable;
 #endif
-	[tables removeAllObjects];
-	[tableTypes removeAllObjects];
+	SPMainQSync(^{
+		//this has to be executed en-block on the main queue, otherwise the table view might have a chance to access released memory before we tell it to throw away everything.
+		[tables removeAllObjects];
+		[tableTypes removeAllObjects];
+		[tablesListView reloadData];
+	});
 
 	if ([tableDocumentInstance database]) {
 
