@@ -767,7 +767,7 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 			// Process events for a short time, allowing dialogs to be shown but waiting for
 			// the proxy. Capture how long this interface action took, standardising the
 			// overall time.
-			[[NSRunLoop mainRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
+			[[NSRunLoop currentRunLoop] runMode:NSModalPanelRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.25]];
 			if (_elapsedSecondsSinceAbsoluteTime(loopIterationStart_t) < 0.25) {
 				usleep((useconds_t)(250000 - (1000000 * _elapsedSecondsSinceAbsoluteTime(loopIterationStart_t))));
 			}
