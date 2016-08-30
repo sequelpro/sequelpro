@@ -409,9 +409,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 			@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
 			@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
 			@"/var/mysql/mysql.sock",                               // Mac OS X Server default
-			@"/opt/local/var/run/mysqld/mysqld.sock",               // Darwinports MySQL
-			@"/opt/local/var/run/mysql4/mysqld.sock",               // Darwinports MySQL 4
-			@"/opt/local/var/run/mysql5/mysqld.sock",               // Darwinports MySQL 5
+			@"/opt/local/var/run/mysqld/mysqld.sock",               // MacPorts MySQL
+			@"/opt/local/var/run/mysql4/mysqld.sock",               // MacPorts MySQL 4
+			@"/opt/local/var/run/mysql5/mysqld.sock",               // MacPorts MySQL 5
+			@"/opt/local/var/run/mariadb-10.0/mysqld.sock",         // MacPorts MariaDB 10.0
+			@"/opt/local/var/run/mariadb-10.1/mysqld.sock",         // MacPorts MariaDB 11.0
 			@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
 			@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
 			@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
