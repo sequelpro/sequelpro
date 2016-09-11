@@ -1,4 +1,1 @@
-# To enable smart diffing of *.strings files, run the following command:
-# git config diff.localizablestrings.textconv "iconv -f utf-16 -t utf-8"
-*.strings diff=localizablestrings
-
+*.strings diff
