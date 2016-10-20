@@ -54,7 +54,7 @@
         <attribute name="originaluser" optional="YES" attributeType="String">
             <userInfo/>
         </attribute>
-        <attribute name="password" optional="YES" attributeType="String" maxValueString="41" syncable="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="plugin" optional="YES" attributeType="String" maxValueString="64" syncable="YES"/>
         <attribute name="process_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
         <attribute name="references_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
