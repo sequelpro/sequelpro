@@ -237,8 +237,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 				[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeTable]];
 			}
 		} else {
+			NSString *bTableType = nil;
+			
 			for (NSArray *eachRow in theResult) {
 
+				bTableType = [[NSString alloc] initWithData:[eachRow objectAtIndex:1] encoding:NSUTF8StringEncoding];
+				
 				// Due to encoding problems it can be the case that [resultRow objectAtIndex:0]
 				// return NSNull, thus catch that case for safety reasons
 				id tableName = [eachRow objectAtIndex:0];
@@ -246,8 +250,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 					tableName = @"...";
 				}
 				[tables addObject:tableName];
-
-				if ([[eachRow objectAtIndex:1] isEqualToString:@"VIEW"]) {
+				
+				if ([bTableType isEqualToString:@"VIEW"]) {
 					[tableTypes addObject:[NSNumber numberWithInteger:SPTableTypeView]];
 					tableListContainsViews = YES;
 				} else {
