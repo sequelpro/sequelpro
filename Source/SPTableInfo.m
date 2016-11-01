@@ -191,7 +191,10 @@
 					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
 			}
 
-			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
+			NSString *dl = [tableStatus objectForKey:@"Data_length"];
+			dl = dl && ![dl isEqual:[NSNull null]] ? dl : nil;
+			
+			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[dl longLongValue]]]];
 			NSString *tableEnc = [tableDataInstance tableEncoding];
 			NSString *tableColl = [tableStatus objectForKey:@"Collation"];
 			if([tableColl length]) {
