@@ -231,6 +231,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		// views; on MySQL versions >= 5.0.02 select the "full" list to also select the table type column.
 		theResult = [mySQLConnection queryString:@"SHOW /*!50002 FULL*/ TABLES"];
 		[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
+		[theResult setReturnDataAsStrings:YES]; // MySQL 5.8 (beta) seems to return Table_type as data (see PR #2606)
 		if ([theResult numberOfFields] == 1) {
 			for (NSArray *eachRow in theResult) {
 				[tables addObject:[eachRow objectAtIndex:0]];

@@ -681,7 +681,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	NSString *value = [infoDict objectForKey:key];
 
-	if ([value isNSNull]) {
+	if (![value unboxNull]) { // (value == nil || value == [NSNull null])
 		value = @"";
 	}
 	else {

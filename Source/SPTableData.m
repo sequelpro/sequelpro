@@ -1156,7 +1156,9 @@
 #endif
 
 		if (rowCountLevel == SPRowCountFetchNever
-			|| (rowCountLevel == SPRowCountFetchIfCheap && [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary))
+			|| (rowCountLevel == SPRowCountFetchIfCheap
+				&& (![[self statusValueForKey:@"Data_length"] unboxNull] //this works as a nil check for both NSNull and nil.
+					|| [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary)))
 		{
 			return YES;
 		}

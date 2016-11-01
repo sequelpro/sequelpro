@@ -5608,9 +5608,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 					}
 					NSError *err = nil;
 					[tableMetaData writeToFile:metaFileName
-							  atomically:YES
-								encoding:NSUTF8StringEncoding
-								   error:&err];
+					                atomically:YES
+					                  encoding:NSUTF8StringEncoding
+					                     error:&err];
 					if(err != nil) {
 						NSLog(@"Error while writing “%@”", tableMetaData);
 						NSBeep();
@@ -5705,7 +5705,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 
 		if(userTerminated) {
-			[SPTooltip showWithObject:NSLocalizedString(@"URL scheme command was terminated by user", @"URL scheme command was terminated by user") atLocation:[NSApp mouseLocation]];
+			[SPTooltip showWithObject:NSLocalizedString(@"URL scheme command was terminated by user", @"URL scheme command was terminated by user") atLocation:[NSEvent mouseLocation]];
 			status = @"1";
 		}
 

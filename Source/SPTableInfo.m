@@ -190,8 +190,11 @@
 				[info addObject:[NSString stringWithFormat:[[tableStatus objectForKey:@"RowsCountAccurate"] boolValue] ? NSLocalizedString(@"rows: %@", @"Table Info Section : number of rows (exact value)") : NSLocalizedString(@"rows: ~%@", @"Table Info Section : number of rows (estimated value)"),
 					[numberFormatter stringFromNumber:[NSNumber numberWithLongLong:[[tableStatus objectForKey:@"Rows"] longLongValue]]]]];
 			}
-
-			[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
+			
+			// Check for 'Data_Length' == NULL (see PR #2606)
+			if([[tableStatus objectForKey:@"Data_length"] unboxNull]) {
+				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
+			}
 			NSString *tableEnc = [tableDataInstance tableEncoding];
 			NSString *tableColl = [tableStatus objectForKey:@"Collation"];
 			if([tableColl length]) {
