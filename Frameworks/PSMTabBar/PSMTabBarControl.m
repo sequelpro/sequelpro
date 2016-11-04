@@ -1912,11 +1912,14 @@
     while ( (cell = [e nextObject]) ) {
 		//remove the observer binding
         if ([cell representedObject] && ![tabItems containsObject:[cell representedObject]]) {
+			// see issue #2609
+			// -removeTabForCell: comes first to stop the observing that would be triggered in the delegate's call tree
+			// below and finally caused a crash.
+			[self removeTabForCell:cell];
+			
 			if ([[self delegate] respondsToSelector:@selector(tabView:didCloseTabViewItem:)]) {
 				[[self delegate] tabView:aTabView didCloseTabViewItem:[cell representedObject]];
 			}
-			
-            [self removeTabForCell:cell];
         }
     }
     
