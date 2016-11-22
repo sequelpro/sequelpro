@@ -324,22 +324,9 @@ static unsigned short getRandomPort();
 	// Ensure that the connection can be used for only tunnels, not interactive
 	[taskArguments addObject:@"-N"];
 
-	// If explicitly enabled, activate connection multiplexing - note that this can cause connection
+	// If explicitly enabled, allow user default connection multiplexing - note that this can cause connection
 	// instability on some setups, so is currently disabled by default.
-	if (connectionMuxingEnabled) {
-
-		// Enable automatic connection muxing/sharing, for faster connections
-		[taskArguments addObject:@"-o ControlMaster=auto"];
-
-		// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
-		// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
-		// hashed path to aid length limit issues.
-		unsigned char hashedPathResult[16];
-		NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, (long)(sshPort?sshPort:0)];
-		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
-		[taskArguments addObject:[NSString stringWithFormat:@"-o ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8]]];
-	} else {
-
+	if (! connectionMuxingEnabled) {
 		// Disable muxing if requested
 		[taskArguments addObject:@"-S none"];
 		[taskArguments addObject:@"-o ControlMaster=no"];
