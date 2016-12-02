@@ -856,6 +856,71 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		  contextInfo:SPAlterDatabaseAction];
 }
 
+- (IBAction)compareDatabase:(id)sender
+{
+	/*
+	 
+	 
+	 This method is a basic experiment to see how long it takes to read an string compare an entire database. It works,
+	 well, good performance and very little memory usage.
+	 
+	 Next we need to ask the user to select another connection (from the favourites list) and compare chunks of ~1000 rows
+	 at a time, ordered by primary key, between the two databases, using three threads (one for each database and one for
+	 comparisons).
+	 
+	 We will the write to disk every difference that has been found and open the result in FileMerge.
+	 
+	 In future, add the ability to write all difference to the current database.
+	 
+	 
+	 */
+	NSLog(@"=================");
+	
+	SPMySQLResult *showTablesQuery = [mySQLConnection queryString:@"show tables"];
+	
+	NSArray *tableRow;
+	while ((tableRow = [showTablesQuery getRowAsArray]) != nil) {
+		@autoreleasepool {
+			NSString *table = tableRow[0];
+			
+			NSLog(@"-----------------");
+			NSLog(@"Scanning %@", table);
+			
+			
+			NSDictionary *tableStatus = [[mySQLConnection queryString:[NSString stringWithFormat:@"SHOW TABLE STATUS LIKE %@", [table tickQuotedString]]] getRowAsDictionary];
+			NSInteger rowCountEstimate = [tableStatus[@"Rows"] integerValue];
+			NSLog(@"Estimated row count: %li", rowCountEstimate);
+			
+			
+			
+			SPMySQLResult *tableContentsQuery = [mySQLConnection streamingQueryString:[NSString stringWithFormat:@"select * from %@", [table backtickQuotedString]] useLowMemoryBlockingStreaming:NO];
+			//NSDate *lastProgressUpdate = [NSDate date];
+			time_t lastProgressUpdate = time(NULL);
+			NSInteger rowCount = 0;
+			NSArray *row;
+			while (true) {
+				@autoreleasepool {
+					row = [tableContentsQuery getRowAsArray];
+					if (!row) {
+						break;
+					}
+					
+					[row isEqualToArray:row]; // TODO: compare to the other database, instead of the same one (just doing that to test performance)
+					
+					rowCount++;
+					if ((time(NULL) - lastProgressUpdate) > 0) {
+						NSLog(@"Progress: %.1f%%", (((float)rowCount) / ((float)rowCountEstimate)) * 100);
+						lastProgressUpdate = time(NULL);
+					}
+				}
+			}
+			NSLog(@"Done. Actual row count: %li", rowCount);
+		}
+	}
+	
+	NSLog(@"=================");
+}
+
 #ifndef SP_CODA /* operations on whole databases */
 /**
  * opens the copy database sheet and copies the databsae
