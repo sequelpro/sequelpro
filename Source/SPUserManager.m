@@ -1128,22 +1128,27 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			}
 			// If we created the user with the GRANT statment (MySQL < 5), then revoke the
 			// privileges we gave the new user.
-			else {
+			if(![serverSupport supportsCreateUser]) {
 				[connection queryString:[NSString stringWithFormat:@"REVOKE SELECT ON mysql.* FROM %@@%@", [[[user parent] valueForKey:@"user"] tickQuotedString], host]];
 				
 				if (![self _checkAndDisplayMySqlError]) return NO;
 			}
 			
-			return [self grantPrivilegesToUser:user];
+			return [self grantPrivilegesToUser:user skippingRevoke:YES];
 		}
 	}
 	return NO;
 }
 
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv
+{
+	return [self grantDbPrivilegesWithPrivilege:schemaPriv skippingRevoke:NO];
+}
+
 /**
  * Grant or revoke DB privileges for the supplied user.
  */
-- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv skippingRevoke:(BOOL)skipRevoke
 {
 	NSMutableArray *grantPrivileges = [NSMutableArray array];
 	NSMutableArray *revokePrivileges = [NSMutableArray array];
@@ -1151,16 +1156,14 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
     dbName = [dbName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"];
 	
-	NSString *statement = [NSString stringWithFormat:@"SELECT USER, HOST FROM mysql.db WHERE USER = %@ AND HOST = %@ AND DB = %@",
-									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
-									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
-									  [dbName tickQuotedString]];
-	
-	NSArray *matchingUsers = [connection getAllRowsFromQuery:statement];	
+	NSArray *changedKeys = [[schemaPriv changedValues] allKeys];
 	
 	for (NSString *key in [self privsSupportedByServer])
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
+		
+		//ignore anything that we didn't change
+		if (![changedKeys containsObject:key]) continue;
 		
 		NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 		
@@ -1169,9 +1172,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				if ([matchingUsers count] || [grantPrivileges count] > 0) {
-					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
-				}
+				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 		NS_HANDLER
 		NS_ENDHANDLER
@@ -1184,11 +1185,13 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 				   forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
 					  host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
 	
-	// Revoke privileges
-	if(![self _revokePrivileges:revokePrivileges
-				 onDatabase:dbName 
-					forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
-					   host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
+	if(!skipRevoke) {
+		// Revoke privileges
+		if(![self _revokePrivileges:revokePrivileges
+					 onDatabase:dbName 
+						forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
+						   host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
+	}
 	
 	return YES;
 }
@@ -1214,19 +1217,29 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user
+{
+	return [self grantPrivilegesToUser:user skippingRevoke:NO];
+}
+
 /**
  * Grant or revoke privileges for the supplied user.
  */
-- (BOOL)grantPrivilegesToUser:(SPUserMO *)user
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user skippingRevoke:(BOOL)skipRevoke
 {
 	if ([user valueForKey:@"parent"] != nil)
 	{
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
+		NSArray *changedKeys = [[user changedValues] allKeys];
+		
 		for (NSString *key in [self privsSupportedByServer])
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
+			
+			//ignore anything that we didn't change
+			if (![changedKeys containsObject:key]) continue;
 			
 			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 			
@@ -1249,16 +1262,18 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 					   forUser:[[user parent] valueForKey:@"user"] 
 						  host:[user valueForKey:@"host"]]) return NO;
 
-		// Revoke privileges
-		if(![self _revokePrivileges:revokePrivileges
-					 onDatabase:nil 
-						forUser:[[user parent] valueForKey:@"user"] 
-						   host:[user valueForKey:@"host"]]) return NO;
+		if(!skipRevoke) {
+			// Revoke privileges
+			if(![self _revokePrivileges:revokePrivileges
+						 onDatabase:nil 
+							forUser:[[user parent] valueForKey:@"user"] 
+							   host:[user valueForKey:@"host"]]) return NO;
+		}
 	}
 	
 	for (SPPrivilegesMO *priv in [user valueForKey:@"schema_privileges"])
 	{
-		if(![self grantDbPrivilegesWithPrivilege:priv]) return NO;
+		if(![self grantDbPrivilegesWithPrivilege:priv skippingRevoke:skipRevoke]) return NO;
 	}
 	
 	return YES;
