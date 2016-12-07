@@ -127,7 +127,9 @@
 - (BOOL)updateUser:(SPUserMO *)user;
 - (BOOL)updateResourcesForUser:(SPUserMO *)user;
 - (BOOL)grantPrivilegesToUser:(SPUserMO *)user;
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user skippingRevoke:(BOOL)skipRevoke;
 - (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)user;
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)user skippingRevoke:(BOOL)skipRevoke;
 
 // External
 /**
