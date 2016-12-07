@@ -1156,16 +1156,14 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
     dbName = [dbName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"];
 	
-	NSString *statement = [NSString stringWithFormat:@"SELECT USER, HOST FROM mysql.db WHERE USER = %@ AND HOST = %@ AND DB = %@",
-									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
-									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
-									  [dbName tickQuotedString]];
-	
-	NSArray *matchingUsers = [connection getAllRowsFromQuery:statement];	
+	NSArray *changedKeys = [[schemaPriv changedValues] allKeys];
 	
 	for (NSString *key in [self privsSupportedByServer])
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
+		
+		//ignore anything that we didn't change
+		if (![changedKeys containsObject:key]) continue;
 		
 		NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 		
@@ -1174,9 +1172,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				if ([matchingUsers count] || [grantPrivileges count] > 0) {
-					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
-				}
+				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 		NS_HANDLER
 		NS_ENDHANDLER
@@ -1236,9 +1232,14 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
+		NSArray *changedKeys = [[user changedValues] allKeys];
+		
 		for (NSString *key in [self privsSupportedByServer])
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
+			
+			//ignore anything that we didn't change
+			if (![changedKeys containsObject:key]) continue;
 			
 			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 			
