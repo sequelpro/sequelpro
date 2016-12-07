@@ -1078,10 +1078,21 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		
 		NSString *idString;
 		if(requiresPost576PasswordHandling) {
-			//copy the hash from the parent. if the parent password changes at the same time, updateUser: will take care of it afterwards
-			NSString *plugin = [[[user parent] valueForKey:@"plugin"] tickQuotedString];
-			NSString *hash = [[[user parent] valueForKey:@"authentication_string"] tickQuotedString];
-			idString = [NSString stringWithFormat:@"IDENTIFIED WITH %@ AS %@",plugin,hash];
+			// there are three situations to cover here:
+			//   1) host added, parent user unchanged
+			//   2) host added, parent user password changed
+			//   3) host added, parent user is new
+			if([[user parent] valueForKey:@"originaluser"]) {
+				// 1 & 2: If the parent user already exists we always use the old password hash. if the parent password changes at the same time, updateUser: will take care of it afterwards
+				NSString *plugin = [[[user parent] valueForKey:@"plugin"] tickQuotedString];
+				NSString *hash = [[[user parent] valueForKey:@"authentication_string"] tickQuotedString];
+				idString = [NSString stringWithFormat:@"IDENTIFIED WITH %@ AS %@",plugin,hash];
+			}
+			else {
+				// 3: If the user is new, we take the plaintext password value from the UI
+				NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+				idString = [NSString stringWithFormat:@"IDENTIFIED BY %@",password];
+			}
 		}
 		else {
 			BOOL passwordIsHash;
