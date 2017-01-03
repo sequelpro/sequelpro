@@ -16,10 +16,10 @@ Build Instructions
  * Open `sequel-pro.xcodeproj`
  * Click the `Run` button in the toolbar
  * If the above doesn't work, please file a [bug report](https://github.com/sequelpro/sequelpro/issues/new)
- 
+
 License
 =======
 
-Copyright (c) 2002-2016 Sequel Pro & CocoaMySQL Teams. All rights reserved.
+Copyright (c) 2002-2017 Sequel Pro & CocoaMySQL Teams. All rights reserved.
 
 Sequel Pro is free and open source software, licensed under [MIT](https://opensource.org/licenses/MIT). See [LICENSE](https://github.com/sequelpro/sequelpro/blob/master/LICENSE) for full details.
