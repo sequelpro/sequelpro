@@ -274,6 +274,7 @@ extern NSString *SPFavoritesDataFile;
 extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
+extern NSString *SPPreferenceDefaultsFile;
 
 // SPF file types
 extern NSString *SPFExportSettingsContentType;
