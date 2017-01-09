@@ -1671,13 +1671,13 @@
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
-				17846B9D170C95D800414499 /* Process List */,
-				17381853151FB29C0078FFE2 /* User Manager */,
-				1713C73D140D88D400CFD461 /* Query Controller */,
 				50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */,
 				50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */,
 				506CE92F1A311C6C0039F736 /* SPTableContentFilterController.h */,
 				506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */,
+				1713C73D140D88D400CFD461 /* Query Controller */,
+				17381853151FB29C0078FFE2 /* User Manager */,
+				17846B9D170C95D800414499 /* Process List */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
