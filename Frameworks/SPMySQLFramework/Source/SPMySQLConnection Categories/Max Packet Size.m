@@ -97,13 +97,15 @@
  */
 - (void)_updateMaxQuerySize
 {
-
 	// Determine which query to run based on server version
 	NSString *packetQueryString;
+	NSUInteger resultCol;
 	if ([self serverMajorVersion] == 3) {
 		packetQueryString = @"SHOW VARIABLES LIKE 'max_allowed_packet'";
+		resultCol = 1;
 	} else {
 		packetQueryString = @"SELECT @@global.max_allowed_packet";
+		resultCol = 0;
 	}
 
 	// Make a standard query to the server to retrieve the information
@@ -115,17 +117,16 @@
 	[result setReturnDataAsStrings:YES];
 
 	// Get the maximum size string
-	NSString *maxQuerySizeString = nil;
-	if ([self serverMajorVersion] == 3) {
-		maxQuerySizeString = [[result getRowAsArray] objectAtIndex:1];
-	} else {
-		maxQuerySizeString = [[result getRowAsArray] objectAtIndex:0];
-	}
+	NSString *maxQuerySizeString = [[result getRowAsArray] objectAtIndex:resultCol];
 
-	// If a valid size was returned, update the instance variable
-	if (maxQuerySizeString) {
-		maxQuerySize = (NSUInteger)[maxQuerySizeString integerValue];
+	NSInteger _maxQuerySize = maxQuerySizeString ? [maxQuerySizeString integerValue] : 0;
+	//see #2653
+	if(_maxQuerySize < 34) { // the max_allowed_packet query above has at least 34 bytes and succeeded, so any value less than that would be nonsense
+		NSLog(@"Query for max_allowed_packet returned invalid or implausible value: %ld (raw value: %@) (on %@)", _maxQuerySize, maxQuerySizeString, [self serverVersionString]);
+		return;
 	}
+	// If a valid size was returned, update the instance variable
+	maxQuerySize = (NSUInteger)_maxQuerySize;
 }
 
 /**
