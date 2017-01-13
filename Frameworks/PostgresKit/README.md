@@ -1,10 +1,9 @@
-POSTGRESKIT README
-------------------
+# PostgresKit
 
 PostgresKit is a fork and heavily modified version of the PostgresClientKit 
 code from the PostgresKit project:
 
-	http://code.google.com/p/postgres-kit/
+    http://code.google.com/p/postgres-kit/
 
 PostgresClientKit was originally written by David Thorpe and is licensed under
 version 2 of the Apache License.
@@ -13,6 +12,8 @@ This PostgresKit fork was created by Stuart Connolly on July 22, 2012 and
 is to be developed as part of the Sequel Pro project:
 
 	http://sequelpro.com/
+
+## License
 
 Any new code added during it's development is licensed under the MIT license
 and is copyrighted by the respective developer and the Sequel Pro team.
@@ -43,7 +44,7 @@ license and the MIT license. Use of it must carry both of the following
 licenses to indicate this:
 
 
-APACHE 2 LICENSE
+### Apache 2 License
 
 Copyright (c) 2008-2009 David Thorpe, djt@mutablelogic.com
 
@@ -60,7 +61,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-MIT LICENSE
+### MIT License
 
 Copyright (c) 2017 Sequel Pro Team. All rights reserved.
 
