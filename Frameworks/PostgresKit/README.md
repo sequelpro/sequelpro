@@ -3,7 +3,7 @@
 PostgresKit is a fork and heavily modified version of the PostgresClientKit 
 code from the PostgresKit project:
 
-    http://code.google.com/p/postgres-kit/
+[http://code.google.com/p/postgres-kit/](http://code.google.com/p/postgres-kit/)
 
 PostgresClientKit was originally written by David Thorpe and is licensed under
 version 2 of the Apache License.
@@ -11,7 +11,7 @@ version 2 of the Apache License.
 This PostgresKit fork was created by Stuart Connolly on July 22, 2012 and 
 is to be developed as part of the Sequel Pro project:
 
-	http://sequelpro.com/
+[http://sequelpro.com/](http://sequelpro.com/)
 
 ## License
 
@@ -29,7 +29,7 @@ libpq is licensed under The PostgreSQL License and is copyrighted by:
 	
 Full license: 
 
-	http://www.postgresql.org/about/licence/
+[https://www.postgresql.org/about/licence/](https://www.postgresql.org/about/licence/)
 	
 libpqtypes is licensed under the BSD license and is copyrighted by:
 
@@ -37,7 +37,7 @@ libpqtypes is licensed under the BSD license and is copyrighted by:
 	
 Full License:
 
-	http://libpqtypes.esilo.com/pkgdocs.html?file=LICENSE
+[http://libpqtypes.esilo.com/pkgdocs.html?file=LICENSE](http://libpqtypes.esilo.com/pkgdocs.html?file=LICENSE)
 
 The entire framework is dual licensed under both version 2 of the Apache 
 license and the MIT license. Use of it must carry both of the following 
@@ -51,7 +51,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+[https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
