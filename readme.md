@@ -5,7 +5,7 @@ Sequel Pro is a fast, easy-to-use Mac database management application for workin
 
 You can find more details on our website: [sequelpro.com](http://sequelpro.com)
 
-![Screenshot](http://www.sequelpro.com/assets/images/NewAdvancedFilter.jpg)
+![Screenshot](https://sequelpro.com/images/browse.png)
 
 Build Instructions
 ==================
