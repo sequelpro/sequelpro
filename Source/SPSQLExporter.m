@@ -99,7 +99,7 @@
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
+	NSUInteger j, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -369,7 +369,8 @@
 				[self writeUTF8String:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]]];
 				
 				// Iterate through the rows to construct a VALUES group for each
-				j = 0, k = 0;
+				NSUInteger rowsWrittenForTable = 0;
+				NSUInteger rowsWrittenForCurrentStmt = 0;
 				
 				NSAutoreleasePool *sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
@@ -392,11 +393,8 @@
 						return;
 					}
 
-					j++;
-					k++;
-
 					// Update the progress
-					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
+					NSUInteger progress = (NSUInteger)((rowsWrittenForTable + 1) * ([self exportMaxProgress] / rowCount));
 
 					if (progress > lastProgressValue) {
 						[self setExportProgressValue:progress];
@@ -410,7 +408,7 @@
 					// Set up the new row as appropriate.  If a new INSERT statement should be created,
 					// set one up; otherwise, set up a new row
 					if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
-						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
+						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (rowsWrittenForCurrentStmt == [self sqlInsertAfterNValue])))
 					{
 						[sqlString setString:@";\n\nINSERT INTO "];
 						[sqlString appendString:[tableName backtickQuotedString]];
@@ -418,12 +416,12 @@
 						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
 						[sqlString appendString:@")\nVALUES\n\t("];
 
-						queryLength = 0, k = 0;
+						queryLength = 0, rowsWrittenForCurrentStmt = 0;
 
 						// Use the opportunity to drain and reset the autorelease pool at the end of this row
 						cleanAutoReleasePool = YES;
 					}
-					else if (j == 1) {
+					else if (rowsWrittenForTable == 0) {
 						[sqlString setString:@"\n\t("];
 					}
 					else {
@@ -506,6 +504,9 @@
 						sqlExportPool = [[NSAutoreleasePool alloc] init];
 						cleanAutoReleasePool = NO;
 					}
+					
+					rowsWrittenForTable++;
+					rowsWrittenForCurrentStmt++;
 				}
 				
 				// Complete the command
