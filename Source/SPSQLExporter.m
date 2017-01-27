@@ -90,16 +90,13 @@
 	[sqlTableDataInstance setConnection:connection];
 			
 	SPMySQLResult *queryResult;
-	SPMySQLStreamingResult *streamingResult;
 	
-	NSArray *row;
 	NSString *tableName;
 	NSDictionary *tableDetails;
-	BOOL *useRawDataForColumnAtIndex, *useRawHexDataForColumnAtIndex;
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger j, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
+	NSUInteger j, s;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -232,7 +229,7 @@
 		// Inform the delegate that we are about to start fetcihing data for the current table
 		[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
 		
-		lastProgressValue = 0;
+		NSUInteger lastProgressValue = 0;
 		
 		// Add the name of table
 		[self writeString:[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName]];
@@ -297,8 +294,8 @@
 			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
 			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
-			useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
-			useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
+			BOOL *useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
+			BOOL *useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
 							
 			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
 			for (j = 0; j < colCount; j++) 
@@ -347,17 +344,17 @@
 				continue;
 			}
 			
-			rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
+			NSUInteger rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
 						
 			if (rowCount) {
 
 				// Set up a result set in streaming mode
-				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
+				SPMySQLStreamingResult *streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
 
 				// Inform the delegate that we are about to start writing data for the current table
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 
-				queryLength = 0;
+				NSUInteger queryLength = 0;
 				
 				// Lock the table for writing and disable keys if supported
 				[metaString setString:@""];
@@ -371,13 +368,15 @@
 				// Iterate through the rows to construct a VALUES group for each
 				NSUInteger rowsWrittenForTable = 0;
 				NSUInteger rowsWrittenForCurrentStmt = 0;
+				BOOL cleanAutoReleasePool = NO;
 				
 				NSAutoreleasePool *sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
 				// Inform the delegate that we are about to start writing the data to disk
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 				
-				while ((row = [streamingResult getRowAsArray])) 
+				NSArray *row;
+				while ((row = [streamingResult getRowAsArray]))
 				{
 					// Check for cancellation flag
 					if ([self isCancelled]) {
@@ -428,7 +427,7 @@
 						[sqlString setString:@",\n\t("];
 					}
 
-					for (t = 0; t < colCount; t++)
+					for (NSUInteger t = 0; t < colCount; t++)
 					{
 						id object = NSArrayObjectAtIndex(row, t);
 
