@@ -249,7 +249,8 @@ typedef enum {
 	if ([fieldType length])
 		[label appendString:fieldType];
 
-	if (maxTextLength > 0)
+	//skip length for JSON type since it's a constant and MySQL doesn't display it either
+	if (maxTextLength > 0 && ![[fieldType uppercaseString] isEqualToString:SPMySQLJsonType])
 		[label appendFormat:@"(%lld) ", maxTextLength];
 
 	if (!_allowNULL)
