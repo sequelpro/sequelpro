@@ -62,11 +62,11 @@ static char GetNextANSIChar(SPJSONTokenizerState *stateInfo);
 			return nil;
 		}
 		
-		if(curToken.tok == JSON_TOK_SQUARE_BRACE_CLOSE || curToken.tok == JSON_TOK_CURLY_BRACE_CLOSE)
+		if(idLevel > 0 && (curToken.tok == JSON_TOK_SQUARE_BRACE_CLOSE || curToken.tok == JSON_TOK_CURLY_BRACE_CLOSE))
 			idLevel--;
 		
-		//if this token is a "]" or "}" and there was no "[" or "{" directly before it, add a linebreak before
-		if(prevTokenType != JSON_TOK_CURLY_BRACE_OPEN && prevTokenType != JSON_TOK_SQUARE_BRACE_OPEN && (curToken.tok == JSON_TOK_SQUARE_BRACE_CLOSE || curToken.tok == JSON_TOK_CURLY_BRACE_CLOSE)) {
+		//if this token is a "]" or "}" and there was no ",", "[" or "{" directly before it, add a linebreak before
+		if(prevTokenType != JSON_TOK_CURLY_BRACE_OPEN && prevTokenType != JSON_TOK_SQUARE_BRACE_OPEN && prevTokenType != JSON_TOK_COMMA && (curToken.tok == JSON_TOK_SQUARE_BRACE_CLOSE || curToken.tok == JSON_TOK_CURLY_BRACE_CLOSE)) {
 			[formatted appendString:@"\n"];
 			needIndent = YES;
 		}
@@ -255,7 +255,7 @@ int SPJSONTokenizerInit(NSString *input, SPJSONTokenizerState *stateInfo) {
 	stateInfo->ctxt = JSON_ROOT_CONTEXT;
 	stateInfo->pos = 0;
 	stateInfo->str = [input UTF8String];
-	stateInfo->len = strlen(stateInfo->str); //we deem -[NSString UTF8String] to be a safe source
+	stateInfo->len = [input lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 	
 	return 0;
 }
