@@ -1380,7 +1380,7 @@ typedef enum {
 	if([notification object] == editTextView) {
 		// Do nothing if user really didn't changed text (e.g. for font size changing return)
 		if(!editTextViewWasChanged && (editSheetWillBeInitialized
-			|| (([[[notification object] textStorage] editedRange].length == 0)
+			|| (([[[notification object] textStorage] editedRange].location == NSNotFound)
 			&& ([[[notification object] textStorage] changeInLength] == 0)))) {
 			// Inform the undo-grouping about the caret movement
 			selectionChanged = YES;
