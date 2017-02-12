@@ -188,6 +188,7 @@
 
 	NSInteger editSheetReturnCode;
 	BOOL _isGeometry;
+	BOOL _isJSON;
 	NSUndoManager *esUndoManager;
 
 	NSDictionary *editedFieldInfo;
