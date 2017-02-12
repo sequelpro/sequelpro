@@ -195,6 +195,7 @@ typedef enum {
 	}
 #endif
 
+	[self setEditedFieldInfo:nil];
 	if ( sheetEditData ) SPClear(sheetEditData);
 #ifndef SP_CODA
 	if ( qlTypes )       SPClear(qlTypes);
