@@ -274,6 +274,7 @@ extern NSString *SPFavoritesDataFile;
 extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
+extern NSString *SPPreferenceDefaultsFile;
 
 // SPF file types
 extern NSString *SPFExportSettingsContentType;
@@ -673,6 +674,9 @@ void _SPClear(id *addr);
 #endif
 #ifndef __MAC_10_10
 #define __MAC_10_10 101000
+#endif
+#ifndef __MAC_10_11
+#define __MAC_10_11 101100
 #endif
 
 // This enum is available since 10.5 but only got a "name" in 10.10

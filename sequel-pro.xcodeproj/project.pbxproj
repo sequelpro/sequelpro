@@ -224,6 +224,8 @@
 		5080229C1BF7C0FE0052A9B2 /* MGTemplateStandardMarkers.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8AD0F909194002A3258 /* MGTemplateStandardMarkers.m */; };
 		5080229D1BF7C0FE0052A9B2 /* MGTemplateStandardFilters.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8B40F909194002A3258 /* MGTemplateStandardFilters.m */; };
 		50805B0D1BF2A068005F7A99 /* SPPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */; };
+		50837F741E50DCD4004FAE8A /* SPJSONFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 50837F731E50DCD4004FAE8A /* SPJSONFormatterTests.m */; };
+		50837F771E50E007004FAE8A /* SPJSONFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 73F70A951E4E547500636550 /* SPJSONFormatter.m */; };
 		5089B0271BE714E300E226CD /* SPIdMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 5089B0261BE714E300E226CD /* SPIdMenu.m */; };
 		50A9F8B119EAD4B90053E571 /* SPGotoDatabaseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */; };
 		50D3C3491A75B8A800B5429C /* GotoDatabaseDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 50D3C34B1A75B8A800B5429C /* GotoDatabaseDialog.xib */; };
@@ -415,6 +417,7 @@
 		58FEEF471676D160009CD478 /* SQL.icns in Resources */ = {isa = PBXBuildFile; fileRef = 58FEEF441676D160009CD478 /* SQL.icns */; };
 		58FEF16D0F23D66600518E8E /* SPSQLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF16C0F23D66600518E8E /* SPSQLParser.m */; };
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
+		73F70A961E4E547500636550 /* SPJSONFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 73F70A951E4E547500636550 /* SPJSONFormatter.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
 		B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */ = {isa = PBXBuildFile; fileRef = B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */; };
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
@@ -966,6 +969,7 @@
 		508022941BF7BA470052A9B2 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = English; path = English.lproj/SPQLPluginExportSettingsTemplate.html; sourceTree = "<group>"; };
 		50805B0B1BF2A068005F7A99 /* SPPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPopUpButtonCell.h; sourceTree = "<group>"; };
 		50805B0C1BF2A068005F7A99 /* SPPopUpButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPopUpButtonCell.m; sourceTree = "<group>"; };
+		50837F731E50DCD4004FAE8A /* SPJSONFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatterTests.m; sourceTree = "<group>"; };
 		5089B0251BE714E300E226CD /* SPIdMenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPIdMenu.h; sourceTree = "<group>"; };
 		5089B0261BE714E300E226CD /* SPIdMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPIdMenu.m; sourceTree = "<group>"; };
 		50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGotoDatabaseController.h; sourceTree = "<group>"; };
@@ -1217,6 +1221,8 @@
 		58FEF16C0F23D66600518E8E /* SPSQLParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPSQLParser.m; sourceTree = "<group>"; };
 		58FEF57C0F3B4E9700518E8E /* SPTableData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableData.h; sourceTree = "<group>"; };
 		58FEF57D0F3B4E9700518E8E /* SPTableData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableData.m; sourceTree = "<group>"; };
+		73F70A941E4E547500636550 /* SPJSONFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPJSONFormatter.h; sourceTree = "<group>"; };
+		73F70A951E4E547500636550 /* SPJSONFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatter.m; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-triggers.png"; sourceTree = "<group>"; };
 		B52460D30F8EF92300171639 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
@@ -1671,13 +1677,13 @@
 				BC27779F11514B940034DF6A /* SPNavigatorController.m */,
 				17A7773211C52D8E001E27B4 /* SPIndexesController.h */,
 				17A7773311C52D8E001E27B4 /* SPIndexesController.m */,
-				17846B9D170C95D800414499 /* Process List */,
-				17381853151FB29C0078FFE2 /* User Manager */,
-				1713C73D140D88D400CFD461 /* Query Controller */,
 				50A9F8AF19EAD4B90053E571 /* SPGotoDatabaseController.h */,
 				50A9F8B019EAD4B90053E571 /* SPGotoDatabaseController.m */,
 				506CE92F1A311C6C0039F736 /* SPTableContentFilterController.h */,
 				506CE9301A311C6C0039F736 /* SPTableContentFilterController.m */,
+				1713C73D140D88D400CFD461 /* Query Controller */,
+				17381853151FB29C0078FFE2 /* User Manager */,
+				17846B9D170C95D800414499 /* Process List */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -2469,6 +2475,7 @@
 			children = (
 				50D3C35B1A771C4C00B5429C /* SPParserUtilsTest.m */,
 				503B02CE1AE95C2C0060CAB1 /* SPTableFilterParserTest.m */,
+				50837F731E50DCD4004FAE8A /* SPJSONFormatterTests.m */,
 			);
 			name = Other;
 			sourceTree = "<group>";
@@ -2664,6 +2671,8 @@
 				50D3C3511A77135F00B5429C /* SPParserUtils.h */,
 				503B02C81AE82C5E0060CAB1 /* SPTableFilterParser.h */,
 				503B02C91AE82C5E0060CAB1 /* SPTableFilterParser.m */,
+				73F70A941E4E547500636550 /* SPJSONFormatter.h */,
+				73F70A951E4E547500636550 /* SPJSONFormatter.m */,
 			);
 			name = Parsing;
 			sourceTree = "<group>";
@@ -3175,6 +3184,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50837F771E50E007004FAE8A /* SPJSONFormatter.m in Sources */,
 				505F56901BCEE491007467DD /* SPOSInfo.m in Sources */,
 				505F568F1BCEE485007467DD /* SPFunctions.m in Sources */,
 				502D21F81BA50966000D4CE7 /* SPDataAdditions.m in Sources */,
@@ -3184,6 +3194,7 @@
 				503B02CF1AE95C2C0060CAB1 /* SPTableFilterParserTest.m in Sources */,
 				50EA92681AB23EFC008D3C4F /* SPTableCopy.m in Sources */,
 				507FF1621BBF0D5000104523 /* SPTableCopyTest.m in Sources */,
+				50837F741E50DCD4004FAE8A /* SPJSONFormatterTests.m in Sources */,
 				50EA926A1AB246B8008D3C4F /* SPDatabaseActionTest.m in Sources */,
 				50EA92651AB23EC8008D3C4F /* SPDatabaseAction.m in Sources */,
 				50EA92641AB23EAD008D3C4F /* SPDatabaseCopy.m in Sources */,
@@ -3311,6 +3322,7 @@
 				1740FABB0FC4372F00CF3699 /* SPDatabaseData.m in Sources */,
 				17C058880FC9FC390077E9CF /* SPNarrowDownCompletion.m in Sources */,
 				177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */,
+				73F70A961E4E547500636550 /* SPJSONFormatter.m in Sources */,
 				58CDB3300FCE138D00F8ACA3 /* SPSSHTunnel.m in Sources */,
 				29A1B7E50FD1293A000B88E8 /* SPPrintAccessory.m in Sources */,
 				BC1847EA0FE6EC8400094BFB /* SPEditSheetTextView.m in Sources */,

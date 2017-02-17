@@ -104,8 +104,16 @@
  */
 + (void)initialize
 {
+	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+
+	NSMutableDictionary *preferenceDefaults = [NSMutableDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SPPreferenceDefaultsFile ofType:@"plist"]];
+
+	if (![prefs objectForKey:SPGlobalResultTableFont]) {
+		[preferenceDefaults setObject:[NSArchiver archivedDataWithRootObject:[NSFont systemFontOfSize:11]] forKey:SPGlobalResultTableFont];
+	}
+
 	// Register application defaults
-	[[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"PreferenceDefaults" ofType:@"plist"]]];
+	[prefs registerDefaults:preferenceDefaults];
 						
 	// Upgrade prefs before any other parts of the app pick up on the values
 	SPApplyRevisionChanges();

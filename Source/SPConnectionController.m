@@ -71,6 +71,14 @@ static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 @end
 #endif
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_11
+@interface NSOpenPanel (NSOpenPanel_ElCaptian)
+
+@property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed;
+
+@end
+#endif
+
 /**
  * This is a utility function to validate SSL key/certificate files
  * @param fileData   The contents of the file
@@ -468,6 +476,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	keySelectionPanel = [[NSOpenPanel openPanel] retain]; // retain/release needed on OS X ≤ 10.6 according to Apple doc
 	[keySelectionPanel setShowsHiddenFiles:[prefs boolForKey:SPHiddenKeyFileVisibilityKey]];
 	[keySelectionPanel setAccessoryView:accessoryView];
+	//on os x 10.11+ the accessory view will be hidden by default and has to be made visible
+	if(accessoryView && [keySelectionPanel respondsToSelector:@selector(setAccessoryViewDisclosed:)]) {
+		[keySelectionPanel setAccessoryViewDisclosed:YES];
+	}
 	[keySelectionPanel setDelegate:self];
 	[keySelectionPanel beginSheetModalForWindow:[dbDocument parentWindow] completionHandler:^(NSInteger returnCode)
 	{

@@ -67,6 +67,7 @@ NSString *SPFavoritesDataFile                    = @"Favorites.plist";
 NSString *SPHTMLPrintTemplate                    = @"SPPrintTemplate";
 NSString *SPHTMLTableInfoPrintTemplate           = @"SPTableInfoPrintTemplate";
 NSString *SPHTMLHelpTemplate                     = @"SPMySQLHelpTemplate";
+NSString *SPPreferenceDefaultsFile               = @"PreferenceDefaults";
 
 // Folder names
 NSString *SPThemesSupportFolder                  = @"Themes";

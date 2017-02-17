@@ -90,16 +90,13 @@
 	[sqlTableDataInstance setConnection:connection];
 			
 	SPMySQLResult *queryResult;
-	SPMySQLStreamingResult *streamingResult;
 	
-	NSArray *row;
 	NSString *tableName;
 	NSDictionary *tableDetails;
-	BOOL *useRawDataForColumnAtIndex, *useRawHexDataForColumnAtIndex;
 	SPTableType tableType = SPTableTypeTable;
 	
 	id createTableSyntax = nil;
-	NSUInteger j, k, t, s, rowCount, queryLength, lastProgressValue, cleanAutoReleasePool = NO;
+	NSUInteger j, s;
 	
 	BOOL sqlOutputIncludeStructure;
 	BOOL sqlOutputIncludeContent;
@@ -232,7 +229,7 @@
 		// Inform the delegate that we are about to start fetcihing data for the current table
 		[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginFetchingData:) withObject:self waitUntilDone:NO];
 		
-		lastProgressValue = 0;
+		NSUInteger lastProgressValue = 0;
 		
 		// Add the name of table
 		[self writeString:[NSString stringWithFormat:@"# %@ %@\n# ------------------------------------------------------------\n\n", NSLocalizedString(@"Dump of table", @"sql export dump of table label"), tableName]];
@@ -297,8 +294,8 @@
 			NSMutableArray *rawColumnNames = [NSMutableArray arrayWithCapacity:colCount];
 			NSMutableArray *queryColumnDetails = [NSMutableArray arrayWithCapacity:colCount];
 			
-			useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
-			useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
+			BOOL *useRawDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
+			BOOL *useRawHexDataForColumnAtIndex = calloc(colCount, sizeof(BOOL));
 							
 			// Determine whether raw data can be used for each column during processing - safe numbers and hex-encoded data.
 			for (j = 0; j < colCount; j++) 
@@ -347,17 +344,17 @@
 				continue;
 			}
 			
-			rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
+			NSUInteger rowCount = [NSArrayObjectAtIndex(rowArray, 0) integerValue];
 						
 			if (rowCount) {
 
 				// Set up a result set in streaming mode
-				streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
+				SPMySQLStreamingResult *streamingResult = [[connection streamingQueryString:[NSString stringWithFormat:@"SELECT %@ FROM %@", [queryColumnDetails componentsJoinedByString:@", "], [tableName backtickQuotedString]] useLowMemoryBlockingStreaming:([self exportUsingLowMemoryBlockingStreaming])] retain];
 
 				// Inform the delegate that we are about to start writing data for the current table
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 
-				queryLength = 0;
+				NSUInteger queryLength = 0;
 				
 				// Lock the table for writing and disable keys if supported
 				[metaString setString:@""];
@@ -369,14 +366,17 @@
 				[self writeUTF8String:[NSString stringWithFormat:@"INSERT INTO %@ (%@)\nVALUES", [tableName backtickQuotedString], [rawColumnNames componentsJoinedAndBacktickQuoted]]];
 				
 				// Iterate through the rows to construct a VALUES group for each
-				j = 0, k = 0;
+				NSUInteger rowsWrittenForTable = 0;
+				NSUInteger rowsWrittenForCurrentStmt = 0;
+				BOOL cleanAutoReleasePool = NO;
 				
 				NSAutoreleasePool *sqlExportPool = [[NSAutoreleasePool alloc] init];
 				
 				// Inform the delegate that we are about to start writing the data to disk
 				[delegate performSelectorOnMainThread:@selector(sqlExportProcessWillBeginWritingData:) withObject:self waitUntilDone:NO];
 				
-				while ((row = [streamingResult getRowAsArray])) 
+				NSArray *row;
+				while ((row = [streamingResult getRowAsArray]))
 				{
 					// Check for cancellation flag
 					if ([self isCancelled]) {
@@ -392,11 +392,8 @@
 						return;
 					}
 
-					j++;
-					k++;
-
 					// Update the progress
-					NSUInteger progress = (NSUInteger)(j * ([self exportMaxProgress] / rowCount));
+					NSUInteger progress = (NSUInteger)((rowsWrittenForTable + 1) * ([self exportMaxProgress] / rowCount));
 
 					if (progress > lastProgressValue) {
 						[self setExportProgressValue:progress];
@@ -410,7 +407,7 @@
 					// Set up the new row as appropriate.  If a new INSERT statement should be created,
 					// set one up; otherwise, set up a new row
 					if ((([self sqlInsertDivider] == SPSQLInsertEveryNDataBytes) && (queryLength >= ([self sqlInsertAfterNValue] * 1024))) ||
-						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (k == [self sqlInsertAfterNValue])))
+						(([self sqlInsertDivider] == SPSQLInsertEveryNRows) && (rowsWrittenForCurrentStmt == [self sqlInsertAfterNValue])))
 					{
 						[sqlString setString:@";\n\nINSERT INTO "];
 						[sqlString appendString:[tableName backtickQuotedString]];
@@ -418,19 +415,19 @@
 						[sqlString appendString:[rawColumnNames componentsJoinedAndBacktickQuoted]];
 						[sqlString appendString:@")\nVALUES\n\t("];
 
-						queryLength = 0, k = 0;
+						queryLength = 0, rowsWrittenForCurrentStmt = 0;
 
 						// Use the opportunity to drain and reset the autorelease pool at the end of this row
 						cleanAutoReleasePool = YES;
 					}
-					else if (j == 1) {
+					else if (rowsWrittenForTable == 0) {
 						[sqlString setString:@"\n\t("];
 					}
 					else {
 						[sqlString setString:@",\n\t("];
 					}
 
-					for (t = 0; t < colCount; t++)
+					for (NSUInteger t = 0; t < colCount; t++)
 					{
 						id object = NSArrayObjectAtIndex(row, t);
 
@@ -506,6 +503,9 @@
 						sqlExportPool = [[NSAutoreleasePool alloc] init];
 						cleanAutoReleasePool = NO;
 					}
+					
+					rowsWrittenForTable++;
+					rowsWrittenForCurrentStmt++;
 				}
 				
 				// Complete the command

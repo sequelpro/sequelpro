@@ -93,38 +93,57 @@
 @implementation SPMySQLConnection (Max_Packet_Size_Private_API)
 
 /**
- * Update the max_allowed_packet size - the largest supported query size - from the server.
+ * Executes a passed query for max_allowed_packet and returns the resulting number in bytes
+ *
+ * @return -1 => if the query failed
+ *          0 => if the query did not fail, but also did not contain a (valid) result
+ *          * => if the query succeeded and the value is a valid integer (NOTE: this may also include -1 and 0)
  */
-- (void)_updateMaxQuerySize
+- (NSInteger)_queryMaxAllowedPacketWithSQL:(NSString *)query resultInColumn:(NSUInteger)colIdx
 {
-
-	// Determine which query to run based on server version
-	NSString *packetQueryString;
-	if ([self serverMajorVersion] == 3) {
-		packetQueryString = @"SHOW VARIABLES LIKE 'max_allowed_packet'";
-	} else {
-		packetQueryString = @"SELECT @@global.max_allowed_packet";
-	}
-
 	// Make a standard query to the server to retrieve the information
-	SPMySQLResult *result = [self queryString:packetQueryString];
-	if(!result) { // query fails on sphinxql
-		NSLog(@"Query for max_allowed_packet failed: %@ (%lu) (on %@)", [self lastErrorMessage], [self lastErrorID], [self serverVersionString]);
-		return;
+	SPMySQLResult *result = [self queryString:query];
+	if(!result) {
+		NSLog(@"Query (%@) for max_allowed_packet failed: %@ (%lu) (on %@)", query, [self lastErrorMessage], [self lastErrorID], [self serverVersionString]);
+		return -1;
 	}
 	[result setReturnDataAsStrings:YES];
 
 	// Get the maximum size string
-	NSString *maxQuerySizeString = nil;
-	if ([self serverMajorVersion] == 3) {
-		maxQuerySizeString = [[result getRowAsArray] objectAtIndex:1];
-	} else {
-		maxQuerySizeString = [[result getRowAsArray] objectAtIndex:0];
-	}
+	NSString *maxQuerySizeString = [[result getRowAsArray] objectAtIndex:colIdx];
 
-	// If a valid size was returned, update the instance variable
-	if (maxQuerySizeString) {
-		maxQuerySize = (NSUInteger)[maxQuerySizeString integerValue];
+	NSInteger _maxQuerySize = maxQuerySizeString ? [maxQuerySizeString integerValue] : 0;
+
+	if(_maxQuerySize == 0)
+		NSLog(@"Query (%@) for max_allowed_packet returned invalid value: %ld (raw value: %@) (on %@)", query, _maxQuerySize, maxQuerySizeString, [self serverVersionString]);
+
+	return _maxQuerySize;
+}
+
+/**
+ * Update the max_allowed_packet size - the largest supported query size - from the server.
+ */
+- (void)_updateMaxQuerySize
+{
+	struct {
+		NSString *sql;
+		NSUInteger col;
+	} queryVariants[] = {
+		{ .sql = @"SELECT @@global.max_allowed_packet",       .col = 0 }, //works on mysql 4+
+		{ .sql = @"SHOW VARIABLES LIKE 'max_allowed_packet'", .col = 1 }, //works on mysql 3, sphinx
+		{ .sql = nil,                                         .col = 0 }, //terminator element
+	};
+	
+	int i = 0;
+	while(queryVariants[i].sql) {
+		NSInteger _maxQuerySize = [self _queryMaxAllowedPacketWithSQL:queryVariants[i].sql resultInColumn:queryVariants[i].col];
+		//see #2653
+		if(_maxQuerySize >= 34) { // the max_allowed_packet query above has at least 34 bytes, so any value less than that would be nonsense
+			// If a valid size was returned, update the instance variable
+			maxQuerySize = (NSUInteger)_maxQuerySize;
+			return;
+		}
+		i++;
 	}
 }
 

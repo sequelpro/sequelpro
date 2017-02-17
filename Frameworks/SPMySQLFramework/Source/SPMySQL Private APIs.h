@@ -71,6 +71,7 @@
 
 @interface SPMySQLConnection (Max_Packet_Size_Private_API)
 
+- (NSInteger)_queryMaxAllowedPacketWithSQL:(NSString *)query resultInColumn:(NSUInteger)colIdx;
 - (void)_updateMaxQuerySize;
 - (void)_updateMaxQuerySizeEditability;
 - (BOOL)_attemptMaxQuerySizeIncreaseTo:(NSUInteger)targetSize;
