@@ -124,6 +124,7 @@
 	// Perform the query and record state
 	SPMySQLResult *databaseResult = [self queryString:databaseQuery];
 	[databaseResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
+	[databaseResult setReturnDataAsStrings:YES]; //see #2699
 
 	// Retrieve the result into an array if the query was successful
 	if (![self queryErrored]) {
