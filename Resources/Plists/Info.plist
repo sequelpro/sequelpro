@@ -187,7 +187,7 @@
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
-	<string>http://log.sequelpro.com/submit</string>
+	<string>https://sequelpro.com/api?action=feedback-submit</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
@@ -199,7 +199,6 @@
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
-	
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -223,7 +222,6 @@
 			</dict>
 		</dict>
 	</dict>
-	
 	<key>NSAppleScriptEnabled</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
