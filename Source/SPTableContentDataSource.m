@@ -130,8 +130,12 @@
 				fieldEditorCheckLock = &tableValuesLock;
 			}
 
-			// Always retrieve the short string representation, truncating the value where necessary
-			return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			// Unless we're editing, always retrieve the short string representation, truncating the value where necessary
+			if ([tableView editedColumn] == (NSInteger)columnIndex || [tableView editedRow] == rowIndex) {
+				return [value stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			} else {
+				return [value shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+			}
 		}
 		
 		if ([value isSPNotLoaded]) {
