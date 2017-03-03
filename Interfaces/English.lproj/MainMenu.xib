@@ -103,8 +103,7 @@
                                     <action selector="newTab:" target="-1" id="1088"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Duplicate Connection Tab" tag="1104" alternate="YES" keyEquivalent="t" toolTip="Duplicate the current connection tab" id="1186">
-                                <modifierMask key="keyEquivalentModifierMask" option="YES"/>
+                            <menuItem title="Duplicate Connection Tab" tag="1104" keyEquivalent="T" toolTip="Duplicate the current connection tab" id="1186">
                                 <connections>
                                     <action selector="duplicateTab:" target="-1" id="1188"/>
                                 </connections>
@@ -550,7 +549,8 @@
                 <menuItem title="View" tag="3" id="496">
                     <menu key="submenu" title="View" id="498">
                         <items>
-                            <menuItem title="Show Tab Bar" keyEquivalent="T" id="1124">
+                            <menuItem title="Show Tab Bar" keyEquivalent="t" id="1124">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
                                 <connections>
                                     <action selector="toggleTabBarShown:" target="-1" id="1127"/>
                                 </connections>
