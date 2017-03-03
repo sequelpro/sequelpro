@@ -238,7 +238,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([processesFiltered count] > 0) {
-                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[SPAppDelegate frontDocument] host]];
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server processes for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *process in processesFiltered)
                 {
