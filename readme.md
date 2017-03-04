@@ -1,7 +1,7 @@
 Sequel Pro <img alt="Logo" src="https://sequelpro.com/images/logo.png" align="right" height="50">
 ==========
 
-Sequel Pro is a fast, easy-to-use Mac database management application for working with MySQL databases.
+Sequel Pro is a fast, easy-to-use Mac database management application for working with MySQL & MariaDB databases.
 
 You can find more details on our website: [sequelpro.com](http://sequelpro.com)
 
