@@ -336,6 +336,8 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  *
  * WARNING: This method may return NO if the current thread is cancelled!
  *          You MUST check the isCancelled flag before using the result!
+ *
+ * NOTE: In general -checkConnectionIfNecessary should be used instead!
  */
 - (BOOL)checkConnection
 {
@@ -372,6 +374,35 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	}
 
 	return connectionVerified;
+}
+
+/**
+ * If thirty seconds have passed since the last time the connection was
+ * used, check the connection.
+ * This minimises the impact of continuous additional connection checks -
+ * each of which requires a round trip to the server - but handles most
+ * network issues.
+ * Returns whether the connection is considered still valid.
+ *
+ * WARNING: This method may return NO if the current thread is cancelled!
+ *          You MUST check the isCancelled flag before using the result!
+ */
+- (BOOL)checkConnectionIfNecessary
+{
+	
+	// If the connection has been dropped in the background, trigger a
+	// reconnect and return the success state here
+	if (state == SPMySQLConnectionLostInBackground) {
+		return [self _reconnectAllowingRetries:YES];
+	}
+	
+	// If the connection was recently used, return success
+	if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 30) {
+		return YES;
+	}
+	
+	// Otherwise check the connection
+	return [self checkConnection];
 }
 
 /**
@@ -1040,35 +1071,6 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 	[self setEncoding:encoding];
 	[self setEncodingUsesLatin1Transport:encodingUsesLatin1Transport];
-}
-
-/**
- * If thirty seconds have passed since the last time the connection was
- * used, check the connection.
- * This minimises the impact of continuous additional connection checks -
- * each of which requires a round trip to the server - but handles most
- * network issues.
- * Returns whether the connection is considered still valid.
- *
- * WARNING: This method may return NO if the current thread is cancelled!
- *          You MUST check the isCancelled flag before using the result!
- */
-- (BOOL)_checkConnectionIfNecessary
-{
-
-	// If the connection has been dropped in the background, trigger a
-	// reconnect and return the success state here
-	if (state == SPMySQLConnectionLostInBackground) {
-		return [self _reconnectAllowingRetries:YES];
-	}
-
-	// If the connection was recently used, return success
-	if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 30) {
-		return YES;
-	}
-
-	// Otherwise check the connection
-	return [self checkConnection];
 }
 
 /**

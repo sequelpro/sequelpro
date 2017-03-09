@@ -551,7 +551,7 @@ cleanup_thread_and_pool:
 	if (!mySQLConnection || !delegate) return NO;
 
 	// Check the connection state
-	if ([mySQLConnection isConnected] && [mySQLConnection checkConnection]) return YES;
+	if ([mySQLConnection isConnected] && [mySQLConnection checkConnectionIfNecessary]) return YES;
 	
 	// the result of checkConnection may be meaningless if the thread was cancelled during execution. (issue #2353)
 	if([[NSThread currentThread] isCancelled]) return NO;
