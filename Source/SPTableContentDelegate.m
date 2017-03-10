@@ -54,6 +54,7 @@
 @interface SPTableContent (SPDeclaredAPI)
 
 - (BOOL)cancelRowEditing;
+- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
 
 @end
 
@@ -273,7 +274,7 @@
 			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
 			
 			// TODO: Fix editing of "Display as Hex" columns and remove this (also see above)
-			if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
 				NSBeep();
 				[SPTooltip showWithObject:NSLocalizedString(@"Disable \"Display Binary Data as Hex\" in the View menu to edit this field.",@"Temporary : Tooltip shown when trying to edit a binary field in table content view while it is displayed using HEX conversion")];
 				return NO;
@@ -330,7 +331,7 @@
 					cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
 				}
 
-				if ([[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"] && [prefs boolForKey:SPDisplayBinaryDataAsHex]) {
+				if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
 					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
 					isFieldEditable = NO;
 				}
@@ -521,13 +522,7 @@
 
 			NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
 
-			NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
-
-			// Find a more reliable way of doing this check
-			if ([columnType isEqualToString:@"binary"] &&
-				[prefs boolForKey:SPDisplayBinaryDataAsHex] &&
-				[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] hasPrefix:@"0x"]) {
-
+			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
 				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
 			}
 
