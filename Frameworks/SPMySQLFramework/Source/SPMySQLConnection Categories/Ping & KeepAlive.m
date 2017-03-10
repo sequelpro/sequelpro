@@ -81,8 +81,10 @@
  */
 - (void)_threadedKeepAlive
 {
-	if(keepAliveThread) {
-		NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
+	@synchronized(self) {
+		if(keepAliveThread) {
+			NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
+		}
 	}
 	
 	keepAliveThread = [NSThread currentThread];
@@ -114,7 +116,9 @@
 		keepAlivePingFailures++;
 	}
 end_cleanup:
-	keepAliveThread = nil;
+	@synchronized(self) {
+		keepAliveThread = nil;
+	}
 }
 
 #pragma mark -
