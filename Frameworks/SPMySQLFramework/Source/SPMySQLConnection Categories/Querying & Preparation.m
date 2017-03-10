@@ -79,7 +79,7 @@
 	// Ensure per-thread variables are set up
 	[self _validateThreadSetup];
 
-	if (![self _checkConnectionIfNecessary]) return nil;
+	if (![self checkConnectionIfNecessary]) return nil;
 
 	// Perform a lossy conversion to bytes, using NSData to do the hard work.  Preserves
 	// nul characters correctly.
@@ -259,7 +259,7 @@
 	[self _validateThreadSetup];
 
 	// Check the connection if necessary, returning nil if the state couldn't be validated
-	if (![self _checkConnectionIfNecessary]) return nil;
+	if (![self checkConnectionIfNecessary]) return nil;
 
 	// Determine whether a maximum query size needs to be restored from a previous query
 	if (queryActionShouldRestoreMaxQuerySize != NSNotFound) {

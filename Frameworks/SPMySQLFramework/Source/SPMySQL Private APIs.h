@@ -47,7 +47,6 @@
 - (void)_disconnect;
 - (void)_updateConnectionVariables;
 - (void)_restoreConnectionVariables;
-- (BOOL)_checkConnectionIfNecessary;
 - (void)_validateThreadSetup;
 + (void)_removeThreadVariables:(NSNotification *)aNotification;
 

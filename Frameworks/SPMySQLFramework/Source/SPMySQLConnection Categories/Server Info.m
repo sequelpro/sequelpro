@@ -107,7 +107,7 @@
 	if (state != SPMySQLConnected) return nil;
 
 	// Check the connection if appropriate
-	if (![self _checkConnectionIfNecessary]) return nil;
+	if (![self checkConnectionIfNecessary]) return nil;
 
 	// Lock the connection before using it
 	[self _lockConnection];
@@ -153,7 +153,7 @@
 
 - (BOOL)serverShutdown
 {
-	if([self _checkConnectionIfNecessary]) {
+	if([self checkConnectionIfNecessary]) {
 		[self _lockConnection];
 		// Ensure per-thread variables are set up
 		[self _validateThreadSetup];
