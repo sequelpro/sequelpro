@@ -875,14 +875,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSMutableArray *nodes = [NSMutableArray array];
 	NSIndexSet *indexes = [favoritesOutlineView selectedRowIndexes];
 
-	NSUInteger currentIndex = [indexes firstIndex];
-	
-	while (currentIndex != NSNotFound)
-	{
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[nodes addObject:[favoritesOutlineView itemAtRow:currentIndex]];
-		
-		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
 
 	return nodes;
 }
@@ -1604,8 +1599,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self _sortTreeNode:treeNode usingKey:key];
 		}
 	}
-	
-	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init]; 
+#warning What is this supposed to do? We create an empty indexset, iterate it (still empty) and release it again!?
+	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
 	
 	NSUInteger i = [indexes lastIndex];
 	

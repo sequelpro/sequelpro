@@ -609,11 +609,9 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
-	NSUInteger rowIndex = [draggedIndexes firstIndex];
-	while ( rowIndex != NSNotFound ) {
+	[draggedIndexes enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
-		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
-	}
+	}];
 
 
 	NSInteger destinationRow = row;
@@ -805,16 +803,9 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
-			// Get last index
-			NSUInteger currentIndex = [indexes lastIndex];
-
-			while (currentIndex != NSNotFound) 
-			{
+			[indexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 				[contentFilters removeObjectAtIndex:currentIndex];
-				
-				// Get next index (beginning from the end)
-				currentIndex = [indexes indexLessThanIndex:currentIndex];
-			}
+			}];
 
 			if ([contentFilters count] == 2) {
 				[contentFilterNameTextField setStringValue:@""];

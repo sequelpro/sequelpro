@@ -730,11 +730,9 @@
 
 	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
-	NSUInteger rowIndex = [draggedIndexes firstIndex];
-	while ( rowIndex != NSNotFound ) {
+	[draggedIndexes enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		[draggedRows addObject:[NSNumber numberWithUnsignedInteger:rowIndex]];
-		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
-	}
+	}];
 
 	NSInteger destinationRow = row;
 	NSInteger offset = 0;
@@ -791,14 +789,9 @@
 		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [favoritesTableView selectedRowIndexes];
 
-			// get last index
-			NSUInteger currentIndex = [indexes lastIndex];
-
-			while (currentIndex != NSNotFound) {
+			[indexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 				[favorites removeObjectAtIndex:currentIndex];
-				// get next index (beginning from the end)
-				currentIndex = [indexes indexLessThanIndex:currentIndex];
-			}
+			}];
 
 			[favoritesArrayController rearrangeObjects];
 			[favoritesTableView reloadData];

@@ -414,10 +414,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 			NSString *database = [tableDocumentInstance database];
 			NSIndexSet *selectedSet = [triggersTableView selectedRowIndexes];
 
-			NSUInteger row = [selectedSet lastIndex];
-
-			while (row != NSNotFound)
-			{
+			[selectedSet enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL * _Nonnull stop) {
 				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:SPTriggerName];
 				NSString *query = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", [database backtickQuotedString], [triggerName backtickQuotedString]];
 
@@ -431,11 +428,9 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 						[NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection lastErrorMessage]]
 					);
 					// Abort loop
-					break;
+					*stop = YES;
 				}
-
-				row = [selectedSet indexLessThanIndex:row];
-			}
+			}];
 
 			[self _refreshTriggerDataForcingCacheRefresh:YES];
 		}

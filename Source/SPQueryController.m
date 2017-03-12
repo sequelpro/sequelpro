@@ -158,16 +158,13 @@ static SPQueryController *sharedQueryController = nil;
 		NSMutableString *string = [NSMutableString string];
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
 
-		NSUInteger i = [rows firstIndex];
-
 		BOOL includeTimestamps = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
 		BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
 		BOOL includeDatabases = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDatabaseColumnID] isHidden];
 
 		[string setString:@""];
 
-		while (i != NSNotFound)
-		{
+		[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
 			if (i < [messagesVisibleSet count]) {
 				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
 
@@ -195,9 +192,7 @@ static SPQueryController *sharedQueryController = nil;
 
 				[string appendFormat:@"%@\n", [message message]];
 			}
-
-			i = [rows indexGreaterThanIndex:i];
-		}
+		}];
 
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 

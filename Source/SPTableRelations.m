@@ -529,10 +529,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 			NSString *thisTable = [tablesListInstance tableName];
 			NSIndexSet *selectedSet = [relationsTableView selectedRowIndexes];
 
-			NSUInteger row = [selectedSet lastIndex];
-
-			while (row != NSNotFound) 
-			{
+			[selectedSet enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL * _Nonnull stop) {
 				NSString *relationName = [[relationData objectAtIndex:row] objectForKey:SPRelationNameKey];
 				NSString *query = [NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [thisTable backtickQuotedString], [relationName backtickQuotedString]];
 
@@ -547,11 +544,9 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 					);
 
 					// Abort loop
-					break;
-				} 
-
-				row = [selectedSet indexLessThanIndex:row];
-			}
+					*stop = YES;
+				}
+			}];
 
 			[self _refreshRelationDataForcingCacheRefresh:YES];
 		}

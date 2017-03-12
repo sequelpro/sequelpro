@@ -342,13 +342,10 @@
 	
 	if ((firstResponder == variablesTableView) && ([variablesTableView numberOfSelectedRows] > 0)) {
 		
-		NSString *string = @"";
+		NSMutableString *string = [[NSMutableString alloc] init];
 		NSIndexSet *rows = [variablesTableView selectedRowIndexes];
 		
-		NSUInteger i = [rows firstIndex];
-		
-		while (i != NSNotFound) 
-		{
+		[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
 			if (i < [variablesFiltered count]) {
 				NSDictionary *variable = NSArrayObjectAtIndex(variablesFiltered, i);
 				
@@ -357,21 +354,20 @@
 				
 				// Decide what to include in the string
 				if (name && value) {
-					string = [string stringByAppendingFormat:@"%@ = %@\n", variableName, variableValue];
+					[string appendFormat:@"%@ = %@\n", variableName, variableValue];
 				}
 				else {
-					string = [string stringByAppendingFormat:@"%@\n", (name) ? variableName : variableValue];
+					[string appendFormat:@"%@\n", (name) ? variableName : variableValue];
 				}
 			}
-			
-			i = [rows indexGreaterThanIndex:i];
-		}
+		}];
 		
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		
 		// Copy the string to the pasteboard
 		[pasteBoard declareTypes:@[NSStringPboardType] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
+		[string release];
 	}
 }
 

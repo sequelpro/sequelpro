@@ -1323,11 +1323,9 @@
 		if([firstResponder numberOfSelectedRows]) {
 			NSMutableArray *sel = [NSMutableArray array];
 			NSIndexSet *selectedRows = [firstResponder selectedRowIndexes];
-			NSUInteger rowIndex = [selectedRows firstIndex];
-			while ( rowIndex != NSNotFound ) {
+			[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 				[sel addObject:[NSString stringWithFormat:@"%ld", (long)rowIndex]];
-				rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-			}
+			}];
 			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
 		}
 

@@ -140,10 +140,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		NSMutableString *string = [NSMutableString string];
 		NSIndexSet *rows = [processListTableView selectedRowIndexes];
 		
-		NSUInteger i = [rows firstIndex];
-		
-		while (i != NSNotFound) 
-		{
+		[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
 			if (i < [processesFiltered count]) {
 				NSDictionary *process = NSArrayObjectAtIndex(processesFiltered, i);
 				
@@ -160,9 +157,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				[string appendString:stringTmp];
 				[string appendString:@"\n"];
 			}
-			
-			i = [rows indexGreaterThanIndex:i];
-		}
+		}];
 		
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		

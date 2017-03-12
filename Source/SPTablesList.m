@@ -1212,14 +1212,13 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
-	NSUInteger currentIndex = [indexes firstIndex];
-	NSMutableArray *selTables = [NSMutableArray array];
+	NSMutableArray *selTables = [NSMutableArray arrayWithCapacity:[indexes count]];
 
-	while (currentIndex != NSNotFound) {
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		if([[filteredTableTypes objectAtIndex:currentIndex] integerValue] == SPTableTypeTable)
 			[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
-		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
+
 	return selTables;
 }
 
@@ -1227,13 +1226,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
-	NSUInteger currentIndex = [indexes firstIndex];
-	NSMutableArray *selTables = [NSMutableArray array];
+	NSMutableArray *selTables = [NSMutableArray arrayWithCapacity:[indexes count]];
 
-	while (currentIndex != NSNotFound) {
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[selTables addObject:[filteredTables objectAtIndex:currentIndex]];
-		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
+
 	return selTables;
 }
 
@@ -1241,13 +1239,12 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
-	NSUInteger currentIndex = [indexes firstIndex];
-	NSMutableArray *selTables = [NSMutableArray array];
+	NSMutableArray *selTables = [NSMutableArray arrayWithCapacity:[indexes count]];
 
-	while (currentIndex != NSNotFound) {
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[selTables addObject:[filteredTableTypes objectAtIndex:currentIndex]];
-		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
+	
 	return selTables;
 }
 
@@ -2168,7 +2165,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (void)setDatabaseDocument:(SPDatabaseDocument*)val
 {
 	tableDocumentInstance = val;
-	}
+}
 #endif
 
 #pragma mark -
@@ -2304,33 +2301,23 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 
-	// Get last index
-	NSUInteger currentIndex = [indexes lastIndex];
-
-	while (currentIndex != NSNotFound)
-	{
+	[indexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[mySQLConnection queryString:[NSString stringWithFormat: @"TRUNCATE TABLE %@", [[filteredTables objectAtIndex:currentIndex] backtickQuotedString]]];
 
 		// Couldn't truncate table
 		if ([mySQLConnection queryErrored]) {
-			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error truncating table", @"error truncating table message")
-											 defaultButton:NSLocalizedString(@"OK", @"OK button")
-										   alternateButton:nil
-											   otherButton:nil
-								 informativeTextWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"),
-									[filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]];
-
-			[alert setAlertStyle:NSCriticalAlertStyle];
+			SPOnewayAlertSheetWithStyle(
+				NSLocalizedString(@"Error truncating table", @"error truncating table message"),
+				nil,
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to truncate the table '%@'.\n\nMySQL said: %@", @"error truncating table informative message"), [filteredTables objectAtIndex:currentIndex], [mySQLConnection lastErrorMessage]],
+				NSCriticalAlertStyle
+			);
 			
-			[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] 
-							  modalDelegate:self 
-							 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-								contextInfo:@"truncateTableError"];
+			*stop = YES;
 		}
 
-		// Get next index (beginning from the end)
-		currentIndex = [indexes indexLessThanIndex:currentIndex];
-	}
+	}];
 
 	// Ensure the the table's content view is updated to show that it has been truncated
 	[tableDocumentInstance setContentRequiresReload:YES];
