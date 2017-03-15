@@ -63,19 +63,20 @@
 - (void)awakeFromNib
 {
 	[[NSNotificationCenter defaultCenter] addObserver:self
-		selector:@selector(tableChanged:)
-		name:SPTableChangedNotification
-		object:tableDocumentInstance];
+											 selector:@selector(tableChanged:)
+												 name:SPTableChangedNotification
+											   object:tableDocumentInstance];
+
 	[[NSNotificationCenter defaultCenter] addObserver:self
-		selector:@selector(tableChanged:)
-		name:SPTableInfoChangedNotification
-		object:tableDocumentInstance];
+											 selector:@selector(tableChanged:)
+												 name:SPTableInfoChangedNotification
+											   object:tableDocumentInstance];
 
 	// Register activities update notifications for add/remove BASH commands etc.
 	[[NSNotificationCenter defaultCenter] addObserver:self 
-		selector:@selector(updateActivities) 
-		name:SPActivitiesUpdateNotification 
-		object:nil];
+											 selector:@selector(updateActivities)
+												 name:SPActivitiesUpdateNotification
+											   object:nil];
 
 	// Add activities header
 	[activities addObject:@{@"name" : NSLocalizedString(@"ACTIVITIES", @"header for activities pane")}];
@@ -147,6 +148,7 @@
 		}
 		
 		[infoTable reloadData];
+		
 		return;
 	}
 
@@ -195,8 +197,10 @@
 			if([[tableStatus objectForKey:@"Data_length"] unboxNull]) {
 				[info addObject:[NSString stringWithFormat:NSLocalizedString(@"size: %@", @"Table Info Section : table size on disk"), [NSString stringForByteSize:[[tableStatus objectForKey:@"Data_length"] longLongValue]]]];
 			}
+
 			NSString *tableEnc = [tableDataInstance tableEncoding];
 			NSString *tableColl = [tableStatus objectForKey:@"Collation"];
+
 			if([tableColl length]) {
 				// instead of @"latin1 (latin1_german_ci)" we can just show @"latin1 (german_ci)"
 				if([tableColl hasPrefix:[NSString stringWithFormat:@"%@_",tableEnc]]) tableColl = [tableColl substringFromIndex:([tableEnc length]+1)];
@@ -382,11 +386,11 @@
 	return (row == 0 ? 25 : [tableView rowHeight]);
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectRow:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
 	if (rowIndex == 0) return YES;
 	
-	if (aTableView == infoTable) {
+	if (tableView == infoTable) {
 		return NO;
 	} 
 	else {
@@ -396,7 +400,7 @@
 	return NO;
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	if (rowIndex > 0) return NO;
 
@@ -411,14 +415,15 @@
 
 	[infoTable deselectAll:nil];
 	[activitiesTable deselectAll:nil];
+
 	[self updateActivities];
 	
 	return NO;
 }
 
-- (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(NSCell *)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
+- (NSString *)tableView:(NSTableView *)tableView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
-	if (aTableView == activitiesTable) {
+	if (tableView == activitiesTable) {
 		if (rowIndex == 0) return @"";
 		
 		if (mouseLocation.x > rect->origin.x + rect->size.width - 30) {
@@ -437,23 +442,23 @@
 	return nil;
 }
 
-- (BOOL)tableView:(NSTableView *)aTableView isGroupRow:(NSInteger)row
+- (BOOL)tableView:(NSTableView *)tableView isGroupRow:(NSInteger)row
 {
 	// This makes the top row (TABLE INFORMATION/ACTIVITIES) have the diff styling
-	return (row == 0);
+	return row == 0;
 }
 
-- (void)tableView:(NSTableView *)aTableView willDisplayCell:(id)aCell forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-	if (aTableView == infoTable) {
-		if (rowIndex > 0 && [[aTableColumn identifier] isEqualToString:@"info"]) {
-			[(ImageAndTextCell*)aCell setImage:[NSImage imageNamed:@"table-property"]];
-			[(ImageAndTextCell*)aCell setIndentationLevel:1];
-			[(ImageAndTextCell*)aCell setDrawsBackground:NO];
+	if (tableView == infoTable) {
+		if (rowIndex > 0 && [[tableColumn identifier] isEqualToString:@"info"]) {
+			[(ImageAndTextCell*)cell setImage:[NSImage imageNamed:@"table-property"]];
+			[(ImageAndTextCell*)cell setIndentationLevel:1];
+			[(ImageAndTextCell*)cell setDrawsBackground:NO];
 		} 
 		else {
-			[(ImageAndTextCell*)aCell setImage:nil];
-			[(ImageAndTextCell*)aCell setIndentationLevel:0];
+			[(ImageAndTextCell*)cell setImage:nil];
+			[(ImageAndTextCell*)cell setIndentationLevel:0];
 		}
 	}
 }

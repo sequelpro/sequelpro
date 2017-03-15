@@ -5794,7 +5794,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	);
 }
 
-- (void)registerActivity:(NSDictionary*)commandDict
+- (void)registerActivity:(NSDictionary *)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
@@ -5832,23 +5832,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 }
 
-- (void)setActivityPaneHidden:(NSNumber*)hide
+- (void)setActivityPaneHidden:(NSNumber *)hide
 {
-	if(hide.boolValue) {
-		[tableInfoScrollView setHidden:YES];
-		[documentActivityScrollView setHidden:NO];
-	} else {
+	if (hide.boolValue) {
 		[documentActivityScrollView setHidden:YES];
 		[tableInfoScrollView setHidden:NO];
 	}
+	else {
+		[tableInfoScrollView setHidden:YES];
+		[documentActivityScrollView setHidden:NO];
+	}
 }
 
-- (NSArray*)runningActivities
+- (NSArray *)runningActivities
 {
 	return (NSArray*)runningActivitiesArray;
 }
 
-- (NSDictionary*)shellVariables
+- (NSDictionary *)shellVariables
 {
 
 	if(!_isConnected) return @{};

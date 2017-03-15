@@ -28,14 +28,19 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+@class SPTableView;
+@class SPTablesList;
+@class SPTableData;
+@class SPDatabaseDocument;
+
 @interface SPTableInfo : NSObject 
 {
-	IBOutlet NSTableView *infoTable;
-	IBOutlet id tableList;
-	IBOutlet id tableListInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id tableDocumentInstance;
+	IBOutlet SPTableView *tableList;
+	IBOutlet SPTablesList *tableListInstance;
+	IBOutlet SPTableData *tableDataInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 
+	IBOutlet NSTableView *infoTable;
 	IBOutlet NSTableView *activitiesTable;
 	IBOutlet NSScrollView *tableInfoScrollView;
 
