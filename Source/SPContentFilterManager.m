@@ -237,7 +237,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	NSUInteger insertIndex;
 
 	// Store pending changes in Clause
-	[[self window] makeFirstResponder:contentFilterNameTextField];
+	[[self window] makeFirstResponder:nil];
 
 	// Duplicate a selected filter if sender == self
 	if(sender == self)
@@ -298,7 +298,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 {
 
 	// Complete editing in the window
-	[[sender window] makeFirstResponder:[sender window]];
+	[[self window] makeFirstResponder:nil];
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message")
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
