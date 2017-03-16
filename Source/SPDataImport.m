@@ -1092,7 +1092,7 @@
 						[query release];
 
 						if ([mySQLConnection queryErrored]) {
-							[tableDocumentInstance showConsole:nil];
+							[[tableDocumentInstance onMainThread] showConsole:nil];
 							[errors appendFormat:
 								NSLocalizedString(@"[ERROR in row %ld] %@\n", @"error text when reading of csv file gave errors"),
 								(long)(rowsImported+1),[mySQLConnection lastErrorMessage]];
@@ -1132,7 +1132,7 @@
 
 				// If an error occurred, run the queries individually to get exact line errors
 				if (!importMethodIsUpdate && [mySQLConnection queryErrored]) {
-					[tableDocumentInstance showConsole:nil];
+					[[tableDocumentInstance onMainThread] showConsole:nil];
 					for (i = 0; i < csvRowsThisQuery; i++) {
 						if (progressCancelled) break;
 						query = [[NSMutableString alloc] initWithString:insertBaseString];
