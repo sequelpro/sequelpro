@@ -40,11 +40,9 @@ enum {
 #import "SPConnectionController.h"
 #import "SPConnectionHandler.h"
 #import "SPConnectionControllerInitializer.h"
-
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
-#ifndef SP_CODA /* headers */
 #import "SPFileHandle.h"
 #import "SPKeychain.h"
 #import "SPTableContent.h"
@@ -55,20 +53,14 @@ enum {
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPSplitView.h"
-#endif
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
-#ifndef SP_CODA /* headers */
 #import "SPWindowController.h"
-#endif
 #import "SPNavigatorController.h"
-#ifndef SP_CODA /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
-#endif
 #import "SPDatabaseData.h"
 #import "SPDatabaseStructure.h"
-#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPWindowManagement.h"
 #import "SPExtendedTableInfo.h"
@@ -86,28 +78,15 @@ enum {
 #import "SPDatabaseRename.h"
 #import "SPTableRelations.h"
 #import "SPCopyTable.h"
-#endif
 #import "SPServerSupport.h"
-#ifndef SP_CODA /* headers */
 #import "SPTooltip.h"
-#endif
 #import "SPDatabaseViewController.h"
-#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
-#endif
 #import "SPThreadAdditions.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPFavoriteColorSupport.h"
-
-#ifdef SP_CODA /* headers */
-#import "SPAlertSheets.h"
-#import "NSNotificationCenterThreadingAdditions.h"
-#import "SPCustomQuery.h"
-#import "SPDatabaseRename.h"
-#endif
-
 #import "SPCharsetCollationHelper.h"
 #import "SPGotoDatabaseController.h"
 #import "SPFunctions.h"
@@ -125,53 +104,26 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)_addDatabase;
 - (void)_alterDatabase;
-
-#ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
-#endif
-
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
-
-#ifndef SP_CODA /* method decls */
 - (void)_processDatabaseChangedBundleTriggerActions;
-#endif
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
 @implementation SPDatabaseDocument
 
-#ifndef SP_CODA /* ivars */
 @synthesize sqlFileURL;
 @synthesize sqlFileEncoding;
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
-#endif
 @synthesize isProcessing;
 @synthesize serverSupport;
 @synthesize databaseStructureRetrieval;
-#ifndef SP_CODA /* ivars */
 @synthesize processID;
-#endif
-
-#ifdef SP_CODA /* ivars */
-@synthesize allDatabases;
-@synthesize delegate;
-@synthesize tableDataInstance;
-@synthesize customQueryInstance;
-@synthesize queryProgressBar;
-@synthesize databaseSheet;
-@synthesize databaseNameField;
-@synthesize databaseEncodingButton;
-@synthesize addDatabaseButton;
-@synthesize databaseDataInstance;
-@synthesize databaseRenameSheet;
-@synthesize databaseRenameNameField;
-@synthesize renameDatabaseButton;
-@synthesize chooseDatabaseButton;
-@synthesize structureContentSwitcher;
-#endif
 @synthesize instanceId;
 
 #pragma mark -
@@ -280,7 +232,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)awakeFromNib
 {
-#ifndef SP_CODA
 	if (_mainNibLoaded) return;
 
 	_mainNibLoaded = YES;
@@ -313,35 +264,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
 
-	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
-	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-
-	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register a second observer for when the logging preference changes so we can tell the current connection about it
-	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-#endif
+	// Register preference observers to allow live UI-linked preference changes
+	[self _addPreferenceObservers];
 
 	// Register for notifications
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
-												 name:@"NSApplicationWillTerminateNotification" object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed"
+											   object:self];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(hasPerformedQuery:)
+												 name:@"SMySQLQueryHasBeenPerformed"
+											   object:self];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(applicationWillTerminate:)
+												 name:@"NSApplicationWillTerminateNotification"
+											   object:nil];
 
 #ifndef SP_CODA
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
@@ -1010,9 +950,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		serverVariablesController = [[SPServerVariablesController alloc] init];
 		
 		[serverVariablesController setConnection:mySQLConnection];
-		
-		// Register to obeserve table view vertical grid line pref changes
-		[prefs addObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
 	[serverVariablesController displayServerVariablesSheetAttachedToWindow:parentWindow];
@@ -1027,9 +964,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		processListController = [[SPProcessListController alloc] init];
 		
 		[processListController setConnection:mySQLConnection];
-		
-		// Register to obeserve table view vertical grid line pref changes
-		[prefs addObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
 	[processListController displayProcessListWindow];
@@ -6455,35 +6389,65 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 #endif
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableTriggersInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the logging preference changes
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register a second observer for when the logging preference changes so we can tell the current connection about it
+	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
-	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!",__func__);
-#ifndef SP_CODA /* Unregister observers */
+	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!", __func__);
+
 	// Unregister observers
-	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
-	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
-	
-	if (processListController) {
-		[processListController close];
-		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	}
-	
-	if (serverVariablesController) {
-		[prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	}
-#endif
+	[self _removePreferenceObservers];
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -6491,13 +6455,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// see -(void)awakeFromNib for the reasoning behind this.
 	SPClear(chooseDatabaseButton);
 	SPClear(historyControl);
-	
-#ifndef SP_CODA /* release nib objects */
+
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	SPClear(nibObjectsToRelease);
-#endif
-	
+
 	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
 	
@@ -6506,55 +6468,36 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	SPClear(allDatabases);
 	SPClear(allSystemDatabases);
 	SPClear(gotoDatabaseController);
-#ifndef SP_CODA /* dealloc ivars */
 	SPClear(undoManager);
 	SPClear(printWebView);
-#endif
 	SPClear(selectedDatabaseEncoding);
-#ifndef SP_CODA
+
 	[taskProgressWindow close];
-#endif
 	
+	if (processListController) [processListController close];
+
 	if (selectedTableName) SPClear(selectedTableName);
 	if (connectionController) SPClear(connectionController);
-#ifndef SP_CODA /* dealloc ivars */
 	if (processListController) SPClear(processListController);
 	if (serverVariablesController) SPClear(serverVariablesController);
-#endif
 	if (mySQLConnection) SPClear(mySQLConnection);
 	if (selectedDatabase) SPClear(selectedDatabase);
 	if (mySQLVersion) SPClear(mySQLVersion);
-#ifndef SP_CODA
 	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
 	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
-#endif
 	if (queryEditorInitString) SPClear(queryEditorInitString);
-#ifndef SP_CODA
 	if (sqlFileURL) SPClear(sqlFileURL);
 	if (spfFileURL) SPClear(spfFileURL);
 	if (spfPreferences) SPClear(spfPreferences);
 	if (spfSession) SPClear(spfSession);
 	if (spfDocData) SPClear(spfDocData);
-#endif
 	if (keyChainID) SPClear(keyChainID);
-#ifndef SP_CODA
 	if (mainToolbar) SPClear(mainToolbar);
-#endif
 	if (titleAccessoryView) SPClear(titleAccessoryView);
-#ifndef SP_CODA
 	if (taskProgressWindow) SPClear(taskProgressWindow);
-#endif
 	if (serverSupport) SPClear(serverSupport);
-#ifndef SP_CODA /* dealloc ivars */
 	if (processID) SPClear(processID);
 	if (runningActivitiesArray) SPClear(runningActivitiesArray);
-#endif
-	
-#ifdef SP_CODA 
-	if (tablesListInstance) [tablesListInstance release];
-	if (customQueryInstance) [customQueryInstance release];
-#endif
-	
 	if (alterDatabaseCharsetHelper) SPClear(alterDatabaseCharsetHelper);
 	if (addDatabaseCharsetHelper) SPClear(addDatabaseCharsetHelper);
 	

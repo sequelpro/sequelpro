@@ -53,6 +53,8 @@
 {
 	if ((self = [super initWithWindowNibName:@"DatabaseServerVariables"])) {
 		variables = [[NSMutableArray alloc] init];
+
+		prefs = [NSUserDefaults standardUserDefaults];
 	}
 	
 	return self;
@@ -60,8 +62,6 @@
 
 - (void)awakeFromNib
 {
-	prefs = [NSUserDefaults standardUserDefaults];
-	
 	// Set the process table view's vertical gridlines if required
 	[variablesTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
@@ -74,8 +74,7 @@
 		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 	
-	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[self _addPreferenceObservers];
 }
 
 #pragma mark -
@@ -371,11 +370,32 @@
 	}
 }
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register to obeserve table view vertical grid line pref changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[self _removePreferenceObservers];
 
 	SPClear(variables);
 	
