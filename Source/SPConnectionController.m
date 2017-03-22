@@ -1590,7 +1590,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// If this node only has one child and it's not another group node, don't bother proceeding
 	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) {
 		[nodes release];
-			return;
+		return;
 	}
 
 	for (SPTreeNode *treeNode in nodes)
@@ -1599,19 +1599,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self _sortTreeNode:treeNode usingKey:key];
 		}
 	}
-#warning What is this supposed to do? We create an empty indexset, iterate it (still empty) and release it again!?
-	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init];
-	
-	NSUInteger i = [indexes lastIndex];
-	
-	while (i != NSNotFound)
-	{
-		[nodes removeObjectAtIndex:i];
-		
-		i = [indexes indexLessThanIndex:i];
-	}
-
-	[indexes release];
 	
 	[nodes sortUsingFunction:_compareFavoritesUsingKey context:key];
 
