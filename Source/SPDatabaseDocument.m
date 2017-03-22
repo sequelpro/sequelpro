@@ -5785,56 +5785,55 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (NSDictionary *)shellVariables
 {
-
-	if(!_isConnected) return @{};
+	if (!_isConnected) return @{};
 
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
 
 	if (tablesListInstance) {
-		if([tablesListInstance selectedDatabase])
+
+		if ([tablesListInstance selectedDatabase]) {
 			[env setObject:[tablesListInstance selectedDatabase] forKey:SPBundleShellVariableSelectedDatabase];
+		}
 
-		if ([tablesListInstance tableName])
+		if ([tablesListInstance tableName]) {
 			[env setObject:[tablesListInstance tableName] forKey:SPBundleShellVariableSelectedTable];
+		}
 
-		if ([tablesListInstance selectedTableItems])
+		if ([tablesListInstance selectedTableItems]) {
 			[env setObject:[[tablesListInstance selectedTableItems] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedTables];
+		}
 
-		if ([tablesListInstance allDatabaseNames])
+		if ([tablesListInstance allDatabaseNames]) {
 			[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllDatabases];
+		}
 
-		if ([tablesListInstance allTableNames])
-			[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllTables];
-
-		if ([tablesListInstance allViewNames])
-			[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllViews];
-
-		if ([tablesListInstance allFunctionNames])
-			[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllFunctions];
-
-		if ([tablesListInstance allProcedureNames])
-			[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllProcedures];
-
-		if ([self user])
+		if ([self user]) {
 			[env setObject:[self user] forKey:SPBundleShellVariableCurrentUser];
+		}
 
-		if ([self host])
+		if ([self host]) {
 			[env setObject:[self host] forKey:SPBundleShellVariableCurrentHost];
+		}
 
-		if ([self port])
+		if ([self port]) {
 			[env setObject:[self port] forKey:SPBundleShellVariableCurrentPort];
+		}
 
-		[env setObject:([self databaseEncoding])?:@"" forKey:SPBundleShellVariableDatabaseEncoding];
+		[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllTables];
+		[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllViews];
+		[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllFunctions];
+		[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllProcedures];
 
+		[env setObject:([self databaseEncoding]) ? : @"" forKey:SPBundleShellVariableDatabaseEncoding];
 	}
 
-	if(1)
-		[env setObject:@"mysql" forKey:SPBundleShellVariableRDBMSType];
+	[env setObject:@"mysql" forKey:SPBundleShellVariableRDBMSType];
 
-	if([self mySQLVersion])
+	if ([self mySQLVersion]) {
 		[env setObject:[self mySQLVersion] forKey:SPBundleShellVariableRDBMSVersion];
+	}
 
-	return (NSDictionary*)env;
+	return (NSDictionary *)env;
 }
 #endif
 
