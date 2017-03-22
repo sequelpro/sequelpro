@@ -164,21 +164,29 @@
 	if([doc getConnection] == nil)
 		doc = nil;
 	else {
-		for (NSWindow *aWindow in [NSApp orderedWindows]) {
-			if([[[[aWindow windowController] class] description] isEqualToString:@"SPWindowController"]) {
-				if([[[aWindow windowController] documents] count] && [[[[[[aWindow windowController] documents] objectAtIndex:0] class] description] isEqualToString:@"SPDatabaseDocument"]) {
+		for (NSWindow *aWindow in [NSApp orderedWindows])
+		{
+			if ([[[[aWindow windowController] class] description] isEqualToString:@"SPWindowController"]) {
+
+				SPWindowController *windowController = (SPWindowController *)[aWindow windowController];
+				NSArray *documents = [windowController documents];
+
+				if ([documents count] && [[[[documents objectAtIndex:0] class] description] isEqualToString:@"SPDatabaseDocument"]) {
 					// Check if connected
-					if([[[[aWindow windowController] documents] objectAtIndex:0] getConnection])
-						doc = [[[aWindow windowController] documents] objectAtIndex:0];
-					else
+					if ([[documents objectAtIndex:0] getConnection]) {
+						doc = [documents objectAtIndex:0];
+					}
+					else {
 						doc = nil;
+					}
 				}
 			}
-			if(doc) break;
+
+			if (doc) break;
 		}
 	}
 	
-	if(doc != nil) {
+	if (doc != nil) {
 		
 		[doc setProcessID:uuid];
 		
