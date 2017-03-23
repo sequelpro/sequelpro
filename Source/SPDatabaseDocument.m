@@ -90,14 +90,18 @@ enum {
 #import "SPCharsetCollationHelper.h"
 #import "SPGotoDatabaseController.h"
 #import "SPFunctions.h"
+#import "SPCreateDatabaseInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
 
 #include <libkern/OSAtomic.h>
 
 // Constants
+static NSString *SPCopyDatabaseAction = @"SPCopyDatabase";
+static NSString *SPConfirmCopyDatabaseAction = @"SPConfirmCopyDatabase";
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
+
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 @interface SPDatabaseDocument ()
@@ -592,7 +596,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  *
  * @return The document's connection
  */
-- (SPMySQLConnection *) getConnection 
+- (SPMySQLConnection *)getConnection
 {
 	return mySQLConnection;
 }
@@ -600,9 +604,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Sets this connection's Keychain ID.
  */ 
-- (void)setKeychainID:(NSString *)theID
+- (void)setKeychainID:(NSString *)theId
 {
-	keyChainID = [[NSString stringWithString:theID] retain];
+	keyChainID = [[NSString stringWithString:theId] retain];
 }
 
 #pragma mark -
@@ -868,7 +872,25 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (IBAction)copyDatabase:(id)sender
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-	
+
+	// Inform the user that we don't support copying objects other than tables and ask them if they'd like to proceed
+	if ([tablesListInstance hasNonTableObjects]) {
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:@""
+										 defaultButton:NSLocalizedString(@"Continue", "continue button")
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										   otherButton:nil
+											alertStyle:NSAlertStyleWarning
+											 docWindow:parentWindow
+										 modalDelegate:self
+										didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+										   contextInfo:SPConfirmCopyDatabaseAction
+												   msg:NSLocalizedString(@"Only Partially Supported", @"partial copy database support message")
+											  infoText:[NSString stringWithFormat:NSLocalizedString(@"Duplicating the database '%@' is only partially supported as it contains objects other tables (i.e. views, procedures, functions, etc.), which will not be copied.\n\nWould you like to continue?", @"partial copy database support informative message"), selectedDatabase]
+											returnCode:&confirmCopyDatabaseReturnCode];
+
+		if (confirmCopyDatabaseReturnCode == NSAlertAlternateReturn) return;
+	}
+
 	[databaseCopyNameField setStringValue:selectedDatabase];
 	[copyDatabaseMessageField setStringValue:selectedDatabase];
 	
@@ -876,16 +898,29 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"copyDatabase"];
+		  contextInfo:SPCopyDatabaseAction];
 }
 #endif
 
 /**
- * opens the rename database sheet and renames the databsae
+ * Opens the rename database sheet and renames the databsae.
  */
 - (IBAction)renameDatabase:(id)sender
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+
+	// We currently don't support moving any objects other than tables (i.e. views, functions, procs, etc.) from one database to another
+	// so inform the user and don't allow them to proceed. Copy/duplicate is more appropriate in this case, but with the same limitation.
+	if ([tablesListInstance hasNonTableObjects]) {
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Database Rename Unsupported", @"databsse rename unsupported message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(
+					@"Ranaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
+					@"databsse rename unsupported informative message"), selectedDatabase]
+		);
+		return;
+	}
 	
 	[databaseRenameNameField setStringValue:selectedDatabase];
 	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
@@ -912,8 +947,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
-									  otherButton:nil 
-						informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
+									   otherButton:nil
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
 
 	NSArray *buttons = [alert buttons];
 
@@ -1022,26 +1057,29 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
- *
- * if contextInfo == removeDatabase -> Remove the selected database
- * if contextInfo == addDatabase    -> Add a new database
- * if contextInfo == copyDatabase   -> Duplicate the selected database
- * if contextInfo == renameDatabase -> Rename the selected database
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 #ifndef SP_CODA
-	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+
+	// Those that are just setting a return code and don't need to order out the sheet. See SPAlertSheets+beginWaitingAlertSheetWithTitle:
+	if ([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
+		return;
+	}
+	else if ([contextInfo isEqualToString:SPConfirmCopyDatabaseAction]) {
+		confirmCopyDatabaseReturnCode = returnCode;
 		return;
 	}
 #endif
 
 	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)])
+	if ([sheet respondsToSelector:@selector(orderOut:)]) {
 		[sheet orderOut:nil];
-	else if ([sheet respondsToSelector:@selector(window)])
+	}
+	else if ([sheet respondsToSelector:@selector(window)]) {
 		[[sheet window] orderOut:nil];
+	}
 
 	// Remove the current database
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
@@ -1081,7 +1119,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	} 
 	} 
 #ifndef SP_CODA
-	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
+	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
 		if (returnCode == NSOKButton) {
 			[self _copyDatabase];		
 		}

@@ -32,6 +32,7 @@
 #import "SPTableCopy.h"
 #import "SPViewCopy.h"
 #import "SPTablesList.h"
+#import "SPCreateDatabaseInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -46,6 +47,9 @@
 
 @implementation SPDatabaseRename
 
+/**
+ * Note that this doesn't currently support moving any non-table objects (i.e. views, proc, functions, events, etc).
+ */
 - (BOOL)renameDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabase
 {
 	// Check, whether the source database exists and the target database doesn't
@@ -55,22 +59,12 @@
 	if (!sourceExists || targetExists) return NO;
 
 	NSArray *tables = [tablesList allTableNames];
-//	NSArray *views  = [tablesList allViewNames]; // TODO: handle views when renaming database
-	
+
 	BOOL success = [self createDatabase:targetDatabase
 						   withEncoding:[sourceDatabase defaultEncoding]
 						      collation:[sourceDatabase defaultCollation]];
 	
 	[self _moveTables:tables fromDatabase:[sourceDatabase databaseName] toDatabase:targetDatabase];
-	
-#warning Section disabled because it might destroy data (views, functions, events, ...)
-/*
-	tables = [connection tablesFromDatabase:[sourceDatabase databaseName]];
- 
-	if ([tables count] == 0) {
-		[self _dropDatabase:[sourceDatabase databaseName]];
-	}
-*/
 	
 	return success;
 }

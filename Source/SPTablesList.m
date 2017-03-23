@@ -34,39 +34,24 @@
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
 #import "SPDatabaseViewController.h"
-
-#ifndef SP_CODA /* headers */
 #import "SPTableContent.h"
-#endif
 #import "SPTableData.h"
-#ifndef SP_CODA /* headers */
 #import "SPTableInfo.h"
 #import "SPDataImport.h"
 #import "SPTableView.h"
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
-#endif
 #import "SPDatabaseData.h"
 #import "SPAlertSheets.h"
-#ifndef SP_CODA /* headers */
 #import "SPNavigatorController.h"
 #import "SPHistoryController.h"
-#endif
 #import "SPServerSupport.h"
-#ifndef SP_CODA /* headers */
 #import "SPWindowController.h"
 #import "SPAppController.h"
 #import "SPSplitView.h"
-#endif
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
-
-#ifdef SP_CODA
-#import "SQLSidebarViewController.h"
-#endif
-
 #import "SPCharsetCollationHelper.h"
-
 #import "SPWindowManagement.h"
 
 #import <SPMySQL/SPMySQL.h>
@@ -75,43 +60,23 @@
 static NSString *SPAddRow         = @"SPAddRow";
 static NSString *SPAddNewTable    = @"SPAddNewTable";
 static NSString *SPRemoveTable    = @"SPRemoveTable";
-#ifndef SP_CODA
 static NSString *SPTruncateTable  = @"SPTruncateTable";
 static NSString *SPDuplicateTable = @"SPDuplicateTable";
-#endif
 
 @interface SPTablesList ()
 
-#ifndef SP_CODA
 - (void)_removeTable:(NSNumber *)force;
 - (void)_truncateTable;
-#endif
 - (void)_addTable;
-#ifndef SP_CODA
 - (void)_copyTable;
-#endif
 - (void)_renameTableOfType:(SPTableType)tableType from:(NSString *)oldTableName to:(NSString *)newTableName;
 - (void)_duplicateConnectionToFrontTab;
 - (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type;
+- (BOOL)_databaseHasObjectOfType:(SPTableType)type;
+
 @end
 
 @implementation SPTablesList
-
-#ifdef SP_CODA
-@synthesize sidebarViewController;
-@synthesize databaseDataInstance;
-@synthesize toolbarAddButton;
-@synthesize toolbarDeleteButton;
-@synthesize toolbarReloadButton;
-@synthesize tableSourceInstance;
-@synthesize tableContentInstance;
-@synthesize tableSheet;
-@synthesize tableNameField;
-@synthesize tableEncodingButton;
-@synthesize tableTypeButton;
-@synthesize addTableButton;
-@synthesize tablesListView;
-#endif
 
 #pragma mark -
 #pragma mark Initialisation
@@ -119,6 +84,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (id)init
 {
 	if ((self = [super init])) {
+
 		tables = [[NSMutableArray alloc] init];
 		filteredTables = tables;
 		tableTypes = [[NSMutableArray alloc] init];
@@ -128,11 +94,11 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		tableListContainsViews = NO;
 		selectedTableType = SPTableTypeNone;
 		selectedTableName = nil;
-#ifndef SP_CODA
+
 		[tables addObject:NSLocalizedString(@"TABLES", @"header for table list")];
 		
 		smallSystemFont = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-#endif
+
 		addTableCharsetHelper = nil; //initialized in awakeFromNib
 	}
 	
@@ -141,8 +107,6 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 - (void)awakeFromNib
 {
-#ifndef SP_CODA
-
 	// Configure the table information pane
 	[tableListSplitView setCollapsibleSubviewIndex:1];
 
@@ -157,22 +121,20 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	
 	// Disable tab edit behaviour in the tables list
 	[tablesListView setTabEditingDisabled:YES];
-#endif
 	
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(startDocumentTaskForTab:)
 												 name:SPDocumentTaskStartNotification
 											   object:tableDocumentInstance];
+
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
 	
-#ifndef SP_CODA
 	[tablesListView registerForDraggedTypes:@[SPNavigatorTableDataPasteboardDragType]];
-#endif
-	
+
 	//create the charset helper
 	addTableCharsetHelper = [[SPCharsetCollationHelper alloc] initWithCharsetButton:tableEncodingButton CollationButton:tableCollationButton];
 }
@@ -1273,57 +1235,66 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 }
 
 /**
- * Database tables accessors for a given table type
+ * Database tables accessors for a given table type.
  */
 - (NSArray *)allTableAndViewNames
 {
 	NSMutableArray *returnArray = [NSMutableArray array];
-	NSUInteger i;
-	NSUInteger cnt = [[self tables] count];
-	for(i=0; i<cnt; i++) {
-		SPTableType tt = (SPTableType)[NSArrayObjectAtIndex([self tableTypes],i) integerValue];
-		if(tt == SPTableTypeTable || tt == SPTableTypeView)
+
+	for (NSUInteger i = 0; i <  [[self tables] count]; i++)
+	{
+		SPTableType tt = (SPTableType)[NSArrayObjectAtIndex([self tableTypes], i) integerValue];
+
+		if (tt == SPTableTypeTable || tt == SPTableTypeView) {
 			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+		}
 	}
+
 	return returnArray;
 }
 
+/**
+ * Returns an array of all table names.
+ */
 - (NSArray *)allTableNames
 {
 	return [self _allSchemaObjectsOfType:SPTableTypeTable];
 }
 
+/**
+ * Returns an array of view names.
+ */
 - (NSArray *)allViewNames
 {
 	NSMutableArray *returnArray = [self _allSchemaObjectsOfType:SPTableTypeView];
+
 	[returnArray sortUsingSelector:@selector(compare:)];
+
 	return returnArray;
 }
 
+/**
+ * Returns an array of all procedure names.
+ */
 - (NSArray *)allProcedureNames
 {
 	return [self _allSchemaObjectsOfType:SPTableTypeProc];
 }
+
+/**
+ * Returns an array of all function names.
+ */
 - (NSArray *)allFunctionNames
 {
 	return [self _allSchemaObjectsOfType:SPTableTypeFunc];
 }
 
+/**
+ * Returns an array of event names.
+ */
 - (NSArray *)allEventNames
 {
-	return  [self _allSchemaObjectsOfType:SPTableTypeEvent];
-}
-
-- (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type
-{
-	NSMutableArray *returnArray = [NSMutableArray array];
-	NSInteger i;
-	NSInteger cnt = [[self tables] count];
-	for(i=0; i<cnt; i++) {
-		if([NSArrayObjectAtIndex([self tableTypes],i) integerValue] == type)
-			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
-	}
-	return returnArray;
+	return [self _allSchemaObjectsOfType:SPTableTypeEvent];
 }
 
 /**
@@ -1353,6 +1324,46 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 - (NSArray *)tableTypes
 {
 	return tableTypes;
+}
+
+/**
+ * Returns whether or not the current database contains any views.
+ */
+- (BOOL)hasViews
+{
+	return [self _databaseHasObjectOfType:SPTableTypeView];
+}
+
+/**
+ * Returns whether or not the current database contains any functions.
+ */
+- (BOOL)hasFunctions
+{
+	return [self _databaseHasObjectOfType:SPTableTypeFunc];
+}
+
+/**
+ * Returns whether or not the current database has any procedures.
+ */
+- (BOOL)hasProcedures
+{
+	return [self _databaseHasObjectOfType:SPTableTypeProc];
+}
+
+/**
+ * Returns whether or not the current database has any events.
+ */
+- (BOOL)hasEvents
+{
+	return [self _databaseHasObjectOfType:SPTableTypeEvent];
+}
+
+/**
+ * Returns whether or not the current database has any non-table objects.
+ */
+- (BOOL)hasNonTableObjects
+{
+	return [self hasViews] || [self hasProcedures] || [self hasFunctions] || [self hasEvents];
 }
 
 #pragma mark -
@@ -2740,6 +2751,35 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	[NSException raise:@"Object of unknown type" format:NSLocalizedString(@"An error occured while renaming. '%@' is of an unknown type.", @"rename error - don't know what type the renamed thing is"), oldTableName];
 }
 
+- (NSMutableArray *)_allSchemaObjectsOfType:(SPTableType)type
+{
+	NSMutableArray *returnArray = [NSMutableArray array];
+
+	for (NSUInteger i = 0; i < [[self tables] count]; i++)
+	{
+		if ([NSArrayObjectAtIndex([self tableTypes], i) integerValue] == type) {
+			[returnArray addObject:NSArrayObjectAtIndex([self tables], i)];
+		}
+	}
+
+	return returnArray;
+}
+
+- (BOOL)_databaseHasObjectOfType:(SPTableType)type
+{
+	BOOL hasObjectOfType = NO;
+
+	for (NSUInteger i = 0; i < [[self tables] count]; i++)
+	{
+		if ([NSArrayObjectAtIndex([self tableTypes], i) integerValue] == type) {
+			hasObjectOfType = YES;
+			break;
+		}
+	}
+
+	return hasObjectOfType;
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -2748,12 +2788,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	
 	SPClear(tables);
 	SPClear(tableTypes);
-#ifndef SP_CODA
+
 	if (isTableListFiltered && filteredTables)     SPClear(filteredTables);
 	if (isTableListFiltered && filteredTableTypes) SPClear(filteredTableTypes);
-#endif
 	if (selectedTableName)                         SPClear(selectedTableName);
-	
 	if (addTableCharsetHelper)                     SPClear(addTableCharsetHelper);
 	
 	[super dealloc];

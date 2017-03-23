@@ -1,8 +1,8 @@
 //
-//  SPDatabaseCopy.h
+//  SPCreateDatabaseInfo.m
 //  sequel-pro
 //
-//  Created by David Rekowski on April 13, 2010.
+//  Created by David Rekowski on April 29, 2010.
 //  Copyright (c) 2010 David Rekowski. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
@@ -28,21 +28,22 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPDatabaseAction.h"
+#import "SPCreateDatabaseInfo.h"
 
-/**
- * The SPDatabaseCopy class povides functionality to create a copy of a database.
- */
-@interface SPDatabaseCopy : SPDatabaseAction
+@implementation SPCreateDatabaseInfo
 
-/**
- * This method clones an existing database.
- *
- * @param sourceDatabase     information tuple about source database
- * @param targetDatabaseName the name of the target database
- *
- * @result success
- */
-- (BOOL)copyDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent;
+@synthesize databaseName;
+@synthesize defaultEncoding;
+@synthesize defaultCollation;
+
+- (void)dealloc
+{
+	if (databaseName) SPClear(databaseName);
+	if (defaultEncoding) SPClear(defaultEncoding);
+	if (defaultCollation) SPClear(defaultCollation);
+
+	[super dealloc];
+}
 
 @end
+

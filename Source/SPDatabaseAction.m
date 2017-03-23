@@ -29,24 +29,9 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPDatabaseAction.h"
+#import "SPCreateDatabaseInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
-
-@implementation SPCreateDatabaseInfo
-
-@synthesize databaseName;
-@synthesize defaultEncoding;
-@synthesize defaultCollation;
-
-- (void)dealloc
-{
-	[self setDatabaseName:nil];
-	[self setDefaultEncoding:nil];
-	[self setDefaultCollation:nil];
-	[super dealloc];
-}
-
-@end
 
 #pragma mark -
 
@@ -65,17 +50,18 @@
 
 - (BOOL)createDatabase:(NSString *)database withEncoding:(NSString *)encoding collation:(NSString *)collation
 {
-	if(![database length]) {
+	if (![database length]) {
 		SPLog(@"'database' should not be nil or empty!");
 		return NO;
 	}
 	
 	NSMutableString *query = [NSMutableString stringWithFormat:@"CREATE DATABASE %@", [database backtickQuotedString]];
 	
-	if([encoding length]) { // [nil length] == 0
+	if ([encoding length]) { // [nil length] == 0
 		[query appendFormat:@" DEFAULT CHARACTER SET = %@",[encoding backtickQuotedString]];
 	}
-	if([collation length]) {
+
+	if ([collation length]) {
 		[query appendFormat:@" DEFAULT COLLATE = %@",[collation backtickQuotedString]];
 	}
 	
