@@ -875,7 +875,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Inform the user that we don't support copying objects other than tables and ask them if they'd like to proceed
 	if ([tablesListInstance hasNonTableObjects]) {
-		[SPAlertSheets beginWaitingAlertSheetWithTitle:@""
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"Only Partially Supported", @"partial copy database support message")
 										 defaultButton:NSLocalizedString(@"Continue", "continue button")
 									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 										   otherButton:nil
@@ -884,7 +884,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 										 modalDelegate:self
 										didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 										   contextInfo:SPConfirmCopyDatabaseAction
-												   msg:NSLocalizedString(@"Only Partially Supported", @"partial copy database support message")
 											  infoText:[NSString stringWithFormat:NSLocalizedString(@"Duplicating the database '%@' is only partially supported as it contains objects other tables (i.e. views, procedures, functions, etc.), which will not be copied.\n\nWould you like to continue?", @"partial copy database support informative message"), selectedDatabase]
 											returnCode:&confirmCopyDatabaseReturnCode];
 
@@ -3371,7 +3370,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
-			[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+			[SPAlertSheets beginWaitingAlertSheetWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
 			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
 			                                   otherButton:nil
@@ -3380,7 +3379,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			                                 modalDelegate:self
 			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			                                   contextInfo:@"saveDocPrefSheetStatus"
-			                                           msg:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
 			                                    returnCode:&saveDocPrefSheetStatus];
 
