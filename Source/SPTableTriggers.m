@@ -68,6 +68,8 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_openTriggerSheet;
 - (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
@@ -114,8 +116,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
-	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[self _addPreferenceObservers];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(triggerStatementTextDidChange:)
@@ -634,6 +635,27 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 	[self performSelector:@selector(_openTriggerSheet) withObject:nil afterDelay:0.0];
 }
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -642,7 +664,8 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 	SPClear(editedTrigger);
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[self _removePreferenceObservers];
 
 	[super dealloc];
 }

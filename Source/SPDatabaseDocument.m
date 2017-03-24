@@ -6435,7 +6435,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableTriggersInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 
 	// Register observers for the when the UseMonospacedFonts preference changes
@@ -6461,14 +6460,14 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
 
 	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
 
 	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
 	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
 
 	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
 	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
 
 	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
 	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
