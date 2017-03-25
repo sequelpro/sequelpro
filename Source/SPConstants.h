@@ -665,18 +665,25 @@ typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
 void _SPClear(id *addr);
 #define SPClear(x) _SPClear(&x)
 
-//Backwards compatibility
+// Backwards compatibility
 #ifndef __MAC_10_7
-#define __MAC_10_7 1070
+	#define __MAC_10_7 1070
 #endif
+
 #ifndef __MAC_10_8
-#define __MAC_10_8 1080
+	#define __MAC_10_8 1080
 #endif
+
 #ifndef __MAC_10_10
-#define __MAC_10_10 101000
+	#define __MAC_10_10 101000
 #endif
+
 #ifndef __MAC_10_11
-#define __MAC_10_11 101100
+	#define __MAC_10_11 101100
+#endif
+
+#ifndef __MAC_10_12
+	#define __MAC_10_12 101200
 #endif
 
 // This enum is available since 10.5 but only got a "name" in 10.10
