@@ -432,8 +432,11 @@
 	[image lockFocusFlipped:YES];
 #endif
 	[self setFrame:tabDrawFrame];
-	[(id <PSMTabStyle>)[(PSMTabBarControl *)_customControlView style] drawTabCell:self];
+
+	[(id <PSMTabStyle>)[(PSMTabBarControl *)_customControlView style] drawTabCellForDragImage:self];
+
 	[self setFrame:oldFrame];
+
 	[image unlockFocus];
 
 	// Add the indicator if appropriate

@@ -34,7 +34,9 @@
 	srcRect.size = [_image size];
 	
 	[_image drawInRect:[self bounds] fromRect:srcRect operation:NSCompositeSourceOver fraction:primaryAlpha];
+
 	srcRect.size = [_alternateImage size];
+
 	[_alternateImage drawInRect:[self bounds] fromRect:srcRect operation:NSCompositeSourceOver fraction:alternateAlpha];
 }
 

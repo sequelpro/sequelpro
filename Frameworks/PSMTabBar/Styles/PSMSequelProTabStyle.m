@@ -1,6 +1,4 @@
 //
-//  $Id: PSMSequelProTabStyle.m 2317 2010-06-15 10:19:41Z avenjamin $
-//
 //  PSMSequelProTabStyle.m
 //  sequel-pro
 //
@@ -31,10 +29,9 @@
 #define kPSMSequelProObjectCounterRadius 7.0f
 #define kPSMSequelProCounterMinWidth 20
 #define kPSMSequelProTabCornerRadius 0
-#define MARGIN_X 6
 
 #ifndef __MAC_10_10
-#define __MAC_10_10         101000
+#define __MAC_10_10 101000
 #endif
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
@@ -46,11 +43,19 @@ typedef struct {
 } NSOperatingSystemVersion;
 
 @interface NSProcessInfo ()
+
 - (NSOperatingSystemVersion)operatingSystemVersion;
 - (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-@end
 
+@end
 #endif
+
+@interface PSMSequelProTabStyle ()
+
+- (NSColor *)_lineColorForTabCellDrawing;
+- (void)_drawTabCell:(PSMTabBarCell *)cell withBackgroundColor:(NSColor *)backgroundColor lineColor:(NSColor *)lineColor;
+
+@end
 
 @implementation PSMSequelProTabStyle
 
@@ -69,9 +74,11 @@ typedef struct {
 		// This code actually belongs in it's own class, but since both PSMTabBar.framework
 		// and SP itself would need it, the loader will complain about a duplicate class implementation.
 		NSProcessInfo *procInfo = [NSProcessInfo processInfo];
-		if([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
+
+		if ([procInfo respondsToSelector:@selector(isOperatingSystemAtLeastVersion:)]) {
 			NSOperatingSystemVersion os10_7_0 = {10,7,0};
 			NSOperatingSystemVersion os10_10_0 = {10,10,0};
+
 			systemVersionIsAtLeast10_7_0 = [procInfo isOperatingSystemAtLeastVersion:os10_7_0];
 			systemVersionIsAtLeast10_10_0 = [procInfo isOperatingSystemAtLeastVersion:os10_10_0];
 		}
@@ -85,21 +92,23 @@ typedef struct {
 			systemVersionIsAtLeast10_10_0 = (versionMajor > 10 || (versionMajor == 10 && versionMinor >= 10));
 		}
 
-        sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose"]];
-        sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Pressed"]];
-        sequelProCloseButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabClose_Rollover"]];
+		NSBundle *bundle = [PSMTabBarControl bundle];
 
-        sequelProCloseDirtyButton = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty"]];
-        sequelProCloseDirtyButtonDown = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Pressed"]];
-        sequelProCloseDirtyButtonOver = [[NSImage alloc] initByReferencingFile:[[PSMTabBarControl bundle] pathForImageResource:@"SequelProTabDirty_Rollover"]];
+        sequelProCloseButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose"]];
+        sequelProCloseButtonDown = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose_Pressed"]];
+        sequelProCloseButtonOver = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabClose_Rollover"]];
+
+        sequelProCloseDirtyButton = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabDirty"]];
+        sequelProCloseDirtyButtonDown = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabDirty_Pressed"]];
+        sequelProCloseDirtyButtonOver = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"SequelProTabDirty_Rollover"]];
                 
-        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
-        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
-        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[[NSBundle mainBundle] pathForImageResource:@"button_add"]];
+        _addTabButtonImage = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"AddTabButton"]];
+        _addTabButtonPressedImage = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"AddTabButton"]];
+        _addTabButtonRolloverImage = [[NSImage alloc] initByReferencingFile:[bundle pathForImageResource:@"AddTabButton"]];
 		
-		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
-																					[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName,
-																					nil, nil];
+		_objectCountStringAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:
+										[[NSFontManager sharedFontManager] convertFont:[NSFont fontWithName:@"Helvetica" size:11.0f] toHaveTrait:NSBoldFontMask], NSFontAttributeName,
+										[[NSColor whiteColor] colorWithAlphaComponent:0.85f], NSForegroundColorAttributeName, nil, nil];
     }
     return self;
 }
@@ -371,7 +380,6 @@ typedef struct {
     [textShadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0f alpha:shadowAlpha]];
     [textShadow setShadowOffset:NSMakeSize(0, -1)];
     [textShadow setShadowBlurRadius:1.0f];
-//    [attrStr addAttribute:NSShadowAttributeName value:textShadow range:range];
 	
     // Paragraph Style for Truncating Long Text
     static NSMutableParagraphStyle *TruncatingTailParagraphStyle = nil;
@@ -433,23 +441,22 @@ typedef struct {
     }
 }
 
-
 // Step 2
 - (void)drawBackgroundInRect:(NSRect)rect
 {
-	//Draw for our whole bounds; it'll be automatically clipped to fit the appropriate drawing area
+	// Draw for our whole bounds; it'll be automatically clipped to fit the appropriate drawing area
 	rect = [tabBar bounds];
 	
-	// find active cell
+	// Find active cell
 	PSMTabBarCell *selectedCell = nil;
+
 	for (PSMTabBarCell *aCell in [tabBar cells]) {
 		if (aCell.tabState & PSMTab_SelectedMask) {
 			selectedCell = aCell;
 			break;
 		}
 	}
-	
-	
+
 	[NSGraphicsContext saveGraphicsState];
 	[[NSGraphicsContext currentContext] setShouldAntialias:NO];
 
@@ -465,21 +472,13 @@ typedef struct {
 		shadowAlpha = 0.3f;
 	}
 	
-	// fill in background of tab bar
+	// Fill in background of tab bar
 	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
-	NSRectFill(NSMakeRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height - 10));
-	
-	
-	// fill active tab strip
-	[[self fillColorForCell:selectedCell] set];
-	NSRectFill(NSMakeRect(rect.origin.x, rect.origin.y + rect.size.height - 9, rect.size.width, 8));
+	NSRectFill(NSMakeRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height));
 
 	// Draw horizontal line across the top edge
 	[[NSColor colorWithCalibratedWhite:lineCalibratedWhite alpha:1.0f] set];
 	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + 0.5f) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + 0.5f)];
-	
-	// Draw horizontal line across the baseline for each tab
-	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + rect.size.height - 9.5f) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height - 9.5f)];
 	
 	// Draw horizontal line across the bottom edge
 	[NSBezierPath strokeLineFromPoint:NSMakePoint(rect.origin.x, rect.origin.y + rect.size.height - 0.5f) toPoint:NSMakePoint(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height - 0.5f)];
@@ -490,51 +489,27 @@ typedef struct {
 // Step 3
 - (void)drawTabCell:(PSMTabBarCell *)cell
 {
-	// don't draw cells when collapsed
-	if (tabBar.isTabBarHidden) {
-		return;
-	}
-	
-	NSRect cellFrame = cell.frame;
-	NSColor *lineColor = nil;
+	// Don't draw cells when collapsed
+	if ([tabBar isTabBarHidden]) return;
+
+	NSColor *lineColor = [self _lineColorForTabCellDrawing];
 	NSColor *fillColor = [self fillColorForCell:cell];
 
-	// Set up colours
-	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
-		lineColor = [NSColor grayColor];
-		
-	} else {
-		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
-		
-	}
-	
-	// setup fill rect
-	NSRect fillRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + 1, cellFrame.size.width, cellFrame.size.height - 10);
-	
-	
-	// draw
-	[NSGraphicsContext saveGraphicsState];
-
-	[fillColor set];
-	NSRectFill(fillRect);
-	
-	// stroke left edge
-	[lineColor setStroke];
-	NSPoint point1 = NSMakePoint(fillRect.origin.x + fillRect.size.width - 0.5, fillRect.origin.y);
-	NSPoint point2 = NSMakePoint(fillRect.origin.x + fillRect.size.width - 0.5, fillRect.origin.y + fillRect.size.height);
-	[NSBezierPath strokeLineFromPoint:point1 toPoint:point2];
-	
-	// stroke bottom edge unless active cell
-	if (cell.state != NSOnState) {
-		point1 = NSMakePoint(fillRect.origin.x, fillRect.origin.y + fillRect.size.height - 0.5);
-		point2 = NSMakePoint(fillRect.origin.x + fillRect.size.width, fillRect.origin.y + fillRect.size.height - 0.5);
-		[NSBezierPath strokeLineFromPoint:point1 toPoint:point2];
-	}
-
-	[NSGraphicsContext restoreGraphicsState];
+	[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:lineColor];
 	
 	[self drawInteriorWithTabCell:cell inView:[cell customControlView]];
+}
 
+/**
+ * Same as above, but doesn't draw the left hand (right had of the actual tab) border for the tab drag image.
+ */
+- (void)drawTabCellForDragImage:(PSMTabBarCell *)cell
+{
+	NSColor *fillColor = [self fillColorForCell:cell];
+
+	[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:nil];
+
+	[self drawInteriorWithTabCell:cell inView:[cell customControlView]];
 }
 
 // Step 4
@@ -547,12 +522,20 @@ typedef struct {
     if ([cell hasCloseButton] && ![cell isCloseButtonSuppressed] && [cell isHighlighted]) {
 		
         NSRect closeButtonRect = [cell closeButtonRectForFrame:cellFrame];
-        NSImage * closeButton = nil;
+        NSImage *closeButton = nil;
 
         closeButton = [cell isEdited] ? sequelProCloseDirtyButton : sequelProCloseButton;
 		
         if ([cell closeButtonOver]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonOver : sequelProCloseButtonOver;
         if ([cell closeButtonPressed]) closeButton = [cell isEdited] ? sequelProCloseDirtyButtonDown : sequelProCloseButtonDown;
+
+		// Slightly darken background tabs on mouse over
+		if ([cell state] == NSOffState) {
+			NSColor *lineColor = [self _lineColorForTabCellDrawing];
+			NSColor *fillColor = [[self fillColorForCell:cell] shadowWithLevel:0.03f];
+
+			[self _drawTabCell:cell withBackgroundColor:fillColor lineColor:lineColor];
+		}
 
 		[closeButton drawInRect:closeButtonRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f respectFlipped:YES hints:nil];
     }
@@ -677,42 +660,55 @@ typedef struct {
 
 - (void)encodeWithCoder:(NSCoder *)aCoder 
 {
-    //[super encodeWithCoder:aCoder];
-/*    
-    if ([aCoder allowsKeyedCoding]) {
-        [aCoder encodeObject:sequelProCloseButton forKey:@"sequelProCloseButton"];
-        [aCoder encodeObject:sequelProCloseButtonDown forKey:@"sequelProCloseButtonDown"];
-        [aCoder encodeObject:sequelProCloseButtonOver forKey:@"sequelProCloseButtonOver"];
-        [aCoder encodeObject:sequelProCloseDirtyButton forKey:@"sequelProCloseDirtyButton"];
-        [aCoder encodeObject:sequelProCloseDirtyButtonDown forKey:@"sequelProCloseDirtyButtonDown"];
-        [aCoder encodeObject:sequelProCloseDirtyButtonOver forKey:@"sequelProCloseDirtyButtonOver"];
-        [aCoder encodeObject:_addTabButtonImage forKey:@"addTabButtonImage"];
-        [aCoder encodeObject:_addTabButtonPressedImage forKey:@"addTabButtonPressedImage"];
-        [aCoder encodeObject:_addTabButtonRolloverImage forKey:@"addTabButtonRolloverImage"];
-    }
-*/    
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder 
 {
-    self = [self init];
-    if (self) {
+    return [self init];
+}
 
-/*    
-        if ([aDecoder allowsKeyedCoding]) {
-            sequelProCloseButton = [[aDecoder decodeObjectForKey:@"sequelProCloseButton"] retain];
-            sequelProCloseButtonDown = [[aDecoder decodeObjectForKey:@"sequelProCloseButtonDown"] retain];
-            sequelProCloseButtonOver = [[aDecoder decodeObjectForKey:@"sequelProCloseButtonOver"] retain];
-            sequelProCloseDirtyButton = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButton"] retain];
-            sequelProCloseDirtyButtonDown = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButtonDown"] retain];
-            sequelProCloseDirtyButtonOver = [[aDecoder decodeObjectForKey:@"sequelProCloseDirtyButtonOver"] retain];
-            _addTabButtonImage = [[aDecoder decodeObjectForKey:@"addTabButtonImage"] retain];
-            _addTabButtonPressedImage = [[aDecoder decodeObjectForKey:@"addTabButtonPressedImage"] retain];
-            _addTabButtonRolloverImage = [[aDecoder decodeObjectForKey:@"addTabButtonRolloverImage"] retain];
-        }
-*/        
-    }
-    return self;
+#pragma mark -
+#pragma mark Private API
+
+- (void)_drawTabCell:(PSMTabBarCell *)cell withBackgroundColor:(NSColor *)backgroundColor lineColor:(NSColor *)lineColor
+{
+	NSRect cellFrame = [cell frame];
+
+	// Setup fill rect
+	NSRect fillRect = NSMakeRect(cellFrame.origin.x, cellFrame.origin.y + 1, cellFrame.size.width, cellFrame.size.height - 1.5);
+
+	// Draw
+	[NSGraphicsContext saveGraphicsState];
+
+	[backgroundColor set];
+	NSRectFill(fillRect);
+
+	if (lineColor) {
+
+		// Stroke left edge
+		[lineColor setStroke];
+
+		NSPoint point1 = NSMakePoint(fillRect.origin.x + fillRect.size.width - 0.5, fillRect.origin.y);
+		NSPoint point2 = NSMakePoint(fillRect.origin.x + fillRect.size.width - 0.5, fillRect.origin.y + fillRect.size.height);
+
+		[NSBezierPath strokeLineFromPoint:point1 toPoint:point2];
+	}
+
+	[NSGraphicsContext restoreGraphicsState];
+}
+
+- (NSColor *)_lineColorForTabCellDrawing
+{
+	NSColor *lineColor = nil;
+
+	if (([[tabBar window] isMainWindow] || [[[tabBar window] attachedSheet] isMainWindow]) && [NSApp isActive]) {
+		lineColor = [NSColor grayColor];
+	}
+	else {
+		lineColor = [NSColor colorWithCalibratedWhite:0.49f alpha:1.0f];
+	}
+
+	return lineColor;
 }
 
 @end

@@ -358,9 +358,6 @@
 		58B9074A11BD9B34000826E5 /* overflowImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070A11BD9B34000826E5 /* overflowImage.png */; };
 		58B9074B11BD9B34000826E5 /* overflowImagePressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070B11BD9B34000826E5 /* overflowImagePressed.png */; };
 		58B9074C11BD9B34000826E5 /* pi.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9070C11BD9B34000826E5 /* pi.png */; };
-		58B9075311BD9B34000826E5 /* TabNewMetal.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9071311BD9B34000826E5 /* TabNewMetal.png */; };
-		58B9075411BD9B34000826E5 /* TabNewMetalPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9071411BD9B34000826E5 /* TabNewMetalPressed.png */; };
-		58B9075511BD9B34000826E5 /* TabNewMetalRollover.png in Resources */ = {isa = PBXBuildFile; fileRef = 58B9071511BD9B34000826E5 /* TabNewMetalRollover.png */; };
 		58B9075611BD9B34000826E5 /* NSBezierPath_AMShading.h in Headers */ = {isa = PBXBuildFile; fileRef = 58B9071611BD9B34000826E5 /* NSBezierPath_AMShading.h */; };
 		58B9075711BD9B34000826E5 /* NSBezierPath_AMShading.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B9071711BD9B34000826E5 /* NSBezierPath_AMShading.m */; };
 		58B9075811BD9B34000826E5 /* NSString_AITruncation.h in Headers */ = {isa = PBXBuildFile; fileRef = 58B9071811BD9B34000826E5 /* NSString_AITruncation.h */; };
@@ -1186,16 +1183,6 @@
 		58B9072C11BD9B34000826E5 /* PSMTabDragWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMTabDragWindowController.h; sourceTree = "<group>"; };
 		58B9072D11BD9B34000826E5 /* PSMTabDragWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMTabDragWindowController.m; sourceTree = "<group>"; };
 		58B9072E11BD9B34000826E5 /* PSMTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMTabStyle.h; sourceTree = "<group>"; };
-		58B9073011BD9B34000826E5 /* PSMAdiumTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMAdiumTabStyle.h; sourceTree = "<group>"; };
-		58B9073111BD9B34000826E5 /* PSMAdiumTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMAdiumTabStyle.m; sourceTree = "<group>"; };
-		58B9073211BD9B34000826E5 /* PSMAquaTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMAquaTabStyle.h; sourceTree = "<group>"; };
-		58B9073311BD9B34000826E5 /* PSMAquaTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMAquaTabStyle.m; sourceTree = "<group>"; };
-		58B9073411BD9B34000826E5 /* PSMCardTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMCardTabStyle.h; sourceTree = "<group>"; };
-		58B9073511BD9B34000826E5 /* PSMCardTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMCardTabStyle.m; sourceTree = "<group>"; };
-		58B9073611BD9B34000826E5 /* PSMMetalTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMMetalTabStyle.h; sourceTree = "<group>"; };
-		58B9073711BD9B34000826E5 /* PSMMetalTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMMetalTabStyle.m; sourceTree = "<group>"; };
-		58B9073811BD9B34000826E5 /* PSMUnifiedTabStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMUnifiedTabStyle.h; sourceTree = "<group>"; };
-		58B9073911BD9B34000826E5 /* PSMUnifiedTabStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMUnifiedTabStyle.m; sourceTree = "<group>"; };
 		58B9077D11BD9B64000826E5 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		58B9088711BDB7AA000826E5 /* PSMTabBar-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "PSMTabBar-Info.plist"; path = "Plists/PSMTabBar-Info.plist"; sourceTree = "<group>"; };
 		58B9095B11C3A3EC000826E5 /* xibLocalizationPostprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xibLocalizationPostprocessor.m; sourceTree = "<group>"; };
@@ -2651,18 +2638,8 @@
 		58B9072F11BD9B34000826E5 /* Styles */ = {
 			isa = PBXGroup;
 			children = (
-				58B9073011BD9B34000826E5 /* PSMAdiumTabStyle.h */,
-				58B9073111BD9B34000826E5 /* PSMAdiumTabStyle.m */,
-				58B9073211BD9B34000826E5 /* PSMAquaTabStyle.h */,
-				58B9073311BD9B34000826E5 /* PSMAquaTabStyle.m */,
-				58B9073411BD9B34000826E5 /* PSMCardTabStyle.h */,
-				58B9073511BD9B34000826E5 /* PSMCardTabStyle.m */,
-				58B9073611BD9B34000826E5 /* PSMMetalTabStyle.h */,
-				58B9073711BD9B34000826E5 /* PSMMetalTabStyle.m */,
 				B55F8E5D11C67CA0006A3386 /* PSMSequelProTabStyle.h */,
 				B55F8E5E11C67CA0006A3386 /* PSMSequelProTabStyle.m */,
-				58B9073811BD9B34000826E5 /* PSMUnifiedTabStyle.h */,
-				58B9073911BD9B34000826E5 /* PSMUnifiedTabStyle.m */,
 			);
 			path = Styles;
 			sourceTree = "<group>";
@@ -3016,9 +2993,6 @@
 				58B9074A11BD9B34000826E5 /* overflowImage.png in Resources */,
 				58B9074B11BD9B34000826E5 /* overflowImagePressed.png in Resources */,
 				58B9074C11BD9B34000826E5 /* pi.png in Resources */,
-				58B9075311BD9B34000826E5 /* TabNewMetal.png in Resources */,
-				58B9075411BD9B34000826E5 /* TabNewMetalPressed.png in Resources */,
-				58B9075511BD9B34000826E5 /* TabNewMetalRollover.png in Resources */,
 				B55F8E6611C67D8A006A3386 /* AddTabButton.png in Resources */,
 				B55F8E6711C67D8A006A3386 /* AddTabButtonPushed.png in Resources */,
 				B55F8E6811C67D8A006A3386 /* AddTabButtonRollover.png in Resources */,

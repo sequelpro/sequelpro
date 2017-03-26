@@ -15,13 +15,16 @@
 #define PSMTabDragDidEndNotification @"PSMTabDragDidEndNotification"
 #define PSMTabDragDidBeginNotification @"PSMTabDragDidBeginNotification"
 
-#define kPSMTabBarControlHeight 34
+#define kPSMTabBarControlHeight 25
 #define kPSMTabBarControlDefaultHeightCollapsed 0 // can be changed with a property
+
 // internal cell border
 #define MARGIN_X        6
-#define MARGIN_Y        5
+#define MARGIN_Y        6
+
 // padding between objects
 #define kPSMTabBarCellPadding 4
+
 // fixed size objects
 #define kPSMMinimumTitleWidth 30
 #define kPSMTabBarIndicatorWidth 16.0f
@@ -48,13 +51,13 @@ typedef enum {
 } PSMTabBarTearOffStyle;
 
 enum {
-    PSMTab_SelectedMask                 = 1 << 1,
-    PSMTab_LeftIsSelectedMask       = 1 << 2,
-    PSMTab_RightIsSelectedMask          = 1 << 3,
+    PSMTab_SelectedMask         = 1 << 1,
+    PSMTab_LeftIsSelectedMask   = 1 << 2,
+    PSMTab_RightIsSelectedMask  = 1 << 3,
     PSMTab_PositionLeftMask     = 1 << 4,
-    PSMTab_PositionMiddleMask       = 1 << 5,
-    PSMTab_PositionRightMask        = 1 << 6,
-    PSMTab_PositionSingleMask       = 1 << 7
+    PSMTab_PositionMiddleMask   = 1 << 5,
+    PSMTab_PositionRightMask    = 1 << 6,
+    PSMTab_PositionSingleMask   = 1 << 7
 };
 
 @interface PSMTabBarControl : NSControl {
