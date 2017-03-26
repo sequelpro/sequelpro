@@ -65,7 +65,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 @interface SPTablesList ()
 
-- (void)_removeTable:(NSNumber *)force;
+- (void)_removeTable:(BOOL)force;
 - (void)_truncateTable;
 - (void)_addTable;
 - (void)_copyTable;
@@ -730,9 +730,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	}
 	else if ([contextInfo isEqualToString:SPRemoveTable]) {
 		if (returnCode == NSAlertDefaultReturn) {
-			[self performSelector:@selector(_removeTable:) 
-					   withObject:[NSNumber numberWithInteger:[[(NSAlert *)sheet suppressionButton] state]] 
-					   afterDelay:0.0];
+			[self _removeTable:([[(NSAlert *)sheet suppressionButton] state] == NSOnState)];
 		}
 	}
 #ifndef SP_CODA
@@ -2185,7 +2183,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Removes the selected object (table, view, procedure, function, etc.) from the database and tableView.
  */
-- (void)_removeTable:(NSNumber *)force
+- (void)_removeTable:(BOOL)force
 {
 	NSIndexSet *indexes = [tablesListView selectedRowIndexes];
 	
@@ -2194,7 +2192,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 	// Get last index
 	NSUInteger currentIndex = [indexes lastIndex];
 	
-	if ([force boolValue]) {
+	if (force) {
 		[mySQLConnection queryString:@"SET FOREIGN_KEY_CHECKS = 0"];
 	}
 
@@ -2274,7 +2272,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 	
-	if ([force boolValue]) {
+	if (force) {
 		[mySQLConnection queryString:@"SET FOREIGN_KEY_CHECKS = 1"];
 	}
 
