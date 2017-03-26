@@ -131,8 +131,6 @@
     // restore usual image
 	[self setImage:_usualImage];
 
-		[self setHighlighted:NO];
-
 	[super mouseExited:event];
 }
 
