@@ -84,6 +84,10 @@ extern NSString *SPTableViewDatabaseColumnID;
 
 + (SPQueryController *)sharedQueryController;
 
+/**
+ * Calls -sqlStringForForRowIndexes: with the current selection and 
+ * puts the output into the general Pasteboard (only if non-empty)
+ */
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
 - (IBAction)saveConsoleAs:(id)sender;
@@ -102,5 +106,18 @@ extern NSString *SPTableViewDatabaseColumnID;
 - (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection database:(NSString *)database;
 
 - (NSUInteger)consoleMessageCount;
+
+/**
+ * Returns the console messages specified by indexes as a string, each message separated by "\n".
+ * @param indexes The indexes of rows to be returned. 
+ *                Invalid indexes will be skipped silently.
+ *                nil is treated as an empty set.
+ *
+ * If no (valid) indexes are given, @"" will be returned.
+ * The output may include other info like timestamp, host, etc. if shown in the table view, as part of a comment.
+ *
+ * THIS METHOD IS NOT THREAD-SAFE!
+ */
+- (NSString *)sqlStringForRowIndexes:(NSIndexSet *)indexes;
 
 @end
