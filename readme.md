@@ -20,6 +20,8 @@ Build Instructions
 Contributing
 ============
 
+The best way to help the project is to use our [test builds](https://sequelpro.com/test-builds) and report any issues (both bugs and missing features) in [the issue tracker](https://github.com/sequelpro/sequelpro/issues). If you want to get more involved, then you can comment on issues written by other people or send us a pull request.
+
 Please see our [projects page](https://github.com/sequelpro/sequelpro/projects). This lists the issues where we would most like your help. There are simple and difficult tasks there so new contributors should be able to get started.
 
 License
