@@ -97,4 +97,15 @@ static NSUInteger SPMessageTruncateCharacterLength = 256;
 #endif
 }
 
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
+{
+	NSString *string = [self sqlStringForRowIndexes:rowIndexes];
+	if([string length]) {
+		[pboard declareTypes:@[NSStringPboardType] owner:self];
+		return [pboard setString:string forType:NSStringPboardType];
+	}
+	
+	return NO;
+}
+
 @end

@@ -85,6 +85,9 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
 	{
 		[[column dataCell] setFont:(useMonospacedFont) ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
+
+	//allow drag-out copying of selected rows
+	[consoleTableView setDraggingSourceOperationMask:NSDragOperationCopy forLocal:NO];
 #endif
 }
 
