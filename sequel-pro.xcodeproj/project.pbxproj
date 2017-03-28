@@ -28,6 +28,7 @@
 		11B55BFE1189E3B2009EF465 /* SPDatabaseAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 11B55BFD1189E3B2009EF465 /* SPDatabaseAction.m */; };
 		11C211301180EC9A00758039 /* SPDatabaseRename.m in Sources */ = {isa = PBXBuildFile; fileRef = 11C2109D1180E70800758039 /* SPDatabaseRename.m */; };
 		17005CB316D6CF0000AF81F4 /* SPTableTriggersDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17005CB216D6CF0000AF81F4 /* SPTableTriggersDelegate.m */; };
+		171156551E8B0F96002E6363 /* SPTableRelationsDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 171156541E8B0F96002E6363 /* SPTableRelationsDelegate.m */; };
 		171312CE109D23C700FB465F /* SPTableTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 171312CD109D23C700FB465F /* SPTableTextFieldCell.m */; };
 		1713C740140D8AEF00CFD461 /* SPQueryDocumentsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C73F140D8AEF00CFD461 /* SPQueryDocumentsController.m */; };
 		1713C75F140D8D5900CFD461 /* SPQueryConsoleDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1713C75E140D8D5900CFD461 /* SPQueryConsoleDataSource.m */; };
@@ -673,6 +674,8 @@
 		11D44DEF118F5887002AA43C /* OCMock.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OCMock.framework; path = Frameworks/OCMock.framework; sourceTree = "<group>"; };
 		17005CB116D6CF0000AF81F4 /* SPTableTriggersDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTriggersDelegate.h; sourceTree = "<group>"; };
 		17005CB216D6CF0000AF81F4 /* SPTableTriggersDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTriggersDelegate.m; sourceTree = "<group>"; };
+		171156531E8B0F96002E6363 /* SPTableRelationsDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableRelationsDelegate.h; sourceTree = "<group>"; };
+		171156541E8B0F96002E6363 /* SPTableRelationsDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableRelationsDelegate.m; sourceTree = "<group>"; };
 		1713122F109C7DF600FB465F /* build.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = build.sh; sourceTree = "<group>"; };
 		171312CC109D23C700FB465F /* SPTableTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTableTextFieldCell.h; sourceTree = "<group>"; };
 		171312CD109D23C700FB465F /* SPTableTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTableTextFieldCell.m; sourceTree = "<group>"; };
@@ -1495,6 +1498,17 @@
 			name = "Table Triggers";
 			sourceTree = "<group>";
 		};
+		171156501E8B0F40002E6363 /* Table Relations */ = {
+			isa = PBXGroup;
+			children = (
+				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
+				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
+				171156531E8B0F96002E6363 /* SPTableRelationsDelegate.h */,
+				171156541E8B0F96002E6363 /* SPTableRelationsDelegate.m */,
+			);
+			name = "Table Relations";
+			sourceTree = "<group>";
+		};
 		171312CF109D23CA00FB465F /* Cells */ = {
 			isa = PBXGroup;
 			children = (
@@ -1655,8 +1669,6 @@
 				17E641490EF01EF6001BC333 /* SPCustomQuery.m */,
 				177E7A210FCB6A2E00E9E122 /* SPExtendedTableInfo.h */,
 				177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */,
-				387BBBA60FBCB6CB00B31746 /* SPTableRelations.h */,
-				387BBBA70FBCB6CB00B31746 /* SPTableRelations.m */,
 				17E641500EF01EF6001BC333 /* SPDatabaseDocument.h */,
 				17E641510EF01EF6001BC333 /* SPDatabaseDocument.m */,
 				17D3DC1E1281816E002A163A /* SPDatabaseViewController.h */,
@@ -1665,6 +1677,7 @@
 				17386E08151924E9002DC206 /* Table Content */,
 				17D38F691279E17D00672B13 /* Table Structure */,
 				17005CB016D6CEA400AF81F4 /* Table Triggers */,
+				171156501E8B0F40002E6363 /* Table Relations */,
 				1792C28910AE1C7200ABE758 /* Controller Categories */,
 			);
 			name = "Main View Controllers";
@@ -3450,6 +3463,7 @@
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
 				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
 				50D3C3521A77135F00B5429C /* SPParserUtils.c in Sources */,
+				171156551E8B0F96002E6363 /* SPTableRelationsDelegate.m in Sources */,
 				BC68BFC7128D4EAE004907D9 /* SPBundleEditorController.m in Sources */,
 				BC1944D01297291800A236CD /* SPBundleCommandTextView.m in Sources */,
 				BC77C5E4129AA69E009AD832 /* SPBundleHTMLOutputController.m in Sources */,

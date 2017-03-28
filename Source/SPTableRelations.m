@@ -373,27 +373,6 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 }
 
 #pragma mark -
-#pragma mark TextField delegate methods
-
-- (void)controlTextDidChange:(NSNotification *)notification
-{	
-	// Make sure the user does not enter a taken name, using the quickly-generated incomplete list
-	if ([notification object] == constraintName) {		
-		NSString *userValue = [[constraintName stringValue] lowercaseString];
-		
-		// Make field red and disable add button
-		if ([takenConstraintNames containsObject:userValue]) {
-			[constraintName setTextColor:[NSColor redColor]];
-			[confirmAddRelationButton setEnabled:NO];
-		}
-		else {
-			[constraintName setTextColor:[NSColor controlTextColor]];
-			[confirmAddRelationButton setEnabled:YES];
-		}
-	}
-}
-
-#pragma mark -
 #pragma mark Tableview datasource methods
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
@@ -413,44 +392,13 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 }
 
 #pragma mark -
-#pragma mark Tableview delegate methods
-
-/**
- * Called whenever the relations table view selection changes.
- */
-- (void)tableViewSelectionDidChange:(NSNotification *)notification
-{
-	[removeRelationButton setEnabled:([relationsTableView numberOfSelectedRows] > 0)];
-}
-
-/*
- * Double-click action on table cells - for the time being, return
- * NO to disable editing.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
-{
-	if ([tableDocumentInstance isWorking]) return NO;
-
-	return NO;
-}
-
-/**
- * Disable row selection while the document is working.
- */
-- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
-{
-	return ![tableDocumentInstance isWorking];
-}
-
-#pragma mark -
 #pragma mark Task interaction
 
 /**
  * Disable all content interactive elements during an ongoing task.
  */
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification
+- (void)startDocumentTaskForTab:(NSNotification *)notification
 {
-
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
 
@@ -462,7 +410,7 @@ static NSString *SPRelationOnDeleteKey   = @"on_delete";
 /**
  * Enable all content interactive elements after an ongoing task.
  */
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification
+- (void)endDocumentTaskForTab:(NSNotification *)notification
 {
 	// Only proceed if this view is selected.
 	if (![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableRelations]) return;
