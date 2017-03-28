@@ -17,6 +17,11 @@ Build Instructions
  * Click the `Run` button in the toolbar
  * If the above doesn't work, please file a [bug report](https://github.com/sequelpro/sequelpro/issues/new)
 
+Contributing
+============
+
+Please see our [projects page](https://github.com/sequelpro/sequelpro/projects). This lists the issues where we would most like your help. There are simple and difficult tasks there so new contributors should be able to get started.
+
 License
 =======
 
