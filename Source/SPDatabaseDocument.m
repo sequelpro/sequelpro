@@ -4479,10 +4479,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)setParentWindow:(NSWindow *)window
 {
-	NSWindow *outlineViewWindow = [(NSView *)[connectionController favoritesOutlineView] window];
+	NSWindow *favoritesOutlineViewWindow = [(NSView *)[connectionController favoritesOutlineView] window];
 
 	// If the window is being set for the first time - connection controller is visible - update focus
-	if (!parentWindow && !mySQLConnection && window == outlineViewWindow) {
+	if (!parentWindow && !mySQLConnection && window == favoritesOutlineViewWindow) {
 		[window makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
 	}
 
