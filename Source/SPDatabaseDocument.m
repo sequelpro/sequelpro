@@ -427,7 +427,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 														  
 #ifndef SP_CODA	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
-	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
+	NSURL *newURL = [[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences];
+#warning debug code for #2266
+	if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from queryController=%@ oldFileURL=%@ contextInfo=%@", __func__, [SPQueryController sharedQueryController], [self fileURL], spfPreferences);
+	[self setFileURL:newURL];
 	
 	// ...but hide the icon while the document is temporary
 	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
@@ -3534,7 +3537,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[preferences setObject:[spfStructure objectForKey:SPContentFilters] forKey:SPContentFilters];
 		[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
 
-		[self setFileURL:[NSURL fileURLWithPath:fileName]];
+		NSURL *newURL = [NSURL fileURLWithPath:fileName];
+#warning debug code for #2266
+		if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from fileName=%@", __func__, fileName);
+		[self setFileURL:newURL];
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 		[self updateWindowTitle:self];
@@ -5088,7 +5094,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if (![self isSaveInBundle]) {
-		[self setFileURL:[NSURL fileURLWithPath:path]];
+		NSURL *newURL = [NSURL fileURLWithPath:path];
+#warning debug code for #2266
+		if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from path=%@", __func__, path);
+		[self setFileURL:newURL];
 	}
 
 	[spfDocData setObject:[NSNumber numberWithBool:([[data objectForKey:@"connection"] objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];

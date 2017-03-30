@@ -147,6 +147,9 @@
                         <tableHeaderView key="headerView" id="112">
                             <rect key="frame" x="0.0" y="0.0" width="576" height="17"/>
                             <autoresizingMask key="autoresizingMask"/>
+                            <connections>
+                                <outlet property="menu" destination="DCA-JR-zjw" id="2UH-9N-pS2"/>
+                            </connections>
                         </tableHeaderView>
                     </scrollView>
                     <progressIndicator hidden="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="62">
@@ -164,7 +167,7 @@
                             <action selector="clearConsole:" target="-2" id="75"/>
                         </connections>
                     </button>
-                    <popUpButton id="77">
+                    <popUpButton id="77" userLabel="Gear Menu Button">
                         <rect key="frame" x="-2" y="0.0" width="36" height="23"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <popUpButtonCell key="cell" type="bevel" bezelStyle="regularSquare" imagePosition="right" alignment="center" lineBreakMode="truncatingTail" inset="2" pullsDown="YES" arrowPosition="noArrow" selectedItem="80" id="78">
@@ -272,7 +275,7 @@
                 </button>
             </subviews>
         </customView>
-        <menu id="64">
+        <menu id="64" userLabel="Table Row Context Menu">
             <items>
                 <menuItem title="Copy" id="65">
                     <modifierMask key="keyEquivalentModifierMask"/>
@@ -283,6 +286,46 @@
             </items>
         </menu>
         <userDefaultsController representsSharedInstance="YES" id="89"/>
+        <menu id="DCA-JR-zjw" userLabel="Table Header Context Menu">
+            <items>
+                <menuItem title="Time" state="on" id="Eqs-r2-Xz7">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="toggleShowTimeStamps:" target="-2" id="OMU-jP-CeY"/>
+                        <binding destination="89" name="value" keyPath="values.ConsoleShowTimestamps" id="62b-Yd-Tlr">
+                            <dictionary key="options">
+                                <bool key="NSConditionallySetsEnabled" value="NO"/>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </menuItem>
+                <menuItem title="Connection" state="on" id="xEF-YU-b4J">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="toggleShowConnections:" target="-2" id="Hhw-0n-qWg"/>
+                        <binding destination="89" name="value" keyPath="values.ConsoleShowConnections" id="YKo-wm-6u8">
+                            <dictionary key="options">
+                                <bool key="NSConditionallySetsEnabled" value="NO"/>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </menuItem>
+                <menuItem title="Database" state="on" id="kNX-td-f8A">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="toggleShowDatabases:" target="-2" id="1z7-qp-tCQ"/>
+                        <binding destination="89" name="value" keyPath="values.ConsoleShowDatabases" id="0w1-96-uH9">
+                            <dictionary key="options">
+                                <bool key="NSConditionallySetsEnabled" value="NO"/>
+                            </dictionary>
+                        </binding>
+                    </connections>
+                </menuItem>
+                <menuItem title="Query" state="on" enabled="NO" id="VWx-bC-aFb">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+            </items>
+        </menu>
     </objects>
     <resources>
         <image name="button_action" width="30" height="22"/>
