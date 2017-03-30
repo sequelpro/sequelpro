@@ -2544,7 +2544,7 @@ DQ
                         <action selector="renameNode:" target="-2" id="5819"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Remove" id="5794">
+                <menuItem title="Delete" id="5794">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="removeNode:" target="-2" id="5802"/>
