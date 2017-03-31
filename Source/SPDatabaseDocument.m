@@ -4474,6 +4474,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	// Coax the main split view into actually checking its constraints
 	[contentViewSplitter setPosition:[[[contentViewSplitter subviews] objectAtIndex:0] bounds].size.width ofDividerAtIndex:0];
+
 	// If the task interface is visible, and this tab is frontmost, re-center the task child window
 	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
@@ -4482,17 +4483,19 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Set the parent window
  */
-- (void)setParentWindow:(NSWindow *)aWindow
+- (void)setParentWindow:(NSWindow *)window
 {
-#ifndef SP_CODA
-	// If the window is being set for the first time - connection controller is visible - update focus
-	if (!parentWindow && !mySQLConnection) {
-		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
-	}
-#endif
+	NSWindow *favoritesOutlineViewWindow = [(NSView *)[connectionController favoritesOutlineView] window];
 
-	parentWindow = aWindow;
+	// If the window is being set for the first time - connection controller is visible - update focus
+	if (!parentWindow && !mySQLConnection && window == favoritesOutlineViewWindow) {
+		[window makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
+	}
+
+	parentWindow = window;
+
 	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
+
 	if (currentTunnel) [currentTunnel setParentWindow:parentWindow];
 }
 
