@@ -410,6 +410,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 #pragma mark -
 #pragma mark Connection callback and methods
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	if ([theConnection userTriggeredDisconnect]) {
@@ -617,6 +621,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * sets up the database select toolbar item
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (IBAction)setDatabases:(id)sender;
 {
@@ -1171,6 +1177,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Reset the current selected database name
+ *
+ * This method MAY be called from UI and background threads!
  */
 - (void)refreshCurrentDatabase
 {
@@ -1188,23 +1196,21 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
 
-		// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
-		if(dbName && ![dbName isNSNull]) {
-			if(![dbName isEqualToString:selectedDatabase]) {
+		SPMainQSync(^{
+			// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
+			if(dbName && ![dbName isNSNull]) {
+				if(![dbName isEqualToString:selectedDatabase]) {
+					if (selectedDatabase) SPClear(selectedDatabase);
+					selectedDatabase = [[NSString alloc] initWithString:dbName];
+					[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
+					[self updateWindowTitle:self];
+				}
+			} else {
 				if (selectedDatabase) SPClear(selectedDatabase);
-				selectedDatabase = [[NSString alloc] initWithString:dbName];
-				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-#ifndef SP_CODA /* [self updateWindowTitle:self] */
+				[chooseDatabaseButton selectItemAtIndex:0];
 				[self updateWindowTitle:self];
-#endif
 			}
-		} else {
-			if (selectedDatabase) SPClear(selectedDatabase);
-			[chooseDatabaseButton selectItemAtIndex:0];
-#ifndef SP_CODA /* [self updateWindowTitle:self] */
-			[self updateWindowTitle:self];
-#endif
-		}
+		});
 	}
 
 	//query finished
@@ -6071,6 +6077,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 #ifndef SP_CODA /* whole database operations */
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)_copyDatabase 
 {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
@@ -6103,6 +6113,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }			 
 #endif
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)_renameDatabase 
 {
 	NSString *newDatabaseName = [databaseRenameNameField stringValue];
@@ -6147,6 +6161,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Adds a new database.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_addDatabase
 {
@@ -6217,6 +6233,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Removes the current database.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_removeDatabase
 {

@@ -690,10 +690,10 @@
 	}
 
 	// Update available databases
-	[tableDocumentInstance setDatabases:self];
+	[[tableDocumentInstance onMainThread] setDatabases:self];
 
 	// Update current selected database
-	[[tableDocumentInstance onMainThread] refreshCurrentDatabase];
+	[tableDocumentInstance refreshCurrentDatabase];
 
 	// Update current database tables 
 	[tablesListInstance updateTables:self];
