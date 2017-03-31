@@ -351,7 +351,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	[defaultItem setTarget:self];
 	
 	// Build theme selection submenu
-	[themeSelectionMenu compatibleRemoveAllItems];
+	[themeSelectionMenu removeAllItems];
 	[themeSelectionMenu addItem:defaultItem];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	

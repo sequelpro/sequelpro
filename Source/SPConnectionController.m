@@ -63,22 +63,6 @@ static NSString *SPRemoveNode              = @"RemoveNode";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #endif
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_6
-@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
-
-- (void)setShowsHiddenFiles:(BOOL)flag;
-
-@end
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_11
-@interface NSOpenPanel (NSOpenPanel_ElCaptian)
-
-@property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed;
-
-@end
-#endif
-
 /**
  * This is a utility function to validate SSL key/certificate files
  * @param fileData   The contents of the file

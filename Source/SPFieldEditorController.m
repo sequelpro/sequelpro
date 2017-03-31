@@ -41,13 +41,6 @@
 
 #import <SPMySQL/SPMySQL.h>
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_7
-@interface NSTextView (LionPlus)
-- (void)setUsesFindBar:(BOOL)value;
-- (BOOL)usesFindBar;
-@end
-#endif
-
 typedef enum {
 	TextSegment = 0,
 	ImageSegment,

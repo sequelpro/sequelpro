@@ -39,15 +39,6 @@
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
 
-// Forward-declare for 10.7 compatibility
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-	NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-	NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8,
-	NSFullScreenWindowMask = 1 << 14
-};
-#endif
-
 @interface SPWindowController ()
 
 - (void)_setUpTabBar;

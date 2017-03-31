@@ -29,7 +29,6 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPBundleEditorController.h"
-#import "SPMenuAdditions.h"
 #import "SPBundleCommandRunner.h"
 #import "SPOutlineView.h"
 #import "SPBundleCommandTextView.h"
@@ -245,7 +244,7 @@
 	}
 
 	NSMenuItem *anItem;
-	[inputGeneralScopePopUpMenu compatibleRemoveAllItems];
+	[inputGeneralScopePopUpMenu removeAllItems];
 	anItem = [[NSMenuItem alloc] initWithTitle:SP_BUNDLEEDITOR_SCOPE_GENERAL_STRING action:@selector(scopeButtonChanged:) keyEquivalent:@""];
 	[anItem setTag:kGeneralScopeArrayIndex];
 	[inputGeneralScopePopUpMenu addItem:anItem];

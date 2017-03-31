@@ -50,6 +50,7 @@
 #import "SPWindowManagement.h"
 #import "SPCopyTable.h"
 #import "SPSyntaxParser.h"
+#import "SPOSInfo.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>
@@ -825,7 +826,14 @@
 	// remove percent encoding
 	NSMutableArray *decodedPathComponents = [NSMutableArray arrayWithCapacity:pathComponents.count];
 	for (NSString *component in pathComponents) {
-		[decodedPathComponents addObject:component.stringByRemovingPercentEncoding];
+		NSString *decoded;
+		if([SPOSInfo isOSVersionAtLeastMajor:10 minor:9 patch:0]) {
+			decoded = [component stringByRemovingPercentEncoding];
+		}
+		else {
+			decoded = [component stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		}
+		[decodedPathComponents addObject:decoded];
 	}
 	pathComponents = decodedPathComponents.copy;
 	
@@ -1599,7 +1607,7 @@
 	NSMenu *menu = [[[NSApp mainMenu] itemWithTag:SPMainMenuBundles] submenu];
 
 	// Clean menu
-	[menu compatibleRemoveAllItems];
+	[menu removeAllItems];
 
 	// Set up the bundle search paths
 	// First process all in Application Support folder installed ones then Default ones

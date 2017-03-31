@@ -44,11 +44,10 @@ void SPMainQSync(void (^block)(void))
 
 int SPBetterRandomBytes(uint8_t *buf, size_t count)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
 	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {
 		return SecRandomCopyBytes(kSecRandomDefault, count, buf);
 	}
-#endif
+
 	// Version for 10.6
 	// https://developer.apple.com/library/prerelease/mac/documentation/Security/Conceptual/cryptoservices/RandomNumberGenerationAPIs/RandomNumberGenerationAPIs.html#//apple_ref/doc/uid/TP40011172-CH12-SW1
 	FILE *fp = fopen("/dev/random", "r");

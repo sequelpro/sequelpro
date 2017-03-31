@@ -665,32 +665,6 @@ typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
 void _SPClear(id *addr);
 #define SPClear(x) _SPClear(&x)
 
-// Backwards compatibility
-#ifndef __MAC_10_7
-	#define __MAC_10_7 1070
-#endif
-
-#ifndef __MAC_10_8
-	#define __MAC_10_8 1080
-#endif
-
-#ifndef __MAC_10_10
-	#define __MAC_10_10 101000
-#endif
-
-#ifndef __MAC_10_11
-	#define __MAC_10_11 101100
-#endif
-
-#ifndef __MAC_10_12
-	#define __MAC_10_12 101200
-#endif
-
-// This enum is available since 10.5 but only got a "name" in 10.10
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-typedef NSUInteger NSCellHitResult;
-#endif
-
 // Stolen from Stack Overflow: http://stackoverflow.com/questions/969130
 #define SPLog(fmt, ...) NSLog((@"%s:%d: " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
 

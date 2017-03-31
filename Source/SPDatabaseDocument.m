@@ -29,13 +29,6 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-// Forward-declare for 10.7 compatibility
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-	NSFullScreenWindowMask = 1 << 14
-};
-#endif
-
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "SPConnectionHandler.h"
@@ -3990,10 +3983,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if (newIsVisible == windowTitleStatusViewIsVisible) return;
 
 	if (newIsVisible) {
-		if (NSClassFromString(@"NSTitlebarAccessoryViewController")) { // OS X 10.11 and later
+		Class controllerClass;
+		if ((controllerClass = NSClassFromString(@"NSTitlebarAccessoryViewController"))) { // OS X 10.11 and later
 			[titleAccessoryView setFrame:NSMakeRect(0, 0, titleAccessoryView.frame.size.width, 120)]; // make it really tall, so that it's on the top right of the title/toolbar area, instead of the bottom right (AppKit will not prevent it from going behind the toolbar)
 			
-			NSTitlebarAccessoryViewController *accessoryViewController = [[[NSTitlebarAccessoryViewController alloc] init] autorelease];
+			NSTitlebarAccessoryViewController *accessoryViewController = [[[controllerClass alloc] init] autorelease];
 			accessoryViewController.view = titleAccessoryView;
 			accessoryViewController.layoutAttribute = NSLayoutAttributeRight;
 			[parentWindow addTitlebarAccessoryViewController:accessoryViewController];

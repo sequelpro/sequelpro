@@ -2040,7 +2040,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 #endif
 
 			// Re-init recent menu
-			[recentGlobalValueMenu compatibleRemoveAllItems];
+			[recentGlobalValueMenu removeAllItems];
 			for(id item in recents)
 				[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
 

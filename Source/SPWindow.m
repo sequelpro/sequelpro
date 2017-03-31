@@ -31,12 +31,6 @@
 #import "SPWindow.h"
 #import "SPWindowController.h"
 
-@interface NSWindow (LionPlusMethods)
-
-- (void)toggleFullScreen:(id)sender;
-
-@end
-
 @implementation SPWindow
 
 @synthesize isSheetWhichCanBecomeMain;
@@ -45,12 +39,10 @@
 
 + (void)initialize
 {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_12
 	// Disable automatic window tabbing on 10.12+
 	if ([NSWindow respondsToSelector:@selector(setAllowsAutomaticWindowTabbing:)]) {
 		[NSWindow setAllowsAutomaticWindowTabbing:NO];
 	}
-#endif
 }
 
 #pragma mark -
