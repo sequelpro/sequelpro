@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		177916A21E88733000EE3043 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 177916A01E88733000EE3043 /* LICENSE */; };
-		177916A31E88733000EE3043 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 177916A11E88733000EE3043 /* README.md */; };
 		17E3A57B1885A286009CF372 /* SPMySQLDataTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 17E3A5791885A286009CF372 /* SPMySQLDataTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		17E3A57C1885A286009CF372 /* SPMySQLDataTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 17E3A57A1885A286009CF372 /* SPMySQLDataTypes.m */; };
 		507FF1E51BC0D82300104523 /* DataConversion_Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 507FF1811BC0C64100104523 /* DataConversion_Tests.m */; };
@@ -571,7 +570,6 @@
 				584294FF14CB8002000F8438 /* Server Info.m in Sources */,
 				5884142814CCF5190078027F /* Conversion.m in Sources */,
 				5884159514D1A6880078027F /* Querying & Preparation.m in Sources */,
-				177916A31E88733000EE3043 /* README.md in Sources */,
 				5884159414D1A6760078027F /* Locking.m in Sources */,
 				17E3A57C1885A286009CF372 /* SPMySQLDataTypes.m in Sources */,
 				5884165614D2306A0078027F /* SPMySQLResult.m in Sources */,
