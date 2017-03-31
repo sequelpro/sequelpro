@@ -149,6 +149,7 @@ uint32_t LimitUInt32(NSUInteger i);
 	unsigned char *lenPtr = paddedBytes + (paddedLength - 4);
 	memcpy(lenPtr, &bigIntDataLength, 4);
 
+	size_t bytesWritten;
 	CCCryptorStatus res = CCCrypt(
 			kCCEncrypt,         // operation mode
 			kCCAlgorithmAES128, // algorithm
@@ -160,7 +161,7 @@ uint32_t LimitUInt32(NSUInteger i);
 			paddedLength,       // length of raw data
 			paddedBytes,        // output buffer. overwriting input is OK
 			paddedLength,       // output buffer size
-			NULL                // number of bytes written. not relevant here
+			&bytesWritten       // number of bytes written. not relevant here, but 10.6 fails if omitted
 	);
 	
 	if(res != kCCSuccess)
@@ -168,7 +169,7 @@ uint32_t LimitUInt32(NSUInteger i);
 									   reason:[NSString stringWithFormat:@"CCCrypt() failed! (CCCryptorStatus=%d)",res]
 									 userInfo:@{@"cryptorStatus":@(res)}];
 	
-	// the return code of CCCrypt() is not always reliable, better check it again
+	// CVE-2016-4711: the return code of CCCrypt() is not always reliable, better check it again
 	if(memcmp(lenPtr, &bigIntDataLength, 4) == 0)
 		@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Encrypted data is same as plaintext data!" userInfo:nil];
 	
@@ -203,6 +204,7 @@ uint32_t LimitUInt32(NSUInteger i);
 	// Decrypt the data
 	unsigned char *decryptedBytes = calloc(1,encryptedLength);
 	
+	size_t bytesRead;
 	CCCryptorStatus res = CCCrypt(
 			kCCDecrypt,                          // operation mode
 			kCCAlgorithmAES128,                  // algorithm
@@ -214,7 +216,7 @@ uint32_t LimitUInt32(NSUInteger i);
 			encryptedLength,                     // length of raw data
 			decryptedBytes,                      // output buffer. overwriting input is OK
 			encryptedLength,                     // output buffer size
-			NULL                                 // number of bytes written. not relevant here
+			&bytesRead                           // number of bytes decrypted. not relevant here, but 10.6 fails if omitted
 	);
 	
 	if(res != kCCSuccess) {
