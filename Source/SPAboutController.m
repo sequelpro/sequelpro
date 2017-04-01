@@ -58,7 +58,8 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 	
 	// If the version string has a prefix of 'Nightly' then this is obviously a nighly build.
-	BOOL isSnapshotBuild = [version containsString:SPSnapshotBuildIndicator];
+	NSRange matchRange = [version rangeOfString:SPSnapshotBuildIndicator];
+	BOOL isSnapshotBuild = (matchRange.location != NSNotFound);
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
 	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
