@@ -621,13 +621,21 @@ set_input:
  */
 - (IBAction)toggleCustomFilenameFormatView:(id)sender
 {
-	showCustomFilenameView = (!showCustomFilenameView);
-	
+	showCustomFilenameView = !showCustomFilenameView;
+
+	if (!showCustomFilenameView) {
+		[exportFilenameDividerBox setHidden:NO];
+		[exportCustomFilenameView setHidden:YES];
+	}
+
+	[self _resizeWindowForCustomFilenameViewByHeightDelta:showCustomFilenameView ? [exportCustomFilenameView frame].size.height : 0];
+
+	if (showCustomFilenameView) {
+		[exportFilenameDividerBox setHidden:YES];
+		[exportCustomFilenameView setHidden:NO];
+	}
+
 	[exportCustomFilenameViewButton setState:showCustomFilenameView];
-	[exportFilenameDividerBox setHidden:showCustomFilenameView];
-	[exportCustomFilenameView setHidden:(!showCustomFilenameView)];
-	
-	[self _resizeWindowForCustomFilenameViewByHeightDelta:(showCustomFilenameView) ? [exportCustomFilenameView frame].size.height : 0];
 }
 
 /**
@@ -652,13 +660,20 @@ set_input:
  */
 - (IBAction)toggleAdvancedExportOptionsView:(id)sender
 {
-	showAdvancedView = (!showAdvancedView);
-	
-	[exportAdvancedOptionsViewButton setState:showAdvancedView];
-	[exportAdvancedOptionsView setHidden:(!showAdvancedView)];
-	
+	showAdvancedView = !showAdvancedView;
+
+	if (!showAdvancedView) {
+		[exportAdvancedOptionsView setHidden:YES];
+	}
+
 	[self _updateExportAdvancedOptionsLabel];
-	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:(showAdvancedView) ? ([exportAdvancedOptionsView frame].size.height + 10) : 0];
+	[self _resizeWindowForAdvancedOptionsViewByHeightDelta:showAdvancedView ? [exportAdvancedOptionsView frame].size.height + 10 : 0];
+
+	if (showAdvancedView) {
+		[exportAdvancedOptionsView setHidden:NO];
+	}
+
+	[exportAdvancedOptionsViewButton setState:showAdvancedView];
 }
 
 /**

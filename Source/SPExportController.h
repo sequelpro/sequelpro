@@ -234,7 +234,6 @@
 	NSUInteger windowMinHeigth;
 	
 	NSDictionary *localizedTokenNames;
-	
 }
 
 /**
