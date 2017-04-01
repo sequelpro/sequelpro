@@ -595,10 +595,10 @@
                                                                         </connections>
                                                                     </button>
                                                                     <scrollView focusRingType="none" autohidesScrollers="YES" horizontalLineScroll="18" horizontalPageScroll="10" verticalLineScroll="18" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="231">
-                                                                        <rect key="frame" x="-1" y="22" width="692" height="307"/>
+                                                                        <rect key="frame" x="-1" y="22" width="692" height="306"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <clipView key="contentView" id="07n-i9-O0i">
-                                                                            <rect key="frame" x="1" y="0.0" width="690" height="306"/>
+                                                                            <rect key="frame" x="1" y="0.0" width="690" height="305"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
                                                                                 <tableView identifier="TableStructureColumnsTableView" focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" alternatingRowBackgroundColors="YES" multipleSelection="NO" autosaveName="SPTableStructureSource" rowHeight="16" headerView="3926" id="232" customClass="SPTableView">
@@ -675,7 +675,7 @@
                                                                                             </buttonCell>
                                                                                             <tableColumnResizingMask key="resizingMask" userResizable="YES"/>
                                                                                         </tableColumn>
-                                                                                        <tableColumn identifier="binary" width="37" minWidth="14" maxWidth="37" id="749">
+                                                                                        <tableColumn identifier="binary" width="37" minWidth="14" maxWidth="39" id="749">
                                                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Binary">
                                                                                                 <font key="font" metaFont="smallSystem"/>
                                                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -809,7 +809,7 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
                                                                         <tableHeaderView key="headerView" id="3926">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="690" height="23"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="690" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                             <connections>
                                                                                 <outlet property="menu" destination="8056" id="Uxa-5O-Q0T"/>
@@ -1025,7 +1025,7 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
                                                                         <tableHeaderView key="headerView" id="3923">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="690" height="23"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="690" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </tableHeaderView>
                                                                     </scrollView>
@@ -1397,7 +1397,7 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </scroller>
                                                                         <tableHeaderView key="headerView" id="3920">
-                                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="23"/>
+                                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="17"/>
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </tableHeaderView>
                                                                     </scrollView>
@@ -1818,7 +1818,7 @@ Gw
                                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                                         </scroller>
                                                                                         <tableHeaderView key="headerView" id="7227">
-                                                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="23"/>
+                                                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                                         </tableHeaderView>
                                                                                     </scrollView>
@@ -2451,7 +2451,7 @@ Gw
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <tableHeaderView key="headerView" id="5545">
-                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="23"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="17"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </tableHeaderView>
                                                     </scrollView>
@@ -2638,7 +2638,7 @@ Gw
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </scroller>
                                                         <tableHeaderView key="headerView" id="6704">
-                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="23"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="694" height="17"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </tableHeaderView>
                                                     </scrollView>
@@ -4355,7 +4355,7 @@ Gw
                                             <autoresizingMask key="autoresizingMask"/>
                                         </scroller>
                                         <tableHeaderView key="headerView" id="8145">
-                                            <rect key="frame" x="0.0" y="0.0" width="752" height="23"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="752" height="17"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                         </tableHeaderView>
                                     </scrollView>
@@ -4885,7 +4885,7 @@ Gw
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                     <tableHeaderView key="headerView" id="6890">
-                        <rect key="frame" x="0.0" y="0.0" width="358" height="23"/>
+                        <rect key="frame" x="0.0" y="0.0" width="358" height="17"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </tableHeaderView>
                 </scrollView>
