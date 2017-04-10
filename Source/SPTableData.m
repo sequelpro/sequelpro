@@ -524,7 +524,7 @@
 }
 
 /**
- * Analyse a CREATE TABLE tring to extract the field details, primary key, unique keys, and table encoding.
+ * Analyse a CREATE TABLE string to extract the field details, primary key, unique keys, and table encoding.
  * @param tableDef @"CREATE TABLE ..."
  * @param tableType Can either be Table or View. Value is copied to the result and not used otherwise
  * @return A dict containing info about the table's structure
@@ -532,6 +532,9 @@
  * In future this could also be used to retrieve the majority of index information
  * assuming information like cardinality isn't needed.
  * This function is rather long due to the painful parsing required, but is fast.
+ *
+ * *WARNING* This method is only designed to handle the output of a "SHOW CREATE ..." query.
+ *           DO NOT try to use it with user-defined input. The code does not handle the full possible syntax!
  */
 - (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType
 {
@@ -785,7 +788,7 @@
 		NSUInteger stringStart = NSMaxRange(charsetDefinitionRange);
 		NSUInteger i;
 		for (i = stringStart; i < [createTableParser length]; i++) {
-			if ([createTableParser characterAtIndex:i] == ' ') break;
+			if ([whitespaceAndNewlineSet characterIsMember:[createTableParser characterAtIndex:i]]) break;
 		}
 
 		// Catch the "default" character encoding:
