@@ -20,23 +20,13 @@
 											 selector:@selector(rolloverFrameDidChange:)
 												 name:NSViewFrameDidChangeNotification
 											   object:self];
+
 	[self setPostsFrameChangedNotifications:YES];
 	[self resetCursorRects];
 	
 	_myTrackingRectTag = -1;
 	_rolloverImage = nil;
 	_usualImage = nil;
-}
-
-- (void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-	[self removeTrackingRect];
-	[_rolloverImage release];
-	[_usualImage release];
-	
-	[super dealloc];
 }
 
 // the regular image
@@ -66,7 +56,7 @@
     return _rolloverImage;
 }
 
-//Remove old tracking rects when we change superviews
+// Remove old tracking rects when we change superviews
 - (void)viewWillMoveToSuperview:(NSView *)newSuperview
 {
 	[self removeTrackingRect];
@@ -95,7 +85,7 @@
 	[self resetCursorRects];
 }
 
-- (void)rolloverFrameDidChange:(NSNotification *)inNotification
+- (void)rolloverFrameDidChange:(NSNotification *)notification
 {
 	[self resetCursorRects];
 }
@@ -104,15 +94,18 @@
 {
     // assign a tracking rect to watch for mouse enter/exit
 	NSRect	trackRect = [self bounds];
-	NSPoint	localPoint = [self convertPoint:[[self window] convertScreenToBase:[NSEvent mouseLocation]]
-											   fromView:nil];
-	BOOL	mouseInside = NSPointInRect(localPoint, trackRect);
+	NSPoint	localPoint = [self convertPoint:[[self window] convertScreenToBase:[NSEvent mouseLocation]] fromView:nil];
+
+	BOOL mouseInside = NSPointInRect(localPoint, trackRect);
 	
     _myTrackingRectTag = [self addTrackingRect:trackRect owner:self userData:nil assumeInside:mouseInside];
-	if (mouseInside) 
+
+	if (mouseInside) {
 		[self mouseEntered:nil];
-	else
+	}
+	else {
 		[self mouseExited:nil];
+	}
 }
 
 - (void)removeTrackingRect
@@ -120,24 +113,25 @@
 	if (_myTrackingRectTag != -1) {
 		[self removeTrackingRect:_myTrackingRectTag];
 	}
+
 	_myTrackingRectTag = -1;
 }
 
 // override for rollover effect
-- (void)mouseEntered:(nullable NSEvent *)theEvent
+- (void)mouseEntered:(nullable NSEvent *)event
 {
     // set rollover image
     [self setImage:_rolloverImage];
 
-	[super mouseEntered:theEvent];
+	[super mouseEntered:event];
 }
 
-- (void)mouseExited:(nullable NSEvent *)theEvent
+- (void)mouseExited:(nullable NSEvent *)event
 {
     // restore usual image
 	[self setImage:_usualImage];
 
-	[super mouseExited:theEvent];
+	[super mouseExited:event];
 }
 
 - (void)resetCursorRects
@@ -162,26 +156,42 @@
 #pragma mark -
 #pragma mark Archiving
 
-- (void)encodeWithCoder:(NSCoder *)aCoder {
-    [super encodeWithCoder:aCoder];
-    if ([aCoder allowsKeyedCoding]) {
-        [aCoder encodeObject:_rolloverImage forKey:@"rolloverImage"];
-        [aCoder encodeObject:_usualImage forKey:@"usualImage"];
-        [aCoder encodeInteger:_myTrackingRectTag forKey:@"myTrackingRectTag"];
+- (void)encodeWithCoder:(NSCoder *)coder
+{
+    [super encodeWithCoder:coder];
+
+    if ([coder allowsKeyedCoding]) {
+        [coder encodeObject:_rolloverImage forKey:@"rolloverImage"];
+        [coder encodeObject:_usualImage forKey:@"usualImage"];
+        [coder encodeInteger:_myTrackingRectTag forKey:@"myTrackingRectTag"];
     }
 }
 
-- (id)initWithCoder:(NSCoder *)aDecoder {
-    self = [super initWithCoder:aDecoder];
-    if (self) {
-        if ([aDecoder allowsKeyedCoding]) {
-            _rolloverImage = [[aDecoder decodeObjectForKey:@"rolloverImage"] retain];
-            _usualImage = [[aDecoder decodeObjectForKey:@"usualImage"] retain];
-            _myTrackingRectTag = [aDecoder decodeIntegerForKey:@"myTrackingRectTag"];
+- (id)initWithCoder:(NSCoder *)decoder
+{
+    if ((self = [super initWithCoder:decoder])) {
+        if ([decoder allowsKeyedCoding]) {
+            _rolloverImage = [[decoder decodeObjectForKey:@"rolloverImage"] retain];
+            _usualImage = [[decoder decodeObjectForKey:@"usualImage"] retain];
+            _myTrackingRectTag = [decoder decodeIntegerForKey:@"myTrackingRectTag"];
         }
     }
+
     return self;
 }
 
+#pragma mark -
+
+- (void)dealloc
+{
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	[self removeTrackingRect];
+
+	[_rolloverImage release];
+	[_usualImage release];
+
+	[super dealloc];
+}
 
 @end

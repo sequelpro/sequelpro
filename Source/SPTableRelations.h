@@ -34,7 +34,7 @@
 @class SPTablesList;
 @class SPTableData;
 
-@interface SPTableRelations : NSObject 
+@interface SPTableRelations : NSObject <NSTableViewDelegate, NSTableViewDataSource>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTablesList       *tablesListInstance;
@@ -85,8 +85,8 @@
 - (void)tableSelectionChanged:(NSNotification *)notification;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(NSNotification *)notification;
+- (void)endDocumentTaskForTab:(NSNotification *)notification;
 
 // Other
 - (NSArray *)relationDataForPrinting;

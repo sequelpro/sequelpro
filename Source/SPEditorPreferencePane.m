@@ -351,7 +351,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	[defaultItem setTarget:self];
 	
 	// Build theme selection submenu
-	[themeSelectionMenu compatibleRemoveAllItems];
+	[themeSelectionMenu removeAllItems];
 	[themeSelectionMenu addItem:defaultItem];
 	[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	
@@ -749,7 +749,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		
 		[[NSColorPanel sharedColorPanel] close];
 		
-		[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"Unsaved Theme", @"unsaved theme message")
 		                                 defaultButton:NSLocalizedString(@"Proceed", @"proceed button")
 		                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
 		                                   otherButton:nil
@@ -758,7 +758,6 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		                                 modalDelegate:self
 		                                didEndSelector:@selector(checkForUnsavedThemeDidEndSheet:returnCode:contextInfo:)
 		                                   contextInfo:nil
-		                                           msg:NSLocalizedString(@"Unsaved Theme", @"unsaved theme message")
 		                                      infoText:NSLocalizedString(@"The current color theme is unsaved. Do you want to proceed without saving it?", @"unsaved theme informative message")
 		                                    returnCode:&checkForUnsavedThemeSheetStatus];
 		

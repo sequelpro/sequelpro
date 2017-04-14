@@ -269,7 +269,9 @@
 	
 	NSArray *statusValues;
 
+	// Alert return codes
 	NSInteger saveDocPrefSheetStatus;
+	NSInteger confirmCopyDatabaseReturnCode;
 
 	// Properties
 	SPWindowController *parentWindowController;

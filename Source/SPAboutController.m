@@ -30,6 +30,8 @@
 
 #import "SPAboutController.h"
 
+static NSString *SPSnapshotBuildIndicator = @"Snapshot";
+
 static NSString *SPCreditsFilename = @"Credits";
 static NSString *SPLicenseFilename = @"License";
 
@@ -56,12 +58,13 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
 	
 	// If the version string has a prefix of 'Nightly' then this is obviously a nighly build.
-	BOOL isNightly = [version hasPrefix:@"Nightly"];
+	NSRange matchRange = [version rangeOfString:SPSnapshotBuildIndicator];
+	BOOL isSnapshotBuild = (matchRange.location != NSNotFound);
 	
 	// Set the application name, but only include the major version if this is not a nightly build.
-	[appNameVersionTextField setStringValue:isNightly ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
+	[appNameVersionTextField setStringValue:isSnapshotBuild ? @"Sequel Pro" : [NSString stringWithFormat:@"Sequel Pro %@", version]];
 
-	[self _setVersionLabel:isNightly];
+	[self _setVersionLabel:isSnapshotBuild];
 
 	// Get the credits file contents
 	NSAttributedString *credits = [[[NSAttributedString alloc] initWithPath:[[NSBundle mainBundle] pathForResource:SPCreditsFilename ofType:@"rtf"] documentAttributes:nil] autorelease];
@@ -102,9 +105,9 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 /**
  * Set the UI version labels.
  *
- * @param isNightly Indicates whether or not this is a nightly build.
+ * @param isSnapshot Indicates whether or not this is a snapshot build.
  */
-- (void)_setVersionLabel:(BOOL)isNightly
+- (void)_setVersionLabel:(BOOL)isSnapshotBuild
 {
 	NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
 
@@ -122,7 +125,7 @@ static NSString *SPShortVersionHashKey = @"SPVersionShortHash";
 	else {
 		textFieldString =
 		 [NSString stringWithFormat:@"%@ %@%@",
-		  isNightly ? NSLocalizedString(@"Nightly Build", @"nightly build label") : NSLocalizedString(@"Build", @"build label"),
+		  isSnapshotBuild ? NSLocalizedString(@"Snapshot Build", @"snapshot build label") : NSLocalizedString(@"Build", @"build label"),
 		  bundleVersion,
 		  hashIsEmpty ? @"" : [NSString stringWithFormat:@" (%@)", versionHash]];
 	}

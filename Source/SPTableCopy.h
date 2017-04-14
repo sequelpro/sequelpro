@@ -41,6 +41,7 @@
  * @param name name of the table in the source database
  * @param sourceDB name of the source database
  * @param targetDB name of the target database
+ *
  * @return YES on success, NO on any kind of error (unspecified)
  */
 - (BOOL)copyTable:(NSString *)name from:(NSString *)sourceDB to:(NSString *)targetDB;
@@ -61,6 +62,7 @@
  * @param sourceDB name of the source database
  * @param targetDB name of the target database
  * @param copyWithContent whether to copy the content too, otherwise only structure
+ *
  * @return YES on success, NO on any kind of error (unspecified)
  */
 - (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to: (NSString *)targetDB withContent:(BOOL)copyWithContent;
@@ -72,6 +74,7 @@
  * @param sourceDB name of the source database
  * @param targetDB name of the target database
  * @param copyWithContent whether to copy the content too, otherwise only structure
+ *
  * @return YES on success, NO on any kind of error (unspecified)
  *
  * This method is able to copy InnoDB tables with foreign key constraints.

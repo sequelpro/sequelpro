@@ -754,7 +754,7 @@
 					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+						[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
 						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
 						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
 						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
@@ -763,7 +763,6 @@
 						                                 modalDelegate:self
 						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						                                   contextInfo:@"runAllContinueStopSheet"
-						                                           msg:NSLocalizedString(@"MySQL Error", @"mysql error message")
 						                                      infoText:[mySQLConnection lastErrorMessage]
 						                                    returnCode:&runAllContinueStopSheetReturnCode];
 
@@ -803,7 +802,7 @@
 	// Reload table list if at least one query began with drop, alter, rename, or create
 	if(tableListNeedsReload || databaseWasChanged) {
 		// Build database pulldown menu
-		[tableDocumentInstance setDatabases:self];
+		[[tableDocumentInstance onMainThread] setDatabases:self];
 
 		if (databaseWasChanged)
 			// Reset the current database

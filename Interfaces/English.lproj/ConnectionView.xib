@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10116"/>
+        <development version="5100" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPConnectionController">
@@ -182,7 +183,7 @@
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" autosaveColumns="NO" id="4913" customClass="SPFavoritesOutlineView">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="19"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -252,7 +253,7 @@
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="5588">
                                     <rect key="frame" x="0.0" y="0.0" width="681" height="481"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <clipView key="contentView" id="gFs-TM-wGu">
+                                    <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="gFs-TM-wGu">
                                         <rect key="frame" x="0.0" y="0.0" width="681" height="481"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
@@ -1625,7 +1626,7 @@ DQ
                             <rect key="frame" x="0.0" y="0.0" width="578" height="293"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <textView editable="NO" drawsBackground="NO" importsGraphics="NO" verticallyResizable="YES" id="5434">
+                                <textView editable="NO" drawsBackground="NO" importsGraphics="NO" id="5434">
                                     <rect key="frame" x="0.0" y="0.0" width="578" height="293"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="textColor" red="0.90196078999999996" green="0.90196078999999996" blue="0.90196078999999996" alpha="1" colorSpace="calibratedRGB"/>
@@ -2378,8 +2379,6 @@ DQ
                                         </fragment>
                                     </attributedString>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                    <size key="minSize" width="578" height="293"/>
-                                    <size key="maxSize" width="1156" height="10000000"/>
                                     <connections>
                                         <outlet property="delegate" destination="-2" id="5462"/>
                                     </connections>
@@ -2545,7 +2544,7 @@ DQ
                         <action selector="renameNode:" target="-2" id="5819"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Remove" id="5794">
+                <menuItem title="Delete" id="5794">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="removeNode:" target="-2" id="5802"/>
@@ -2596,8 +2595,8 @@ DQ
         <image name="button_action" width="30" height="22"/>
         <image name="button_add" width="30" height="22"/>
         <image name="button_add_folder" width="30" height="22"/>
-        <image name="button_bar_handle" width="11" height="23"/>
-        <image name="button_bar_spacer" width="10" height="23"/>
+        <image name="button_bar_handle" width="15" height="23"/>
+        <image name="button_bar_spacer" width="11" height="23"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
     </resources>

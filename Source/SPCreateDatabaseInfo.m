@@ -1,9 +1,9 @@
 //
-//  SPMenuAdditions.h
+//  SPCreateDatabaseInfo.m
 //  sequel-pro
 //
-//  Created by Rowan Beentje on November 27, 2010.
-//  Copyright (c) 2010 Rowan Beentje. All rights reserved.
+//  Created by David Rekowski on April 29, 2010.
+//  Copyright (c) 2010 David Rekowski. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,9 +28,22 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-@interface NSMenu (SPMenuAdditions)
+#import "SPCreateDatabaseInfo.h"
 
-// Add a 10.5-compatible removeAllItems
-- (void)compatibleRemoveAllItems;
+@implementation SPCreateDatabaseInfo
+
+@synthesize databaseName;
+@synthesize defaultEncoding;
+@synthesize defaultCollation;
+
+- (void)dealloc
+{
+	if (databaseName) SPClear(databaseName);
+	if (defaultEncoding) SPClear(defaultEncoding);
+	if (defaultCollation) SPClear(defaultCollation);
+
+	[super dealloc];
+}
 
 @end
+

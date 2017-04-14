@@ -168,19 +168,15 @@ static const NSInteger kBlobAsImageFile = 4;
 		[result appendString:@"\n"];
 	}
 
-	NSUInteger c;
-	id cellData = nil;
-
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
-	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
+	for (NSUInteger ci = 0; ci < numColumns; ci++ )
+		columnMappings[ci] = (NSUInteger)[[NSArrayObjectAtIndex(columns, ci) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
-	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
-	NSUInteger rowCounter = 0;
+	__block NSUInteger rowCounter = 0;
 
 	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 		NSFileManager *fm = [NSFileManager defaultManager];
@@ -188,10 +184,9 @@ static const NSInteger kBlobAsImageFile = 4;
 		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
-	while ( rowIndex != NSNotFound )
-	{
-		for ( c = 0; c < numColumns; c++ ) {
-			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
+	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
+		for (NSUInteger c = 0; c < numColumns; c++ ) {
+			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
 			// definable representation of any blobs or binary texts.
@@ -262,10 +257,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
 		[result appendString:@"\n"];
-
-		// Select the next row index
-		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-	}
+	}];
 
 	// Remove the trailing line end
 	if ([result length]) {
@@ -306,20 +298,16 @@ static const NSInteger kBlobAsImageFile = 4;
 		[result appendString:@"\n"];
 	}
 
-	NSUInteger c;
-	id cellData = nil;
-
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
-	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
+	for (NSUInteger ci = 0; ci < numColumns; ci++ )
+		columnMappings[ci] = (NSUInteger)[[NSArrayObjectAtIndex(columns, ci) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
-	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 
-	NSUInteger rowCounter = 0;
+	__block NSUInteger rowCounter = 0;
 
 	if((withBlobHandling == kBlobAsFile || withBlobHandling == kBlobAsImageFile) && tmpBlobFileDirectory && [tmpBlobFileDirectory length]) {
 		NSFileManager *fm = [NSFileManager defaultManager];
@@ -327,10 +315,9 @@ static const NSInteger kBlobAsImageFile = 4;
 		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
-	while ( rowIndex != NSNotFound )
-	{
-		for ( c = 0; c < numColumns; c++ ) {
-			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
+	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
+		for (NSUInteger c = 0; c < numColumns; c++ ) {
+			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
 			// definable representation of any blobs or binary texts.
@@ -401,10 +388,7 @@ static const NSInteger kBlobAsImageFile = 4;
 			[result deleteCharactersInRange:NSMakeRange([result length]-1, 1)];
 		}
 		[result appendString:@"\n"];
-
-		// Select the next row index
-		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-	}
+	}];
 
 	// Remove the trailing line end
 	if ([result length]) {
@@ -625,24 +609,20 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSIndexSet *selectedRows = [self selectedRowIndexes];
 
 	NSMutableString *result = [NSMutableString stringWithCapacity:2000];
-	NSUInteger c;
-	id cellData = nil;
 
 	// Create an array of table column mappings for fast iteration
 	NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
-	for ( c = 0; c < numColumns; c++ )
-		columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
+	for (NSUInteger ci = 0; ci < numColumns; ci++ )
+		columnMappings[ci] = (NSUInteger)[[NSArrayObjectAtIndex(columns, ci) identifier] integerValue];
 
 	// Loop through the rows, adding their descriptive contents
-	NSUInteger rowIndex = [selectedRows firstIndex];
 	NSString *nullString = [prefs objectForKey:SPNullValue];
 	Class nsDataClass = [NSData class];
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
-	while ( rowIndex != NSNotFound )
-	{
-		for ( c = 0; c < numColumns; c++ ) {
-			cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
+	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
+		for (NSUInteger c = 0; c < numColumns; c++ ) {
+			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
 
 			// Copy the shown representation of the cell - custom NULL display strings, (not loaded),
 			// and the string representation of any blobs or binary texts.
@@ -673,10 +653,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		}
 
 		[result appendString:@"\n"];
-
-		// Retrieve the next selected row index
-		rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-	}
+	}];
 
 	// Trim the trailing line ending
 	if ([result length]) {
@@ -1307,11 +1284,9 @@ static const NSInteger kBlobAsImageFile = 4;
 			if([self numberOfSelectedRows]) {
 				NSMutableArray *sel = [NSMutableArray array];
 				NSIndexSet *selectedRows = [self selectedRowIndexes];
-				NSUInteger rowIndex = [selectedRows firstIndex];
-				while ( rowIndex != NSNotFound ) {
+				[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 					[sel addObject:[NSString stringWithFormat:@"%llu", (unsigned long long)rowIndex]];
-					rowIndex = [selectedRows indexGreaterThanIndex:rowIndex];
-				}
+				}];
 				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
 			}
 

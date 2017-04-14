@@ -221,20 +221,24 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_initializeTree:(NSArray *)items
 {
-
 	// Retrieve all the user data in order to be able to initialise the schema privs for each child,
 	// copying into a dictionary keyed by user, each with all the host rows.
 	NSMutableDictionary *schemaPrivilegeData = [NSMutableDictionary dictionary];
 	SPMySQLResult *queryResults = [connection queryString:@"SELECT * FROM mysql.db"];
+
 	[queryResults setReturnDataAsStrings:YES];
-	for (NSDictionary *privRow in queryResults) {
+
+	for (NSDictionary *privRow in queryResults)
+	{
 		if (![schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]]) {
 			[schemaPrivilegeData setObject:[NSMutableArray array] forKey:[privRow objectForKey:@"User"]];
 		}
+
 		[[schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]] addObject:privRow];
 
 		// If "all database" values were found, add them to the schemas list if not already present
 		NSString *schemaName = [privRow objectForKey:@"Db"];
+
 		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
 			if (![schemas containsObject:schemaName]) {
 				[schemas addObject:schemaName];
@@ -269,11 +273,20 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			// original values for comparison purposes
 			[parent setPrimitiveValue:username forKey:@"user"];
 			[parent setPrimitiveValue:username forKey:@"originaluser"];
-			if(requiresPost576PasswordHandling) {
+
+			if (requiresPost576PasswordHandling) {
 				[parent setPrimitiveValue:[item objectForKey:@"plugin"] forKey:@"plugin"];
-				NSString *pwHash = [item objectForKey:@"authentication_string"];
-				[parent setPrimitiveValue:pwHash forKey:@"authentication_string"];
-				if([pwHash length]) [parent setPrimitiveValue:@"sequelpro_dummy_password" forKey:@"password"]; // for the UI dialog
+
+				NSString *passwordHash = [item objectForKey:@"authentication_string"];
+
+				if (![passwordHash isNSNull]) {
+					[parent setPrimitiveValue:passwordHash forKey:@"authentication_string"];
+
+					// for the UI dialog
+					if ([passwordHash length]) {
+						[parent setPrimitiveValue:@"sequelpro_dummy_password" forKey:@"password"];
+					}
+				}
 			}
 			else {
 				[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
@@ -535,7 +548,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doApply:(id)sender
 {
-
 	// If editing can't be committed, cancel the apply
 	if (![treeController commitEditing]) {
 		return;
@@ -953,6 +965,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	if (!isInitializing) [outlineView reloadData];
 }
 
+#pragma mark -
+#pragma mark Core data notifications
+
 - (BOOL)updateUser:(SPUserMO *)user
 {
 	if (![user parent]) {
@@ -1290,6 +1305,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
+#pragma mark -
+#pragma mark Private API
+
 /** 
  * Gets any NSManagedObject (SPUser) from the managedObjectContext that may
  * already exist with the given username.
@@ -1446,9 +1464,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
-#pragma mark -
-#pragma mark Private API
-
 /**
  * Renames a user account using the supplied parameters.
  *
@@ -1510,7 +1525,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
 
     SPClear(managedObjectContext);
     SPClear(persistentStoreCoordinator);

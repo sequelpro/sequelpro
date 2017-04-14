@@ -63,22 +63,6 @@ static NSString *SPRemoveNode              = @"RemoveNode";
 static NSString *SPExportFavoritesFilename = @"SequelProFavorites.plist";
 #endif
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_6
-@interface NSSavePanel (NSSavePanel_unpublishedUntilSnowLeopardAPI)
-
-- (void)setShowsHiddenFiles:(BOOL)flag;
-
-@end
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_11
-@interface NSOpenPanel (NSOpenPanel_ElCaptian)
-
-@property (getter=isAccessoryViewDisclosed) BOOL accessoryViewDisclosed;
-
-@end
-#endif
-
 /**
  * This is a utility function to validate SSL key/certificate files
  * @param fileData   The contents of the file
@@ -875,14 +859,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSMutableArray *nodes = [NSMutableArray array];
 	NSIndexSet *indexes = [favoritesOutlineView selectedRowIndexes];
 
-	NSUInteger currentIndex = [indexes firstIndex];
-	
-	while (currentIndex != NSNotFound)
-	{
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[nodes addObject:[favoritesOutlineView itemAtRow:currentIndex]];
-		
-		currentIndex = [indexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
 
 	return nodes;
 }
@@ -1595,7 +1574,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// If this node only has one child and it's not another group node, don't bother proceeding
 	if (([nodes count] == 1) && (![[nodes objectAtIndex:0] isGroup])) {
 		[nodes release];
-			return;
+		return;
 	}
 
 	for (SPTreeNode *treeNode in nodes)
@@ -1604,19 +1583,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			[self _sortTreeNode:treeNode usingKey:key];
 		}
 	}
-	
-	NSMutableIndexSet *indexes = [[NSMutableIndexSet alloc] init]; 
-	
-	NSUInteger i = [indexes lastIndex];
-	
-	while (i != NSNotFound)
-	{
-		[nodes removeObjectAtIndex:i];
-		
-		i = [indexes indexLessThanIndex:i];
-	}
-
-	[indexes release];
 	
 	[nodes sortUsingFunction:_compareFavoritesUsingKey context:key];
 

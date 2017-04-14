@@ -54,6 +54,8 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (void)_killProcessQueryWithId:(long long)processId;
 - (void)_killProcessConnectionWithId:(long long)processId;
 - (void)_updateServerProcessesFilterForFilterString:(NSString *)filterString;
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
@@ -111,9 +113,8 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				
 		if (columnWidth) [column setWidth:[columnWidth floatValue]];
 	}
-	
-	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[self _addPreferenceObservers];
 }
 
 /**
@@ -140,10 +141,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		NSMutableString *string = [NSMutableString string];
 		NSIndexSet *rows = [processListTableView selectedRowIndexes];
 		
-		NSUInteger i = [rows firstIndex];
-		
-		while (i != NSNotFound) 
-		{
+		[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
 			if (i < [processesFiltered count]) {
 				NSDictionary *process = NSArrayObjectAtIndex(processesFiltered, i);
 				
@@ -160,9 +158,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				[string appendString:stringTmp];
 				[string appendString:@"\n"];
 			}
-			
-			i = [rows indexGreaterThanIndex:i];
-		}
+		}];
 		
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		
@@ -765,14 +761,35 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
 }
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register to obeserve table view vertical grid line pref changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
-	
 	processListThreadRunning = NO;
-	
+
+	[self _removePreferenceObservers];
+
 	SPClear(processes);
 	
 	if (autoRefreshTimer) SPClear(autoRefreshTimer);

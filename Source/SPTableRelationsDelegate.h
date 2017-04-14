@@ -1,9 +1,9 @@
 //
-//  SPMenuAdditionsTests.m
+//  SPTableRelationsDelegate.h
 //  sequel-pro
 //
-//  Created by Stuart Connolly (stuconnolly.com) on March 20, 2011.
-//  Copyright (c) 2011 Stuart Connolly. All rights reserved.
+//  Created by Stuart Connolly (stuconnolly.com) on March 28, 2017.
+//  Copyright (c) 2017 Stuart Connolly. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person
 //  obtaining a copy of this software and associated documentation
@@ -28,51 +28,8 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPMenuAdditions.h"
+#import "SPTableRelations.h"
 
-#import <XCTest/XCTest.h>
-
-/**
- * @class SPMenuAdditionsTests SPMenuAdditionsTests.h
- *
- * @author Stuart Connolly http://stuconnolly.com/
- *
- * SPMenuAdditionsTests tests class.
- */
-@interface SPMenuAdditionsTests : XCTestCase
-{
-	NSMenu *menu;
-}
+@interface SPTableRelations (SPTableRelationsDelegate)
 
 @end
-
-static NSString *SPTestMenuItemTitle = @"Menu Item";
-
-@implementation SPMenuAdditionsTests
-
-- (void)setUp
-{
-	NSUInteger num = 5;
-	
-	menu = [[NSMenu alloc] init];
-	
-	for (NSUInteger i = 0; i < num; i++)
-	{
-		[menu addItemWithTitle:[NSString stringWithFormat:@"%@ %ld", SPTestMenuItemTitle, (unsigned long)i] action:NULL keyEquivalent:@""];	
-	}
-}
-
-- (void)tearDown
-{
-	[menu release], menu = nil;
-}
-
-- (void)testCompatibleRemoveAllItems
-{
-	[menu compatibleRemoveAllItems];
-	
-	XCTAssertFalse([menu numberOfItems], @"The menu should have no menu items.");
-}
-
-@end
-

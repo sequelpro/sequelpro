@@ -30,6 +30,7 @@
 
 #import "SPDatabaseCopy.h"
 #import "SPTableCopy.h"
+#import "SPCreateDatabaseInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -38,10 +39,11 @@
 - (BOOL)copyDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent
 {
 	NSArray *tables = nil;
-		
-	// Check whether the source database exists and the target database doesn't.	
-	BOOL sourceExists = [[connection databases] containsObject:[sourceDatabase databaseName]];
-	BOOL targetExists = [[connection databases] containsObject:targetDatabaseName];
+	NSArray *databases = [connection databases];
+
+	// Check whether the source database exists and the target database doesn't
+	BOOL sourceExists = [databases containsObject:[sourceDatabase databaseName]];
+	BOOL targetExists = [databases containsObject:targetDatabaseName];
 	
 	if (!sourceExists || targetExists)
 		return NO;

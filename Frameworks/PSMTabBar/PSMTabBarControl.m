@@ -11,11 +11,6 @@
 #import "PSMOverflowPopUpButton.h"
 #import "PSMRolloverButton.h"
 #import "PSMTabStyle.h"
-#import "PSMMetalTabStyle.h"
-#import "PSMAquaTabStyle.h"
-#import "PSMUnifiedTabStyle.h"
-#import "PSMCardTabStyle.h"
-#import "PSMAdiumTabStyle.h"
 #import "PSMSequelProTabStyle.h"
 #import "PSMTabDragAssistant.h"
 #import "PSMTabBarController.h"
@@ -161,6 +156,7 @@
     // new tab button
     NSRect addTabButtonRect = NSMakeRect([self frame].size.width - [style rightMarginForTabBarControl] + 1, 3.0f, 16.0f, 16.0f);
     _addTabButton = [[PSMRolloverButton alloc] initWithFrame:addTabButtonRect];
+	
     if (_addTabButton) {
         NSImage *newButtonImage = [style addTabButtonImage];
         if (newButtonImage) {
@@ -369,31 +365,16 @@
 - (void)setStyleNamed:(NSString *)name
 {
     id <PSMTabStyle> newStyle;
-	
-/*	if ([name isEqualToString:@"Aqua"]) {
-		newStyle = [[PSMAquaTabStyle alloc] init];
-		
-	} else if ([name isEqualToString:@"Unified"]) {
-		newStyle = [[PSMUnifiedTabStyle alloc] init];
-		
-	} else if ([name isEqualToString:@"Adium"]) {
-		newStyle = [[PSMAdiumTabStyle alloc] init];
-	
-	} else if ([name isEqualToString:@"Card"]) {
-		newStyle = [[PSMCardTabStyle alloc] init];
-	
-	} else if ([name isEqualToString:@"Metal"]) {
-		newStyle = [[PSMMetalTabStyle alloc] init];
 
-	} else */
     if ([name isEqualToString:@"SequelPro"]) {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
-
-	} else {
+	}
+	else {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
 	}
 
     [self setStyle:newStyle];
+
     [newStyle release];
 }
 

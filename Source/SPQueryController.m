@@ -150,54 +150,13 @@ static SPQueryController *sharedQueryController = nil;
  */
 - (void)copy:(id)sender
 {
-#ifndef SP_CODA
 	NSResponder *firstResponder = [[self window] firstResponder];
 
 	if ((firstResponder == consoleTableView) && ([consoleTableView numberOfSelectedRows] > 0)) {
-
-		NSMutableString *string = [NSMutableString string];
+		
 		NSIndexSet *rows = [consoleTableView selectedRowIndexes];
 
-		NSUInteger i = [rows firstIndex];
-
-		BOOL includeTimestamps = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
-		BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
-		BOOL includeDatabases = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDatabaseColumnID] isHidden];
-
-		[string setString:@""];
-
-		while (i != NSNotFound)
-		{
-			if (i < [messagesVisibleSet count]) {
-				SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
-
-				if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"/* "];
-				
-				NSDate *date = [message messageDate];
-				if (includeTimestamps && date) {
-					[string appendString:[dateFormatter stringFromDate:date]];
-					[string appendString:@" "];
-				}
-
-				NSString *connection = [message messageConnection];
-				if (includeConnections && connection) {
-					[string appendString:connection];
-					[string appendString:@" "];
-				}
-
-				NSString *database = [message messageDatabase];
-				if (includeDatabases && database) {
-					[string appendString:database];
-					[string appendString:@" "];
-				}
-
-				if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"*/ "];
-
-				[string appendFormat:@"%@\n", [message message]];
-			}
-
-			i = [rows indexGreaterThanIndex:i];
-		}
+		NSString *string = [self sqlStringForRowIndexes:rows];
 
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 
@@ -205,7 +164,50 @@ static SPQueryController *sharedQueryController = nil;
 		[pasteBoard declareTypes:@[NSStringPboardType] owner:nil];
 		[pasteBoard setString:string forType:NSStringPboardType];
 	}
-#endif
+}
+
+- (NSString *)sqlStringForRowIndexes:(NSIndexSet *)rows
+{
+	if(![rows count]) return @"";
+	
+	NSMutableString *string = [[NSMutableString alloc] init];
+	
+	BOOL includeTimestamps  = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDateColumnID] isHidden];
+	BOOL includeConnections = ![[consoleTableView tableColumnWithIdentifier:SPTableViewConnectionColumnID] isHidden];
+	BOOL includeDatabases   = ![[consoleTableView tableColumnWithIdentifier:SPTableViewDatabaseColumnID] isHidden];
+	
+	[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
+		if (i < [messagesVisibleSet count]) {
+			SPConsoleMessage *message = NSArrayObjectAtIndex(messagesVisibleSet, i);
+			
+			if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"/* "];
+			
+			NSDate *date = [message messageDate];
+			if (includeTimestamps && date) {
+				[string appendString:[dateFormatter stringFromDate:date]];
+				[string appendString:@" "];
+			}
+			
+			NSString *connection = [message messageConnection];
+			if (includeConnections && connection) {
+				[string appendString:connection];
+				[string appendString:@" "];
+			}
+			
+			NSString *database = [message messageDatabase];
+			if (includeDatabases && database) {
+				[string appendString:database];
+				[string appendString:@" "];
+			}
+			
+			if (includeTimestamps || includeConnections || includeDatabases) [string appendString:@"*/ "];
+			
+			[string appendString:[message message]];
+			[string appendString:@"\n"];
+		}
+	}];
+	
+	return [string autorelease];
 }
 
 /**

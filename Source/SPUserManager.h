@@ -81,7 +81,7 @@
 	BOOL isInitializing;
 	NSMutableString *errorsString;
 	
-	// MySQL 5.7.6 removes the "Password" columns and only uses the "plugin"+"authentication_string" columns
+	// MySQL 5.7.6 removes the "Password" columns and only uses the "plugin" + "authentication_string" columns
 	BOOL requiresPost576PasswordHandling;
 }
 
@@ -114,14 +114,14 @@
 - (IBAction)closeErrorsSheet:(id)sender;
 - (IBAction)doubleClickSchemaPriv:(id)sender;
 
-// Schema Privieges
+// Schema privieges
 - (IBAction)addSchemaPriv:(id)sender;
 - (IBAction)removeSchemaPriv:(id)sender;
 
 // Refresh
 - (IBAction)refresh:(id)sender;
 
-// Core Data notifications
+// Core data notifications
 - (BOOL)insertUser:(SPUserMO *)user;
 - (BOOL)deleteUser:(SPUserMO *)user;
 - (BOOL)updateUser:(SPUserMO *)user;

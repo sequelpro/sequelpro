@@ -73,9 +73,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		[webView setDrawsBackground:YES];
 		[webView setEditable:NO];
 		[webView setShouldCloseWithWindow:YES];
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 		[webView setShouldUpdateWhileOffscreen:NO];
-#endif
 		suppressExceptionAlerting = NO;
 	}
 	

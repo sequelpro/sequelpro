@@ -83,12 +83,6 @@ static CGFloat slow_in_out (CGFloat t)
 
 @end
 
-@interface WebView (LeopardOnly)
-
-- (void)setDrawsBackground:(BOOL)drawsBackground;
-
-@end
-
 @implementation SPTooltip
 
 // ==================

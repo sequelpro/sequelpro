@@ -992,14 +992,12 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 	[toBeEditedRowIndexes removeIndex:toBeRemovedIndex];
 
 	// Renumber indexes greater than toBeRemovedIndex
-	NSInteger currentIndex = [toBeEditedRowIndexes firstIndex];
-	while(currentIndex != NSNotFound) {
-		if(currentIndex > toBeRemovedIndex) {
+	[toBeEditedRowIndexes enumerateIndexesUsingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
+		if(currentIndex > (NSUInteger)toBeRemovedIndex) {
 			[toBeEditedRowIndexes addIndex:currentIndex-1];
 			[toBeEditedRowIndexes removeIndex:currentIndex];
 		}
-		currentIndex = [toBeEditedRowIndexes indexGreaterThanIndex:currentIndex];
-	}
+	}];
 
 	[self _setupFieldMappingPopUpMenus];
 	[fieldMapperTableView reloadData];
@@ -1155,15 +1153,10 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 
 	NSIndexSet *indexes = [globalValuesTableView selectedRowIndexes];
 
-	// get last index
-	NSUInteger currentIndex = [indexes lastIndex];
-
-	while (currentIndex != NSNotFound) {
+	[indexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 		[fieldMappingGlobalValues removeObjectAtIndex:currentIndex+numberOfImportColumns];
 		[fieldMappingGlobalValuesSQLMarked removeObjectAtIndex:currentIndex+numberOfImportColumns];
-		// get next index (beginning from the end)
-		currentIndex = [indexes indexLessThanIndex:currentIndex];
-	}
+	}];
 
 	[globalValuesTableView reloadData];
 
@@ -2047,7 +2040,7 @@ static NSUInteger SPSourceColumnTypeInteger     = 1;
 #endif
 
 			// Re-init recent menu
-			[recentGlobalValueMenu compatibleRemoveAllItems];
+			[recentGlobalValueMenu removeAllItems];
 			for(id item in recents)
 				[recentGlobalValueMenu addItemWithTitle:item action:@selector(insertRecentGlobalValue:) keyEquivalent:@""];
 

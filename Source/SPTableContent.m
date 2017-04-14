@@ -243,20 +243,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	
 	[nibLoader release];
 	
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
 	//let's see if we can use the NSPopover (10.7+) or have to make do with our legacy clone.
 	//this is using reflection right now, as our SDK is 10.8 but our minimum supported version is 10.6
 	Class popOverClass = NSClassFromString(@"NSPopover");
-	if(popOverClass)
-	{
+	if(popOverClass) {
 		paginationPopover = [[popOverClass alloc] init];
 		[paginationPopover setDelegate:(SPTableContent<NSPopoverDelegate> *)self];
 		[paginationPopover setContentViewController:paginationViewController];
 		[paginationPopover setBehavior:NSPopoverBehaviorTransient];
 	}
-	else
-#endif
-	{
+	else {
 		[paginationBox setContentView:[paginationViewController view]];
 		
 		// Add the pagination view to the content area
@@ -1638,13 +1634,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 #endif
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
 - (void)popoverDidClose:(NSNotification *)notification
 {
 	//not to hide the view, but to change the paginationButton
 	[self setPaginationViewVisibility:NO];
 }
-#endif
 
 /**
  * Show or hide the pagination layer, also changing the first responder as appropriate.
@@ -1672,7 +1666,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		}
 	}
 	
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_7
 	if(paginationPopover) {
 		if(makeVisible) {
 			[paginationPopover showRelativeToRect:[paginationButton bounds] ofView:paginationButton preferredEdge:NSMinYEdge];
@@ -1684,7 +1677,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		}
 		return;
 	}
-#endif
 	
 	if (makeVisible) {
 		if (paginationViewFrame.size.height == paginationViewHeight) return;

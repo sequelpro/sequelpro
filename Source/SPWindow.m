@@ -31,13 +31,19 @@
 #import "SPWindow.h"
 #import "SPWindowController.h"
 
-@interface NSWindow (LionPlusMethods)
-- (void)toggleFullScreen:(id)sender;
-@end
-
 @implementation SPWindow
 
 @synthesize isSheetWhichCanBecomeMain;
+
+#pragma mark -
+
++ (void)initialize
+{
+	// Disable automatic window tabbing on 10.12+
+	if ([NSWindow respondsToSelector:@selector(setAllowsAutomaticWindowTabbing:)]) {
+		[NSWindow setAllowsAutomaticWindowTabbing:NO];
+	}
+}
 
 #pragma mark -
 #pragma mark Keyboard shortcut additions
@@ -140,7 +146,9 @@
 {
 	if ([[self windowController] respondsToSelector:@selector(selectedTableDocument)]) {
 		return [[[self windowController] selectedTableDocument] undoManager];
+
 	}
+
 	return [super undoManager];
 }
 
@@ -153,7 +161,6 @@
  */
 - (BOOL)canBecomeMainWindow
 {
-
 	// If this window is a sheet which is permitted to become main, respond appropriately
 	if ([self isSheet] && isSheetWhichCanBecomeMain) {
 		return [self isVisible];
@@ -190,7 +197,6 @@
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-
 	// If the item is the Show/Hide Toolbar menu item, override the text to allow correct translation
 	if ([menuItem action] == @selector(toggleToolbarShown:)) {
 		BOOL theResponse = [super validateMenuItem:menuItem];

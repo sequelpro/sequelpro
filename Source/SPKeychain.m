@@ -230,10 +230,8 @@
  */
 - (BOOL)passwordExistsForName:(NSString *)name account:(NSString *)account
 {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	// "kSecClassGenericPassword" was introduced with the 10.7 SDK.
 	// It won't work on 10.6 either (meaning this code never matches properly there).
-	// (That's why there are compile time and runtime checks here)
 	if([SPOSInfo isOSVersionAtLeastMajor:10 minor:7 patch:0]) {
 		NSMutableDictionary *query = [NSMutableDictionary dictionary];
 		
@@ -248,7 +246,9 @@
 		
 		return SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&result) == errSecSuccess;
 	}
-#endif
+
+	//Version for 10.6
+
 	SecKeychainItemRef item;
 	SecKeychainSearchRef search = NULL;
 	NSInteger numberOfItemsFound = 0;

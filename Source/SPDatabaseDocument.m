@@ -29,22 +29,13 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-// Forward-declare for 10.7 compatibility
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-	NSFullScreenWindowMask = 1 << 14
-};
-#endif
-
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "SPConnectionHandler.h"
 #import "SPConnectionControllerInitializer.h"
-
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
-#ifndef SP_CODA /* headers */
 #import "SPFileHandle.h"
 #import "SPKeychain.h"
 #import "SPTableContent.h"
@@ -55,20 +46,14 @@ enum {
 #import "SPGrowlController.h"
 #import "SPExportController.h"
 #import "SPSplitView.h"
-#endif
 #import "SPQueryController.h"
 #import "SPQueryDocumentsController.h"
-#ifndef SP_CODA /* headers */
 #import "SPWindowController.h"
-#endif
 #import "SPNavigatorController.h"
-#ifndef SP_CODA /* headers */
 #import "SPSQLParser.h"
 #import "SPTableData.h"
-#endif
 #import "SPDatabaseData.h"
 #import "SPDatabaseStructure.h"
-#ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #import "SPWindowManagement.h"
 #import "SPExtendedTableInfo.h"
@@ -86,92 +71,56 @@ enum {
 #import "SPDatabaseRename.h"
 #import "SPTableRelations.h"
 #import "SPCopyTable.h"
-#endif
 #import "SPServerSupport.h"
-#ifndef SP_CODA /* headers */
 #import "SPTooltip.h"
-#endif
 #import "SPDatabaseViewController.h"
-#ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #import "SPConnectionDelegate.h"
-#endif
 #import "SPThreadAdditions.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPFavoriteColorSupport.h"
-
-#ifdef SP_CODA /* headers */
-#import "SPAlertSheets.h"
-#import "NSNotificationCenterThreadingAdditions.h"
-#import "SPCustomQuery.h"
-#import "SPDatabaseRename.h"
-#endif
-
 #import "SPCharsetCollationHelper.h"
 #import "SPGotoDatabaseController.h"
 #import "SPFunctions.h"
+#import "SPCreateDatabaseInfo.h"
 
 #import <SPMySQL/SPMySQL.h>
 
 #include <libkern/OSAtomic.h>
 
 // Constants
+static NSString *SPCopyDatabaseAction = @"SPCopyDatabase";
+static NSString *SPConfirmCopyDatabaseAction = @"SPConfirmCopyDatabase";
 static NSString *SPRenameDatabaseAction = @"SPRenameDatabase";
 static NSString *SPAlterDatabaseAction = @"SPAlterDatabase";
+
 static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 @interface SPDatabaseDocument ()
 
 - (void)_addDatabase;
 - (void)_alterDatabase;
-
-#ifndef SP_CODA /* method decls */
 - (void)_copyDatabase;
-#endif
-
 - (void)_renameDatabase;
 - (void)_removeDatabase;
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails;
-
-#ifndef SP_CODA /* method decls */
 - (void)_processDatabaseChangedBundleTriggerActions;
-#endif
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
 @implementation SPDatabaseDocument
 
-#ifndef SP_CODA /* ivars */
 @synthesize sqlFileURL;
 @synthesize sqlFileEncoding;
 @synthesize parentWindowController;
 @synthesize parentTabViewItem;
-#endif
 @synthesize isProcessing;
 @synthesize serverSupport;
 @synthesize databaseStructureRetrieval;
-#ifndef SP_CODA /* ivars */
 @synthesize processID;
-#endif
-
-#ifdef SP_CODA /* ivars */
-@synthesize allDatabases;
-@synthesize delegate;
-@synthesize tableDataInstance;
-@synthesize customQueryInstance;
-@synthesize queryProgressBar;
-@synthesize databaseSheet;
-@synthesize databaseNameField;
-@synthesize databaseEncodingButton;
-@synthesize addDatabaseButton;
-@synthesize databaseDataInstance;
-@synthesize databaseRenameSheet;
-@synthesize databaseRenameNameField;
-@synthesize renameDatabaseButton;
-@synthesize chooseDatabaseButton;
-@synthesize structureContentSwitcher;
-#endif
 @synthesize instanceId;
 
 #pragma mark -
@@ -280,7 +229,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void)awakeFromNib
 {
-#ifndef SP_CODA
 	if (_mainNibLoaded) return;
 
 	_mainNibLoaded = YES;
@@ -313,35 +261,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Set the connection controller's delegate
 	[connectionController setDelegate:self];
 
-	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
-	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
-
-	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
-	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register observers for when the logging preference changes
-	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-
-	// Register a second observer for when the logging preference changes so we can tell the current connection about it
-	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
-#endif
+	// Register preference observers to allow live UI-linked preference changes
+	[self _addPreferenceObservers];
 
 	// Register for notifications
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willPerformQuery:)
-												 name:@"SMySQLQueryWillBePerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(hasPerformedQuery:)
-												 name:@"SMySQLQueryHasBeenPerformed" object:self];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminate:)
-												 name:@"NSApplicationWillTerminateNotification" object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(willPerformQuery:)
+												 name:@"SMySQLQueryWillBePerformed"
+											   object:self];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(hasPerformedQuery:)
+												 name:@"SMySQLQueryHasBeenPerformed"
+											   object:self];
+
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(applicationWillTerminate:)
+												 name:@"NSApplicationWillTerminateNotification"
+											   object:nil];
 
 #ifndef SP_CODA
 	// Find the Database -> Database Encoding menu (it's not in our nib, so we can't use interface builder)
@@ -466,6 +403,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 #pragma mark -
 #pragma mark Connection callback and methods
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)setConnection:(SPMySQLConnection *)theConnection
 {
 	if ([theConnection userTriggeredDisconnect]) {
@@ -483,7 +424,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 														  
 #ifndef SP_CODA	
 	// Set the fileURL and init the preferences (query favs, filters, and history) if available for that URL 
-	[self setFileURL:[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences]];
+	NSURL *newURL = [[SPQueryController sharedQueryController] registerDocumentWithFileURL:[self fileURL] andContextInfo:spfPreferences];
+#warning debug code for #2266
+	if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from queryController=%@ oldFileURL=%@ contextInfo=%@", __func__, [SPQueryController sharedQueryController], [self fileURL], spfPreferences);
+	[self setFileURL:newURL];
 	
 	// ...but hide the icon while the document is temporary
 	if ([self isUntitled]) [[parentWindow standardWindowButton:NSWindowDocumentIconButton] setImage:nil];
@@ -652,7 +596,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  *
  * @return The document's connection
  */
-- (SPMySQLConnection *) getConnection 
+- (SPMySQLConnection *)getConnection
 {
 	return mySQLConnection;
 }
@@ -660,9 +604,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Sets this connection's Keychain ID.
  */ 
-- (void)setKeychainID:(NSString *)theID
+- (void)setKeychainID:(NSString *)theId
 {
-	keyChainID = [[NSString stringWithString:theID] retain];
+	keyChainID = [[NSString stringWithString:theId] retain];
 }
 
 #pragma mark -
@@ -670,6 +614,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * sets up the database select toolbar item
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (IBAction)setDatabases:(id)sender;
 {
@@ -928,7 +874,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (IBAction)copyDatabase:(id)sender
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
-	
+
+	// Inform the user that we don't support copying objects other than tables and ask them if they'd like to proceed
+	if ([tablesListInstance hasNonTableObjects]) {
+		[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"Only Partially Supported", @"partial copy database support message")
+										 defaultButton:NSLocalizedString(@"Continue", "continue button")
+									   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+										   otherButton:nil
+											alertStyle:NSAlertStyleWarning
+											 docWindow:parentWindow
+										 modalDelegate:self
+										didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+										   contextInfo:SPConfirmCopyDatabaseAction
+											  infoText:[NSString stringWithFormat:NSLocalizedString(@"Duplicating the database '%@' is only partially supported as it contains objects other tables (i.e. views, procedures, functions, etc.), which will not be copied.\n\nWould you like to continue?", @"partial copy database support informative message"), selectedDatabase]
+											returnCode:&confirmCopyDatabaseReturnCode];
+
+		if (confirmCopyDatabaseReturnCode == NSAlertAlternateReturn) return;
+	}
+
 	[databaseCopyNameField setStringValue:selectedDatabase];
 	[copyDatabaseMessageField setStringValue:selectedDatabase];
 	
@@ -936,16 +899,29 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	   modalForWindow:parentWindow
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:@"copyDatabase"];
+		  contextInfo:SPCopyDatabaseAction];
 }
 #endif
 
 /**
- * opens the rename database sheet and renames the databsae
+ * Opens the rename database sheet and renames the databsae.
  */
 - (IBAction)renameDatabase:(id)sender
 {	
 	if (![tablesListInstance selectionShouldChangeInTableView:nil]) return;
+
+	// We currently don't support moving any objects other than tables (i.e. views, functions, procs, etc.) from one database to another
+	// so inform the user and don't allow them to proceed. Copy/duplicate is more appropriate in this case, but with the same limitation.
+	if ([tablesListInstance hasNonTableObjects]) {
+		SPOnewayAlertSheet(
+			NSLocalizedString(@"Database Rename Unsupported", @"databsse rename unsupported message"),
+			parentWindow,
+			[NSString stringWithFormat:NSLocalizedString(
+					@"Ranaming the database '%@' is currently unsupported as it contains objects other than tables (i.e. views, procedures, functions, etc.).\n\nIf you would like to rename a database please use the 'Duplicate Database', move any non-table objects manually then drop the old database.",
+					@"databsse rename unsupported informative message"), selectedDatabase]
+		);
+		return;
+	}
 	
 	[databaseRenameNameField setStringValue:selectedDatabase];
 	[renameDatabaseMessageField setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Rename database '%@' to:", @"rename database message"), selectedDatabase]];
@@ -972,8 +948,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete database '%@'?", @"delete database message"), [self database]]
 									 defaultButton:NSLocalizedString(@"Delete", @"delete button") 
 								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button") 
-									  otherButton:nil 
-						informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
+									   otherButton:nil
+						 informativeTextWithFormat:NSLocalizedString(@"Are you sure you want to delete the database '%@'? This operation cannot be undone.", @"delete database informative message"), [self database]];
 
 	NSArray *buttons = [alert buttons];
 
@@ -1010,9 +986,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		serverVariablesController = [[SPServerVariablesController alloc] init];
 		
 		[serverVariablesController setConnection:mySQLConnection];
-		
-		// Register to obeserve table view vertical grid line pref changes
-		[prefs addObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
 	[serverVariablesController displayServerVariablesSheetAttachedToWindow:parentWindow];
@@ -1027,9 +1000,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		processListController = [[SPProcessListController alloc] init];
 		
 		[processListController setConnection:mySQLConnection];
-		
-		// Register to obeserve table view vertical grid line pref changes
-		[prefs addObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
 	}
 	
 	[processListController displayProcessListWindow];
@@ -1088,26 +1058,29 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Alert sheet method. Invoked when an alert sheet is dismissed.
- *
- * if contextInfo == removeDatabase -> Remove the selected database
- * if contextInfo == addDatabase    -> Add a new database
- * if contextInfo == copyDatabase   -> Duplicate the selected database
- * if contextInfo == renameDatabase -> Rename the selected database
  */
 - (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
 {
 #ifndef SP_CODA
-	if([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
+
+	// Those that are just setting a return code and don't need to order out the sheet. See SPAlertSheets+beginWaitingAlertSheetWithTitle:
+	if ([contextInfo isEqualToString:@"saveDocPrefSheetStatus"]) {
 		saveDocPrefSheetStatus = returnCode;
+		return;
+	}
+	else if ([contextInfo isEqualToString:SPConfirmCopyDatabaseAction]) {
+		confirmCopyDatabaseReturnCode = returnCode;
 		return;
 	}
 #endif
 
 	// Order out current sheet to suppress overlapping of sheets
-	if ([sheet respondsToSelector:@selector(orderOut:)])
+	if ([sheet respondsToSelector:@selector(orderOut:)]) {
 		[sheet orderOut:nil];
-	else if ([sheet respondsToSelector:@selector(window)])
+	}
+	else if ([sheet respondsToSelector:@selector(window)]) {
 		[[sheet window] orderOut:nil];
+	}
 
 	// Remove the current database
 	if ([contextInfo isEqualToString:@"removeDatabase"]) {
@@ -1147,7 +1120,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	} 
 	} 
 #ifndef SP_CODA
-	else if ([contextInfo isEqualToString:@"copyDatabase"]) {
+	else if ([contextInfo isEqualToString:SPCopyDatabaseAction]) {
 		if (returnCode == NSOKButton) {
 			[self _copyDatabase];		
 		}
@@ -1197,6 +1170,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Reset the current selected database name
+ *
+ * This method MAY be called from UI and background threads!
  */
 - (void)refreshCurrentDatabase
 {
@@ -1214,23 +1189,21 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			dbName = NSArrayObjectAtIndex(eachRow, 0);
 		}
 
-		// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
-		if(dbName && ![dbName isNSNull]) {
-			if(![dbName isEqualToString:selectedDatabase]) {
+		SPMainQSync(^{
+			// TODO: there have been crash reports because dbName == nil at this point. When could that happen?
+			if(dbName && ![dbName isNSNull]) {
+				if(![dbName isEqualToString:selectedDatabase]) {
+					if (selectedDatabase) SPClear(selectedDatabase);
+					selectedDatabase = [[NSString alloc] initWithString:dbName];
+					[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
+					[self updateWindowTitle:self];
+				}
+			} else {
 				if (selectedDatabase) SPClear(selectedDatabase);
-				selectedDatabase = [[NSString alloc] initWithString:dbName];
-				[chooseDatabaseButton selectItemWithTitle:selectedDatabase];
-#ifndef SP_CODA /* [self updateWindowTitle:self] */
+				[chooseDatabaseButton selectItemAtIndex:0];
 				[self updateWindowTitle:self];
-#endif
 			}
-		} else {
-			if (selectedDatabase) SPClear(selectedDatabase);
-			[chooseDatabaseButton selectItemAtIndex:0];
-#ifndef SP_CODA /* [self updateWindowTitle:self] */
-			[self updateWindowTitle:self];
-#endif
-		}
+		});
 	}
 
 	//query finished
@@ -3399,7 +3372,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
 
-			[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+			[SPAlertSheets beginWaitingAlertSheetWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
 			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
 			                                   otherButton:nil
@@ -3408,7 +3381,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			                                 modalDelegate:self
 			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 			                                   contextInfo:@"saveDocPrefSheetStatus"
-			                                           msg:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
 			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
 			                                    returnCode:&saveDocPrefSheetStatus];
 
@@ -3564,7 +3536,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[preferences setObject:[spfStructure objectForKey:SPContentFilters] forKey:SPContentFilters];
 		[[SPQueryController sharedQueryController] registerDocumentWithFileURL:[NSURL fileURLWithPath:fileName] andContextInfo:preferences];
 
-		[self setFileURL:[NSURL fileURLWithPath:fileName]];
+		NSURL *newURL = [NSURL fileURLWithPath:fileName];
+#warning debug code for #2266
+		if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from fileName=%@", __func__, fileName);
+		[self setFileURL:newURL];
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 		[self updateWindowTitle:self];
@@ -4008,10 +3983,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if (newIsVisible == windowTitleStatusViewIsVisible) return;
 
 	if (newIsVisible) {
-		if (NSClassFromString(@"NSTitlebarAccessoryViewController")) { // OS X 10.11 and later
+		Class controllerClass;
+		if ((controllerClass = NSClassFromString(@"NSTitlebarAccessoryViewController"))) { // OS X 10.11 and later
 			[titleAccessoryView setFrame:NSMakeRect(0, 0, titleAccessoryView.frame.size.width, 120)]; // make it really tall, so that it's on the top right of the title/toolbar area, instead of the bottom right (AppKit will not prevent it from going behind the toolbar)
 			
-			NSTitlebarAccessoryViewController *accessoryViewController = [[[NSTitlebarAccessoryViewController alloc] init] autorelease];
+			NSTitlebarAccessoryViewController *accessoryViewController = [[[controllerClass alloc] init] autorelease];
 			accessoryViewController.view = titleAccessoryView;
 			accessoryViewController.layoutAttribute = NSLayoutAttributeRight;
 			[parentWindow addTitlebarAccessoryViewController:accessoryViewController];
@@ -4492,6 +4468,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	// Coax the main split view into actually checking its constraints
 	[contentViewSplitter setPosition:[[[contentViewSplitter subviews] objectAtIndex:0] bounds].size.width ofDividerAtIndex:0];
+
 	// If the task interface is visible, and this tab is frontmost, re-center the task child window
 	if (_isWorkingLevel && [parentWindowController selectedTableDocument] == self) [self centerTaskWindow];
 }
@@ -4500,17 +4477,19 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Set the parent window
  */
-- (void)setParentWindow:(NSWindow *)aWindow
+- (void)setParentWindow:(NSWindow *)window
 {
-#ifndef SP_CODA
-	// If the window is being set for the first time - connection controller is visible - update focus
-	if (!parentWindow && !mySQLConnection) {
-		[aWindow makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
-	}
-#endif
+	NSWindow *favoritesOutlineViewWindow = [(NSView *)[connectionController favoritesOutlineView] window];
 
-	parentWindow = aWindow;
+	// If the window is being set for the first time - connection controller is visible - update focus
+	if (!parentWindow && !mySQLConnection && window == favoritesOutlineViewWindow) {
+		[window makeFirstResponder:(NSResponder *)[connectionController favoritesOutlineView]];
+	}
+
+	parentWindow = window;
+
 	SPSSHTunnel *currentTunnel = [connectionController valueForKeyPath:@"sshTunnel"];
+
 	if (currentTunnel) [currentTunnel setParentWindow:parentWindow];
 }
 
@@ -5118,7 +5097,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	if (![self isSaveInBundle]) {
-		[self setFileURL:[NSURL fileURLWithPath:path]];
+		NSURL *newURL = [NSURL fileURLWithPath:path];
+#warning debug code for #2266
+		if(!newURL) NSLog(@"#2266: Trying to set nil fileURL in %s from path=%@", __func__, path);
+		[self setFileURL:newURL];
 	}
 
 	[spfDocData setObject:[NSNumber numberWithBool:([[data objectForKey:@"connection"] objectForKey:@"password"]) ? YES : NO] forKey:@"save_password"];
@@ -5794,7 +5776,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	);
 }
 
-- (void)registerActivity:(NSDictionary*)commandDict
+- (void)registerActivity:(NSDictionary *)commandDict
 {
 	[runningActivitiesArray addObject:commandDict];
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
@@ -5832,74 +5814,74 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPActivitiesUpdateNotification object:self];
 }
 
-- (void)setActivityPaneHidden:(NSNumber*)hide
+- (void)setActivityPaneHidden:(NSNumber *)hide
 {
-	if(hide.boolValue) {
-		[tableInfoScrollView setHidden:YES];
-		[documentActivityScrollView setHidden:NO];
-	} else {
+	if (hide.boolValue) {
 		[documentActivityScrollView setHidden:YES];
 		[tableInfoScrollView setHidden:NO];
 	}
+	else {
+		[tableInfoScrollView setHidden:YES];
+		[documentActivityScrollView setHidden:NO];
+	}
 }
 
-- (NSArray*)runningActivities
+- (NSArray *)runningActivities
 {
 	return (NSArray*)runningActivitiesArray;
 }
 
-- (NSDictionary*)shellVariables
+- (NSDictionary *)shellVariables
 {
-
-	if(!_isConnected) return @{};
+	if (!_isConnected) return @{};
 
 	NSMutableDictionary *env = [NSMutableDictionary dictionary];
 
 	if (tablesListInstance) {
-		if([tablesListInstance selectedDatabase])
+
+		if ([tablesListInstance selectedDatabase]) {
 			[env setObject:[tablesListInstance selectedDatabase] forKey:SPBundleShellVariableSelectedDatabase];
+		}
 
-		if ([tablesListInstance tableName])
+		if ([tablesListInstance tableName]) {
 			[env setObject:[tablesListInstance tableName] forKey:SPBundleShellVariableSelectedTable];
+		}
 
-		if ([tablesListInstance selectedTableItems])
+		if ([tablesListInstance selectedTableItems]) {
 			[env setObject:[[tablesListInstance selectedTableItems] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedTables];
+		}
 
-		if ([tablesListInstance allDatabaseNames])
+		if ([tablesListInstance allDatabaseNames]) {
 			[env setObject:[[tablesListInstance allDatabaseNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllDatabases];
+		}
 
-		if ([tablesListInstance allTableNames])
-			[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllTables];
-
-		if ([tablesListInstance allViewNames])
-			[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllViews];
-
-		if ([tablesListInstance allFunctionNames])
-			[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllFunctions];
-
-		if ([tablesListInstance allProcedureNames])
-			[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllProcedures];
-
-		if ([self user])
+		if ([self user]) {
 			[env setObject:[self user] forKey:SPBundleShellVariableCurrentUser];
+		}
 
-		if ([self host])
+		if ([self host]) {
 			[env setObject:[self host] forKey:SPBundleShellVariableCurrentHost];
+		}
 
-		if ([self port])
+		if ([self port]) {
 			[env setObject:[self port] forKey:SPBundleShellVariableCurrentPort];
+		}
 
-		[env setObject:([self databaseEncoding])?:@"" forKey:SPBundleShellVariableDatabaseEncoding];
+		[env setObject:[[tablesListInstance allTableNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllTables];
+		[env setObject:[[tablesListInstance allViewNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllViews];
+		[env setObject:[[tablesListInstance allFunctionNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllFunctions];
+		[env setObject:[[tablesListInstance allProcedureNames] componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableAllProcedures];
 
+		[env setObject:([self databaseEncoding]) ? : @"" forKey:SPBundleShellVariableDatabaseEncoding];
 	}
 
-	if(1)
-		[env setObject:@"mysql" forKey:SPBundleShellVariableRDBMSType];
+	[env setObject:@"mysql" forKey:SPBundleShellVariableRDBMSType];
 
-	if([self mySQLVersion])
+	if ([self mySQLVersion]) {
 		[env setObject:[self mySQLVersion] forKey:SPBundleShellVariableRDBMSVersion];
+	}
 
-	return (NSDictionary*)env;
+	return (NSDictionary *)env;
 }
 #endif
 
@@ -6092,6 +6074,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 #ifndef SP_CODA /* whole database operations */
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)_copyDatabase 
 {
 	if ([[databaseCopyNameField stringValue] isEqualToString:@""]) {
@@ -6124,6 +6110,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }			 
 #endif
 
+/**
+ *
+ * This method *MUST* be called from the UI thread!
+ */
 - (void)_renameDatabase 
 {
 	NSString *newDatabaseName = [databaseRenameNameField stringValue];
@@ -6168,6 +6158,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Adds a new database.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_addDatabase
 {
@@ -6238,6 +6230,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Removes the current database.
+ *
+ * This method *MUST* be called from the UI thread!
  */
 - (void)_removeDatabase
 {
@@ -6454,35 +6448,64 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 #endif
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[prefs addObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
+	[prefs addObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the logging preference changes
+	[prefs addObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register a second observer for when the logging preference changes so we can tell the current connection about it
+	[prefs addObserver:self forKeyPath:SPConsoleEnableLogging options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
+
+	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
+
+	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
+
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
+	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
-	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!",__func__);
-#ifndef SP_CODA /* Unregister observers */
+	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!", __func__);
+
 	// Unregister observers
-	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:customQueryInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableRelationsInstance forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPDisplayTableViewVerticalGridlines];
-	[prefs removeObserver:tableSourceInstance forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPUseMonospacedFonts];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPGlobalResultTableFont];
-	[prefs removeObserver:tableContentInstance forKeyPath:SPDisplayBinaryDataAsHex];
-	[prefs removeObserver:[SPQueryController sharedQueryController] forKeyPath:SPConsoleEnableLogging];
-	[prefs removeObserver:self forKeyPath:SPConsoleEnableLogging];
-	
-	if (processListController) {
-		[processListController close];
-		[prefs removeObserver:processListController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	}
-	
-	if (serverVariablesController) {
-		[prefs removeObserver:serverVariablesController forKeyPath:SPDisplayTableViewVerticalGridlines];
-	}
-#endif
+	[self _removePreferenceObservers];
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[NSObject cancelPreviousPerformRequestsWithTarget:self];
@@ -6490,13 +6513,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// see -(void)awakeFromNib for the reasoning behind this.
 	SPClear(chooseDatabaseButton);
 	SPClear(historyControl);
-	
-#ifndef SP_CODA /* release nib objects */
+
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	SPClear(nibObjectsToRelease);
-#endif
-	
+
 	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
 	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
 	
@@ -6505,55 +6526,36 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	SPClear(allDatabases);
 	SPClear(allSystemDatabases);
 	SPClear(gotoDatabaseController);
-#ifndef SP_CODA /* dealloc ivars */
 	SPClear(undoManager);
 	SPClear(printWebView);
-#endif
 	SPClear(selectedDatabaseEncoding);
-#ifndef SP_CODA
+
 	[taskProgressWindow close];
-#endif
 	
+	if (processListController) [processListController close];
+
 	if (selectedTableName) SPClear(selectedTableName);
 	if (connectionController) SPClear(connectionController);
-#ifndef SP_CODA /* dealloc ivars */
 	if (processListController) SPClear(processListController);
 	if (serverVariablesController) SPClear(serverVariablesController);
-#endif
 	if (mySQLConnection) SPClear(mySQLConnection);
 	if (selectedDatabase) SPClear(selectedDatabase);
 	if (mySQLVersion) SPClear(mySQLVersion);
-#ifndef SP_CODA
 	if (taskDrawTimer) [taskDrawTimer invalidate], SPClear(taskDrawTimer);
 	if (taskFadeInStartDate) SPClear(taskFadeInStartDate);
-#endif
 	if (queryEditorInitString) SPClear(queryEditorInitString);
-#ifndef SP_CODA
 	if (sqlFileURL) SPClear(sqlFileURL);
 	if (spfFileURL) SPClear(spfFileURL);
 	if (spfPreferences) SPClear(spfPreferences);
 	if (spfSession) SPClear(spfSession);
 	if (spfDocData) SPClear(spfDocData);
-#endif
 	if (keyChainID) SPClear(keyChainID);
-#ifndef SP_CODA
 	if (mainToolbar) SPClear(mainToolbar);
-#endif
 	if (titleAccessoryView) SPClear(titleAccessoryView);
-#ifndef SP_CODA
 	if (taskProgressWindow) SPClear(taskProgressWindow);
-#endif
 	if (serverSupport) SPClear(serverSupport);
-#ifndef SP_CODA /* dealloc ivars */
 	if (processID) SPClear(processID);
 	if (runningActivitiesArray) SPClear(runningActivitiesArray);
-#endif
-	
-#ifdef SP_CODA 
-	if (tablesListInstance) [tablesListInstance release];
-	if (customQueryInstance) [customQueryInstance release];
-#endif
-	
 	if (alterDatabaseCharsetHelper) SPClear(alterDatabaseCharsetHelper);
 	if (addDatabaseCharsetHelper) SPClear(addDatabaseCharsetHelper);
 	
