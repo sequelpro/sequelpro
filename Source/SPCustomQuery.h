@@ -160,7 +160,6 @@
 
 	SPDataStorage *resultData;
 	pthread_mutex_t resultDataLock;
-	NSCondition *resultLoadingCondition;
 	NSInteger resultDataCount;
 	NSArray *cqColumnDefinition;
 	NSString *lastExecutedQuery;

@@ -993,11 +993,7 @@
 	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initQueryLoadTimer];
 
-	[resultLoadingCondition lock];
-	while (![resultData dataDownloaded]) {
-		[resultLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	}
-	[resultLoadingCondition unlock];
+	[resultData awaitDataDownloaded];
 
 	// If the final column autoresize wasn't performed, perform it
 	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
@@ -1500,10 +1496,7 @@
 	}
 
 	if ([resultData dataDownloaded]) {
-		[resultLoadingCondition lock];
-		[resultLoadingCondition signal];
 		[self clearQueryLoadTimer];
-		[resultLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
@@ -3787,7 +3780,6 @@
 		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
-		resultLoadingCondition = [NSCondition new];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -4070,7 +4062,6 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
-	SPClear(resultLoadingCondition);
 	SPClear(usedQuery);
 	SPClear(lastExecutedQuery);
 	SPClear(resultData);
