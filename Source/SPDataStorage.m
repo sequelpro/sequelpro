@@ -468,6 +468,13 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	}
 }
 
+- (void) awaitDataDownloaded
+{
+	[dataDownloadedLock lock];
+	while(![self dataDownloaded]) [dataDownloadedLock wait];
+	[dataDownloadedLock unlock];
+}
+
 #pragma mark - Delegate callback methods
 
 /**
@@ -479,6 +486,9 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
 		editedRowCount = [editedRows count];
 	}
+	[dataDownloadedLock lock];
+	[dataDownloadedLock broadcast];
+	[dataDownloadedLock unlock];
 }
 
 /**
@@ -492,6 +502,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		dataStorage = nil;
 		editedRows = nil;
 		unloadedColumns = NULL;
+		dataDownloadedLock = [NSCondition new];
 
 		numberOfColumns = 0;
 		editedRowCount = 0;
@@ -504,6 +515,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	@synchronized(self) {
 		SPClear(dataStorage);
 		SPClear(editedRows);
+		SPClear(dataDownloadedLock);
 		if (unloadedColumns) {
 			free(unloadedColumns), unloadedColumns = NULL;
 		}
