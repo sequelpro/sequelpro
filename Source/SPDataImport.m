@@ -1213,29 +1213,30 @@
 													  document:tableDocumentInstance
                                               notificationName:@"Import Finished"];
 
+	SPMainQSync(^{
+		if(importIntoNewTable) {
 
-	if(importIntoNewTable) {
-
-		// Select the new table
-
-		// Update current database tables 
-		[[tablesListInstance onMainThread] updateTables:self];
-	
-		// Re-query the structure of all databases in the background
-		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
-
-		// Select the new table
-		[tablesListInstance selectItemWithName:selectedTableTarget];
-
-	} else {
-
-		// If import was done into a new table or the table selected for import is also selected in the content view,
-		// update the content view - on the main thread to avoid crashes.
-		if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
-			[tableDocumentInstance setContentRequiresReload:YES];
+			// Select the new table
+			
+			// Update current database tables
+			[tablesListInstance updateTables:self];
+			
+			// Re-query the structure of all databases in the background
+			[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
+			
+			// Select the new table
+			[tablesListInstance selectItemWithName:selectedTableTarget];
+			
+		} else {
+			
+			// If import was done into a new table or the table selected for import is also selected in the content view,
+			// update the content view - on the main thread to avoid crashes.
+			if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
+				[tableDocumentInstance setContentRequiresReload:YES];
+			}
+			
 		}
-
-	}
+	});
 
 }
 

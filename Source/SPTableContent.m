@@ -2541,13 +2541,15 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			@"filterValue": targetFilterValue,
 			@"filterComparison": SPBoxNil(filterComparison)
 		};
-		[self setFiltersToRestore:filterSettings];
-
-		// Attempt to switch to the target table
-		if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
-			NSBeep();
-			[self setFiltersToRestore:nil];
-		}
+		SPMainQSync(^{
+			[self setFiltersToRestore:filterSettings];
+			
+			// Attempt to switch to the target table
+			if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
+				NSBeep();
+				[self setFiltersToRestore:nil];
+			}
+		});
 	}
 
 #ifndef SP_CODA

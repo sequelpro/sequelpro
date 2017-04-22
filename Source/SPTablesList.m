@@ -1370,6 +1370,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Select an item using the provided name; returns YES if the
  * supplied name could be selected, or NO if not.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (BOOL)selectItemWithName:(NSString *)theName
 {
@@ -1418,7 +1420,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 
-	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 #endif
 
 	return YES;
