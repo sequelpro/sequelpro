@@ -37,6 +37,7 @@
 @interface SPDataStorage (Private_API)
 
 - (void) _checkNewRow:(NSMutableArray *)aRow;
+- (void) _addRowUnsafeUnchecked:(NSMutableArray *)aRow;
 
 @end
 
@@ -107,6 +108,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 /**
  * Return a mutable array containing the data for a specified row.
+ * The returned array will be a shallow copy of the internal row object.
  */
 - (NSMutableArray *) rowContentsAtIndex:(NSUInteger)anIndex
 {
@@ -117,12 +119,12 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 			NSMutableArray *editedRow = SPDataStorageGetEditedRow(editedRows, anIndex);
 			
 			if (editedRow != NULL) {
-				return editedRow;
+				return [NSMutableArray arrayWithArray:editedRow]; //make a copy to not give away control of our internal state
 			}
 		}
 		
 		// Otherwise, prepare to return the underlying storage row
-		NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex);
+		NSMutableArray *dataArray = SPMySQLResultStoreGetRow(dataStorage, anIndex); //returned array is already a copy
 		
 		// Modify unloaded cells as appropriate
 		for (NSUInteger i = 0; i < numberOfColumns; i++) {
@@ -252,11 +254,14 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 		// If an edited row exists for the supplied index, use that; otherwise use the underlying
 		// storage row
 		if (state->state < editedRowCount) {
-			targetRow = SPDataStorageGetEditedRow(editedRows, state->state);
+			NSMutableArray *internalRow = SPDataStorageGetEditedRow(editedRows, state->state);
+			if(internalRow != NULL) {
+				targetRow = [NSMutableArray arrayWithArray:internalRow]; //make a copy to not give away control of our internal state
+			}
 		}
 
 		if (targetRow == nil) {
-			targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state);
+			targetRow = SPMySQLResultStoreGetRow(dataStorage, state->state); //returned array is already a copy
 
 			// Modify unloaded cells as appropriate
 			for (NSUInteger i = 0; i < numberOfColumns; i++) {
@@ -287,16 +292,18 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) addRowWithContents:(NSMutableArray *)aRow
 {
-	@synchronized(self) {
-		// Verify the row is of the correct length
-		[self _checkNewRow:aRow];
-
-		// Add the new row to the editable store
-		[editedRows addPointer:aRow];
-		editedRowCount++;
-
-		// Update the underlying store as well to keep counts correct
-		[dataStorage addDummyRow];
+	// we can't just store the passed in array as that would give an outsider too much control of our internal state
+	// (e.g. they could change the bounds after adding it, defeating the check below), so let's make a shallow copy.
+	NSMutableArray *newArray = [[NSMutableArray alloc] initWithArray:aRow];
+	@try {
+		@synchronized(self) {
+			// Verify the row is of the correct length
+			[self _checkNewRow:newArray];
+			[self _addRowUnsafeUnchecked:newArray];
+		}
+	}
+	@finally {
+		[newArray release];
 	}
 }
 
@@ -307,39 +314,58 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) insertRowContents:(NSMutableArray *)aRow atIndex:(NSUInteger)anIndex
 {
-	@synchronized(self) {
-		unsigned long long numberOfRows = SPMySQLResultStoreGetRowCount(dataStorage);
-
-		// Verify the row is of the correct length
-		[self _checkNewRow:aRow];
-
-		// Throw an exception if the index is out of bounds
-		if (anIndex > numberOfRows) {
-			[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
+	// we can't just store the passed in array as that would give an outsider too much control of our internal state
+	// (e.g. they could change the bounds after adding it, defeating the check below), so let's make a shallow copy.
+	NSMutableArray *newArray = [[NSMutableArray alloc] initWithArray:aRow];
+	@try {
+		@synchronized(self) {
+			unsigned long long numberOfRows = SPMySQLResultStoreGetRowCount(dataStorage);
+			
+			// Verify the row is of the correct length
+			[self _checkNewRow:newArray];
+			
+			// Throw an exception if the index is out of bounds
+			if (anIndex > numberOfRows) {
+				[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, numberOfRows];
+			}
+			
+			// If "inserting" at the end of the array just add a row
+			if (anIndex == numberOfRows) {
+				[self _addRowUnsafeUnchecked:newArray];
+				return;
+			}
+			
+			// Add the new row to the editable store
+			[editedRows insertPointer:newArray atIndex:anIndex];
+			editedRowCount++;
+			
+			// Update the underlying store to keep counts and indices correct
+			[dataStorage insertDummyRowAtIndex:anIndex];
 		}
-
-		// If "inserting" at the end of the array just add a row
-		if (anIndex == numberOfRows) {
-			return [self addRowWithContents:aRow];
-		}
-
-		// Add the new row to the editable store
-		[editedRows insertPointer:aRow atIndex:anIndex];
-		editedRowCount++;
-
-		// Update the underlying store to keep counts and indices correct
-		[dataStorage insertDummyRowAtIndex:anIndex];
+	}
+	@finally {
+		[newArray release];
 	}
 }
 
 /**
  * Replace a row with contents of the supplied NSArray.
+ *
+ * Note that the supplied objects within the array are retained as a reference rather than copied.
  */
 - (void) replaceRowAtIndex:(NSUInteger)anIndex withRowContents:(NSMutableArray *)aRow
 {
-	@synchronized(self) {
-		[self _checkNewRow:aRow];
-		[editedRows replacePointerAtIndex:anIndex withPointer:aRow];
+	// we can't just store the passed in array as that would give an outsider too much control of our internal state
+	// (e.g. they could change the bounds after adding it, defeating the check below), so let's make a shallow copy.
+	NSMutableArray *newArray = [[NSMutableArray alloc] initWithArray:aRow];
+	@try {
+		@synchronized(self) {
+			[self _checkNewRow:newArray];
+			[editedRows replacePointerAtIndex:anIndex withPointer:newArray];
+		}
+	}
+	@finally {
+		[newArray release];
 	}
 }
 
@@ -357,7 +383,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 
 		// Make sure that the row in question is editable
 		if (editableRow == nil) {
-			editableRow = [self rowContentsAtIndex:rowIndex];
+			editableRow = [self rowContentsAtIndex:rowIndex]; //already returns a copy, so we don't have to go via -replaceRowAtIndex:withRowContents:
 			[editedRows replacePointerAtIndex:rowIndex withPointer:editableRow];
 		}
 	}
@@ -534,6 +560,18 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	if ([aRow count] != numberOfColumns) {
 		[NSException raise:NSInternalInconsistencyException format:@"New row length (%llu) does not match store column	count (%llu)", (unsigned long long)[aRow count], (unsigned long long)numberOfColumns];
 	}
+}
+
+// DO NOT CALL THIS METHOD UNLESS YOU CURRENTLY HAVE A LOCK ON SELF!!!
+// DO NOT CALL THIS METHOD UNLESS YOU HAVE CALLED _checkNewRow: FIRST!
+- (void)_addRowUnsafeUnchecked:(NSMutableArray *)aRow
+{
+	// Add the new row to the editable store
+	[editedRows addPointer:aRow];
+	editedRowCount++;
+	
+	// Update the underlying store as well to keep counts correct
+	[dataStorage addDummyRow];
 }
 
 @end
