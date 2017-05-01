@@ -606,6 +606,7 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	mysql_options(theConnection, MYSQL_OPT_CONNECT_TIMEOUT, (const void *)&timeout);
 
 	// Set the connection encoding
+	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:[encodingName UTF8String]];
 	mysql_options(theConnection, MYSQL_SET_CHARSET_NAME, [encodingName UTF8String]);
 
 	// Set up the connection variables in the format MySQL needs, from the class-wide variables
@@ -614,22 +615,36 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	const char *thePassword = NULL;
 	const char *theSocket = NULL;
 
-	if (host) theHost = [self _cStringForString:host];
-	if (username) theUsername = [self _cStringForString:username];
+	if (host) theHost = [host UTF8String]; //mysql calls getaddrinfo on the hostname. Apples code uses -UTF8String in that situation.
+	if (username) theUsername = _cStringForStringWithEncoding(username, connectEncodingNS, NULL); //during connect this is in MYSQL_SET_CHARSET_NAME encoding
 
-	// If a password was supplied, use it; otherwise ask the delegate if appropriate
+	// If a password was supplied, use it; otherwise ask the delegate if appropriate.
+	//
+	// Note that password has no charset in mysql: If a user password is set to 'ü' on a latin1 connection
+	// and you later try to connect on an UTF-8 terminal (or vice versa) it will fail. The MySQL (5.5) manual wrongly states that
+	// MYSQL_SET_CHARSET_NAME has influence over that, but it does not and could not, since the password is hashed by the client
+	// before transmitting it to the server and the (5.5) client has no charset support, effectively treating password as
+	// a NUL-terminated byte array.
+	// There is one exception, though: The "mysql_clear_password" auth plugin sends the password in plaintext and the server side
+	// MAY choose to do a charset conversion as appropriate before handing it to whatever backend is used.
+	// Since we don't know which auth plugin server and client will agree upon, we'll do as the manual says...
 	if (password) {
-		thePassword = [self _cStringForString:password];
+		thePassword = _cStringForStringWithEncoding(password, connectEncodingNS, NULL);
 	} else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-		thePassword = [self _cStringForString:[delegate keychainPasswordForConnection:self]];
+		thePassword = _cStringForStringWithEncoding([delegate keychainPasswordForConnection:self], connectEncodingNS, NULL);
 	}
 
 	// If set to use a socket and a socket was supplied, use it; otherwise, search for a socket to use
 	if (useSocket) {
-		if ([socketPath length]) {
-			theSocket = [self _cStringForString:socketPath];
-		} else {
-			theSocket = [self _cStringForString:[SPMySQLConnection findSocketPath]];
+		//default to user supplied path
+		NSString *mySocketPath = socketPath;
+		//if none was given, search in the default locations instead
+		if (![mySocketPath length]) {
+			mySocketPath = [SPMySQLConnection findSocketPath];
+		}
+		//get C string if we have a path (danger: method will throw on empty/nil string!)
+		if([mySocketPath length]) {
+			theSocket = [mySocketPath fileSystemRepresentation];
 		}
 	}
 
@@ -640,14 +655,14 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 		const char *theCACertificatePath = NULL;
 		const char *theSSLCiphers = SPMySQLSSLPermissibleCiphers;
 
-		if (sslKeyFilePath) {
-			theSSLKeyFilePath = [[sslKeyFilePath stringByExpandingTildeInPath] UTF8String];
+		if ([sslKeyFilePath length]) {
+			theSSLKeyFilePath = [[sslKeyFilePath stringByExpandingTildeInPath] fileSystemRepresentation];
 		}
-		if (sslCertificatePath) {
-			theSSLCertificatePath = [[sslCertificatePath stringByExpandingTildeInPath] UTF8String];
+		if ([sslCertificatePath length]) {
+			theSSLCertificatePath = [[sslCertificatePath stringByExpandingTildeInPath] fileSystemRepresentation];
 		}
-		if (sslCACertificatePath) {
-			theCACertificatePath = [[sslCACertificatePath stringByExpandingTildeInPath] UTF8String];
+		if ([sslCACertificatePath length]) {
+			theCACertificatePath = [[sslCACertificatePath stringByExpandingTildeInPath] fileSystemRepresentation];
 		}
 		if(sslCipherList) {
 			theSSLCiphers = [sslCipherList UTF8String];
@@ -663,9 +678,30 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 		// If the connection is the master connection, record the error state
 		if (isMaster) {
+			// <TODO>
+			// this is tricky: mysql_error() is supposed to return data encoded in character_set_results (in mysql 5.5+),
+			// yet the whole API treats it as if it were a plain C string.
+			// So if the charset is e.g. utf16 the mysql server will itself fall over that and return an empty error message
+			// (5.5, 5.7: the message is really missing at the network layer).
+			//   (Side Note: There is a workaround for server generated error messages: "show warnings" will also include errors
+			//               and because it uses a regular results table it can contain the actual error message)
+			//
+			// Before 5.5 things are much worse, because the charset of the message depends on the language of the error messages
+			// (which can be changed at runtime per session (or at launch time in 4.1)) plus all arguments in the template string
+			// will retain their original encoding.
+			// So if you connect with utf8 to a server with russian locale the error message will be in koi8r and contain the name of
+			// an erroneus value in utf8...
+			//
+			// On the other hand mysql_error() may also return errors generated by the client locally.
+			// The client has no charset support and simply assumes the local charset is ASCII-compatible.
+			// The english messages are compiled into the client (see libmysql/errmsg.c and include/errmsg.h).
+			// We could use a little trick, though: client errors are in the exclusive range 2000 to 2999 (CR_MIN_ERROR/CR_MAX_ERROR)
+			// and all their string arguments are either hostnames or file system paths, which on OS X use UTF-8.
 			[self _updateLastErrorMessage:[self _stringForCString:mysql_error(theConnection)]];
+			// </TODO>
 			[self _updateLastErrorID:mysql_errno(theConnection)];
-			[self _updateLastSqlstate:[self _stringForCString:mysql_sqlstate(theConnection)]];
+			// sqlstate is always an ASCII string, regardless of charset (but use latin1 anyway as that is less picky about invalid bytes)
+			[self _updateLastSqlstate:_stringForCStringWithEncoding(mysql_sqlstate(theConnection),NSISOLatin1StringEncoding)];
 		}
 
 		return NULL;

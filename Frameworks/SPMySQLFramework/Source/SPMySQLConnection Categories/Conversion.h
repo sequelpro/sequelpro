@@ -34,6 +34,7 @@
 @interface SPMySQLConnection (Conversion)
 
 + (const char *)_cStringForString:(NSString *)aString usingEncoding:(NSStringEncoding)anEncoding returningLengthAs:(NSUInteger *)cStringLengthPointer;
++ (NSString *)_stringForCString:(const char *)cString usingEncoding:(NSStringEncoding)encoding;
 
 - (const char *)_cStringForString:(NSString *)aString;
 - (NSString *)_stringForCString:(const char *)cString;
@@ -55,4 +56,17 @@ static inline const char* _cStringForStringWithEncoding(NSString* aString, NSStr
 	if (!cachedMethodPointer) cachedMethodPointer = [SPMySQLConnection methodForSelector:cachedSelector];
 
 	return (const char *)(*cachedMethodPointer)(cachedClass, cachedSelector, aString, anEncoding, cStringLengthPointer);
+}
+
+/**
+ * Converts a C string (NUL-terminated) to an NSString using the supplied encoding.
+ *
+ * Unlike +[NSString stringWithCString:encoding:] which will crash on a NULL pointer, this method will return nil instead.
+ */
+static inline NSString * _stringForCStringWithEncoding(const char *aString, NSStringEncoding inputEncoding)
+{
+	//This implementation is smaller than the cached selector voodoo above, so let's do it inline
+	
+	//NSString will crash on NULL ptr
+	return (aString == NULL)? nil : [NSString stringWithCString:aString encoding:inputEncoding];
 }
