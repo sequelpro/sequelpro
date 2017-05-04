@@ -42,6 +42,9 @@ static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
 static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
 static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
+static NSString * const SPKillModeKey = @"SPKillMode";
+static NSString * const SPKillIdKey   = @"SPKillId";
+
 @interface SPProcessListController (PrivateAPI)
 
 - (void)_processListRefreshed;
@@ -283,7 +286,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessQueryMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessQueryMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -311,7 +321,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessConnectionMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessConnectionMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -364,7 +381,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	   modalForWindow:[self window]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+		  contextInfo:NULL];
 }
 
 #pragma mark -
@@ -386,7 +403,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Invoked when the kill alerts are dismissed. Decide what to do based on the user's decision.
  */
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)]) {
@@ -396,19 +413,23 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		[[sheet window] orderOut:nil];
 	}
 
-	if (returnCode == NSAlertDefaultReturn) {
-		
-		if (sheet == customIntervalWindow) {			
-			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
-		}
-		else {
-			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	if (sheet == customIntervalWindow) {
+		if (returnCode == NSAlertDefaultReturn) [self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
+	}
+	else {
+		NSDictionary *userInfo = [(NSDictionary *)contextInfo autorelease]; //we retained it during the beginSheet… call because Cocoa does not do memory management on void *.
+		if (returnCode == NSAlertDefaultReturn) {
+			long long processId = [[userInfo objectForKey:SPKillIdKey] longLongValue];
 			
-			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
+			NSString *mode = [userInfo objectForKey:SPKillModeKey];
+			if ([mode isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
 			}
-			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
+			else if ([mode isEqualToString:SPKillProcessConnectionMode]) {
 				[self _killProcessConnectionWithId:processId];
+			}
+			else {
+				[NSException raise:NSInternalInconsistencyException format:@"%s: Unhandled branch for mode=%@", __PRETTY_FUNCTION__, mode];
 			}
 		}
 	}
