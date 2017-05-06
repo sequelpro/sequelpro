@@ -59,33 +59,38 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
  */
 - (void) setDataStorage:(SPMySQLStreamingResultStore *)newDataStorage updatingExisting:(BOOL)updateExistingStore
 {
-	SPMySQLStreamingResultStore *oldDataStorage = dataStorage;
-
-	if (oldDataStorage) {
-		// If the table is reloading data, link to the current data store for smoother loads
-		if (updateExistingStore) {
-			[newDataStorage replaceExistingResultStore:oldDataStorage];
-		}
-	}
-
-	[newDataStorage retain];
-
-	NSPointerArray *newEditedRows = [[NSPointerArray alloc] init];
-	NSUInteger newNumberOfColumns = [newDataStorage numberOfFields];
-	BOOL *newUnloadedColumns = calloc(newNumberOfColumns, sizeof(BOOL));
-	for (NSUInteger i = 0; i < newNumberOfColumns; i++) {
-		newUnloadedColumns[i] = NO;
-	}
+	BOOL *oldUnloadedColumns;
+	NSPointerArray *oldEditedRows;
+	SPMySQLStreamingResultStore *oldDataStorage;
 	
-	BOOL *oldUnloadedColumns = unloadedColumns;
-	NSPointerArray *oldEditedRows = editedRows;
 	@synchronized(self) {
+		oldDataStorage = dataStorage;
+
+		if (oldDataStorage) {
+			// If the table is reloading data, link to the current data store for smoother loads
+			if (updateExistingStore) {
+				[newDataStorage replaceExistingResultStore:oldDataStorage];
+			}
+		}
+
+		[newDataStorage retain];
+
+		NSPointerArray *newEditedRows = [[NSPointerArray alloc] init];
+		NSUInteger newNumberOfColumns = [newDataStorage numberOfFields];
+		BOOL *newUnloadedColumns = calloc(newNumberOfColumns, sizeof(BOOL));
+		for (NSUInteger i = 0; i < newNumberOfColumns; i++) {
+			newUnloadedColumns[i] = NO;
+		}
+
+		oldUnloadedColumns = unloadedColumns;
+		oldEditedRows = editedRows;
 		dataStorage = newDataStorage;
 		numberOfColumns = newNumberOfColumns;
 		unloadedColumns = newUnloadedColumns;
 		editedRowCount = 0;
 		editedRows = newEditedRows;
 	}
+	
 	free(oldUnloadedColumns);
 	[oldEditedRows release];
 	[oldDataStorage release];
@@ -509,6 +514,10 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 - (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore
 {
 	@synchronized(self) {
+		if(resultStore != dataStorage) {
+			NSLog(@"%s: received delegate callback from an unknown result store %p (expected: %p). Ignored!", __PRETTY_FUNCTION__, resultStore, dataStorage);
+			return;
+		}
 		[editedRows setCount:(NSUInteger)[resultStore numberOfRows]];
 		editedRowCount = [editedRows count];
 	}
