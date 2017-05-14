@@ -172,7 +172,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		usedQuery = [[NSString alloc] initWithString:@""];
 
 		tableLoadTimer = nil;
-		tableLoadingCondition = [NSCondition new];
 
 		blackColor = [NSColor blackColor];
 		lightGrayColor = [NSColor lightGrayColor];
@@ -1056,11 +1055,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initTableLoadTimer];
 
-	[tableLoadingCondition lock];
-	while (![tableValues dataDownloaded]) {
-		[tableLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	}
-	[tableLoadingCondition unlock];
+	[tableValues awaitDataDownloaded];
+
 	tableRowsCount = [tableValues count];
 
 	// If the final column autoresize wasn't performed, perform it
@@ -1265,10 +1261,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	if ([tableValues dataDownloaded]) {
-		[tableLoadingCondition lock];
-		[tableLoadingCondition signal];
 		[self clearTableLoadTimer];
-		[tableLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
@@ -4226,7 +4219,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if(fieldEditor) SPClear(fieldEditor);
 
 	[self clearTableLoadTimer];
-	SPClear(tableLoadingCondition);
 	SPClear(tableValues);
 	pthread_mutex_destroy(&tableValuesLock);
 	SPClear(dataColumns);
