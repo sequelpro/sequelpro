@@ -159,11 +159,13 @@ end_cleanup:
 	if (timeout > 0) pingTimeout = timeout;
 
 	// Set up a struct containing details the ping task will need
-	SPMySQLConnectionPingDetails *pingDetails = malloc(sizeof(SPMySQLConnectionPingDetails));
-	pingDetails->mySQLConnection = mySQLConnection;
-	pingDetails->keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess;
-	pingDetails->keepAlivePingThreadActivePointer = &keepAlivePingThreadActive;
-	pingDetails->parentId = self;
+	// we can do this on the stack since this method makes sure to outlive the ping thread
+	SPMySQLConnectionPingDetails pingDetails = {
+		.mySQLConnection = mySQLConnection,
+		.keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess,
+		.keepAlivePingThreadActivePointer = &keepAlivePingThreadActive,
+		.parentId = self
+	};
 
 	// Create a pthread for the ping
 	pthread_t keepAlivePingThread_t;
@@ -171,7 +173,7 @@ end_cleanup:
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, pingDetails);
+	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, &pingDetails);
 
 	// Record the ping start time
 	pingStartTime_t = mach_absolute_time();
@@ -200,13 +202,12 @@ end_cleanup:
 		}
 	} while (keepAlivePingThreadActive);
 	
-	//wait for thread to go away, otherwise our free() below might run before _pingThreadCleanup()
+	//wait for thread to go away, otherwise pingDetails may go away before _pingThreadCleanup() finishes
 	pthread_join(keepAlivePingThread_t, NULL);
 
 	// Clean up
 	keepAlivePingThread_t = NULL;
 	pthread_attr_destroy(&attr);
-	free(pingDetails);
 
     // Unlock the connection
 	[self _unlockConnection];
