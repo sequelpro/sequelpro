@@ -81,6 +81,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 @interface SPTableContent ()
 
 - (BOOL)cancelRowEditing;
+- (void)documentWillClose:(NSNotification *)notification;
 
 @end
 
@@ -292,6 +293,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(documentWillClose:)
+	                                             name:SPDocumentWillCloseNotification
+	                                           object:tableDocumentInstance];
 }
 
 #pragma mark -
@@ -4133,6 +4138,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	[filterButton setEnabled:[fieldField isEnabled]];
 	tableRowsSelectable = YES;
+}
+
+//this method is called right before the UI objects are deallocated
+- (void)documentWillClose:(NSNotification *)notification
+{
+	// if a result load is in progress we must stop the timer or it may try to call invalid IBOutlets
+	[self clearTableLoadTimer];
 }
 
 #pragma mark -
