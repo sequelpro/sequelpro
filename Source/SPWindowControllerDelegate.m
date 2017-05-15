@@ -56,15 +56,11 @@
  */
 - (BOOL)windowShouldClose:(id)sender
 {
-	// Iterate through all tabs if more than one tab is opened only otherwise
-	// [... parentTabShouldClose] will be called twice [see self closeTab:(id)sender]
-	if ([[tabView tabViewItems] count] > 1) {
-		for (NSTabViewItem *eachItem in [tabView tabViewItems]) 
-		{
-			SPDatabaseDocument *eachDocument = [eachItem identifier];
-			
-			if (![eachDocument parentTabShouldClose]) return NO;
-		}
+	for (NSTabViewItem *eachItem in [tabView tabViewItems])
+	{
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
+		
+		if (![eachDocument parentTabShouldClose]) return NO;
 	}
 	
 	// Remove global session data if the last window of a session will be closed
@@ -190,6 +186,8 @@
 
 /**
  * Called to determine whether a tab view item can be closed
+ *
+ * Note: This is ONLY called when using the "X" button on the tab itself.
  */
 - (BOOL)tabView:(NSTabView *)aTabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem
 {
