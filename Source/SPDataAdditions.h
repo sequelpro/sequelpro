@@ -43,6 +43,7 @@ typedef NS_OPTIONS(NSUInteger, SPLineTerminator) {
 - (NSData *)dataEncryptedWithKey:(NSData *)aesKey IV:(NSData *)iv;
 - (NSData *)dataDecryptedWithPassword:(NSString *)password;
 - (NSData *)dataDecryptedWithKey:(NSData *)key;
++ (NSData *)dataWithHexString: (NSString *)hex;
 
 - (NSData *)compress;
 - (NSData *)decompress;
