@@ -62,6 +62,14 @@
 		</dict>
 		<dict>
 			<key>MenuLabel</key>
+			<string>NOT IN</string>
+			<key>NumberOfArguments</key>
+			<integer>1</integer>
+			<key>Clause</key>
+			<string>NOT IN (${})</string>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
 			<string>LIKE</string>
 			<key>NumberOfArguments</key>
 			<integer>1</integer>
@@ -172,6 +180,18 @@
 			<string>IN (${})</string>
 			<key>Tooltip</key>
 			<string>IN ([arg])
+
+Do quote strings manually.</string>
+		</dict>
+		<dict>
+			<key>MenuLabel</key>
+			<string>NOT IN</string>
+			<key>NumberOfArguments</key>
+			<integer>1</integer>
+			<key>Clause</key>
+			<string>NOT IN (${})</string>
+			<key>Tooltip</key>
+			<string>NOT IN ([arg])
 
 Do quote strings manually.</string>
 		</dict>
