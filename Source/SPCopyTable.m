@@ -175,6 +175,7 @@ static const NSInteger kBlobAsImageFile = 4;
 
 	// Loop through the rows, adding their descriptive contents
 	NSString *nullString = [prefs objectForKey:SPNullValue];
+	BOOL hexBlobs = [[prefs objectForKey: SPCopyBLOBsAsHex] boolValue];
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 	__block NSUInteger rowCounter = 0;
 
