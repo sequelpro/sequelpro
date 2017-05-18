@@ -343,6 +343,74 @@ uint32_t LimitUInt32(NSUInteger i);
 	return hexString;
 }
 
+static int hexval( char c)
+{
+	if (c >= '0' && c <= '9')
+		return c - '0';
+	if (c >= 'a' && c <= 'f')
+		return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F')
+		return c - 'A' + 10;
+	return -1;
+}
+
+//
+// Interpret a string of hex digits in 'hex' as hex data, and return
+// an NSData representation of the data.  Spaces are permitted within
+// the string and an initial '0x' or '0X' will be ignored. If bad input
+// is detected, nil is returned.
+//
++ (NSData *)dataWithHexString: (NSString *)hex 
+{
+	int n = (int)(hex.length + 1);
+	if (n <= 1)
+		return nil;	// no string or empty string
+	char c, *str = (char *)malloc( n), *d = str, *e;
+	const char *s = hex.UTF8String;
+	//
+	// Copy input while removing spaces and tabs.
+	//
+	do {
+		c = *s++;
+		if (c != ' ' && c != '\t')
+			*d++ = c;
+	} while (c);
+	d = str;
+	if (d[0] == '0' && (d[1] == 'x' || d[1] == 'X')) {
+		d += 2;	// bypass initial 0x or 0X
+	}
+	//
+	// Check for non-hex characters
+	//
+	for (e = d; (c = *e); e++) {
+		if (hexval( c) < 0) {
+			break;
+		}
+	}
+	n = (int)(e - d);	// n = # of hex digits
+	if (*e) {
+		//
+		// Bad hex char at e. Return empty data.  Alternative would be to
+		// convert data up to bad point.
+		//
+		free( str);
+		return nil;
+	}
+	int nbytes = (n % 2) ? (n + 1) / 2 : n / 2;
+	unsigned char *bytes = malloc( nbytes), *b = bytes;
+	if (n % 2) {
+		*b++ = hexval( *d++);
+	}
+	while (d < e) {
+		unsigned char v = (hexval( d[0]) << 4) + hexval( d[1]);
+		*b++ = v;
+		d += 2;
+	}
+	NSData *data = [NSData dataWithBytesNoCopy: bytes length: nbytes freeWhenDone: YES];
+	free( str);
+	return data;
+}
+
 /**
  * Returns the hex representation of the given data.
  */

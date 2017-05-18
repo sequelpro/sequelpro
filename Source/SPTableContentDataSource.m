@@ -33,6 +33,7 @@
 #import "SPDataStorage.h"
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
+#import "SPAlertSheets.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -177,6 +178,11 @@
 			return;
 		}
 		
+		NSInteger columnIndex = [[tableColumn identifier] integerValue];
+		NSDictionary *columnDefinition = [[(id <SPDatabaseContentViewDelegate>)[tableContentView delegate] dataColumnDefinitions] objectAtIndex:columnIndex];
+		
+		NSString *columnType = [columnDefinition objectForKey:@"typegrouping"];
+		
 		// Catch editing events in the row and if the row isn't currently being edited,
 		// start an edit.  This allows edits including enum changes to save correctly.
 		if (isEditingRow && [tableContentView selectedRow] != currentlyEditingRow) {
@@ -192,7 +198,28 @@
 		
 		NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[tableColumn identifier] integerValue]);
 		
-		if (object) {
+		if ([columnType isEqualToString:@"binary"] && [object isKindOfClass: [NSString class]]) {
+			//
+			// This is a binary object being edited as a hex string. (Is there a better
+			// way to detect this case?)
+			// Convert the string back to binary, checking for errors.
+			//
+			NSData *data = [NSData dataWithHexString: object];
+			if (data) {
+				object = data;
+				[tableValues replaceObjectInRow:rowIndex column:[[tableColumn identifier] integerValue] withObject:object];
+			}
+			else {
+				SPOnewayAlertSheet(
+								   NSLocalizedString(@"Error", @"error"),
+								   [tableDocumentInstance parentWindow],
+								   NSLocalizedString(@"Bad hexadecimal data input.", @"Bad hexadecimal data input.")
+								   );
+				return;
+
+			}
+		}
+		else if (object) {
 			// Restore NULLs if necessary
 			if ([object isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue]) {
 				object = [NSNull null];
