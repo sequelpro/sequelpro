@@ -259,7 +259,7 @@
 
 // Data accessors
 - (NSArray *)currentResult;
-- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide;
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide hexBLOBs:(BOOL)hexBLOBs;
 
 // Task interaction
 - (void)startDocumentTaskForTab:(NSNotification *)aNotification;

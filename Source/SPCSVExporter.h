@@ -54,6 +54,7 @@
 	NSString *csvNULLString;
 	
 	BOOL csvOutputFieldNames;
+	BOOL csvExportBlobsAsHex;
 	
 	SPTableData *csvTableData;
 }
@@ -109,5 +110,10 @@
 @property(readwrite, retain) SPTableData *csvTableData;
 
 - (id)initWithDelegate:(NSObject *)exportDelegate;
+
+/**
+ * @property csvExportBlobsAsHex CSV Export blobs as hexadecimal
+ */
+@property(readwrite, assign) BOOL csvExportBlobsAsHex;
 
 @end

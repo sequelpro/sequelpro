@@ -2360,7 +2360,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  * Returns the current result (as shown in table content view) as array, the first object containing the field
  * names as array, the following objects containing the rows as array.
  */ 
-- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide
+- (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide hexBLOBs:(BOOL)hexBLOBs
 {
 	NSInteger i;
 	NSArray *tableColumns;
@@ -2440,7 +2440,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64Encoding]]];
 				} 
 				else {
-					[tempRow addObject:hide ? @"&lt;BLOB&gt;" : [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]];
+					NSString *str;
+					if (hide)
+						str = @"&lt;BLOB&gt;";
+					else if (hexBLOBs) {
+						str = [o dataToHexString];
+					}
+					else {
+						str = [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+					}
+					[tempRow addObject: str];
 				}
 				
 				if(image) [image release];

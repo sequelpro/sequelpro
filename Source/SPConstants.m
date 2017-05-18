@@ -100,6 +100,7 @@ NSString *SPLoadBlobsAsNeeded                    = @"LoadBlobsAsNeeded";
 NSString *SPTableRowCountQueryLevel              = @"TableRowCountQueryLevel";
 NSString *SPTableRowCountCheapSizeBoundary       = @"TableRowCountCheapLookupSizeBoundary";
 NSString *SPNewFieldsAllowNulls                  = @"NewFieldsAllowNulls";
+NSString *SPCopyBLOBsAsHex						 = @"CopyBLOBsAsHex";
 #ifndef SP_CODA
 NSString *SPLimitResults                         = @"LimitResults";
 NSString *SPLimitResultsValue                    = @"LimitResultsValue";

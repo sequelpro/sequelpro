@@ -197,7 +197,11 @@ static const NSInteger kBlobAsImageFile = 4;
 					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
 					if(withBlobHandling == kBlobInclude) {
-						NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
+						NSString *displayString;
+						if (hexBlobs)
+							displayString = [[cellData dataToHexString] copy];
+						else
+							displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
 						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
 						if (displayString) {
 							[result appendFormat:@"%@\t", displayString];

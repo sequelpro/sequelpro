@@ -112,6 +112,7 @@
 	IBOutlet NSComboBox *exportCSVFieldsEscapedField;
 	IBOutlet NSComboBox *exportCSVLinesTerminatedField;
 	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
+	IBOutlet NSButton *exportCSVBlobsAsHexidecimalCheck;
 	
 	// XML
 	IBOutlet NSPopUpButton *exportXMLFormatPopUpButton;
