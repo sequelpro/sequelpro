@@ -343,71 +343,137 @@ uint32_t LimitUInt32(NSUInteger i);
 	return hexString;
 }
 
-static int hexval( char c)
+/**
+ * Returns the integer value for a single hex-encoded nibble or -1 for invalid values.
+ * Supported characters: 0-9,a-f,A-F
+ * 
+ * Note: You usually would call this method like ((hexchar2nibble(highByte) << 4) + hexchar2nibble(lowByte)) to decode a single hex-encoded byte.
+ */
+static int hexchar2nibble(char c)
 {
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	if (c >= 'a' && c <= 'f')
-		return c - 'a' + 10;
-	if (c >= 'A' && c <= 'F')
-		return c - 'A' + 10;
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
 	return -1;
 }
 
-//
-// Interpret a string of hex digits in 'hex' as hex data, and return
-// an NSData representation of the data.  Spaces are permitted within
-// the string and an initial '0x' or '0X' will be ignored. If bad input
-// is detected, nil is returned.
-//
-+ (NSData *)dataWithHexString: (NSString *)hex 
+/**
+ * Decodes a sequence of hex digits to raw byte values.
+ * This function is very strict about the allowed inputs and must only be used for validated inputs!
+ *
+ * - If numRawBytes != 0 and inBuffer == NULL or outBuffer == NULL, this will crash
+ * - The hex sequence must ONLY contain chars 0-9,a-f,A-F or the result will be undefined
+ * - The sequence must be padded to have an even length. numRawBytes is the number of bytes AFTER decoding, so inBuffer must be exactly 2x as large
+ * - inBuffer and outBuffer may be the same pointer
+ */
+static void decodeValidHexSequence(const char *inBuffer,uint8_t *outBuffer, NSUInteger numRawBytes)
 {
-	int n = (int)(hex.length + 1);
-	if (n <= 1)
-		return nil;	// no string or empty string
-	char c, *str = (char *)malloc( n), *d = str, *e;
-	const char *s = hex.UTF8String;
-	//
-	// Copy input while removing spaces and tabs.
-	//
-	do {
-		c = *s++;
-		if (c != ' ' && c != '\t')
-			*d++ = c;
-	} while (c);
-	d = str;
-	if (d[0] == '0' && (d[1] == 'x' || d[1] == 'X')) {
-		d += 2;	// bypass initial 0x or 0X
+	NSUInteger outIndex = 0;
+	NSUInteger srcIndex = 0;
+	while (outIndex < numRawBytes) {
+		uint8_t v = (hexchar2nibble(inBuffer[srcIndex]) << 4) + hexchar2nibble(inBuffer[srcIndex+1]);
+		outBuffer[outIndex++] = v;
+		srcIndex += 2;
 	}
-	//
-	// Check for non-hex characters
-	//
-	for (e = d; (c = *e); e++) {
-		if (hexval( c) < 0) {
-			break;
+}
+
+/**
+ * Interpret a string of hex digits in 'hex' as hex data, and return
+ * an NSData representation of the data.  Spaces are permitted within
+ * the string and an initial '0x' will be ignored. If bad input
+ * is detected, nil is returned.
+ *
+ * Alternatively the MySQL-style X'val' syntax is also supported, 
+ * with the same restrictions as in MySQL:
+ * - val must always be an even number of characters
+ * - val cannot contain whitespace (whitespace before/after is ok)
+ * - The leading x is case-INsensitive
+ */
++ (NSData *)dataWithHexString:(NSString *)hex
+{
+	if(!hex) return nil; // no string
+	const char *sourceBytes = [hex UTF8String];
+	
+	size_t length = strlen(sourceBytes); // keep in mind that [hex length] is the number of Unicode characters, not the number of bytes
+	if (length < 1) return [NSData data];	// empty string
+
+	NSUInteger srcIndex = 0;
+	NSData *data = nil;
+	NSUInteger nbytes;
+	
+	//skip leading whitespace (in order to properly check for leading "0x")
+	while(srcIndex < length && (sourceBytes[srcIndex] == ' ' || sourceBytes[srcIndex] == '\t')) srcIndex++;
+
+	// bypass initial 0x
+	if(srcIndex+1 < length && sourceBytes[srcIndex] == '0' && sourceBytes[srcIndex+1] == 'x' ) {
+		srcIndex += 2;
+	}
+	//check for mysql syntax
+	else if(srcIndex+2 < length && (sourceBytes[srcIndex] == 'x' || sourceBytes[srcIndex] == 'X') && sourceBytes[srcIndex+1] == '\'') {
+		srcIndex += 2;
+		//look for the terminating quote
+		NSUInteger startIndex = srcIndex;
+		NSUInteger endIndex = startIndex; //startIndex points to the first character inside the quotes, which may already be the terminating quote
+		while(endIndex < length) {
+			char c = sourceBytes[endIndex];
+			//if we've hit the terminator, verify that only whitespace follows and stop reading
+			if(c == '\'') {
+				NSUInteger afterIndex = endIndex+1;
+				while (afterIndex < length) {
+					c = sourceBytes[afterIndex++];
+					if(c != ' ' && c != '\t') return nil;
+				}
+				break;
+			}
+			endIndex++;
+			// Check for non-hex characters
+			if (hexchar2nibble(c) < 0) return nil;
 		}
+		// Check for unterminated sequence and uneven number of bytes
+		NSUInteger n = endIndex - startIndex;
+		if(endIndex == length || ((n % 2) != 0)) return nil;
+		// shortcut
+		if(n == 0) return [NSData data];
+		//looks good, create the output buffer and decode
+		nbytes = n / 2;
+		unsigned char *outBuf = malloc(nbytes);
+		decodeValidHexSequence(&sourceBytes[startIndex], outBuf, nbytes);
+		return [NSData dataWithBytesNoCopy:outBuf length:nbytes freeWhenDone:YES];
 	}
-	n = (int)(e - d);	// n = # of hex digits
-	if (*e) {
-		//
-		// Bad hex char at e. Return empty data.  Alternative would be to
-		// convert data up to bad point.
-		//
-		free( str);
-		return nil;
+	
+	// Copy input while removing spaces and tabs.
+	char *trimmedFull = (char *)malloc(length + 1);
+	char *trimmed = (trimmedFull + 1); //we'll use the first byte in case we have to fill in a leading '0'
+	NSUInteger trimIndex = 0;
+	NSUInteger n = 0; // n = # of hex digits
+	while(srcIndex < length) {
+		char c = sourceBytes[srcIndex++];
+		if(c == ' ' || c == '\t') continue;
+		trimmed[trimIndex++] = c;
+		if(!c) break;
+		n++;
+		// Check for non-hex characters
+		if (hexchar2nibble(c) < 0) goto fail_cleanup;
 	}
-	int nbytes = (n % 2) ? (n + 1) / 2 : n / 2;
-	unsigned char *bytes = malloc( nbytes), *b = bytes;
-	if (n % 2) {
-		*b++ = hexval( *d++);
+	//shortcut
+	if(n == 0) {
+		data = [NSData data];
+		goto fail_cleanup;
 	}
-	while (d < e) {
-		unsigned char v = (hexval( d[0]) << 4) + hexval( d[1]);
-		*b++ = v;
-		d += 2;
+
+	BOOL isEven = ((n % 2) == 0);
+	nbytes = !isEven ? (n + 1) / 2 : n / 2; //adjust for cases where "0aff" is written as "aff" (e.g.)
+	if(!isEven) {
+		trimmed--;
+		trimmed[0] = '0';
 	}
-	NSData *data = [NSData dataWithBytesNoCopy: bytes length: nbytes freeWhenDone: YES];
-	free( str);
+	
+	//we'll just decode the data in-place since the raw values have to be shorter by definition, anyway
+	decodeValidHexSequence(trimmed, (uint8_t *)trimmedFull, nbytes);
+	return [NSData dataWithBytesNoCopy:trimmedFull length:nbytes freeWhenDone:YES];
+	
+fail_cleanup:
+	free(trimmedFull);
 	return data;
 }
 
