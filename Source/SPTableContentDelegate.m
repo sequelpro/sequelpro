@@ -511,10 +511,10 @@
 			} 
 			else {
 				[cell setTextColor:blackColor];
-			}
-			
-			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+				
+				if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
+					[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+				}
 			}
 
 			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
