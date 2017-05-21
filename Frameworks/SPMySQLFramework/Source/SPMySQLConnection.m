@@ -668,7 +668,26 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 			theSSLCiphers = [sslCipherList UTF8String];
 		}
 
+		// Calling mysql_ssl_set() to libmysqlclient only means that connecting with SSL would be nice.
+		// If the server doesn't support SSL though, it will *silently* fall back to plaintext and in the worst case even transmit
+		// the password in cleartext.
+		//
+		// Setting MYSQL_OPT_SSL_MODE is required, to actually make it abort the connection if the server doesn't signal SSL support.
+		//
+		//   mysql 5.5.55+
+		//   mysql 5.6.36+
+		//   mysql 5.7.11+ (5.7.3 - 5.7.10 with a different name)
+		//   mysql 8.0+
 		mysql_ssl_set(theConnection, theSSLKeyFilePath, theSSLCertificatePath, theCACertificatePath, NULL, theSSLCiphers);
+		enum mysql_ssl_mode opt_ssl_mode = SSL_MODE_REQUIRED;
+		if(mysql_options(theConnection, MYSQL_OPT_SSL_MODE, (void *)&opt_ssl_mode)) {
+			if(isMaster) {
+				[self _updateLastErrorMessage:@"libmysqlclient is missing support for MYSQL_OPT_SSL_MODE"];
+				[self _updateLastSqlstate:@"HY000"];
+				[self _updateLastErrorID:2026];
+			}
+			return NULL;
+		}
 	}
 
 	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, [self clientFlags]);
