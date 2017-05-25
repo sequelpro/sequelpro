@@ -520,7 +520,7 @@
 				BOOL tableNameInTokens = NO;
 				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:SPFileNameTableTokenName]) tableNameInTokens = YES;
 				}
 				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}
@@ -582,7 +582,7 @@
 				BOOL tableNameInTokens = NO;
 				NSArray *representedObjects = [exportCustomFilenameTokenField objectValue];
 				for (id representedObject in representedObjects) {
-					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:NSLocalizedString(@"table", @"table")]) tableNameInTokens = YES;
+					if ([representedObject isKindOfClass:[SPExportFileNameTokenObject class]] && [[representedObject tokenId] isEqualToString:SPFileNameTableTokenName]) tableNameInTokens = YES;
 				}
 				[exportFilename setString:(tableNameInTokens ? exportFilename : [exportFilename stringByAppendingFormat:@"_%@", table])];
 			}
