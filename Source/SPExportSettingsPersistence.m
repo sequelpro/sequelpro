@@ -519,7 +519,8 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 		@"CSVFieldsWrapped":      [exportCSVFieldsWrappedField stringValue],
 		@"CSVLinesTerminated":    [exportCSVLinesTerminatedField stringValue],
 		@"CSVFieldsEscaped":      [exportCSVFieldsEscapedField stringValue],
-		@"CSVNULLValuesAsText":   [exportCSVNULLValuesAsTextField stringValue]
+		@"CSVNULLValuesAsText":   [exportCSVNULLValuesAsTextField stringValue],
+		@"CSVExportBlobsAsHex":	  IsOn(exportCSVBlobsAsHexidecimalCheck)
 	};
 }
 
@@ -535,6 +536,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	if((o = [settings objectForKey:@"CSVLinesTerminated"]))    [exportCSVLinesTerminatedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVFieldsEscaped"]))      [exportCSVFieldsEscapedField setStringValue:o];
 	if((o = [settings objectForKey:@"CSVNULLValuesAsText"]))   [exportCSVNULLValuesAsTextField setStringValue:o];
+	if((o = [settings objectForKey:@"CSVExportBlobsAsHex"]))   SetOnOff(o, exportCSVBlobsAsHexidecimalCheck);
 }
 
 - (NSDictionary *)dotSettings

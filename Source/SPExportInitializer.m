@@ -126,7 +126,7 @@
 	switch (exportSource) 
 	{
 		case SPFilteredExport:
-			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO];
+			dataArray = [tableContentInstance currentDataResultWithNULLs:YES hideBLOBs:NO hexBLOBs: [exportCSVBlobsAsHexidecimalCheck state]];
 			break;
 		case SPQueryExport:
 			dataArray = [customQueryInstance currentDataResultWithNULLs:YES truncateDataFields:NO];
@@ -505,6 +505,7 @@
 	[csvExporter setCsvLineEndingString:[exportCSVLinesTerminatedField stringValue]];
 	[csvExporter setCsvEscapeString:[exportCSVFieldsEscapedField stringValue]];
 	[csvExporter setCsvNULLString:[exportCSVNULLValuesAsTextField stringValue]];
+	[csvExporter setCsvExportBlobsAsHex:[exportCSVBlobsAsHexidecimalCheck state]];
 		
 	// If required create separate files
 	if (exportSource == SPTableExport && [self exportToMultipleFiles]) {

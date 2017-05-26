@@ -48,6 +48,7 @@
 @synthesize csvLineEndingString;
 @synthesize csvNULLString;
 @synthesize csvTableData;
+@synthesize csvExportBlobsAsHex;
 
 /**
  * Initialise an instance of SPCSVExporter using the supplied delegate.

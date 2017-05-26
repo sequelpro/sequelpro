@@ -313,6 +313,7 @@ extern NSString *SPLoadBlobsAsNeeded;
 extern NSString *SPTableRowCountQueryLevel;
 extern NSString *SPTableRowCountCheapSizeBoundary;
 extern NSString *SPNewFieldsAllowNulls;
+extern NSString *SPCopyBLOBsAsHex;
 extern NSString *SPLimitResults;
 extern NSString *SPLimitResultsValue;
 extern NSString *SPNullValue;
