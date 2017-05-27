@@ -58,6 +58,9 @@
 // Table control
 - (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;
 
+// Loading queries
+- (void) viewCustomQuery:(id)sender withString:(NSString*)query;
+
 #ifndef SP_CODA /* method decls */
 - (NSView *)databaseView;
 #endif

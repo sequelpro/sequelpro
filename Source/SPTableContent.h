@@ -69,6 +69,7 @@
 	IBOutlet id compareField;
 	IBOutlet id argumentField;
 	IBOutlet id filterButton;
+	IBOutlet id queryButton;
 	IBOutlet id addButton;
 	IBOutlet id duplicateButton;
 	IBOutlet id removeButton;
@@ -229,6 +230,7 @@
 - (IBAction)reloadTable:(id)sender;
 - (void)reloadTableTask;
 - (IBAction)filterTable:(id)sender;
+- (IBAction)goToQuery:(id)sender;
 - (void)filterTableTask;
 - (IBAction)toggleFilterField:(id)sender;
 - (void)setUsedQuery:(NSString *)query;

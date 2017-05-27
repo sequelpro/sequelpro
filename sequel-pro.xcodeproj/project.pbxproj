@@ -522,6 +522,8 @@
 		C9F92710162D38D70051CB2E /* toolbar-switch-to-table-info@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F9270F162D38D70051CB2E /* toolbar-switch-to-table-info@2x.png */; };
 		C9F92712162D39E60051CB2E /* toolbar-switch-to-browse.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F92711162D39E60051CB2E /* toolbar-switch-to-browse.png */; };
 		C9F92714162D39FE0051CB2E /* toolbar-switch-to-browse@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C9F92713162D39FE0051CB2E /* toolbar-switch-to-browse@2x.png */; };
+		E935CDCF1ED9F30E00FDBF23 /* button_query.png in Resources */ = {isa = PBXBuildFile; fileRef = E935CDCD1ED9F30E00FDBF23 /* button_query.png */; };
+		E935CDD01ED9F30E00FDBF23 /* button_query@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E935CDCE1ED9F30E00FDBF23 /* button_query@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1352,6 +1354,8 @@
 		C9F9270F162D38D70051CB2E /* toolbar-switch-to-table-info@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-info@2x.png"; sourceTree = "<group>"; };
 		C9F92711162D39E60051CB2E /* toolbar-switch-to-browse.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-browse.png"; sourceTree = "<group>"; };
 		C9F92713162D39FE0051CB2E /* toolbar-switch-to-browse@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-browse@2x.png"; sourceTree = "<group>"; };
+		E935CDCD1ED9F30E00FDBF23 /* button_query.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = button_query.png; sourceTree = "<group>"; };
+		E935CDCE1ED9F30E00FDBF23 /* button_query@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "button_query@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2235,6 +2239,8 @@
 				C9C9943C1678A117001F5DA8 /* button_pane_hide@2x.png */,
 				C9C994431678A5CD001F5DA8 /* button_pane_show.png */,
 				C9C994441678A5CD001F5DA8 /* button_pane_show@2x.png */,
+				E935CDCD1ED9F30E00FDBF23 /* button_query.png */,
+				E935CDCE1ED9F30E00FDBF23 /* button_query@2x.png */,
 				C9AD7C7D167619B400234EEE /* button_refresh.png */,
 				C9AD7C7E167619B400234EEE /* button_refresh@2x.png */,
 				582E942516835FAE003459FD /* button_remove.png */,
@@ -3069,6 +3075,8 @@
 				BCB56197106F893F00167321 /* ContentFilters.plist in Resources */,
 				BCB5619B106F8A1B00167321 /* EditorQuickLookTypes.plist in Resources */,
 				BC675A17107203BA00C5ACD4 /* ContentFilterManager.xib in Resources */,
+				E935CDCF1ED9F30E00FDBF23 /* button_query.png in Resources */,
+				E935CDD01ED9F30E00FDBF23 /* button_query@2x.png in Resources */,
 				BC65C3B2107CE3EE003F7B02 /* ImportAccessory.xib in Resources */,
 				582A05A9108A5CCF0027D42B /* ProgressIndicatorLayer.xib in Resources */,
 				174CE11E10AB80B5008F892B /* DatabaseProcessList.xib in Resources */,

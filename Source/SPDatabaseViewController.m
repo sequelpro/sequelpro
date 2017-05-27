@@ -165,6 +165,14 @@
 	[prefs setInteger:SPQueryEditorViewMode forKey:SPLastViewMode];
 }
 
+- (void) viewCustomQuery:(id)sender withString:(NSString*)query {
+	[self viewQuery:sender];
+	[customQueryInstance doPerformLoadQueryService:query];
+	[NSTimer scheduledTimerWithTimeInterval:0.1 target:[NSBlockOperation blockOperationWithBlock:^{
+		[customQueryInstance doPerformQueryService:query];
+	}] selector:@selector(main) userInfo:nil repeats:NO];
+}
+
 - (IBAction)viewStatus:(id)sender
 {
 	// Cancel the selection if currently editing a view and unable to save
