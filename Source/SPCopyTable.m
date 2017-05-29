@@ -184,6 +184,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
+	BOOL hexBlobs = [prefs boolForKey:SPDisplayBinaryDataAsHex];
 	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		for (NSUInteger c = 0; c < numColumns; c++ ) {
 			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -197,13 +198,12 @@ static const NSInteger kBlobAsImageFile = 4;
 					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
 					if(withBlobHandling == kBlobInclude) {
-						BOOL hexBlobs = [prefs boolForKey:SPDisplayBinaryDataAsHex];
 						NSString *displayString;
 						if (hexBlobs)
 							displayString = [[NSString alloc] initWithFormat:@"0x%@", [cellData dataToHexString]];
 						else
 							displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
-						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSISOLatin1StringEncoding];
 						if (displayString) {
 							[result appendFormat:@"%@\t", displayString];
 							[displayString release];
@@ -320,6 +320,7 @@ static const NSInteger kBlobAsImageFile = 4;
 		[fm createDirectoryAtPath:tmpBlobFileDirectory withIntermediateDirectories:YES attributes:nil error:nil];
 	}
 
+	BOOL hexBlobs = [prefs boolForKey:SPDisplayBinaryDataAsHex];
 	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		for (NSUInteger c = 0; c < numColumns; c++ ) {
 			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -333,8 +334,12 @@ static const NSInteger kBlobAsImageFile = 4;
 					[result appendFormat:@"\"%@\",", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:[NSData class]]) {
 					if(withBlobHandling == kBlobInclude) {
-						NSString *displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
-						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+						NSString *displayString;
+						if (hexBlobs)
+							displayString = [[NSString alloc] initWithFormat:@"0x%@", [cellData dataToHexString]];
+						else
+							displayString = [[NSString alloc] initWithData:cellData encoding:[mySQLConnection stringEncoding]];
+						if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSISOLatin1StringEncoding];
 						if (displayString) {
 							[result appendFormat:@"\"%@\",", displayString];
 							[displayString release];
@@ -625,6 +630,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	Class nsDataClass = [NSData class];
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
 	NSStringEncoding connectionEncoding = [mySQLConnection stringEncoding];
+	BOOL hexBlobs = [prefs boolForKey:SPDisplayBinaryDataAsHex];
 	[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		for (NSUInteger c = 0; c < numColumns; c++ ) {
 			id cellData = SPDataStorageObjectAtRowAndColumn(tableStorage, rowIndex, columnMappings[c]);
@@ -637,10 +643,15 @@ static const NSInteger kBlobAsImageFile = 4;
 				else if ([cellData isSPNotLoaded])
 					[result appendFormat:@"%@\t", NSLocalizedString(@"(not loaded)", @"value shown for hidden blob and text fields")];
 				else if ([cellData isKindOfClass:nsDataClass]) {
-					NSString *displayString = [[NSString alloc] initWithData:cellData encoding:connectionEncoding];
-					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSASCIIStringEncoding];
+					NSString *displayString;
+					if (hexBlobs)
+						displayString = [[NSString alloc] initWithFormat:@"0x%@", [cellData dataToHexString]];
+					else
+						displayString = [[NSString alloc] initWithData:cellData encoding:connectionEncoding];
+					if (!displayString) displayString = [[NSString alloc] initWithData:cellData encoding:NSISOLatin1StringEncoding];
 					if (displayString) {
 						[result appendString:displayString];
+						[result appendString:@"\t"];
 						[displayString release];
 					}
 				}
@@ -754,7 +765,6 @@ static const NSInteger kBlobAsImageFile = 4;
 - (NSUInteger)autodetectWidthForColumnDefinition:(NSDictionary *)columnDefinition maxRows:(NSUInteger)rowsToCheck
 {
 	CGFloat columnBaseWidth;
-	id contentString;
 	NSUInteger cellWidth, maxCellWidth, i;
 	NSRange linebreakRange;
 	double rowStep;
@@ -767,6 +777,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	NSUInteger columnIndex = (NSUInteger)[[columnDefinition objectForKey:@"datacolumnindex"] integerValue];
 	NSDictionary *stringAttributes = @{NSFontAttributeName : tableFont};
 	Class spmysqlGeometryData = [SPMySQLGeometryData class];
+	BOOL hexBlobs = [prefs boolForKey:SPDisplayBinaryDataAsHex];
 
 	// Check the number of rows available to check, sampling every n rows
 	if ([tableStorage count] < rowsToCheck)
@@ -784,7 +795,7 @@ static const NSInteger kBlobAsImageFile = 4;
 	for (i = 0; i < rowsToCheck; i += rowStep) {
 
 		// Retrieve part of the cell's content to get widths, topping out at a maximum length
-		contentString =	SPDataStoragePreviewAtRowAndColumn(tableStorage, i, columnIndex, 500);
+		id contentString = SPDataStoragePreviewAtRowAndColumn(tableStorage, i, columnIndex, 500);
 
 		// If the cell hasn't loaded yet, skip processing
 		if (!contentString)
@@ -806,7 +817,10 @@ static const NSInteger kBlobAsImageFile = 4;
 
 			// Otherwise, ensure the cell is represented as a short string
 			if ([contentString isKindOfClass:[NSData class]]) {
-				contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+				if (hexBlobs)
+					contentString = [[NSString alloc] initWithFormat:@"0x%@", [(NSData *)contentString dataToHexString]];
+				else
+					contentString = [contentString shortStringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 			} else if ([(NSString *)contentString length] > 500) {
 				contentString = [contentString substringToIndex:500];
 			}

@@ -30,6 +30,7 @@
 
 #import "SPTableContentDelegate.h"
 #import "SPTableContentFilter.h"
+#import "SPTableContentDataSource.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
@@ -54,7 +55,6 @@
 @interface SPTableContent (SPDeclaredAPI)
 
 - (BOOL)cancelRowEditing;
-- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
 
 @end
 

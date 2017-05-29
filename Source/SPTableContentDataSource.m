@@ -120,7 +120,7 @@
 			
 			if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
 				if ([(NSData *)value length] > 255) {
-					return [NSString stringWithFormat:@"0x%@...", [[(NSData *)value subdataWithRange:NSMakeRange(0, 255)] dataToHexString]];
+					return [NSString stringWithFormat:@"0x%@…", [[(NSData *)value subdataWithRange:NSMakeRange(0, 255)] dataToHexString]];
 				}
 				return [NSString stringWithFormat:@"0x%@", [(NSData *)value dataToHexString]];
 			}

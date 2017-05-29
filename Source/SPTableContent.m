@@ -31,6 +31,7 @@
 
 #import "SPTableContent.h"
 #import "SPTableContentFilter.h"
+#import "SPTableContentDataSource.h"
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableInfo.h"
@@ -2382,7 +2383,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
-	BOOL hexBlobs = [prefs boolForKey: SPDisplayBinaryDataAsHex];
 	// Add rows
 	for (i = 0; i < [self numberOfRowsInTableView:tableContentView]; i++) 
 	{
@@ -2390,7 +2390,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		
 		for (NSTableColumn *aTableColumn in tableColumns) 
 		{
-			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[aTableColumn identifier] integerValue]);
+			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
+			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, columnIndex);
 			
 			if ([o isNSNull]) {
 				[tempRow addObject:includeNULLs ? [NSNull null] : [prefs objectForKey:SPNullValue]];
@@ -2442,15 +2443,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 				} 
 				else {
 					NSString *str;
-					if (hide)
+					if (hide) {
 						str = @"&lt;BLOB&gt;";
-					else if (hexBlobs) {
-						str = [NSString stringWithFormat: @"0x%@", [o dataToHexString]];
+					}
+					else if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
+						str = [NSString stringWithFormat:@"0x%@", [o dataToHexString]];
 					}
 					else {
 						str = [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
 					}
-					[tempRow addObject: str];
+					[tempRow addObject:str];
 				}
 				
 				if(image) [image release];
