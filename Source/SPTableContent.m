@@ -2382,6 +2382,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	
 	[currentResult addObject:[NSArray arrayWithArray:tempRow]];
 
+	BOOL hexBlobs = [prefs boolForKey: SPDisplayBinaryDataAsHex];
 	// Add rows
 	for (i = 0; i < [self numberOfRowsInTableView:tableContentView]; i++) 
 	{
@@ -2440,7 +2441,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64Encoding]]];
 				} 
 				else {
-					[tempRow addObject:hide ? @"&lt;BLOB&gt;" : [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]];
+					NSString *str;
+					if (hide)
+						str = @"&lt;BLOB&gt;";
+					else if (hexBlobs) {
+						str = [NSString stringWithFormat: @"0x%@", [o dataToHexString]];
+					}
+					else {
+						str = [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+					}
+					[tempRow addObject: str];
 				}
 				
 				if(image) [image release];
