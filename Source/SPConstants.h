@@ -389,6 +389,7 @@ extern NSString *SPResetAutoIncrementAfterDeletionOfAllRows;
 extern NSString *SPFavoriteColorList;
 extern NSString *SPDisplayBinaryDataAsHex;
 extern NSString *SPMonospacedFontSize;
+extern NSString *SPDisplayLongTabTitles;
 
 // Hidden Prefs
 extern NSString *SPPrintWarningRowLimit;

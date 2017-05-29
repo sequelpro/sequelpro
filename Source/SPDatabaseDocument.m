@@ -3866,6 +3866,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	SPDatabaseDocument *frontTableDocument = [parentWindowController selectedTableDocument];
 	
 	NSColor *tabColor = nil;
+	bool longTitles = [prefs boolForKey:SPDisplayLongTabTitles];
 
 	// Determine name details
 	NSString *pathName = @"";
@@ -3897,14 +3898,15 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[windowTitle appendString:[self name]];
 
 		// Also add to the non-front tabs if the host is different, not connected, or no db is selected
-		if ([[frontTableDocument name] isNotEqualTo:[self name]] || ![frontTableDocument getConnection] || ![self database]) {
+		if (longTitles || [[frontTableDocument name] isNotEqualTo:[self name]] || ![frontTableDocument getConnection] || ![self database]) {
 			[tabTitle appendString:[self name]];
 		}
 
 		// If a database is selected, add to the window - and other tabs if host is the same but db different or table is not set
 		if ([self database]) {
 			[windowTitle appendFormat:@"/%@", [self database]];
-			if (frontTableDocument == self
+			if (longTitles
+				|| frontTableDocument == self
 				|| ![frontTableDocument getConnection]
 				|| [[frontTableDocument name] isNotEqualTo:[self name]]
 				|| [[frontTableDocument database] isNotEqualTo:[self database]]
@@ -3928,7 +3930,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[parentTabViewItem setColor:tabColor];
 	[parentWindowController updateTabBar];
 	
-	if ([parentWindowController selectedTableDocument] == self) {
+	if (frontTableDocument == self) {
 		[parentWindow setTitle:windowTitle];
 	}
 

@@ -188,6 +188,7 @@ NSString *SPResetAutoIncrementAfterDeletionOfAllRows = @"ResetAutoIncrementAfter
 NSString *SPFavoriteColorList                    = @"FavoriteColorList";
 NSString *SPDisplayBinaryDataAsHex               = @"DisplayBinaryDataAsHex";
 NSString *SPMonospacedFontSize                   = @"MonospacedFontSize";
+NSString *SPDisplayLongTabTitles                 = @"DisplayLongTabTitles";
 
 // Hidden Prefs
 NSString *SPPrintWarningRowLimit                 = @"PrintWarningRowLimit";
