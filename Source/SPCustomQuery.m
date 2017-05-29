@@ -2205,7 +2205,7 @@
 	if(sortField)
 		newOrder = [NSString stringWithFormat:@" ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
 	else
-		newOrder = @"";
+		newOrder = @" ";
 
 	// Remove any comments
 	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
