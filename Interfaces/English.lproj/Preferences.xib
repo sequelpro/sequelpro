@@ -539,7 +539,7 @@ Gw
                 <button misplaced="YES" id="N5e-kW-TkI">
                     <rect key="frame" x="202" y="64" width="360" height="18"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <buttonCell key="cell" type="check" title="Always show host and database name" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="6OP-rw-8Xu">
+                    <buttonCell key="cell" type="check" title="Always show connection and database name" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="6OP-rw-8Xu">
                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                         <font key="font" metaFont="system"/>
                     </buttonCell>
