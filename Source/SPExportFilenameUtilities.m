@@ -293,7 +293,7 @@
 			} 
 			else if ([tokenContent isEqualToString:SPFileNameTimeTokenName]) {
 				[dateFormatter setDateStyle:NSDateFormatterNoStyle];
-				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+				[dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 			}
 			else if ([tokenContent isEqualToString:SPFileNameFavoriteTokenName]) {
