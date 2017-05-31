@@ -66,6 +66,7 @@ mkdir "${DISTTEMP}"
 
 # Copy in the required distribution files
 cp -R "${BUILT_PRODUCTS_DIR}/${TARGET_NAME}${WRAPPER_SUFFIX}" "${DMG_BUILD_PATH}/disttemp"
+ln -s /Applications "${DMG_BUILD_PATH}/disttemp"
 
 # Add a link to the Applications dir
 echo "Add link to /Applications"
