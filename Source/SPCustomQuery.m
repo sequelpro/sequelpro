@@ -2203,73 +2203,20 @@
 	// Order by the column position number to avoid ambiguous name errors if any
 	NSString* newOrder;
 	if(sortField)
-		newOrder = [NSString stringWithFormat:@" ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
+		newOrder = [NSString stringWithFormat:@" /*SP-CUSTOM-ORDER*/ ORDER BY %ld %@ ", (long)([[tableColumn identifier] integerValue]+1), (isDesc)?@"DESC":@"ASC"];
 	else
-		newOrder = @"";
+		newOrder = @" /*SP-CUSTOM-ORDER*/ ";
 
-	// Remove any comments
-	[queryString replaceOccurrencesOfRegex:@"--.*?\n" withString:@""];
-	[queryString replaceOccurrencesOfRegex:@"--.*?$" withString:@""];
-	[queryString replaceOccurrencesOfRegex:@"/\\*(.|\n)*?\\*/" withString:@""];
-
-	// Remove all quoted strings as a temp string to match the correct clauses
 	NSRange matchedRange;
-	NSUInteger i;
-	NSMutableString *tmpString = [NSMutableString stringWithString:queryString];
-	NSMutableString *qq = [NSMutableString string];
-	matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
-	// Replace all "..." with _'s
-	while(matchedRange.length) {
-		[qq setString:@""];
-		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
-		[tmpString replaceCharactersInRange:matchedRange withString:qq];
-		[tmpString flushCachedRegexData];
-		matchedRange = [tmpString rangeOfRegex:@"\"(?:[^\"\\\\]*+|\\\\.)*\""];
+	if ([queryString isMatchedByRegex:@"\\s+\\/\\*SP-CUSTOM-ORDER\\*\\/.*"])
+	{
+		// Only change custom sort order on existing wrapped query.
+		matchedRange = [queryString rangeOfRegex:@"\\s+\\/\\*SP-CUSTOM-ORDER\\*\\/.*"];
+		[queryString replaceCharactersInRange:matchedRange withString:newOrder];
+	} else {
+		// Wrap original query and select from it using custom sort order.
+		queryString = [NSString stringWithFormat:@"SELECT * FROM (%@) `SP-ORIGINAL` %@", queryString, newOrder];
 	}
-	// Replace all '...' with _'s
-	matchedRange = [tmpString rangeOfRegex:@"'(?:[^'\\\\]*+|\\\\.)*'"];
-	while(matchedRange.length) {
-		[qq setString:@""];
-		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
-		[tmpString replaceCharactersInRange:matchedRange withString:qq];
-		[tmpString flushCachedRegexData];
-		matchedRange = [tmpString rangeOfRegex:@"'(?:[^'\\\\]*+|\\\\.)*'"];
-	}
-	// Replace all `...` with _'s
-	matchedRange = [tmpString rangeOfRegex:@"`(?:[^`\\\\]*+|\\\\.)*`"];
-	while(matchedRange.length) {
-		[qq setString:@""];
-		for(i=0; i<matchedRange.length; i++) [qq appendString:@"_"];
-		[tmpString replaceCharactersInRange:matchedRange withString:qq];
-		[tmpString flushCachedRegexData];
-		matchedRange = [tmpString rangeOfRegex:@"`(?:[^`\\\\]*+|\\\\.)*`"];
-	}
-
-	// Check for an existing ORDER clause (in the temp string),
-	// if so replace it by the new one (in the actual string)
-	// Test for ORDER clause inside a statement
-	if([tmpString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"])
-		{
-			matchedRange = [tmpString rangeOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+(\\s+(DESC|ASC))?(\\s|\\n)+(?=(LI|PR|IN|FO|LO))"];
-			[queryString replaceCharactersInRange:matchedRange withString:newOrder];
-		}
-	// Test for ORDER clause at the end
-	else if ([tmpString isMatchedByRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"])
-		{
-			matchedRange = [tmpString rangeOfRegex:@"(?i)\\s+ORDER\\s+BY\\s+(.|\\n)+((\\s|\\n)+(DESC|ASC))?"];
-			[queryString replaceCharactersInRange:matchedRange withString:newOrder];
-		}
-	// No ORDER clause found
-	// ORDER clause has to be inserted before LIMIT, PROCEDURE, INTO, FOR, or LOCK due to MySQL syntax for SELECT
-	else if([tmpString isMatchedByRegex:@"(?i)\\bSELECT\\b((.|\\n)+?)\\s*(?=(\\sLIMIT\\s|\\sPROCEDURE\\s|\\sINTO\\s|\\sFOR\\s|\\sLOCK\\s))"])
-		{
-			matchedRange = [tmpString rangeOfRegex:@"(?i)\\bSELECT\\b((.|\\n)+?)(?=(\\sLIMIT\\s|\\sPROCEDURE\\s|\\sINTO\\s|\\sFOR\\s|\\sLOCK\\s))" capture:1];
-			NSString *orderHeader = [NSString stringWithFormat:@"%@ %@", [queryString substringWithRange:matchedRange], newOrder];
-			[queryString replaceCharactersInRange:matchedRange withString:orderHeader];
-		}
-	// Otherwise append the new ORDER clause at the end
-	else
-		[queryString appendFormat:@" %@", newOrder];
 
 	reloadingExistingResult = YES;
 	[self storeCurrentResultViewForRestoration];
