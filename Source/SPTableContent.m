@@ -1323,20 +1323,21 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
 
-	// Check whether a save of the current row is required.
-	if (![[self onMainThread] saveRowOnDeselect]) return;
+	// Check whether a save of the current row is required, abort if pending changes couldn't be saved.
+	if ([[self onMainThread] saveRowOnDeselect]) {
 
-	// Save view details to restore safely if possible (except viewport, which will be
-	// preserved automatically, and can then be scrolled as the table loads)
-	[self storeCurrentDetailsForRestoration];
-	[self setViewportToRestore:NSZeroRect];
+		// Save view details to restore safely if possible (except viewport, which will be
+		// preserved automatically, and can then be scrolled as the table loads)
+		[self storeCurrentDetailsForRestoration];
+		[self setViewportToRestore:NSZeroRect];
 
-	// Clear the table data column cache and status (including counts)
-	[tableDataInstance resetColumnData];
-	[tableDataInstance resetStatusData];
+		// Clear the table data column cache and status (including counts)
+		[tableDataInstance resetColumnData];
+		[tableDataInstance resetStatusData];
 
-	// Load the table's data
-	[self loadTable:[tablesListInstance tableName]];
+		// Load the table's data
+		[self loadTable:[tablesListInstance tableName]];
+	}
 
 	[tableDocumentInstance endTask];
 
