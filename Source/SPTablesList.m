@@ -232,7 +232,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = %@ ORDER BY routine_name", [[tableDocumentInstance database] tickQuotedString]];
 			theResult = [mySQLConnection queryString:pQuery];
 			[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
-
+			[theResult setReturnDataAsStrings:YES]; //see tables above
+			
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
 			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] && [theResult numberOfFields] > 3) {
