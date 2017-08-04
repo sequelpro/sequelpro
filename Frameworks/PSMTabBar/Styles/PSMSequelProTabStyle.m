@@ -473,7 +473,11 @@ typedef struct {
 	}
 	
 	// Fill in background of tab bar
-	[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
+	if (tabBar.cells.count != 1) { // multiple tabs - fill with background color
+		[[NSColor colorWithCalibratedWhite:backgroundCalibratedWhite alpha:1.0f] set];
+	} else { // When there's only one tab, the tabs are probably hidden, so use the selected cell's highlight colour as our background colour
+		[[self fillColorForCell:selectedCell] set];
+	}
 	NSRectFill(NSMakeRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height));
 
 	// Draw horizontal line across the top edge
