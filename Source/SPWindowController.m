@@ -160,15 +160,14 @@
  */
 - (IBAction)closeTab:(id)sender
 {
-	// Return if the selected tab shouldn't be closed
-	if (![selectedTableDocument parentTabShouldClose]) return;
-
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
+		// Return if the selected tab shouldn't be closed
+		if (![selectedTableDocument parentTabShouldClose]) return;
 		[tabView removeTabViewItem:[tabView selectedTabViewItem]];
-		
 	} 
 	else {
+		//trying to close the window will itself call parentTabShouldClose for all tabs in windowShouldClose:
 		[[self window] performClose:self];
 	}
 }

@@ -70,6 +70,7 @@
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
+- (void)documentWillClose:(NSNotification *)notification;
 
 @end
 
@@ -3986,6 +3987,10 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(documentWillClose:)
+	                                             name:SPDocumentWillCloseNotification
+	                                           object:tableDocumentInstance];
 
 #ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
@@ -4044,6 +4049,13 @@
 	}
 
 	return value;
+}
+
+//this method is called right before the UI objects are deallocated
+- (void)documentWillClose:(NSNotification *)notification
+{
+	// if a result load is in progress we must stop the timer or it may try to call invalid IBOutlets
+	[self clearQueryLoadTimer];
 }
 
 #pragma mark -

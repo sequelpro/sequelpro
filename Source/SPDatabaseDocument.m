@@ -6503,6 +6503,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (void)dealloc
 {
 	NSAssert([NSThread isMainThread], @"Calling %s from a background thread is not supported!", __func__);
+	
+	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
+	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
 
 	// Unregister observers
 	[self _removePreferenceObservers];
@@ -6517,9 +6520,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	
 	SPClear(nibObjectsToRelease);
-
-	// Tell listeners that this database document is being closed - fixes retain cycles and allows cleanup
-	[[NSNotificationCenter defaultCenter] postNotificationName:SPDocumentWillCloseNotification object:self];
 	
 	SPClear(databaseStructureRetrieval);
 	

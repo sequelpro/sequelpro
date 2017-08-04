@@ -31,6 +31,7 @@
 
 #import "SPTableContent.h"
 #import "SPTableContentFilter.h"
+#import "SPTableContentDataSource.h"
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPTableInfo.h"
@@ -81,6 +82,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 @interface SPTableContent ()
 
 - (BOOL)cancelRowEditing;
+- (void)documentWillClose:(NSNotification *)notification;
 
 @end
 
@@ -172,7 +174,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		usedQuery = [[NSString alloc] initWithString:@""];
 
 		tableLoadTimer = nil;
-		tableLoadingCondition = [NSCondition new];
 
 		blackColor = [NSColor blackColor];
 		lightGrayColor = [NSColor lightGrayColor];
@@ -293,6 +294,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(documentWillClose:)
+	                                             name:SPDocumentWillCloseNotification
+	                                           object:tableDocumentInstance];
 }
 
 #pragma mark -
@@ -1056,11 +1061,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initTableLoadTimer];
 
-	[tableLoadingCondition lock];
-	while (![tableValues dataDownloaded]) {
-		[tableLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	}
-	[tableLoadingCondition unlock];
+	[tableValues awaitDataDownloaded];
+
 	tableRowsCount = [tableValues count];
 
 	// If the final column autoresize wasn't performed, perform it
@@ -1265,10 +1267,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	if ([tableValues dataDownloaded]) {
-		[tableLoadingCondition lock];
-		[tableLoadingCondition signal];
 		[self clearTableLoadTimer];
-		[tableLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
@@ -1324,20 +1323,21 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
 
-	// Check whether a save of the current row is required.
-	if (![[self onMainThread] saveRowOnDeselect]) return;
+	// Check whether a save of the current row is required, abort if pending changes couldn't be saved.
+	if ([[self onMainThread] saveRowOnDeselect]) {
 
-	// Save view details to restore safely if possible (except viewport, which will be
-	// preserved automatically, and can then be scrolled as the table loads)
-	[self storeCurrentDetailsForRestoration];
-	[self setViewportToRestore:NSZeroRect];
+		// Save view details to restore safely if possible (except viewport, which will be
+		// preserved automatically, and can then be scrolled as the table loads)
+		[self storeCurrentDetailsForRestoration];
+		[self setViewportToRestore:NSZeroRect];
 
-	// Clear the table data column cache and status (including counts)
-	[tableDataInstance resetColumnData];
-	[tableDataInstance resetStatusData];
+		// Clear the table data column cache and status (including counts)
+		[tableDataInstance resetColumnData];
+		[tableDataInstance resetStatusData];
 
-	// Load the table's data
-	[self loadTable:[tablesListInstance tableName]];
+		// Load the table's data
+		[self loadTable:[tablesListInstance tableName]];
+	}
 
 	[tableDocumentInstance endTask];
 
@@ -2391,7 +2391,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		
 		for (NSTableColumn *aTableColumn in tableColumns) 
 		{
-			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, [[aTableColumn identifier] integerValue]);
+			NSUInteger columnIndex = [[aTableColumn identifier] integerValue];
+			id o = SPDataStorageObjectAtRowAndColumn(tableValues, i, columnIndex);
 			
 			if ([o isNSNull]) {
 				[tempRow addObject:includeNULLs ? [NSNull null] : [prefs objectForKey:SPNullValue]];
@@ -2442,7 +2443,17 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 						[[image TIFFRepresentationUsingCompression:NSTIFFCompressionJPEG factor:0.01f] base64Encoding]]];
 				} 
 				else {
-					[tempRow addObject:hide ? @"&lt;BLOB&gt;" : [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]]];
+					NSString *str;
+					if (hide) {
+						str = @"&lt;BLOB&gt;";
+					}
+					else if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
+						str = [NSString stringWithFormat:@"0x%@", [o dataToHexString]];
+					}
+					else {
+						str = [o stringRepresentationUsingEncoding:[mySQLConnection stringEncoding]];
+					}
+					[tempRow addObject:str];
 				}
 				
 				if(image) [image release];
@@ -2541,13 +2552,15 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 			@"filterValue": targetFilterValue,
 			@"filterComparison": SPBoxNil(filterComparison)
 		};
-		[self setFiltersToRestore:filterSettings];
-
-		// Attempt to switch to the target table
-		if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
-			NSBeep();
-			[self setFiltersToRestore:nil];
-		}
+		SPMainQSync(^{
+			[self setFiltersToRestore:filterSettings];
+			
+			// Attempt to switch to the target table
+			if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
+				NSBeep();
+				[self setFiltersToRestore:nil];
+			}
+		});
 	}
 
 #ifndef SP_CODA
@@ -4140,6 +4153,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	tableRowsSelectable = YES;
 }
 
+//this method is called right before the UI objects are deallocated
+- (void)documentWillClose:(NSNotification *)notification
+{
+	// if a result load is in progress we must stop the timer or it may try to call invalid IBOutlets
+	[self clearTableLoadTimer];
+}
+
 #pragma mark -
 #pragma mark KVO methods
 
@@ -4224,7 +4244,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if(fieldEditor) SPClear(fieldEditor);
 
 	[self clearTableLoadTimer];
-	SPClear(tableLoadingCondition);
 	SPClear(tableValues);
 	pthread_mutex_destroy(&tableValuesLock);
 	SPClear(dataColumns);

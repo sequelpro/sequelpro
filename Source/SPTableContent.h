@@ -125,7 +125,6 @@
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
-	NSCondition *tableLoadingCondition;
 #ifndef SP_CODA
 	NSMutableArray *nibObjectsToRelease;
 #endif

@@ -770,7 +770,7 @@
 	}
 	else {
 		NSBeep();
-		NSLog(@"Error in sequelpro URL scheme");
+		NSLog(@"Error in sequelpro URL scheme for URL <%@>",url);
 	}
 }
 

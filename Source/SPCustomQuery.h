@@ -57,16 +57,14 @@
 @class SPMySQLConnection;
 @class SPMySQLStreamingResultStore;
 @class SPTextView;
-
-#ifdef SP_CODA
 @class SPDatabaseDocument;
 @class SPTablesList;
-#endif
+
 
 @interface SPCustomQuery : NSObject <NSTableViewDataSource, NSWindowDelegate, NSTableViewDelegate, SPDatabaseContentViewDelegate>
 {
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tablesListInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTablesList *tablesListInstance;
 
 #ifndef SP_CODA
 	IBOutlet id queryFavoritesButton;

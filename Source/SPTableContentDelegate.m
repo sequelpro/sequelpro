@@ -30,6 +30,7 @@
 
 #import "SPTableContentDelegate.h"
 #import "SPTableContentFilter.h"
+#import "SPTableContentDataSource.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
@@ -54,7 +55,6 @@
 @interface SPTableContent (SPDeclaredAPI)
 
 - (BOOL)cancelRowEditing;
-- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
 
 @end
 
@@ -272,13 +272,6 @@
 			
 			// Retrieve the column definition
 			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
-			
-			// TODO: Fix editing of "Display as Hex" columns and remove this (also see above)
-			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-				NSBeep();
-				[SPTooltip showWithObject:NSLocalizedString(@"Disable \"Display Binary Data as Hex\" in the View menu to edit this field.",@"Temporary : Tooltip shown when trying to edit a binary field in table content view while it is displayed using HEX conversion")];
-				return NO;
-			}
 			
 			// Open the editing sheet if required
 			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
@@ -518,10 +511,10 @@
 			} 
 			else {
 				[cell setTextColor:blackColor];
-			}
-			
-			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+				
+				if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
+					[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
+				}
 			}
 
 			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
@@ -686,6 +679,34 @@
 
 #pragma mark -
 #pragma mark Control delegate methods
+
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)editor
+{
+	// Validate hex input
+	// We do this here because the textfield will still be selected with the pending changes if we bail out here
+	if(control == tableContentView) {
+		NSInteger columnIndex = [tableContentView editedColumn];
+		if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
+			// special case: the "NULL" string
+			NSDictionary *column = NSArrayObjectAtIndex(dataColumns, columnIndex);
+			if ([[editor string] isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue]) {
+				return YES;
+			}
+			// This is a binary object being edited as a hex string.
+			// Convert the string back to binary, checking for errors.
+			NSData *data = [NSData dataWithHexString:[editor string]];
+			if (!data) {
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Invalid hexadecimal value", @"table content : editing : error message title when parsing as hex string failed"),
+					[tableDocumentInstance parentWindow],
+					NSLocalizedString(@"A valid hex string may only contain the numbers 0-9 and letters A-F (a-f). It can optionally begin with „0x“ and spaces will be ignored.\nAlternatively the syntax X'val' is supported, too.", @"table content : editing : error message description when parsing as hex string failed")
+				);
+				return NO;
+			}
+		}
+	}
+	return YES;
+}
 
 - (void)controlTextDidChange:(NSNotification *)notification
 {

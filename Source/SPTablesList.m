@@ -232,7 +232,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 			NSString *pQuery = [NSString stringWithFormat:@"SELECT * FROM information_schema.routines WHERE routine_schema = %@ ORDER BY routine_name", [[tableDocumentInstance database] tickQuotedString]];
 			theResult = [mySQLConnection queryString:pQuery];
 			[theResult setDefaultRowReturnType:SPMySQLResultRowAsArray];
-
+			[theResult setReturnDataAsStrings:YES]; //see tables above
+			
 			// Check for mysql errors - if information_schema is not accessible for some reasons
 			// omit adding procedures and functions
 			if(![mySQLConnection queryErrored] && theResult != nil && [theResult numberOfRows] && [theResult numberOfFields] > 3) {
@@ -1370,6 +1371,8 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 /**
  * Select an item using the provided name; returns YES if the
  * supplied name could be selected, or NO if not.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (BOOL)selectItemWithName:(NSString *)theName
 {
@@ -1418,7 +1421,7 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 		}
 	}
 
-	[[tablesListView onMainThread] scrollRowToVisible:[tablesListView selectedRow]];
+	[tablesListView scrollRowToVisible:[tablesListView selectedRow]];
 #endif
 
 	return YES;

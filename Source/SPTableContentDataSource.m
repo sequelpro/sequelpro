@@ -33,6 +33,7 @@
 #import "SPDataStorage.h"
 #import "SPCopyTable.h"
 #import "SPTablesList.h"
+#import "SPAlertSheets.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -119,7 +120,7 @@
 			
 			if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
 				if ([(NSData *)value length] > 255) {
-					return [NSString stringWithFormat:@"0x%@...", [[(NSData *)value subdataWithRange:NSMakeRange(0, 255)] dataToHexString]];
+					return [NSString stringWithFormat:@"0x%@…", [[(NSData *)value subdataWithRange:NSMakeRange(0, 255)] dataToHexString]];
 				}
 				return [NSString stringWithFormat:@"0x%@", [(NSData *)value dataToHexString]];
 			}
@@ -164,10 +165,10 @@
 	}
 #endif
 	if (tableView == tableContentView) {
-		
+		NSInteger columnIndex = [[tableColumn identifier] integerValue];
 		// If the current cell should have been edited in a sheet, do nothing - field closing will have already
 		// updated the field.
-		if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
+		if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:columnIndex checkWithLock:NULL]) {
 			return;
 		}
 		
@@ -190,18 +191,29 @@
 			currentlyEditingRow = rowIndex;
 		}
 		
-		NSDictionary *column = NSArrayObjectAtIndex(dataColumns, [[tableColumn identifier] integerValue]);
+		NSDictionary *column = NSArrayObjectAtIndex(dataColumns, columnIndex);
 		
 		if (object) {
 			// Restore NULLs if necessary
 			if ([object isEqualToString:[prefs objectForKey:SPNullValue]] && [[column objectForKey:@"null"] boolValue]) {
 				object = [NSNull null];
 			}
+			else if ([self cellValueIsDisplayedAsHexForColumn:columnIndex]) {
+				// This is a binary object being edited as a hex string.
+				// Convert the string back to binary.
+				// Error checking is done in -control:textShouldEndEditing:
+				NSData *data = [NSData dataWithHexString:object];
+				if (!data) {
+					NSBeep();
+					return;
+				}
+				object = data;
+			}
 			
-			[tableValues replaceObjectInRow:rowIndex column:[[tableColumn identifier] integerValue] withObject:object];
+			[tableValues replaceObjectInRow:rowIndex column:columnIndex withObject:object];
 		} 
 		else {
-			[tableValues replaceObjectInRow:rowIndex column:[[tableColumn identifier] integerValue] withObject:@""];
+			[tableValues replaceObjectInRow:rowIndex column:columnIndex withObject:@""];
 		}
 	}
 }

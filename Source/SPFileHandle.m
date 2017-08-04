@@ -37,7 +37,7 @@
 // waits until some has been written out.  This can affect speed and memory usage.
 #define SPFH_MAX_WRITE_BUFFER_SIZE 1048576
 
-union SPSomeFileHandle {
+struct SPRawFileHandles {
 	FILE *file;
 	BZFILE *bzfile;
 	gzFile *gzfile;
@@ -46,6 +46,7 @@ union SPSomeFileHandle {
 @interface SPFileHandle ()
 
 - (void)_writeBufferToData;
+- (void)_closeFileHandles;
 
 @end
 
@@ -132,11 +133,11 @@ union SPSomeFileHandle {
 				
 				if (isBzip2) {
 					compressionFormat = SPBzip2Compression;
-					wrappedFile->bzfile = BZ2_bzopen(path, "rb");
+					wrappedFile->bzfile = BZ2_bzReadOpen(NULL, theFile, 0, 0, NULL, 0);
 				}
 			}
-			// Default to plain
-			if(compressionFormat == SPNoCompression) {
+			// We need to save the file handle both in plain and BZ2 format
+			if(compressionFormat == SPNoCompression || compressionFormat == SPBzip2Compression) {
 				wrappedFile->file = theFile;
 			}
 			else {
@@ -231,7 +232,7 @@ union SPSomeFileHandle {
 }
 
 /**
- * Returns the on-disk (raw/uncompressed) length of data read so far.
+ * Returns the on-disk (raw/compressed) length of data read so far.
  * This includes any compression headers within the data, and can be used
  * for progress bars when processing files.
  */
@@ -243,7 +244,7 @@ union SPSomeFileHandle {
 		return gzoffset(wrappedFile->gzfile);
 	}
 	else if(compressionFormat == SPBzip2Compression) {
-		return 0;
+		return ftell(wrappedFile->file);
 	}
 	else {
 		return ftell(wrappedFile->file);
@@ -263,15 +264,7 @@ union SPSomeFileHandle {
 	if (compressionFormat == useCompressionFormat) return;
 
 	// Regardless of the supplied argument, close the current file according to how it was previously opened
-	if (compressionFormat == SPGzipCompression) {
-		gzclose(wrappedFile->gzfile);
-	}
-	else if (compressionFormat == SPBzip2Compression) {
-		BZ2_bzclose(wrappedFile->bzfile);
-	}
-	else {
-		fclose(wrappedFile->file);
-	}
+	[self _closeFileHandles];
 	
 	if (dataWritten) [NSException raise:NSInternalInconsistencyException format:@"Cannot change compression settings when data has already been written."];
 
@@ -282,7 +275,8 @@ union SPSomeFileHandle {
 		gzbuffer(wrappedFile->gzfile, 131072);
 	}
 	else if (compressionFormat == SPBzip2Compression) {
-		wrappedFile->bzfile = BZ2_bzopen(wrappedFilePath, "wb");
+		wrappedFile->file = fopen(wrappedFilePath, "wb");
+		wrappedFile->bzfile = BZ2_bzWriteOpen(NULL, wrappedFile->file, 9, 0, 0);
 	}
 	else {
 		wrappedFile->file = fopen(wrappedFilePath, "wb");
@@ -343,16 +337,7 @@ union SPSomeFileHandle {
 {
 	if (!fileIsClosed) {
 		[self synchronizeFile];
-		
-		if (compressionFormat == SPGzipCompression) {
-			gzclose(wrappedFile->gzfile);
-		}
-		else if (compressionFormat == SPBzip2Compression) {
-			BZ2_bzclose(wrappedFile->bzfile);
-		}
-		else {
-			fclose(wrappedFile->file);
-		}
+		[self _closeFileHandles];
 		
 		if (processingThread) {
 			if ([processingThread isExecuting]) {
@@ -440,6 +425,35 @@ union SPSomeFileHandle {
 	}
 
 	[writePool drain];
+}
+
+/**
+ * Close any open file handles
+ */
+- (void)_closeFileHandles
+{
+	if (compressionFormat == SPGzipCompression) {
+		gzclose(wrappedFile->gzfile);
+		wrappedFile->gzfile = NULL;
+	}
+	else if (compressionFormat == SPBzip2Compression) {
+		if (fileMode == O_RDONLY) {
+			BZ2_bzReadClose(NULL, wrappedFile->bzfile);
+		}
+		else if (fileMode == O_WRONLY) {
+			BZ2_bzWriteClose(NULL, wrappedFile->bzfile, 0, NULL, NULL);
+		}
+		else {
+			[NSException raise:NSInvalidArgumentException format:@"SPFileHandle only supports read-only and write-only file modes"];
+		}
+		fclose(wrappedFile->file);
+		wrappedFile->bzfile = NULL;
+		wrappedFile->file = NULL;
+	}
+	else {
+		fclose(wrappedFile->file);
+		wrappedFile->file = NULL;
+	}
 }
 
 #pragma mark -

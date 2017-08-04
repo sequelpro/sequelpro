@@ -85,9 +85,9 @@
 		if(keepAliveThread) {
 			NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
 		}
+		keepAliveThread = [NSThread currentThread];
 	}
 	
-	keepAliveThread = [NSThread currentThread];
 	[keepAliveThread setName:[NSString stringWithFormat:@"SPMySQL connection keepalive monitor thread (id=%p)", self]];
 
 	// If the maximum number of ping failures has been reached, determine whether to reconnect.
@@ -159,11 +159,13 @@ end_cleanup:
 	if (timeout > 0) pingTimeout = timeout;
 
 	// Set up a struct containing details the ping task will need
-	SPMySQLConnectionPingDetails *pingDetails = malloc(sizeof(SPMySQLConnectionPingDetails));
-	pingDetails->mySQLConnection = mySQLConnection;
-	pingDetails->keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess;
-	pingDetails->keepAlivePingThreadActivePointer = &keepAlivePingThreadActive;
-	pingDetails->parentId = self;
+	// we can do this on the stack since this method makes sure to outlive the ping thread
+	SPMySQLConnectionPingDetails pingDetails = {
+		.mySQLConnection = mySQLConnection,
+		.keepAliveLastPingSuccessPointer = &keepAliveLastPingSuccess,
+		.keepAlivePingThreadActivePointer = &keepAlivePingThreadActive,
+		.parentId = self
+	};
 
 	// Create a pthread for the ping
 	pthread_t keepAlivePingThread_t;
@@ -171,7 +173,7 @@ end_cleanup:
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, pingDetails);
+	pthread_create(&keepAlivePingThread_t, &attr, (void *)&_backgroundPingTask, &pingDetails);
 
 	// Record the ping start time
 	pingStartTime_t = mach_absolute_time();
@@ -200,13 +202,12 @@ end_cleanup:
 		}
 	} while (keepAlivePingThreadActive);
 	
-	//wait for thread to go away, otherwise our free() below might run before _pingThreadCleanup()
+	//wait for thread to go away, otherwise pingDetails may go away before _pingThreadCleanup() finishes
 	pthread_join(keepAlivePingThread_t, NULL);
 
 	// Clean up
 	keepAlivePingThread_t = NULL;
 	pthread_attr_destroy(&attr);
-	free(pingDetails);
 
     // Unlock the connection
 	[self _unlockConnection];
@@ -282,7 +283,24 @@ void _pingThreadCleanup(void *pingDetails)
 	if (keepAliveThread) {
 
 		// Mark the thread as cancelled
-		[keepAliveThread cancel];
+		@synchronized(self) {
+			// the synchronized is neccesary here, because we don't retain keepAliveThread.
+			// If it were ommitted, for example this could happen:
+			//
+			//   this thread                                 keepalive thread
+			//   --------------                              -----------------
+			// 1 fetch value of keepAliveThread to register
+			// 2                                             keepAliveThread = nil
+			// 3                                             [[NSThread currentThread] release]
+			// 4 objc_msgSend() <-- invalid memory accessed
+			//
+			// With synchronized we are guaranteed to either message nil or block the keepAliveThread from exiting
+			// (and thus releasing the NSThread object) until this call finishes.
+			//
+			// We can omit it in the other 2 cases, since keepAliveThread is already volatile and we are only
+			// checking for NULL, not dereferencing it.
+			[keepAliveThread cancel];
+		}
 
 		// Wait inside a time limit of ten seconds for it to exit
 		uint64_t threadCancelStartTime_t = mach_absolute_time();

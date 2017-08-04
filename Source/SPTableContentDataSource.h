@@ -32,4 +32,6 @@
 
 @interface SPTableContent (SPTableContentDataSource)
 
+- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
+
 @end

@@ -162,6 +162,7 @@
 {
 	SPMainQSync(^{
 		[NSApp endSheet:singleProgressSheet];
+		[singleProgressBar setIndeterminate:YES];
 		[singleProgressSheet orderOut:nil];
 		[singleProgressBar stopAnimation:self];
 		[singleProgressBar setMaxValue:100];
@@ -397,16 +398,12 @@
 	fileTotalLength = (NSUInteger)[[[[NSFileManager defaultManager] attributesOfItemAtPath:filename error:NULL] objectForKey:NSFileSize] longLongValue];
 	if (!fileTotalLength) fileTotalLength = 1;
 
-	// If importing a bzipped file, use indeterminate progress bars as no progress is available
-	BOOL useIndeterminate = NO;
-	if ([sqlFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
-
 	SPMainQSync(^{
 		// Reset progress interface
 		[errorsView setString:@""];
 		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing SQL", @"text showing that the application is importing SQL")];
 		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-		[singleProgressBar setIndeterminate:useIndeterminate];
+		[singleProgressBar setIndeterminate:NO];
 		[singleProgressBar setMaxValue:fileTotalLength];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
@@ -787,16 +784,12 @@
 	if (!fileTotalLength) fileTotalLength = 1;
 	fileIsCompressed = ([csvFileHandle compressionFormat] != SPNoCompression);
 
-	// If importing a bzipped file, use indeterminate progress bars as no progress is available
-	BOOL useIndeterminate = NO;
-	if ([csvFileHandle compressionFormat] == SPBzip2Compression) useIndeterminate = YES;
-
 	// Reset progress interface
 	SPMainQSync(^{
 		[errorsView setString:@""];
 		[singleProgressTitle setStringValue:NSLocalizedString(@"Importing CSV", @"text showing that the application is importing CSV")];
 		[singleProgressText setStringValue:NSLocalizedString(@"Reading...", @"text showing that app is reading dump")];
-		[singleProgressBar setIndeterminate:YES];
+		[singleProgressBar setIndeterminate:NO];
 		[singleProgressBar setUsesThreadedAnimation:YES];
 		[singleProgressBar startAnimation:self];
 		
@@ -971,8 +964,8 @@
 
 				// Reset progress interface and open the progress sheet
 				SPMainQSync(^{
-					[singleProgressBar setIndeterminate:useIndeterminate];
 					[singleProgressBar setMaxValue:fileTotalLength];
+					[singleProgressBar setIndeterminate:NO];
 					[singleProgressBar startAnimation:self];
 					[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
 					[singleProgressSheet makeKeyWindow];
@@ -1213,29 +1206,30 @@
 													  document:tableDocumentInstance
                                               notificationName:@"Import Finished"];
 
+	SPMainQSync(^{
+		if(importIntoNewTable) {
 
-	if(importIntoNewTable) {
-
-		// Select the new table
-
-		// Update current database tables 
-		[[tablesListInstance onMainThread] updateTables:self];
-	
-		// Re-query the structure of all databases in the background
-		[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
-
-		// Select the new table
-		[tablesListInstance selectItemWithName:selectedTableTarget];
-
-	} else {
-
-		// If import was done into a new table or the table selected for import is also selected in the content view,
-		// update the content view - on the main thread to avoid crashes.
-		if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
-			[tableDocumentInstance setContentRequiresReload:YES];
+			// Select the new table
+			
+			// Update current database tables
+			[tablesListInstance updateTables:self];
+			
+			// Re-query the structure of all databases in the background
+			[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
+			
+			// Select the new table
+			[tablesListInstance selectItemWithName:selectedTableTarget];
+			
+		} else {
+			
+			// If import was done into a new table or the table selected for import is also selected in the content view,
+			// update the content view - on the main thread to avoid crashes.
+			if ([tablesListInstance tableName] && [selectedTableTarget isEqualToString:[tablesListInstance tableName]]) {
+				[tableDocumentInstance setContentRequiresReload:YES];
+			}
+			
 		}
-
-	}
+	});
 
 }
 

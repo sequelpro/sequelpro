@@ -323,7 +323,8 @@
 			// Store the error state
 			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
 			theErrorID = mysql_errno(mySQLConnection);
-			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+			// sqlstate is always an ASCII string, regardless of charset (but use latin1 anyway as that is less picky about invalid bytes)
+			theSqlstate = _stringForCStringWithEncoding(mysql_sqlstate(mySQLConnection), NSISOLatin1StringEncoding);
 
 			// Prevent retries if the query was cancelled or not a connection error
 			if (lastQueryWasCancelled || ![SPMySQLConnection isErrorIDConnectionError:theErrorID]) {
@@ -382,7 +383,8 @@
 			// Update the error message, if appropriate, to reflect result store errors or overall success
 			theErrorMessage = [self _stringForCString:mysql_error(mySQLConnection)];
 			theErrorID = mysql_errno(mySQLConnection);
-			theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+			// sqlstate is always an ASCII string, regardless of charset (but use latin1 anyway as that is less picky about invalid bytes)
+			theSqlstate = _stringForCStringWithEncoding(mysql_sqlstate(mySQLConnection), NSISOLatin1StringEncoding);
 		} else {
 			theResult = [[SPMySQLEmptyResult alloc] init];
 		}
@@ -735,7 +737,8 @@
 {
 	// If a SQLSTATE wasn't supplied, select one from the connection
 	if(!theSqlstate) {
-		theSqlstate = [self _stringForCString:mysql_sqlstate(mySQLConnection)];
+		// sqlstate is always an ASCII string, regardless of charset (but use latin1 anyway as that is less picky about invalid bytes)
+		theSqlstate = _stringForCStringWithEncoding(mysql_sqlstate(mySQLConnection), NSISOLatin1StringEncoding);
 	}
 
 	// Clear the last SQLSTATE stored on the instance
