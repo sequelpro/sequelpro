@@ -213,7 +213,9 @@ NSString *SPFileNameYearTokenName       = @"year";
 NSString *SPFileNameMonthTokenName      = @"month";
 NSString *SPFileNameDayTokenName        = @"day";
 NSString *SPFileNameTimeTokenName       = @"time";
-NSString *SPFileName24HourTimeTokenName = @"time24";
+NSString *SPFileNameHourTokenName       = @"hour";
+NSString *SPFileNameMinuteTokenName     = @"minute";
+NSString *SPFileNameSecondTokenName     = @"second";
 NSString *SPFileNameFavoriteTokenName   = @"favorite";
 NSString *SPFileNameTableTokenName      = @"table";
 

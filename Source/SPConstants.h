@@ -414,7 +414,9 @@ extern NSString *SPFileNameYearTokenName;
 extern NSString *SPFileNameMonthTokenName;
 extern NSString *SPFileNameDayTokenName;
 extern NSString *SPFileNameTimeTokenName;
-extern NSString *SPFileName24HourTimeTokenName;
+extern NSString *SPFileNameHourTokenName;
+extern NSString *SPFileNameMinuteTokenName;
+extern NSString *SPFileNameSecondTokenName;
 extern NSString *SPFileNameFavoriteTokenName;
 extern NSString *SPFileNameTableTokenName;
 

@@ -126,7 +126,9 @@
 		[SPExportFileNameTokenObject tokenWithId:SPFileNameMonthTokenName],
 		[SPExportFileNameTokenObject tokenWithId:SPFileNameDayTokenName],
 		[SPExportFileNameTokenObject tokenWithId:SPFileNameTimeTokenName],
-		[SPExportFileNameTokenObject tokenWithId:SPFileName24HourTimeTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameHourTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameMinuteTokenName],
+		[SPExportFileNameTokenObject tokenWithId:SPFileNameSecondTokenName],
 		[SPExportFileNameTokenObject tokenWithId:SPFileNameFavoriteTokenName],
 		(tableObject = [SPExportFileNameTokenObject tokenWithId:SPFileNameTableTokenName]),
 		nil
@@ -297,8 +299,14 @@
 				[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
 				[string appendString:[dateFormatter stringFromDate:[NSDate date]]];
 			}
-			else if ([tokenContent isEqualToString:SPFileName24HourTimeTokenName]) {
-				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%H:%M:%S" timeZone:nil locale:nil]];
+			else if ([tokenContent isEqualToString:SPFileNameHourTokenName]) {
+				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%H" timeZone:nil locale:nil]];
+			}
+			else if ([tokenContent isEqualToString:SPFileNameMinuteTokenName]) {
+				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%M" timeZone:nil locale:nil]];
+			}
+			else if ([tokenContent isEqualToString:SPFileNameSecondTokenName]) {
+				[string appendString:[[NSDate date] descriptionWithCalendarFormat:@"%S" timeZone:nil locale:nil]];
 			}
 			else if ([tokenContent isEqualToString:SPFileNameFavoriteTokenName]) {
 				[string appendStringOrNil:[tableDocumentInstance name]];

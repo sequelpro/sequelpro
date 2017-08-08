@@ -133,7 +133,9 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 			SPFileNameMonthTokenName:      NSLocalizedString(@"Month", @"export filename date token"),
 			SPFileNameDayTokenName:        NSLocalizedString(@"Day", @"export filename date token"),
 			SPFileNameTimeTokenName:       NSLocalizedString(@"Time", @"export filename time token"),
-			SPFileName24HourTimeTokenName: NSLocalizedString(@"24-Hour Time", @"export filename time token"),
+			SPFileNameHourTokenName:       NSLocalizedString(@"Hour", @"export filename time token"),
+			SPFileNameMinuteTokenName:     NSLocalizedString(@"Minute", @"export filename time token"),
+			SPFileNameSecondTokenName:     NSLocalizedString(@"Second", @"export filename time token"),
 			SPFileNameFavoriteTokenName:   NSLocalizedString(@"Favorite", @"export filename favorite name token")
 		} retain];
 	}
