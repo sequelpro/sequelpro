@@ -206,15 +206,16 @@ NSString *SPImportClipboardTempFileNamePrefix    = @"/tmp/_SP_ClipBoard_Import_F
 NSString *SPLastExportSettings                   = @"LastExportSettings";
 
 // Export filename tokens
-NSString *SPFileNameDatabaseTokenName = @"database";
-NSString *SPFileNameHostTokenName     = @"host";
-NSString *SPFileNameDateTokenName     = @"date";
-NSString *SPFileNameYearTokenName     = @"year";
-NSString *SPFileNameMonthTokenName    = @"month";
-NSString *SPFileNameDayTokenName      = @"day";
-NSString *SPFileNameTimeTokenName     = @"time";
-NSString *SPFileNameFavoriteTokenName = @"favorite";
-NSString *SPFileNameTableTokenName    = @"table";
+NSString *SPFileNameDatabaseTokenName   = @"database";
+NSString *SPFileNameHostTokenName       = @"host";
+NSString *SPFileNameDateTokenName       = @"date";
+NSString *SPFileNameYearTokenName       = @"year";
+NSString *SPFileNameMonthTokenName      = @"month";
+NSString *SPFileNameDayTokenName        = @"day";
+NSString *SPFileNameTimeTokenName       = @"time";
+NSString *SPFileName24HourTimeTokenName = @"time24";
+NSString *SPFileNameFavoriteTokenName   = @"favorite";
+NSString *SPFileNameTableTokenName      = @"table";
 
 // Misc 
 NSString *SPContentFilters                       = @"ContentFilters";
