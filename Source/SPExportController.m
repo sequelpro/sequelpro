@@ -125,15 +125,16 @@ static const NSString *SPSQLExportDropEnabled       = @"SQLExportDropEnabled";
 		prefs = [NSUserDefaults standardUserDefaults];
 		
 		localizedTokenNames = [@{
-			SPFileNameHostTokenName:     NSLocalizedString(@"Host", @"export filename host token"),
-			SPFileNameDatabaseTokenName: NSLocalizedString(@"Database", @"export filename database token"),
-			SPFileNameTableTokenName:    NSLocalizedString(@"Table", @"table"),
-			SPFileNameDateTokenName:     NSLocalizedString(@"Date", @"export filename date token"),
-			SPFileNameYearTokenName:     NSLocalizedString(@"Year", @"export filename date token"),
-			SPFileNameMonthTokenName:    NSLocalizedString(@"Month", @"export filename date token"),
-			SPFileNameDayTokenName:      NSLocalizedString(@"Day", @"export filename date token"),
-			SPFileNameTimeTokenName:     NSLocalizedString(@"Time", @"export filename time token"),
-			SPFileNameFavoriteTokenName: NSLocalizedString(@"Favorite", @"export filename favorite name token")
+			SPFileNameHostTokenName:       NSLocalizedString(@"Host", @"export filename host token"),
+			SPFileNameDatabaseTokenName:   NSLocalizedString(@"Database", @"export filename database token"),
+			SPFileNameTableTokenName:      NSLocalizedString(@"Table", @"table"),
+			SPFileNameDateTokenName:       NSLocalizedString(@"Date", @"export filename date token"),
+			SPFileNameYearTokenName:       NSLocalizedString(@"Year", @"export filename date token"),
+			SPFileNameMonthTokenName:      NSLocalizedString(@"Month", @"export filename date token"),
+			SPFileNameDayTokenName:        NSLocalizedString(@"Day", @"export filename date token"),
+			SPFileNameTimeTokenName:       NSLocalizedString(@"Time", @"export filename time token"),
+			SPFileName24HourTimeTokenName: NSLocalizedString(@"24-Hour Time", @"export filename time token"),
+			SPFileNameFavoriteTokenName:   NSLocalizedString(@"Favorite", @"export filename favorite name token")
 		} retain];
 	}
 	
