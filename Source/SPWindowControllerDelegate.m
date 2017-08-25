@@ -33,6 +33,8 @@
 #import "SPDatabaseDocument.h"
 #import "SPDatabaseViewController.h"
 #import "SPAppController.h"
+#import "SPConnectionController.h"
+#import "SPFavoritesOutlineView.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
@@ -248,6 +250,15 @@
 	
 	// Check the window and move it to front if it's key (eg for new window creation)
 	if ([[tabBarControl window] isKeyWindow]) [[tabBarControl window] orderFront:self];
+	
+	// workaround bug where "source list" table views are broken in the new window. See https://github.com/sequelpro/sequelpro/issues/2863
+	SPWindowController *newWindowController = tabBarControl.window.windowController;
+	newWindowController.selectedTableDocument.connectionController.favoritesOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleRegular;
+	newWindowController.selectedTableDocument.dbTablesTableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleRegular;
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0)), dispatch_get_main_queue(), ^{
+		newWindowController.selectedTableDocument.dbTablesTableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+		newWindowController.selectedTableDocument.connectionController.favoritesOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+	});
 }
 
 /**
