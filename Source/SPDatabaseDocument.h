@@ -291,6 +291,8 @@
 	int64_t instanceId;
 }
 
+@property (assign) NSTableView *dbTablesTableView;
+
 #ifdef SP_CODA /* ivars */
 @property (assign) SPDatabaseData* databaseDataInstance;
 @property (assign) SPTableData* tableDataInstance;
