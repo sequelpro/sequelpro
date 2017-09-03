@@ -436,8 +436,8 @@ NSString *SPBundleShellVariableSelectedTextRange            = @"SP_SELECTED_TEXT
 NSString *SPBundleShellVariableUsedQueryForTable            = @"SP_USED_QUERY_FOR_TABLE";
 
 #define OWS @"\\s*" /* optional whitespace */
-//                                                CURRENT_TIMESTAMP    [            (           [n]          )    ]
-NSString *SPCurrentTimestampPattern = (@"^" OWS @"CURRENT_TIMESTAMP" @"(?:" OWS @"\\(" OWS @"(\\d*)" OWS @"\\)" @")?" OWS @"$");
+//                                                    CURRENT_TIMESTAMP    [            (           [n]          )    ]
+NSString *SPCurrentTimestampPattern = (@"(?i)^" OWS @"CURRENT_TIMESTAMP" @"(?:" OWS @"\\(" OWS @"(\\d*)" OWS @"\\)" @")?" OWS @"$");
 #undef OWS
 
 // URL scheme
