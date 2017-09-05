@@ -171,9 +171,33 @@ static NSString *DirectoryLocationDomain = @"DirectoryLocationDomain";
 	}
 
 	UniversalDetector *fileEncodingDetector = [[UniversalDetector alloc] init];
-	[fileEncodingDetector analyzeData:[detectorFileHandle readDataOfLength:5000000]];
+	NSData *startData = [detectorFileHandle readDataOfLength:5000000];
+	[fileEncodingDetector analyzeData:startData];
 	detectedEncoding = [fileEncodingDetector encoding];
 	[fileEncodingDetector release];
+	
+	// #2860: NSUnicodeStringEncoding is itself an autodetect encoding, meaning "any UTF16 variant".
+	//        Which means that value is rather useless if we want to pass it to some byte-to-string method later,
+	//        since it may guess wrong again. Nevertheless UniversalDetector may return that "encoding".
+	//
+	//        So, if we have a BOM, let's be exact instead! That wouldn't matter if you try to convert exactly those bytes
+	//        for which you invoked this method, since NSString will itself find the BOM and read the data accordingly,
+	//        but if you do the conversion in chunks, only the first one will have the helping BOM and all following
+	//        chunks may be guessed wrong when using the unspecific NSUnicodeStringEncoding.
+	//
+	//        Apple's implementation for all byte-to-NSString methods can be found in __CFStringDecodeByteStream3()
+	
+	// Note: NSUTF16StringEncoding == NSUnicodeStringEncoding
+	if(detectedEncoding == NSUnicodeStringEncoding && [startData length] >= 2) {
+		const UInt8 *bytes = [startData bytes];
+		if(bytes[0] == 0xFE && bytes[1] == 0xFF) detectedEncoding = NSUTF16BigEndianStringEncoding;
+		else if(bytes[0] == 0xFF && bytes[1] == 0xFE) detectedEncoding = NSUTF16LittleEndianStringEncoding;
+	}
+	else if(detectedEncoding == NSUTF32StringEncoding && [startData length] >= 4) {
+		const UInt8 *bytes = [startData bytes];
+		if(bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0xFE && bytes[3] == 0xFF) detectedEncoding = NSUTF32BigEndianStringEncoding;
+		else if(bytes[0] == 0xFF && bytes[1] == 0xFE && bytes[2] == 0 && bytes[3] == 0) detectedEncoding = NSUTF32LittleEndianStringEncoding;
+	}
 
 	return detectedEncoding;
 }
