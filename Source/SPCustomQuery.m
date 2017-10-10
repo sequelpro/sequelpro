@@ -65,6 +65,7 @@
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
+#import "SPBracketHighlighter.h"
 
 @interface SPCustomQuery (PrivateAPI)
 
@@ -86,6 +87,8 @@
 
 @synthesize runAllButton;
 @synthesize textViewWasChanged;
+@synthesize bracketHighlighter;
+
 
 #pragma mark IBAction methods
 
@@ -2738,6 +2741,11 @@
 	return newSelectedCharRange;
 }
 
+- (BOOL)textView:(NSTextView *)textView shouldChangeTextInRange:(NSRange)affectedCharRange replacementString:(NSString *)replacementString {
+	[self.bracketHighlighter highlightOff];
+	return YES;
+}
+
 /**
  * A notification posted when the selection changes within the text view;
  * used to control the run-currentrun-selection button state and action.
@@ -2775,6 +2783,8 @@
 
 	if (!historyItemWasJustInserted)
 		currentHistoryOffsetIndex = -1;
+	
+	[self.bracketHighlighter bracketHighglight:caretPosition -1 inRange:currentQueryRange];
 
 	// Update the text of the contextual run current/previous/selection button and menu item
 	[self updateContextualRunInterface];
@@ -3995,7 +4005,7 @@
 #ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
 #endif
-
+	self.bracketHighlighter = [[SPBracketHighlighter alloc] initWithTextView:textView];
 }
 
 #pragma mark -

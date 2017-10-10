@@ -167,6 +167,8 @@
 		17F90E481210B42700274C98 /* SPExportFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E471210B42700274C98 /* SPExportFile.m */; };
 		17F90E4B1210B43A00274C98 /* SPExportFileUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */; };
 		17FDB04C1280778B00DBBBC2 /* SPFontPreviewTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */; };
+		1A558B221F8FF98900DEB771 /* SPBracketHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A558B1C1F8FF98900DEB771 /* SPBracketHighlighter.m */; };
+		1A558B231F8FF98900DEB771 /* SPBrackets.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A558B1F1F8FF98900DEB771 /* SPBrackets.m */; };
 		1A564F74237E2E4958CA593A /* SPPillAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A56463D14569A0B56EE8BAC /* SPPillAttachmentCell.m */; };
 		296DC89F0F8FD336002A3258 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 296DC89E0F8FD336002A3258 /* WebKit.framework */; };
 		296DC8B60F909194002A3258 /* MGTemplateEngine.m in Sources */ = {isa = PBXBuildFile; fileRef = 296DC8A70F909194002A3258 /* MGTemplateEngine.m */; };
@@ -920,6 +922,10 @@
 		17F90E4A1210B43A00274C98 /* SPExportFileUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportFileUtilities.m; sourceTree = "<group>"; };
 		17FDB04A1280778B00DBBBC2 /* SPFontPreviewTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFontPreviewTextField.h; sourceTree = "<group>"; };
 		17FDB04B1280778B00DBBBC2 /* SPFontPreviewTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFontPreviewTextField.m; sourceTree = "<group>"; };
+		1A558B1C1F8FF98900DEB771 /* SPBracketHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBracketHighlighter.m; sourceTree = "<group>"; };
+		1A558B1F1F8FF98900DEB771 /* SPBrackets.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPBrackets.m; sourceTree = "<group>"; };
+		1A558B201F8FF98900DEB771 /* SPBracketHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBracketHighlighter.h; sourceTree = "<group>"; };
+		1A558B211F8FF98900DEB771 /* SPBrackets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPBrackets.h; sourceTree = "<group>"; };
 		1A56463D14569A0B56EE8BAC /* SPPillAttachmentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPillAttachmentCell.m; sourceTree = "<group>"; };
 		1A564C0C0FFB444D2E5CA447 /* SPPillAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPillAttachmentCell.h; sourceTree = "<group>"; };
 		296DC89E0F8FD336002A3258 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = /System/Library/Frameworks/WebKit.framework; sourceTree = "<absolute>"; };
@@ -2497,6 +2503,10 @@
 		507FF10E1BBCC4A900104523 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				1A558B201F8FF98900DEB771 /* SPBracketHighlighter.h */,
+				1A558B1C1F8FF98900DEB771 /* SPBracketHighlighter.m */,
+				1A558B211F8FF98900DEB771 /* SPBrackets.h */,
+				1A558B1F1F8FF98900DEB771 /* SPBrackets.m */,
 				507FF1101BBCC4C400104523 /* SPFunctions.h */,
 				507FF1111BBCC57600104523 /* SPFunctions.m */,
 				5089B0251BE714E300E226CD /* SPIdMenu.h */,
@@ -3432,6 +3442,7 @@
 				BC2898F3125F4488001B50E1 /* SPGeometryDataView.m in Sources */,
 				17148565125F5FF500321285 /* SPDatabaseCharacterSets.m in Sources */,
 				1798AB911267924D000D946A /* SPAppleScriptSupport.m in Sources */,
+				1A558B231F8FF98900DEB771 /* SPBrackets.m in Sources */,
 				175EC63512733B36009A7C0F /* SPExportControllerDelegate.m in Sources */,
 				17D38EBC12771A1C00672B13 /* SPTableStructureDelegate.m in Sources */,
 				17D38F701279E23A00672B13 /* SPTableFieldValidation.m in Sources */,
@@ -3449,6 +3460,7 @@
 				17D3DC201281816E002A163A /* SPDatabaseViewController.m in Sources */,
 				17D3C22212859E070047709F /* SPFavoriteNode.m in Sources */,
 				506CE9311A311C6C0039F736 /* SPTableContentFilterController.m in Sources */,
+				1A558B221F8FF98900DEB771 /* SPBracketHighlighter.m in Sources */,
 				17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */,
 				17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */,
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
