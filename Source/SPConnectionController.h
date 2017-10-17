@@ -90,6 +90,9 @@
 	NSString *sslCertificateFileLocation;
 	NSInteger sslCACertFileLocationEnabled;
 	NSString *sslCACertFileLocation;
+
+	// SQL_SAFE_UPDATES variable
+	NSInteger useSafeUpdates;
 	
 	// SSH details
 	NSString *sshHost;
@@ -194,6 +197,7 @@
 @property (readwrite, retain) NSString *socket;
 @property (readwrite, retain) NSString *port;
 @property (readwrite, assign) NSInteger useSSL;
+@property (readwrite, assign) NSInteger useSafeUpdates;
 @property (readwrite, assign) NSInteger colorIndex;
 @property (readwrite, assign) NSInteger sslKeyFileLocationEnabled;
 @property (readwrite, retain) NSString *sslKeyFileLocation;

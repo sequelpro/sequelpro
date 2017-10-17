@@ -316,6 +316,7 @@ NSString *SPFavoriteSSLCertificateFileLocationEnabledKey = @"sslCertificateFileL
 NSString *SPFavoriteSSLCertificateFileLocationKey        = @"sslCertificateFileLocation";
 NSString *SPFavoriteSSLCACertFileLocationEnabledKey      = @"sslCACertFileLocationEnabled";
 NSString *SPFavoriteSSLCACertFileLocationKey             = @"sslCACertFileLocation";
+NSString *SPFavoriteUseSafeUpdatesKey                    = @"useSafeUpdates";
 NSString *SPFavoriteUseCompressionKey                    = @"useCompression";
 NSString *SPConnectionFavoritesChangedNotification       = @"SPConnectionFavoritesChanged";
 

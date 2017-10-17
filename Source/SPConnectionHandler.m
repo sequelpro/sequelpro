@@ -156,6 +156,11 @@ static NSString *SPLocalhostAddress = @"127.0.0.1";
 			[mySQLConnection setSslCipherList:userSSLCipherList];
 		}
 	}
+
+	// Enable SQL_SAFE_UPDATES if set
+	if ([self useSafeUpdates]) {
+		[mySQLConnection setUseSafeUpdates:YES];
+	}
 	
 	if(![self useCompression])
 		[mySQLConnection removeClientFlags:SPMySQLClientFlagCompression];

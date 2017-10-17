@@ -507,6 +507,7 @@ extern NSString *SPFavoriteSSLCertificateFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCertificateFileLocationKey;
 extern NSString *SPFavoriteSSLCACertFileLocationEnabledKey;
 extern NSString *SPFavoriteSSLCACertFileLocationKey;
+extern NSString *SPFavoriteUseSafeUpdatesKey;
 extern NSString *SPFavoriteUseCompressionKey;
 extern NSString *SPConnectionFavoritesChangedNotification;
 
