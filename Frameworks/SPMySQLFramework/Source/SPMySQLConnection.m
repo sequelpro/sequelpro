@@ -1007,10 +1007,10 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 		return;
 	}
 
-	state = SPMySQLDisconnecting;
-
 	// If a query is active, cancel it
 	[self cancelCurrentQuery];
+
+	state = SPMySQLDisconnecting;
 
 	// Allow any pings or cancelled queries  to complete, inside a time limit of ten seconds
 	uint64_t disconnectStartTime_t = mach_absolute_time();
