@@ -437,6 +437,8 @@ static NSString *SPMySQLCommentField          = @"Comment";
 
 /**
  * Returns a dictionary describing the information of the table to be used for printing purposes.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSDictionary *)tableInformationForPrinting
 {

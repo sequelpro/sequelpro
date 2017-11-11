@@ -364,7 +364,7 @@
 	NSString *heading = NSLocalizedString(@"Table Information", @"table information print heading");
 
 	[engine setObject:connection forKey:@"c"];
-	[engine setObject:[extendedTableInfoInstance tableInformationForPrinting] forKey:@"i"];
+	[engine setObject:[[extendedTableInfoInstance onMainThread] tableInformationForPrinting] forKey:@"i"];
 
 	[printData setObject:heading forKey:@"heading"];
 	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
