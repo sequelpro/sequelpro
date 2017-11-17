@@ -840,7 +840,12 @@
 		
 		// Add the type and length information as appropriate
 		if ([column objectForKey:@"length"]) {
-			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], [column objectForKey:@"length"]];
+			NSString *length = [column objectForKey:@"length"];
+			NSString *decimals = [column objectForKey:@"decimals"];
+			if([decimals length]) {
+				length = [length stringByAppendingFormat:@",%@", decimals];
+			}
+			[fieldString appendFormat:@" %@(%@)", [column objectForKey:@"type"], length];
 		} 
 		else if ([column objectForKey:@"values"]) {
 			[fieldString appendFormat:@" %@(", [column objectForKey:@"type"]];
