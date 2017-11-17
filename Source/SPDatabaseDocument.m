@@ -6534,8 +6534,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	if (processListController) [processListController close];
 
+	// #2924: The connection controller doesn't retain its delegate (us), but it may outlive us (e.g. when running a bg thread)
+	[connectionController setDelegate:nil];
+	SPClear(connectionController);
+	
 	if (selectedTableName) SPClear(selectedTableName);
-	if (connectionController) SPClear(connectionController);
 	if (processListController) SPClear(processListController);
 	if (serverVariablesController) SPClear(serverVariablesController);
 	if (mySQLConnection) SPClear(mySQLConnection);
