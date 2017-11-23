@@ -2956,20 +2956,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[alert addButtonWithTitle:NSLocalizedString(@"Never ask again for this file", @"Never ask again for this file button text")];
 			[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Cancel button text")];
 			[alert setMessageText:NSLocalizedString(@"Ovewrite file", @"Alert message text")];
-			/* Alert dialog overwrite query file OK button*/
-			"OK" = "OK";
-
-			/* Alert dialog overwrite query file Never ask again for this file button*/
-			"Never ask again for this file" = "Never ask again for this file";
-
-			/* Alert dialog overwrite query file Cancel button*/
-			"Cancel" = "Cancel";
-
-			/* Alert dialog overwrite query file message Ovewrite file '%@'*/
-			"Ovewrite file" = "Ovewrite file '%@'";
-
-			/* Alert dialog overwrite query file title Ovewrite last opened file?*/
-			"Ovewrite last opened file" = "Ovewrite last opened file?";
 			
 			NSString *lastFileName = [sqlFileURL lastPathComponent];
 			NSString *informativeText = [NSString stringWithFormat:NSLocalizedString(@"Ovewrite file", @"Alert message text"), lastFileName];
