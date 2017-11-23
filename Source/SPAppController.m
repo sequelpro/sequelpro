@@ -328,6 +328,10 @@
 		NSString *fileExt = [[filePath pathExtension] lowercaseString];
 		// Opens a sql file and insert its content into the Custom Query editor
 		if ([fileExt isEqualToString:[SPFileExtensionSQL lowercaseString]]) {
+			
+			[[NSUserDefaults standardUserDefaults] setBool:false forKey:@"doNotAskAgainForThisFile"];
+			[[NSUserDefaults standardUserDefaults] synchronize];
+			
 			[self openSQLFileAtPath:filePath];
 			break; // open only the first SQL file
 		}

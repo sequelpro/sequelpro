@@ -2947,6 +2947,30 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Save Query...
 	if (sender != nil && ([sender tag] == SPMainMenuFileSaveQuery || [sender tag] == SPMainMenuFileSaveQueryAs)) {
 
+		BOOL doNotAskAgainForThisFile = [prefs boolForKey:@"doNotAskAgainForThisFile"];
+		
+		if (doNotAskAgainForThisFile == false){
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert addButtonWithTitle:NSLocalizedString(@"OK", @"OK button text")];
+			[alert addButtonWithTitle:NSLocalizedString(@"Never ask again for this file", @"Never ask again for this file button text")];
+			[alert addButtonWithTitle:NSLocalizedString(@"Cancel", @"Cancel button text")];
+			[alert setMessageText:NSLocalizedString(@"Ovewrite last opened file", @"Alert title text")];
+			
+			NSString *lastFileName = [sqlFileURL lastPathComponent];
+			NSString *informativeText = [NSString stringWithFormat:NSLocalizedString(@"Ovewrite file", @"Alert message text"), lastFileName];
+			[alert setInformativeText:informativeText];
+			[alert setAlertStyle:NSWarningAlertStyle];
+			
+			NSModalResponse usersChoice = [alert runModal];
+			
+			if (usersChoice == NSAlertFirstButtonReturn) {
+				sqlFileURL = [[NSURL alloc] initWithString:@""];
+			}else if (usersChoice == NSAlertSecondButtonReturn){
+				[[NSUserDefaults standardUserDefaults] setBool:true forKey:@"doNotAskAgainForThisFile"];
+				[[NSUserDefaults standardUserDefaults] synchronize];
+			}
+		}
+		
 		// If Save was invoked, check whether the file was previously opened, and if so save without the panel
 		if ([sender tag] == SPMainMenuFileSaveQuery && [[[self sqlFileURL] path] length]) {
 			NSError *error = nil;
