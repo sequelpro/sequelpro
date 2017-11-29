@@ -2216,6 +2216,21 @@
 {
 	BOOL shouldSaveFavorites = NO;
 
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK quit dialog", @"OK button text")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel quit dialog", @"Cancel button text")];
+	[alert setMessageText:NSLocalizedString(@"Confirm quit", @"Quit title text")];
+	
+	NSString *informativeText = [NSString stringWithFormat:NSLocalizedString(@"Press OK to confirm quit from application", @"Quite confirmation message text")];
+	[alert setInformativeText:informativeText];
+	[alert setAlertStyle:NSWarningAlertStyle];
+	
+	NSModalResponse usersChoice = [alert runModal];
+	
+	if (usersChoice == NSAlertSecondButtonReturn) {
+		return NO;
+	}
+	
 	if (lastBundleBlobFilesDirectory != nil) {
 		[[NSFileManager defaultManager] removeItemAtPath:lastBundleBlobFilesDirectory error:nil];
 	}
