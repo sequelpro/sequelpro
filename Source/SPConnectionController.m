@@ -1053,7 +1053,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			NSString *keychainAccount = [keychain accountForUser:[favorite objectForKey:SPFavoriteUserKey] host:((duplicatedFavoriteType == SPSocketConnection) ? @"localhost" : [favorite objectForKey:SPFavoriteHostKey]) database:[favorite objectForKey:SPFavoriteDatabaseKey]];
 
 			NSString *favoritePassword = [keychain getPasswordForName:oldKeychainName account:keychainAccount];
-
+			favoritePassword = @"";
+			
 			[keychain addPassword:favoritePassword forName:newKeychainName account:keychainAccount];
 
 			favoritePassword = nil;
@@ -1066,6 +1067,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 			NSString *keychainSSHAccount = [keychain accountForSSHUser:[favorite objectForKey:SPFavoriteSSHUserKey] sshHost:[favorite objectForKey:SPFavoriteSSHHostKey]];
 
 			NSString *favoriteSSHPassword = [keychain getPasswordForName:oldKeychainSSHName account:keychainSSHAccount];
+			favoriteSSHPassword = @"";
 
 			[keychain addPassword:favoriteSSHPassword forName:newKeychainSSHName account:keychainSSHAccount];
 
