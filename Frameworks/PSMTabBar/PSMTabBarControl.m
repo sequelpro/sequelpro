@@ -1644,6 +1644,22 @@
 
 - (void)closeTabClick:(id)sender
 {
+	
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert addButtonWithTitle:NSLocalizedString(@"OK close tab dialog", @"OK button text")];
+	[alert addButtonWithTitle:NSLocalizedString(@"Cancel close tab dialog", @"Cancel button text")];
+	[alert setMessageText:NSLocalizedString(@"Confirm close tab", @"close tab title text")];
+	
+	NSString *informativeText = [NSString stringWithFormat:NSLocalizedString(@"Press OK to confirm close current tab", @"Close tab confirmation message text")];
+	[alert setInformativeText:informativeText];
+	[alert setAlertStyle:NSWarningAlertStyle];
+	
+	NSModalResponse usersChoice = [alert runModal];
+	
+	if (usersChoice == NSAlertSecondButtonReturn) {
+		return;
+	}
+
 	NSTabViewItem *item = [sender representedObject];
     [sender retain];
     if(([_cells count] == 1) && (![self canCloseOnlyTab]))

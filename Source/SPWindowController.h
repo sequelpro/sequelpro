@@ -72,5 +72,6 @@
 - (void)selectTabAtIndex:(NSInteger)index;
 - (void)setHideForSingleTab:(BOOL)hide;
 - (void)updateTabBar;
+-(BOOL)askAboutCloseTab;
 
 @end

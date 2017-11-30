@@ -6565,4 +6565,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[super dealloc];
 }
 
+
+- (BOOL)windowShouldClose:(id)sender{
+	
+	NSLog(@"Close window");
+	
+}
+
 @end
