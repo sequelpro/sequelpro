@@ -2216,6 +2216,13 @@
 {
 	BOOL shouldSaveFavorites = NO;
 
+	SPWindowController *windowController = [[SPWindowController alloc] init];
+	
+	if ([windowController askAboutCloseTab] == false){
+		return NO;
+	}
+
+	
 	if (lastBundleBlobFilesDirectory != nil) {
 		[[NSFileManager defaultManager] removeItemAtPath:lastBundleBlobFilesDirectory error:nil];
 	}
