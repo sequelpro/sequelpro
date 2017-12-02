@@ -44,21 +44,21 @@
  * Export controller.
  */
 @interface SPExportController : NSWindowController
-{	
+{
 	// Controllers
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTableContent *tableContentInstance;
 	IBOutlet SPCustomQuery *customQueryInstance;
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableData *tableDataInstance;
-	
+
 	// Export window
 	IBOutlet NSView *exporterView;
 	IBOutlet NSButton *exportButton;
 	IBOutlet NSTextField *exportPathField;
 	IBOutlet NSTableView *exportTableList;
 	IBOutlet NSTabView *exportTypeTabBar;
-	IBOutlet NSTabView *exportOptionsTabBar;	
+	IBOutlet NSTabView *exportOptionsTabBar;
 	IBOutlet NSPopUpButton *exportInputPopUpButton;
 	IBOutlet NSButton *exportFilePerTableCheck;
 	IBOutlet NSButton *exportSelectAllTablesButton;
@@ -66,11 +66,11 @@
 	IBOutlet NSButton *exportRefreshTablesButton;
 	IBOutlet NSScrollView *exportTablelistScrollView;
 	IBOutlet NSBox *exportFilenameDividerBox;
-	
+
 	// Errors sheet
 	IBOutlet NSWindow *errorsWindow;
 	IBOutlet NSTextView *errorsTextView;
-	
+
 	// Advanced options view
 	IBOutlet NSButton *exportAdvancedOptionsViewButton;
 	IBOutlet NSView *exportAdvancedOptionsView;
@@ -78,33 +78,35 @@
 	IBOutlet NSButton *exportUseUTF8BOMButton;
 	IBOutlet NSButton *exportProcessLowMemoryButton;
 	IBOutlet NSPopUpButton *exportOutputCompressionFormatPopupButton;
-	
+
 	IBOutlet NSBox *exportTableListButtonBar;
-	
+
 	// Export progress sheet
 	IBOutlet NSWindow *exportProgressWindow;
 	IBOutlet NSTextField *exportProgressTitle;
 	IBOutlet NSTextField *exportProgressText;
 	IBOutlet NSTextField *exportFormatInfoText;
 	IBOutlet NSProgressIndicator *exportProgressIndicator;
-	
+
 	// Custom filename view
 	IBOutlet NSButton *exportCustomFilenameViewButton;
 	IBOutlet NSButton *exportCustomFilenameViewLabelButton;
 	IBOutlet NSView *exportCustomFilenameView;
 	IBOutlet NSTokenField *exportCustomFilenameTokenField;
 	IBOutlet NSTokenField *exportCustomFilenameTokenPool;
-	
+
 	// SQL
 	IBOutlet NSButton *exportSQLIncludeStructureCheck;
 	IBOutlet NSButton *exportSQLIncludeDropSyntaxCheck;
+	//my changes
+	IBOutlet NSButton *exportSQLIncludeCreateDbSyntaxCheck;
 	IBOutlet NSButton *exportSQLIncludeContentCheck;
 	IBOutlet NSButton *exportSQLIncludeErrorsCheck;
 	IBOutlet NSButton *exportSQLBLOBFieldsAsHexCheck;
 	IBOutlet NSTextField *exportSQLInsertNValueTextField;
 	IBOutlet NSPopUpButton *exportSQLInsertDividerPopUpButton;
 	IBOutlet NSButton *exportSQLIncludeAutoIncrementValueButton;
-	
+
 	// CSV
 	IBOutlet NSButton *exportCSVIncludeFieldNamesCheck;
 	IBOutlet NSComboBox *exportCSVFieldsTerminatedField;
@@ -112,7 +114,7 @@
 	IBOutlet NSComboBox *exportCSVFieldsEscapedField;
 	IBOutlet NSComboBox *exportCSVLinesTerminatedField;
 	IBOutlet NSTextField *exportCSVNULLValuesAsTextField;
-	
+
 	// XML
 	IBOutlet NSPopUpButton *exportXMLFormatPopUpButton;
 	IBOutlet NSButton *exportXMLIncludeStructure;
@@ -126,88 +128,88 @@
 	 * Whether the awakeFromNib routine has already been run
 	 */
 	BOOL mainNibLoaded;
-	
+
 	/**
 	 * Cancellation flag
 	 */
 	BOOL exportCancelled;
-	
-	/** 
+
+	/**
 	 * Multi-file export flag
 	 */
 	BOOL exportToMultipleFiles;
-	
+
 	/**
 	 * Create custom filename flag
 	 */
 	BOOL createCustomFilename;
-	
+
 	/**
 	 * Number of tables being exported
 	 */
 	NSUInteger exportTableCount;
-	
-	/** 
+
+	/**
 	 * Index of the current table being exported
 	 */
 	NSUInteger currentTableExportIndex;
-	
+
 	/**
 	 * Export type label
 	 */
 	NSString *exportTypeLabel;
-	
-	/** 
+
+	/**
 	 * Export filename
 	 */
 	NSMutableString *exportFilename;
-	
+
 	/**
 	 * Current database's tables
 	 */
 	NSMutableArray *tables;
-	
-	/** 
+
+	/**
 	 * Database connection
 	 */
 	SPMySQLConnection *connection;
 	SPServerSupport *serverSupport;
-	
+
 	/**
 	 * Concurrent operation queue
 	 */
 	NSOperationQueue *operationQueue;
-	
-	/** 
+
+	/**
 	 * Exporters
 	 */
 	NSMutableArray *exporters;
-	
+
 	/**
 	 * Array of export files.
 	 */
 	NSMutableArray *exportFiles;
-	
+
 	/**
 	 * Export type
 	 */
 	SPExportType exportType;
-	
+
 	/**
 	 * Export source
 	 */
 	SPExportSource exportSource;
-	
+
 	/**
 	 * Display advanced view flag
 	 */
 	BOOL showAdvancedView;
-	
+
 	/**
 	 * Display custom filename view flag.
 	 */
 	BOOL showCustomFilenameView;
-	
+
 	/**
 	 * User defaults
 	 */
@@ -232,9 +234,9 @@
 	NSInteger heightOffset2;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
-	
+
 	NSDictionary *localizedTokenNames;
-	
+
 }
 
 /**
@@ -282,6 +284,7 @@
 - (IBAction)toggleSQLIncludeStructure:(NSButton *)sender;
 - (IBAction)toggleSQLIncludeContent:(NSButton *)sender;
 - (IBAction)toggleSQLIncludeDropSyntax:(NSButton *)sender;
+- (IBAction)toggleSQLIncludeCreateDbSyntax:(NSButton *)sender;
 - (IBAction)toggleNewFilePerTable:(NSButton *)sender;
 
 @end
