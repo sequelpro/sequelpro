@@ -516,7 +516,7 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 
 		[resetAutoIncrementLine setHidden:YES];
 
-		if ([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 0)
+		if ([tableDocumentInstance currentlySelectedView] == SPTableViewStructure)
 			[resetAutoIncrementLine setHidden:NO];
 
 		// Begin the sheet
@@ -678,7 +678,7 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 
 	// reload data
 	[tableDataInstance resetStatusData];
-	if([[tableDocumentInstance valueForKeyPath:@"tableTabView"] indexOfTabViewItem:[[tableDocumentInstance valueForKeyPath:@"tableTabView"] selectedTabViewItem]] == 3) {
+	if([tableDocumentInstance currentlySelectedView] == SPTableViewStatus) {
 		[tableDataInstance resetAllData];
 #ifndef SP_CODA
 		[extendedTableInfoInstance loadTable:selTable];

@@ -55,7 +55,6 @@
 - (void)goBackInHistory;
 - (void)goForwardInHistory;
 - (IBAction) historyControlClicked:(NSSegmentedControl *)theControl;
-- (NSUInteger) currentlySelectedView;
 - (void) setupInterface;
 - (void) startDocumentTask:(NSNotification *)aNotification;
 - (void) endDocumentTask:(NSNotification *)aNotification;

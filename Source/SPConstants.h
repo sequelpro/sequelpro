@@ -108,16 +108,18 @@ typedef enum
 	SPTableTypeEvent = 4
 } SPTableType;
 
-// History views
-typedef enum
+// Content views
+typedef NS_ENUM(NSInteger, SPTableViewType)
 {
 	SPTableViewStructure   = 0,
 	SPTableViewContent     = 1,
 	SPTableViewCustomQuery = 2,
 	SPTableViewStatus      = 3,
 	SPTableViewRelations   = 4,
-	SPTableViewTriggers    = 5
-} SPTableViewType;
+	SPTableViewTriggers    = 5,
+
+	SPTableViewInvalid     = NSNotFound
+};
 
 // SSH tunnel password modes
 typedef enum

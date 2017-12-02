@@ -2691,14 +2691,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	[parentWindow endEditingFor:nil];
 #ifndef SP_CODA 
-	switch ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]]) {
+	switch ([self currentlySelectedView]) {
 
-		// Table structure view
-		case 0:
+		case SPTableViewStructure:
 			return [tableSourceInstance saveRowOnDeselect];
 
-		// Table content view
-		case 1:
+		case SPTableViewContent:
 			return [tableContentInstance saveRowOnDeselect];
 
 		default:
@@ -2882,6 +2880,35 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	[dbInfo setDefaultCollation:[databaseDataInstance getDatabaseDefaultCollation]];
 	
 	return [dbInfo autorelease];
+}
+
+/**
+ * Retrieve the view that is currently selected from the database
+ *
+ * MUST BE CALLED ON THE UI THREAD!
+ */
+- (SPTableViewType)currentlySelectedView
+{
+	SPTableViewType theView = NSNotFound;
+
+	// -selectedTabViewItem is a UI method according to Xcode 9.2!
+	NSString *viewName = [[tableTabView selectedTabViewItem] identifier];
+
+	if ([viewName isEqualToString:@"source"]) {
+		theView = SPTableViewStructure;
+	} else if ([viewName isEqualToString:@"content"]) {
+		theView = SPTableViewContent;
+	} else if ([viewName isEqualToString:@"customQuery"]) {
+		theView = SPTableViewCustomQuery;
+	} else if ([viewName isEqualToString:@"status"]) {
+		theView = SPTableViewStatus;
+	} else if ([viewName isEqualToString:@"relations"]) {
+		theView = SPTableViewRelations;
+	} else if ([viewName isEqualToString:@"triggers"]) {
+		theView = SPTableViewTriggers;
+	}
+
+	return theView;
 }
 
 #pragma mark -
@@ -3736,7 +3763,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			// If Custom Query Tab is active the textView will handle printDocument by itself
 			// if it is first responder; otherwise allow to print the Query Result table even 
 			// if no db/table is selected
-			[tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 2);
+			[self currentlySelectedView] == SPTableViewCustomQuery);
 	}
 #endif
 
@@ -4687,7 +4714,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[sessionState setObject:[self table] forKey:@"table"];
 
 		NSString *currentlySelectedViewName;
-		switch ([spHistoryControllerInstance currentlySelectedView]) {
+		switch ([self currentlySelectedView]) {
 			case SPTableViewStructure:
 				currentlySelectedViewName = @"SP_VIEW_STRUCTURE";
 				break;
@@ -5921,7 +5948,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	// Locate the sheet "Reset Auto Increment" just centered beneath the chosen index row
 	// if Structure Pane is active
-	if([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == 0 
+	if([self currentlySelectedView] == SPTableViewStructure
 			&& [[sheet title] isEqualToString:@"Reset Auto Increment"]) {
 
 		id it = [tableSourceInstance valueForKeyPath:@"indexesTableView"];

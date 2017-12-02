@@ -463,6 +463,7 @@
 - (NSArray *)allTableNames;
 - (SPTablesList *)tablesListInstance;
 - (SPCreateDatabaseInfo *)createDatabaseInfo;
+- (SPTableViewType) currentlySelectedView;
 
 #ifndef SP_CODA /* method decls */
 // Notification center methods

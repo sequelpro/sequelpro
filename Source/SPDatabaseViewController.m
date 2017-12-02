@@ -50,7 +50,7 @@
 
 @interface SPDatabaseDocument (SPDatabaseViewControllerPrivateAPI)
 
-- (void)_loadTabTask:(NSTabViewItem *)tabViewItem;
+- (void)_loadTabTask:(NSNumber *)tabViewItemIndexNumber;
 - (void)_loadTableTask;
 
 @end
@@ -120,7 +120,7 @@
 - (IBAction)viewStructure:(id)sender
 {
 	// Cancel the selection if currently editing a view and unable to save
-	if (![self couldCommitCurrentViewActions]) {
+	if (![[self onMainThread] couldCommitCurrentViewActions]) {
 		[[mainToolbar onMainThread] setSelectedItemIdentifier:*SPViewModeToMainToolbarMap[[prefs integerForKey:SPLastViewMode]]];
 		return;
 	}
@@ -226,7 +226,7 @@
 	BOOL reloadRequired = reload;
 
 #ifndef SP_CODA
-	if ([tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStructure) {
+	if ([self currentlySelectedView] == SPTableViewStructure) {
 		reloadRequired = NO;
 	}
 #endif
@@ -247,7 +247,7 @@
 {
 	if (reload && selectedTableName
 #ifndef SP_CODA /* check which tab is selected */
-	 && [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewContent
+	 && [self currentlySelectedView] == SPTableViewContent
 #endif
 	 ) {
 		[tableContentInstance loadTable:selectedTableName];
@@ -265,7 +265,7 @@
 {
 	if (reload && selectedTableName 
 #ifndef SP_CODA /* check which tab is selected */
-		&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewStatus
+		&& [self currentlySelectedView] == SPTableViewStatus
 #endif
 		) {
 		[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
@@ -283,7 +283,7 @@
 {
 	if (reload && selectedTableName 
 #ifndef SP_CODA /* check which tab is selected */
-		&& [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]] == SPTableViewRelations
+		&& [self currentlySelectedView] == SPTableViewRelations
 #endif
 		) {
 		[[tableRelationsInstance onMainThread] refreshRelations:self];
@@ -301,15 +301,19 @@
 - (void)tabView:(NSTabView *)aTabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	[self startTaskWithDescription:[NSString stringWithFormat:NSLocalizedString(@"Loading %@...", @"Loading table task string"), [self table]]];
-	
+
+	// We can't pass aTabView or tabViewItem UI objects to a bg thread, but since the change should already
+	// be done in *did*SelectTabViewItem we can just ask the tab view for the current selection index and use that
+	SPTableViewType newView = [self currentlySelectedView];
+
 	if ([NSThread isMainThread]) {
 		[NSThread detachNewThreadWithName:SPCtxt(@"SPDatabaseViewController view load task",self)
 								   target:self 
 								 selector:@selector(_loadTabTask:) 
-								   object:tabViewItem];
+								   object:@(newView)];
 	} 
 	else {
-		[self _loadTabTask:tabViewItem];
+		[self _loadTabTask:@(newView)];
 	}
 }
 #endif
@@ -408,7 +412,7 @@
  * In a threaded task, ensure that the supplied tab is loaded -
  * usually as a result of switching to it.
  */
-- (void)_loadTabTask:(NSTabViewItem *)tabViewItem
+- (void)_loadTabTask:(NSNumber *)tabViewItemIndexNumber
 {
 	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
 
@@ -421,7 +425,7 @@
 	}
 
 	// Get the tab view index and ensure the associated view is loaded
-	NSInteger selectedTabViewIndex = [[tabViewItem tabView] indexOfTabViewItem:tabViewItem];
+	SPTableViewType selectedTabViewIndex = [tabViewItemIndexNumber integerValue];
 
 	switch (selectedTabViewIndex) {
 		case SPTableViewStructure:
@@ -531,7 +535,7 @@
 	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
 	{
 #ifndef SP_CODA /* load everything */
-		NSInteger selectedTabViewIndex = [tableTabView indexOfTabViewItem:[tableTabView selectedTabViewItem]];
+		NSInteger selectedTabViewIndex = [[self onMainThread] currentlySelectedView];
 
 		switch (selectedTabViewIndex) {
 			case SPTableViewStructure:

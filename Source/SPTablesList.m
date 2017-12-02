@@ -316,7 +316,10 @@ static NSString *SPDuplicateTable = @"SPDuplicateTable";
 
 	// Set the filter placeholder text
 	if ([tableDocumentInstance database]) {
-		[[[listFilterField cell] onMainThread] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
+		SPMainQSync(^{
+			// -cell is a UI call according to Xcode 9.2 (and -setPlaceholderString: is too, obviously)
+			[[listFilterField cell] setPlaceholderString:NSLocalizedString(@"Filter", @"filter label")];
+		});
 	}
 #endif
 

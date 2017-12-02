@@ -1065,14 +1065,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	tableRowsCount = [tableValues count];
 
-	// If the final column autoresize wasn't performed, perform it
-	if (tableLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
+	SPMainQSync(^{
+		// If the final column autoresize wasn't performed, perform it
+		if (tableLoadLastRowCount < 200) [self autosizeColumns];
 
-	// Ensure the table is aware of changes
-	[[tableContentView onMainThread] noteNumberOfRowsChanged];
+		// Ensure the table is aware of changes
+		[tableContentView noteNumberOfRowsChanged]; // UI method!
 
-	// Reset the progress indicator
-	[dataLoadingIndicator setIndeterminate:YES];
+		// Reset the progress indicator
+		[dataLoadingIndicator setIndeterminate:YES]; // UI method!
+	});
 }
 
 /**
@@ -1200,13 +1202,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	// If rows are selected, append selection count
-	if ([tableContentView numberOfSelectedRows] > 0) {
+	NSInteger selectedRows = [[tableContentView onMainThread] numberOfSelectedRows]; // -numberOfSelectedRows is a UI method!
+	if (selectedRows > 0) {
 		[countString appendString:@"; "];
-		if ([tableContentView numberOfSelectedRows] == 1)
+		if (selectedRows == 1)
 			rowString = [NSString stringWithString:NSLocalizedString(@"row", @"singular word for row")];
 		else
 			rowString = [NSString stringWithString:NSLocalizedString(@"rows", @"plural word for rows")];
-		[countString appendFormat:NSLocalizedString(@"%@ %@ selected", @"text showing how many rows are selected"), [numberFormatter stringFromNumber:[NSNumber numberWithInteger:[tableContentView numberOfSelectedRows]]], rowString];
+		[countString appendFormat:NSLocalizedString(@"%@ %@ selected", @"text showing how many rows are selected"), [numberFormatter stringFromNumber:[NSNumber numberWithInteger:selectedRows]], rowString];
 	}
 
 #ifndef SP_CODA
@@ -2008,7 +2011,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[alert setInformativeText:[NSString stringWithFormat:NSLocalizedString(@"Are you sure you want to delete the selected %ld rows from this table? This action cannot be undone.", @"delete rows informative message"), (long)[tableContentView numberOfSelectedRows]]];
 	}
 
-	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+	[alert beginSheetModalForWindow:[tableDocumentInstance parentWindow]
+	                  modalDelegate:self
+	                 didEndSelector:@selector(removeRowSheetDidEnd:returnCode:contextInfo:)
+	                    contextInfo:contextInfo];
 }
 
 /**
@@ -3018,7 +3024,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Save any edits which have been started but not saved to the underlying table/data structures
 	// yet - but not if currently undoing/redoing, as this can cause a processing loop
-	if (![[[[tableContentView window] firstResponder] undoManager] isUndoing] && ![[[[tableContentView window] firstResponder] undoManager] isRedoing]) {
+	if (![[[[tableContentView window] firstResponder] undoManager] isUndoing] && ![[[[tableContentView window] firstResponder] undoManager] isRedoing]) { // -window is a UI method!
 		[[tableDocumentInstance parentWindow] endEditingFor:nil];
 	}
 
@@ -3732,6 +3738,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  * identifier for each selected row.  If no primary key is available, the returned
  * dictionary will contain details and a list of the selected row *indexes* if the
  * supplied argument is set to true, which may not always be appropriate.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSDictionary *)selectionDetailsAllowingIndexSelection:(BOOL)allowIndexFallback
 {
@@ -3799,7 +3807,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if (allowIndexFallback) {
 		return [NSDictionary dictionaryWithObjectsAndKeys:
 					SPSelectionDetailTypeIndexed, @"type",
-					[tableContentView selectedRowIndexes], @"rows",
+					[tableContentView selectedRowIndexes], @"rows", // -selectedRowIndexes is a UI method!
 				nil];
 	}
 
@@ -3820,10 +3828,12 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 /**
  * Provide a getter for the table's current viewport
+ *
+ * MUST BE CALLED FROM THE UI THREAD!
  */
 - (NSRect) viewport
 {
-	return [tableContentView visibleRect];
+	return [tableContentView visibleRect]; // UI method!
 }
 
 /**
