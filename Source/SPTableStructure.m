@@ -1036,6 +1036,10 @@ static inline SPFieldTypeHelp *MakeFieldTypeHelp(NSString *typeName,NSString *ty
 			else if (![defaultValue length] && ([fieldValidation isFieldTypeNumeric:theRowType] || [fieldValidation isFieldTypeDate:theRowType] || [theRowType hasSuffix:@"TEXT"] || [theRowType hasSuffix:@"BLOB"] || [theRowType isEqualToString:@"JSON"] || [fieldValidation isFieldTypeGeometry:theRowType])) {
 				;
 			}
+			//for ENUM field type
+			else if (([defaultValue length]==0) && [theRowType isEqualToString:@"ENUM"]) {
+				[queryString appendFormat:@" "];
+			}
 			// Otherwise, use the provided default
 			else {
 				[queryString appendFormat:@"\n DEFAULT %@", [mySQLConnection escapeAndQuoteString:defaultValue]];
