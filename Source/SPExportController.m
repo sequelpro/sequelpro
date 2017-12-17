@@ -974,6 +974,9 @@ set_input:
 	else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPBzip2Compression) {
 		[optionsSummary addObject:NSLocalizedString(@"bzip2 compression", @"bzip2 compression export summary - within a sentence")];
 	}
+	else if ([exportOutputCompressionFormatPopupButton indexOfSelectedItem] == SPZipCompression) {
+		[optionsSummary addObject:NSLocalizedString(@"zip compression", @"zip compression export summary - within a sentence")];
+	}
 
 	[exportAdvancedOptionsViewLabelButton setTitle:[NSString stringWithFormat:@"%@ (%@)", NSLocalizedString(@"Advanced", @"Advanced options short title"), [optionsSummary componentsJoinedByString:@", "]]];
 }

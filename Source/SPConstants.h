@@ -207,7 +207,8 @@ typedef enum
 {
 	SPNoCompression    = 0,
 	SPGzipCompression  = 1,
-	SPBzip2Compression = 2
+	SPBzip2Compression = 2,
+	SPZipCompression = 3
 } SPFileCompressionFormat;
 
 // Import SQL error handling tags/choices

@@ -228,11 +228,31 @@
 		
 		SPFileCompressionFormat compressionFormat = (SPFileCompressionFormat)[exportOutputCompressionFormatPopupButton indexOfSelectedItem];
 		
+		NSString *compressedFileExtention = [[NSString alloc] init];
+		
+		switch (compressionFormat) {
+			case SPGzipCompression:
+				compressedFileExtention = @"gz";
+				break;
+
+			case SPBzip2Compression:
+				compressedFileExtention = @"bz2";
+				break;
+
+			case SPZipCompression:
+				compressedFileExtention = @"zip";
+				break;
+
+			default:
+				compressedFileExtention = @"";
+				break;
+		}
+		
 		if ([extension length] > 0) {
-			extension = [extension stringByAppendingPathExtension:(compressionFormat == SPGzipCompression) ? @"gz" : @"bz2"];
+			extension = [extension stringByAppendingPathExtension:compressedFileExtention];
 		}
 		else {
-			extension = (compressionFormat == SPGzipCompression) ? @"gz" : @"bz2";
+			extension = compressedFileExtention;
 		}
 	}
 	

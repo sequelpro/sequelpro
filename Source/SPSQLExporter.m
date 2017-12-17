@@ -788,6 +788,44 @@
 	
 	// Close the file
 	[[self exportOutputFile] close];
+
+	if (self.exportOutputCompressionFormat == SPZipCompression){
+
+		NSString *pathOriginal = [[self exportOutputFile] exportFilePath];
+		NSString *pathZipArchive = pathOriginal;
+		
+		if ([pathOriginal length] > 0){
+			pathOriginal = [pathOriginal substringToIndex:[pathOriginal length] - 4];
+		}
+
+		NSError *error = nil;
+		[[NSFileManager defaultManager] moveItemAtPath:pathZipArchive toPath:pathOriginal error:&error];
+
+		if (error != nil){
+
+			// Mark the process as not running
+			[self setExportProcessIsRunning:NO];
+			
+			// Inform the delegate that the export process is complete
+			[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
+
+		}
+		
+		NSTask *task = [NSTask new];
+
+		NSString *argumentCommand =[@"/usr/bin/zip -X " stringByAppendingString:pathZipArchive];
+		argumentCommand = [argumentCommand stringByAppendingString:@" "];
+		argumentCommand = [argumentCommand stringByAppendingString:pathOriginal];
+
+		task.launchPath = @"/bin/sh";
+		task.arguments = @[@"-c", argumentCommand];
+		
+		[task launch];
+		[task waitUntilExit];
+		
+		[[NSFileManager defaultManager] removeItemAtPath:pathOriginal error:&error];
+		
+	}
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];
