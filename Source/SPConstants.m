@@ -243,6 +243,7 @@ NSString *SPLastImportIntoNewTableType           = @"LastImportIntoNewTableType"
 NSString *SPGlobalValueHistory                   = @"GlobalValueHistory";
 NSString *SPBundleDeletedDefaultBundlesKey       = @"deletedDefaultBundles";
 NSString *SPHiddenKeyFileVisibilityKey           = @"KeySelectionHiddenFilesVisibility";
+NSString *SPSaveQueryToLog                       = @"SaveLogForQueries";
 NSString *SPSelectionDetailTypeIndexed           = @"SelectionDetailTypeNSIndexSet";
 NSString *SPSelectionDetailTypePrimaryKeyed      = @"SelectionDetailTypePrimaryKeyedDetails";
 NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
