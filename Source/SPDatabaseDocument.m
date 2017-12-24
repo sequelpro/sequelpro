@@ -1388,6 +1388,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 
+/**
+ * Show query execution time on progress window.
+ */
 -(void)showQueryExecutionTime{
 
 	double timeSinceQueryStarted = [[NSDate date] timeIntervalSinceDate:queryStartDate];
