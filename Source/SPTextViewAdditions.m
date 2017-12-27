@@ -36,7 +36,6 @@
 #import "SPCustomQuery.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
-#import "SPWindowManagement.h"
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"

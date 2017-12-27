@@ -38,7 +38,6 @@
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
 #import "SPAppController.h"
-#import "SPAppleScriptSupport.h"
 
 static NSString *SPExportFilterAction = @"SPExportFilter";
 

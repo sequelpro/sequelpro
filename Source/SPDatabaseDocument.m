@@ -55,7 +55,6 @@
 #import "SPDatabaseData.h"
 #import "SPDatabaseStructure.h"
 #import "SPAppController.h"
-#import "SPWindowManagement.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"

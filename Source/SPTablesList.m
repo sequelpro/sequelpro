@@ -52,7 +52,6 @@
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
 #import "SPCharsetCollationHelper.h"
-#import "SPWindowManagement.h"
 
 #import <SPMySQL/SPMySQL.h>
 
