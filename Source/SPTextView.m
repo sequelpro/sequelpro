@@ -42,7 +42,6 @@
 #ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
-#import "SPDatabaseViewController.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
@@ -1032,7 +1031,7 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 - (IBAction)printDocument:(id)sender
 {
 
-	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// If Extended Table Info tab is active delegate the print call to the SPDatabaseDocument
 	// if the user doesn't select anything in self
 	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
 		[[(NSObject*)[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];

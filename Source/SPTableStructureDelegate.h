@@ -1,5 +1,5 @@
 //
-//  SPConnectionDelegate.h
+//  SPTableStructureDelegate.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on October 26, 2010.

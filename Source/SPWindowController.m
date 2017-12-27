@@ -30,7 +30,6 @@
 
 #import "SPWindowController.h"
 #import "SPDatabaseDocument.h"
-#import "SPDatabaseViewController.h"
 #import "SPAppController.h"
 #import "PSMTabDragAssistant.h"
 #import "SPConnectionController.h"

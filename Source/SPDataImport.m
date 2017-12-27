@@ -31,7 +31,6 @@
 
 #import "SPDataImport.h"
 #import "SPDatabaseDocument.h"
-#import "SPDatabaseViewController.h"
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"

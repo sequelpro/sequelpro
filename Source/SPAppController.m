@@ -50,7 +50,6 @@
 #import "SPCopyTable.h"
 #import "SPSyntaxParser.h"
 #import "SPOSInfo.h"
-#import "SPPrintController.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <Sparkle/Sparkle.h>

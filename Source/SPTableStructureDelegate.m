@@ -1,5 +1,5 @@
 //
-//  SPConnectionDelegate.m
+//  SPTableStructureDelegate.m
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on October 26, 2010.
@@ -31,7 +31,7 @@
 #import "SPTableStructureDelegate.h"
 #import "SPAlertSheets.h"
 #import "SPDatabaseData.h"
-#import "SPDatabaseViewController.h"
+#import "SPDatabaseDocument.h"
 #import "SPTableData.h"
 #import "SPTableView.h"
 #import "SPTableFieldValidation.h"

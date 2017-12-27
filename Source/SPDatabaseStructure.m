@@ -30,7 +30,6 @@
 
 #import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
-#import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
 #import "SPThreadAdditions.h"

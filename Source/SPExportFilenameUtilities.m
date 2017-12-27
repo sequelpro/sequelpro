@@ -30,7 +30,7 @@
 
 #import "SPExportFilenameUtilities.h"
 #import "SPTablesList.h"
-#import "SPDatabaseViewController.h"
+#import "SPDatabaseDocument.h"
 #import "SPExportFileNameTokenObject.h"
 
 @implementation SPExportController (SPExportFilenameUtilities)

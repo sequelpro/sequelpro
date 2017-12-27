@@ -32,7 +32,6 @@
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
-#import "SPDatabaseViewController.h"
 #import "SPThreadAdditions.h"
 
 @implementation SPHistoryController

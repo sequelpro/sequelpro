@@ -45,7 +45,6 @@
 #import "SPFavoritesController.h"
 #import "SPFavoriteNode.h"
 #import "SPGeneralPreferencePane.h"
-#import "SPDatabaseViewController.h"
 #import "SPTreeNode.h"
 #import "SPFavoritesExporter.h"
 #import "SPFavoritesImporter.h"

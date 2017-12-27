@@ -35,7 +35,7 @@
 #import "SPTreeNode.h"
 #import "SPFavoriteNode.h"
 #import "SPGroupNode.h"
-#import "SPDatabaseViewController.h"
+#import "SPDatabaseDocument.h"
 #import "SPSplitView.h"
 #import "SPFavoriteColorSupport.h"
 #import "SPColorSelectorView.h"

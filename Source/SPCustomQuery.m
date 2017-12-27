@@ -66,7 +66,7 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPCustomQuery (PrivateAPI)
+@interface SPCustomQuery ()
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;

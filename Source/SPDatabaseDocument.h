@@ -291,7 +291,7 @@
 	int64_t instanceId;
 }
 
-@property (assign) NSTableView *dbTablesTableView;
+@property (nonatomic, assign) NSTableView *dbTablesTableView;
 
 #ifdef SP_CODA /* ivars */
 @property (assign) SPDatabaseData* databaseDataInstance;
@@ -536,5 +536,46 @@
 - (void)setTableContentInstance:(SPTableContent*)content;
 
 #endif
+
+#pragma mark - SPDatabaseViewController
+
+// Accessors
+- (NSString *)table;
+- (SPTableType)tableType;
+
+- (BOOL)structureLoaded;
+- (BOOL)contentLoaded;
+- (BOOL)statusLoaded;
+
+#ifndef SP_CODA /* method decls */
+// Tab view control
+- (IBAction)viewStructure:(id)sender;
+- (IBAction)viewContent:(id)sender;
+- (IBAction)viewQuery:(id)sender;
+- (IBAction)viewStatus:(id)sender;
+- (IBAction)viewRelations:(id)sender;
+- (IBAction)viewTriggers:(id)sender;
+#endif
+
+- (void)setStructureRequiresReload:(BOOL)reload;
+- (void)setContentRequiresReload:(BOOL)reload;
+- (void)setStatusRequiresReload:(BOOL)reload;
+- (void)setRelationsRequiresReload:(BOOL)reload;
+
+// Table control
+- (void)loadTable:(NSString *)aTable ofType:(SPTableType)aTableType;
+
+#ifndef SP_CODA /* method decls */
+- (NSView *)databaseView;
+#endif
+
+#pragma mark - SPPrintController
+
+- (void)startPrintDocumentOperation;
+- (void)generateHTMLForPrinting;
+- (void)generateTableInfoHTMLForPrinting;
+
+- (NSArray *)columnNames;
+- (NSMutableDictionary *)connectionInformation;
 
 @end
