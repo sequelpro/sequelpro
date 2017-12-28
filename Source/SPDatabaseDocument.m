@@ -31,8 +31,6 @@
 
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
-#import "SPConnectionHandler.h"
-#import "SPConnectionControllerInitializer.h"
 #import "SPTablesList.h"
 #import "SPDatabaseStructure.h"
 #import "SPFileHandle.h"
@@ -5247,7 +5245,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Invoked by the connection controller when it starts the process of initiating a connection.
  */
-- (void)connectionControllerInitiatingConnection:(id)controller
+- (void)connectionControllerInitiatingConnection:(SPConnectionController *)controller
 {
 #ifndef SP_CODA /* ui manipulation */
 	// Update the window title to indicate that we are trying to establish a connection
@@ -5262,7 +5260,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Invoked by the connection controller when the attempt to initiate a connection failed.
  */
-- (void)connectionControllerConnectAttemptFailed:(id)controller
+- (void)connectionControllerConnectAttemptFailed:(SPConnectionController *)controller
 {
 #ifdef SP_CODA /* glue */
 	if ( delegate && [delegate respondsToSelector:@selector(databaseDocumentConnectionFailed:)] )

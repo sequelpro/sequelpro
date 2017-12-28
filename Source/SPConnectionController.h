@@ -1,5 +1,5 @@
 //
-//  SPConnectionHandler.h
+//  SPConnectionController.h
 //  sequel-pro
 //
 //  Created by Stuart Connolly (stuconnolly.com) on November 15, 2010.
@@ -30,6 +30,7 @@
 
 #import "SPConnectionControllerDelegateProtocol.h"
 #import "SPFavoritesExportProtocol.h"
+#import "SPFavoritesImportProtocol.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -48,7 +49,7 @@
 #endif
 ;
 
-@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate, SPFavoritesExportProtocol, NSSplitViewDelegate>
+@interface SPConnectionController : NSViewController <SPMySQLConnectionDelegate, NSOpenSavePanelDelegate, SPFavoritesImportProtocol, SPFavoritesExportProtocol, NSSplitViewDelegate>
 {
 	id <SPConnectionControllerDelegateProtocol, NSObject> delegate;
 	
@@ -266,4 +267,27 @@
 - (SPFavoritesOutlineView *)favoritesOutlineView;
 
 #endif
+
+#pragma mark - SPConnectionHandler
+
+- (void)initiateMySQLConnection;
+- (void)initiateMySQLConnectionInBackground;
+- (void)initiateSSHTunnelConnection;
+
+- (void)mySQLConnectionEstablished;
+- (void)sshTunnelCallback:(SPSSHTunnel *)theTunnel;
+
+- (void)addConnectionToDocument;
+
+- (void)failConnectionWithTitle:(NSString *)theTitle errorMessage:(NSString *)theErrorMessage detail:(NSString *)errorDetail rawErrorText:(NSString *)rawErrorText;
+
+#pragma mark - SPConnectionControllerInitializer
+
+- (id)initWithDocument:(SPDatabaseDocument *)document;
+
+- (void)loadNib;
+- (void)registerForNotifications;
+- (void)setUpFavoritesOutlineView;
+- (void)setUpSelectedConnectionFavorite;
+
 @end

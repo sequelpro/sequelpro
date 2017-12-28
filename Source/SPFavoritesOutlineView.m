@@ -29,7 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPFavoritesOutlineView.h"
-#import "SPConnectionControllerDelegate.h"
+#import "SPConnectionController.h"
 
 @interface SPFavoritesOutlineView ()
 
@@ -191,12 +191,12 @@ static NSUInteger SPFavoritesOutlineViewUnindent = 6;
 
 
 /**
- * If the delegate is a SPConnectionControllerDelegate, and editing is currently in
+ * If the delegate is a SPConnectionController, and editing is currently in
  * progress, draw a custom highlight.
  */
 - (void)highlightSelectionInClipRect:(NSRect)clipRect
 {
-	// Only proceed if a the delegate is a SPConnectionControllerDelegate and a favoruite being edited
+	// Only proceed if a the delegate is a SPConnectionController and a favorite being edited
 	if ([[self delegate] isKindOfClass:[SPConnectionController class]] && 
 		[(SPConnectionController *)[self delegate] isEditingConnection] &&
 		[(SPConnectionController *)[self delegate] selectedFavorite])

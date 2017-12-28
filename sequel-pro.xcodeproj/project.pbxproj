@@ -83,9 +83,6 @@
 		1792C13710AD75C800ABE758 /* SPServerVariablesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1792C13610AD75C800ABE758 /* SPServerVariablesController.m */; };
 		1798F1871550175B004B0AB8 /* SPFavoritesExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1821550175B004B0AB8 /* SPFavoritesExporter.m */; };
 		1798F1881550175B004B0AB8 /* SPFavoritesImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */; };
-		1798F18F1550178E004B0AB8 /* SPConnectionControllerDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */; };
-		1798F1901550178E004B0AB8 /* SPConnectionControllerInitializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */; };
-		1798F1911550178E004B0AB8 /* SPConnectionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */; };
 		1798F1951550181B004B0AB8 /* SPGroupNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F1941550181B004B0AB8 /* SPGroupNode.m */; };
 		1798F19815501838004B0AB8 /* SPMutableArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19715501838004B0AB8 /* SPMutableArrayAdditions.m */; };
 		1798F19B1550185B004B0AB8 /* SPTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 1798F19A1550185B004B0AB8 /* SPTreeNode.m */; };
@@ -121,7 +118,6 @@
 		17D390C8127B65AF00672B13 /* SPGeneralPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390C7127B65AF00672B13 /* SPGeneralPreferencePane.m */; };
 		17D390CB127B6BF800672B13 /* SPPreferencesUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D390CA127B6BF800672B13 /* SPPreferencesUpgrade.m */; };
 		17D3C22212859E070047709F /* SPFavoriteNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C22112859E070047709F /* SPFavoriteNode.m */; };
-		17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */; };
 		17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C66D128AD4710047709F /* SPFavoritesController.m */; };
 		17D3C671128AD8160047709F /* SPSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C670128AD8160047709F /* SPSingleton.m */; };
 		17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 17D3C6D2128B1C900047709F /* SPFavoritesOutlineView.m */; };
@@ -776,12 +772,6 @@
 		1798F1841550175B004B0AB8 /* SPFavoritesImporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImporter.h; sourceTree = "<group>"; };
 		1798F1851550175B004B0AB8 /* SPFavoritesImporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesImporter.m; sourceTree = "<group>"; };
 		1798F1861550175B004B0AB8 /* SPFavoritesImportProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesImportProtocol.h; sourceTree = "<group>"; };
-		1798F1891550178E004B0AB8 /* SPConnectionControllerDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDataSource.h; sourceTree = "<group>"; };
-		1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDataSource.m; sourceTree = "<group>"; };
-		1798F18B1550178E004B0AB8 /* SPConnectionControllerInitializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerInitializer.h; sourceTree = "<group>"; };
-		1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerInitializer.m; sourceTree = "<group>"; };
-		1798F18D1550178E004B0AB8 /* SPConnectionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionHandler.h; sourceTree = "<group>"; };
-		1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionHandler.m; sourceTree = "<group>"; };
 		1798F1931550181B004B0AB8 /* SPGroupNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPGroupNode.h; sourceTree = "<group>"; };
 		1798F1941550181B004B0AB8 /* SPGroupNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPGroupNode.m; sourceTree = "<group>"; };
 		1798F19615501838004B0AB8 /* SPMutableArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPMutableArrayAdditions.h; sourceTree = "<group>"; };
@@ -836,8 +826,6 @@
 		17D390CA127B6BF800672B13 /* SPPreferencesUpgrade.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferencesUpgrade.m; sourceTree = "<group>"; };
 		17D3C22012859E070047709F /* SPFavoriteNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoriteNode.h; sourceTree = "<group>"; };
 		17D3C22112859E070047709F /* SPFavoriteNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoriteNode.m; sourceTree = "<group>"; };
-		17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPConnectionControllerDelegate.h; sourceTree = "<group>"; };
-		17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPConnectionControllerDelegate.m; sourceTree = "<group>"; };
 		17D3C66C128AD4710047709F /* SPFavoritesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFavoritesController.h; sourceTree = "<group>"; };
 		17D3C66D128AD4710047709F /* SPFavoritesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFavoritesController.m; sourceTree = "<group>"; };
 		17D3C66F128AD8160047709F /* SPSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPSingleton.h; sourceTree = "<group>"; };
@@ -1877,16 +1865,8 @@
 		17D38FC2127B0C9500672B13 /* Connection View */ = {
 			isa = PBXGroup;
 			children = (
-				1798F18D1550178E004B0AB8 /* SPConnectionHandler.h */,
-				1798F18E1550178E004B0AB8 /* SPConnectionHandler.m */,
 				5822C9B31000DB2400DCC3D6 /* SPConnectionController.h */,
 				5822C9B41000DB2400DCC3D6 /* SPConnectionController.m */,
-				17D3C6021289BF350047709F /* SPConnectionControllerDelegate.h */,
-				17D3C6031289BF350047709F /* SPConnectionControllerDelegate.m */,
-				1798F18B1550178E004B0AB8 /* SPConnectionControllerInitializer.h */,
-				1798F18C1550178E004B0AB8 /* SPConnectionControllerInitializer.m */,
-				1798F1891550178E004B0AB8 /* SPConnectionControllerDataSource.h */,
-				1798F18A1550178E004B0AB8 /* SPConnectionControllerDataSource.m */,
 				17D38FC3127B0CFC00672B13 /* SPConnectionControllerDelegateProtocol.h */,
 				1798F1801550172A004B0AB8 /* Import & Export */,
 			);
@@ -3407,7 +3387,6 @@
 				17FDB04C1280778B00DBBBC2 /* SPFontPreviewTextField.m in Sources */,
 				17D3C22212859E070047709F /* SPFavoriteNode.m in Sources */,
 				506CE9311A311C6C0039F736 /* SPTableContentFilterController.m in Sources */,
-				17D3C6041289BF350047709F /* SPConnectionControllerDelegate.m in Sources */,
 				17D3C66E128AD4710047709F /* SPFavoritesController.m in Sources */,
 				17D3C671128AD8160047709F /* SPSingleton.m in Sources */,
 				17D3C6D3128B1C900047709F /* SPFavoritesOutlineView.m in Sources */,
@@ -3434,9 +3413,6 @@
 				17BA2A3215275D8600389803 /* SPExportInterfaceController.m in Sources */,
 				1798F1871550175B004B0AB8 /* SPFavoritesExporter.m in Sources */,
 				1798F1881550175B004B0AB8 /* SPFavoritesImporter.m in Sources */,
-				1798F18F1550178E004B0AB8 /* SPConnectionControllerDataSource.m in Sources */,
-				1798F1901550178E004B0AB8 /* SPConnectionControllerInitializer.m in Sources */,
-				1798F1911550178E004B0AB8 /* SPConnectionHandler.m in Sources */,
 				1798F1951550181B004B0AB8 /* SPGroupNode.m in Sources */,
 				1798F19815501838004B0AB8 /* SPMutableArrayAdditions.m in Sources */,
 				1798F19B1550185B004B0AB8 /* SPTreeNode.m in Sources */,
