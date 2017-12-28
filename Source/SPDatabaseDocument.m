@@ -82,7 +82,6 @@
 #import "SPTableTriggers.h"
 #ifdef SP_CODA /* headers */
 #import "SPTableStructure.h"
-#import "SPTableStructureLoading.h"
 #endif
 #import "SPPrintAccessory.h"
 #import "MGTemplateEngine.h"

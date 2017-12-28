@@ -37,7 +37,6 @@
 #import "SPTablesList.h"
 #import "SPTableView.h"
 #import "SPTableStructure.h"
-#import "SPTableStructureLoading.h"
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
 

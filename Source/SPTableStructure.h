@@ -175,4 +175,10 @@
 
 + (SPFieldTypeHelp *)helpForFieldType:(NSString *)typeName;
 
+#pragma mark - SPTableStructureLoading
+
+- (void)loadTable:(NSString *)aTable;
+- (IBAction)reloadTable:(id)sender;
+- (void)setTableDetails:(NSDictionary *)tableDetails;
+
 @end
