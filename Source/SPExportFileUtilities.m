@@ -35,7 +35,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
-#import "SPTableContentDelegate.h"
 #import "SPExportController+SharedPrivateAPI.h"
 
 #import <SPMySQL/SPMySQL.h>

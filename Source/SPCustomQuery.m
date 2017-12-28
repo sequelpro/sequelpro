@@ -4012,7 +4012,7 @@
  */
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
-#warning duplicate code with SPTableContentDataSource.m tableView:objectValueForTableColumn:…
+#warning duplicate code with SPTableContent.m tableView:objectValueForTableColumn:…
 	id value = nil;
 	
 	// While the table is being loaded, additional validation is required - data

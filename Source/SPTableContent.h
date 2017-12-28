@@ -52,7 +52,7 @@
 
 #import "SPDatabaseContentViewDelegate.h"
 
-@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
+@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate, SPDatabaseContentViewDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;
@@ -308,5 +308,15 @@
 - (void)openContentFilterManager;
 
 - (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+
+#pragma mark - SPTableContentDataSource
+
+- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
+
+#pragma mark - SPTableContentFilter
+
+- (void)makeContentFilterHaveFocus;
+- (void)updateFilterTableClause:(id)currentValue;
+- (NSString*)escapeFilterTableDefaultOperator:(NSString*)op;
 
 @end
