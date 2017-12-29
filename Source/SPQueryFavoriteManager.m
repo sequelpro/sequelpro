@@ -477,6 +477,7 @@
 		[prefs setObject:[self queryFavoritesForFileURL:nil] forKey:SPQueryFavorites];
 
 		// Inform all opened documents to update the query favorites list
+#warning This should be done using notifications
 		for(id doc in [SPAppDelegate orderedDocuments])
 			if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(queryFavoritesHaveBeenUpdated:)])
 				[[doc valueForKeyPath:@"customQueryInstance"] queryFavoritesHaveBeenUpdated:self];

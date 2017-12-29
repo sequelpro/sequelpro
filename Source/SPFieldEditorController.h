@@ -254,3 +254,10 @@
 - (void)setDoGroupDueToChars;
 
 @end
+
+@protocol SPFieldEditorControllerDelegate <NSObject>
+
+@optional
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
+
+@end

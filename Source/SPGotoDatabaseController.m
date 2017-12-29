@@ -30,7 +30,7 @@
 
 #import "SPGotoDatabaseController.h"
 
-@interface SPGotoDatabaseController (Private)
+@interface SPGotoDatabaseController ()
 
 /** Update the list of matched names
  * @param filter     The string to be matched.
