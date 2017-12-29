@@ -43,7 +43,6 @@
 #import "SPExportController.h"
 #import "SPSplitView.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPWindowController.h"
 #import "SPNavigatorController.h"
 #import "SPSQLParser.h"

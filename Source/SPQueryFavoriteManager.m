@@ -32,7 +32,6 @@
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"

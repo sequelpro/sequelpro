@@ -38,7 +38,6 @@
 #import "SPQueryController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
-#import "SPQueryDocumentsController.h"
 #import "SPDatabaseStructure.h"
 
 #pragma mark -
