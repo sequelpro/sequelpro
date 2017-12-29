@@ -36,7 +36,7 @@
 
 #import <pthread.h>
 
-@interface SPDatabaseStructure (Private_API)
+@interface SPDatabaseStructure ()
 
 - (void)_destroy:(NSNotification *)notification;
 
@@ -469,12 +469,8 @@ cleanup_thread_and_pool:
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPDatabaseStructure (Private_API)
 
 /**
  * Ensure that processing is completed.

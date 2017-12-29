@@ -39,7 +39,7 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPTableData (PrivateAPI)
+@interface SPTableData ()
 
 - (void)_loopWhileWorking;
 - (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType;
