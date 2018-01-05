@@ -201,11 +201,19 @@
 	[[self window] makeFirstResponder:favoriteNameTextField];
 
 	// Duplicate a selected favorite if sender == self
-	if (sender == self)
-		favorite = [NSMutableDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[[favoriteNameTextField stringValue] stringByAppendingFormat:@" Copy"], [favoriteQueryTextView string], nil] forKeys:[NSArray arrayWithObjects:@"name", @"query", nil]];
+	if (sender == self) {
+		favorite = [NSMutableDictionary dictionaryWithDictionary:@{
+			@"name":  [NSString stringWithFormat:NSLocalizedString(@"%@ Copy", @"query favorite manager : duplicate favorite : new favorite name"),[favoriteNameTextField stringValue]],
+			@"query": [NSString stringWithString:[favoriteQueryTextView string]] // #2938 - without copying the string we would store the live NS*MutableString object that backs the text view and changes its contents when selection changes!
+		}];
+	}
 	// Add a new favorite
-	else
-		favorite = [NSMutableDictionary dictionaryWithObjects:@[@"New Favorite", @""] forKeys:@[@"name", @"query"]];
+	else {
+		favorite = [NSMutableDictionary dictionaryWithDictionary:@{
+			@"name":  NSLocalizedString(@"New Favorite",@"query favorite manager : new favorite : name"),
+			@"query": @""
+		}];
+	}
 	
 	// If a favourite is currently selected, add the new favourite next to it
 	if ([favoritesTableView numberOfSelectedRows] > 0) {
