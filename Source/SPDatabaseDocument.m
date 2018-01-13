@@ -3386,36 +3386,42 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			NSBeep();
 			return NO;
 		}
-
-		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
+		
 		NSMutableDictionary *spf = [[NSMutableDictionary alloc] init];
+		{
+			NSError *error = nil;
+			
+			NSData *pData = [NSData dataWithContentsOfFile:fileName options:NSUncachedRead error:&error];
+			
+			if(pData && !error) {
+				NSDictionary *pDict = [NSPropertyListSerialization propertyListWithData:pData
+																				options:NSPropertyListImmutable
+																				 format:NULL
+																				  error:&error];
 
-		NSData *pData = [NSData dataWithContentsOfFile:fileName options:NSUncachedRead error:&readError];
-
-		[spf addEntriesFromDictionary:[NSPropertyListSerialization propertyListFromData:pData 
-				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError]];
-
-		if(!spf || ![spf count] || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-
-			[SPAlertSheets beginWaitingAlertSheetWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
-			                               alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
-			                                   otherButton:nil
-			                                    alertStyle:NSCriticalAlertStyle
-			                                     docWindow:parentWindow
-			                                 modalDelegate:self
-			                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-			                                   contextInfo:@"saveDocPrefSheetStatus"
-			                                      infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent]]
-			                                    returnCode:&saveDocPrefSheetStatus];
-
-			if (spf) [spf release];
-			if(saveDocPrefSheetStatus == NSAlertAlternateReturn)
-				return YES;
-
-			return NO;
+				if(pDict && !error) {
+					[spf addEntriesFromDictionary:pDict];
+				}
+			}
+			
+			if(![spf count] || error) {
+				[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:NSLocalizedString(@"Ignore", @"ignore button")
+												   otherButton:nil
+													alertStyle:NSCriticalAlertStyle
+													 docWindow:parentWindow
+												 modalDelegate:self
+												didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+												   contextInfo:@"saveDocPrefSheetStatus"
+													  infoText:[NSString stringWithFormat:NSLocalizedString(@"Connection data file “%@” couldn't be read. Please try to save the document under a different name.\n\nDetails: %@", @"message error while reading connection data file and suggesting to save it under a differnet name"), [fileName lastPathComponent], [error localizedDescription]]
+													returnCode:&saveDocPrefSheetStatus];
+				
+				if(spf) [spf release];
+				if(saveDocPrefSheetStatus == NSAlertAlternateReturn) return YES;
+				
+				return NO;
+			}
 		}
 
 		// For dispatching later
@@ -4940,33 +4946,36 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (BOOL)setStateFromConnectionFile:(NSString *)path
 {
-	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
-
 	NSString *encryptpw = nil;
 	NSMutableDictionary *data = nil;
 	NSDictionary *spf = nil;
 
-
-	// Read the property list data, and unserialize it.
-	NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&readError];
-
-	spf = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-	if (!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read.", @"error while reading connection data file")];
-
-		[alert setAlertStyle:NSCriticalAlertStyle];
-		[alert runModal];
-		if (spf) [spf release];
-		[self closeAndDisconnect];
-		return NO;
+	{
+		NSError *error = nil;
+		
+		// Read the property list data, and unserialize it.
+		NSData *pData = [NSData dataWithContentsOfFile:path options:NSUncachedRead error:&error];
+		
+		if(pData && !error) {
+			spf = [[NSPropertyListSerialization propertyListWithData:pData
+															 options:NSPropertyListImmutable
+															  format:NULL
+															   error:&error] retain];
+		}
+		
+		if (!spf || error) {
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while reading connection data file", @"error while reading connection data file")
+											 defaultButton:NSLocalizedString(@"OK", @"OK button")
+										   alternateButton:nil
+											   otherButton:nil
+								 informativeTextWithFormat:NSLocalizedString(@"Connection data file couldn't be read. (%@)", @"error while reading connection data file"), [error localizedDescription]];
+			
+			[alert setAlertStyle:NSCriticalAlertStyle];
+			[alert runModal];
+			if (spf) [spf release];
+			[self closeAndDisconnect];
+			return NO;
+		}
 	}
 
 	// If the .spf format is unhandled, error.

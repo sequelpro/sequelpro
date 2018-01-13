@@ -939,25 +939,31 @@
 
 
 	if(!isNewBundle) {
-		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
 		NSDictionary *cmdData = nil;
-		NSData *pData = [NSData dataWithContentsOfFile:cmdFilePath options:NSUncachedRead error:&readError];
-		cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-		if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-			NSLog(@"“%@” file couldn't be read.", cmdFilePath);
-			NSBeep();
-			if (cmdData) [cmdData release];
-			return NO;
-		} else {
-			// Check for changes and return if no changes are found
-			if([[saveDict description] isEqualToString:[cmdData description]])
-				return YES;
-			if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
-				[saveDict setObject:@YES forKey:SPBundleFileDefaultBundleWasModifiedKey];
+		{
+			NSError *error = nil;
+			
+			NSData *pData = [NSData dataWithContentsOfFile:cmdFilePath options:NSUncachedRead error:&error];
+			
+			cmdData = [[NSPropertyListSerialization propertyListWithData:pData
+																 options:NSPropertyListImmutable
+																  format:NULL
+																   error:&error] retain];
+			
+			if(!cmdData || error) {
+				NSLog(@"“%@” file couldn't be read. (error=%@)", cmdFilePath, error);
+				NSBeep();
+				if (cmdData) [cmdData release];
+				return NO;
+			}
 		}
+		
+		// Check for changes and return if no changes are found
+		if([[saveDict description] isEqualToString:[cmdData description]]) 
+			return YES;
+		if([cmdData objectForKey:SPBundleFileIsDefaultBundleKey]) 
+			[saveDict setObject:@YES forKey:SPBundleFileDefaultBundleWasModifiedKey];
+		
 		if (cmdData) [cmdData release];
 	}
 
@@ -966,7 +972,6 @@
 	[saveDict writeToFile:cmdFilePath atomically:YES];
 
 	return YES;
-
 }
 
 /**
@@ -1642,21 +1647,25 @@
 			for(NSString* bundle in foundBundles) {
 				if(![[[bundle pathExtension] lowercaseString] isEqualToString:[SPUserBundleFileExtension lowercaseString]]) continue;
 
-				NSError *readError = nil;
-				NSString *convError = nil;
-				NSPropertyListFormat format;
 				NSDictionary *cmdData = nil;
+				NSError *readError = nil;
+					
 				NSString *infoPath = [NSString stringWithFormat:@"%@/%@/%@", bundlePath, bundle, SPBundleFileName];
 				NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
-
-				cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-						mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-				if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-					NSLog(@"“%@/%@” file couldn't be read.", bundle, SPBundleFileName);
+				
+				if(pData && !error) {
+					cmdData = [[NSPropertyListSerialization propertyListWithData:pData
+																		 options:NSPropertyListImmutable
+																		  format:NULL
+																		   error:&readError] retain];
+				}
+				
+				if(!cmdData || readError) {
+					NSLog(@"“%@/%@” file couldn't be read. (error=%@)", bundle, SPBundleFileName, readError);
 					NSBeep();
 					if (cmdData) [cmdData release];
-				} else {
+				}
+				else {
 					if([cmdData objectForKey:SPBundleFileNameKey] && [[cmdData objectForKey:SPBundleFileNameKey] length] && [cmdData objectForKey:SPBundleFileScopeKey])
 					{
 						NSMutableDictionary *bundleCommand = [NSMutableDictionary dictionary];

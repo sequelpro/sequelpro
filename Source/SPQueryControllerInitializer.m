@@ -97,24 +97,30 @@ static NSString *SPCompletionTokensSnippetsKey = @"function_argument_snippets";
 - (NSError *)loadCompletionLists
 {	
 	NSError *readError = nil;
-	NSString *convError = nil;
 	NSString *errorDescription = nil;
 	
-	NSPropertyListFormat format;
-	NSData *completionTokensData = [NSData dataWithContentsOfFile:
-									[NSBundle pathForResource:SPCompletionTokensFilename
-													   ofType:nil 
-												  inDirectory:[[NSBundle mainBundle] bundlePath]] 
-														  options:NSMappedRead error:&readError];
+	NSString *filePath = [NSBundle pathForResource:SPCompletionTokensFilename
+											ofType:nil
+									   inDirectory:[[NSBundle mainBundle] bundlePath]];
+						  
+	NSData *completionTokensData = [NSData dataWithContentsOfFile:filePath
+														  options:NSMappedRead
+															error:&readError];
+
+	NSDictionary *completionPlist = nil;
+	if(completionTokensData && !readError) {
+		NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:completionTokensData
+																			options:NSPropertyListMutableContainersAndLeaves
+																			 format:NULL
+																			  error:&readError];
 	
-	NSDictionary *completionPlist = [NSDictionary dictionaryWithDictionary:
-									 [NSPropertyListSerialization propertyListFromData:completionTokensData
-																	  mutabilityOption:NSPropertyListMutableContainersAndLeaves 
-																				format:&format 
-																	  errorDescription:&convError]];
+		if(plistDict && !readError) {
+			completionPlist = [NSDictionary dictionaryWithDictionary:plistDict];
+		}
+	}
 	
-	if (completionPlist == nil || readError != nil || convError != nil) {
-		errorDescription = [NSString stringWithFormat:@"Error reading '%@': %@, %@", SPCompletionTokensFilename, [readError localizedDescription], convError];
+	if (completionPlist == nil || readError) {
+		errorDescription = [NSString stringWithFormat:@"Error reading '%@': %@", SPCompletionTokensFilename, readError];
 	} 
 	else {
 		if ([completionPlist objectForKey:SPCompletionTokensKeywordsKey]) {

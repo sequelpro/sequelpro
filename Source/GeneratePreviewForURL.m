@@ -145,20 +145,23 @@ void CancelPreviewGeneration(void* thisInterface, QLPreviewRequestRef preview)
 #pragma mark -
 
 NSString *PreviewForSPF(NSURL *myURL, NSInteger *previewHeight) {
-	
+	NSDictionary *spf = nil;
 	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
-	NSString *html = nil;
-	
+
 	// Get spf data as dictionary
-	NSData *pData = [NSData dataWithContentsOfFile:[myURL path] options:NSUncachedRead error:&readError];
-	NSDictionary *spf = [[NSPropertyListSerialization propertyListFromData:pData
-	                                                      mutabilityOption:NSPropertyListImmutable
-	                                                                format:&format
-	                                                      errorDescription:&convError] retain];
+	NSData *pData = [NSData dataWithContentsOfFile:[myURL path]
+										   options:NSUncachedRead
+											 error:&readError];
 	
-	if(!readError && spf && ![convError length] && (format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+	if(pData && !readError) {
+		spf = [[NSPropertyListSerialization propertyListWithData:pData
+														 options:NSPropertyListImmutable
+														  format:NULL
+														   error:&readError] retain];
+	}
+	
+	NSString *html = nil;
+	if(!readError && spf) {
 		NSString *spfType = [spf objectForKey:SPFFormatKey];
 		NSString *(*fp)(NSDictionary *spf,NSURL *myURL, NSInteger *previewHeight) = NULL;
 		// Dispatch different spf formats
@@ -378,16 +381,21 @@ NSString *PreviewForSPFS(NSURL *myURL,NSInteger *previewHeight)
 	}
 	
 	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
 	NSDictionary *spf = nil;
 	
 	// Get info.plist data as dictionary
-	NSData *pData = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/info.plist", [myURL path]] options:NSUncachedRead error:&readError];
-	spf = [[NSPropertyListSerialization propertyListFromData:pData
-											mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+	NSData *pData = [NSData dataWithContentsOfFile:[[myURL path] stringByAppendingPathComponent:@"info.plist"]
+										   options:NSUncachedRead
+											 error:&readError];
 	
-	if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+	if(pData && !readError) {
+		spf = [[NSPropertyListSerialization propertyListWithData:pData
+														 options:NSPropertyListImmutable
+														  format:NULL
+														   error:&readError] retain];
+	}
+	
+	if(!spf || readError) {
 		[spf release];
 		return nil;
 	}
@@ -434,14 +442,19 @@ NSString *PreviewForSPFS(NSURL *myURL,NSInteger *previewHeight)
 				continue;
 			}
 			// Get info.plist data as dictionary
-			NSDictionary *sessionSpf;
+			NSDictionary *sessionSpf = nil;
 			pData = [NSData dataWithContentsOfFile:spfPath options:NSUncachedRead error:&readError];
-			sessionSpf = [[NSPropertyListSerialization propertyListFromData:pData
-														   mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+			if(pData && !readError) {
+				sessionSpf = [[NSPropertyListSerialization propertyListWithData:pData
+																		options:NSPropertyListImmutable
+																		 format:NULL
+																		  error:&readError] retain];
+			}
 			
-			if(!sessionSpf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
+			if(!sessionSpf || readError) {
 				[spfsHTML appendFormat:@"&nbsp;&nbsp;&nbsp;&nbsp;%@&nbsp;∅", [tab objectForKey:@"path"]];
-			} else {
+			}
+			else {
 				
 				NSString *name = @"••••";
 				NSString *host = @"••••";

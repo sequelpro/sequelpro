@@ -181,21 +181,28 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		whiteColor = [NSColor whiteColor];
 
 		// Init default filters for Content Browser
-		contentFilters = nil;
 		contentFilters = [[NSMutableDictionary alloc] init];
 		numberOfDefaultFilters = [[NSMutableDictionary alloc] init];
 
 		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
-		NSData *defaultFilterData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]]
-			options:NSMappedRead error:&readError];
-
-		[contentFilters setDictionary:[NSPropertyListSerialization propertyListFromData:defaultFilterData
-				mutabilityOption:NSPropertyListMutableContainersAndLeaves format:&format errorDescription:&convError]];
+		NSString *filePath = [NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]];
+		NSData *defaultFilterData = [NSData dataWithContentsOfFile:filePath
+														   options:NSMappedRead
+															 error:&readError];
 		
-		if (contentFilters == nil || readError != nil || convError != nil) {
-			NSLog(@"Error while reading 'ContentFilters.plist':\n%@\n%@", [readError localizedDescription], convError);
+		if(defaultFilterData && !readError) {
+			NSDictionary *defaultFilterDict = [NSPropertyListSerialization propertyListWithData:defaultFilterData
+																						options:NSPropertyListMutableContainersAndLeaves
+																						 format:NULL
+																						  error:&readError];
+			
+			if(defaultFilterDict && !readError) {
+				[contentFilters setDictionary:defaultFilterDict];
+			}
+		}
+		
+		if (readError) {
+			NSLog(@"Error while reading 'ContentFilters.plist':\n%@", readError);
 			NSBeep();
 		} 
 		else {

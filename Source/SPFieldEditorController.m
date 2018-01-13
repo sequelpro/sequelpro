@@ -129,17 +129,27 @@ typedef enum {
 		// Load default QL types
 		NSMutableArray *qlTypesItems = [[NSMutableArray alloc] init];
 		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
 
-		NSData *defaultTypeData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"EditorQuickLookTypes.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]]
-			options:NSMappedRead error:&readError];
+		NSString *filePath = [NSBundle pathForResource:@"EditorQuickLookTypes.plist"
+												ofType:nil
+										   inDirectory:[[NSBundle mainBundle] bundlePath]];
+		
+		NSData *defaultTypeData = [NSData dataWithContentsOfFile:filePath
+														 options:NSMappedRead
+														   error:&readError];
 
-		NSDictionary *defaultQLTypes = [NSPropertyListSerialization propertyListFromData:defaultTypeData
-				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
-		if(defaultQLTypes == nil || readError != nil || convError != nil)
-			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@\n%@", [readError localizedDescription], convError);
-		if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
+		NSDictionary *defaultQLTypes = nil;
+		if(defaultTypeData && !readError) {
+			defaultQLTypes = [NSPropertyListSerialization propertyListWithData:defaultTypeData
+																	   options:NSPropertyListImmutable
+																		format:NULL
+																		 error:&readError];
+		}
+		
+		if(defaultQLTypes == nil || readError ) {
+			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@", readError);
+		}
+		else if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
 			for(id type in [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
 				NSMenuItem *aMenuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
 				[aMenuItem setTag:tag];

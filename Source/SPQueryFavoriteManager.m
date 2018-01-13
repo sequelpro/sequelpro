@@ -823,8 +823,6 @@
 
 		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
 		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
 		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
@@ -832,15 +830,19 @@
 		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
 			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
 
-			spf = [[NSPropertyListSerialization propertyListFromData:pData 
-					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
+			if(pData && !readError) {
+				spf = [[NSPropertyListSerialization propertyListWithData:pData
+																 options:NSPropertyListImmutable
+																  format:NULL
+																   error:&readError] retain];
+			}
+			
+			if(!spf || readError) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while reading data file", @"error while reading data file")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
+												   otherButton:nil
+									 informativeTextWithFormat:NSLocalizedString(@"File couldn't be read. (%@)", @"error while reading data file"), [readError localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];

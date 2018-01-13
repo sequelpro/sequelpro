@@ -1257,275 +1257,280 @@ static const NSInteger kBlobAsImageFile = 4;
 		return;
 	}
 
-	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
 	NSDictionary *cmdData = nil;
-	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+	{
+		NSError *error = nil;
+		
+		NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&error];
 
-	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+		if(pData && !error) {
+			cmdData = [[NSPropertyListSerialization propertyListWithData:pData
+																 options:NSPropertyListImmutable
+																  format:NULL
+																   error:&error] retain];
+		}
+		
+		if(!cmdData || error) {
+			NSLog(@"“%@” file couldn't be read. (error=%@)", infoPath, error);
+			NSBeep();
+			if (cmdData) [cmdData release];
+			return;
+		}
+	}
 
-	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSLog(@"“%@” file couldn't be read.", infoPath);
-		NSBeep();
-		if (cmdData) [cmdData release];
-		return;
-	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+	if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
-			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
-			NSString *inputAction = @"";
-			NSString *inputFallBackAction = @"";
-			NSError *err = nil;
-			NSString *uuid = [NSString stringWithNewUUID];
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
-			NSString *bundleInputTableMetaDataFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskTableMetaDataFilePath, uuid];
+		NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
+		NSString *inputAction = @"";
+		NSString *inputFallBackAction = @"";
+		NSError *err = nil;
+		NSString *uuid = [NSString stringWithNewUUID];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
+		NSString *bundleInputTableMetaDataFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskTableMetaDataFilePath, uuid];
 
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if([cmdData objectForKey:SPBundleFileInputSourceKey])
-				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
-			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
-				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
+		if([cmdData objectForKey:SPBundleFileInputSourceKey])
+			inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+		if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+			inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
 
-			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
-			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
+		NSMutableDictionary *env = [NSMutableDictionary dictionary];
+		[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
+		[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
 
-			if ([[self delegate] respondsToSelector:@selector(usedQuery)] && [(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery]) {
-				[env setObject:[(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
-			}
+		if ([[self delegate] respondsToSelector:@selector(usedQuery)] && [(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery]) {
+			[env setObject:[(id <SPDatabaseContentViewDelegate>)[self delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+		}
 
-			[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
-			[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
+		[env setObject:bundleInputTableMetaDataFilePath forKey:SPBundleShellVariableInputTableMetaData];
+		[env setObject:SPBundleScopeDataTable forKey:SPBundleShellVariableBundleScope];
 
-			if([self numberOfSelectedRows]) {
-				NSMutableArray *sel = [NSMutableArray array];
-				NSIndexSet *selectedRows = [self selectedRowIndexes];
-				[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
-					[sel addObject:[NSString stringWithFormat:@"%llu", (unsigned long long)rowIndex]];
-				}];
-				[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
-			}
+		if([self numberOfSelectedRows]) {
+			NSMutableArray *sel = [NSMutableArray array];
+			NSIndexSet *selectedRows = [self selectedRowIndexes];
+			[selectedRows enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
+				[sel addObject:[NSString stringWithFormat:@"%llu", (unsigned long long)rowIndex]];
+			}];
+			[env setObject:[sel componentsJoinedByString:@"\t"] forKey:SPBundleShellVariableSelectedRowIndices];
+		}
 
-			NSError *inputFileError = nil;
-			NSString *input = @"";
-			NSInteger blobHandling = kBlobExclude;
-			if([cmdData objectForKey:SPBundleFileWithBlobKey]) {
-				if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingExclude])
-					blobHandling = kBlobExclude;
-				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingInclude])
-					blobHandling = kBlobInclude;
-				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingImageFileReference])
-					blobHandling = kBlobAsImageFile;
-				else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingFileReference])
-					blobHandling = kBlobAsFile;
-			}
+		NSError *inputFileError = nil;
+		NSString *input = @"";
+		NSInteger blobHandling = kBlobExclude;
+		if([cmdData objectForKey:SPBundleFileWithBlobKey]) {
+			if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingExclude])
+				blobHandling = kBlobExclude;
+			else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingInclude])
+				blobHandling = kBlobInclude;
+			else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingImageFileReference])
+				blobHandling = kBlobAsImageFile;
+			else if([[cmdData objectForKey:SPBundleFileWithBlobKey] isEqualToString:SPBundleInputSourceBlobHandlingFileReference])
+				blobHandling = kBlobAsFile;
+		}
 
-			if(blobHandling != kBlobExclude) {
-				NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
-				[env setObject:bundleBlobFilePath forKey:SPBundleShellVariableBlobFileDirectory];
-				[self setTmpBlobFileDirectory:bundleBlobFilePath];
-			} else {
-				[self setTmpBlobFileDirectory:@""];
-			}
+		if(blobHandling != kBlobExclude) {
+			NSString *bundleBlobFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskCopyBlobFileDirectory, uuid];
+			[env setObject:bundleBlobFilePath forKey:SPBundleShellVariableBlobFileDirectory];
+			[self setTmpBlobFileDirectory:bundleBlobFilePath];
+		} else {
+			[self setTmpBlobFileDirectory:@""];
+		}
 
-			if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
-				input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
-				input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
-				input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
-				input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
-			}
+		if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsTab]) {
+			input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
+		}
+		else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsCsv]) {
+			input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:YES blobHandling:blobHandling];
+		}
+		else if([inputAction isEqualToString:SPBundleInputSourceSelectedTableRowsAsSqlInsert]) {
+			input = [self rowsAsSqlInsertsOnlySelectedRows:YES];
+		}
+		else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsTab]) {
+			input = [self rowsAsTabStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
+		}
+		else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsCsv]) {
+			input = [self rowsAsCsvStringWithHeaders:YES onlySelectedRows:NO blobHandling:blobHandling];
+		}
+		else if([inputAction isEqualToString:SPBundleInputSourceTableRowsAsSqlInsert]) {
+			input = [self rowsAsSqlInsertsOnlySelectedRows:NO];
+		}
+		
+		if(input == nil) input = @"";
+		[input writeToFile:bundleInputFilePath
+				  atomically:YES
+					encoding:NSUTF8StringEncoding
+					   error:&inputFileError];
+		
+		if(inputFileError != nil) {
+			NSString *errorMessage  = [inputFileError localizedDescription];
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Bundle Error", @"bundle error"),
+				[self window],
+				[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+			);
+			if (cmdData) [cmdData release];
+			return;
+		}
+
+
+		// Create an array of table column mappings for fast iteration
+		NSArray *columns = [self tableColumns];
+		NSUInteger numColumns = [columns count];
+		NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
+		NSUInteger c;
+		for ( c = 0; c < numColumns; c++ )
+			columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
+
+		NSMutableString *tableMetaData = [NSMutableString string];
+		if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
+			[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
 			
-			if(input == nil) input = @"";
-			[input writeToFile:bundleInputFilePath
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&inputFileError];
+			NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
 			
-			if(inputFileError != nil) {
-				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"Bundle Error", @"bundle error"),
-					[self window],
-					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
-				);
-				if (cmdData) [cmdData release];
-				return;
-			}
-
-
-			// Create an array of table column mappings for fast iteration
-			NSArray *columns = [self tableColumns];
-			NSUInteger numColumns = [columns count];
-			NSUInteger *columnMappings = calloc(numColumns, sizeof(NSUInteger));
-			NSUInteger c;
-			for ( c = 0; c < numColumns; c++ )
-				columnMappings[c] = (NSUInteger)[[NSArrayObjectAtIndex(columns, c) identifier] integerValue];
-
-			NSMutableString *tableMetaData = [NSMutableString string];
-			if([[self delegate] isKindOfClass:[SPCustomQuery class]]) {
-				[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
-				
-				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
-				
-				if(defs && [defs count] == numColumns)
-					for( c = 0; c < numColumns; c++ ) {
-						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
-						[tableMetaData appendString:@"\n"];
-					}
-			}
-			else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
-				[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
-				
-				NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
-				
-				if(defs && [defs count] == numColumns)
-					for( c = 0; c < numColumns; c++ ) {
-						NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
-						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
-						[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
-						[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
-						[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
-					}
-			}
-			free(columnMappings);
-
-			inputFileError = nil;
-			[tableMetaData writeToFile:bundleInputTableMetaDataFilePath
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&inputFileError];
+			if(defs && [defs count] == numColumns)
+				for( c = 0; c < numColumns; c++ ) {
+					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"char_length"]) ? : @""];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"UNSIGNED_FLAG"]];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"AUTO_INCREMENT_FLAG"]];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"PRI_KEY_FLAG"]];
+					[tableMetaData appendString:@"\n"];
+				}
+		}
+		else if([[self delegate] isKindOfClass:[SPTableContent class]]) {
+			[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
 			
-			if(inputFileError != nil) {
-				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"Bundle Error", @"bundle error"),
-					[self window],
-					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
-				);
-				if (cmdData) [cmdData release];
-				return;
+			NSArray *defs = [(id <SPDatabaseContentViewDelegate>)[self delegate] dataColumnDefinitions];
+			
+			if(defs && [defs count] == numColumns)
+				for( c = 0; c < numColumns; c++ ) {
+					NSDictionary *col = NSArrayObjectAtIndex(defs, columnMappings[c]);
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"type"]];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"typegrouping"]];
+					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"length"]) ? : @""];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"unsigned"]];
+					[tableMetaData appendFormat:@"%@\t", [col objectForKey:@"autoincrement"]];
+					[tableMetaData appendFormat:@"%@\t", ([col objectForKey:@"isprimarykey"]) ? : @"0"];
+					[tableMetaData appendFormat:@"%@\n", [col objectForKey:@"comment"]];
+				}
+		}
+		free(columnMappings);
+
+		inputFileError = nil;
+		[tableMetaData writeToFile:bundleInputTableMetaDataFilePath
+				  atomically:YES
+					encoding:NSUTF8StringEncoding
+					   error:&inputFileError];
+		
+		if(inputFileError != nil) {
+			NSString *errorMessage  = [inputFileError localizedDescription];
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Bundle Error", @"bundle error"),
+				[self window],
+				[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+			);
+			if (cmdData) [cmdData release];
+			return;
+		}
+
+
+		NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
+										atCurrentDirectoryPath:nil 
+										callerInstance:[SPAppDelegate frontDocument]
+										contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+												([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+												NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
+																  uuid, SPBundleFileInternalexecutionUUID, nil]
+										error:&err];
+
+		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+		NSString *action = SPBundleOutputActionNone;
+		if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+			action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+		// Redirect due exit code
+		if(err != nil) {
+			if([err code] == SPBundleRedirectActionNone) {
+				action = SPBundleOutputActionNone;
+				err = nil;
 			}
-
-
-			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:[SPAppDelegate frontDocument]
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"Data Table", @"data table menu item label"), @"scope",
-																	  uuid, SPBundleFileInternalexecutionUUID, nil]
-											error:&err];
-
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-			NSString *action = SPBundleOutputActionNone;
-			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
-				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
-
-			// Redirect due exit code
-			if(err != nil) {
-				if([err code] == SPBundleRedirectActionNone) {
-					action = SPBundleOutputActionNone;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionReplaceSection) {
-					action = SPBundleOutputActionReplaceSelection;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionReplaceContent) {
-					action = SPBundleOutputActionReplaceContent;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionInsertAsText) {
-					action = SPBundleOutputActionInsertAsText;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
-					action = SPBundleOutputActionInsertAsSnippet;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsHTML) {
-					action = SPBundleOutputActionShowAsHTML;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
-					action = SPBundleOutputActionShowAsTextTooltip;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
-					action = SPBundleOutputActionShowAsHTMLTooltip;
-					err = nil;
-				}
+			else if([err code] == SPBundleRedirectActionReplaceSection) {
+				action = SPBundleOutputActionReplaceSelection;
+				err = nil;
 			}
-
-			if(err == nil && output) {
-				if(![action isEqualToString:SPBundleOutputActionNone]) {
-					NSPoint pos = [NSEvent mouseLocation];
-					pos.y -= 16;
-
-					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
-						[SPTooltip showWithObject:output atLocation:pos];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
-						[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
-						BOOL correspondingWindowFound = NO;
-						for(id win in [NSApp windows]) {
-							if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
-								if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-									correspondingWindowFound = YES;
-									[[win delegate] displayHTMLContent:output withOptions:nil];
-									break;
-								}
-							}
-						}
-						if(!correspondingWindowFound) {
-							SPBundleHTMLOutputController *bundleController = [[SPBundleHTMLOutputController alloc] init];
-							[bundleController setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
-							[bundleController displayHTMLContent:output withOptions:nil];
-							[SPAppDelegate addHTMLOutputController:bundleController];
-						}
-					}
-				}
-			} else if([err code] != 9) { // Suppress an error message if command was killed
-				NSString *errorMessage  = [err localizedDescription];
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"BASH Error", @"bash error"),
-					[self window],
-					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
-				);
+			else if([err code] == SPBundleRedirectActionReplaceContent) {
+				action = SPBundleOutputActionReplaceContent;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionInsertAsText) {
+				action = SPBundleOutputActionInsertAsText;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
+				action = SPBundleOutputActionInsertAsSnippet;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsHTML) {
+				action = SPBundleOutputActionShowAsHTML;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
+				action = SPBundleOutputActionShowAsTextTooltip;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
+				action = SPBundleOutputActionShowAsHTMLTooltip;
+				err = nil;
 			}
 		}
 
-		if (cmdData) [cmdData release];
+		if(err == nil && output) {
+			if(![action isEqualToString:SPBundleOutputActionNone]) {
+				NSPoint pos = [NSEvent mouseLocation];
+				pos.y -= 16;
+
+				if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+					[SPTooltip showWithObject:output atLocation:pos];
+				}
+
+				else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+					[SPTooltip showWithObject:output atLocation:pos ofType:@"html"];
+				}
+
+				else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+					BOOL correspondingWindowFound = NO;
+					for(id win in [NSApp windows]) {
+						if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
+							if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+								correspondingWindowFound = YES;
+								[[win delegate] displayHTMLContent:output withOptions:nil];
+								break;
+							}
+						}
+					}
+					if(!correspondingWindowFound) {
+						SPBundleHTMLOutputController *bundleController = [[SPBundleHTMLOutputController alloc] init];
+						[bundleController setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
+						[bundleController displayHTMLContent:output withOptions:nil];
+						[SPAppDelegate addHTMLOutputController:bundleController];
+					}
+				}
+			}
+		} else if([err code] != 9) { // Suppress an error message if command was killed
+			NSString *errorMessage  = [err localizedDescription];
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"BASH Error", @"bash error"),
+				[self window],
+				[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+			);
+		}
 	}
+
+	if (cmdData) [cmdData release];
 #endif
 }
 
