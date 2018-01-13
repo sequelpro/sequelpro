@@ -33,6 +33,7 @@
 #import "SPColorWellCell.h"
 #import "SPAlertSheets.h"
 #import "SPCategoryAdditions.h"
+#import "SPFunctions.h"
 
 // Constants
 static NSString *SPSaveColorScheme          = @"SaveColorScheme";
@@ -222,8 +223,6 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		}
 	}
 	
-	NSBeep();
-	
 	[editThemeListTable reloadData];
 }
 
@@ -256,8 +255,6 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		}
 	}
 	
-	NSBeep();
-	
 	[editThemeListTable reloadData];
 }
 
@@ -288,17 +285,26 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	[[NSColorPanel sharedColorPanel] close];
 	
 	[prefs setObject:SPDefaultColorSchemeName forKey:SPCustomQueryEditorThemeName];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000f green:0.455f blue:0.000f alpha:1.000f]] forKey:SPCustomQueryEditorCommentColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.769f green:0.102f blue:0.086f alpha:1.000f]] forKey:SPCustomQueryEditorQuoteColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.200f green:0.250f blue:1.000f alpha:1.000f]] forKey:SPCustomQueryEditorSQLKeywordColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.000f green:0.000f blue:0.658f alpha:1.000f]] forKey:SPCustomQueryEditorBacktickColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.506f green:0.263f blue:0.000f alpha:1.000f]] forKey:SPCustomQueryEditorNumericColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.500f green:0.500f blue:0.500f alpha:1.000f]] forKey:SPCustomQueryEditorVariableColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.950f green:0.950f blue:0.950f alpha:1.000f]] forKey:SPCustomQueryEditorHighlightQueryColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor colorWithDeviceRed:0.7098f green:0.8352f blue:1.000f alpha:1.000f]] forKey:SPCustomQueryEditorSelectionColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorTextColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor blackColor]] forKey:SPCustomQueryEditorCaretColor];
-	[prefs setObject:[NSArchiver archivedDataWithRootObject:[NSColor whiteColor]] forKey:SPCustomQueryEditorBackgroundColor];
+	
+	NSDictionary *vendorDefaults = [prefs volatileDomainForName:NSRegistrationDomain]; // corresponds to -registerDefaults: in the app controller
+	
+	NSArray *copyKeys = @[
+		SPCustomQueryEditorCommentColor,
+		SPCustomQueryEditorQuoteColor,
+		SPCustomQueryEditorSQLKeywordColor,
+		SPCustomQueryEditorBacktickColor,
+		SPCustomQueryEditorNumericColor,
+		SPCustomQueryEditorVariableColor,
+		SPCustomQueryEditorHighlightQueryColor,
+		SPCustomQueryEditorSelectionColor,
+		SPCustomQueryEditorTextColor,
+		SPCustomQueryEditorCaretColor,
+		SPCustomQueryEditorBackgroundColor,
+	];
+	
+	for(NSString *key in copyKeys) {
+		[prefs setObject:[vendorDefaults objectForKey:key] forKey:key];
+	}
 
 	[colorSettingTableView setBackgroundColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]]];
 	[colorSettingTableView reloadData];

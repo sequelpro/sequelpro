@@ -85,6 +85,7 @@
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 #ifndef SP_CODA
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor;
 - (void)_setTextSelectionColor:(NSColor *)newSelectionColor onBackgroundColor:(NSColor *)aBackgroundColor;
 #endif
 - (void)_positionCompletionPopup:(SPNarrowDownCompletion *)aPopup relativeToTextAtLocation:(NSUInteger)aLocation;
@@ -185,27 +186,56 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(boundsDidChangeNotification:) name:NSViewBoundsDidChangeNotification object:[scrollView contentView]];
 
 #ifndef SP_CODA
-	[self setQueryHiliteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorHighlightQueryColor]]];
-	NSColor *backgroundColor = [NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBackgroundColor]];
-	[self setQueryEditorBackgroundColor:backgroundColor];
-	[self setBackgroundColor:backgroundColor];
-	[self setCommentColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCommentColor]]];
-	[self setQuoteColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorQuoteColor]]];
-	[self setKeywordColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSQLKeywordColor]]];
-	[self setBacktickColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorBacktickColor]]];
-	[self setNumericColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorNumericColor]]];
-	[self setVariableColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorVariableColor]]];
-	[self setOtherTextColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorTextColor]]];
-	[self setTextColor:otherTextColor];
-	[self setInsertionPointColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorCaretColor]]];
-	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
+	{
+		struct csItem {
+			NSString *p;
+			SEL m;
+		} colorSetup[] = {
+			{ .p = SPCustomQueryEditorHighlightQueryColor, .m = @selector(setQueryHiliteColor:) },
+			{ .p = SPCustomQueryEditorBackgroundColor,     .m = @selector(setQueryEditorBackgroundColor:) },
+			{ .p = SPCustomQueryEditorBackgroundColor,     .m = @selector(setBackgroundColor:) },
+			{ .p = SPCustomQueryEditorCommentColor,        .m = @selector(setCommentColor:) },
+			{ .p = SPCustomQueryEditorQuoteColor,          .m = @selector(setQuoteColor:) },
+			{ .p = SPCustomQueryEditorSQLKeywordColor,     .m = @selector(setKeywordColor:) },
+			{ .p = SPCustomQueryEditorBacktickColor,       .m = @selector(setBacktickColor:) },
+			{ .p = SPCustomQueryEditorNumericColor,        .m = @selector(setNumericColor:) },
+			{ .p = SPCustomQueryEditorVariableColor,       .m = @selector(setVariableColor:) },
+			{ .p = SPCustomQueryEditorTextColor,           .m = @selector(setOtherTextColor:) },
+			{ .p = SPCustomQueryEditorTextColor,           .m = @selector(setTextColor:) },
+			{ .p = SPCustomQueryEditorCaretColor,          .m = @selector(setInsertionPointColor:) },
+			{ .p = SPCustomQueryEditorSelectionColor,      .m = @selector(_setTextSelectionColor:) },
+			{ .p = nil, .m = NULL } // stop key
+		};
+		
+		struct csItem *item = &colorSetup[0];
+		
+		NSDictionary *vendorDefaults = [prefs volatileDomainForName:NSRegistrationDomain]; //prefs from -registerDefaults: in app controller
 
-	[self _setTextSelectionColor:[NSUnarchiver unarchiveObjectWithData:[prefs dataForKey:SPCustomQueryEditorSelectionColor]] onBackgroundColor:backgroundColor];
+		do {
+			NSData *colorData = [prefs dataForKey:item->p];
+			NSColor *color;
+			BOOL canRetry = YES;
+retry:
+			if(colorData && (color = [NSUnarchiver unarchiveObjectWithData:colorData])) {
+				[self performSelector:item->m withObject:color];
+			}
+			else if(canRetry) {
+				// #2963: previous versions of SP would accept invalid data (resulting in `nil`) and store it in prefs,
+				//        so if loading failed use the default color instead (`nil` would cause exceptions later on)
+				colorData = [vendorDefaults objectForKey:item->p];
+				canRetry = NO;
+				SPLog(@"user defaults contains invalid value for theme color '%@'! (retrying with default value)", item->p);
+				goto retry;
+			}
+		} while((++item)->p);
+	}
+	
+	[self setShouldHiliteQuery:[prefs boolForKey:SPCustomQueryHighlightCurrentQuery]];
 
 	[self setAutomaticDashSubstitutionEnabled:NO];  // prevents -- from becoming —, the em dash.
 	[self setAutomaticQuoteSubstitutionEnabled:NO]; // prevents ' and " from becoming ‘, ’ and “, ” respectively.
 
-	// Register observers for the when editor background colors preference changes
+	// Register observers for the when editor colors preference changes
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorSelectionColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorCaretColor options:NSKeyValueObservingOptionNew context:NULL];
 	[prefs addObserver:self forKeyPath:SPCustomQueryEditorFont options:NSKeyValueObservingOptionNew context:NULL];
@@ -3735,6 +3765,11 @@ NSInteger _alphabeticSort(id string1, id string2, void *reverse)
 
 	// Set the selection colour
 	[self setSelectedTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:newSelectionColor, NSBackgroundColorAttributeName, nil]];
+}
+
+- (void)_setTextSelectionColor:(NSColor *)newSelectionColor
+{
+	[self _setTextSelectionColor:newSelectionColor onBackgroundColor:[self backgroundColor]];
 }
 #endif
 
