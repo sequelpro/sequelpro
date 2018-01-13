@@ -3309,25 +3309,25 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			}
 			[info setObject:windows forKey:@"windows"];
 			
-			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:info
-													  format:NSPropertyListXMLFormat_v1_0
-											errorDescription:&err];
+			error = nil;
+			
+			NSData *plist = [NSPropertyListSerialization dataWithPropertyList:info
+																	   format:NSPropertyListXMLFormat_v1_0
+																	  options:0
+																		error:&error];
 
-			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting session data", @"error while converting session data")]
+			if(error) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting session data", @"error while converting session data")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 											   alternateButton:nil 
-												  otherButton:nil 
-									informativeTextWithFormat:@"%@", err];
+												   otherButton:nil
+									 informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
 				
 				return;
 			}
-
-			error = nil;
 			
 			[plist writeToFile:[NSString stringWithFormat:@"%@/info.plist", fileName] options:NSAtomicWrite error:&error];
 			
@@ -3437,27 +3437,27 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[spf setObject:[[SPQueryController sharedQueryController] contentFilterForFileURL:[self fileURL]] forKey:SPContentFilters];
 
 		// Save it again
-		NSString *err = nil;
-		NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spf
-												  format:NSPropertyListXMLFormat_v1_0
-										errorDescription:&err];
+		NSError *error = nil;
+		NSData *plist = [NSPropertyListSerialization dataWithPropertyList:spf
+																   format:NSPropertyListXMLFormat_v1_0
+																  options:0
+																	error:&error];
 
 		[spf release];
-		if(err != nil) {
-			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
+		if(error) {
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")
 											 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 										   alternateButton:nil 
-											  otherButton:nil 
-								informativeTextWithFormat:@"%@", err];
+											   otherButton:nil
+								 informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
 			return NO;
 		}
 
-		NSError *error = nil;
 		[plist writeToFile:fileName options:NSAtomicWrite error:&error];
-		if(error != nil){
+		if(error != nil) {
 			NSAlert *errorAlert = [NSAlert alertWithError:error];
 			[errorAlert runModal];
 			return NO;
@@ -3466,7 +3466,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[NSURL fileURLWithPath:fileName]];
 
 		return YES;
-
 	}
 
 	// Set up the dictionary to save to file, together with a data store
@@ -3536,24 +3535,24 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	// Convert to plist
-	NSString *err = nil;
-	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfStructure
+	NSError *error = nil;
+	NSData *plist = [NSPropertyListSerialization dataWithPropertyList:spfStructure
 															   format:NSPropertyListXMLFormat_v1_0
-													 errorDescription:&err];
+															  options:0
+																error:&error];
 
-	if (err != nil) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")]
+	if (error) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting connection data", @"error while converting connection data")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:@"%@", err];
+							 informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
 		return NO;
 	}
 
-	NSError *error = nil;
 	[plist writeToFile:fileName options:NSAtomicWrite error:&error];
 	if (error != nil){
 		NSAlert *errorAlert = [NSAlert alertWithError:error];
@@ -3585,7 +3584,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 
 	return YES;
-
 }
 
 /**

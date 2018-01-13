@@ -895,17 +895,18 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	
 	[scheme setObject:settings forKey:@"settings"];
 	
-	NSString *err = nil;
-	NSData *plist = [NSPropertyListSerialization dataFromPropertyList:scheme
+	NSError *error = nil;
+	NSData *plist = [NSPropertyListSerialization dataWithPropertyList:scheme
 															   format:NSPropertyListXMLFormat_v1_0
-													 errorDescription:&err];
+															  options:0
+																error:&error];
 	
-	if(err != nil) {
-		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while converting color scheme data", @"error while converting color scheme data")]
+	if(error) {
+		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting color scheme data", @"error while converting color scheme data")
 										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
 									   alternateButton:nil 
 										   otherButton:nil 
-							 informativeTextWithFormat:@"%@", err];
+							 informativeTextWithFormat:@"%@", [error localizedDescription]];
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -913,7 +914,6 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		return;
 	}
 	
-	NSError *error = nil;
 	[plist writeToFile:path options:NSAtomicWrite error:&error];
 	
 	if (error) [[NSAlert alertWithError:error] runModal];
