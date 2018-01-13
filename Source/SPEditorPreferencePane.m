@@ -66,34 +66,32 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		
 		editThemeListItems = [[NSArray arrayWithArray:[self _getAvailableThemes]] retain];
 		
-		editorColors = 
-		[@[
-		  SPCustomQueryEditorTextColor,
-		  SPCustomQueryEditorBackgroundColor,
-		  SPCustomQueryEditorCaretColor,
-		  SPCustomQueryEditorCommentColor,
-		  SPCustomQueryEditorSQLKeywordColor,
-		  SPCustomQueryEditorNumericColor,
-		  SPCustomQueryEditorQuoteColor,
-		  SPCustomQueryEditorBacktickColor,
-		  SPCustomQueryEditorVariableColor,
-		  SPCustomQueryEditorHighlightQueryColor,
-		  SPCustomQueryEditorSelectionColor
+		editorColors = [@[
+			SPCustomQueryEditorTextColor,
+			SPCustomQueryEditorBackgroundColor,
+			SPCustomQueryEditorCaretColor,
+			SPCustomQueryEditorCommentColor,
+			SPCustomQueryEditorSQLKeywordColor,
+			SPCustomQueryEditorNumericColor,
+			SPCustomQueryEditorQuoteColor,
+			SPCustomQueryEditorBacktickColor,
+			SPCustomQueryEditorVariableColor,
+			SPCustomQueryEditorHighlightQueryColor,
+			SPCustomQueryEditorSelectionColor
 		] retain];
 		
-		editorNameForColors = 
-		[@[
-		  NSLocalizedString(@"Text", @"text label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Background", @"background label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Caret", @"caret label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Comment", @"comment label"),
-		  NSLocalizedString(@"Keyword", @"keyword label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Numeric", @"numeric label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Quote", @"quote label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Backtick Quote", @"backtick quote label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Variable", @"variable label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Query Background", @"query background label for color table (Prefs > Editor)"),
-		  NSLocalizedString(@"Selection", @"selection label for color table (Prefs > Editor)")
+		editorNameForColors = [@[
+			NSLocalizedString(@"Text", @"text label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Background", @"background label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Caret", @"caret label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Comment", @"comment label"),
+			NSLocalizedString(@"Keyword", @"keyword label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Numeric", @"numeric label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Quote", @"quote label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Backtick Quote", @"backtick quote label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Variable", @"variable label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Query Background", @"query background label for color table (Prefs > Editor)"),
+			NSLocalizedString(@"Selection", @"selection label for color table (Prefs > Editor)")
 		] retain];
 	}
 	
@@ -193,9 +191,9 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	
 	[NSApp beginSheet:enterNameWindow
 	   modalForWindow:[[self view] window]
-		modalDelegate:self
+	    modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:SPSaveColorScheme];
+	      contextInfo:SPSaveColorScheme];
 	
 }
 
@@ -327,9 +325,9 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	
 	[NSApp beginSheet:editThemeListWindow
 	   modalForWindow:[[self view] window]
-		modalDelegate:self
+	    modalDelegate:self
 	   didEndSelector:nil
-		  contextInfo:nil];
+	      contextInfo:nil];
 }
 
 #pragma mark -
@@ -352,7 +350,9 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
  */
 - (void)updateColorSchemeSelectionMenu
 {	
-	NSMenuItem *defaultItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Default", @"default label") action:@selector(setDefaultColors:) keyEquivalent:@""];
+	NSMenuItem *defaultItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Default", @"default label") 
+	                                                     action:@selector(setDefaultColors:) 
+	                                              keyEquivalent:@""];
 	
 	[defaultItem setTarget:self];
 	
@@ -380,7 +380,9 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		[themeSelectionMenu addItem:[NSMenuItem separatorItem]];
 	}
 	
-	NSMenuItem *editItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Theme List…", @"edit theme list label") action:@selector(editThemeList:) keyEquivalent:@""];
+	NSMenuItem *editItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Edit Theme List…", @"edit theme list label") 
+	                                                  action:@selector(editThemeList:)
+	                                           keyEquivalent:@""];
 	
 	[editItem setTarget:self];
 	
@@ -519,7 +521,9 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 			NSFileManager *fm = [NSFileManager defaultManager];
 			
 			if (![fm fileExistsAtPath:themePath isDirectory:nil]) {
-				if (![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:nil]) {
+				NSError *error = nil;
+				if (![fm createDirectoryAtPath:themePath withIntermediateDirectories:YES attributes:nil error:&error]) {
+					SPLog(@"Failed to create directory '%@'. error=%@", themePath, error);
 					NSBeep();
 					return;
 				}
@@ -781,9 +785,13 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	NSFileManager *fm = [NSFileManager defaultManager];
 	
 	if ([fm fileExistsAtPath:themePath isDirectory:nil]) {
-		NSArray *allItemsRaw = [fm contentsOfDirectoryAtPath:themePath error:NULL];
+		NSError *error = nil;
+		NSArray *allItemsRaw = [fm contentsOfDirectoryAtPath:themePath error:&error];
 		
-		if(!allItemsRaw) return @[];
+		if(!allItemsRaw || error) {
+			SPLog(@"Failed to list contents of path '%@'. error=%@", themePath, error);
+			return @[];
+		}
 		
 		// Filter out all themes
 		NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF ENDSWITH %@", [NSString stringWithFormat:@".%@", SPColorThemeFileExtension]];
@@ -897,16 +905,16 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	
 	NSError *error = nil;
 	NSData *plist = [NSPropertyListSerialization dataWithPropertyList:scheme
-															   format:NSPropertyListXMLFormat_v1_0
-															  options:0
-																error:&error];
+	                                                           format:NSPropertyListXMLFormat_v1_0
+	                                                          options:0
+	                                                            error:&error];
 	
 	if(error) {
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting color scheme data", @"error while converting color scheme data")
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										   otherButton:nil 
-							 informativeTextWithFormat:@"%@", [error localizedDescription]];
+		                                 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+		                               alternateButton:nil 
+		                                   otherButton:nil 
+		                     informativeTextWithFormat:@"%@", [error localizedDescription]];
 		
 		[alert setAlertStyle:NSCriticalAlertStyle];
 		[alert runModal];
@@ -929,17 +937,17 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 		
 		if(pData && !error) {
 			theme = [NSPropertyListSerialization propertyListWithData:pData
-															  options:NSPropertyListImmutable
-															   format:NULL
-																error:&error];
+			                                                  options:NSPropertyListImmutable
+			                                                   format:NULL
+			                                                    error:&error];
 		}
 		
 		if (!theme || error) {
 			NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-											 defaultButton:NSLocalizedString(@"OK", @"OK button")
-										   alternateButton:nil
-											   otherButton:nil
-								 informativeTextWithFormat:NSLocalizedString(@"File couldn't be read. (%@)", @"error while reading data file"), [error localizedDescription]];
+			                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
+			                               alternateButton:nil
+			                                   otherButton:nil
+			                     informativeTextWithFormat:NSLocalizedString(@"File couldn't be read. (%@)", @"error while reading data file"), [error localizedDescription]];
 			
 			[alert setAlertStyle:NSCriticalAlertStyle];
 			[alert runModal];
@@ -1044,10 +1052,10 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 	} 
 	else {
 		NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Error while reading data file", @"error while reading data file")]
-										 defaultButton:NSLocalizedString(@"OK", @"OK button") 
-									   alternateButton:nil 
-										   otherButton:nil 
-							 informativeTextWithFormat:NSLocalizedString(@"No color theme data found.", @"error that no color theme found")];
+		                                 defaultButton:NSLocalizedString(@"OK", @"OK button") 
+		                               alternateButton:nil 
+		                                   otherButton:nil 
+		                     informativeTextWithFormat:NSLocalizedString(@"No color theme data found.", @"error that no color theme found")];
 		
 		[alert setAlertStyle:NSInformationalAlertStyle];
 		[alert runModal];
