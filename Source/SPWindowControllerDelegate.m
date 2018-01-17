@@ -64,7 +64,13 @@
 		
 		if (![eachDocument parentTabShouldClose]) return NO;
 	}
+
+	SPWindowController *windowController = [[SPWindowController alloc] init];
 	
+	if ([windowController askAboutCloseTab] == false){
+		return NO;
+	}
+
 	// Remove global session data if the last window of a session will be closed
 	if ([SPAppDelegate sessionURL] && [[SPAppDelegate orderedDatabaseConnectionWindows] count] == 1) {
 		[SPAppDelegate setSessionURL:nil];

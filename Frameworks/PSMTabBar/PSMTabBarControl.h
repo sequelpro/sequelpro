@@ -11,6 +11,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import "SPWindowController.h"
 
 #define PSMTabDragDidEndNotification @"PSMTabDragDidEndNotification"
 #define PSMTabDragDidBeginNotification @"PSMTabDragDidBeginNotification"
