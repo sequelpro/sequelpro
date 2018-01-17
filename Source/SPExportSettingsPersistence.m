@@ -150,6 +150,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 		NAMEOF(SPNoCompression);
 		NAMEOF(SPGzipCompression);
 		NAMEOF(SPBzip2Compression);
+		NAMEOF(SPZipCompression);
 	}
 	return nil;
 }
@@ -159,6 +160,7 @@ static inline void SetOnOff(NSNumber *ref,id obj);
 	VALUEOF(SPNoCompression,    cfd, dst);
 	VALUEOF(SPGzipCompression,  cfd, dst);
 	VALUEOF(SPBzip2Compression, cfd, dst);
+	VALUEOF(SPZipCompression, cfd, dst);
 	return NO;
 }
 
