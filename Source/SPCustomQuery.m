@@ -71,6 +71,7 @@
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
 - (void)documentWillClose:(NSNotification *)notification;
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification;
 
 @end
 
@@ -3391,9 +3392,14 @@
 /**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
-- (void)queryFavoritesHaveBeenUpdated:(id)manager
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification
 {
-	NSMenuItem *headerMenuItem;
+	NSURL *fileURL = [tableDocumentInstance fileURL];
+
+	// Warning: This method may be called before any connection has been made in the current tab (triggered by another tab)!
+	// There doesn't seem to be a real indicator for this, but fileURL is the closest thing plus we need it below (#2266)
+	if(!fileURL) return;
+
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
@@ -3401,28 +3407,23 @@
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
-	NSString *tblDocName = [[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
-	if(!tblDocName) {
-		//NSMenuItem will not accept nil as title
-		@throw [NSException exceptionWithName:NSInternalInconsistencyException
-									   reason:[NSString stringWithFormat:@"Document name conversion resulted in nil string!? tableDocumentInstance=%@ fileURL=%@",tableDocumentInstance,[tableDocumentInstance fileURL]]
-									 userInfo:nil];
+	NSString *tblDocName = [[[fileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
 	}
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
-	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
+	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:fileURL]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3434,21 +3435,22 @@
 	}
 
 	// Build global list
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
+	}
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3991,6 +3993,10 @@
 	                                         selector:@selector(documentWillClose:)
 	                                             name:SPDocumentWillCloseNotification
 	                                           object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(queryFavoritesHaveBeenUpdated:)
+	                                             name:SPQueryFavoritesHaveBeenUpdatedNotification
+	                                           object:nil];
 
 #ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];

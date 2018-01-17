@@ -32,12 +32,6 @@
 @class SPDatabaseDocument;
 @class SPSplitView;
 
-@interface NSObject (SPQueryFavoriteManagerDelegate)
-
-- (void)queryFavoritesHaveBeenUpdated:(id)manager;
-
-@end
-
 @interface SPQueryFavoriteManager : NSWindowController <NSOpenSavePanelDelegate>
 {
 #ifndef SP_CODA /* ivars */
