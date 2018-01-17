@@ -298,7 +298,6 @@
 - (NSRange)currentQueryRange;
 - (NSString *)buildHistoryString;
 - (void)addHistoryEntry:(NSString *)entryString;
-- (void)historyItemsHaveBeenUpdated:(id)manager;
 - (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end

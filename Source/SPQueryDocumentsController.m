@@ -204,13 +204,8 @@
 	}
 	
 	// Inform all opened documents to update the history list
-	for (id doc in [SPAppDelegate orderedDocuments])
-	{
-		if([[doc valueForKeyPath:@"customQueryInstance"] respondsToSelector:@selector(historyItemsHaveBeenUpdated:)]) {
-			[[doc valueForKeyPath:@"customQueryInstance"] performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:NO];
-		}
-	}
-			
+	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPHistoryItemsHaveBeenUpdatedNotification object:self];
+
 	// User did choose to clear the global history list
 	if (![fileURL isFileURL] && ![historyArray count]) {
 		[prefs setObject:historyArray forKey:SPQueryHistory];

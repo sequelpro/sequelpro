@@ -249,6 +249,8 @@ NSString *SPSSHEnableMuxingPreference            = @"SSHMultiplexingEnabled";
 NSString *SPSSHClientPath                        = @"SSHClientPath";
 NSString *SPSSLCipherListKey                     = @"SSLCipherList";
 NSString *SPQueryFavoritesHaveBeenUpdatedNotification = @"QueryFavoritesHaveBeenUpdatedNotification";
+NSString *SPHistoryItemsHaveBeenUpdatedNotification   = @"HistoryItemsHaveBeenUpdatedNotification";
+NSString *SPContentFiltersHaveBeenUpdatedNotification = @"ContentFiltersHaveBeenUpdatedNotification";
 
 // URLs
 NSString *SPDonationsURL                         = @"http://www.sequelpro.com/donate/";

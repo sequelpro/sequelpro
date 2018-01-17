@@ -83,6 +83,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (BOOL)cancelRowEditing;
 - (void)documentWillClose:(NSNotification *)notification;
+- (void)contentFiltersHaveBeenUpdated:(NSNotification *)notification;
 
 @end
 
@@ -305,6 +306,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	                                         selector:@selector(documentWillClose:)
 	                                             name:SPDocumentWillCloseNotification
 	                                           object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(contentFiltersHaveBeenUpdated:)
+	                                             name:SPContentFiltersHaveBeenUpdatedNotification
+	                                           object:nil];
 }
 
 #pragma mark -
@@ -2593,6 +2598,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Empty the loading pool and exit the thread
 	[linkPool drain];
+}
+
+- (void)contentFiltersHaveBeenUpdated:(NSNotification *)notification
+{
+	[self setCompareTypes:nil];
 }
 
 /**

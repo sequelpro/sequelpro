@@ -452,6 +452,8 @@ extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
 extern NSString *SPSSLCipherListKey;
 extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
+extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;
+extern NSString *SPContentFiltersHaveBeenUpdatedNotification;
 
 // URLs
 extern NSString *SPDonationsURL;

@@ -72,6 +72,7 @@
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
 - (void)documentWillClose:(NSNotification *)notification;
 - (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification;
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification;
 
 @end
 
@@ -1621,7 +1622,7 @@
 
 #ifndef SP_CODA
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:nil waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
@@ -3369,8 +3370,12 @@
 
 /**
  * Rebuild history popup menu.
+ *
+ * Warning: notification may be nil if invoked directly from within this class.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
-- (void)historyItemsHaveBeenUpdated:(id)manager
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification
 {
 	// Abort if the connection has been closed already - sign of a closed window
 	if (![mySQLConnection isConnected]) return;
@@ -3996,6 +4001,10 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(queryFavoritesHaveBeenUpdated:)
 	                                             name:SPQueryFavoritesHaveBeenUpdatedNotification
+	                                           object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(historyItemsHaveBeenUpdated:)
+	                                             name:SPHistoryItemsHaveBeenUpdatedNotification
 	                                           object:nil];
 
 #ifndef SP_CODA
