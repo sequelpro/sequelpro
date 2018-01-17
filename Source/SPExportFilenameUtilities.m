@@ -320,6 +320,13 @@
 							withString:@"-"
 							   options:NSLiteralSearch
 								 range:NSMakeRange(0, [string length])];
+
+	// Replace dots with hyphens
+	[string replaceOccurrencesOfString:@"."
+							withString:@"-"
+							   options:NSLiteralSearch
+								 range:NSMakeRange(0, [string length])];
+
 	
 	[dateFormatter release];
 
