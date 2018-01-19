@@ -307,6 +307,11 @@ static NSString *SPConnectionViewNibName = @"ConnectionView";
 		   forKeyPath:SPFavoriteSSLCACertFileLocationKey 
 			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) 
 			  context:NULL];
+
+	[self addObserver:self
+		   forKeyPath:SPFavoriteUseSafeUpdatesKey
+			  options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
+			  context:NULL];
 #endif
 }
 

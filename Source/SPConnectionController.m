@@ -127,6 +127,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize port;
 @synthesize colorIndex;
 @synthesize useSSL;
+@synthesize useSafeUpdates;
 @synthesize sslKeyFileLocationEnabled;
 @synthesize sslKeyFileLocation;
 @synthesize sslCertificateFileLocationEnabled;
@@ -757,6 +758,9 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setSslCACertFileLocationEnabled:([fav objectForKey:SPFavoriteSSLCACertFileLocationEnabledKey] ? [[fav objectForKey:SPFavoriteSSLCACertFileLocationEnabledKey] intValue] : NSOffState)];
 	[self setSslCACertFileLocation:([fav objectForKey:SPFavoriteSSLCACertFileLocationKey] ? [fav objectForKey:SPFavoriteSSLCACertFileLocationKey] : @"")];
 
+	// SQL_SAFE_UPDATES variable
+	[self setUseSafeUpdates:([fav objectForKey:SPFavoriteUseSafeUpdatesKey] ? [[fav objectForKey:SPFavoriteUseSafeUpdatesKey] intValue] : NSOffState)];
+
 	// SSH details
 	[self setSshHost:([fav objectForKey:SPFavoriteSSHHostKey] ? [fav objectForKey:SPFavoriteSSHHostKey] : @"")];
 	[self setSshUser:([fav objectForKey:SPFavoriteSSHUserKey] ? [fav objectForKey:SPFavoriteSSHUserKey] : @"")];
@@ -913,7 +917,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 					 SPFavoriteUseSSLKey, 
 					 SPFavoriteSSLKeyFileLocationEnabledKey,
 					 SPFavoriteSSLCertificateFileLocationEnabledKey, 
-					 SPFavoriteSSLCACertFileLocationEnabledKey, 
+					 SPFavoriteSSLCACertFileLocationEnabledKey,
+					 SPFavoriteUseSafeUpdatesKey,
 					 SPFavoriteDatabaseKey, 
 					 SPFavoriteSSHHostKey, 
 					 SPFavoriteSSHUserKey, 
@@ -1332,7 +1337,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	} else {
 		[theFavorite removeObjectForKey:SPFavoriteSSLCACertFileLocationKey];
 	}
-	
+
+	// SQL_SAFE_UPDATES variable
+	[theFavorite setObject:[NSNumber numberWithInteger:[self useSafeUpdates]] forKey:SPFavoriteUseSafeUpdatesKey];
+
 	// SSH details
 	if ([self sshHost]) {
 		[theFavorite setObject:[self sshHost] forKey:SPFavoriteSSHHostKey];
@@ -1997,6 +2005,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCertificateFileLocationKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationEnabledKey];
 	[self removeObserver:self forKeyPath:SPFavoriteSSLCACertFileLocationKey];
+	[self removeObserver:self forKeyPath:SPFavoriteUseSafeUpdatesKey];
 #endif
 	
 #ifndef SP_CODA

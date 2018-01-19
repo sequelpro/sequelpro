@@ -66,6 +66,7 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 @synthesize sslCertificatePath;
 @synthesize sslCACertificatePath;
 @synthesize sslCipherList;
+@synthesize useSafeUpdates;
 @synthesize timeout;
 @synthesize useKeepAlive;
 @synthesize keepAliveInterval;
@@ -571,6 +572,12 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	// a query, ensure the connection is still up afterwards (!)
 	[self _updateConnectionVariables];
 	if (state != SPMySQLConnected) return NO;
+
+	// Update the connection to set the sql_safe_updates as needed
+	if (useSafeUpdates) {
+		[self _setSafeUpdates];
+		if (state != SPMySQLConnected) return NO;
+	}
 
 	// Now connection is established and verified, reset the counter
 	reconnectionRetryAttempts = 0;
@@ -1159,6 +1166,17 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 + (void)_removeThreadVariables:(NSNotification *)aNotification
 {
 	mysql_thread_end();
+}
+
+
+/**
+ * Set SQL_SAFE_UPDATES variable
+ */
+- (void)_setSafeUpdates
+{
+	if (state != SPMySQLConnected && state != SPMySQLConnecting) return;
+
+	[self queryString:@"SET sql_safe_updates=1"];
 }
 
 @end

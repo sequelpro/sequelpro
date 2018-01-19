@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6751" systemVersion="13F1507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
         <deployment identifier="macosx"/>
-        <development version="5100" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6751"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SPConnectionController">
@@ -64,16 +64,16 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="5739" userLabel="ConnectionView" customClass="SPFlippedView">
-            <rect key="frame" x="0.0" y="0.0" width="882" height="513"/>
+        <customView misplaced="YES" id="5739" userLabel="ConnectionView" customClass="SPFlippedView">
+            <rect key="frame" x="0.0" y="0.0" width="882" height="813"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <splitView autosaveName="DBViewSplitter" dividerStyle="thin" vertical="YES" id="5741" customClass="SPSplitView">
-                    <rect key="frame" x="0.0" y="0.0" width="882" height="513"/>
+                    <rect key="frame" x="0.0" y="0.0" width="882" height="813"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <subviews>
                         <view id="5742">
-                            <rect key="frame" x="0.0" y="0.0" width="200" height="513"/>
+                            <rect key="frame" x="0.0" y="0.0" width="200" height="813"/>
                             <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
                             <subviews>
                                 <imageView id="5822">
@@ -176,14 +176,14 @@
                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" image="button_bar_handle" id="5859"/>
                                 </imageView>
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="4910">
-                                    <rect key="frame" x="0.0" y="23" width="200" height="483"/>
+                                    <rect key="frame" x="0.0" y="23" width="200" height="783"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <clipView key="contentView" drawsBackground="NO" id="cjP-S4-7Nz">
-                                        <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="200" height="783"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="firstColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnSelection="YES" columnResizing="NO" autosaveColumns="NO" id="4913" customClass="SPFavoritesOutlineView">
-                                                <rect key="frame" x="0.0" y="0.0" width="200" height="483"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="200" height="783"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" name="_sourceListBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -247,22 +247,22 @@
                             </subviews>
                         </view>
                         <view id="5743">
-                            <rect key="frame" x="201" y="0.0" width="681" height="513"/>
+                            <rect key="frame" x="201" y="0.0" width="681" height="813"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="5588">
-                                    <rect key="frame" x="0.0" y="0.0" width="681" height="481"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="681" height="781"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="gFs-TM-wGu">
-                                        <rect key="frame" x="0.0" y="0.0" width="681" height="481"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="681" height="781"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
-                                            <customView id="5447" customClass="SPFlippedView">
-                                                <rect key="frame" x="0.0" y="0.0" width="681" height="480"/>
+                                            <customView misplaced="YES" id="5447" customClass="SPFlippedView">
+                                                <rect key="frame" x="0.0" y="0.0" width="681" height="780"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                 <subviews>
-                                                    <customView id="4888" customClass="NSCustomView">
-                                                        <rect key="frame" x="116" y="5" width="446" height="472"/>
+                                                    <customView misplaced="YES" id="4888" customClass="NSCustomView">
+                                                        <rect key="frame" x="116" y="0.0" width="446" height="772"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         <subviews>
                                                             <button horizontalHuggingPriority="750" verticalHuggingPriority="750" id="4829">
@@ -276,7 +276,7 @@
                                                                     <action selector="showHelp:" target="-2" id="5351"/>
                                                                 </connections>
                                                             </button>
-                                                            <textField hidden="YES" verticalHuggingPriority="750" id="5423">
+                                                            <textField hidden="YES" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5423">
                                                                 <rect key="frame" x="29" y="43" width="264" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Connecting..." id="5424">
@@ -304,21 +304,21 @@ DQ
                                                                 </connections>
                                                             </button>
                                                             <tabView initialItem="4981" id="4980">
-                                                                <rect key="frame" x="3" y="61" width="440" height="417"/>
+                                                                <rect key="frame" x="3" y="61" width="440" height="717"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <font key="font" metaFont="system"/>
                                                                 <tabViewItems>
                                                                     <tabViewItem label="TCP/IP" identifier="1" id="4981">
                                                                         <view key="view" id="4984">
-                                                                            <rect key="frame" x="10" y="33" width="420" height="371"/>
+                                                                            <rect key="frame" x="10" y="33" width="420" height="671"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <customView id="5156">
-                                                                                    <rect key="frame" x="22" y="101" width="377" height="287"/>
+                                                                                <customView misplaced="YES" id="5156">
+                                                                                    <rect key="frame" x="22" y="381" width="377" height="307"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
-                                                                                        <textField verticalHuggingPriority="750" id="5188">
-                                                                                            <rect key="frame" x="7" y="44" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5188">
+                                                                                            <rect key="frame" x="7" y="64" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Port:" id="5189">
                                                                                                 <font key="font" metaFont="system"/>
@@ -326,8 +326,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" verticalHuggingPriority="750" id="5187">
-                                                                                            <rect key="frame" x="110" y="42" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5187">
+                                                                                            <rect key="frame" x="110" y="62" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="3306" drawsBackground="YES" usesSingleLineMode="YES" id="5190">
                                                                                                 <font key="font" metaFont="system"/>
@@ -344,8 +344,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5362"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5184">
-                                                                                            <rect key="frame" x="7" y="78" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5184">
+                                                                                            <rect key="frame" x="7" y="98" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Database:" id="5185">
                                                                                                 <font key="font" metaFont="system"/>
@@ -353,8 +353,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" id="5183">
-                                                                                            <rect key="frame" x="110" y="76" width="247" height="22"/>
+                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5183">
+                                                                                            <rect key="frame" x="110" y="96" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5186">
                                                                                                 <font key="font" metaFont="system"/>
@@ -371,8 +371,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5361"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5180">
-                                                                                            <rect key="frame" x="7" y="112" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5180">
+                                                                                            <rect key="frame" x="7" y="132" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="5181">
                                                                                                 <font key="font" metaFont="system"/>
@@ -380,8 +380,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" id="5179" customClass="NSSecureTextField">
-                                                                                            <rect key="frame" x="110" y="110" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5179" customClass="NSSecureTextField">
+                                                                                            <rect key="frame" x="110" y="130" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5182">
                                                                                                 <font key="font" metaFont="system"/>
@@ -397,8 +397,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5360"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5176">
-                                                                                            <rect key="frame" x="7" y="146" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5176">
+                                                                                            <rect key="frame" x="7" y="166" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Username:" id="5177">
                                                                                                 <font key="font" metaFont="system"/>
@@ -406,8 +406,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" id="5175">
-                                                                                            <rect key="frame" x="110" y="144" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5175">
+                                                                                            <rect key="frame" x="110" y="164" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5178">
                                                                                                 <font key="font" metaFont="system"/>
@@ -424,8 +424,8 @@ DQ
                                                                                                 <outlet property="nextKeyView" destination="5179" id="5464"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5377">
-                                                                                            <rect key="frame" x="7" y="240" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5377">
+                                                                                            <rect key="frame" x="7" y="260" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Name:" id="5378">
                                                                                                 <font key="font" metaFont="system"/>
@@ -433,8 +433,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" id="5376">
-                                                                                            <rect key="frame" x="110" y="238" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5376">
+                                                                                            <rect key="frame" x="110" y="258" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5379">
                                                                                                 <font key="font" metaFont="system"/>
@@ -451,8 +451,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5402"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5173">
-                                                                                            <rect key="frame" x="7" y="180" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5173">
+                                                                                            <rect key="frame" x="7" y="200" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Host:" id="5174">
                                                                                                 <font key="font" metaFont="system"/>
@@ -460,8 +460,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server on this computer" verticalHuggingPriority="750" id="5171">
-                                                                                            <rect key="frame" x="110" y="178" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server on this computer" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5171">
+                                                                                            <rect key="frame" x="110" y="198" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5172">
                                                                                                 <font key="font" metaFont="system"/>
@@ -478,7 +478,32 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5358"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <button id="5593">
+                                                                                        <button misplaced="YES" id="bmZ-fh-qXS">
+                                                                                            <rect key="frame" x="108" y="34" width="251" height="18"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                            <buttonCell key="cell" type="check" title="Connect using Safe Updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="lar-cJ-vRe">
+                                                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                                                <font key="font" metaFont="system"/>
+                                                                                            </buttonCell>
+                                                                                            <connections>
+                                                                                                <binding destination="-2" name="value" keyPath="useSafeUpdates" id="hSt-YK-eJh">
+                                                                                                    <dictionary key="options">
+                                                                                                        <integer key="NSMultipleValuesPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                                                                        <integer key="NSNullPlaceholder" value="0"/>
+                                                                                                    </dictionary>
+                                                                                                </binding>
+                                                                                            </connections>
+                                                                                        </button>
+                                                                                        <customView id="5894" customClass="SPColorSelectorView">
+                                                                                            <rect key="frame" x="110" y="228" width="247" height="22"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                            <connections>
+                                                                                                <outlet property="delegate" destination="-2" id="5900"/>
+                                                                                            </connections>
+                                                                                        </customView>
+                                                                                        <button misplaced="YES" id="5593">
                                                                                             <rect key="frame" x="108" y="14" width="251" height="18"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <buttonCell key="cell" type="check" title="Connect using SSL" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="5594">
@@ -497,17 +522,10 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <customView id="5894" customClass="SPColorSelectorView">
-                                                                                            <rect key="frame" x="110" y="208" width="247" height="22"/>
-                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                                            <connections>
-                                                                                                <outlet property="delegate" destination="-2" id="5900"/>
-                                                                                            </connections>
-                                                                                        </customView>
                                                                                     </subviews>
                                                                                 </customView>
-                                                                                <customView id="5595">
-                                                                                    <rect key="frame" x="22" y="-3" width="377" height="104"/>
+                                                                                <customView misplaced="YES" id="5595">
+                                                                                    <rect key="frame" x="22" y="277" width="377" height="104"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
                                                                                         <button toolTip="Click to choose the SSL private key file to use when establishing a secure connection." verticalHuggingPriority="750" id="5600">
@@ -529,7 +547,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5596">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5596">
                                                                                             <rect key="frame" x="109" y="81" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5597">
@@ -546,7 +564,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5598">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5598">
                                                                                             <rect key="frame" x="-3" y="83" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Key File:" id="5599">
@@ -574,7 +592,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5605">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5605">
                                                                                             <rect key="frame" x="109" y="47" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5608">
@@ -591,7 +609,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5606">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5606">
                                                                                             <rect key="frame" x="-3" y="49" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Certificate:" id="5607">
@@ -619,7 +637,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5613">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5613">
                                                                                             <rect key="frame" x="109" y="13" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5616">
@@ -636,7 +654,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5614">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5614">
                                                                                             <rect key="frame" x="-3" y="15" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="CA Cert:" id="5615">
@@ -663,15 +681,15 @@ DQ
                                                                     </tabViewItem>
                                                                     <tabViewItem label="Socket" identifier="2" id="4982">
                                                                         <view key="view" id="4983">
-                                                                            <rect key="frame" x="10" y="33" width="420" height="371"/>
+                                                                            <rect key="frame" x="10" y="33" width="420" height="671"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <customView id="5162">
-                                                                                    <rect key="frame" x="22" y="142" width="377" height="246"/>
+                                                                                <customView misplaced="YES" id="5162">
+                                                                                    <rect key="frame" x="22" y="422" width="377" height="266"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
-                                                                                        <textField verticalHuggingPriority="750" id="5386">
-                                                                                            <rect key="frame" x="7" y="199" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5386">
+                                                                                            <rect key="frame" x="7" y="219" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Name:" id="5387">
                                                                                                 <font key="font" metaFont="system"/>
@@ -679,8 +697,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" id="5385">
-                                                                                            <rect key="frame" x="110" y="197" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5385">
+                                                                                            <rect key="frame" x="110" y="217" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5388">
                                                                                                 <font key="font" metaFont="system"/>
@@ -697,8 +715,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5401"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5219">
-                                                                                            <rect key="frame" x="7" y="37" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5219">
+                                                                                            <rect key="frame" x="7" y="57" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Socket:" id="5220">
                                                                                                 <font key="font" metaFont="system"/>
@@ -706,8 +724,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the path to the socket file to use when connecting to MySQL.  Leave this field blank to use the default socket location" verticalHuggingPriority="750" id="5218">
-                                                                                            <rect key="frame" x="110" y="35" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the path to the socket file to use when connecting to MySQL.  Leave this field blank to use the default socket location" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5218">
+                                                                                            <rect key="frame" x="110" y="55" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5221">
                                                                                                 <font key="font" metaFont="system"/>
@@ -724,8 +742,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5366"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5217">
-                                                                                            <rect key="frame" x="7" y="71" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5217">
+                                                                                            <rect key="frame" x="7" y="91" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Database:" id="5222">
                                                                                                 <font key="font" metaFont="system"/>
@@ -733,8 +751,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" id="5216">
-                                                                                            <rect key="frame" x="110" y="69" width="247" height="22"/>
+                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5216">
+                                                                                            <rect key="frame" x="110" y="89" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5223">
                                                                                                 <font key="font" metaFont="system"/>
@@ -751,8 +769,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5365"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5215">
-                                                                                            <rect key="frame" x="7" y="105" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5215">
+                                                                                            <rect key="frame" x="7" y="125" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="5224">
                                                                                                 <font key="font" metaFont="system"/>
@@ -760,8 +778,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" id="5214" customClass="NSSecureTextField">
-                                                                                            <rect key="frame" x="110" y="103" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5214" customClass="NSSecureTextField">
+                                                                                            <rect key="frame" x="110" y="123" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5225">
                                                                                                 <font key="font" metaFont="system"/>
@@ -777,8 +795,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5364"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5213">
-                                                                                            <rect key="frame" x="7" y="139" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5213">
+                                                                                            <rect key="frame" x="7" y="159" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Username:" id="5226">
                                                                                                 <font key="font" metaFont="system"/>
@@ -786,8 +804,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" id="5212">
-                                                                                            <rect key="frame" x="110" y="137" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5212">
+                                                                                            <rect key="frame" x="110" y="157" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5227">
                                                                                                 <font key="font" metaFont="system"/>
@@ -804,7 +822,7 @@ DQ
                                                                                                 <outlet property="nextKeyView" destination="5214" id="5463"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <button id="5720">
+                                                                                        <button misplaced="YES" id="5720">
                                                                                             <rect key="frame" x="108" y="7" width="251" height="18"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <buttonCell key="cell" type="check" title="Connect using SSL" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="5721">
@@ -824,16 +842,34 @@ DQ
                                                                                             </connections>
                                                                                         </button>
                                                                                         <customView id="5896" customClass="SPColorSelectorView">
-                                                                                            <rect key="frame" x="110" y="167" width="247" height="22"/>
+                                                                                            <rect key="frame" x="110" y="187" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <connections>
                                                                                                 <outlet property="delegate" destination="-2" id="5901"/>
                                                                                             </connections>
                                                                                         </customView>
+                                                                                        <button misplaced="YES" id="yDf-kn-Mhk">
+                                                                                            <rect key="frame" x="108" y="27" width="251" height="18"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                            <buttonCell key="cell" type="check" title="Connect using Safe Updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="HDB-qc-tIa">
+                                                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                                                <font key="font" metaFont="system"/>
+                                                                                            </buttonCell>
+                                                                                            <connections>
+                                                                                                <binding destination="-2" name="value" keyPath="useSafeUpdates" id="fTu-Iq-c0B">
+                                                                                                    <dictionary key="options">
+                                                                                                        <integer key="NSMultipleValuesPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                                                                        <integer key="NSNullPlaceholder" value="0"/>
+                                                                                                    </dictionary>
+                                                                                                </binding>
+                                                                                            </connections>
+                                                                                        </button>
                                                                                     </subviews>
                                                                                 </customView>
-                                                                                <customView id="5688">
-                                                                                    <rect key="frame" x="22" y="38" width="377" height="104"/>
+                                                                                <customView misplaced="YES" id="5688">
+                                                                                    <rect key="frame" x="22" y="318" width="377" height="104"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
                                                                                         <button toolTip="Click to choose the SSL private key file to use when establishing a secure connection." verticalHuggingPriority="750" id="5695">
@@ -855,7 +891,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5697">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5697">
                                                                                             <rect key="frame" x="109" y="81" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5698">
@@ -872,7 +908,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5696">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5696">
                                                                                             <rect key="frame" x="-3" y="83" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Key File:" id="5699">
@@ -900,7 +936,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5693">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5693">
                                                                                             <rect key="frame" x="109" y="47" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5702">
@@ -917,7 +953,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5692">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5692">
                                                                                             <rect key="frame" x="-3" y="49" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Certificate:" id="5703">
@@ -945,7 +981,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5690">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5690">
                                                                                             <rect key="frame" x="109" y="13" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="5705">
@@ -962,7 +998,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5689">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5689">
                                                                                             <rect key="frame" x="-3" y="15" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="CA Cert:" id="5706">
@@ -989,15 +1025,15 @@ DQ
                                                                     </tabViewItem>
                                                                     <tabViewItem label="SSH" identifier="Item 2" id="4985">
                                                                         <view key="view" id="4986">
-                                                                            <rect key="frame" x="10" y="33" width="420" height="371"/>
+                                                                            <rect key="frame" x="10" y="33" width="420" height="671"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <subviews>
-                                                                                <customView id="5166">
-                                                                                    <rect key="frame" x="22" y="-34" width="377" height="422"/>
+                                                                                <customView misplaced="YES" id="5166">
+                                                                                    <rect key="frame" x="22" y="246" width="377" height="442"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
-                                                                                        <textField verticalHuggingPriority="750" id="5523">
-                                                                                            <rect key="frame" x="110" y="61" width="219" height="22"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5523">
+                                                                                            <rect key="frame" x="110" y="81" width="219" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5524">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1022,8 +1058,8 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5525">
-                                                                                            <rect key="frame" x="7" y="63" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5525">
+                                                                                            <rect key="frame" x="7" y="83" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH Key:" id="5526">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1043,7 +1079,7 @@ DQ
                                                                                             </connections>
                                                                                         </textField>
                                                                                         <button toolTip="Choose a custom SSH key file to use with this connection.  Standard locations like ~/.ssh are checked automatically." verticalHuggingPriority="750" id="5492">
-                                                                                            <rect key="frame" x="328" y="60" width="29" height="24"/>
+                                                                                            <rect key="frame" x="328" y="80" width="29" height="24"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="key-icon" imagePosition="overlaps" alignment="center" alternateImage="key-icon-alternate" borderStyle="border" inset="2" id="5493">
                                                                                                 <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
@@ -1061,8 +1097,8 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="5404">
-                                                                                            <rect key="frame" x="7" y="375" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5404">
+                                                                                            <rect key="frame" x="7" y="395" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Name:" id="5405">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1070,8 +1106,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" id="5403">
-                                                                                            <rect key="frame" x="110" y="373" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter a nickname to use if adding to favorites. Optional." verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5403">
+                                                                                            <rect key="frame" x="110" y="393" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5406">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1088,8 +1124,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5414"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5291">
-                                                                                            <rect key="frame" x="7" y="29" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5291">
+                                                                                            <rect key="frame" x="7" y="49" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH Port:" id="5292">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1097,8 +1133,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the port to use when connecting to the SSH server.  The default SSH port is 22" verticalHuggingPriority="750" id="5290">
-                                                                                            <rect key="frame" x="110" y="27" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the port to use when connecting to the SSH server.  The default SSH port is 22" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5290">
+                                                                                            <rect key="frame" x="110" y="47" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5293">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1115,8 +1151,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5375"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5289">
-                                                                                            <rect key="frame" x="7" y="63" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5289">
+                                                                                            <rect key="frame" x="7" y="83" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH Password:" id="5294">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1134,8 +1170,8 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5288" customClass="NSSecureTextField">
-                                                                                            <rect key="frame" x="110" y="61" width="219" height="22"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5288" customClass="NSSecureTextField">
+                                                                                            <rect key="frame" x="110" y="81" width="219" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <string key="toolTip">Enter the password to use when connecting to the SSH server. NB: your SSH configuration is used, and public/private key pairs and other authentication methods will be used if available</string>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5295">
@@ -1153,8 +1189,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5374"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5287">
-                                                                                            <rect key="frame" x="7" y="97" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5287">
+                                                                                            <rect key="frame" x="7" y="117" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH User:" id="5296">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1162,8 +1198,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the SSH username to connect with" verticalHuggingPriority="750" id="5286">
-                                                                                            <rect key="frame" x="110" y="95" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the SSH username to connect with" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5286">
+                                                                                            <rect key="frame" x="110" y="115" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5297">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1179,8 +1215,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5373"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5285">
-                                                                                            <rect key="frame" x="10" y="131" width="95" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5285">
+                                                                                            <rect key="frame" x="10" y="151" width="95" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="SSH Host:" id="5298">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1188,8 +1224,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the hostname of the SSH server to tunnel via when connecting to the MySQL server" verticalHuggingPriority="750" id="5284">
-                                                                                            <rect key="frame" x="110" y="129" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the hostname of the SSH server to tunnel via when connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5284">
+                                                                                            <rect key="frame" x="110" y="149" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5299">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1205,8 +1241,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5372"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5273">
-                                                                                            <rect key="frame" x="10" y="179" width="95" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5273">
+                                                                                            <rect key="frame" x="10" y="199" width="95" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Port:" id="5274">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1214,8 +1250,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" verticalHuggingPriority="750" id="5272">
-                                                                                            <rect key="frame" x="110" y="177" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the port to use when connecting to the MySQL server.  The default MySQL port is 3306" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5272">
+                                                                                            <rect key="frame" x="110" y="197" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="3306" drawsBackground="YES" usesSingleLineMode="YES" id="5275">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1232,8 +1268,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5371"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5271">
-                                                                                            <rect key="frame" x="7" y="213" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5271">
+                                                                                            <rect key="frame" x="7" y="233" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Database:" id="5276">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1241,8 +1277,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" id="5270">
-                                                                                            <rect key="frame" x="110" y="211" width="247" height="22"/>
+                                                                                        <textField toolTip="Optionally enter a database to select after successfully connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5270">
+                                                                                            <rect key="frame" x="110" y="231" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="optional" drawsBackground="YES" usesSingleLineMode="YES" id="5277">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1259,8 +1295,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5370"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5269">
-                                                                                            <rect key="frame" x="7" y="247" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5269">
+                                                                                            <rect key="frame" x="7" y="267" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="5278">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1268,8 +1304,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" id="5268" customClass="NSSecureTextField">
-                                                                                            <rect key="frame" x="110" y="245" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the password to use when connecting to the MySQL server" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5268" customClass="NSSecureTextField">
+                                                                                            <rect key="frame" x="110" y="265" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5279">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1285,8 +1321,8 @@ DQ
                                                                                                 <outlet property="delegate" destination="-2" id="5369"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5267">
-                                                                                            <rect key="frame" x="7" y="281" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5267">
+                                                                                            <rect key="frame" x="7" y="301" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Username:" id="5280">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1294,8 +1330,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" id="5266">
-                                                                                            <rect key="frame" x="110" y="279" width="247" height="22"/>
+                                                                                        <textField toolTip="Enter the MySQL username to connect with" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5266">
+                                                                                            <rect key="frame" x="110" y="299" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5281">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1312,8 +1348,8 @@ DQ
                                                                                                 <outlet property="nextKeyView" destination="5268" id="5465"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5265">
-                                                                                            <rect key="frame" x="7" y="315" width="98" height="17"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5265">
+                                                                                            <rect key="frame" x="7" y="335" width="98" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="MySQL Host:" id="5282">
                                                                                                 <font key="font" metaFont="system"/>
@@ -1321,8 +1357,8 @@ DQ
                                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                             </textFieldCell>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="5264">
-                                                                                            <rect key="frame" x="110" y="313" width="247" height="22"/>
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5264">
+                                                                                            <rect key="frame" x="110" y="333" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <string key="toolTip">Enter the hostname of the MySQL server you want to connect to.  Enter 127.0.0.1 to connect to a server running on the machine you are tunnelling to</string>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="5283">
@@ -1340,13 +1376,31 @@ DQ
                                                                                             </connections>
                                                                                         </textField>
                                                                                         <customView id="5898" customClass="SPColorSelectorView">
-                                                                                            <rect key="frame" x="110" y="343" width="247" height="22"/>
+                                                                                            <rect key="frame" x="110" y="363" width="247" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <connections>
                                                                                                 <outlet property="delegate" destination="-2" id="5902"/>
                                                                                             </connections>
                                                                                         </customView>
-                                                                                        <button id="FtV-HG-DIU">
+                                                                                        <button misplaced="YES" id="0oX-sO-oHP">
+                                                                                            <rect key="frame" x="108" y="23" width="251" height="18"/>
+                                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                                            <buttonCell key="cell" type="check" title="Connect using Safe Updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="SHM-Su-X6c">
+                                                                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                                                <font key="font" metaFont="system"/>
+                                                                                            </buttonCell>
+                                                                                            <connections>
+                                                                                                <binding destination="-2" name="value" keyPath="useSafeUpdates" id="kG3-KT-SP4">
+                                                                                                    <dictionary key="options">
+                                                                                                        <integer key="NSMultipleValuesPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNoSelectionPlaceholder" value="0"/>
+                                                                                                        <integer key="NSNotApplicablePlaceholder" value="0"/>
+                                                                                                        <integer key="NSNullPlaceholder" value="0"/>
+                                                                                                    </dictionary>
+                                                                                                </binding>
+                                                                                            </connections>
+                                                                                        </button>
+                                                                                        <button misplaced="YES" id="FtV-HG-DIU">
                                                                                             <rect key="frame" x="108" y="3" width="251" height="18"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <buttonCell key="cell" type="check" title="Connect using SSL" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="w3N-9r-DzN">
@@ -1367,8 +1421,8 @@ DQ
                                                                                         </button>
                                                                                     </subviews>
                                                                                 </customView>
-                                                                                <customView id="9t3-JG-c1l">
-                                                                                    <rect key="frame" x="22" y="-146" width="377" height="104"/>
+                                                                                <customView misplaced="YES" id="9t3-JG-c1l">
+                                                                                    <rect key="frame" x="22" y="134" width="377" height="104"/>
                                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                     <subviews>
                                                                                         <button toolTip="Click to choose the SSL private key file to use when establishing a secure connection." verticalHuggingPriority="750" id="vPP-gd-c4a">
@@ -1390,7 +1444,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="hLW-S6-RZ9">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="hLW-S6-RZ9">
                                                                                             <rect key="frame" x="109" y="81" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="wO6-xE-Gjg">
@@ -1407,7 +1461,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="Mkf-Q4-7vt">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="Mkf-Q4-7vt">
                                                                                             <rect key="frame" x="-3" y="83" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Key File:" id="xGU-pV-iYc">
@@ -1435,7 +1489,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="3Y2-Rj-0be">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="3Y2-Rj-0be">
                                                                                             <rect key="frame" x="109" y="47" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="ldB-Kc-oTh">
@@ -1452,7 +1506,7 @@ DQ
                                                                                                 <binding destination="-2" name="toolTip" keyPath="sslCertificateFileLocation" id="aUS-Id-i02"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="zor-qs-az3">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="zor-qs-az3">
                                                                                             <rect key="frame" x="-3" y="49" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Certificate:" id="m4Z-qz-MVB">
@@ -1480,7 +1534,7 @@ DQ
                                                                                                 </binding>
                                                                                             </connections>
                                                                                         </button>
-                                                                                        <textField verticalHuggingPriority="750" id="7nJ-pZ-buy">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="7nJ-pZ-buy">
                                                                                             <rect key="frame" x="109" y="13" width="220" height="22"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" lineBreakMode="truncatingHead" selectable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="none set" drawsBackground="YES" id="30l-FF-qhV">
@@ -1497,7 +1551,7 @@ DQ
                                                                                                 <binding destination="-2" name="toolTip" keyPath="sslCACertFileLocation" id="s1j-iY-B0W"/>
                                                                                             </connections>
                                                                                         </textField>
-                                                                                        <textField verticalHuggingPriority="750" id="XLC-w6-o5W">
+                                                                                        <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="XLC-w6-o5W">
                                                                                             <rect key="frame" x="-3" y="15" width="107" height="17"/>
                                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="CA Cert:" id="QTm-ne-rcS">
@@ -1586,8 +1640,8 @@ DQ
                                         <autoresizingMask key="autoresizingMask"/>
                                     </scroller>
                                 </scrollView>
-                                <textField verticalHuggingPriority="750" id="5154">
-                                    <rect key="frame" x="17" y="489" width="647" height="17"/>
+                                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5154">
+                                    <rect key="frame" x="17" y="789" width="647" height="17"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Enter connection details below, or choose a favorite" id="5155">
                                         <font key="font" metaFont="systemBold"/>
@@ -2406,7 +2460,7 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="579" height="83"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="5577">
+                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5577">
                     <rect key="frame" x="2" y="42" width="575" height="34"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" alignment="center" id="5578">
@@ -2440,7 +2494,7 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="579" height="66"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="5669">
+                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5669">
                     <rect key="frame" x="2" y="42" width="575" height="17"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" alignment="center" title="Please select the SSL key file to use when establishing a secure connection." id="5670">
@@ -2473,7 +2527,7 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="599" height="66"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="5684">
+                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5684">
                     <rect key="frame" x="6" y="42" width="576" height="17"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" alignment="center" title="Please select the client SSL certificate file to use when establishing a secure connection." id="5685">
@@ -2506,7 +2560,7 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="579" height="83"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="5681">
+                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5681">
                     <rect key="frame" x="2" y="42" width="575" height="34"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                     <textFieldCell key="cell" controlSize="mini" sendsActionOnEndEditing="YES" alignment="center" id="5682">
@@ -2579,7 +2633,7 @@ DQ
             <rect key="frame" x="0.0" y="0.0" width="365" height="52"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <textField verticalHuggingPriority="750" id="5797">
+                <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" id="5797">
                     <rect key="frame" x="-3" y="12" width="371" height="34"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="For security reasons, your connection favorite passwords are not included in the export." id="5798">
@@ -2595,8 +2649,8 @@ DQ
         <image name="button_action" width="30" height="22"/>
         <image name="button_add" width="30" height="22"/>
         <image name="button_add_folder" width="30" height="22"/>
-        <image name="button_bar_handle" width="15" height="23"/>
-        <image name="button_bar_spacer" width="11" height="23"/>
+        <image name="button_bar_handle" width="11" height="23"/>
+        <image name="button_bar_spacer" width="10" height="23"/>
         <image name="key-icon" width="16" height="9"/>
         <image name="key-icon-alternate" width="16" height="9"/>
     </resources>

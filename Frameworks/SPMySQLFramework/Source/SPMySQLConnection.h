@@ -53,6 +53,9 @@
 	NSString *sslCACertificatePath;
 	NSString *sslCipherList;
 
+    // SQL_SAFE_UPDATES variable
+	BOOL useSafeUpdates;
+
 	// MySQL connection details and state
 	struct st_mysql *mySQLConnection;
 	SPMySQLConnectionState state;
@@ -146,6 +149,8 @@
 @property (readwrite, retain) NSString *sslKeyFilePath;
 @property (readwrite, retain) NSString *sslCertificatePath;
 @property (readwrite, retain) NSString *sslCACertificatePath;
+
+@property (readwrite, assign) BOOL useSafeUpdates;
 
 /**
  * List of supported ciphers for SSL/TLS connections.
