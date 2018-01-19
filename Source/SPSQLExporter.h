@@ -43,7 +43,7 @@
 @interface SPSQLExporter : SPExporter
 {
 	NSObject <SPSQLExporterProtocol> *delegate;
-	
+
 	NSArray *sqlExportTables;
 
 	NSString *sqlDatabaseHost;
@@ -51,12 +51,12 @@
 	NSString *sqlDatabaseVersion;
 	NSString *sqlExportCurrentTable;
 	NSString *sqlExportErrors;
-	
+
 	BOOL sqlOutputIncludeUTF8BOM;
 	BOOL sqlOutputEncodeBLOBasHex;
 	BOOL sqlOutputIncludeErrors;
 	BOOL sqlOutputIncludeAutoIncrement;
-	
+
 	SPSQLExportInsertDivider sqlInsertDivider;
 
 	NSUInteger sqlCurrentTableExportIndex;
@@ -130,10 +130,17 @@
  */
 @property(readwrite, assign) NSUInteger sqlInsertAfterNValue;
 
+//my changes
+/**
+ * @property sqlOutputIncludeCreateDbSyntax New CREATE DATABASE statement
+ */
+@property(readwrite, assign) BOOL sqlOutputIncludeCreateDbSyntax;
+
 /**
  * @property sqlInsertDivider New INSERT statement divider
  */
 @property(readwrite, assign) SPSQLExportInsertDivider sqlInsertDivider;
+
 
 - (id)initWithDelegate:(NSObject<SPSQLExporterProtocol> *)exportDelegate;
 
