@@ -91,7 +91,6 @@
 		insertRemainingRowsAfterUpdate = NO;
 		numberOfImportDataColumns = 0;
 		selectedTableTarget = nil;
-		targetTableDetails = nil;
 		
 		prefs = nil;
 		lastFilename = nil;
@@ -1286,6 +1285,7 @@
 	fieldMappingArrayHasGlobalVariables = NO;
 
 	//the field mapper is an UI object and must not be caught in the background thread's autoreleasepool
+	__block SPFieldMapperController *fieldMapperController = nil;
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Init the field mapper controller
 		fieldMapperController = [[SPFieldMapperController alloc] initWithDelegate:self];
@@ -1315,19 +1315,21 @@
 	}
 
 	// Get mapping settings and preset some global variables
-	fieldMapperOperator  = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
-	fieldMappingArray    = [[NSArray arrayWithArray:[fieldMapperController fieldMappingArray]] retain];
-	selectedTableTarget  = [[NSString stringWithString:[fieldMapperController selectedTableTarget]] retain];
-	selectedImportMethod = [NSString stringWithString:[fieldMapperController selectedImportMethod]];
-	fieldMappingTableColumnNames = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
-	fieldMappingGlobalValueArray = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
-	fieldMappingTableDefaultValues = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableDefaultValues]] retain];
-	csvImportHeaderString = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
-	csvImportTailString = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
-	importIntoNewTable = [fieldMapperController importIntoNewTable];
-	fieldMappingArrayHasGlobalVariables = [fieldMapperController globalValuesInUsage];
+	SPMainQSync(^{
+		fieldMapperOperator                 = [[NSArray arrayWithArray:[fieldMapperController fieldMapperOperator]] retain];
+		fieldMappingArray                   = [[NSArray arrayWithArray:[fieldMapperController fieldMappingArray]] retain];
+		selectedTableTarget                 = [[NSString stringWithString:[fieldMapperController selectedTableTarget]] retain];
+		selectedImportMethod                = [[NSString stringWithString:[fieldMapperController selectedImportMethod]] retain];
+		fieldMappingTableColumnNames        = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableColumnNames]] retain];
+		fieldMappingGlobalValueArray        = [[NSArray arrayWithArray:[fieldMapperController fieldMappingGlobalValueArray]] retain];
+		fieldMappingTableDefaultValues      = [[NSArray arrayWithArray:[fieldMapperController fieldMappingTableDefaultValues]] retain];
+		csvImportHeaderString               = [[NSString stringWithString:[fieldMapperController importHeaderString]] retain];
+		csvImportTailString                 = [[NSString stringWithString:[fieldMapperController onupdateString]] retain];
+		importIntoNewTable                  = [fieldMapperController importIntoNewTable];
+		fieldMappingArrayHasGlobalVariables = [fieldMapperController globalValuesInUsage];
+		insertRemainingRowsAfterUpdate      = [fieldMapperController insertRemainingRowsAfterUpdate];
+	});
 	csvImportMethodHasTail = ([csvImportTailString length] == 0) ? NO : YES;
-	insertRemainingRowsAfterUpdate = [fieldMapperController insertRemainingRowsAfterUpdate];
 	importMethodIsUpdate = ([selectedImportMethod isEqualToString:@"UPDATE"]) ? YES : NO;
 
 	// Error checking
@@ -1344,7 +1346,7 @@
 	// Store target table definitions
 	SPTableData *selectedTableData = [[SPTableData alloc] init];
 	[selectedTableData setConnection:mySQLConnection];
-	targetTableDetails = [selectedTableData informationForTable:selectedTableTarget];
+	NSDictionary *targetTableDetails = [selectedTableData informationForTable:selectedTableTarget];
 	[selectedTableData release];
 
 	// Store all field names which are of typegrouping 'geometry' and 'bit', and check if
@@ -1358,13 +1360,15 @@
 			[nullableNumericFields addObject:[field objectForKey:@"name"]];
 	}
 
-	[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
-	[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
+	SPMainQSync(^{
+		[importFieldNamesSwitch setState:[fieldMapperController importFieldNamesHeader]];
+		[prefs setBool:[importFieldNamesSwitch state] forKey:SPCSVImportFirstLineIsHeader];
+	});
 	success = YES;
 	
 cleanup:
 	dispatch_async(dispatch_get_main_queue(), ^{
-		if(fieldMapperController) SPClear(fieldMapperController);
+		[fieldMapperController release];
 	});
 
 	return success;
