@@ -39,7 +39,7 @@
  */
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 {
-	id delegateForUse = nil;
+	id<SPImageViewDelegate> delegateForUse = nil;
 
 	// If the delegate or the delegate's content instance doesn't implement processUpdatedImageData:,
 	// return the super's implementation
@@ -113,7 +113,7 @@
 - (void)paste:(id)sender
 {
 	// [super paste:sender];
-	id delegateForUse = nil;
+	id<SPImageViewDelegate> delegateForUse = nil;
 
 	// If the delegate or the delegate's content instance doesn't implement processUpdatedImageData:,
 	// return the super's implementation

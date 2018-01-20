@@ -53,7 +53,6 @@
 		177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 177E792C0FCB54EC00E9E122 /* dummy-small.png */; };
 		177E7A230FCB6A2E00E9E122 /* SPExtendedTableInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */; };
 		1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */; };
-		1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */; };
 		1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */; };
 		1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB5F127DD5A800F468C8 /* SPNotificationsPreferencePane.m */; };
 		1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */ = {isa = PBXBuildFile; fileRef = 1785EB62127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m */; };
@@ -683,8 +682,6 @@
 		177E7A220FCB6A2E00E9E122 /* SPExtendedTableInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExtendedTableInfo.m; sourceTree = "<group>"; };
 		1785E9F5127D8C7500F468C8 /* SPPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferencePane.h; sourceTree = "<group>"; };
 		1785E9F6127D8C7500F468C8 /* SPPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferencePane.m; sourceTree = "<group>"; };
-		1785EA14127DAE3A00F468C8 /* SPPreferenceControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPPreferenceControllerDelegate.h; sourceTree = "<group>"; };
-		1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPPreferenceControllerDelegate.m; sourceTree = "<group>"; };
 		1785EA21127DAF3300F468C8 /* SPTablesPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPTablesPreferencePane.h; sourceTree = "<group>"; };
 		1785EA22127DAF3300F468C8 /* SPTablesPreferencePane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPTablesPreferencePane.m; sourceTree = "<group>"; };
 		1785EB5E127DD5A800F468C8 /* SPNotificationsPreferencePane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPNotificationsPreferencePane.h; sourceTree = "<group>"; };
@@ -1760,8 +1757,6 @@
 				B57747D50F7A8978003B34F9 /* SPPreferenceController.h */,
 				B57747D30F7A8974003B34F9 /* SPPreferenceController.m */,
 				17D390A8127B556F00672B13 /* SPPreferencePaneProtocol.h */,
-				1785EA14127DAE3A00F468C8 /* SPPreferenceControllerDelegate.h */,
-				1785EA15127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m */,
 				17D390A7127B551400672B13 /* Panes */,
 			);
 			name = Preferences;
@@ -3230,7 +3225,6 @@
 				17D390C8127B65AF00672B13 /* SPGeneralPreferencePane.m in Sources */,
 				17D390CB127B6BF800672B13 /* SPPreferencesUpgrade.m in Sources */,
 				1785E9F7127D8C7500F468C8 /* SPPreferencePane.m in Sources */,
-				1785EA16127DAE3A00F468C8 /* SPPreferenceControllerDelegate.m in Sources */,
 				1785EA23127DAF3300F468C8 /* SPTablesPreferencePane.m in Sources */,
 				1785EB60127DD5A800F468C8 /* SPNotificationsPreferencePane.m in Sources */,
 				1785EB63127DD5DE00F468C8 /* SPAutoUpdatePreferencePane.m in Sources */,

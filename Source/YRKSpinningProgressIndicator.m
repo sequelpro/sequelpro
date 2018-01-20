@@ -31,7 +31,7 @@
 
 #import "YRKSpinningProgressIndicator.h"
 
-@interface YRKSpinningProgressIndicator (YRKSpinningProgressIndicatorPrivate)
+@interface YRKSpinningProgressIndicator ()
 
 - (void)updateFrame:(NSTimer *)timer;
 - (void) animateInBackgroundThread;

@@ -79,7 +79,7 @@
 
 #pragma mark -
 
-@interface SPTextView (Private_API)
+@interface SPTextView ()
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 #ifndef SP_CODA
@@ -3695,12 +3695,8 @@ static inline NSPoint SPPointOnLine(NSPoint a, NSPoint b, CGFloat t) { return NS
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPTextView (Private_API)
 
 /**
  * Sort function (mainly used to sort the words in the textView)

@@ -33,7 +33,7 @@
 static NSString *SPSSLCipherListMarkerItem = @"--";
 static NSString *SPSSLCipherPboardTypeName = @"SSLCipherPboardType";
 
-@interface SPNetworkPreferencePane (Private)
+@interface SPNetworkPreferencePane ()
 - (void)updateHiddenFiles;
 - (void)loadSSLCiphers;
 - (void)storeSSLCiphers;

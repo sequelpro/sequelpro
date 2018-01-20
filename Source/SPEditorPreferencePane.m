@@ -43,7 +43,7 @@ static NSString *SPCustomColorSchemeNameLC  = @"user-defined";
 
 #define SP_EXPORT_COLOR_SCHEME_NAME_STRING NSLocalizedString(@"MyTheme", @"Preferences : Themes : Initial filename for 'Export'")
 
-@interface SPEditorPreferencePane (PrivateAPI)
+@interface SPEditorPreferencePane ()
 
 - (BOOL)_checkForUnsavedTheme;
 - (NSArray *)_getAvailableThemes;

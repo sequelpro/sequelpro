@@ -28,7 +28,7 @@
 #define GLOBAL_DELIM_EXPR_END		@"expressionEnd"
 #define GLOBAL_DELIM_FILTER			@"filter"
 
-@interface MGTemplateEngine (PrivateMethods)
+@interface MGTemplateEngine ()
 
 - (NSObject *)valueForVariable:(NSString *)var parent:(NSObject **)parent parentKey:(NSString **)parentKey;
 - (void)setValue:(NSObject *)newValue forVariable:(NSString *)var forceCurrentStackFrame:(BOOL)inStackFrame;

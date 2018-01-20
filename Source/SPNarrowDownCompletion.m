@@ -52,7 +52,7 @@
 
 @end
 
-@interface SPNarrowDownCompletion (Private)
+@interface SPNarrowDownCompletion ()
 
 - (NSRect)rectOfMainScreen;
 - (NSString*)filterString;

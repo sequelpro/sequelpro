@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <mach/mach_time.h>
 
-@interface SPDataStorage (Private_API)
+@interface SPDataStorage ()
 
 - (void) _checkNewRow:(NSMutableArray *)aRow;
 - (void) _addRowUnsafeUnchecked:(NSMutableArray *)aRow;
@@ -559,9 +559,7 @@ static inline NSMutableArray* SPDataStorageGetEditedRow(NSPointerArray* rowStore
 	[super dealloc];
 }
 
-@end
-
-@implementation SPDataStorage (PrivateAPI)
+#pragma mark - Private API
 
 // DO NOT CALL THIS METHOD UNLESS YOU CURRENTLY HAVE A LOCK ON SELF!!!
 - (void) _checkNewRow:(NSMutableArray *)aRow

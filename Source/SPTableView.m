@@ -34,8 +34,8 @@
 #import "SPWindowController.h"
 #import "SPFieldMapperController.h"
 
-@interface SPTableView (SPTableViewDelegate)
-
+@protocol SPTableViewDelegate <NSObject>
+@optional
 - (BOOL)cancelRowEditing;
 
 @end
@@ -212,7 +212,7 @@
 
 	// Check if ESCAPE is hit and use it to cancel row editing if supported
 	else if ([theEvent keyCode] == 53 && [[self delegate] respondsToSelector:@selector(cancelRowEditing)]) {
-		if ([[self delegate] performSelector:@selector(cancelRowEditing)]) return;
+		if ([(id<SPTableViewDelegate>)[self delegate] cancelRowEditing]) return;
 	}
 	
 	// If the Tab key is used, but tab editing is disabled, change focus rather than entering edit mode.

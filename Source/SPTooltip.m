@@ -71,7 +71,7 @@ static CGFloat slow_in_out (CGFloat t)
 	return t;
 }
 
-@interface SPTooltip (Private)
+@interface SPTooltip ()
 
 - (void)setContent:(NSString *)content withOptions:(NSDictionary *)displayOptions;
 - (void)runUntilUserActivity;
