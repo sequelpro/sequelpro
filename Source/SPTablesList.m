@@ -33,7 +33,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
-#import "SPDatabaseViewController.h"
 #import "SPTableContent.h"
 #import "SPTableData.h"
 #import "SPTableInfo.h"
@@ -52,7 +51,6 @@
 #import "SPThreadAdditions.h"
 #import "SPFunctions.h"
 #import "SPCharsetCollationHelper.h"
-#import "SPWindowManagement.h"
 
 #import <SPMySQL/SPMySQL.h>
 

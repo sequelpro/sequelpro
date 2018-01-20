@@ -53,7 +53,7 @@ typedef NSRange (*RangeOfLineIMP)(id object, SEL selector, NSRange range);
 
 #pragma mark -
 
-@interface NoodleLineNumberView (Private)
+@interface NoodleLineNumberView ()
 
 - (NSArray *)lineIndices;
 - (void)invalidateLineIndices;

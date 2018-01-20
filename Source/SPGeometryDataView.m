@@ -30,7 +30,7 @@
 
 #import "SPGeometryDataView.h"
 
-@interface SPGeometryDataView (PrivateAPI)
+@interface SPGeometryDataView ()
 
 - (NSPoint)_normalizePoint:(NSPoint)aPoint;
 - (void)_drawPoint:(NSPoint)aPoint;
@@ -282,12 +282,8 @@
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
-#pragma mark PrivateAPI
-
-@implementation  SPGeometryDataView (PrivateAPI)
+#pragma mark Private API
 
 /**
  * Converts original NSPoint to target coordinates

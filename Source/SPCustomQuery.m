@@ -46,7 +46,6 @@
 #import "SPQueryFavoriteManager.h"
 #endif
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
@@ -66,7 +65,7 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPCustomQuery (PrivateAPI)
+@interface SPCustomQuery ()
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
@@ -4027,7 +4026,7 @@
  */
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
-#warning duplicate code with SPTableContentDataSource.m tableView:objectValueForTableColumn:…
+#warning duplicate code with SPTableContent.m tableView:objectValueForTableColumn:…
 	id value = nil;
 	
 	// While the table is being loaded, additional validation is required - data

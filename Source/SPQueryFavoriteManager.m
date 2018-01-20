@@ -32,12 +32,12 @@
 #import "ImageAndTextCell.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPDatabaseDocument.h"
 #import "SPConnectionController.h"
 #import "RegexKitLite.h"
 #import "SPTextView.h"
 #import "SPSplitView.h"
+#import "SPAppController.h"
 
 #define SP_MULTIPLE_SELECTION_PLACEHOLDER_STRING NSLocalizedString(@"[multiple selection]", @"[multiple selection]")
 #define SP_NO_SELECTION_PLACEHOLDER_STRING       NSLocalizedString(@"[no selection]", @"[no selection]")

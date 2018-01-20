@@ -32,7 +32,7 @@
 #import "SPDateAdditions.h"
 #include <stdlib.h>
 
-@interface SPSplitView (Private_API)
+@interface SPSplitView ()
 
 - (void)_initCustomProperties;
 - (void)_ensureDefaultSubviewSizesToIndex:(NSUInteger)anIndex;
@@ -692,12 +692,8 @@
 	}
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPSplitView (Private_API)
 
 - (void)_initCustomProperties
 {

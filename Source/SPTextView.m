@@ -33,7 +33,6 @@
 #import "SPDatabaseDocument.h"
 #import "SPNarrowDownCompletion.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPTooltip.h"
 #import "SPTablesList.h"
 #import "SPNavigatorController.h"
@@ -42,7 +41,6 @@
 #ifndef SP_CODA /* headers */
 #import "SPBundleHTMLOutputController.h"
 #endif
-#import "SPDatabaseViewController.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
 #endif
@@ -81,7 +79,7 @@
 
 #pragma mark -
 
-@interface SPTextView (Private_API)
+@interface SPTextView ()
 
 NSInteger _alphabeticSort(id string1, id string2, void *reverse);
 #ifndef SP_CODA
@@ -1062,7 +1060,7 @@ retry:
 - (IBAction)printDocument:(id)sender
 {
 
-	// If Extended Table Info tab is active delegate the print call to the SPPrintController
+	// If Extended Table Info tab is active delegate the print call to the SPDatabaseDocument
 	// if the user doesn't select anything in self
 	if([[[[self delegate] class] description] isEqualToString:@"SPExtendedTableInfo"] && ![self selectedRange].length) {
 		[[(NSObject*)[self delegate] valueForKeyPath:@"tableDocumentInstance"] printDocument:sender];
@@ -3727,12 +3725,8 @@ retry:
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPTextView (Private_API)
 
 /**
  * Sort function (mainly used to sort the words in the textView)

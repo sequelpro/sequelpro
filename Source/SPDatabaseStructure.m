@@ -30,14 +30,13 @@
 
 #import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
-#import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
 #import "SPThreadAdditions.h"
 
 #import <pthread.h>
 
-@interface SPDatabaseStructure (Private_API)
+@interface SPDatabaseStructure ()
 
 - (void)_destroy:(NSNotification *)notification;
 
@@ -470,12 +469,8 @@ cleanup_thread_and_pool:
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPDatabaseStructure (Private_API)
 
 /**
  * Ensure that processing is completed.

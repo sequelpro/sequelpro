@@ -47,12 +47,6 @@ typedef enum {
 	HexSegment
 } FieldEditorSegment;
 
-@interface SPFieldEditorController (SPFieldEditorControllerDelegate)
-
-- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
-
-@end
-
 @implementation SPFieldEditorController
 
 @synthesize editedFieldInfo;
@@ -682,7 +676,9 @@ typedef enum {
 		else if ( [callerInstance isKindOfClass:[SPTableContent class]] )
 			[(SPTableContent*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 #else
-		[callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+		if([callerInstance respondsToSelector:@selector(processFieldEditorResult:contextInfo:)]) {
+			[(id <SPFieldEditorControllerDelegate>)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+		}
 #endif
 	}
 }

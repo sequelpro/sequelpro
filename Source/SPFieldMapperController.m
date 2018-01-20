@@ -52,7 +52,7 @@ static NSString *SPTableViewSqlColumnID         = @"sql";
 static NSUInteger SPSourceColumnTypeText        = 0;
 static NSUInteger SPSourceColumnTypeInteger     = 1;
 
-@interface SPFieldMapperController (Private)
+@interface SPFieldMapperController ()
 - (void)_setupFieldMappingPopUpMenus;
 @end
 

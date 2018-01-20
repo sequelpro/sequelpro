@@ -47,7 +47,6 @@
 #import "SPFavoritesController.h"
 #import "SPEditorTokens.h"
 #import "SPBundleCommandRunner.h"
-#import "SPWindowManagement.h"
 #import "SPCopyTable.h"
 #import "SPSyntaxParser.h"
 #import "SPOSInfo.h"
@@ -2360,6 +2359,244 @@
 		
 		return;
 	}
+}
+
+#pragma mark - SPAppleScriptSupport
+
+/**
+ * Is needed to interact with AppleScript for set/get internal SP variables
+ */
+- (BOOL)application:(NSApplication *)sender delegateHandlesKey:(NSString *)key
+{
+	NSLog(@"Not yet implemented.");
+
+	return NO;
+}
+
+/**
+ * AppleScript call to get the available documents.
+ */
+- (NSArray *)orderedDocuments
+{
+	NSMutableArray *orderedDocuments = [NSMutableArray array];
+
+	for (NSWindow *aWindow in [self orderedWindows])
+	{
+		if ([[aWindow windowController] isMemberOfClass:[SPWindowController class]]) {
+			[orderedDocuments addObjectsFromArray:[[aWindow windowController] documents]];
+		}
+	}
+
+	return orderedDocuments;
+}
+
+/**
+ * AppleScript support for 'make new document'.
+ *
+ * TODO: following tab support this has been disabled - need to discuss reimplmenting vs syntax.
+ */
+- (void)insertInOrderedDocuments:(SPDatabaseDocument *)doc
+{
+	[self newWindow:self];
+
+	// Set autoconnection if appropriate
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAutoConnectToDefault]) {
+		[[self frontDocument] connect];
+	}
+}
+
+/**
+ * AppleScript call to get the available windows.
+ */
+- (NSArray *)orderedWindows
+{
+	return [NSApp orderedWindows];
+}
+
+/**
+ * AppleScript handler to quit Sequel Pro
+ *
+ * This handler is required to allow termination via the Dock or AppleScript event after activating it using AppleScript
+ */
+- (id)handleQuitScriptCommand:(NSScriptCommand *)command
+{
+	[NSApp terminate:self];
+
+	return nil;
+}
+
+/**
+ * AppleScript open handler
+ *
+ * This handler is required to catch the 'open' command if no argument was passed which would cause a crash.
+ */
+- (id)handleOpenScriptCommand:(NSScriptCommand *)command
+{
+	return nil;
+}
+
+/**
+ * AppleScript print handler
+ *
+ * This handler prints the active view.
+ */
+- (id)handlePrintScriptCommand:(NSScriptCommand *)command
+{
+	SPDatabaseDocument *frontDoc = [self frontDocument];
+
+	if (frontDoc && ![frontDoc isWorking] && ![[frontDoc connectionID] isEqualToString:@"_"]) {
+		[frontDoc startPrintDocumentOperation];
+	}
+
+	return nil;
+}
+
+#pragma mark - SPWindowManagement
+
+- (IBAction)newWindow:(id)sender
+{
+	[self newWindow];
+}
+
+/**
+ * Create a new window, containing a single tab.
+ */
+- (SPWindowController *)newWindow
+{
+	static NSPoint cascadeLocation = {.x = 0, .y = 0};
+
+	// Create a new window controller, and set up a new connection view within it.
+	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+	NSWindow *newWindow = [newWindowController window];
+
+	// Cascading defaults to on - retrieve the window origin automatically assigned by cascading,
+	// and convert to a top left point.
+	NSPoint topLeftPoint = [newWindow frame].origin;
+	topLeftPoint.y += [newWindow frame].size.height;
+
+	// The first window should use autosaving; subsequent windows should cascade.
+	// So attempt to set the frame autosave name; this will succeed for the very
+	// first window, and fail for others.
+	BOOL usedAutosave = [newWindow setFrameAutosaveName:@"DBView"];
+
+	if (!usedAutosave) {
+		[newWindow setFrameUsingName:@"DBView"];
+	}
+
+	// Add the connection view
+	[newWindowController addNewConnection];
+
+	// Cascade according to the statically stored cascade location.
+	cascadeLocation = [newWindow cascadeTopLeftFromPoint:cascadeLocation];
+
+	// Set the window controller as the window's delegate
+	[newWindow setDelegate:newWindowController];
+
+	// Show the window, and perform frontmost tasks again once the window has drawn
+	[newWindowController showWindow:self];
+	[[newWindowController selectedTableDocument] didBecomeActiveTabInWindow];
+
+	return newWindowController;
+}
+
+/**
+ * Create a new tab in the frontmost window.
+ */
+- (IBAction)newTab:(id)sender
+{
+	SPWindowController *frontController = [self frontController];
+
+	// If no window was found, create a new one
+	if (!frontController) {
+		[self newWindow:self];
+	}
+	else {
+		if ([[frontController window] isMiniaturized]) {
+			[[frontController window] deminiaturize:self];
+		}
+
+		[frontController addNewConnection:self];
+	}
+}
+
+- (SPDatabaseDocument *)makeNewConnectionTabOrWindow
+{
+	SPWindowController *frontController = [self frontController];
+
+	SPDatabaseDocument *frontDocument;
+	// If no window was found or the front most window has no tabs, create a new one
+	if (!frontController || [[frontController valueForKeyPath:@"tabView"] numberOfTabViewItems] == 1) {
+		frontController = [self newWindow];
+		frontDocument = [frontController selectedTableDocument];
+	}
+	// Open the spf file in a new tab if the tab bar is visible
+	else {
+		if ([[frontController window] isMiniaturized]) [[frontController window] deminiaturize:self];
+		frontDocument = [frontController addNewConnection];
+	}
+
+	return frontDocument;
+}
+
+/**
+ * Duplicate the current connection tab
+ */
+- (IBAction)duplicateTab:(id)sender
+{
+	SPDatabaseDocument *theFrontDocument = [self frontDocument];
+
+	if (!theFrontDocument) return [self newTab:sender];
+
+	// Add a new tab to the window
+	if ([[self frontDocumentWindow] isMiniaturized]) {
+		[[self frontDocumentWindow] deminiaturize:self];
+	}
+
+	SPDatabaseDocument *newConnection = [[self frontController] addNewConnection];
+
+	// Get the state of the previously-frontmost document
+	NSDictionary *allStateDetails = @{
+									  @"connection" : @YES,
+									  @"history"    : @YES,
+									  @"session"    : @YES,
+									  @"query"      : @YES,
+									  @"password"   : @YES
+									  };
+
+	NSMutableDictionary *frontState = [NSMutableDictionary dictionaryWithDictionary:[theFrontDocument stateIncludingDetails:allStateDetails]];
+
+	// Ensure it's set to autoconnect
+	[frontState setObject:@YES forKey:@"auto_connect"];
+
+	// Set the connection on the new tab
+	[newConnection setState:frontState];
+}
+
+/**
+ * Retrieve the frontmost document window; returns nil if not found.
+ */
+- (NSWindow *)frontDocumentWindow
+{
+	return [[self frontController] window];
+}
+
+- (SPWindowController *)frontController
+{
+	for (NSWindow *aWindow in [NSApp orderedWindows]) {
+		id ctr = [aWindow windowController];
+		if ([ctr isMemberOfClass:[SPWindowController class]]) {
+			return ctr;
+		}
+	}
+	return nil;
+}
+
+/**
+ * When tab drags start, bring all the windows in front of other applications.
+ */
+- (void)tabDragStarted:(id)sender
+{
+	[NSApp arrangeInFront:self];
 }
 
 #pragma mark -

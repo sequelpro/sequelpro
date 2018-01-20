@@ -41,7 +41,7 @@ typedef struct to_buffer_state *TO_BUFFER_STATE;
 void to_switch_to_buffer(TO_BUFFER_STATE);
 TO_BUFFER_STATE to_scan_string (const char *);
 
-@interface SPSQLParser (PrivateAPI)
+@interface SPSQLParser ()
 
 - (unichar) _charAtIndex:(NSInteger)index;
 - (void) _clearCharCache;
@@ -53,7 +53,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * Please see the header files for a general description of the purpose of this class,
  * and increased overview detail for the functions below.
  */
-@implementation SPSQLParser : NSMutableString
+@implementation SPSQLParser
 
 #pragma mark -
 #pragma mark Parser information
@@ -1044,11 +1044,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	[super dealloc];
 }
 
-@end
-
-#pragma mark -
-
-@implementation SPSQLParser (PrivateAPI)
+#pragma mark - Private API
 
 /**
  * Provide a method to retrieve a character from the local cache.

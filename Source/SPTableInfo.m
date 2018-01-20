@@ -37,7 +37,7 @@
 #import "SPTableTextFieldCell.h"
 #import "SPAppController.h"
 
-@interface SPTableInfo (PrivateAPI)
+@interface SPTableInfo ()
 
 - (NSString *)_getUserDefinedDateStringFromMySQLDate:(NSString *)mysqlDate;
 

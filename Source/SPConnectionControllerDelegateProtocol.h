@@ -28,6 +28,8 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
+@class SPConnectionController;
+
 /**
  * @protocol SPConnectionControllerDelegateProtocol SPConnectionControllerDelegateProtocol.h
  *
@@ -42,13 +44,13 @@
  *
  * @param controller The calling connection controller.
  */
-- (void)connectionControllerInitiatingConnection:(id)controller;
+- (void)connectionControllerInitiatingConnection:(SPConnectionController *)controller;
 
 /**
  * Called when the connection controller's connection attempt failed.
  *
  * @param controller The calling connection controller.
  */
-- (void)connectionControllerConnectAttemptFailed:(id)controller;
+- (void)connectionControllerConnectAttemptFailed:(SPConnectionController *)controller;
 
 @end
