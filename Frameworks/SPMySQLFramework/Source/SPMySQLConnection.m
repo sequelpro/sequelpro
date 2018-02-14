@@ -37,6 +37,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>
 #include <stdlib.h>
+#include <dlfcn.h>
 
 // Thread flag constant
 static pthread_key_t mySQLThreadInitFlagKey;
@@ -54,6 +55,7 @@ const SPMySQLClientFlags SPMySQLConnectionOptions =
 const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
 
 static void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *passwd));
+static errno_t LegacyMemsetS(void *ptr, rsize_t ignored, int value, rsize_t count);
 
 @implementation SPMySQLConnection
 
@@ -773,8 +775,16 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	else {
 		NSLog(@"%s: -getCString:maxLength:encoding: failed for password!", __PRETTY_FUNCTION__);
 	}
+	
+	// memset_s is 10.9+ only - if we added a link time dependency, SP wouldn't launch on older targets
+	static errno_t (*memsetPtr)(void *, rsize_t, int, rsize_t);
+	static dispatch_once_t findMemsetToken;
+	dispatch_once(&findMemsetToken, ^{
+		memsetPtr = dlsym(RTLD_DEFAULT, "memset_s");
+		if(!memsetPtr) memsetPtr = LegacyMemsetS;
+	});
 
-	memset_s(cBuffer, cLength, '\0', cLength); //clear password from memory
+	memsetPtr(cBuffer, cLength, '\0', cLength); //clear password from memory
 	free(cBuffer);
 }
 
@@ -1212,4 +1222,19 @@ void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(co
 {
 	assert(mysql && mysql->sp_context);
 	[(SPMySQLConnection *)mysql->sp_context _mysqlConnection:mysql wantsPassword:with_password withPlugin:plugin];
+}
+
+/**
+ * This function tries to emulate the important (to us) parts
+ * of memset_s on pre 10.9 systems.
+ *
+ * The implementation is taken from the original memset_s proposal:
+ *   http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1381.pdf
+ */
+errno_t LegacyMemsetS(void *s, rsize_t smax, int c, rsize_t n)
+{
+	volatile unsigned char * addr = (volatile unsigned char *)s;
+	while(n--) *addr++ = c;
+	
+	return 0;
 }
