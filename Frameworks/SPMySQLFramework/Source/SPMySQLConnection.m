@@ -33,6 +33,10 @@
 #include <mach/mach_time.h>
 #include <pthread.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
+#include <errno.h>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <string.h>
+#include <stdlib.h>
 
 // Thread flag constant
 static pthread_key_t mySQLThreadInitFlagKey;
@@ -49,6 +53,7 @@ const SPMySQLClientFlags SPMySQLConnectionOptions =
 // List of permissible ciphers to use for SSL connections
 const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:AES128-SHA:AES256-RMD:AES128-RMD:DES-CBC3-RMD:DHE-RSA-AES256-RMD:DHE-RSA-AES128-RMD:DHE-RSA-DES-CBC3-RMD:RC4-SHA:RC4-MD5:DES-CBC3-SHA:DES-CBC-SHA:EDH-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC-SHA";
 
+static void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *passwd));
 
 @implementation SPMySQLConnection
 
@@ -612,27 +617,11 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	// Set up the connection variables in the format MySQL needs, from the class-wide variables
 	const char *theHost = NULL;
 	const char *theUsername = "";
-	const char *thePassword = NULL;
 	const char *theSocket = NULL;
 
 	if (host) theHost = [host UTF8String]; //mysql calls getaddrinfo on the hostname. Apples code uses -UTF8String in that situation.
 	if (username) theUsername = _cStringForStringWithEncoding(username, connectEncodingNS, NULL); //during connect this is in MYSQL_SET_CHARSET_NAME encoding
 
-	// If a password was supplied, use it; otherwise ask the delegate if appropriate.
-	//
-	// Note that password has no charset in mysql: If a user password is set to 'ü' on a latin1 connection
-	// and you later try to connect on an UTF-8 terminal (or vice versa) it will fail. The MySQL (5.5) manual wrongly states that
-	// MYSQL_SET_CHARSET_NAME has influence over that, but it does not and could not, since the password is hashed by the client
-	// before transmitting it to the server and the (5.5) client has no charset support, effectively treating password as
-	// a NUL-terminated byte array.
-	// There is one exception, though: The "mysql_clear_password" auth plugin sends the password in plaintext and the server side
-	// MAY choose to do a charset conversion as appropriate before handing it to whatever backend is used.
-	// Since we don't know which auth plugin server and client will agree upon, we'll do as the manual says...
-	if (password) {
-		thePassword = _cStringForStringWithEncoding(password, connectEncodingNS, NULL);
-	} else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-		thePassword = _cStringForStringWithEncoding([delegate keychainPasswordForConnection:self], connectEncodingNS, NULL);
-	}
 
 	// If set to use a socket and a socket was supplied, use it; otherwise, search for a socket to use
 	if (useSocket) {
@@ -690,7 +679,11 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 		}
 	}
 
-	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, thePassword, NULL, (unsigned int)port, theSocket, [self clientFlags]);
+	// we will provide the password via this callback. the mysql_real_connect parameter is a dummy and won't work
+	theConnection->passwd_callback = &PasswordCallback;
+	theConnection->sp_context = self;
+	
+	MYSQL *connectionStatus = mysql_real_connect(theConnection, theHost, theUsername, "", NULL, (unsigned int)port, theSocket, [self clientFlags]);
 
 	// If the connection failed, return NULL
 	if (theConnection != connectionStatus) {
@@ -731,6 +724,58 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 	// Successful connection - return the handle
 	return theConnection;
+}
+
+- (void)_mysqlConnection:(MYSQL *)connection wantsPassword:(void (^)(const char *passwd))inBlock withPlugin:(const char *)pluginName
+{
+	// If a password was supplied, use it; otherwise ask the delegate if appropriate.
+	//
+	// Note that password has no charset in mysql: If a user password is set to 'ü' on a latin1 connection
+	// and you later try to connect on an UTF-8 terminal (or vice versa) it will fail. The MySQL (5.5) manual wrongly states that
+	// MYSQL_SET_CHARSET_NAME has influence over that, but it does not and could not, since the password is hashed by the client
+	// before transmitting it to the server and the (5.5) client has no charset support, effectively treating password as
+	// a NUL-terminated byte array.
+	// There is one exception, though: The "mysql_clear_password" auth plugin sends the password in plaintext and the server side
+	// MAY choose to do a charset conversion as appropriate before handing it to whatever backend is used.
+	// Since we don't know which auth plugin server and client will agree upon, we'll do as the manual says...
+	NSString *passwd = nil;
+	
+	if (password) {
+		passwd = password;
+	} else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
+		passwd = [delegate keychainPasswordForConnection:self]; //TODO pass pluginName to client
+	}
+	
+	// shortcut for empty/nil password
+	if(![passwd length]) {
+		inBlock(NULL);
+		return;
+	}
+
+	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:connection->options.charset_name];
+	NSInteger cLength = [passwd lengthOfBytesUsingEncoding:connectEncodingNS];
+	
+	if(!cLength || cLength == NSIntegerMax) {
+		NSLog(@"%s: -lengthOfBytesUsingEncoding: returned 0 or NSIntegerMax for encoding %lu (mysql: %s)", __PRETTY_FUNCTION__, connectEncodingNS, connection->options.charset_name);
+		return;
+	}
+	
+	char *cBuffer = malloc(++cLength);
+	
+	if(!cBuffer) {
+		NSLog(@"%s: malloc(%ld) failed: %s", __PRETTY_FUNCTION__, (long)cLength, strerror(errno));
+		return;
+	}
+	
+	if([passwd getCString:cBuffer maxLength:cLength encoding:connectEncodingNS]) {
+		inBlock(cBuffer);
+	}
+	else {
+		NSLog(@"%s: -getCString:maxLength:encoding: failed for password!", __PRETTY_FUNCTION__);
+	}
+
+	memset_s(cBuffer, cLength, '\0', cLength); //clear password from memory
+	free(cBuffer);
 }
 
 /**
@@ -1162,3 +1207,9 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 }
 
 @end
+
+void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *passwd))
+{
+	assert(mysql && mysql->sp_context);
+	[(SPMySQLConnection *)mysql->sp_context _mysqlConnection:mysql wantsPassword:with_password withPlugin:plugin];
+}

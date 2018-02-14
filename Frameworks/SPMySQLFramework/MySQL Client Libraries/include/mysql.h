@@ -288,6 +288,18 @@ typedef struct st_mysql
   /* needed for embedded server - no net buffer to store the 'info' */
   char *info_buffer;
   void *extension;
+
+  /* SPMySQL patch: 
+   *   Set this to a callback function that will be invoked when mysql wants to do authentication.
+   *   @param mysql          The MYSQL struct
+   *   @param plugin         The name of the auth plugin that will be used (usually either 
+   *                         "mysql_native_password", "mysql_old_password" or "mysql_clear_password")
+   *   @param with_password  A block function you must invoke, during which mysql can use the password you provide via the passwd parameter.
+   *                         After the block you should immediately clear the password from memory again.
+   */
+  void (*passwd_callback)(struct st_mysql *mysql, const char *plugin, void (^with_password)(const char *passwd));
+  /* SPMySQL patch: This is used with passwd_callback to bridge back to OOP land */
+  void *sp_context;
 } MYSQL;
 
 
