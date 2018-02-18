@@ -730,22 +730,27 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 - (void)_mysqlConnection:(MYSQL *)connection wantsPassword:(void (^)(const char *passwd))inBlock withPlugin:(const char *)pluginName
 {
-	// If a password was supplied, use it; otherwise ask the delegate if appropriate.
-	//
-	// Note that password has no charset in mysql: If a user password is set to 'ü' on a latin1 connection
-	// and you later try to connect on an UTF-8 terminal (or vice versa) it will fail. The MySQL (5.5) manual wrongly states that
-	// MYSQL_SET_CHARSET_NAME has influence over that, but it does not and could not, since the password is hashed by the client
-	// before transmitting it to the server and the (5.5) client has no charset support, effectively treating password as
-	// a NUL-terminated byte array.
-	// There is one exception, though: The "mysql_clear_password" auth plugin sends the password in plaintext and the server side
-	// MAY choose to do a charset conversion as appropriate before handing it to whatever backend is used.
-	// Since we don't know which auth plugin server and client will agree upon, we'll do as the manual says...
 	NSString *passwd = nil;
-	
+
+	// If a password was supplied, use it; otherwise ask the delegate if appropriate.
 	if (password) {
 		passwd = password;
-	} else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:)]) {
-		passwd = [delegate keychainPasswordForConnection:self]; //TODO pass pluginName to client
+	}
+	else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:authPlugin:)]) {
+		// It's not clear what charset the plugin name is in:
+		// In the 5.5 libmysqlclient:
+		//  * For the compiled-in plugins this will simply be the byte sequence as it was in the source code
+		//  * The server requests a plugin in the first packet it sends and gives its own charset (mysql->server_language)
+		//    * However client for the most part ignores the plugin name
+		//    * and it completely ignores the server_language
+		//  * When the client sends its reply (in send_client_reply_packet()) it will send the plugin name together with
+		//    the desired charset+collation (but doesn't apply any charset conversion logic to the values)
+		// In the JDBC client it works like this:
+		//  * The plugin name in the first packet from the server will always be interpreted as "ASCII"
+		//  * The plugin name in the client response will be encoded in the client's initial charset
+		// TODO We will just use latin1 for now, as it is the safest fallback
+		NSString *plugin = [NSString stringWithCString:pluginName encoding:NSISOLatin1StringEncoding];
+		passwd = [delegate keychainPasswordForConnection:self authPlugin:plugin];
 	}
 	
 	// shortcut for empty/nil password
@@ -754,7 +759,20 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 		return;
 	}
 
-	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:connection->options.charset_name];
+	// Note (libmysqlclient 5.5):
+	// mysql_character_set_name() is only initialized after mysql has read the first packet from the server.
+	// Before that it will always be latin1, regardless of what was set with mysql_options().
+	// That does not mean, that client and server have agreed on a charset already, though!
+	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:mysql_character_set_name(connection)];
+
+	// Note that password has no charset in mysql: If a user password is set to 'ü' on a latin1 connection
+	// and you later try to connect on an UTF-8 terminal (or vice versa) it will fail. The MySQL (5.5) manual wrongly states that
+	// MYSQL_SET_CHARSET_NAME has influence over that, but it does not and could not, since the password is hashed by the client
+	// before transmitting it to the server and the (5.5) client has very limited charset support,
+	// effectively treating password as a NUL-terminated byte array.
+	// There is one exception, though: The "mysql_clear_password" auth plugin sends the password in plaintext and the server side
+	// MAY choose to do a charset conversion as appropriate before handing it to whatever backend is used.
+	// Since we don't know which auth plugin server and client will agree upon, we'll do as the manual says...
 	NSInteger cLength = [passwd lengthOfBytesUsingEncoding:connectEncodingNS];
 	
 	if(!cLength || cLength == NSIntegerMax) {
@@ -1218,7 +1236,7 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 
 @end
 
-void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *passwd))
+void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *))
 {
 	assert(mysql && mysql->sp_context);
 	[(SPMySQLConnection *)mysql->sp_context _mysqlConnection:mysql wantsPassword:with_password withPlugin:plugin];
@@ -1234,7 +1252,7 @@ void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(co
 errno_t LegacyMemsetS(void *s, rsize_t smax, int c, rsize_t n)
 {
 	volatile unsigned char * addr = (volatile unsigned char *)s;
-	while(n--) *addr++ = c;
+	while(n--) *addr++ = (unsigned char)c;
 	
 	return 0;
 }

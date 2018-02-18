@@ -69,8 +69,9 @@
  * can be used to look it up and supplied on demand.
  *
  * @param connection The connection instance to supply the password for
+ * @param pluginName The auth plugin libmysqlclients wants to use the password with
  */
-- (NSString *)keychainPasswordForConnection:(id)connection;
+- (NSString *)keychainPasswordForConnection:(id)connection authPlugin:(NSString *)pluginName;
 
 /**
  * Notifies the delegate that no underlying connection is available,

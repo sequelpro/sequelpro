@@ -119,7 +119,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void) closeAndDisconnect;
 
-- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection;
+- (NSString *)keychainPassword;
 - (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection;
 
 @end
@@ -4686,7 +4686,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[connection setObject:[self database] forKey:@"database"];
 
 		if (includePasswords) {
-			NSString *pw = [self keychainPasswordForConnection:nil];
+			NSString *pw = [self keychainPassword];
 			if (!pw) pw = [connectionController password];
 			if (pw) [connection setObject:pw forKey:@"password"];
 
@@ -4885,9 +4885,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if ([connection objectForKey:@"password"])
 		[connectionController setPassword:[connection objectForKey:@"password"]];
 	else {
-		NSString *pw = [self keychainPasswordForConnection:nil];
-		if (pw)
-			[connectionController setPassword:pw];
+		NSString *pw = [self keychainPassword];
+		if (pw) [connectionController setPassword:pw];
 	}
 
 	// Set the socket details, whether or not the type is a socket
@@ -7150,15 +7149,22 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 /**
  * Invoked when the current connection needs a password from the Keychain.
  */
-- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection
+- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection authPlugin:(NSString *)pluginName
 {
+	//TODO check plugin name to see whether we want to fetch it from keychain
+	return [self keychainPassword];
+}
+
+- (NSString *)keychainPassword
+{
+	NSString *kcItemName = [connectionController connectionKeychainItemName];
 	// If no keychain item is available, return an empty password
-	if (![connectionController connectionKeychainItemName]) return nil;
+	if (!kcItemName) return nil;
 
 	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];
 
-	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
+	NSString *password = [keychain getPasswordForName:kcItemName account:[connectionController connectionKeychainItemAccount]];
 
 	[keychain release];
 
