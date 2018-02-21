@@ -38,6 +38,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#import "SPMySQLUtilities.h"
 
 // Thread flag constant
 static pthread_key_t mySQLThreadInitFlagKey;
@@ -477,14 +478,6 @@ static errno_t LegacyMemsetS(void *ptr, rsize_t ignored, int value, rsize_t coun
 const char *__crashreporter_info__ = NULL;
 asm(".desc ___crashreporter_info__, 0x10");
 
-static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
-{
-	uint64_t elapsedTime_t = mach_absolute_time() - comparisonTime;
-	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
-
-	return (UnsignedWideToUInt64(elapsedTime) / 1000ULL);
-}
-
 @implementation SPMySQLConnection (PrivateAPI)
 
 /**
@@ -496,8 +489,8 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
 		@synchronized (self) {
-			uint64_t diff = _elapsedMicroSecondsSinceAbsoluteTime(initialConnectTime);
-			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lluµs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
+			double diff = _elapsedSecondsSinceAbsoluteTime(initialConnectTime);
+			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lfs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
 			__builtin_trap();
 		}
 		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state];
@@ -1249,7 +1242,7 @@ void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(co
  * The implementation is taken from the original memset_s proposal:
  *   http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1381.pdf
  */
-errno_t LegacyMemsetS(void *s, rsize_t smax, int c, rsize_t n)
+errno_t LegacyMemsetS(void *s, rsize_t smax __attribute__((unused)), int c, rsize_t n)
 {
 	volatile unsigned char * addr = (volatile unsigned char *)s;
 	while(n--) *addr++ = (unsigned char)c;
