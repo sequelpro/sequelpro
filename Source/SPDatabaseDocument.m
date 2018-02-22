@@ -136,6 +136,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 @synthesize processID;
 @synthesize instanceId;
 @synthesize dbTablesTableView = dbTablesTableView;
+@synthesize keychainID = keychainID;
 
 #pragma mark -
 
@@ -218,8 +219,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		alterDatabaseCharsetHelper = nil; //init in awakeFromNib
 		addDatabaseCharsetHelper = nil;
 		
-		keyChainID = nil;
-
 #ifndef SP_CODA /* init ivars */
 		statusValues = nil;
 		printThread = nil;
@@ -611,14 +610,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (SPMySQLConnection *)getConnection
 {
 	return mySQLConnection;
-}
-
-/**
- * Sets this connection's Keychain ID.
- */ 
-- (void)setKeychainID:(NSString *)theId
-{
-	keyChainID = [[NSString stringWithString:theId] retain];
 }
 
 #pragma mark -
@@ -2863,11 +2854,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	return thePort;
 }
 
-- (NSString *)keyChainID
-{
-	return keyChainID;
-}
-
 - (BOOL)isSaveInBundle
 {
 	return _isSavedInBundle;
@@ -4674,7 +4660,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 		[connection setObject:connectionType forKey:@"type"];
 
-		if ([[self keyChainID] length]) [connection setObject:[self keyChainID] forKey:@"kcid"];
+		if ([[self keychainID] length]) [connection setObject:[self keychainID] forKey:@"kcid"];
 		[connection setObject:[self name] forKey:@"name"];
 		[connection setObject:[self host] forKey:@"host"];
 		[connection setObject:[self user] forKey:@"user"];
@@ -4877,7 +4863,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Set the keychain details if available
 	if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
 		[self setKeychainID:[connection objectForKey:@"kcid"]];
-		[connectionController setConnectionKeychainItemName:[keychain nameForFavoriteName:[connectionController name] id:[self keyChainID]]];
+		[connectionController setConnectionKeychainItemName:[keychain nameForFavoriteName:[connectionController name] id:[self keychainID]]];
 		[connectionController setConnectionKeychainItemAccount:[keychain accountForUser:[connectionController user] host:[connectionController host] database:[connection objectForKey:@"database"]]];
 	}
 
@@ -4910,7 +4896,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
 	else {
 		if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
-			[connectionController setConnectionSSHKeychainItemName:[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]]];
+			[connectionController setConnectionSSHKeychainItemName:[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keychainID]]];
 			[connectionController setConnectionSSHKeychainItemAccount:[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]]];
 		}
 		NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
@@ -7184,7 +7170,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	// Otherwise, pull the password from the keychain using the details from this connection
 	SPKeychain *keychain = [[SPKeychain alloc] init];
 
-	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
+	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keychainID]] retain];
 	NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
 	NSString *sshPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 
@@ -7760,7 +7746,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if (spfPreferences) SPClear(spfPreferences);
 	if (spfSession) SPClear(spfSession);
 	if (spfDocData) SPClear(spfDocData);
-	if (keyChainID) SPClear(keyChainID);
+	[self setKeychainID:nil];
 	if (mainToolbar) SPClear(mainToolbar);
 	if (titleAccessoryView) SPClear(titleAccessoryView);
 	if (taskProgressWindow) SPClear(taskProgressWindow);
