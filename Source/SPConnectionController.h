@@ -208,6 +208,7 @@
 @property (readwrite, assign) NSInteger sshKeyLocationEnabled;
 @property (readwrite, retain) NSString *sshKeyLocation;
 @property (readwrite, retain) NSString *sshPort;
+@property (readwrite, copy, nonatomic) NSString *connectionKeychainID;
 @property (readwrite, retain) NSString *connectionKeychainItemName;
 @property (readwrite, retain) NSString *connectionKeychainItemAccount;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
@@ -222,6 +223,7 @@
 @property (readonly, assign) BOOL isEditingConnection;
 
 - (NSString *)keychainPassword;
+- (NSString *)keychainPasswordForSSH;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;

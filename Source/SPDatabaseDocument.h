@@ -262,8 +262,6 @@
 	NSMutableArray *runningActivitiesArray;
 #endif
 
-	NSString *keychainID;
-	
 #ifndef SP_CODA /* ivars */
 	NSThread *printThread;
 	
@@ -342,7 +340,6 @@
 #endif
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (SPMySQLConnection *)getConnection;
-@property(readwrite, copy, nonatomic) NSString *keychainID;
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
