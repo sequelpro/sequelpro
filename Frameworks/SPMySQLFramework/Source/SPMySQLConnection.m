@@ -729,7 +729,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 	if (password) {
 		passwd = password;
 	}
-	else if ([delegate respondsToSelector:@selector(keychainPasswordForConnection:authPlugin:)]) {
+	else if ([delegate respondsToSelector:@selector(passwordForConnection:authPlugin:)]) {
 		// It's not clear what charset the plugin name is in:
 		// In the 5.5 libmysqlclient:
 		//  * For the compiled-in plugins this will simply be the byte sequence as it was in the source code
@@ -743,7 +743,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 		//  * The plugin name in the client response will be encoded in the client's initial charset
 		// TODO We will just use latin1 for now, as it is the safest fallback
 		NSString *plugin = [NSString stringWithCString:pluginName encoding:NSISOLatin1StringEncoding];
-		passwd = [delegate keychainPasswordForConnection:self authPlugin:plugin];
+		passwd = [delegate passwordForConnection:self authPlugin:plugin];
 	}
 	
 	// shortcut for empty/nil password

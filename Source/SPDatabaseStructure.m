@@ -444,11 +444,11 @@ cleanup_thread_and_pool:
 #pragma mark SPMySQLConnection delegate methods
 
 /**
- * Forward keychain password requests to the database object.
+ * Forward password requests to the database object.
  */
-- (NSString *)keychainPasswordForConnection:(id)connection authPlugin:(NSString *)pluginName
+- (NSString *)passwordForConnection:(id)connection authPlugin:(NSString *)pluginName
 {
-	return [delegate keychainPasswordForConnection:connection authPlugin:pluginName];
+	return [delegate passwordForConnection:connection authPlugin:pluginName];
 }
 
 #pragma mark -

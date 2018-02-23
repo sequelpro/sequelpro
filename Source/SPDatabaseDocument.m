@@ -7133,9 +7133,9 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 /**
- * Invoked when the current connection needs a password from the Keychain.
+ * Invoked when the current connection needs a password.
  */
-- (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection authPlugin:(NSString *)pluginName
+- (NSString *)passwordForConnection:(SPMySQLConnection *)connection authPlugin:(NSString *)pluginName
 {
 	//TODO check plugin name to see whether we want to fetch it from keychain
 	return [connectionController keychainPassword];
