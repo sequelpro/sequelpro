@@ -221,6 +221,8 @@
 @property (readonly, assign) BOOL isConnecting;
 @property (readonly, assign) BOOL isEditingConnection;
 
+- (NSString *)keychainPassword;
+
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
 - (IBAction)cancelConnection:(id)sender;

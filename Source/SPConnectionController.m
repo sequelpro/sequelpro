@@ -176,6 +176,18 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize isConnecting;
 @synthesize isEditingConnection;
 
+- (NSString *)keychainPassword
+{
+	NSString *kcItemName = [self connectionKeychainItemName];
+	// If no keychain item is available, return an empty password
+	if (!kcItemName) return nil;
+
+	// Otherwise, pull the password from the keychain using the details from this connection
+	NSString *kcPassword = [keychain getPasswordForName:kcItemName account:[self connectionKeychainItemAccount]];
+
+	return kcPassword;
+}
+
 #pragma mark -
 #pragma mark Connection processes
 

@@ -119,7 +119,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 - (void) closeAndDisconnect;
 
-- (NSString *)keychainPassword;
 - (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection;
 
 @end
@@ -4672,7 +4671,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[connection setObject:[self database] forKey:@"database"];
 
 		if (includePasswords) {
-			NSString *pw = [self keychainPassword];
+			NSString *pw = [connectionController keychainPassword];
 			if (!pw) pw = [connectionController password];
 			if (pw) [connection setObject:pw forKey:@"password"];
 
@@ -4871,7 +4870,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if ([connection objectForKey:@"password"])
 		[connectionController setPassword:[connection objectForKey:@"password"]];
 	else {
-		NSString *pw = [self keychainPassword];
+		NSString *pw = [connectionController keychainPassword];
 		if (pw) [connectionController setPassword:pw];
 	}
 
@@ -7138,23 +7137,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection authPlugin:(NSString *)pluginName
 {
 	//TODO check plugin name to see whether we want to fetch it from keychain
-	return [self keychainPassword];
-}
-
-- (NSString *)keychainPassword
-{
-	NSString *kcItemName = [connectionController connectionKeychainItemName];
-	// If no keychain item is available, return an empty password
-	if (!kcItemName) return nil;
-
-	// Otherwise, pull the password from the keychain using the details from this connection
-	SPKeychain *keychain = [[SPKeychain alloc] init];
-
-	NSString *password = [keychain getPasswordForName:kcItemName account:[connectionController connectionKeychainItemAccount]];
-
-	[keychain release];
-
-	return password;
+	return [connectionController keychainPassword];
 }
 
 /**
