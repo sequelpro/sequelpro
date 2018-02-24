@@ -68,6 +68,8 @@
  * the secure store (Keychain), and the other connection details (user, host)
  * can be used to look it up and supplied on demand.
  *
+ * NOTE: This will be called on the thread SPMySQL is running on (which *MAY* be a background thread)!
+ *
  * @param connection The connection instance to supply the password for
  * @param pluginName The auth plugin libmysqlclients wants to use the password with
  */

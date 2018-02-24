@@ -82,6 +82,7 @@ static errno_t LegacyMemsetS(void *ptr, rsize_t ignored, int value, rsize_t coun
 @synthesize delegateQueryLogging;
 @synthesize lastQueryWasCancelled;
 @synthesize clientFlags = clientFlags;
+@synthesize allowCleartextPlugin = allowCleartextPlugin;
 
 #pragma mark -
 #pragma mark Getters and Setters
@@ -609,6 +610,9 @@ asm(".desc ___crashreporter_info__, 0x10");
 	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:[encodingName UTF8String]];
 	mysql_options(theConnection, MYSQL_SET_CHARSET_NAME, [encodingName UTF8String]);
 
+	my_bool cleartextAllowed = [self allowCleartextPlugin] ? TRUE : FALSE;
+	mysql_options(theConnection, MYSQL_ENABLE_CLEARTEXT_PLUGIN, &cleartextAllowed);
+
 	// Set up the connection variables in the format MySQL needs, from the class-wide variables
 	const char *theHost = NULL;
 	const char *theUsername = "";
@@ -746,9 +750,11 @@ asm(".desc ___crashreporter_info__, 0x10");
 		passwd = [delegate passwordForConnection:self authPlugin:plugin];
 	}
 	
-	// shortcut for empty/nil password
+	// shortcut for nil/empty passwords
 	if(![passwd length]) {
-		inBlock(NULL);
+		// nil means abort, "" is a valid password:
+		// only invoke the block when the password is @"", otherwise we'll skip it which will make mysql abort the connection
+		if(passwd) inBlock("");
 		return;
 	}
 

@@ -7137,8 +7137,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (NSString *)passwordForConnection:(SPMySQLConnection *)connection authPlugin:(NSString *)pluginName
 {
-	//TODO check plugin name to see whether we want to fetch it from keychain
-	return [connectionController keychainPassword];
+	return [[connectionController onMainThread] actualPasswordForAuthPlugin:pluginName];
 }
 
 /**

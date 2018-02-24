@@ -114,6 +114,9 @@ static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,
 
 - (void)_documentWillClose:(NSNotification *)notification;
 
+- (void)_beginRequestPasswordForInsecurePlugin:(NSString *)pluginName;
+- (void)_insecurePasswordAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 #endif
 
@@ -163,6 +166,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize sshKeyLocation;
 @synthesize sshPort;
 @synthesize useCompression;
+@synthesize agreedInsecurePlugin = agreedInsecurePlugin;
+@synthesize insecureOverridePassword = insecureOverridePassword;
 
 #ifdef SP_CODA
 @synthesize dbDocument;
@@ -197,6 +202,133 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSString *kcSSHPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
 
 	return kcSSHPassword;
+}
+
+/**
+ * This method is responsible for handing the user password to SPMySQL when it needs it.
+ * It will receive the name of the auth plugin mysql plans to use and with
+ * that it has to decide whether to fetch the password from keychain, or present
+ * additional prompts to the user (e.g. in case the auth plugin is insecure).
+ *
+ * Note: The 5.5 libmysqlclient on the first attempt ignores the requested plugin
+ *       and tries to guess one instead. Only if that fails it will try to use
+ *       the server's suggested one. Thus this method may be invoked multiple times
+ *       during a single connection attempt.
+ *
+ * @return The actual user password to give to the mysql auth plugin.
+ *         This may be empty (no password).
+ *         This may be nil, which will be interpreted as "cancelled by user"
+ *
+ * This MUST be called on the UI thread!
+ */
+- (NSString *)actualPasswordForAuthPlugin:(NSString *)pluginName
+{
+	NSArray *securePluginNames = @[
+		@"mysql_native_password", //default on 4.1+
+		//@"sha256_password", // not supported by the 5.5 client, only secure when used with TLS server cert checks!
+		                      //   over SSL: password is transmitted in plaintext
+		                      //   over plaintext: the mysql client uses assymetric crypto to encrypt the password and
+		                      //                   send the encrypted plaintext to the server (this requires the OpenSSL
+		                      //                   libs, so doesn't work with our client builds)
+	];
+	//INSECURE:
+	//  mysql_clear_password; Plaintext password
+	//  mysql_old_password;   Deprecated, used with pre-4.1 servers. No longer supported in 5.7.5+ clients
+	//UNSUPPORTED:
+	//  authentication_windows_client;   Kerberos/NTLM auth. Not supported on UNIX by libmysqlclient
+	//  authentication_ldap_sasl_client; MySQL Enterprise
+	//  auth_test_plugin;                Developer example only
+
+	// TODO incorporate SSL/TLS state in decision (cleartext over trusted SSL should be fine)
+	// This is not possible right now, because someone with access to the Mac could just swap the SSL CA cert
+	// and server ip to something he controls. So if Sequel Pro would just check that SSL was in use, it could
+	// still be attacked to easily give the password away.
+	// Instead we have to link all critical connection parameters (host+port+ssh-tunnel+ssl server or ca cert hash)
+	// to the password in keychain and make sure none of them changed before giving the password to libmysqlclient.
+
+	if(![securePluginNames containsObject:pluginName]) {
+		if(![pluginName isEqualToString:agreedInsecurePlugin]) {
+			// since the user will probably take longer to answer the dialog than the connection timeout is
+			// (and because the UI sheet is async anyway),
+			// we will do a little trick and disconnect mysql right now and retry, once we actually have the password
+			[self performSelector:@selector(_beginRequestPasswordForInsecurePlugin:) withObject:pluginName afterDelay:0.0];
+			cancellingConnection = YES;
+			return nil;
+		}
+	}
+
+	NSString *pass;
+	// override password always wins
+	if ((pass = [self insecureOverridePassword])) {
+		;
+	}
+	// Only set the password if there is no Keychain item set and the connection is not being tested.
+	// The connection will otherwise ask the delegate for passwords in the Keychain.
+	else if ((!connectionKeychainItemName || isTestingConnection) && (pass = [self password])) {
+		;
+	}
+	else {
+		pass = [self keychainPassword];
+	}
+
+	return (pass ? pass : @""); //returning nil would mean cancelled
+}
+
+- (void)_beginRequestPasswordForInsecurePlugin:(NSString *)pluginName
+{
+	// if the user presses "Disconnect" in the dialog OR
+	// if this was only a test connection OR
+	// if the connection failed anyway
+	// -> agreedInsecurePlugin will be cleared again via -_restoreConnectionInterface
+	[self setAgreedInsecurePlugin:pluginName];
+
+	//show modal warning dialog
+	NSAlert *alert = [[NSAlert alloc] init]; //released in alert callback
+	[alert setAlertStyle:NSAlertStyleCritical];
+	[alert setMessageText:NSLocalizedString(@"Transmit password insecurely?",@"Connection dialog : password security error alert : title")];
+	[alert setInformativeText:NSLocalizedString(@"The MySQL server has requested the password to be transmitted in an insecure manner. This could be indicative of an attack on the server or your network connection!\n\nIf you still want to continue anyway, manually reenter your connection password.",@"Connection dialog : password security error alert : detail message")];
+	[alert setAccessoryView:requestPasswordAccessoryView];
+
+	[requestPasswordPluginNameField setStringValue:pluginName];
+
+	NSButton *connectAnywayButton = [alert addButtonWithTitle:NSLocalizedString(@"Connect Anyway",@"Connection dialog : password security error alert : confirm button")];
+	[connectAnywayButton setTag:NSAlertDefaultReturn];
+
+	NSButton *disconnectButton = [alert addButtonWithTitle:NSLocalizedString(@"Disconnect",@"Connection dialog : password security error alert : cancel button")];
+	[disconnectButton setTag:NSAlertAlternateReturn];
+
+	[alert beginSheetModalForWindow:[dbDocument parentWindow]
+	                  modalDelegate:self
+	                 didEndSelector:@selector(_insecurePasswordAlertDidEnd:returnCode:contextInfo:)
+	                    contextInfo:NULL];
+}
+
+- (void)_insecurePasswordAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	NSString *pass = nil;
+	if(returnCode == NSAlertDefaultReturn) {
+		pass = [NSString stringWithString:[requestPasswordPasswordField stringValue]];
+	}
+	[requestPasswordPasswordField setStringValue:@""];
+
+	[alert autorelease];
+
+	cancellingConnection = NO;
+
+	//cancelled by user?
+	if(!pass) {
+		[self _restoreConnectionInterface];
+		return;
+	}
+
+	// if the manually given password matches the keychain password there is no need to keep it in memory,
+	// otherwise we use the override password ivar in order to not affect the normal logic
+	if (!connectionKeychainItemName || ![pass isEqualToString:[self keychainPassword]]) {
+		[self setInsecureOverridePassword:pass];
+	}
+
+	[[pass retain] release]; //free it asap
+	[self initiateMySQLConnection]; //reconnect
 }
 
 #pragma mark -
@@ -765,6 +897,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionKeychainItemAccount) SPClear(connectionKeychainItemAccount);
 	if (connectionSSHKeychainItemName) SPClear(connectionSSHKeychainItemName);
 	if (connectionSSHKeychainItemAccount) SPClear(connectionSSHKeychainItemAccount);
+	[self setAgreedInsecurePlugin:nil];
+	[self setInsecureOverridePassword:nil];
 
 	SPTreeNode *node = [self selectedFavoriteNode];
 	if ([node isGroup]) node = nil;
@@ -1764,7 +1898,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Reset the window title
 	[dbDocument updateWindowTitle:self];
 	[[dbDocument parentTabViewItem] setLabel:[dbDocument displayName]];
-	
+
+	//only store that if the connection attempt was successful
+	[self setAgreedInsecurePlugin:nil];
+	[self setInsecureOverridePassword:nil];
+
 	// Stop the current tab's progress indicator
 	[dbDocument setIsProcessing:NO];
 
@@ -2083,12 +2221,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 		}
 	}
 
-	// Only set the password if there is no Keychain item set and the connection is not being tested.
-	// The connection will otherwise ask the delegate for passwords in the Keychain.
-	if ((!connectionKeychainItemName || isTestingConnection) && [self password]) {
-		[mySQLConnection setPassword:[self password]];
-	}
-
 	// Enable SSL if set
 	if ([self useSSL]) {
 		[mySQLConnection setUseSSL:YES];
@@ -2129,6 +2261,11 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[mySQLConnection setTimeout:[[prefs objectForKey:SPConnectionTimeoutValue] integerValue]];
 	[mySQLConnection setUseKeepAlive:[[prefs objectForKey:SPUseKeepAlive] boolValue]];
 	[mySQLConnection setKeepAliveInterval:[[prefs objectForKey:SPKeepAliveInterval] floatValue]];
+
+	// We can always enable the cleartext plugin (this does not yet mean it will actually be used),
+	// since mysql will ask us for the password in -actualPasswordForAuthPlugin: at which point
+	// we get to decide what to do with the actual plugin.
+	[mySQLConnection setAllowCleartextPlugin:YES];
 
 	// Connect
 	[mySQLConnection connect];
@@ -3646,6 +3783,8 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	if (connectionKeychainItemAccount)    SPClear(connectionKeychainItemAccount);
 	if (connectionSSHKeychainItemName)    SPClear(connectionSSHKeychainItemName);
 	if (connectionSSHKeychainItemAccount) SPClear(connectionSSHKeychainItemAccount);
+	[self setAgreedInsecurePlugin:nil];
+	[self setInsecureOverridePassword:nil];
 
 #ifndef SP_CODA
 	if (currentFavorite) SPClear(currentFavorite);
