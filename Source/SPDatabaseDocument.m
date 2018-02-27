@@ -218,8 +218,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		alterDatabaseCharsetHelper = nil; //init in awakeFromNib
 		addDatabaseCharsetHelper = nil;
 		
-		keyChainID = nil;
-
 #ifndef SP_CODA /* init ivars */
 		statusValues = nil;
 		printThread = nil;
@@ -611,14 +609,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (SPMySQLConnection *)getConnection
 {
 	return mySQLConnection;
-}
-
-/**
- * Sets this connection's Keychain ID.
- */ 
-- (void)setKeychainID:(NSString *)theId
-{
-	keyChainID = [[NSString stringWithString:theId] retain];
 }
 
 #pragma mark -
@@ -2863,11 +2853,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	return thePort;
 }
 
-- (NSString *)keyChainID
-{
-	return keyChainID;
-}
-
 - (BOOL)isSaveInBundle
 {
 	return _isSavedInBundle;
@@ -4674,7 +4659,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		}
 		[connection setObject:connectionType forKey:@"type"];
 
-		if ([[self keyChainID] length]) [connection setObject:[self keyChainID] forKey:@"kcid"];
+		NSString *kcid = [connectionController connectionKeychainID];
+		if ([kcid length]) [connection setObject:kcid forKey:@"kcid"];
 		[connection setObject:[self name] forKey:@"name"];
 		[connection setObject:[self host] forKey:@"host"];
 		[connection setObject:[self user] forKey:@"user"];
@@ -4686,7 +4672,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			[connection setObject:[self database] forKey:@"database"];
 
 		if (includePasswords) {
-			NSString *pw = [self keychainPasswordForConnection:nil];
+			NSString *pw = [connectionController keychainPassword];
 			if (!pw) pw = [connectionController password];
 			if (pw) [connection setObject:pw forKey:@"password"];
 
@@ -4875,9 +4861,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[connectionController setSslCACertFileLocation:[connection objectForKey:@"sslCACertFileLocation"]];
 
 	// Set the keychain details if available
-	if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
-		[self setKeychainID:[connection objectForKey:@"kcid"]];
-		[connectionController setConnectionKeychainItemName:[keychain nameForFavoriteName:[connectionController name] id:[self keyChainID]]];
+	NSString *kcid = (NSString *)[connection objectForKey:@"kcid"];
+	if ([kcid length]) {
+		[connectionController setConnectionKeychainID:kcid];
+		[connectionController setConnectionKeychainItemName:[keychain nameForFavoriteName:[connectionController name] id:kcid]];
 		[connectionController setConnectionKeychainItemAccount:[keychain accountForUser:[connectionController user] host:[connectionController host] database:[connection objectForKey:@"database"]]];
 	}
 
@@ -4885,9 +4872,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if ([connection objectForKey:@"password"])
 		[connectionController setPassword:[connection objectForKey:@"password"]];
 	else {
-		NSString *pw = [self keychainPasswordForConnection:nil];
-		if (pw)
-			[connectionController setPassword:pw];
+		NSString *pw = [connectionController keychainPassword];
+		if (pw) [connectionController setPassword:pw];
 	}
 
 	// Set the socket details, whether or not the type is a socket
@@ -4910,8 +4896,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if ([connection objectForKey:@"ssh_password"])
 		[connectionController setSshPassword:[connection objectForKey:@"ssh_password"]];
 	else {
-		if ([connection objectForKey:@"kcid"] && [(NSString *)[connection objectForKey:@"kcid"] length]) {
-			[connectionController setConnectionSSHKeychainItemName:[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]]];
+		if ([kcid length]) {
+			[connectionController setConnectionSSHKeychainItemName:[keychain nameForSSHForFavoriteName:[connectionController name] id:kcid]];
 			[connectionController setConnectionSSHKeychainItemAccount:[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]]];
 		}
 		NSString *sshpw = [self keychainPasswordForSSHConnection:nil];
@@ -7152,17 +7138,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (NSString *)keychainPasswordForConnection:(SPMySQLConnection *)connection
 {
-	// If no keychain item is available, return an empty password
-	if (![connectionController connectionKeychainItemName]) return nil;
-
-	// Otherwise, pull the password from the keychain using the details from this connection
-	SPKeychain *keychain = [[SPKeychain alloc] init];
-
-	NSString *password = [keychain getPasswordForName:[connectionController connectionKeychainItemName] account:[connectionController connectionKeychainItemAccount]];
-
-	[keychain release];
-
-	return password;
+	return [connectionController keychainPassword];
 }
 
 /**
@@ -7173,25 +7149,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 - (NSString *)keychainPasswordForSSHConnection:(SPMySQLConnection *)connection
 {
 	// If no keychain item is available, return an empty password
-	if (![connectionController connectionKeychainItemName]) return @"";
+	NSString *password = [connectionController keychainPasswordForSSH];
+	if (!password) return @"";
 
-	// Otherwise, pull the password from the keychain using the details from this connection
-	SPKeychain *keychain = [[SPKeychain alloc] init];
-
-	NSString *connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[connectionController name] id:[self keyChainID]] retain];
-	NSString *connectionSSHKeychainItemAccount = [[keychain accountForSSHUser:[connectionController sshUser] sshHost:[connectionController sshHost]] retain];
-	NSString *sshPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
-
-	if (!sshPassword || ![sshPassword length]) {
-		sshPassword = @"";
-	}
-
-	if (connectionSSHKeychainItemName) [connectionSSHKeychainItemName release];
-	if (connectionSSHKeychainItemAccount) [connectionSSHKeychainItemAccount release];
-
-	[keychain release];
-
-	return sshPassword;
+	return password;
 }
 
 /**
@@ -7754,7 +7715,6 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	if (spfPreferences) SPClear(spfPreferences);
 	if (spfSession) SPClear(spfSession);
 	if (spfDocData) SPClear(spfDocData);
-	if (keyChainID) SPClear(keyChainID);
 	if (mainToolbar) SPClear(mainToolbar);
 	if (titleAccessoryView) SPClear(titleAccessoryView);
 	if (taskProgressWindow) SPClear(taskProgressWindow);

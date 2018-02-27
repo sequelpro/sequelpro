@@ -168,6 +168,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 @synthesize dbDocument;
 #endif
 
+@synthesize connectionKeychainID = connectionKeychainID;
 @synthesize connectionKeychainItemName;
 @synthesize connectionKeychainItemAccount;
 @synthesize connectionSSHKeychainItemName;
@@ -175,6 +176,28 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 @synthesize isConnecting;
 @synthesize isEditingConnection;
+
+- (NSString *)keychainPassword
+{
+	NSString *kcItemName = [self connectionKeychainItemName];
+	// If no keychain item is available, return an empty password
+	if (!kcItemName) return nil;
+
+	// Otherwise, pull the password from the keychain using the details from this connection
+	NSString *kcPassword = [keychain getPasswordForName:kcItemName account:[self connectionKeychainItemAccount]];
+
+	return kcPassword;
+}
+
+- (NSString *)keychainPasswordForSSH
+{
+	if (![self connectionKeychainItemName]) return nil;
+
+	// Otherwise, pull the password from the keychain using the details from this connection
+	NSString *kcSSHPassword = [keychain getPasswordForName:connectionSSHKeychainItemName account:connectionSSHKeychainItemAccount];
+
+	return kcSSHPassword;
+}
 
 #pragma mark -
 #pragma mark Connection processes
@@ -737,7 +760,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #ifndef SP_CODA
 
 	// Clear the keychain referral items as appropriate
-	if (connectionKeychainID) SPClear(connectionKeychainID);
+	[self setConnectionKeychainID:nil];
 	if (connectionKeychainItemName) SPClear(connectionKeychainItemName);
 	if (connectionKeychainItemAccount) SPClear(connectionKeychainItemAccount);
 	if (connectionSSHKeychainItemName) SPClear(connectionSSHKeychainItemName);
@@ -804,7 +827,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	}
 
 	// Store the selected favorite ID for use with the document on connection
-	if ([fav objectForKey:SPFavoriteIDKey]) connectionKeychainID = [[[fav objectForKey:SPFavoriteIDKey] stringValue] retain];
+	if ([fav objectForKey:SPFavoriteIDKey]) [self setConnectionKeychainID:[[fav objectForKey:SPFavoriteIDKey] stringValue]];
 
 	// And the same for the SSH password
 	connectionSSHKeychainItemName = [[keychain nameForSSHForFavoriteName:[fav objectForKey:SPFavoriteNameKey] id:[fav objectForKey:SPFavoriteIDKey]] retain];
@@ -2022,7 +2045,10 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[connectButton display];
 #endif
 
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPConnectionController MySQL connection task", dbDocument) target:self selector:@selector(initiateMySQLConnectionInBackground) object:nil];
+	[NSThread detachNewThreadWithName:SPCtxt(@"SPConnectionController MySQL connection task", dbDocument)
+	                           target:self
+	                         selector:@selector(initiateMySQLConnectionInBackground)
+	                           object:nil];
 }
 
 /**
@@ -2371,8 +2397,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	for (NSUInteger i = 0; i < [toolbarItems count]; i++) [[toolbarItems objectAtIndex:i] setEnabled:YES];
 #endif
-
-	if (connectionKeychainID) [dbDocument setKeychainID:connectionKeychainID];
 
 	// Pass the connection to the table document, allowing it to set
 	// up the other classes and the rest of the interface.
@@ -3167,7 +3191,6 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 #endif
 
 		// Keychain references
-		connectionKeychainID = nil;
 		connectionKeychainItemName = nil;
 		connectionKeychainItemAccount = nil;
 		connectionSSHKeychainItemName = nil;
@@ -3621,7 +3644,7 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	SPClear(nibObjectsToRelease);
 
-	if (connectionKeychainID)             SPClear(connectionKeychainID);
+	[self setConnectionKeychainID:nil];
 	if (connectionKeychainItemName)       SPClear(connectionKeychainItemName);
 	if (connectionKeychainItemAccount)    SPClear(connectionKeychainItemAccount);
 	if (connectionSSHKeychainItemName)    SPClear(connectionSSHKeychainItemName);

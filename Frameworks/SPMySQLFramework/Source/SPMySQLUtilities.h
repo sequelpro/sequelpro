@@ -1,5 +1,5 @@
 //
-//  Locking.h
+//  SPMySQLUtilities.h
 //  SPMySQLFramework
 //
 //  Created by Rowan Beentje (rowan.beent.je) on February 6, 2012

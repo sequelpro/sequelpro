@@ -33,6 +33,7 @@
 #include <mach/mach_time.h>
 #include <pthread.h>
 #include <SystemConfiguration/SCNetworkReachability.h>
+#import "SPMySQLUtilities.h"
 
 // Thread flag constant
 static pthread_key_t mySQLThreadInitFlagKey;
@@ -321,12 +322,11 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 }
 
 /**
- * Returns YES if the MCPConnection is connected to a server via SSL, NO otherwise.
+ * Returns YES if the SPMySQLConnection is connected to a server via SSL, NO otherwise.
  */
 - (BOOL)isConnectedViaSSL
 {
-	if (![self isConnected]) return NO;
-	return connectedWithSSL;
+	return ([self isConnected] && connectedWithSSL);
 }
 
 /**
@@ -470,14 +470,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 const char *__crashreporter_info__ = NULL;
 asm(".desc ___crashreporter_info__, 0x10");
 
-static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
-{
-	uint64_t elapsedTime_t = mach_absolute_time() - comparisonTime;
-	Nanoseconds elapsedTime = AbsoluteToNanoseconds(*(AbsoluteTime *)&(elapsedTime_t));
-
-	return (UnsignedWideToUInt64(elapsedTime) / 1000ULL);
-}
-
 @implementation SPMySQLConnection (PrivateAPI)
 
 /**
@@ -489,8 +481,8 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
 		@synchronized (self) {
-			uint64_t diff = _elapsedMicroSecondsSinceAbsoluteTime(initialConnectTime);
-			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lluµs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
+			double diff = _elapsedSecondsSinceAbsoluteTime(initialConnectTime);
+			asprintf(&__crashreporter_info__, "Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).\nIf state==2: Previous connection made %lfs ago from: %s", state, diff, [_debugLastConnectedEvent cStringUsingEncoding:NSUTF8StringEncoding]);
 			__builtin_trap();
 		}
 		[NSException raise:NSInternalInconsistencyException format:@"Attempted to connect a connection that is not disconnected (SPMySQLConnectionState=%d).", state];
@@ -1147,7 +1139,10 @@ static uint64_t _elapsedMicroSecondsSinceAbsoluteTime(uint64_t comparisonTime)
 	pthread_setspecific(mySQLThreadInitFlagKey, &mySQLThreadFlag);
 
 	// Set up the notification handler to deregister it
-	[[NSNotificationCenter defaultCenter] addObserver:[self class] selector:@selector(_removeThreadVariables:) name:NSThreadWillExitNotification object:[NSThread currentThread]];
+	[[NSNotificationCenter defaultCenter] addObserver:[self class]
+	                                         selector:@selector(_removeThreadVariables:)
+	                                             name:NSThreadWillExitNotification
+	                                           object:[NSThread currentThread]];
 }
 
 /**
