@@ -262,6 +262,8 @@
 	NSMutableArray *runningActivitiesArray;
 #endif
 
+	NSString *keyChainID;
+	
 #ifndef SP_CODA /* ivars */
 	NSThread *printThread;
 	
@@ -340,6 +342,7 @@
 #endif
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (SPMySQLConnection *)getConnection;
+- (void)setKeychainID:(NSString *)theID;
 
 // Database methods
 - (IBAction)setDatabases:(id)sender;
@@ -448,6 +451,7 @@
 - (NSString *)port;
 - (NSString *)mySQLVersion;
 - (NSString *)user;
+- (NSString *)keyChainID;
 - (NSString *)connectionID;
 #ifndef SP_CODA /* method decls */
 - (NSString *)tabTitleForTooltip;

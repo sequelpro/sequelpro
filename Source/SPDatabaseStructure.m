@@ -258,7 +258,6 @@
 		goto cleanup_thread_and_pool;
 	}
 
-#if 0
 	// For future usage - currently unused
 	// If the affected item name and type - for example, table type and table name - were supplied, extract it.
 	NSString *affectedItem = nil;
@@ -270,7 +269,6 @@
 		else
 			affectedItem = nil;
 	}
-#endif
 
 	// Delete all stored data for the database to be updated, leaving the structure key
 	[queriedStructure removeObjectForKey:db_id];
@@ -444,11 +442,11 @@ cleanup_thread_and_pool:
 #pragma mark SPMySQLConnection delegate methods
 
 /**
- * Forward password requests to the database object.
+ * Forward keychain password requests to the database object.
  */
-- (NSString *)passwordForConnection:(id)connection authPlugin:(NSString *)pluginName
+- (NSString *)keychainPasswordForConnection:(id)connection
 {
-	return [delegate passwordForConnection:connection authPlugin:pluginName];
+	return [delegate keychainPasswordForConnection:connection];
 }
 
 #pragma mark -

@@ -62,18 +62,15 @@
 - (void)showErrorWithTitle:(NSString *)title message:(NSString *)message;
 
 /**
- * Requests the password for the connection.
+ * Requests the keychain password for the connection.
  * When a connection is being made to a server, it is best not to
  * set the password on the class; instead, it should be kept within
- * the secure store (Keychain), and the other connection details (user, host)
+ * the secure store, and the other connection details (user, host)
  * can be used to look it up and supplied on demand.
  *
- * NOTE: This will be called on the thread SPMySQL is running on (which *MAY* be a background thread)!
- *
  * @param connection The connection instance to supply the password for
- * @param pluginName The auth plugin libmysqlclients wants to use the password with
  */
-- (NSString *)passwordForConnection:(id)connection authPlugin:(NSString *)pluginName;
+- (NSString *)keychainPasswordForConnection:(id)connection;
 
 /**
  * Notifies the delegate that no underlying connection is available,

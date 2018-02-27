@@ -43,6 +43,15 @@
 	if (!(self = [super init])) {
 		return nil;
 	}
+	
+	NSString *cleartext = [NSProcessInfo processInfo].environment[@"LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN"];
+	if (cleartext != nil) {
+		NSLog(@"LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN is set. Disabling keychain access. See Issue #2437");
+		
+		[self release];
+		return nil;
+	}
+	
 	return self;
 }
 

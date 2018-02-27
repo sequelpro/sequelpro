@@ -61,7 +61,6 @@
 	pthread_t reconnectingThread;
 	uint64_t initialConnectTime;
 	unsigned long mysqlConnectionThreadId;
-	BOOL allowCleartextPlugin;
 
 	// Connection proxy
 	NSObject <SPMySQLConnectionProxy> *proxy;
@@ -175,23 +174,6 @@
 @property (readwrite, assign, nonatomic) SPMySQLClientFlags clientFlags;
 - (void)addClientFlags:(SPMySQLClientFlags)opts;
 - (void)removeClientFlags:(SPMySQLClientFlags)opts;
-
-/**
- * This tells the mysql client whether the cleartext auth plugin is permitted.
- *
- * If enabled, and requested by the server, the password will simply be transmitted
- * in plaintext, instead of hashing it on the client first, thus this plugin is
- * rather risky. It is mostly used when the server has to forward the password to another
- * auth backend (which it can't do with the one-way hash).
- *
- * If it is not enabled, but requested by the server the connection will fail with
- * error "plugin not enabled (2059)"
- *
- * WARNING: There are 2 ways to enable this plugin: Via this property or by setting
- * the envvar LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN to 1. Sadly ANY ONE of those two is
- * sufficient to enable the plugin.
- */
-@property (readwrite, assign, nonatomic) BOOL allowCleartextPlugin;
 
 #pragma mark -
 #pragma mark Connection and disconnection
