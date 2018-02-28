@@ -30,6 +30,16 @@
 
 #include <mach/mach_time.h>
 
+/**
+ * This function provides a memset() variant that cannot be optimized
+ * away by a compiler's dead store optimization.
+ *
+ * It will write cLength '\0' bytes to the buffer pointed to by cBuffer.
+ *
+ * @return See the documentation for memset_s in libc
+ */
+errno_t SPMySQLSafeEraseMemory(void *cBuffer, size_t cLength);
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
 

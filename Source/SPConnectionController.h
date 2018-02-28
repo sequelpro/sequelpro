@@ -69,6 +69,8 @@
 	BOOL isConnecting;
 	BOOL isEditingConnection;
 	BOOL isTestingConnection;
+	NSString *agreedInsecurePlugin;
+	NSString *insecureOverridePassword;
 	
 	// Standard details
 	NSInteger previousType;
@@ -164,6 +166,10 @@
     IBOutlet NSMenuItem *favoritesSortByMenuItem;
 	IBOutlet NSView *exportPanelAccessoryView;
 	IBOutlet NSView *editButtonsView;
+
+	IBOutlet NSView *requestPasswordAccessoryView;
+	IBOutlet NSTextField *requestPasswordPluginNameField;
+	IBOutlet NSSecureTextField *requestPasswordPasswordField;
 	
 	BOOL isEditingItemName;
     BOOL reverseFavoritesSort;
@@ -214,6 +220,18 @@
 @property (readwrite, retain) NSString *connectionSSHKeychainItemName;
 @property (readwrite, retain) NSString *connectionSSHKeychainItemAccount;
 @property (readwrite, assign) BOOL useCompression;
+/**
+ * If the user was prompted to allow a connection with an insecure auth plugin,
+ * the name of that plugin will be stored here (not persisted) so that we
+ * don't have to ask again when duplicating a connection/reconnecting.
+ */
+@property (readwrite, copy, nonatomic) NSString *agreedInsecurePlugin;
+/**
+ * If the user has given a password that is not the keychain password in
+ * the insecure auth plugin request, we will store it in memory and keep the
+ * other properties unchanged, since they are connected to GUI and/or backing stores
+ */
+@property (readwrite, copy, nonatomic) NSString *insecureOverridePassword;
 
 #ifdef SP_CODA
 @property (readwrite, assign) SPDatabaseDocument *dbDocument;
@@ -224,6 +242,7 @@
 
 - (NSString *)keychainPassword;
 - (NSString *)keychainPasswordForSSH;
+- (NSString *)actualPasswordForAuthPlugin:(NSString *)pluginName;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;
