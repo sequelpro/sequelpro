@@ -324,23 +324,18 @@
 		if (importFileName == nil) return;
 		
 		// Check to see if current connection has existing tables, if so warn
-		if(tablesListInstance != nil){
-			SPTablesList *tablesList = tablesListInstance;
-			if(tablesList.tables.count > 1){
-				SPBeginAlertSheet(NSLocalizedString(@"The current database already has existing tables, importing may overwrite data. Are you sure you want to continue?", @"title of warning when trying to import data when tables already exist"),
-								  NSLocalizedString(@"Yes, continue anyway", @"Yes, continue anyway"),	// Main button
-								  NSLocalizedString(@"Cancel import", @"Cancel import"),	// Alternate button
-								  nil,	// Other button
-								  [tableDocumentInstance parentWindow],	// Window to attach to
-								  self,	// Modal delegate
-								  @selector(importOverwriteWarningSheetDidEnd:returnCode:contextInfo:),	// Did end selector
-								  importFileName,	// Contextual info for selectors
-								  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceeding with the import.", @"message of warning when trying to import data when tables already exist."));
-				
-				
-				NSLog(@"Tables list %@", tablesList.tables);
-				return;
-			}
+		if([[tablesListInstance tables] count] > 1){
+			SPBeginAlertSheet(NSLocalizedString(@"The current database already has existing tables, importing may overwrite data. Are you sure you want to continue?", @"title of warning when trying to import data when tables already exist"),
+							  NSLocalizedString(@"Yes, continue anyway", @"Yes, continue anyway"),	// Main button
+							  NSLocalizedString(@"Cancel import", @"Cancel import"),	// Alternate button
+							  nil,	// Other button
+							  [tableDocumentInstance parentWindow],	// Window to attach to
+							  self,	// Modal delegate
+							  @selector(importOverwriteWarningSheetDidEnd:returnCode:contextInfo:),	// Did end selector
+							  importFileName,	// Contextual info for selectors
+							  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceeding with the import.", @"message of warning when trying to import data when tables already exist."));
+
+			return;
 		}
 		
 		[self _startBackgroundImportTaskForFilename:importFileName];
@@ -350,9 +345,9 @@
 /**
  * Alert sheet callback method - invoked when the error sheet is closed.
  */
-- (void)importOverwriteWarningSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)importFileName
+- (void)importOverwriteWarningSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)importFileName
 {
-	if (returnCode == NSAlertDefaultReturn) {
+	if (returnCode == NSAlertDefaultReturn && importFileName != nil) {
 		// Begin the import process
 		[self _startBackgroundImportTaskForFilename:importFileName];
 	};
