@@ -32,7 +32,6 @@
 #import "ImageAndTextCell.h"
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPDatabaseDocument.h"
 #import "SPTableContent.h"
 #import "SPConnectionController.h"
@@ -236,7 +235,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	NSUInteger insertIndex;
 
 	// Store pending changes in Clause
-	[[self window] makeFirstResponder:contentFilterNameTextField];
+	[[self window] makeFirstResponder:nil];
 
 	// Duplicate a selected filter if sender == self
 	if(sender == self)
@@ -297,7 +296,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 {
 
 	// Complete editing in the window
-	[[sender window] makeFirstResponder:[sender window]];
+	[[self window] makeFirstResponder:nil];
 
 	NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Remove selected content filters?", @"remove selected content filters message")
 									 defaultButton:NSLocalizedString(@"Remove", @"remove button")
@@ -405,11 +404,8 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 		[cf release];
 
 		// Inform all opened documents to update the query favorites list
-		for(id doc in [SPAppDelegate orderedDocuments])
-			if([[doc valueForKeyPath:@"tableContentInstance"] respondsToSelector:@selector(setCompareTypes:)])
-				[[doc valueForKeyPath:@"tableContentInstance"] setCompareTypes:nil];
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPContentFiltersHaveBeenUpdatedNotification object:self];
 #endif
-
 	}
 }
 
@@ -417,7 +413,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
  * It triggers an update of contentFilterTextView and 
  * resultingClauseContentLabel by inserting @"" into contentFilterTextView
  */
-- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender
+- (IBAction)suppressLeadingFieldPlaceholderWasChanged:(id)sender
 {
 	[contentFilterTextView insertText:@""];
 }
@@ -608,11 +604,9 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// TODO: still rely on a NSArray but in the future rewrite it to use the NSIndexSet directly
 	NSMutableArray *draggedRows = [[NSMutableArray alloc] initWithCapacity:1];
-	NSUInteger rowIndex = [draggedIndexes firstIndex];
-	while ( rowIndex != NSNotFound ) {
+	[draggedIndexes enumerateIndexesUsingBlock:^(NSUInteger rowIndex, BOOL * _Nonnull stop) {
 		[draggedRows addObject:[NSNumber numberWithInteger:rowIndex]];
-		rowIndex = [draggedIndexes indexGreaterThanIndex: rowIndex];
-	}
+	}];
 
 
 	NSInteger destinationRow = row;
@@ -760,7 +754,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			[c flushCachedRegexData];
 			[c replaceOccurrencesOfRegex:@"(?<!\\\\)\\$CURRENT_FIELD" withString:@"<field>"];
 			[c flushCachedRegexData];
-			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFiledPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
+			[resultingClauseContentLabel setStringValue:[NSString stringWithFormat:@"%@%@", ([suppressLeadingFieldPlaceholderCheckbox state] == NSOnState) ? @"" : @"<field> ", c]];
 			[c release];
 		}
 
@@ -804,16 +798,9 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 		if (returnCode == NSAlertDefaultReturn) {
 			NSIndexSet *indexes = [contentFilterTableView selectedRowIndexes];
 
-			// Get last index
-			NSUInteger currentIndex = [indexes lastIndex];
-
-			while (currentIndex != NSNotFound) 
-			{
+			[indexes enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger currentIndex, BOOL * _Nonnull stop) {
 				[contentFilters removeObjectAtIndex:currentIndex];
-				
-				// Get next index (beginning from the end)
-				currentIndex = [indexes indexLessThanIndex:currentIndex];
-			}
+			}];
 
 			if ([contentFilters count] == 2) {
 				[contentFilterNameTextField setStringValue:@""];
@@ -839,30 +826,36 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 	if (returnCode == NSOKButton) {
 
 		NSString *filename = [[[panel URLs] objectAtIndex:0] path];
-		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
+
 		NSInteger insertionIndexStart, insertionIndexEnd;
 
 		NSDictionary *spf = nil;
 
 		if([[[filename pathExtension] lowercaseString] isEqualToString:SPFileExtensionDefault]) {
-			NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&readError];
-
-			spf = [[NSPropertyListSerialization propertyListFromData:pData
-					mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
-
-			if(!spf || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:SP_FILE_PARSER_ERROR_TITLE_STRING]
-												 defaultButton:NSLocalizedString(@"OK", @"OK button")
-											   alternateButton:nil
-												  otherButton:nil
-									informativeTextWithFormat:NSLocalizedString(@"File couldn't be read.", @"error while reading data file")];
-
-				[alert setAlertStyle:NSCriticalAlertStyle];
-				[alert runModal];
-				if (spf) [spf release];
-				return;
+			{
+				NSError *error = nil;
+				
+				NSData *pData = [NSData dataWithContentsOfFile:filename options:NSUncachedRead error:&error];
+				
+				if(pData && !error) {
+					spf = [[NSPropertyListSerialization propertyListWithData:pData
+																	 options:NSPropertyListImmutable
+																	  format:NULL
+																	   error:&error] retain];
+				}
+				
+				if(!spf || error) {
+					NSAlert *alert = [NSAlert alertWithMessageText:SP_FILE_PARSER_ERROR_TITLE_STRING
+													 defaultButton:NSLocalizedString(@"OK", @"OK button")
+												   alternateButton:nil
+													   otherButton:nil
+										 informativeTextWithFormat:NSLocalizedString(@"File couldn't be read. (%@)", @"error while reading data file"), [error localizedDescription]];
+					
+					[alert setAlertStyle:NSCriticalAlertStyle];
+					[alert runModal];
+					if (spf) [spf release];
+					return;
+				}
 			}
 
 			if([[spf objectForKey:SPContentFilters] objectForKey:filterType] && [[[spf objectForKey:SPContentFilters] objectForKey:filterType] count]) {
@@ -945,27 +938,26 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 			[cfdata setObject:filterData forKey:filterType];
 			[spfdata setObject:cfdata forKey:SPContentFilters];
 
-			NSString *err = nil;
-			NSData *plist = [NSPropertyListSerialization dataFromPropertyList:spfdata
-													  format:NSPropertyListXMLFormat_v1_0
-											errorDescription:&err];
+			NSError *error = nil;
+			NSData *plist = [NSPropertyListSerialization dataWithPropertyList:spfdata
+																	   format:NSPropertyListXMLFormat_v1_0
+																	  options:0
+																		error:&error];
 
-			if(err != nil) {
-				NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithString:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")]
+			if(error) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")
 												 defaultButton:NSLocalizedString(@"OK", @"OK button")
 											   alternateButton:nil
-												  otherButton:nil
-									informativeTextWithFormat:@"%@", err];
+												   otherButton:nil
+									 informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];
 				return;
 			}
 
-			NSError *error = nil;
 			[plist writeToURL:[panel URL] options:NSAtomicWrite error:&error];
 			if (error) [[NSAlert alertWithError:error] runModal];
-
 		}
 	}
 #endif

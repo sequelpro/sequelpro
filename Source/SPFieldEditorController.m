@@ -37,27 +37,15 @@
 #include <objc/objc-runtime.h>
 #import "SPCustomQuery.h"
 #import "SPTableContent.h"
+#import "SPJSONFormatter.h"
 
 #import <SPMySQL/SPMySQL.h>
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_7
-@interface NSTextView (LionPlus)
-- (void)setUsesFindBar:(BOOL)value;
-- (BOOL)usesFindBar;
-@end
-#endif
 
 typedef enum {
 	TextSegment = 0,
 	ImageSegment,
 	HexSegment
 } FieldEditorSegment;
-
-@interface SPFieldEditorController (SPFieldEditorControllerDelegate)
-
-- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
-
-@end
 
 @implementation SPFieldEditorController
 
@@ -135,17 +123,27 @@ typedef enum {
 		// Load default QL types
 		NSMutableArray *qlTypesItems = [[NSMutableArray alloc] init];
 		NSError *readError = nil;
-		NSString *convError = nil;
-		NSPropertyListFormat format;
 
-		NSData *defaultTypeData = [NSData dataWithContentsOfFile:[NSBundle pathForResource:@"EditorQuickLookTypes.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]]
-			options:NSMappedRead error:&readError];
+		NSString *filePath = [NSBundle pathForResource:@"EditorQuickLookTypes.plist"
+												ofType:nil
+										   inDirectory:[[NSBundle mainBundle] bundlePath]];
+		
+		NSData *defaultTypeData = [NSData dataWithContentsOfFile:filePath
+														 options:NSMappedRead
+														   error:&readError];
 
-		NSDictionary *defaultQLTypes = [NSPropertyListSerialization propertyListFromData:defaultTypeData
-				mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError];
-		if(defaultQLTypes == nil || readError != nil || convError != nil)
-			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@\n%@", [readError localizedDescription], convError);
-		if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
+		NSDictionary *defaultQLTypes = nil;
+		if(defaultTypeData && !readError) {
+			defaultQLTypes = [NSPropertyListSerialization propertyListWithData:defaultTypeData
+																	   options:NSPropertyListImmutable
+																		format:NULL
+																		 error:&readError];
+		}
+		
+		if(defaultQLTypes == nil || readError ) {
+			NSLog(@"Error while reading 'EditorQuickLookTypes.plist':\n%@", readError);
+		}
+		else if(defaultQLTypes != nil && [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
 			for(id type in [defaultQLTypes objectForKey:@"QuickLookTypes"]) {
 				NSMenuItem *aMenuItem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithString:[type objectForKey:@"MenuLabel"]] action:NULL keyEquivalent:@""];
 				[aMenuItem setTag:tag];
@@ -195,6 +193,7 @@ typedef enum {
 	}
 #endif
 
+	[self setEditedFieldInfo:nil];
 	if ( sheetEditData ) SPClear(sheetEditData);
 #ifndef SP_CODA
 	if ( qlTypes )       SPClear(qlTypes);
@@ -237,6 +236,7 @@ typedef enum {
 	callerInstance = sender;
 
 	_isGeometry = ([[fieldType uppercaseString] isEqualToString:@"GEOMETRY"]) ? YES : NO;
+	_isJSON     = ([[fieldType uppercaseString] isEqualToString:SPMySQLJsonType]);
 
 	// Set field label
 	NSMutableString *label = [NSMutableString string];
@@ -249,7 +249,8 @@ typedef enum {
 	if ([fieldType length])
 		[label appendString:fieldType];
 
-	if (maxTextLength > 0)
+	//skip length for JSON type since it's a constant and MySQL doesn't display it either
+	if (maxTextLength > 0 && !_isJSON)
 		[label appendFormat:@"(%lld) ", maxTextLength];
 
 	if (!_allowNULL)
@@ -352,7 +353,8 @@ typedef enum {
 
 		encoding = anEncoding;
 
-		_isBlob = isFieldBlob;
+		// we don't want the hex/image controls for JSON
+		_isBlob = (!_isJSON && isFieldBlob);
 		
 		BOOL isBinary = ([[fieldType uppercaseString] isEqualToString:@"BINARY"] || [[fieldType uppercaseString] isEqualToString:@"VARBINARY"]);
 
@@ -442,7 +444,18 @@ typedef enum {
 			[editTextScrollView setHidden:NO];
 		}
 		else {
-			stringValue = [sheetEditData retain];
+			// If the input is a JSON type column we can format it.
+			// Since MySQL internally stores JSON in binary, it does not retain any formatting
+			do {
+				if(_isJSON) {
+					NSString *formatted = [SPJSONFormatter stringByFormattingString:sheetEditData];
+					if(formatted) {
+						stringValue = [formatted retain];
+						break;
+					}
+				}
+				stringValue = [sheetEditData retain];
+			} while(0);
 
 			[hexTextView setString:@""];
 
@@ -651,13 +664,21 @@ typedef enum {
 	if(callerInstance) {
 		id returnData = ( editSheetReturnCode && _isEditable ) ? (_isGeometry) ? [editTextView string] : sheetEditData : nil;
 		
+		//for MySQLs JSON type remove the formatting again, since it won't be stored anyway
+		if(_isJSON) {
+			NSString *unformatted = [SPJSONFormatter stringByUnformattingString:returnData];
+			if(unformatted) returnData = unformatted;
+		}
+		
 #ifdef SP_CODA /* patch */
 		if ( [callerInstance isKindOfClass:[SPCustomQuery class]] )
 			[(SPCustomQuery*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 		else if ( [callerInstance isKindOfClass:[SPTableContent class]] )
 			[(SPTableContent*)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
 #else
-		[callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+		if([callerInstance respondsToSelector:@selector(processFieldEditorResult:contextInfo:)]) {
+			[(id <SPFieldEditorControllerDelegate>)callerInstance processFieldEditorResult:returnData contextInfo:contextInfo];
+		}
 #endif
 	}
 }
@@ -1358,7 +1379,7 @@ typedef enum {
 	if([notification object] == editTextView) {
 		// Do nothing if user really didn't changed text (e.g. for font size changing return)
 		if(!editTextViewWasChanged && (editSheetWillBeInitialized
-			|| (([[[notification object] textStorage] editedRange].length == 0)
+			|| (([[[notification object] textStorage] editedRange].location == NSNotFound)
 			&& ([[[notification object] textStorage] changeInLength] == 0)))) {
 			// Inform the undo-grouping about the caret movement
 			selectionChanged = YES;

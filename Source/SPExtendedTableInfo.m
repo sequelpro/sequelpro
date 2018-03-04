@@ -34,7 +34,6 @@
 #import "RegexKitLite.h"
 #import "SPDatabaseData.h"
 #import "SPDatabaseDocument.h"
-#import "SPDatabaseViewController.h"
 #import "SPTablesList.h"
 #import "SPAlertSheets.h"
 #import "SPTableStructure.h"
@@ -224,7 +223,11 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	[tableRowAutoIncrement setEditable:NO];
 	
-	[tableSourceInstance takeAutoIncrementFrom:tableRowAutoIncrement];
+	NSNumberFormatter *fmt = [[[NSNumberFormatter alloc] init] autorelease];
+	[fmt setNumberStyle:NSNumberFormatterDecimalStyle];
+	NSNumber *value = [fmt numberFromString:[tableRowAutoIncrement stringValue]];
+	
+	[tableSourceInstance setAutoIncrementTo:value];
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)command
@@ -232,6 +235,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	// Listen to ESC to abort editing of auto increment input field
 	if (command == @selector(cancelOperation:) && control == tableRowAutoIncrement) {
 		[tableRowAutoIncrement abortEditing];
+		[tableRowAutoIncrement setEditable:NO];
 		return YES;
 	}
 
@@ -399,7 +403,8 @@ static NSString *SPMySQLCommentField          = @"Comment";
 	[tableSizeFree setStringValue:[self _formatValueWithKey:SPMySQLDataFreeField inDictionary:statusFields]];
 
 	// Set comments
-	NSString *commentText = [statusFields objectForKey:SPMySQLCommentField];
+	// Note: On MySQL the comment column is marked as NOT NULL, but we still received crash reports because it was NULL!? (#2791)
+	NSString *commentText = [[statusFields objectForKey:SPMySQLCommentField] unboxNull];
 	
 	if (!commentText) commentText = @"";
 	
@@ -431,6 +436,8 @@ static NSString *SPMySQLCommentField          = @"Comment";
 
 /**
  * Returns a dictionary describing the information of the table to be used for printing purposes.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSDictionary *)tableInformationForPrinting
 {
@@ -536,7 +543,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 
 	if ((object == tableCommentsTextView) && ([object isEditable]) && ([selectedTable length] > 0)) {
 
-		NSString *currentComment = [[tableDataInstance statusValueForKey:@"Comment"] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		NSString *currentComment = [[[tableDataInstance statusValueForKey:SPMySQLCommentField] unboxNull] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		NSString *newComment = [[tableCommentsTextView string] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
 		// Check that the user actually changed the tables comment
@@ -676,7 +683,7 @@ static NSString *SPMySQLCommentField          = @"Comment";
 {
 	NSString *value = [infoDict objectForKey:key];
 
-	if ([value isNSNull]) {
+	if (![value unboxNull]) { // (value == nil || value == [NSNull null])
 		value = @"";
 	}
 	else {

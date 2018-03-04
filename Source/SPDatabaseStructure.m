@@ -30,14 +30,13 @@
 
 #import "SPDatabaseStructure.h"
 #import "SPDatabaseDocument.h"
-#import "SPConnectionDelegate.h"
 #import "SPTablesList.h"
 #import "RegexKitLite.h"
 #import "SPThreadAdditions.h"
 
 #import <pthread.h>
 
-@interface SPDatabaseStructure (Private_API)
+@interface SPDatabaseStructure ()
 
 - (void)_destroy:(NSNotification *)notification;
 
@@ -127,6 +126,11 @@
 	return [c autorelease];
 }
 
+- (SPDatabaseDocument *)delegate
+{
+	return delegate;
+}
+
 #pragma mark -
 #pragma mark Structure retrieval from the server
 
@@ -152,8 +156,7 @@
 	if([[NSThread currentThread] isCancelled]) goto cleanup_thread_and_pool;
 
 	// This thread is now first on the stack, and about to process the structure.
-#warning Should not set delegate as the notification source object
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:delegate];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureIsUpdating" object:self];
 
 	NSString *connectionID = ([delegate respondsToSelector:@selector(connectionID)])? [NSString stringWithString:[delegate connectionID]] : @"_";
 
@@ -255,6 +258,7 @@
 		goto cleanup_thread_and_pool;
 	}
 
+#if 0
 	// For future usage - currently unused
 	// If the affected item name and type - for example, table type and table name - were supplied, extract it.
 	NSString *affectedItem = nil;
@@ -266,6 +270,7 @@
 		else
 			affectedItem = nil;
 	}
+#endif
 
 	// Delete all stored data for the database to be updated, leaving the structure key
 	[queriedStructure removeObjectForKey:db_id];
@@ -275,6 +280,7 @@
 	// Set up the database as an empty mutable dictionary ready for tables, and store a reference
 	[queriedStructure setObject:[NSMutableDictionary dictionary] forKey:db_id];
 	NSMutableDictionary *databaseStructure = [queriedStructure objectForKey:db_id];
+	structureWasUpdated = YES;
 
 	NSUInteger uniqueCounter = 0; // used to make field data unique
 	SPMySQLResult *theResult;
@@ -389,8 +395,7 @@ update_globals_and_cleanup:
 
 	if(structureWasUpdated) {
 		// Notify that the structure querying has been performed
-#warning Should not set delegate as the notification source object
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:delegate];
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"SPDBStructureWasUpdated" object:self];
 	}
 
 cleanup_thread_and_pool:
@@ -466,12 +471,8 @@ cleanup_thread_and_pool:
 	[super dealloc];
 }
 
-@end
-
 #pragma mark -
 #pragma mark Private API
-
-@implementation SPDatabaseStructure (Private_API)
 
 /**
  * Ensure that processing is completed.
@@ -547,7 +548,7 @@ cleanup_thread_and_pool:
 	if (!mySQLConnection || !delegate) return NO;
 
 	// Check the connection state
-	if ([mySQLConnection isConnected] && [mySQLConnection checkConnection]) return YES;
+	if ([mySQLConnection isConnected] && [mySQLConnection checkConnectionIfNecessary]) return YES;
 	
 	// the result of checkConnection may be meaningless if the thread was cancelled during execution. (issue #2353)
 	if([[NSThread currentThread] isCancelled]) return NO;

@@ -40,6 +40,7 @@
  *
  * @param sourceDatabase     information tuple about source database
  * @param targetDatabaseName the name of the target database
+ *
  * @result success
  */
 - (BOOL)copyDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabaseName withContent:(BOOL)copyWithContent;

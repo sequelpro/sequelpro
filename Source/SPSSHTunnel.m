@@ -383,6 +383,7 @@ static unsigned short getRandomPort();
 	} else {
 		TA(@"-L", ([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]));
 	}
+#undef TA
 
 	[task setArguments:taskArguments];
 
@@ -414,10 +415,54 @@ static unsigned short getRandomPort();
     [task setStandardError:standardError];
     [[ NSNotificationCenter defaultCenter] addObserver:self 
 											  selector:@selector(standardErrorHandler:) 
-												  name:@"NSFileHandleDataAvailableNotification"
+												  name:NSFileHandleDataAvailableNotification
 												object:[standardError fileHandleForReading]];
 	[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 
+	{
+		static BOOL hasCheckedTTY = NO;
+		if(!hasCheckedTTY) {
+			int fd = open("/dev/tty", O_RDWR);
+			if(fd >= 0) {
+				close(fd);
+				fprintf(stderr, (
+					 "!!!\n"
+					 "!!! You are running Sequel Pro from a TTY.\n"
+					 "!!! Any SSH connections that require user input (e.g. a password/passphrase) will fail\n"
+					 "!!!  and appear stalled indefinitely.\n"
+					 "!!! Sorry!\n"
+					 "!!!\n"
+				));
+				fflush(stderr);
+				// Explanation:
+				// OpenSSH by default requests passwords AND yes/no questions directly from the TTY,
+				// if it is part of a session group that has a controlling terminal (which is the case for
+				// processes created by Terminal.app).
+				//
+				// But this won't work, because only the foreground process group can read from /dev/tty and
+				// NSTask will create a new (background) process group for OpenSSH on launch.
+				//   Side note: The internal method called from -[NSTask launch]
+				//   -[NSConcreteTask launchWithDictionary:] accepts key @"_NSTaskNoNewProcessGroup" to skip that.
+				//
+				// Now, there are two preconditions for OpenSSH to use our SSH_ASKPASS utility instead:
+				//   1) The "DISPLAY" envvar has to be set
+				//   2) There must be no controlling terminal (ie. open("/dev/tty") fails)
+				// (See readpass.c#read_passphrase() in OpenSSH for the relevant code)
+				//
+				// -[NSTask launch] internally uses posix_spawn() and according to its documentation
+				//   "The new process also inherits the following attributes from the calling
+				//    process: [...] control terminal [...]"
+				// So if we wanted to avoid that, we would have to reimplement the whole NSTask class
+				// and use fork()+exec*()+setsid() instead (or use GNUStep's NSTask which already does this).
+				//
+				// We could also do ioctl(fd, TIOCNOTTY, 0); before launching the child process, but
+				// changing our own controlling terminal does not seem like a good idea in the middle
+				// of the application lifecycle, when we don't know what other Cocoa code may use it...
+			}
+			hasCheckedTTY = YES;
+		}
+	}
+	
 	@try {
 		// Launch and run the tunnel
 		[task launch]; //throws for invalid paths, missing +x permission

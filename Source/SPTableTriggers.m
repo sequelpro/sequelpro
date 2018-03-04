@@ -68,6 +68,8 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 - (void)_refreshTriggerDataForcingCacheRefresh:(BOOL)clearAllCaches;
 - (void)_openTriggerSheet;
 - (void)_reopenTriggerSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
@@ -114,8 +116,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 		[[column dataCell] setFont:useMonospacedFont ? [NSFont fontWithName:SPDefaultMonospacedFontName size:monospacedFontSize] : [NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
 	}
 
-	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+	[self _addPreferenceObservers];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(triggerStatementTextDidChange:)
@@ -414,10 +415,7 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 			NSString *database = [tableDocumentInstance database];
 			NSIndexSet *selectedSet = [triggersTableView selectedRowIndexes];
 
-			NSUInteger row = [selectedSet lastIndex];
-
-			while (row != NSNotFound)
-			{
+			[selectedSet enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger row, BOOL * _Nonnull stop) {
 				NSString *triggerName = [[triggerData objectAtIndex:row] objectForKey:SPTriggerName];
 				NSString *query = [NSString stringWithFormat:@"DROP TRIGGER %@.%@", [database backtickQuotedString], [triggerName backtickQuotedString]];
 
@@ -431,11 +429,9 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 						[NSString stringWithFormat:NSLocalizedString(@"The selected trigger couldn't be deleted.\n\nMySQL said: %@", @"error deleting trigger informative message"), [connection lastErrorMessage]]
 					);
 					// Abort loop
-					break;
+					*stop = YES;
 				}
-
-				row = [selectedSet indexLessThanIndex:row];
-			}
+			}];
 
 			[self _refreshTriggerDataForcingCacheRefresh:YES];
 		}
@@ -639,6 +635,86 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 	[self performSelector:@selector(_openTriggerSheet) withObject:nil afterDelay:0.0];
 }
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register observers for when the DisplayTableViewVerticalGridlines preference changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
+#pragma mark -
+#pragma mark Tableview delegate methods
+
+/**
+ * Called whenever the triggers table view selection changes.
+ */
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	[removeTriggerButton setEnabled:([triggersTableView numberOfSelectedRows] > 0)];
+}
+
+/**
+ * Alter the colour of cells displaying NULL values
+ */
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if (![cell respondsToSelector:@selector(setTextColor:)]) {
+		return;
+	}
+
+	id value = [[triggerData objectAtIndex:rowIndex] objectForKey:[tableColumn identifier]];
+
+	[cell setTextColor:[value isNSNull] ? [NSColor lightGrayColor] : [NSColor blackColor]];
+}
+
+/**
+ * Double-click action on table cells - for the time being, return NO to disable editing.
+ */
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if ([tableDocumentInstance isWorking]) return NO;
+
+	// Start Edit panel
+	if (((NSInteger)[triggerData count] > rowIndex) && [triggerData objectAtIndex:rowIndex]) {
+		[self _editTriggerAtIndex:rowIndex];
+	}
+
+	return NO;
+}
+
+/**
+ * Disable row selection while the document is working.
+ */
+- (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
+{
+	return (![tableDocumentInstance isWorking]);
+}
+
+#pragma mark -
+#pragma mark Textfield delegate methods
+
+/**
+ * Toggles the enabled state of confirm add trigger button based on the editing of the trigger's name.
+ */
+- (void)controlTextDidChange:(NSNotification *)notification
+{
+	[self _toggleConfirmAddTriggerButtonEnabled];
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -647,7 +723,8 @@ static SPTriggerEventTag TagForEvent(NSString *mysql);
 	SPClear(editedTrigger);
 
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+
+	[self _removePreferenceObservers];
 
 	[super dealloc];
 }

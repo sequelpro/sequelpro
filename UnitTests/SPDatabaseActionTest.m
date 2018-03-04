@@ -29,14 +29,14 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import <OCMock/OCMock.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 
 #import "SPDatabaseAction.h"
 #import <SPMySQL/SPMySQL.h>
 
 
-@interface SPDatabaseActionTest : SenTestCase
+@interface SPDatabaseActionTest : XCTestCase
 
 - (void)testCreateDatabase_01_emptyName;
 - (void)testCreateDatabase_02_allParams;
@@ -53,7 +53,7 @@
 	
 	SPDatabaseAction *createDb = [[[SPDatabaseAction alloc] init] autorelease];
 	[createDb setConnection:mockConnection];
-	STAssertFalse([createDb createDatabase:@"" withEncoding:nil collation:nil],@"create database = NO with empty db name");
+	XCTAssertFalse([createDb createDatabase:@"" withEncoding:nil collation:nil],@"create database = NO with empty db name");
 	
 	OCMVerifyAll(mockConnection);
 }
@@ -69,7 +69,7 @@
 	SPDatabaseAction *createDb = [[[SPDatabaseAction alloc] init] autorelease];
 	[createDb setConnection:mockConnection];
 	
-	STAssertTrue([createDb createDatabase:@"target_name" withEncoding:@"utf8" collation:@"utf8_bin_ci"], @"create database return");
+	XCTAssertTrue([createDb createDatabase:@"target_name" withEncoding:@"utf8" collation:@"utf8_bin_ci"], @"create database return");
 	
 	OCMVerifyAll(mockConnection);
 }
@@ -84,7 +84,7 @@
 	SPDatabaseAction *createDb = [[[SPDatabaseAction alloc] init] autorelease];
 	[createDb setConnection:mockConnection];
 	
-	STAssertTrue([createDb createDatabase:@"target_name" withEncoding:@"" collation:nil], @"create database return");
+	XCTAssertTrue([createDb createDatabase:@"target_name" withEncoding:@"" collation:nil], @"create database return");
 	
 	OCMVerifyAll(mockConnection);
 }

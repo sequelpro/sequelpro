@@ -36,7 +36,7 @@
 
 + (id)defaultTestSuite
 {
-    SenTestSuite *testSuite = [[SenTestSuite alloc] initWithName:NSStringFromClass(self)];
+    XCTestSuite *testSuite = [[XCTestSuite alloc] initWithName:NSStringFromClass(self)];
 	
 	[self addTestForDatabase:QKDatabaseUnknown withIdentifierQuote:EMPTY_STRING toTestSuite:testSuite];
 	[self addTestForDatabase:QKDatabaseMySQL withIdentifierQuote:QKMySQLIdentifierQuote toTestSuite:testSuite];
@@ -45,11 +45,11 @@
     return [testSuite autorelease];
 }
 
-+ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(SenTestSuite *)testSuite
++ (void)addTestForDatabase:(QKQueryDatabase)database withIdentifierQuote:(NSString *)quote toTestSuite:(XCTestSuite *)testSuite
 {		
     for (NSInvocation *invocation in [self testInvocations]) 
 	{
-		SenTestCase *test = [[QKDeleteQueryTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
+		XCTestCase *test = [[QKDeleteQueryTests alloc] initWithInvocation:invocation database:database identifierQuote:quote];
 		
 		[testSuite addTest:test];
 		
@@ -77,14 +77,14 @@
 
 - (void)testDeleteQueryTypeIsCorrect
 {
-	STAssertTrue([[[self query] query] hasPrefix:@"DELETE"], nil);
+	XCTAssertTrue([[[self query] query] hasPrefix:@"DELETE"]);
 }
 
 - (void)testDeleteQueryFromTableIsCorrect
 {
 	NSString *query = [NSString stringWithFormat:@"DELETE FROM %1$@%2$@%1$@", [self identifierQuote], QKTestTableName];
 	
-	STAssertTrue([[[self query] query] isEqualToString:query], nil);
+	XCTAssertTrue([[[self query] query] isEqualToString:query]);
 }
 
 - (void)testDeleteQueryFromDatabaseTableIsCorrect
@@ -93,7 +93,7 @@
 	
 	NSString *query = [NSString stringWithFormat:@"DELETE FROM %1$@%2$@%1$@.%1$@%3$@%1$@", [self identifierQuote], QKTestDatabaseName, QKTestTableName];
 	
-	STAssertTrue([[[self query] query] isEqualToString:query] , nil);
+	XCTAssertTrue([[[self query] query] isEqualToString:query] );
 }
 
 - (void)testDeleteQueryWithSingleConstraintIsCorrect
@@ -102,7 +102,7 @@
 	
 	NSString *query = [NSString stringWithFormat:@"DELETE FROM %1$@%2$@%1$@ WHERE %1$@%3$@%1$@ %4$@ %5$@", [self identifierQuote], QKTestTableName, QKTestFieldOne, [QKQueryUtilities stringRepresentationOfQueryOperator:QKEqualityOperator], [NSNumber numberWithUnsignedInteger:QKTestParameterOne]];
 	
-	STAssertTrue([[[self query] query] isEqualToString:query] , nil);
+	XCTAssertTrue([[[self query] query] isEqualToString:query] );
 }
 
 - (void)testDeleteQueryWithMultipleConstraintsIsCorrect
@@ -115,7 +115,7 @@
 	
 	NSString *query = [NSString stringWithFormat:@"DELETE FROM %1$@%2$@%1$@ WHERE %1$@%3$@%1$@ %4$@ %5$@ AND %1$@%6$@%1$@ %7$@ '%8$@'", [self identifierQuote], QKTestTableName, QKTestFieldOne, opOne, [NSNumber numberWithUnsignedInteger:QKTestParameterOne], QKTestFieldTwo, opTwo, QKTestParameterTwo];
 	
-	STAssertTrue([[[self query] query] isEqualToString:query] , nil);
+	XCTAssertTrue([[[self query] query] isEqualToString:query] );
 }
 
 @end

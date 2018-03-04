@@ -44,12 +44,10 @@
 	SPMySQLStreamingResultStore *dataStorage;
 	NSPointerArray *editedRows;
 	BOOL *unloadedColumns;
+	NSCondition *dataDownloadedLock;
 
 	NSUInteger numberOfColumns;
 	NSUInteger editedRowCount;
-	
-	NSString *_debugInfo;
-	uint64_t _debugTime;
 }
 
 /* Setting result store */
@@ -77,6 +75,12 @@
 - (NSUInteger) count;
 - (NSUInteger) columnCount;
 - (BOOL) dataDownloaded;
+
+/**
+ * This method will block the caller until -dataDownloaded returns YES.
+ * Multiple parallel calls from different threads are possible.
+ */
+- (void) awaitDataDownloaded;
 
 /* Delegate callback methods */
 - (void)resultStoreDidFinishLoadingData:(SPMySQLStreamingResultStore *)resultStore;

@@ -162,7 +162,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.2 Snapshot</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -187,7 +187,7 @@
 	<key>FRFeedbackReporter.maxConsoleLogSize</key>
 	<integer>10000</integer>
 	<key>FRFeedbackReporter.targetURL</key>
-	<string>http://log.sequelpro.com/submit</string>
+	<string>https://sequelpro.com/api?action=feedback-submit</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 	<key>LSMinimumSystemVersion</key>
@@ -198,6 +198,29 @@
 		<string>10.6.0</string>
 		<key>x86_64</key>
 		<string>10.6.0</string>
+	</dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>sequelpro.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.0</string>
+				<key>NSThirdPartyExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSThirdPartyExceptionMinimumTLSVersion</key>
+				<string>TLSv1.0</string>
+				<key>NSRequiresCertificateTransparency</key>
+				<false/>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
@@ -240,7 +263,7 @@
 	<key>SUEnableSystemProfiling</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>http://www.sequelpro.com/appcast/app-releases.xml</string>
+	<string>https://sequelpro.com/appcast/app-releases.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>sparkle-public-key.pem</string>
 	<key>UTExportedTypeDeclarations</key>

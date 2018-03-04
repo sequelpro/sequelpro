@@ -127,8 +127,6 @@
 	<false/>
 	<key>FilterTableDefaultOperator</key>
 	<string>LIKE &apos;%@%&apos;</string>
-	<key>GlobalResultTableFont</key>
-	<data>BAtzdHJlYW10eXBlZIHoA4QBQISEhAZOU0ZvbnQehIQITlNPYmplY3QAhYQBaSSEBVszNmNdBgAAABoAAAD//kwAdQBjAGkAZABhAEcAcgBhAG4AZABlAAAAhAFmC4QBYwCYAZgAmACG</data>
 	<key>GrowlEnabled</key>
 	<true/>
 	<key>KeepAliveInterval</key>

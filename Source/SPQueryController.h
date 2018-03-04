@@ -84,6 +84,10 @@ extern NSString *SPTableViewDatabaseColumnID;
 
 + (SPQueryController *)sharedQueryController;
 
+/**
+ * Calls -sqlStringForForRowIndexes: with the current selection and 
+ * puts the output into the general Pasteboard (only if non-empty)
+ */
 - (IBAction)copy:(id)sender;
 - (IBAction)clearConsole:(id)sender;
 - (IBAction)saveConsoleAs:(id)sender;
@@ -102,5 +106,50 @@ extern NSString *SPTableViewDatabaseColumnID;
 - (void)showErrorInConsole:(NSString *)error connection:(NSString *)connection database:(NSString *)database;
 
 - (NSUInteger)consoleMessageCount;
+
+/**
+ * Returns the console messages specified by indexes as a string, each message separated by "\n".
+ * @param indexes The indexes of rows to be returned. 
+ *                Invalid indexes will be skipped silently.
+ *                nil is treated as an empty set.
+ *
+ * If no (valid) indexes are given, @"" will be returned.
+ * The output may include other info like timestamp, host, etc. if shown in the table view, as part of a comment.
+ *
+ * THIS METHOD IS NOT THREAD-SAFE!
+ */
+- (NSString *)sqlStringForRowIndexes:(NSIndexSet *)indexes;
+
+#pragma mark - SPQueryControllerInitializer
+
+- (NSError *)loadCompletionLists;
+
+#pragma mark - SPQueryDocumentsController
+
+- (NSURL *)registerDocumentWithFileURL:(NSURL *)fileURL andContextInfo:(NSMutableDictionary *)contextInfo;
+- (void)removeRegisteredDocumentWithFileURL:(NSURL *)fileURL;
+
+- (void)addFavorite:(NSDictionary *)favorite forFileURL:(NSURL *)fileURL;
+- (void)replaceFavoritesByArray:(NSArray *)favoritesArray forFileURL:(NSURL *)fileURL;
+- (void)removeFavoriteAtIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
+- (void)insertFavorite:(NSDictionary *)favorite atIndex:(NSUInteger)index forFileURL:(NSURL *)fileURL;
+
+- (void)addHistory:(NSString *)history forFileURL:(NSURL *)fileURL;
+- (void)replaceHistoryByArray:(NSArray *)historyArray forFileURL:(NSURL *)fileURL;
+
+- (void)replaceContentFilterByArray:(NSArray *)contentFilterArray ofType:(NSString *)filterType forFileURL:(NSURL *)fileURL;
+
+- (NSMutableArray *)favoritesForFileURL:(NSURL *)fileURL;
+- (NSMutableArray *)historyForFileURL:(NSURL *)fileURL;
+- (NSArray *)historyMenuItemsForFileURL:(NSURL *)fileURL;
+- (NSUInteger)numberOfHistoryItemsForFileURL:(NSURL *)fileURL;
+- (NSMutableDictionary *)contentFilterForFileURL:(NSURL *)fileURL;
+
+- (NSArray *)queryFavoritesForFileURL:(NSURL *)fileURL andTabTrigger:(NSString *)tabTrigger includeGlobals:(BOOL)includeGlobals;
+
+// Completion list controller
+- (NSArray*)functionList;
+- (NSArray*)keywordList;
+- (NSString*)argumentSnippetForFunction:(NSString*)func;
 
 @end

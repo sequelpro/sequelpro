@@ -33,7 +33,7 @@
 #import "SPServerSupport.h"
 #import "SPDatabaseData.h"
 
-@interface SPCharsetCollationHelper (Hidden)
+@interface SPCharsetCollationHelper ()
 
 - (void)charsetButtonClicked:(id)sender;
 - (void)collationButtonClicked:(id)sender;

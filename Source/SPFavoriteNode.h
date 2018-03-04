@@ -29,12 +29,13 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPNamedNode.h"
+
 /**
  * @class SPFavoriteNode SPFavoriteNode.h
  *
  * @author Stuart Connolly http://stuconnolly.com/
  *
- * Tree node the represents a connection favorite.
+ * Tree node that represents a connection favorite.
  */
 @interface SPFavoriteNode : NSObject <NSCopying, NSCoding, SPNamedNode>
 {	

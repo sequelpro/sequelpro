@@ -39,7 +39,6 @@
                           modalDelegate:(id)modalDelegate
                          didEndSelector:(SEL)didEndSelector
                             contextInfo:(void *)contextInfo
-                                    msg:(NSString *)msg
                                infoText:(NSString *)infoText
                              returnCode:(NSInteger *)returnCode;
 

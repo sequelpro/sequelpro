@@ -70,8 +70,8 @@
 
 @end
 
-@interface NSObject (SPColorSelectorViewDelegate)
-
+@protocol SPColorSelectorViewDelegate <NSObject>
+@optional
 /**
  * Called on a delegate when the selection did (really) change
  * @param aView The changed view

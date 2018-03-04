@@ -31,7 +31,7 @@
 #import "SPTableFilterParser.h"
 #import "RegexKitLite.h"
 
-@interface SPTableFilterParser (Private)
+@interface SPTableFilterParser ()
 + (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 @end
 

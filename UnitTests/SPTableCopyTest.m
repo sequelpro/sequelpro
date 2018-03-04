@@ -31,12 +31,12 @@
 #import "SPTableCopy.h"
 #import <SPMySQL/SPMySQL.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 
 #define USE_APPLICATION_UNIT_TEST 1
 
-@interface SPTableCopyTest : SenTestCase
+@interface SPTableCopyTest : XCTestCase
 
 - (void)testCopyTableFromToWithData;
 - (void)testCopyTableFromTo_NoPermissions;
@@ -88,8 +88,9 @@
 	
 	{
 		SPTableCopy *tableCopy = [[SPTableCopy alloc] init];
+		[tableCopy setConnection:mockConnection];
 		
-		STAssertFalse([tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db"],@"copy operation must fail.");
+		XCTAssertFalse([tableCopy copyTable:@"table_name" from:@"source_db" to:@"target_db"], @"copy operation must fail.");
 		
 		[tableCopy release];
 	}

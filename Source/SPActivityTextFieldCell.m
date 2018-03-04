@@ -33,7 +33,7 @@
 
 #define FAVORITE_NAME_FONT_SIZE 12.0f
 
-@interface SPActivityTextFieldCell (PrivateAPI)
+@interface SPActivityTextFieldCell ()
 
 - (NSAttributedString *)constructSubStringAttributedString;
 - (NSAttributedString *)attributedStringForFavoriteName;
@@ -332,9 +332,7 @@ static inline NSRect SPTextLinkRectFromCellRect(NSRect inRect)
 	[super dealloc];
 }
 
-@end
-
-@implementation SPActivityTextFieldCell (PrivateAPI)
+#pragma mark - Private API
 
 /**
  * Constructs the attributed string to be used as the cell's substring.

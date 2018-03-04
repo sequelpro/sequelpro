@@ -35,10 +35,7 @@
 @class SPMySQLConnection;
 @class SPTableView;
 
-@interface SPIndexesController : NSWindowController 
-#ifdef SP_CODA
-<NSTableViewDelegate, NSTableViewDataSource>
-#endif
+@interface SPIndexesController : NSWindowController <NSTableViewDelegate, NSTableViewDataSource>
 {
 	// Controllers
 	IBOutlet SPDatabaseDocument *dbDocument;
@@ -62,7 +59,6 @@
 	IBOutlet NSButton *addIndexedColumnButton;
 	IBOutlet NSButton *removeIndexedColumnButton;
 	IBOutlet NSButton *confirmAddIndexButton;
-#ifndef SP_CODA
 	IBOutlet NSBox *anchoredButtonBar;
 	
 	// Advanced options view
@@ -71,9 +67,8 @@
 	IBOutlet NSButton *indexAdvancedOptionsViewLabelButton;
 	IBOutlet NSPopUpButton *indexStorageTypePopUpButton;
 	IBOutlet NSTextField *indexKeyBlockSizeTextField;
-#endif
 		
-	BOOL _mainNibLoaded;
+	BOOL mainNibLoaded;
 	BOOL isMyISAMTable;
 	BOOL isInnoDBTable;
 	NSString *table;
@@ -81,29 +76,16 @@
 	NSMutableArray *fields, *indexes, *indexedFields;
 	NSArray *supportsLength, *requiresLength;
 	
-#ifndef SP_CODA /* ivars */
 	NSUserDefaults *prefs;
-#endif
 	
 	SPMySQLConnection *connection;
-	
-#ifndef SP_CODA /* ivars */
+
 	BOOL showAdvancedView;
 	
 	NSInteger heightOffset;
 	NSUInteger windowMinWidth;
 	NSUInteger windowMinHeigth;
-#endif
 }
-
-#ifdef SP_CODA
-@property (assign) SPTableView* indexesTableView;
-@property (assign) SPTableStructure* tableStructure;
-@property (assign) NSButton* addIndexButton;
-@property (assign) NSButton* removeIndexButton;
-
-- (void)setDatabaseDocument:(SPDatabaseDocument*)db;
-#endif
 
 /**
  * @property table The table currently being viewed

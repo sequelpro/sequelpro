@@ -88,7 +88,6 @@ typedef enum {
 	NSMutableArray *nibObjectsToRelease;
 
 	// Field Mapper Controller
-	SPFieldMapperController *fieldMapperController;
 	NSArray *fieldMappingImportArray;
 	BOOL fieldMappingImportArrayIsPreview;
 	NSArray *fieldMappingTableColumnNames;
@@ -114,7 +113,6 @@ typedef enum {
 	BOOL progressCancelled;
 	BOOL _mainNibLoaded;
 
-	NSDictionary *targetTableDetails;
 	NSMutableArray *geometryFields;
 	NSMutableIndexSet *geometryFieldsMapIndex;
 	NSMutableArray *bitFields;

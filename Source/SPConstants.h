@@ -108,16 +108,18 @@ typedef enum
 	SPTableTypeEvent = 4
 } SPTableType;
 
-// History views
-typedef enum
+// Content views
+typedef NS_ENUM(NSInteger, SPTableViewType)
 {
 	SPTableViewStructure   = 0,
 	SPTableViewContent     = 1,
 	SPTableViewCustomQuery = 2,
 	SPTableViewStatus      = 3,
 	SPTableViewRelations   = 4,
-	SPTableViewTriggers    = 5
-} SPTableViewType;
+	SPTableViewTriggers    = 5,
+
+	SPTableViewInvalid     = NSNotFound
+};
 
 // SSH tunnel password modes
 typedef enum
@@ -274,6 +276,7 @@ extern NSString *SPFavoritesDataFile;
 extern NSString *SPHTMLPrintTemplate;
 extern NSString *SPHTMLTableInfoPrintTemplate;
 extern NSString *SPHTMLHelpTemplate;
+extern NSString *SPPreferenceDefaultsFile;
 
 // SPF file types
 extern NSString *SPFExportSettingsContentType;
@@ -413,6 +416,7 @@ extern NSString *SPFileNameYearTokenName;
 extern NSString *SPFileNameMonthTokenName;
 extern NSString *SPFileNameDayTokenName;
 extern NSString *SPFileNameTimeTokenName;
+extern NSString *SPFileName24HourTimeTokenName;
 extern NSString *SPFileNameFavoriteTokenName;
 extern NSString *SPFileNameTableTokenName;
 
@@ -447,6 +451,9 @@ extern NSString *SPSelectionDetailTypePrimaryKeyed;
 extern NSString *SPSSHEnableMuxingPreference;
 extern NSString *SPSSHClientPath;
 extern NSString *SPSSLCipherListKey;
+extern NSString *SPQueryFavoritesHaveBeenUpdatedNotification;
+extern NSString *SPHistoryItemsHaveBeenUpdatedNotification;
+extern NSString *SPContentFiltersHaveBeenUpdatedNotification;
 
 // URLs
 extern NSString *SPDonationsURL;
@@ -664,27 +671,11 @@ typedef NS_ENUM(NSInteger,SPErrorCode) { // error codes in SPErrorDomain
 void _SPClear(id *addr);
 #define SPClear(x) _SPClear(&x)
 
-//Backwards compatibility
-#ifndef __MAC_10_7
-#define __MAC_10_7 1070
-#endif
-#ifndef __MAC_10_8
-#define __MAC_10_8 1080
-#endif
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-// This enum is available since 10.5 but only got a "name" in 10.10
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-typedef NSUInteger NSCellHitResult;
-#endif
-
 // Stolen from Stack Overflow: http://stackoverflow.com/questions/969130
 #define SPLog(fmt, ...) NSLog((@"%s:%d: " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 // See http://stackoverflow.com/questions/4415524
-#define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+#define COUNT_OF(x) (NSInteger)((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
 // This definition is mostly for legibility
 #ifndef ESUCCESS

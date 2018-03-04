@@ -40,6 +40,7 @@
  *
  * @param sourceDatabase information tuple about the source database
  * @param targetDatabase the name of the target database
+ *
  * @result success
  */
 - (BOOL)renameDatabaseFrom:(SPCreateDatabaseInfo *)sourceDatabase to:(NSString *)targetDatabase;

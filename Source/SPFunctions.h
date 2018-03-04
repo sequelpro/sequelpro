@@ -42,3 +42,17 @@ void SPMainQSync(void (^block)(void));
  * @return 0 on success or -1 if something went wrong, check errno
  */
 int SPBetterRandomBytes(uint8_t *buf, size_t count);
+
+/**
+ * Convert a signed integer into an unsigned integer or throw an exception if the values don't fit.
+ * @param i a signed integer
+ * @return the same value, casted to unsigned integer
+ */
+NSUInteger SPIntS2U(NSInteger i);
+
+/**
+ * Converts nil to NSNull for passing into arrays
+ * @return The object that was passed in or [NSNull null] if object == nil
+ * @see -[SPObjectAdditions unboxNull]
+ */
+id SPBoxNil(id object);

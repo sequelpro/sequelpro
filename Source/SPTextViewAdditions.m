@@ -36,7 +36,6 @@
 #import "SPCustomQuery.h"
 #ifndef SP_CODA /* headers */
 #import "SPAppController.h"
-#import "SPWindowManagement.h"
 #endif
 #import "SPFieldEditorController.h"
 #import "SPTextView.h"
@@ -525,269 +524,272 @@
 		return;
 	}
 
-	NSError *readError = nil;
-	NSString *convError = nil;
-	NSPropertyListFormat format;
 	NSDictionary *cmdData = nil;
-	NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&readError];
+	{
+		NSError *error = nil;
 
-	cmdData = [[NSPropertyListSerialization propertyListFromData:pData 
-			mutabilityOption:NSPropertyListImmutable format:&format errorDescription:&convError] retain];
+		NSData *pData = [NSData dataWithContentsOfFile:infoPath options:NSUncachedRead error:&error];
 
-	if(!cmdData || readError != nil || [convError length] || !(format == NSPropertyListXMLFormat_v1_0 || format == NSPropertyListBinaryFormat_v1_0)) {
-		NSLog(@"“%@” file couldn't be read.", infoPath);
-		NSBeep();
-		if (cmdData) [cmdData release];
-		return;
-	} else {
-		if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
+		if(!error) {
+			cmdData = [[NSPropertyListSerialization propertyListWithData:pData
+																 options:NSPropertyListImmutable
+																  format:NULL
+																   error:&error] retain];
+		}
+		
+		if(!cmdData || error) {
+			NSLog(@"“%@” file couldn't be read. (readError=%@)", infoPath, error);
+			NSBeep();
+			if (cmdData) [cmdData release];
+			return;
+		}
+	}
 
-			NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
-			NSString *inputAction = @"";
-			NSString *inputFallBackAction = @"";
-			NSError *err = nil;
-			NSString *uuid = [NSString stringWithNewUUID];
-			NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
+	if([cmdData objectForKey:SPBundleFileCommandKey] && [(NSString *)[cmdData objectForKey:SPBundleFileCommandKey] length]) {
 
-			NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
+		NSString *cmd = [cmdData objectForKey:SPBundleFileCommandKey];
+		NSString *inputAction = @"";
+		NSString *inputFallBackAction = @"";
+		NSError *err = nil;
+		NSString *uuid = [NSString stringWithNewUUID];
+		NSString *bundleInputFilePath = [NSString stringWithFormat:@"%@_%@", SPBundleTaskInputFilePath, uuid];
 
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+		NSRange currentWordRange, currentSelectionRange, currentLineRange, currentQueryRange;
 
-			BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [[self delegate] respondsToSelector:@selector(currentQueryRange)]);
+		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
 
-			if([cmdData objectForKey:SPBundleFileInputSourceKey])
-				inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
-			if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
-				inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
+		BOOL selfIsQueryEditor = ([[[self class] description] isEqualToString:@"SPTextView"] && [[self delegate] respondsToSelector:@selector(currentQueryRange)]);
 
-			currentSelectionRange = [self selectedRange];
-			currentWordRange = [self getRangeForCurrentWord];
-			currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+		if([cmdData objectForKey:SPBundleFileInputSourceKey])
+			inputAction = [[cmdData objectForKey:SPBundleFileInputSourceKey] lowercaseString];
+		if([cmdData objectForKey:SPBundleFileInputSourceFallBackKey])
+			inputFallBackAction = [[cmdData objectForKey:SPBundleFileInputSourceFallBackKey] lowercaseString];
 
-			if(selfIsQueryEditor) {
-				currentQueryRange = [(SPCustomQuery*)[self delegate] currentQueryRange];
+		currentSelectionRange = [self selectedRange];
+		currentWordRange = [self getRangeForCurrentWord];
+		currentLineRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location, 0)];
+
+		if(selfIsQueryEditor) {
+			currentQueryRange = [(SPCustomQuery*)[self delegate] currentQueryRange];
+		} else {
+			currentQueryRange = currentLineRange;
+		}
+		if(!currentQueryRange.length)
+			currentQueryRange = currentSelectionRange;
+
+		NSRange replaceRange = currentSelectionRange;
+		if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
+			if(!currentSelectionRange.length) {
+				if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
+					replaceRange = currentWordRange;
+				else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
+					replaceRange = currentLineRange;
+				else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
+					replaceRange = currentQueryRange;
+				else if([inputFallBackAction isEqualToString:SPBundleInputSourceEntireContent])
+					replaceRange = NSMakeRange(0,[[self string] length]);
 			} else {
-				currentQueryRange = currentLineRange;
-			}
-			if(!currentQueryRange.length)
-				currentQueryRange = currentSelectionRange;
-
-			NSRange replaceRange = currentSelectionRange;
-			if([inputAction isEqualToString:SPBundleInputSourceSelectedText]) {
-				if(!currentSelectionRange.length) {
-					if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentWord])
-						replaceRange = currentWordRange;
-					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentLine])
-						replaceRange = currentLineRange;
-					else if([inputFallBackAction isEqualToString:SPBundleInputSourceCurrentQuery])
-						replaceRange = currentQueryRange;
-					else if([inputFallBackAction isEqualToString:SPBundleInputSourceEntireContent])
-						replaceRange = NSMakeRange(0,[[self string] length]);
-				} else {
-					replaceRange = currentSelectionRange;
-				}
-
-			}
-			else if([inputAction isEqualToString:SPBundleInputSourceEntireContent]) {
-				replaceRange = NSMakeRange(0, [[self string] length]);
-			}
-
-			NSMutableDictionary *env = [NSMutableDictionary dictionary];
-			[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
-			[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
-			[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
-
-			id tableSource = [self delegate];
-			if([[[tableSource class] description] isEqualToString:@"SPFieldEditorController"]) {
-				NSDictionary *editedFieldInfo = [tableSource editedFieldInfo];
-				[env setObject:[editedFieldInfo objectForKey:@"colName"] forKey:SPBundleShellVariableCurrentEditedColumnName];
-				if([editedFieldInfo objectForKey:@"tableName"])
-					[env setObject:[editedFieldInfo objectForKey:@"tableName"] forKey:SPBundleShellVariableCurrentEditedTable];
-				[env setObject:[editedFieldInfo objectForKey:@"usedQuery"] forKey:SPBundleShellVariableUsedQueryForTable];
-				[env setObject:[editedFieldInfo objectForKey:@"tableSource"] forKey:SPBundleShellVariableDataTableSource];
-			}
-			else if([[[tableSource class] description] isEqualToString:@"SPCopyTable"]) {
-				NSInteger editedCol = [tableSource editedColumn];
-				if(editedCol > -1) {
-					NSString *colName = [[[[tableSource tableColumns] objectAtIndex:editedCol] headerCell] stringValue];
-					if([[[[tableSource dataSource] class] description] hasSuffix:@"Content"]) {
-						[env setObject:[colName description] forKey:SPBundleShellVariableCurrentEditedColumnName];
-						[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
-					} else {
-						NSArray *defs = [[tableSource delegate] dataColumnDefinitions];
-						for(NSDictionary* col in defs) {
-							if([[col objectForKey:@"name"] isEqualToString:colName]) {
-								[env setObject:[col objectForKey:@"org_name"] forKey:SPBundleShellVariableCurrentEditedColumnName];
-								[env setObject:[col objectForKey:@"org_table"] forKey:SPBundleShellVariableCurrentEditedTable];
-								break;
-							}
-						}
-						[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
-					}
-					if([[tableSource delegate] respondsToSelector:@selector(usedQuery)] && [[tableSource delegate] usedQuery])
-						[env setObject:[[tableSource delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
-				}
-			}
-
-			if(selfIsQueryEditor && [(SPCustomQuery*)[self delegate] currentQueryRange].length)
-				[env setObject:[[self string] substringWithRange:[(SPCustomQuery*)[self delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
-
-			if(currentSelectionRange.length)
-				[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
-
-			if(currentWordRange.length)
-				[env setObject:[[self string] substringWithRange:currentWordRange] forKey:SPBundleShellVariableCurrentWord];
-
-			if(currentLineRange.length)
-				[env setObject:[[self string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
-
-			[env setObject:NSStringFromRange(replaceRange) forKey:SPBundleShellVariableSelectedTextRange];
-
-			NSError *inputFileError = nil;
-			NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
-
-			[input writeToFile:bundleInputFilePath
-					  atomically:YES
-						encoding:NSUTF8StringEncoding
-						   error:&inputFileError];
-
-			if(inputFileError != nil) {
-				NSString *errorMessage  = [inputFileError localizedDescription];
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"Bundle Error", @"bundle error"),
-					[self window],
-					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
-				);
-				if (cmdData) [cmdData release];
-				return;
-			}
-
-			NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
-											atCurrentDirectoryPath:nil 
-											callerInstance:[SPAppDelegate frontDocument]
-											contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-													([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
-													NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
-																	  uuid, SPBundleFileInternalexecutionUUID, nil]
-											error:&err];
-
-			[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
-
-			NSString *action = SPBundleOutputActionNone;
-			if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
-				action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
-
-			// Redirect due exit code
-			if(err != nil) {
-				if([err code] == SPBundleRedirectActionNone) {
-					action = SPBundleOutputActionNone;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionReplaceSection) {
-					action = SPBundleOutputActionReplaceSelection;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionReplaceContent) {
-					action = SPBundleOutputActionReplaceContent;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionInsertAsText) {
-					action = SPBundleOutputActionInsertAsText;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
-					action = SPBundleOutputActionInsertAsSnippet;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsHTML) {
-					action = SPBundleOutputActionShowAsHTML;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
-					action = SPBundleOutputActionShowAsTextTooltip;
-					err = nil;
-				}
-				else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
-					action = SPBundleOutputActionShowAsHTMLTooltip;
-					err = nil;
-				}
-			}
-
-			if(err == nil && output) {
-				if(![action isEqualToString:SPBundleOutputActionNone]) {
-
-					if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
-						[SPTooltip showWithObject:output];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
-						[SPTooltip showWithObject:output ofType:@"html"];
-					}
-
-					else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
-						BOOL correspondingWindowFound = NO;
-						for(id win in [NSApp windows]) {
-							if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
-								if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
-									correspondingWindowFound = YES;
-									[[win delegate] displayHTMLContent:output withOptions:nil];
-									break;
-								}
-							}
-						}
-						if(!correspondingWindowFound) {
-							SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
-							[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
-							[c displayHTMLContent:output withOptions:nil];
-							[SPAppDelegate addHTMLOutputController:c];
-						}
-					}
-
-					if([self isEditable]) {
-
-						if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
-							[self insertText:output];
-						}
-
-						else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
-							if([self respondsToSelector:@selector(insertAsSnippet:atRange:)])
-								[(SPTextView *)self insertAsSnippet:output atRange:replaceRange];
-							else
-								[SPTooltip showWithObject:NSLocalizedString(@"Input Field doesn't support insertion of snippets.", @"input field  doesn't support insertion of snippets.")];
-						}
-
-						else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
-							if([[self string] length])
-								[self setSelectedRange:NSMakeRange(0, [[self string] length])];
-							[self insertText:output];
-						}
-
-						else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
-							NSRange safeRange = NSIntersectionRange(replaceRange, NSMakeRange(0, [[self string] length]));
-							[self shouldChangeTextInRange:safeRange replacementString:output];
-							[self replaceCharactersInRange:safeRange withString:output];
-						}
-
-					} else {
-						[SPTooltip showWithObject:NSLocalizedString(@"Input Field is not editable.", @"input field is not editable.")];
-					}
-
-				}
-			} else if([err code] != 9) { // Suppress an error message if command was killed
-				NSString *errorMessage  = [err localizedDescription];
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"BASH Error", @"bash error"),
-					[self window],
-					[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
-				);
+				replaceRange = currentSelectionRange;
 			}
 
 		}
+		else if([inputAction isEqualToString:SPBundleInputSourceEntireContent]) {
+			replaceRange = NSMakeRange(0, [[self string] length]);
+		}
 
-		if (cmdData) [cmdData release];
+		NSMutableDictionary *env = [NSMutableDictionary dictionary];
+		[env setObject:[infoPath stringByDeletingLastPathComponent] forKey:SPBundleShellVariableBundlePath];
+		[env setObject:bundleInputFilePath forKey:SPBundleShellVariableInputFilePath];
+		[env setObject:SPBundleScopeInputField forKey:SPBundleShellVariableBundleScope];
+
+		id tableSource = [self delegate];
+		if([[[tableSource class] description] isEqualToString:@"SPFieldEditorController"]) {
+			NSDictionary *editedFieldInfo = [tableSource editedFieldInfo];
+			[env setObject:[editedFieldInfo objectForKey:@"colName"] forKey:SPBundleShellVariableCurrentEditedColumnName];
+			if([editedFieldInfo objectForKey:@"tableName"])
+				[env setObject:[editedFieldInfo objectForKey:@"tableName"] forKey:SPBundleShellVariableCurrentEditedTable];
+			[env setObject:[editedFieldInfo objectForKey:@"usedQuery"] forKey:SPBundleShellVariableUsedQueryForTable];
+			[env setObject:[editedFieldInfo objectForKey:@"tableSource"] forKey:SPBundleShellVariableDataTableSource];
+		}
+		else if([[[tableSource class] description] isEqualToString:@"SPCopyTable"]) {
+			NSInteger editedCol = [tableSource editedColumn];
+			if(editedCol > -1) {
+				NSString *colName = [[[[tableSource tableColumns] objectAtIndex:editedCol] headerCell] stringValue];
+				if([[[[tableSource dataSource] class] description] hasSuffix:@"Content"]) {
+					[env setObject:[colName description] forKey:SPBundleShellVariableCurrentEditedColumnName];
+					[env setObject:@"content" forKey:SPBundleShellVariableDataTableSource];
+				} else {
+					NSArray *defs = [[tableSource delegate] dataColumnDefinitions];
+					for(NSDictionary* col in defs) {
+						if([[col objectForKey:@"name"] isEqualToString:colName]) {
+							[env setObject:[col objectForKey:@"org_name"] forKey:SPBundleShellVariableCurrentEditedColumnName];
+							[env setObject:[col objectForKey:@"org_table"] forKey:SPBundleShellVariableCurrentEditedTable];
+							break;
+						}
+					}
+					[env setObject:@"query" forKey:SPBundleShellVariableDataTableSource];
+				}
+				if([[tableSource delegate] respondsToSelector:@selector(usedQuery)] && [[tableSource delegate] usedQuery])
+					[env setObject:[[tableSource delegate] usedQuery] forKey:SPBundleShellVariableUsedQueryForTable];
+			}
+		}
+
+		if(selfIsQueryEditor && [(SPCustomQuery*)[self delegate] currentQueryRange].length)
+			[env setObject:[[self string] substringWithRange:[(SPCustomQuery*)[self delegate] currentQueryRange]] forKey:SPBundleShellVariableCurrentQuery];
+
+		if(currentSelectionRange.length)
+			[env setObject:[[self string] substringWithRange:currentSelectionRange] forKey:SPBundleShellVariableSelectedText];
+
+		if(currentWordRange.length)
+			[env setObject:[[self string] substringWithRange:currentWordRange] forKey:SPBundleShellVariableCurrentWord];
+
+		if(currentLineRange.length)
+			[env setObject:[[self string] substringWithRange:currentLineRange] forKey:SPBundleShellVariableCurrentLine];
+
+		[env setObject:NSStringFromRange(replaceRange) forKey:SPBundleShellVariableSelectedTextRange];
+
+		NSError *inputFileError = nil;
+		NSString *input = [NSString stringWithString:[[self string] substringWithRange:replaceRange]];
+
+		[input writeToFile:bundleInputFilePath
+				  atomically:YES
+					encoding:NSUTF8StringEncoding
+					   error:&inputFileError];
+
+		if(inputFileError != nil) {
+			NSString *errorMessage  = [inputFileError localizedDescription];
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Bundle Error", @"bundle error"),
+				[self window],
+				[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+			);
+			if (cmdData) [cmdData release];
+			return;
+		}
+
+		NSString *output = [SPBundleCommandRunner runBashCommand:cmd withEnvironment:env 
+										atCurrentDirectoryPath:nil 
+										callerInstance:[SPAppDelegate frontDocument]
+										contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+												([cmdData objectForKey:SPBundleFileNameKey])?:@"-", @"name",
+												NSLocalizedString(@"Input Field", @"input field menu item label"), @"scope",
+																  uuid, SPBundleFileInternalexecutionUUID, nil]
+										error:&err];
+
+		[[NSFileManager defaultManager] removeItemAtPath:bundleInputFilePath error:nil];
+
+		NSString *action = SPBundleOutputActionNone;
+		if([cmdData objectForKey:SPBundleFileOutputActionKey] && [(NSString *)[cmdData objectForKey:SPBundleFileOutputActionKey] length])
+			action = [[cmdData objectForKey:SPBundleFileOutputActionKey] lowercaseString];
+
+		// Redirect due exit code
+		if(err != nil) {
+			if([err code] == SPBundleRedirectActionNone) {
+				action = SPBundleOutputActionNone;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionReplaceSection) {
+				action = SPBundleOutputActionReplaceSelection;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionReplaceContent) {
+				action = SPBundleOutputActionReplaceContent;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionInsertAsText) {
+				action = SPBundleOutputActionInsertAsText;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionInsertAsSnippet) {
+				action = SPBundleOutputActionInsertAsSnippet;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsHTML) {
+				action = SPBundleOutputActionShowAsHTML;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsTextTooltip) {
+				action = SPBundleOutputActionShowAsTextTooltip;
+				err = nil;
+			}
+			else if([err code] == SPBundleRedirectActionShowAsHTMLTooltip) {
+				action = SPBundleOutputActionShowAsHTMLTooltip;
+				err = nil;
+			}
+		}
+
+		if(err == nil && output) {
+			if(![action isEqualToString:SPBundleOutputActionNone]) {
+
+				if([action isEqualToString:SPBundleOutputActionShowAsTextTooltip]) {
+					[SPTooltip showWithObject:output];
+				}
+
+				else if([action isEqualToString:SPBundleOutputActionShowAsHTMLTooltip]) {
+					[SPTooltip showWithObject:output ofType:@"html"];
+				}
+
+				else if([action isEqualToString:SPBundleOutputActionShowAsHTML]) {
+					BOOL correspondingWindowFound = NO;
+					for(id win in [NSApp windows]) {
+						if([[win delegate] isKindOfClass:[SPBundleHTMLOutputController class]]) {
+							if([[[win delegate] windowUUID] isEqualToString:[cmdData objectForKey:SPBundleFileUUIDKey]]) {
+								correspondingWindowFound = YES;
+								[[win delegate] displayHTMLContent:output withOptions:nil];
+								break;
+							}
+						}
+					}
+					if(!correspondingWindowFound) {
+						SPBundleHTMLOutputController *c = [[SPBundleHTMLOutputController alloc] init];
+						[c setWindowUUID:[cmdData objectForKey:SPBundleFileUUIDKey]];
+						[c displayHTMLContent:output withOptions:nil];
+						[SPAppDelegate addHTMLOutputController:c];
+					}
+				}
+
+				if([self isEditable]) {
+
+					if([action isEqualToString:SPBundleOutputActionInsertAsText]) {
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionInsertAsSnippet]) {
+						if([self respondsToSelector:@selector(insertAsSnippet:atRange:)])
+							[(SPTextView *)self insertAsSnippet:output atRange:replaceRange];
+						else
+							[SPTooltip showWithObject:NSLocalizedString(@"Input Field doesn't support insertion of snippets.", @"input field  doesn't support insertion of snippets.")];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionReplaceContent]) {
+						if([[self string] length])
+							[self setSelectedRange:NSMakeRange(0, [[self string] length])];
+						[self insertText:output];
+					}
+
+					else if([action isEqualToString:SPBundleOutputActionReplaceSelection]) {
+						NSRange safeRange = NSIntersectionRange(replaceRange, NSMakeRange(0, [[self string] length]));
+						[self shouldChangeTextInRange:safeRange replacementString:output];
+						[self replaceCharactersInRange:safeRange withString:output];
+					}
+
+				} else {
+					[SPTooltip showWithObject:NSLocalizedString(@"Input Field is not editable.", @"input field is not editable.")];
+				}
+
+			}
+		} else if([err code] != 9) { // Suppress an error message if command was killed
+			NSString *errorMessage  = [err localizedDescription];
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"BASH Error", @"bash error"),
+				[self window],
+				[NSString stringWithFormat:@"%@ “%@”:\n%@", NSLocalizedString(@"Error for", @"error for message"), [cmdData objectForKey:@"name"], errorMessage]
+			);
+		}
 
 	}
 
+	if (cmdData) [cmdData release];
 }
 
 /**

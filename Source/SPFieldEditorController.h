@@ -188,6 +188,7 @@
 
 	NSInteger editSheetReturnCode;
 	BOOL _isGeometry;
+	BOOL _isJSON;
 	NSUndoManager *esUndoManager;
 
 	NSDictionary *editedFieldInfo;
@@ -251,5 +252,12 @@
 - (void)setWasCutPaste;
 - (void)setAllowedUndo;
 - (void)setDoGroupDueToChars;
+
+@end
+
+@protocol SPFieldEditorControllerDelegate <NSObject>
+
+@optional
+- (void)processFieldEditorResult:(id)data contextInfo:(NSDictionary*)contextInfo;
 
 @end

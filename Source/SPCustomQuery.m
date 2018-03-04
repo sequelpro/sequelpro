@@ -46,7 +46,6 @@
 #import "SPQueryFavoriteManager.h"
 #endif
 #import "SPQueryController.h"
-#import "SPQueryDocumentsController.h"
 #import "SPEncodingPopupAccessory.h"
 #import "SPDataStorage.h"
 #import "SPAlertSheets.h"
@@ -61,14 +60,18 @@
 #import "SPAppController.h"
 #import "SPBundleHTMLOutputController.h"
 #endif
+#import "SPFunctions.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPCustomQuery (PrivateAPI)
+@interface SPCustomQuery ()
 
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 + (NSString *)linkToHelpTopic:(NSString *)aTopic;
+- (void)documentWillClose:(NSNotification *)notification;
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification;
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification;
 
 @end
 
@@ -754,7 +757,7 @@
 					if (![mySQLConnection lastQueryWasCancelled]) {
 
 						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						[SPAlertSheets beginWaitingAlertSheetWithTitle:@"title"
+						[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
 						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
 						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
 						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
@@ -763,7 +766,6 @@
 						                                 modalDelegate:self
 						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
 						                                   contextInfo:@"runAllContinueStopSheet"
-						                                           msg:NSLocalizedString(@"MySQL Error", @"mysql error message")
 						                                      infoText:[mySQLConnection lastErrorMessage]
 						                                    returnCode:&runAllContinueStopSheetReturnCode];
 
@@ -803,7 +805,7 @@
 	// Reload table list if at least one query began with drop, alter, rename, or create
 	if(tableListNeedsReload || databaseWasChanged) {
 		// Build database pulldown menu
-		[tableDocumentInstance setDatabases:self];
+		[[tableDocumentInstance onMainThread] setDatabases:self];
 
 		if (databaseWasChanged)
 			// Reset the current database
@@ -876,16 +878,23 @@
 		}
 	} else {
 		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected, taking %@", @"text showing one row has been affected by a single query"),
-								statusErrorString,
-								[NSString stringForTimeInterval:executionTime]
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
+								statusErrorString
 							];
 		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected, taking %@", @"text showing how many rows have been affected by a single query"),
+			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
 								statusErrorString,
-								(long)totalAffectedRows,
-								[NSString stringForTimeInterval:executionTime]
+								(long)totalAffectedRows
 							];
+		}
+		if([resultData count]) {
+			// we were running a query that returns a result set (ie. SELECT).
+			// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
+			//       and that makes our query time measurement pretty useless (see #264)
+			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+		}
+		else {
+			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
 		}
 	}
 
@@ -899,7 +908,7 @@
 #endif
 
 	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( !resultDataCount ) {
+	if ( ![resultData count] ) {
 		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
 		// Notify any listeners that the query has completed
@@ -924,8 +933,6 @@
 
 		return;
 	}
-
-	[[customQueryView onMainThread] reloadData];
 
 	// Restore the result view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
@@ -970,12 +977,12 @@
  */
 - (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore
 {
-
-	// Remove all items from the table
-	resultDataCount = 0;
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:YES];
 	pthread_mutex_lock(&resultDataLock);
-	[resultData removeAllRows];
+	// Remove all items from the table
+	SPMainQSync(^{
+		[resultData removeAllRows];
+		[customQueryView noteNumberOfRowsChanged];
+	});
 
 	// Add the new store
 	[resultData setDataStorage:theResultStore updatingExisting:NO];
@@ -987,16 +994,9 @@
 	// Set up the table updates timer and wait for it to notify this thread about completion
 	[[self onMainThread] initQueryLoadTimer];
 
-	[resultLoadingCondition lock];
-	while (![resultData dataDownloaded]) {
-		[resultLoadingCondition waitUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
-	}
-	[resultLoadingCondition unlock];
-
-	// If the final column autoresize wasn't performed, perform it
-	if (queryLoadLastRowCount < 200) [[self onMainThread] autosizeColumns];
-
-	[customQueryView performSelectorOnMainThread:@selector(noteNumberOfRowsChanged) withObject:nil waitUntilDone:NO];
+	[resultData awaitDataDownloaded];
+	
+	// Any further UI updates are the responsibility of the timer callback
 }
 
 /**
@@ -1486,23 +1486,20 @@
  */
 - (void) queryLoadUpdate:(NSTimer *)theTimer
 {
-	resultDataCount = [resultData count];
-
+	NSUInteger resultDataCount = [resultData count];
+	
 	if (queryLoadTimerTicksSinceLastUpdate < queryLoadInterfaceUpdateInterval) {
 		queryLoadTimerTicksSinceLastUpdate++;
 		return;
 	}
 
 	if ([resultData dataDownloaded]) {
-		[resultLoadingCondition lock];
-		[resultLoadingCondition signal];
 		[self clearQueryLoadTimer];
-		[resultLoadingCondition unlock];
 	}
 
 	// Check whether a table update is required, based on whether new rows are
 	// available to display.
-	if (resultDataCount == (NSInteger)queryLoadLastRowCount) {
+	if (resultDataCount == queryLoadLastRowCount) {
 		return;
 	}
 
@@ -1549,7 +1546,7 @@
  */
 - (NSUInteger)currentResultRowCount
 {
-	return resultDataCount;
+	return [resultData count];
 }
 
 /**
@@ -1624,7 +1621,7 @@
 
 #ifndef SP_CODA
 	if ( [[SPQueryController sharedQueryController] historyForFileURL:[tableDocumentInstance fileURL]] )
-		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:self waitUntilDone:YES];
+		[self performSelectorOnMainThread:@selector(historyItemsHaveBeenUpdated:) withObject:nil waitUntilDone:YES];
 
 	// Populate query favorites
 	[self queryFavoritesHaveBeenUpdated:nil];
@@ -1663,6 +1660,7 @@
 	// Remove all existing columns from the table
 	theColumns = [customQueryView tableColumns];
 	while ([theColumns count]) {
+		[NSArrayObjectAtIndex(theColumns, 0) setHeaderToolTip:nil]; // prevent crash #2414
 		[customQueryView removeTableColumn:NSArrayObjectAtIndex(theColumns, 0)];
 	}
 
@@ -2077,7 +2075,7 @@
  */
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
 {
-	return (aTableView == customQueryView) ? (resultData == nil) ? 0 : resultDataCount : 0;
+	return (aTableView == customQueryView) ? (resultData == nil) ? 0 : [resultData count] : 0;
 }
 
 /**
@@ -2102,7 +2100,7 @@
 		if (isWorking) {
 			pthread_mutex_lock(&resultDataLock);
 				
-			if (rowIndex < resultDataCount && columnIndex < [resultData columnCount]) {
+			if (SPIntS2U(rowIndex) < [resultData count] && columnIndex < [resultData columnCount]) {
 				showCellAsGray = [resultData cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 			} else {
 				showCellAsGray = YES;
@@ -2403,7 +2401,7 @@
 	// cases.
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
-		if (row < resultDataCount && (NSUInteger)[[aTableColumn identifier] integerValue] < [resultData columnCount]) {
+		if (SPIntS2U(row) < [resultData count] && (NSUInteger)[[aTableColumn identifier] integerValue] < [resultData columnCount]) {
 			theValue = [[SPDataStorageObjectAtRowAndColumn(resultData, row, [[aTableColumn identifier] integerValue]) copy] autorelease];
 		}
 		pthread_mutex_unlock(&resultDataLock);
@@ -3371,8 +3369,12 @@
 
 /**
  * Rebuild history popup menu.
+ *
+ * Warning: notification may be nil if invoked directly from within this class.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
-- (void)historyItemsHaveBeenUpdated:(id)manager
+- (void)historyItemsHaveBeenUpdated:(NSNotification *)notification
 {
 	// Abort if the connection has been closed already - sign of a closed window
 	if (![mySQLConnection isConnected]) return;
@@ -3394,9 +3396,14 @@
 /**
  * Called by the query favorites manager whenever the query favorites have been updated.
  */
-- (void)queryFavoritesHaveBeenUpdated:(id)manager
+- (void)queryFavoritesHaveBeenUpdated:(NSNotification *)notification
 {
-	NSMenuItem *headerMenuItem;
+	NSURL *fileURL = [tableDocumentInstance fileURL];
+
+	// Warning: This method may be called before any connection has been made in the current tab (triggered by another tab)!
+	// There doesn't seem to be a real indicator for this, but fileURL is the closest thing plus we need it below (#2266)
+	if(!fileURL) return;
+
 	NSMenu *menu = [queryFavoritesButton menu];
 
 	// Remove all favorites beginning from the end
@@ -3404,28 +3411,23 @@
 		[queryFavoritesButton removeItemAtIndex:[queryFavoritesButton numberOfItems]-1];
 
 	// Build document-based list
-	NSString *tblDocName = [[[[tableDocumentInstance fileURL] absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
-	if(!tblDocName) {
-		//NSMenuItem will not accept nil as title
-		@throw [NSException exceptionWithName:NSInternalInconsistencyException
-									   reason:[NSString stringWithFormat:@"Document name conversion resulted in nil string!? tableDocumentInstance=%@ fileURL=%@",tableDocumentInstance,[tableDocumentInstance fileURL]]
-									 userInfo:nil];
+	NSString *tblDocName = [[[fileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
 	}
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:tblDocName action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:[NSString stringWithFormat:NSLocalizedString(@"‘%@’ based favorites",@"Query Favorites : List : Section Heading : current connection document : tooltip (arg is the name of the spf file)"), tblDocName]];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
-	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:[tableDocumentInstance fileURL]]) {
+	for (NSDictionary *favorite in [[SPQueryController sharedQueryController] favoritesForFileURL:fileURL]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3437,21 +3439,22 @@
 	}
 
 	// Build global list
-	headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
-	[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
-	[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
-	[headerMenuItem setIndentationLevel:0];
-	[menu addItem:headerMenuItem];
-	[headerMenuItem release];
+	{
+		NSMenuItem *headerMenuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Global",@"Query Favorites : List : Section Heading : global query favorites") action:NULL keyEquivalent:@""];
+		[headerMenuItem setTag:SP_FAVORITE_HEADER_MENUITEM_TAG];
+		[headerMenuItem setToolTip:NSLocalizedString(@"Globally stored favorites",@"Query Favorites : List : Section Heading : global : tooltip")];
+		[headerMenuItem setIndentationLevel:0];
+		[menu addItem:headerMenuItem];
+		[headerMenuItem release];
+	}
 	for (NSDictionary *favorite in [prefs objectForKey:SPQueryFavorites]) {
 		if (![favorite isKindOfClass:[NSDictionary class]] || ![favorite objectForKey:@"name"]) continue;
 		NSMutableParagraphStyle *paraStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 		[paraStyle setTabStops:@[]];
 		[paraStyle addTabStop:[[[NSTextTab alloc] initWithType:NSRightTabStopType location:190.0f] autorelease]];
 		NSDictionary *attributes = @{NSParagraphStyleAttributeName : paraStyle, NSFontAttributeName : [NSFont systemFontOfSize:11]};
-		NSAttributedString *titleString = [[[NSAttributedString alloc]
-			initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
-			    attributes:attributes] autorelease];
+		NSAttributedString *titleString = [[[NSAttributedString alloc] initWithString:([favorite objectForKey:@"tabtrigger"] && [(NSString*)[favorite objectForKey:@"tabtrigger"] length]) ? [NSString stringWithFormat:@"%@\t%@⇥", [favorite objectForKey:@"name"], [favorite objectForKey:@"tabtrigger"]] : [favorite objectForKey:@"name"]
+		                                                                   attributes:attributes] autorelease];
 		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
 		if ([favorite objectForKey:@"query"]) {
 			[item setToolTip:[NSString stringWithString:[favorite objectForKey:@"query"]]];
@@ -3769,7 +3772,6 @@
 #endif
 
 		// init tableView's data source
-		resultDataCount = 0;
 		resultData = [[SPDataStorage alloc] init];
 		editedRow = -1;
 
@@ -3780,7 +3782,6 @@
 		runPrimaryActionButtonAsSelection = nil;
 
 		queryLoadTimer = nil;
-		resultLoadingCondition = [NSCondition new];
 
 		prefs = [NSUserDefaults standardUserDefaults];
 
@@ -3921,9 +3922,9 @@
 			// Send moveDown/Up to the popup menu
 			NSEvent *arrowEvent;
 			if(command == @selector(moveDown:))
-				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7D];
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:0x7D];
 			else
-				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:0x7E];
+				arrowEvent = [NSEvent keyEventWithType:NSKeyDown location:NSMakePoint(0,0) modifierFlags:0 timestamp:0 windowNumber:[[tableDocumentInstance parentWindow] windowNumber] context:[NSGraphicsContext currentContext] characters:@"" charactersIgnoringModifiers:@"" isARepeat:NO keyCode:0x7E];
 			[NSApp postEvent:arrowEvent atStart:NO];
 			return YES;
 
@@ -3992,6 +3993,18 @@
 											 selector:@selector(endDocumentTaskForTab:)
 												 name:SPDocumentTaskEndNotification
 											   object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(documentWillClose:)
+	                                             name:SPDocumentWillCloseNotification
+	                                           object:tableDocumentInstance];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(queryFavoritesHaveBeenUpdated:)
+	                                             name:SPQueryFavoritesHaveBeenUpdatedNotification
+	                                           object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(historyItemsHaveBeenUpdated:)
+	                                             name:SPHistoryItemsHaveBeenUpdatedNotification
+	                                           object:nil];
 
 #ifndef SP_CODA
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont options:NSKeyValueObservingOptionNew context:NULL];
@@ -4013,7 +4026,7 @@
  */
 - (id)_resultDataItemAtRow:(NSInteger)row columnIndex:(NSUInteger)column preserveNULLs:(BOOL)preserveNULLs asPreview:(BOOL)asPreview;
 {
-#warning duplicate code with SPTableContentDataSource.m tableView:objectValueForTableColumn:…
+#warning duplicate code with SPTableContent.m tableView:objectValueForTableColumn:…
 	id value = nil;
 	
 	// While the table is being loaded, additional validation is required - data
@@ -4023,7 +4036,7 @@
 	if (isWorking) {
 		pthread_mutex_lock(&resultDataLock);
 		
-		if (row < resultDataCount && column < [resultData columnCount]) {
+		if (SPIntS2U(row) < [resultData count] && column < [resultData columnCount]) {
 			value = SPDataStoragePreviewAtRowAndColumn(resultData, row, column, 150);
 		}
 		
@@ -4052,6 +4065,13 @@
 	return value;
 }
 
+//this method is called right before the UI objects are deallocated
+- (void)documentWillClose:(NSNotification *)notification
+{
+	// if a result load is in progress we must stop the timer or it may try to call invalid IBOutlets
+	[self clearQueryLoadTimer];
+}
+
 #pragma mark -
 
 - (void)dealloc
@@ -4063,7 +4083,6 @@
 	[NSObject cancelPreviousPerformRequestsWithTarget:customQueryView];
 
 	[self clearQueryLoadTimer];
-	SPClear(resultLoadingCondition);
 	SPClear(usedQuery);
 	SPClear(lastExecutedQuery);
 	SPClear(resultData);

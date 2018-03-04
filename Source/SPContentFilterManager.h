@@ -31,12 +31,6 @@
 @class SPDatabaseDocument;
 @class SPSplitView;
 
-@interface NSObject (SPContentFilterManagerDelegate)
-
-- (void)contentFiltersHaveBeenUpdated:(id)manager;
-
-@end
-
 @interface SPContentFilterManager : NSWindowController <NSOpenSavePanelDelegate>
 {
 #ifndef SP_CODA /* ivars */
@@ -60,7 +54,7 @@
 	IBOutlet id resultingClauseLabel;
 	IBOutlet id resultingClauseContentLabel;
 	IBOutlet id insertPlaceholderButton;
-	IBOutlet NSButton *suppressLeadingFiledPlaceholderCheckbox;
+	IBOutlet NSButton *suppressLeadingFieldPlaceholderCheckbox;
 
 	IBOutlet id contentFilterArrayController;
 	
@@ -85,6 +79,6 @@
 - (IBAction)exportContentFilter:(id)sender;
 - (IBAction)importContentFilterByAdding:(id)sender;
 - (IBAction)closeContentFilterManagerSheet:(id)sender;
-- (IBAction)suppressLeadingFiledPlaceholderWasChanged:(id)sender;
+- (IBAction)suppressLeadingFieldPlaceholderWasChanged:(id)sender;
 
 @end
