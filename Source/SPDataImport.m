@@ -335,7 +335,7 @@
 								  self,	// Modal delegate
 								  @selector(importOverwriteWarningSheetDidEnd:returnCode:contextInfo:),	// Did end selector
 								  importFileName,	// Contextual info for selectors
-								  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceding with the import.", @"message of warning when trying to import data when tables already exist."));
+								  NSLocalizedString(@"The chosen import file can potentially overwrite existing data. You should use caution when proceeding with the import.", @"message of warning when trying to import data when tables already exist."));
 				
 				
 				NSLog(@"Tables list %@", tablesList.tables);
@@ -343,7 +343,7 @@
 			}
 		}
 		
-		[self startImportProcessWithFile:importFileName];
+		[self _startBackgroundImportTaskForFilename:importFileName];
 	}];
 }
 
@@ -355,7 +355,7 @@
 	if (returnCode == NSAlertDefaultReturn) {
 		// Begin the import process
 		[self _startBackgroundImportTaskForFilename:importFileName];
-	}];
+	};
 }
 
 /**
@@ -366,16 +366,6 @@
 	[importFormatPopup selectItemWithTitle:@"SQL"];
 	[self _startBackgroundImportTaskForFilename:filename];
 }
-
-/**
- * Invoked when the user opens a large file, and when warned, chooses "Import".
- */
-- (void)startImportProcessWithFile:(NSString *)filename
-{
-	[NSThread detachNewThreadWithName:SPCtxt(@"SPDataImport background import task",tableDocumentInstance) target:self selector:@selector(_importBackgroundProcess:) object:filename];
-}
-
-
 
 #pragma mark -
 #pragma mark SQL import

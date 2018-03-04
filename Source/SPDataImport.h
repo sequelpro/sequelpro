@@ -133,7 +133,6 @@ typedef enum {
 - (void)importSQLFile:(NSString *)filename;
 - (void)importOverwriteWarningSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)importFileName;
 - (void)startSQLImportProcessWithFile:(NSString *)filename;
-- (void)startImportProcessWithFile:(NSString *)filename;
 - (void)importCSVFile:(NSString *)filename;
 - (IBAction)changeFormat:(id)sender;
 - (BOOL)buildFieldMappingArrayWithData:(NSArray *)importData isPreview:(BOOL)dataIsPreviewData ofSoureFile:(NSString*)filename;
