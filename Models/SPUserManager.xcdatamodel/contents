@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="13F1507" minimumToolsVersion="Xcode 4.5" macOSVersion="Mac OS X 10.6" iOSVersion="Automatic">
+    <entity name="Privileges" representedClassName="SPPrivilegesMO" syncable="YES">
+        <attribute name="alter_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="alter_routine_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_routine_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_temporary_tables_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="db" attributeType="String" maxValueString="64" indexed="YES" syncable="YES"/>
+        <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="grant_option_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="index_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="insert_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="lock_tables_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="references_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="select_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="show_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="trigger_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="update_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="userManager" optional="YES" transient="YES" syncable="YES"/>
+        <relationship name="user" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SPUser" inverseName="schema_privileges" inverseEntity="SPUser" indexed="YES" syncable="YES"/>
+    </entity>
+    <entity name="SPUser" representedClassName="SPUserMO" syncable="YES">
+        <attribute name="alter_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="alter_routine_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="authentication_string" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="create_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_routine_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_tablespace_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_temporary_tables_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_user_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="create_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="delete_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="drop_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="event_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="execute_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="file_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="grant_option_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="host" optional="YES" attributeType="String" maxValueString="60" defaultValueString="%" syncable="YES"/>
+        <attribute name="index_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="insert_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="lock_tables_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="max_connections" optional="YES" attributeType="Integer 32" minValueString="0" maxValueString="99999999999" defaultValueString="0" syncable="YES"/>
+        <attribute name="max_questions" optional="YES" attributeType="Integer 32" minValueString="0" maxValueString="99999999999" defaultValueString="0" syncable="YES"/>
+        <attribute name="max_updates" optional="YES" attributeType="Integer 32" minValueString="0" maxValueString="99999999999" defaultValueString="0" syncable="YES"/>
+        <attribute name="originalhost" optional="YES" attributeType="String" maxValueString="60" defaultValueString="%" syncable="YES"/>
+        <attribute name="originalpassword" optional="YES" attributeType="String">
+            <userInfo/>
+        </attribute>
+        <attribute name="originaluser" optional="YES" attributeType="String">
+            <userInfo/>
+        </attribute>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="plugin" optional="YES" attributeType="String" maxValueString="64" syncable="YES"/>
+        <attribute name="process_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="references_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="reload_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="replication_client_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="replication_slave_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="select_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="show_databases_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="show_view_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="shutdown_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="super_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="trigger_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="update_priv" optional="YES" attributeType="Boolean" defaultValueString="NO" syncable="YES"/>
+        <attribute name="user" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="userManager" optional="YES" transient="YES" syncable="YES"/>
+        <relationship name="children" optional="YES" toMany="YES" minCount="1" deletionRule="Cascade" destinationEntity="SPUser" inverseName="parent" inverseEntity="SPUser" indexed="YES" syncable="YES"/>
+        <relationship name="parent" optional="YES" minCount="1" maxCount="1" deletionRule="Cascade" destinationEntity="SPUser" inverseName="children" inverseEntity="SPUser" indexed="YES" syncable="YES"/>
+        <relationship name="schema_privileges" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Privileges" inverseName="user" inverseEntity="Privileges" indexed="YES" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Privileges" positionX="412" positionY="90" width="128" height="373"/>
+        <element name="SPUser" positionX="135" positionY="45" width="207" height="705"/>
+    </elements>
+</model>

@@ -254,10 +254,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	if (error) {
 		NSLog(@"Error retrieving data directory path: %@", [error localizedDescription]);
-		
-		pthread_mutex_unlock(&favoritesLock);
-		
-		return;
+		goto end_cleanup;
 	}
 	
 	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
@@ -270,31 +267,27 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		NSMutableDictionary *newFavorites = [NSMutableDictionary dictionaryWithObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, @[], SPFavoriteChildrenKey, nil] forKey:SPFavoritesRootKey];
 		
 		error = nil;
-		NSString *errorString = nil;
 		
-		NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
+		NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:newFavorites
 																	   format:NSPropertyListXMLFormat_v1_0
-															 errorDescription:&errorString];
-		if (plistData) {
+																	  options:0
+																		error:&error];
+		if (error) {
+			NSLog(@"Error converting default favorites data to plist format: %@", error);
+			goto end_cleanup;
+		}
+		else if (plistData) {
 			[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
 			
 			if (error) {
-				NSLog(@"Error writing default favorites data: %@", [error localizedDescription]);
+				NSLog(@"Error writing default favorites data: %@", error);
 			}
-		}
-		else if (errorString) {
-			NSLog(@"Error converting default favorites data to plist format: %@", errorString);
-			
-			[errorString release];
-			
-			pthread_mutex_unlock(&favoritesLock);
-			
-			return;
 		}
 		
 		favoritesData = newFavorites;
 	}
-	
+
+end_cleanup:
 	pthread_mutex_unlock(&favoritesLock);
 }
 
@@ -396,12 +389,10 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	pthread_mutex_lock(&writeLock);
 	
 	if (!favoritesTree) {
-		pthread_mutex_unlock(&writeLock);
-		return;
+		goto end_cleanup;
 	}
 	
 	NSError *error = nil;
-	NSString *errorString = nil;
 
 	// Before starting the file actions, attempt to create a dictionary
 	// from the current favourites tree and convert it to a dictionary representation
@@ -409,13 +400,13 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	// be terminated during shutdown.
 	NSDictionary *dictionary = @{SPFavoritesRootKey : data};
 	
-	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
+	NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
 																   format:NSPropertyListXMLFormat_v1_0
-														 errorDescription:&errorString];
-	if (errorString) {
-		NSLog(@"Error converting favorites data to plist format: %@", errorString);
-		
-		[errorString release];
+																  options:0
+																	error:&error];
+	if (error) {
+		NSLog(@"Error converting favorites data to plist format: %@", error);
+		goto end_cleanup;
 	}
 
 	NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -424,9 +415,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 	
 	if (error) {
 		NSLog(@"Error retrieving data directory path: %@", [error localizedDescription]);
-		
-		pthread_mutex_unlock(&writeLock);
-		return;
+		goto end_cleanup;
 	}
 	
 	NSString *favoritesFile = [dataPath stringByAppendingPathComponent:SPFavoritesDataFile];
@@ -445,9 +434,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		// We can't move it so try and delete it
 		if (![fileManager removeItemAtPath:favoritesFile error:&error] && error) {
 			NSLog(@"Unable to delete existing favorites data file during save. Something is wrong, permissions perhaps: %@", [error localizedDescription]);
-			
-			pthread_mutex_unlock(&writeLock);
-			return;
+			goto end_cleanup;
 		}
 	}
 
@@ -471,6 +458,7 @@ static SPFavoritesController *sharedFavoritesController = nil;
 		[fileManager removeItemAtPath:favoritesBackupFile error:NULL];
 	}
 	
+end_cleanup:
 	pthread_mutex_unlock(&writeLock);
 	
 	[pool release];

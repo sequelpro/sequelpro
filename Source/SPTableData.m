@@ -39,7 +39,7 @@
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
 
-@interface SPTableData (PrivateAPI)
+@interface SPTableData ()
 
 - (void)_loopWhileWorking;
 - (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType;
@@ -524,7 +524,7 @@
 }
 
 /**
- * Analyse a CREATE TABLE tring to extract the field details, primary key, unique keys, and table encoding.
+ * Analyse a CREATE TABLE string to extract the field details, primary key, unique keys, and table encoding.
  * @param tableDef @"CREATE TABLE ..."
  * @param tableType Can either be Table or View. Value is copied to the result and not used otherwise
  * @return A dict containing info about the table's structure
@@ -532,6 +532,9 @@
  * In future this could also be used to retrieve the majority of index information
  * assuming information like cardinality isn't needed.
  * This function is rather long due to the painful parsing required, but is fast.
+ *
+ * *WARNING* This method is only designed to handle the output of a "SHOW CREATE ..." query.
+ *           DO NOT try to use it with user-defined input. The code does not handle the full possible syntax!
  */
 - (NSDictionary *)parseCreateStatement:(NSString *)tableDef ofType:(NSString *)tableType
 {
@@ -579,11 +582,12 @@
 			if(fieldName == nil || [fieldName length] == 0) {
 				NSBeep();
 				SPOnewayAlertSheetWithStyle(
-				   NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
-				   nil,
-				   nil,
-				   [NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser],
-				   NSCriticalAlertStyle);
+					NSLocalizedString(@"Error while parsing CREATE TABLE syntax",@"error while parsing CREATE TABLE syntax"),
+					nil,
+					nil,
+					[NSString stringWithFormat:NSLocalizedString(@"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item.", @"“%@” couldn't be parsed. You can edit the column setup but the column will not be shown in the Content view; please report this issue to the Sequel Pro team using the Help menu item."), fieldsParser],
+					NSCriticalAlertStyle
+				);
 				continue;
 			}
 			//if the next character is again a backtick, we stumbled across an escaped backtick. we have to continue parsing.
@@ -622,108 +626,116 @@
 			// Constraints
 			if ([[parts objectAtIndex:0] hasPrefix:@"CONSTRAINT"]) {
 				NSMutableDictionary *constraintDetails = [[NSMutableDictionary alloc] init];
-
-				// Extract the relevant details from the constraint string
-				[fieldsParser setString:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:bracketSet]];
-				[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"name"];
-
-				NSMutableArray *keyColumns = [NSMutableArray array];
-				NSArray *keyColumnStrings = [[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
-
-				for (NSString *keyColumn in keyColumnStrings)
-				{
-					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
-					[keyColumns addObject:[fieldsParser unquotedString]];
-				}
-
-				[constraintDetails setObject:keyColumns forKey:@"columns"];
-
-				NSString *part = [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet];
-												
-				NSArray *reference = [part captureComponentsMatchedByRegex:@"^`([\\w_.]+)`\\.`([\\w_.]+)`$" options:RKLCaseless range:NSMakeRange(0, [part length]) error:nil]; 
 				
-				if ([reference count]) {					
-					[constraintDetails setObject:[reference objectAtIndex:1] forKey:@"ref_database"];
-					[constraintDetails setObject:[reference objectAtIndex:2] forKey:@"ref_table"];
+				if([[parts objectAtIndex:2] hasPrefix:@"FOREIGN"] && [[parts objectAtIndex:3] hasPrefix:@"KEY"]) {
+					// Extract the relevant details from the constraint string
+					[fieldsParser setString:[[parts objectAtIndex:1] stringByTrimmingCharactersInSet:bracketSet]];
+					[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"name"];
+					
+					NSMutableArray *keyColumns = [NSMutableArray array];
+					NSArray *keyColumnStrings = [[[parts objectAtIndex:4] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
+					
+					for (NSString *keyColumn in keyColumnStrings)
+					{
+						[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
+						[keyColumns addObject:[fieldsParser unquotedString]];
+					}
+					
+					[constraintDetails setObject:keyColumns forKey:@"columns"];
+					
+					NSString *part = [[parts objectAtIndex:6] stringByTrimmingCharactersInSet:bracketSet];
+					
+					NSArray *reference = [part captureComponentsMatchedByRegex:@"^`([\\w_.]+)`\\.`([\\w_.]+)`$" options:RKLCaseless range:NSMakeRange(0, [part length]) error:nil];
+					
+					if ([reference count]) {
+						[constraintDetails setObject:[reference objectAtIndex:1] forKey:@"ref_database"];
+						[constraintDetails setObject:[reference objectAtIndex:2] forKey:@"ref_table"];
+					}
+					else {
+						[fieldsParser setString:part];
+						[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
+					}
+					
+					NSMutableArray *refKeyColumns = [NSMutableArray array];
+					NSArray *refKeyColumnStrings = [[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
+					
+					for (NSString *keyColumn in refKeyColumnStrings)
+					{
+						[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
+						[refKeyColumns addObject:[fieldsParser unquotedString]];
+					}
+					
+					[constraintDetails setObject:refKeyColumns forKey:@"ref_columns"];
+					
+					NSUInteger nextOffs = 12;
+					
+					if ([parts count] > 8) {
+						// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
+						if ([[parts objectAtIndex:9] hasPrefix:@"UPDATE"]) {
+							if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
+								[constraintDetails setObject:@"SET NULL"
+								                      forKey:@"update"];
+								nextOffs = 13;
+							} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
+								[constraintDetails setObject:@"NO ACTION"
+								                      forKey:@"update"];
+								nextOffs = 13;
+							} else {
+								[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+								                      forKey:@"update"];
+							}
+						}
+						else if ([NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"]) {
+							if ([NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"]) {
+								[constraintDetails setObject:@"SET NULL"
+								                      forKey:@"delete"];
+								nextOffs = 13;
+							} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
+								[constraintDetails setObject:@"NO ACTION"
+								                      forKey:@"delete"];
+								nextOffs = 13;
+							} else {
+								[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
+								                      forKey:@"delete"];
+							}
+						}
+					}
+					
+					if ([parts count] > nextOffs - 1) {
+						if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
+							if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
+								[constraintDetails setObject:@"SET NULL"
+								                      forKey:@"update"];
+							} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
+								[constraintDetails setObject:@"NO ACTION"
+								                      forKey:@"update"];
+							} else {
+								[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+								                      forKey:@"update"];
+							}
+						}
+						else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
+							if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
+								[constraintDetails setObject:@"SET NULL"
+								                      forKey:@"delete"];
+							} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
+								[constraintDetails setObject:@"NO ACTION"
+								                      forKey:@"delete"];
+							} else {
+								[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
+								                      forKey:@"delete"];
+							}
+						}
+					}
+					
+					[constraints addObject:constraintDetails];
 				}
 				else {
-					[fieldsParser setString:part];
-					[constraintDetails setObject:[fieldsParser unquotedString] forKey:@"ref_table"];
-				}
-
-				NSMutableArray *refKeyColumns = [NSMutableArray array];
-				NSArray *refKeyColumnStrings = [[[parts objectAtIndex:7] stringByTrimmingCharactersInSet:bracketSet] componentsSeparatedByString:@","];
-				
-				for (NSString *keyColumn in refKeyColumnStrings)
-				{
-					[fieldsParser setString:[[keyColumn stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] stringByTrimmingCharactersInSet:bracketSet]];
-					[refKeyColumns addObject:[fieldsParser unquotedString]];
+					//TODO: MariaDB 10.2.1+ (not Mysql) supports syntax:
+					//  CONSTRAINT [constraint_name] CHECK (expression)
+					SPLog(@"Skipping unrecognized CONSTRAINT in CREATE stmt: %@", fieldsParser);
 				}
 				
-				[constraintDetails setObject:refKeyColumns forKey:@"ref_columns"];
-
-				NSUInteger nextOffs = 12;
-				
-				if ([parts count] > 8) {
-					// NOTE: this won't get SET NULL | NO ACTION | RESTRICT
-					if ([[parts objectAtIndex:9] hasPrefix:@"UPDATE"]) {
-						if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"] ) {
-							[constraintDetails setObject:@"SET NULL"
-												  forKey:@"update"];
-							nextOffs = 13;
-						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
-							[constraintDetails setObject:@"NO ACTION"
-												  forKey:@"update"];
-							nextOffs = 13;
-						} else {
-							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
-												  forKey:@"update"];
-						}
-					}
-					else if ([NSArrayObjectAtIndex(parts, 9) hasPrefix:@"DELETE"]) {
-						if ([NSArrayObjectAtIndex(parts, 10) hasPrefix:@"SET"]) {
-							[constraintDetails setObject:@"SET NULL"
-												  forKey:@"delete"];
-							nextOffs = 13;
-						} else if( [NSArrayObjectAtIndex(parts, 10) hasPrefix:@"NO"] ) {
-							[constraintDetails setObject:@"NO ACTION"
-												  forKey:@"delete"];
-							nextOffs = 13;
-						} else {
-							[constraintDetails setObject:NSArrayObjectAtIndex(parts, 10)
-												  forKey:@"delete"];
-						}
-					}
-				}
-				
-				if ([parts count] > nextOffs - 1) {
-					if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"UPDATE"] ) {
-						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
-							[constraintDetails setObject:@"SET NULL"
-												  forKey:@"update"];
-						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
-							[constraintDetails setObject:@"NO ACTION"
-												  forKey:@"update"];
-						} else {
-							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
-												  forKey:@"update"];
-						}
-					}
-					else if( [NSArrayObjectAtIndex(parts, nextOffs) hasPrefix:@"DELETE"] ) {
-						if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"SET"] ) {
-							[constraintDetails setObject:@"SET NULL"
-												  forKey:@"delete"];
-						} else if( [NSArrayObjectAtIndex(parts, nextOffs+1) hasPrefix:@"NO"] ) {
-							[constraintDetails setObject:@"NO ACTION"
-												  forKey:@"delete"];
-						} else {
-							[constraintDetails setObject:NSArrayObjectAtIndex(parts, nextOffs+1)
-												  forKey:@"delete"];
-						}
-					}
-				}
-				
-				[constraints addObject:constraintDetails];
 				[constraintDetails release];
 			}
 			
@@ -785,7 +797,7 @@
 		NSUInteger stringStart = NSMaxRange(charsetDefinitionRange);
 		NSUInteger i;
 		for (i = stringStart; i < [createTableParser length]; i++) {
-			if ([createTableParser characterAtIndex:i] == ' ') break;
+			if ([whitespaceAndNewlineSet characterIsMember:[createTableParser characterAtIndex:i]]) break;
 		}
 
 		// Catch the "default" character encoding:
@@ -1156,7 +1168,9 @@
 #endif
 
 		if (rowCountLevel == SPRowCountFetchNever
-			|| (rowCountLevel == SPRowCountFetchIfCheap && [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary))
+			|| (rowCountLevel == SPRowCountFetchIfCheap
+				&& (![[self statusValueForKey:@"Data_length"] unboxNull] //this works as a nil check for both NSNull and nil.
+					|| [[self statusValueForKey:@"Data_length"] integerValue] >= rowCountCheapBoundary)))
 		{
 			return YES;
 		}

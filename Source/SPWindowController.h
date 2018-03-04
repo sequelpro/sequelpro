@@ -71,5 +71,6 @@
 - (NSArray *)documents;
 - (void)selectTabAtIndex:(NSInteger)index;
 - (void)setHideForSingleTab:(BOOL)hide;
+- (void)updateTabBar;
 
 @end

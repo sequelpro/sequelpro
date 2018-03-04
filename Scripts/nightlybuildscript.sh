@@ -19,7 +19,7 @@ NIGHTLY_KEYCHAIN_PASSWORD='PASSWORD NOT COMMITTED'
 REVISION_HASH=`echo "$1" | grep "\([0-9a-f]*\)"`
 if [ "$REVISION_HASH" == "" ]
 then
-	echo "Unable to extract revision hash from first argument; cancelling nightly build." >&2
+	echo "Unable to extract revision hash from first argument; cancelling nightly build (git rev-parse HEAD)." >&2
 	exit 1
 fi	
 SHORT_HASH=${REVISION_HASH:0:10}
@@ -90,10 +90,10 @@ find languagetranslations/Resources \( -name "*.lproj" \) | while read FILE; do
     cp -R "$FILE" "Sequel Pro.app/Contents/Resources/"
 done
 
-echo "Copying nightly icon"
+#echo "Copying nightly icon"
 
 # Copy in the nightly icon
-cp -f "$NIGHTLY_ICON_LOC" Sequel\ Pro.app/Contents/Resources/appicon.icns
+#cp -f "$NIGHTLY_ICON_LOC" Sequel\ Pro.app/Contents/Resources/appicon.icns
 
 echo "Updating version strings"
 
@@ -103,7 +103,7 @@ php -r '$infoplistloc = "'$BUILD_DIR'/Sequel Pro.app/Contents/Info.plist";
 	$infoplist = preg_replace("/(\<key\>CFBundleShortVersionString\<\/key\>\s*\n?\r?\s*\<string\>)[^<]*(\<\/string\>)/i", "\\1Nightly build for revision '$SHORT_HASH'\\2", $infoplist);
 	$infoplist = preg_replace("/(\<key\>CFBundleVersion\<\/key\>\s*\n?\r?\s*)\<string\>[^<]*(\<\/string\>)/i", "\\1<string>'$NUMERIC_REVISION'\\2", $infoplist);
 	$infoplist = preg_replace("/(\<key\>NSHumanReadableCopyright\<\/key\>\s*\n?\r?\s*\<string\>)[^<]*(\<\/string\>)/i", "\\1Nightly build for revision '$SHORT_HASH'\\2", $infoplist);
-	$infoplist = preg_replace("/(\<key\>SUFeedURL\<\/key\>\s*\n?\r?\s*\<string\>)[^<]*(\<\/string\>)/i", "\\1http://nightly.sequelpro.com/nightly-app-releases.php\\2", $infoplist);
+	$infoplist = preg_replace("/(\<key\>SUFeedURL\<\/key\>\s*\n?\r?\s*\<string\>)[^<]*(\<\/string\>)/i", "\\1https://sequelpro.com/nightly/nightly-app-releases.php\\2", $infoplist);
 	file_put_contents($infoplistloc, $infoplist);'
 
 # Update versions in localised string files
@@ -117,10 +117,10 @@ php -r '$englishstringsloc = "/'$BUILD_DIR'/Sequel Pro.app/Contents/Resources/En
 echo "Signing build..."
 
 # Code sign and verify the nightly
-security unlock-keychain -p "$NIGHTLY_KEYCHAIN_PASSWORD" "$NIGHTLY_KEYCHAIN_LOC"
-codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r "../../Resources/sprequirement.bin" "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant"
-codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r "../../Resources/sprequirement.bin" "Sequel Pro.app"
-security lock-keychain "$NIGHTLY_KEYCHAIN_LOC"
+#security unlock-keychain -p "$NIGHTLY_KEYCHAIN_PASSWORD" "$NIGHTLY_KEYCHAIN_LOC"
+codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r $GIT_DIR"/Resources/spframeworkrequirement.bin" "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant"
+codesign -f --keychain "$NIGHTLY_KEYCHAIN_LOC" -s 'Developer ID Application: MJ Media' -r $GIT_DIR"/Resources/sprequirement.bin" "Sequel Pro.app"
+#security lock-keychain "$NIGHTLY_KEYCHAIN_LOC"
 VERIFYERRORS=`codesign --verify "Sequel Pro.app" 2>&1`
 VERIFYERRORS+=`codesign --verify "Sequel Pro.app/Contents/Resources/SequelProTunnelAssistant" 2>&1`
 if [ "$VERIFYERRORS" != '' ]
@@ -156,7 +156,7 @@ echo "Disk image ready (hashed as $SIGNATURE)"
 echo "Uploading disk image..."
 
 # Upload the disk image
-scp -q -P 32100 Sequel_Pro_r"$SHORT_HASH".dmg spnightlyuploader@sequelpro.com:nightlybuilds
+scp -P 32100 Sequel_Pro_r"$SHORT_HASH".dmg spnightlyuploader@sequelpro.com:nightlybuilds
 RETURNVALUE=$?
 if [ $RETURNVALUE -eq 0 ]
 then

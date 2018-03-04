@@ -56,7 +56,9 @@
 	NSMutableDictionary *cachedCollationsByEncoding;
 	
 	SPMySQLConnection *connection;
-	SPServerSupport *serverSupport;	
+	SPServerSupport *serverSupport;
+	
+	NSObject *charsetCollationLock;
 }
 
 /**

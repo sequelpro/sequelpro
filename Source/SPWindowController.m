@@ -29,32 +29,27 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPWindowController.h"
-#import "SPWindowControllerDelegate.h"
 #import "SPDatabaseDocument.h"
-#import "SPDatabaseViewController.h"
 #import "SPAppController.h"
 #import "PSMTabDragAssistant.h"
+#import "SPConnectionController.h"
+#import "SPFavoritesOutlineView.h"
 
 #import <PSMTabBar/PSMTabBarControl.h>
 #import <PSMTabBar/PSMTabStyle.h>
-
-// Forward-declare for 10.7 compatibility
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-	NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
-	NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8,
-	NSFullScreenWindowMask = 1 << 14
-};
-#endif
 
 @interface SPWindowController ()
 
 - (void)_setUpTabBar;
 - (void)_updateProgressIndicatorForItem:(NSTabViewItem *)theItem;
-- (void)_createTitleBarLineHidingView;
-- (void)_updateLineHidingViewState;
 - (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc;
 - (void)_selectedTableDocumentDeallocd:(NSNotification *)notification;
+
+#pragma mark - SPWindowControllerDelegate
+
+- (void)tabDragStarted:(id)sender;
+- (void)tabDragStopped:(id)sender;
+
 @end
 
 @implementation SPWindowController
@@ -67,9 +62,6 @@ enum {
 	[self _switchOutSelectedTableDocument:nil];
 	
 	[[self window] setCollectionBehavior:[[self window] collectionBehavior] | NSWindowCollectionBehaviorFullScreenPrimary];
-
-	// Add a line to the window to hide the line below the title bar when the toolbar is collapsed
-	[self _createTitleBarLineHidingView];
 
 	// Disable automatic cascading - this occurs before the size is set, so let the app
 	// controller apply cascading after frame autosaving.
@@ -87,7 +79,6 @@ enum {
 	// Register for drag start and stop notifications - used to show/hide tab bars
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStarted:) name:PSMTabDragDidBeginNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(tabDragStopped:) name:PSMTabDragDidEndNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateLineHidingViewState) name:SPWindowToolbarDidToggleNotification object:nil];
 
 	// Because we are a document-based app we automatically adopt window restoration on 10.7+.
 	// However that causes a race condition with our own window setup code.
@@ -117,7 +108,6 @@ enum {
 
 	// Set up a new tab with the connection view as the identifier, add the view, and add it to the tab view
     NSTabViewItem *newItem = [[[NSTabViewItem alloc] initWithIdentifier:newTableDocument] autorelease];
-	[newItem setColor:nil]; //cocoa defaults to [NSColor controlColor] but we want the tabstyle to choose a default color
 	
 	[newItem setView:[newTableDocument databaseView]];
     [tabView addTabViewItem:newItem];
@@ -175,14 +165,14 @@ enum {
  */
 - (IBAction)closeTab:(id)sender
 {
-	// Return if the selected tab shouldn't be closed
-	if (![selectedTableDocument parentTabShouldClose]) return;
-
 	// If there are multiple tabs, close the front tab.
 	if ([tabView numberOfTabViewItems] > 1) {
+		// Return if the selected tab shouldn't be closed
+		if (![selectedTableDocument parentTabShouldClose]) return;
 		[tabView removeTabViewItem:[tabView selectedTabViewItem]];
 	} 
 	else {
+		//trying to close the window will itself call parentTabShouldClose for all tabs in windowShouldClose:
 		[[self window] performClose:self];
 	}
 }
@@ -359,6 +349,23 @@ enum {
 }
 
 #pragma mark -
+#pragma mark Tab Bar
+- (void)updateTabBar
+{
+	BOOL collapse = NO;
+ 
+	if (selectedTableDocument.getConnection) {
+		if (selectedTableDocument.connectionController.colorIndex != -1) {
+			collapse = YES;
+		}
+	}
+	
+	tabBar.heightCollapsed = collapse ? 8 : 1;
+	
+	[tabBar update];
+}
+
+#pragma mark -
 #pragma mark First responder forwarding to active tab
 
 /**
@@ -453,8 +460,8 @@ enum {
 	[tabBar setShowAddTabButton:YES];
 	[tabBar setSizeCellsToFit:NO];
 	[tabBar setCellMinWidth:100];
-	[tabBar setCellMaxWidth:250];
-	[tabBar setCellOptimumWidth:250];
+	[tabBar setCellMaxWidth:25000];
+	[tabBar setCellOptimumWidth:25000];
 	[tabBar setSelectsTabsOnMouseDown:YES];
 	[tabBar setCreatesTabOnDoubleClick:YES];
 	[tabBar setTearOffStyle:PSMTabBarTearOffAlphaWindow];
@@ -492,49 +499,6 @@ enum {
 	[theDocument addObserver:self forKeyPath:@"isProcessing" options:0 context:nil];
 }
 
-/**
- * Create a view which is used to hide the line underneath the window title bar when the
- * toolbar is hidden, improving appearance when tabs are visible (or collapsed!)
- */
-- (void)_createTitleBarLineHidingView
-{
-	float titleBarHeight = 21.f;
-	NSSize windowSize = [self window].frame.size;
-
-	titleBarLineHidingView = [[[NSClipView alloc] init] autorelease];
-
-	// Set the original size and the autosizing mask to preserve it
-	[titleBarLineHidingView setFrame:NSMakeRect(0, windowSize.height - titleBarHeight - 1, windowSize.width, 1)];
-	[titleBarLineHidingView setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
-
-	[self _updateLineHidingViewState];
-
-	// Add the view to the window
-	[[[[self window] contentView] superview] addSubview:titleBarLineHidingView];
-}
-
-/**
- * Update the visibility and colour of the title bar line hiding view
- */
-- (void)_updateLineHidingViewState
-{
-	// Set the background colour to match the titlebar window state
-	if ((([[self window] isMainWindow] || [[[self window] attachedSheet] isMainWindow]) && [NSApp isActive])) {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.66f : 0.63f alpha:1.0]];
-	} 
-	else {
-		[titleBarLineHidingView setBackgroundColor:[NSColor colorWithCalibratedWhite:(isOSVersionAtLeast10_7_0) ? 0.87f : 0.84f alpha:1.0]];
-	}
-
-	// If the window is fullscreen or the toolbar is showing, hide the view; otherwise show it
-	if (([[self window] styleMask] & NSFullScreenWindowMask) || [[[self window] toolbar] isVisible] || ![[self window] toolbar]) {
-		[titleBarLineHidingView setHidden:YES];
-	} 
-	else {
-		[titleBarLineHidingView setHidden:NO];
-	}
-}
-
 
 - (void)_switchOutSelectedTableDocument:(SPDatabaseDocument *)newDoc
 {
@@ -552,11 +516,418 @@ enum {
 		[nc addObserver:self selector:@selector(_selectedTableDocumentDeallocd:) name:SPDocumentWillCloseNotification object:newDoc];
 		selectedTableDocument = newDoc;
 	}
+	
+	[self updateTabBar];
 }
 
 - (void)_selectedTableDocumentDeallocd:(NSNotification *)notification
 {
 	[self _switchOutSelectedTableDocument:nil];
+}
+
+#pragma mark - SPWindowControllerDelegate
+
+/**
+ * Determine whether the window is permitted to close.
+ * Go through the tabs in this window, and ask the database connection view
+ * in each one if it can be closed, returning YES only if all can be closed.
+ */
+- (BOOL)windowShouldClose:(id)sender
+{
+	for (NSTabViewItem *eachItem in [tabView tabViewItems])
+	{
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
+
+		if (![eachDocument parentTabShouldClose]) return NO;
+	}
+
+	// Remove global session data if the last window of a session will be closed
+	if ([SPAppDelegate sessionURL] && [[SPAppDelegate orderedDatabaseConnectionWindows] count] == 1) {
+		[SPAppDelegate setSessionURL:nil];
+		[SPAppDelegate setSpfSessionDocData:nil];
+	}
+
+	return YES;
+}
+
+/**
+ * When the window does close, close all tabs.
+ */
+- (void)windowWillClose:(NSNotification *)notification
+{
+	for (NSTabViewItem *eachItem in [tabView tabViewItems])
+	{
+		[tabView removeTabViewItem:eachItem];
+	}
+
+	[self autorelease];
+}
+
+/**
+ * When the window becomes key, inform the selected tab and
+ * update menu items.
+ */
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+	[selectedTableDocument tabDidBecomeKey];
+
+	// Update the "Close window" item
+	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close Window", @"Close Window menu item")];
+	[closeWindowMenuItem setKeyEquivalentModifierMask:(NSCommandKeyMask | NSShiftKeyMask)];
+
+	// Ensure the "Close tab" item is enabled and has the standard shortcut
+	[closeTabMenuItem setEnabled:YES];
+	[closeTabMenuItem setKeyEquivalent:@"w"];
+	[closeTabMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+}
+
+/**
+ * When the window resigns key, update menu items.
+ */
+- (void)windowDidResignKey:(NSNotification *)notification
+{
+
+	// Disable the "Close tab" menu item
+	[closeTabMenuItem setEnabled:NO];
+	[closeTabMenuItem setKeyEquivalent:@""];
+
+	// Update the "Close window" item to show only "Close"
+	[closeWindowMenuItem setTitle:NSLocalizedString(@"Close", @"Close menu item")];
+	[closeWindowMenuItem setKeyEquivalentModifierMask:NSCommandKeyMask];
+}
+
+/**
+ * Observe changes in main window status to update drawing state to match
+ */
+- (void)windowDidBecomeMain:(NSNotification *)notification
+{
+
+}
+- (void)windowDidResignMain:(NSNotification *)notification
+{
+}
+
+/**
+ * If the window is resized, notify all the tabs.
+ */
+- (void)windowDidResize:(NSNotification *)notification
+{
+	for (NSTabViewItem *eachItem in [tabView tabViewItems])
+	{
+		SPDatabaseDocument *eachDocument = [eachItem identifier];
+
+		[eachDocument tabDidResize];
+	}
+}
+
+/**
+ * If the window is entering fullscreen, update the front tab's titlebar status view visibility.
+ */
+- (void)windowWillEnterFullScreen:(NSNotification *)notification
+{
+	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:YES];
+}
+
+/**
+ * If the window exits fullscreen, update the front tab's titlebar status view visibility.
+ */
+- (void)windowDidExitFullScreen:(NSNotification *)notification
+{
+	[selectedTableDocument updateTitlebarStatusVisibilityForcingHide:NO];
+}
+
+#pragma mark -
+#pragma mark Tab view delegate methods
+
+/**
+ * Called when a tab item is about to be selected.
+ */
+- (void)tabView:(NSTabView *)tabView willSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	[selectedTableDocument willResignActiveTabInWindow];
+}
+
+/**
+ * Called when a tab item was selected.
+ */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[PSMTabDragAssistant sharedDragAssistant] isDragging]) return;
+
+	[self _switchOutSelectedTableDocument:[tabViewItem identifier]];
+	[selectedTableDocument didBecomeActiveTabInWindow];
+
+	if ([[self window] isKeyWindow]) [selectedTableDocument tabDidBecomeKey];
+
+	[self updateAllTabTitles:self];
+}
+
+/**
+ * Called to determine whether a tab view item can be closed
+ *
+ * Note: This is ONLY called when using the "X" button on the tab itself.
+ */
+- (BOOL)tabView:(NSTabView *)aTabView shouldCloseTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
+
+	if (![theDocument parentTabShouldClose]) return NO;
+
+	return YES;
+}
+
+/**
+ * Called after a tab view item is closed.
+ */
+- (void)tabView:(NSTabView *)aTabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
+
+	[theDocument removeObserver:self forKeyPath:@"isProcessing"];
+	[theDocument parentTabDidClose];
+}
+
+/**
+ * Called to allow dragging of tab view items
+ */
+- (BOOL)tabView:(NSTabView *)aTabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl
+{
+	return YES;
+}
+
+/**
+ * Called when a tab finishes a drop.  This is called with the new tabView.
+ */
+- (void)tabView:(NSTabView*)aTabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl
+{
+	SPDatabaseDocument *draggedDocument = [tabViewItem identifier];
+
+	// Grab a reference to the old window
+	NSWindow *draggedFromWindow = [draggedDocument parentWindow];
+
+	// If the window changed, perform additional processing.
+	if (draggedFromWindow != [tabBarControl window]) {
+
+		// Update the old window, ensuring the toolbar is cleared to prevent issues with toolbars in multiple windows
+		[draggedFromWindow setToolbar:nil];
+		[[draggedFromWindow windowController] updateSelectedTableDocument];
+
+		// Update the item's document's window and controller
+		[draggedDocument willResignActiveTabInWindow];
+		[draggedDocument setParentWindowController:[[tabBarControl window] windowController]];
+		[draggedDocument setParentWindow:[tabBarControl window]];
+		[draggedDocument didBecomeActiveTabInWindow];
+
+		// Update window controller's active tab, and update the document's isProcessing observation
+		[[[tabBarControl window] windowController] updateSelectedTableDocument];
+		[draggedDocument removeObserver:[draggedFromWindow windowController] forKeyPath:@"isProcessing"];
+		[[[tabBarControl window] windowController] _updateProgressIndicatorForItem:tabViewItem];
+	}
+
+	// Check the window and move it to front if it's key (eg for new window creation)
+	if ([[tabBarControl window] isKeyWindow]) [[tabBarControl window] orderFront:self];
+
+	// workaround bug where "source list" table views are broken in the new window. See https://github.com/sequelpro/sequelpro/issues/2863
+	SPWindowController *newWindowController = tabBarControl.window.windowController;
+	newWindowController.selectedTableDocument.connectionController.favoritesOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleRegular;
+	newWindowController.selectedTableDocument.dbTablesTableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleRegular;
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0)), dispatch_get_main_queue(), ^{
+		newWindowController.selectedTableDocument.dbTablesTableView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+		newWindowController.selectedTableDocument.connectionController.favoritesOutlineView.selectionHighlightStyle = NSTableViewSelectionHighlightStyleSourceList;
+	});
+}
+
+/**
+ * Respond to dragging events entering the tab in the tab bar.
+ * Allows custom behaviours - for example, if dragging text, switch to the custom
+ * query view.
+ */
+- (void)draggingEvent:(id <NSDraggingInfo>)dragEvent enteredTabBar:(PSMTabBarControl *)tabBarControl tabView:(NSTabViewItem *)tabViewItem
+{
+	SPDatabaseDocument *theDocument = [tabViewItem identifier];
+
+	if (![theDocument isCustomQuerySelected] && [[[dragEvent draggingPasteboard] types] indexOfObject:NSStringPboardType] != NSNotFound)
+	{
+		[theDocument viewQuery:self];
+	}
+}
+
+/**
+ * Show tooltip for a tab view item.
+ */
+- (NSString *)tabView:(NSTabView *)aTabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	NSInteger tabIndex = [tabView indexOfTabViewItem:tabViewItem];
+
+	if ([[tabBar cells] count] < (NSUInteger)tabIndex) return @"";
+
+	PSMTabBarCell *theCell = [[tabBar cells] objectAtIndex:tabIndex];
+
+	// If cell is selected show tooltip if truncated only
+	if ([theCell tabState] & PSMTab_SelectedMask) {
+
+		CGFloat cellWidth = [theCell width];
+		CGFloat titleWidth = [theCell stringSize].width;
+		CGFloat closeButtonWidth = 0;
+
+		if ([theCell hasCloseButton])
+			closeButtonWidth = [theCell closeButtonRectForFrame:[theCell frame]].size.width;
+
+		if (titleWidth > cellWidth - closeButtonWidth) {
+			return [theCell title];
+		}
+
+		return @"";
+	}
+	// if cell is not selected show full title plus MySQL version is enabled as tooltip
+	else {
+		if ([[tabViewItem identifier] respondsToSelector:@selector(tabTitleForTooltip)]) {
+			return [[tabViewItem identifier] tabTitleForTooltip];
+		}
+
+		return @"";
+	}
+}
+
+/**
+ * Allow window closing of the last tab item.
+ */
+- (void)tabView:(NSTabView *)aTabView closeWindowForLastTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	[[aTabView window] close];
+}
+
+/**
+ * When dragging a tab off a tab bar, add a shadow to the drag window.
+ */
+- (void)tabViewDragWindowCreated:(NSWindow *)dragWindow
+{
+	[dragWindow setHasShadow:YES];
+}
+
+/**
+ * Allow dragging and dropping of tabs to any position, including out of a tab bar
+ * to create a new window.
+ */
+- (BOOL)tabView:(NSTabView*)aTabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl
+{
+	return YES;
+}
+
+/**
+ * When a tab is dragged off a tab bar, create a new window containing a new
+ * (empty) tab bar to hold it.
+ */
+- (PSMTabBarControl *)tabView:(NSTabView *)aTabView newTabBarForDraggedTabViewItem:(NSTabViewItem *)tabViewItem atPoint:(NSPoint)point
+{
+	// Create the new window controller, with no tabs
+	SPWindowController *newWindowController = [[SPWindowController alloc] initWithWindowNibName:@"MainWindow"];
+	NSWindow *newWindow = [newWindowController window];
+
+	CGFloat toolbarHeight = 0;
+
+	if ([[[self window] toolbar] isVisible]) {
+		NSRect innerFrame = [NSWindow contentRectForFrameRect:[[self window] frame] styleMask:[[self window] styleMask]];
+		toolbarHeight = innerFrame.size.height - [[[self window] contentView] frame].size.height;
+	}
+
+	// Adjust the positioning as appropriate
+	point.y += toolbarHeight;
+
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]) point.y += kPSMTabBarControlHeight;
+
+	// Set the new window position and size
+	NSRect targetWindowFrame = [[self window] frame];
+	targetWindowFrame.size.height -= toolbarHeight;
+	[newWindow setFrame:targetWindowFrame display:NO];
+	[newWindow setFrameTopLeftPoint:point];
+
+	// Set the window controller as the window's delegate
+	[newWindow setDelegate:newWindowController];
+
+	// Set window title
+	[newWindow setTitle:[[[tabViewItem identifier] parentWindow] title]];
+
+	// Return the window's tab bar
+	return [newWindowController valueForKey:@"tabBar"];
+}
+
+/**
+ * When dragging a tab off the tab bar, return an image so that a
+ * drag placeholder can be displayed.
+ */
+- (NSImage *)tabView:(NSTabView *)aTabView imageForTabViewItem:(NSTabViewItem *)tabViewItem offset:(NSSize *)offset styleMask:(unsigned int *)styleMask
+{
+	NSImage *viewImage = [[NSImage alloc] init];
+
+	// Capture an image of the entire window
+	CGImageRef windowImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, (unsigned int)[[self window] windowNumber], kCGWindowImageBoundsIgnoreFraming);
+	NSBitmapImageRep *viewRep = [[NSBitmapImageRep alloc] initWithCGImage:windowImage];
+	[viewRep setSize:[[self window] frame].size];
+	[viewImage addRepresentation:viewRep];
+	[viewRep release];
+
+	// Calculate the titlebar+toolbar height
+	CGFloat contentViewOffsetY = [[self window] frame].size.height - [[[self window] contentView] frame].size.height;
+	offset->height = contentViewOffsetY + [tabBar frame].size.height;
+
+	// Draw over the tab bar area
+	[viewImage lockFocus];
+	[[NSColor windowBackgroundColor] set];
+	NSRectFill([tabBar frame]);
+	[viewImage unlockFocus];
+
+	// Draw the tab bar background in the tab bar area
+	[viewImage lockFocus];
+	NSRect tabFrame = [tabBar frame];
+	[[NSColor windowBackgroundColor] set];
+	NSRectFill(tabFrame);
+
+	// Draw the background flipped, which is actually the right way up
+	NSAffineTransform *transform = [NSAffineTransform transform];
+
+	[transform translateXBy:0.0f yBy:[[[self window] contentView] frame].size.height];
+	[transform scaleXBy:1.0f yBy:-1.0f];
+
+	[transform concat];
+	[(id <PSMTabStyle>)[(PSMTabBarControl *)[aTabView delegate] style] drawBackgroundInRect:tabFrame];
+
+	[viewImage unlockFocus];
+
+	return [viewImage autorelease];
+}
+
+/**
+ * Displays the current tab's context menu.
+ */
+- (NSMenu *)tabView:(NSTabView *)aTabView menuForTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	NSMenu *menu = [[NSMenu alloc] init];
+
+	[menu addItemWithTitle:NSLocalizedString(@"Close Tab", @"close tab context menu item") action:@selector(closeTab:) keyEquivalent:@""];
+	[menu insertItem:[NSMenuItem separatorItem] atIndex:1];
+	[menu addItemWithTitle:NSLocalizedString(@"Open in New Tab", @"open connection in new tab context menu item") action:@selector(openDatabaseInNewTab:) keyEquivalent:@""];
+
+	return [menu autorelease];
+}
+
+/**
+ * When tab drags start, show all the tab bars.  This allows adding tabs to windows
+ * containing only one tab - where the bar is normally hidden.
+ */
+- (void)tabDragStarted:(id)sender
+{
+	[tabBar setHideForSingleTab:NO];
+}
+
+/**
+ * When tab drags stop, set tab bars to automatically hide again for only one tab.
+ */
+- (void)tabDragStopped:(id)sender
+{
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:SPAlwaysShowWindowTabBar]) {
+		[tabBar setHideForSingleTab:YES];
+	}
 }
 
 #pragma mark -

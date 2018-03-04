@@ -149,6 +149,7 @@ uint32_t LimitUInt32(NSUInteger i);
 	unsigned char *lenPtr = paddedBytes + (paddedLength - 4);
 	memcpy(lenPtr, &bigIntDataLength, 4);
 
+	size_t bytesWritten;
 	CCCryptorStatus res = CCCrypt(
 			kCCEncrypt,         // operation mode
 			kCCAlgorithmAES128, // algorithm
@@ -160,7 +161,7 @@ uint32_t LimitUInt32(NSUInteger i);
 			paddedLength,       // length of raw data
 			paddedBytes,        // output buffer. overwriting input is OK
 			paddedLength,       // output buffer size
-			NULL                // number of bytes written. not relevant here
+			&bytesWritten       // number of bytes written. not relevant here, but 10.6 fails if omitted
 	);
 	
 	if(res != kCCSuccess)
@@ -168,7 +169,7 @@ uint32_t LimitUInt32(NSUInteger i);
 									   reason:[NSString stringWithFormat:@"CCCrypt() failed! (CCCryptorStatus=%d)",res]
 									 userInfo:@{@"cryptorStatus":@(res)}];
 	
-	// the return code of CCCrypt() is not always reliable, better check it again
+	// CVE-2016-4711: the return code of CCCrypt() is not always reliable, better check it again
 	if(memcmp(lenPtr, &bigIntDataLength, 4) == 0)
 		@throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"Encrypted data is same as plaintext data!" userInfo:nil];
 	
@@ -203,6 +204,7 @@ uint32_t LimitUInt32(NSUInteger i);
 	// Decrypt the data
 	unsigned char *decryptedBytes = calloc(1,encryptedLength);
 	
+	size_t bytesRead;
 	CCCryptorStatus res = CCCrypt(
 			kCCDecrypt,                          // operation mode
 			kCCAlgorithmAES128,                  // algorithm
@@ -214,7 +216,7 @@ uint32_t LimitUInt32(NSUInteger i);
 			encryptedLength,                     // length of raw data
 			decryptedBytes,                      // output buffer. overwriting input is OK
 			encryptedLength,                     // output buffer size
-			NULL                                 // number of bytes written. not relevant here
+			&bytesRead                           // number of bytes decrypted. not relevant here, but 10.6 fails if omitted
 	);
 	
 	if(res != kCCSuccess) {
@@ -339,6 +341,140 @@ uint32_t LimitUInt32(NSUInteger i);
 	}
 
 	return hexString;
+}
+
+/**
+ * Returns the integer value for a single hex-encoded nibble or -1 for invalid values.
+ * Supported characters: 0-9,a-f,A-F
+ * 
+ * Note: You usually would call this method like ((hexchar2nibble(highByte) << 4) + hexchar2nibble(lowByte)) to decode a single hex-encoded byte.
+ */
+static int hexchar2nibble(char c)
+{
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+	return -1;
+}
+
+/**
+ * Decodes a sequence of hex digits to raw byte values.
+ * This function is very strict about the allowed inputs and must only be used for validated inputs!
+ *
+ * - If numRawBytes != 0 and inBuffer == NULL or outBuffer == NULL, this will crash
+ * - The hex sequence must ONLY contain chars 0-9,a-f,A-F or the result will be undefined
+ * - The sequence must be padded to have an even length. numRawBytes is the number of bytes AFTER decoding, so inBuffer must be exactly 2x as large
+ * - inBuffer and outBuffer may be the same pointer
+ */
+static void decodeValidHexSequence(const char *inBuffer,uint8_t *outBuffer, NSUInteger numRawBytes)
+{
+	NSUInteger outIndex = 0;
+	NSUInteger srcIndex = 0;
+	while (outIndex < numRawBytes) {
+		uint8_t v = (hexchar2nibble(inBuffer[srcIndex]) << 4) + hexchar2nibble(inBuffer[srcIndex+1]);
+		outBuffer[outIndex++] = v;
+		srcIndex += 2;
+	}
+}
+
+/**
+ * Interpret a string of hex digits in 'hex' as hex data, and return
+ * an NSData representation of the data.  Spaces are permitted within
+ * the string and an initial '0x' will be ignored. If bad input
+ * is detected, nil is returned.
+ *
+ * Alternatively the MySQL-style X'val' syntax is also supported, 
+ * with the same restrictions as in MySQL:
+ * - val must always be an even number of characters
+ * - val cannot contain whitespace (whitespace before/after is ok)
+ * - The leading x is case-INsensitive
+ */
++ (NSData *)dataWithHexString:(NSString *)hex
+{
+	if(!hex) return nil; // no string
+	const char *sourceBytes = [hex UTF8String];
+	
+	size_t length = strlen(sourceBytes); // keep in mind that [hex length] is the number of Unicode characters, not the number of bytes
+	if (length < 1) return [NSData data];	// empty string
+
+	NSUInteger srcIndex = 0;
+	NSData *data = nil;
+	NSUInteger nbytes;
+	
+	//skip leading whitespace (in order to properly check for leading "0x")
+	while(srcIndex < length && (sourceBytes[srcIndex] == ' ' || sourceBytes[srcIndex] == '\t')) srcIndex++;
+
+	// bypass initial 0x
+	if(srcIndex+1 < length && sourceBytes[srcIndex] == '0' && sourceBytes[srcIndex+1] == 'x' ) {
+		srcIndex += 2;
+	}
+	//check for mysql syntax
+	else if(srcIndex+2 < length && (sourceBytes[srcIndex] == 'x' || sourceBytes[srcIndex] == 'X') && sourceBytes[srcIndex+1] == '\'') {
+		srcIndex += 2;
+		//look for the terminating quote
+		NSUInteger startIndex = srcIndex;
+		NSUInteger endIndex = startIndex; //startIndex points to the first character inside the quotes, which may already be the terminating quote
+		while(endIndex < length) {
+			char c = sourceBytes[endIndex];
+			//if we've hit the terminator, verify that only whitespace follows and stop reading
+			if(c == '\'') {
+				NSUInteger afterIndex = endIndex+1;
+				while (afterIndex < length) {
+					c = sourceBytes[afterIndex++];
+					if(c != ' ' && c != '\t') return nil;
+				}
+				break;
+			}
+			endIndex++;
+			// Check for non-hex characters
+			if (hexchar2nibble(c) < 0) return nil;
+		}
+		// Check for unterminated sequence and uneven number of bytes
+		NSUInteger n = endIndex - startIndex;
+		if(endIndex == length || ((n % 2) != 0)) return nil;
+		// shortcut
+		if(n == 0) return [NSData data];
+		//looks good, create the output buffer and decode
+		nbytes = n / 2;
+		unsigned char *outBuf = malloc(nbytes);
+		decodeValidHexSequence(&sourceBytes[startIndex], outBuf, nbytes);
+		return [NSData dataWithBytesNoCopy:outBuf length:nbytes freeWhenDone:YES];
+	}
+	
+	// Copy input while removing spaces and tabs.
+	char *trimmedFull = (char *)malloc(length + 1);
+	char *trimmed = (trimmedFull + 1); //we'll use the first byte in case we have to fill in a leading '0'
+	NSUInteger trimIndex = 0;
+	NSUInteger n = 0; // n = # of hex digits
+	while(srcIndex < length) {
+		char c = sourceBytes[srcIndex++];
+		if(c == ' ' || c == '\t') continue;
+		trimmed[trimIndex++] = c;
+		if(!c) break;
+		n++;
+		// Check for non-hex characters
+		if (hexchar2nibble(c) < 0) goto fail_cleanup;
+	}
+	//shortcut
+	if(n == 0) {
+		data = [NSData data];
+		goto fail_cleanup;
+	}
+
+	BOOL isEven = ((n % 2) == 0);
+	nbytes = !isEven ? (n + 1) / 2 : n / 2; //adjust for cases where "0aff" is written as "aff" (e.g.)
+	if(!isEven) {
+		trimmed--;
+		trimmed[0] = '0';
+	}
+	
+	//we'll just decode the data in-place since the raw values have to be shorter by definition, anyway
+	decodeValidHexSequence(trimmed, (uint8_t *)trimmedFull, nbytes);
+	return [NSData dataWithBytesNoCopy:trimmedFull length:nbytes freeWhenDone:YES];
+	
+fail_cleanup:
+	free(trimmedFull);
+	return data;
 }
 
 /**

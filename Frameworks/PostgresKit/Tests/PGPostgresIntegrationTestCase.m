@@ -35,6 +35,8 @@ static NSString *PGTestDatabasePassword = @"pgkit";
 
 static NSUInteger PGTestDatabasePort = 5432;
 
+static double PGTestConnectionTimeout = 0.2;
+
 @interface PGPostgresIntegrationTestCase ()
 
 - (void)_establishConnection;
@@ -67,13 +69,25 @@ static NSUInteger PGTestDatabasePort = 5432;
 	[_connection setPassword:PGTestDatabasePassword];
 	
 	if (![_connection connect]) {
-		STFail(@"Request to establish connection to local database failed.");
+		XCTFail(@"Request to establish connection to local database failed.");
 		
 		exit(1);
 	}	
 	
+    NSDate *startDate = [NSDate date];
+    
 	do {
 		sleep(0.1);
+        
+        if([[NSDate date] timeIntervalSinceDate:startDate] > PGTestConnectionTimeout) {
+            XCTFail(@"Failed to connect to database after %f seconds. Host:%@ Database:%@ User:%@ Password:%@",
+                    PGTestConnectionTimeout,
+                    PGTestDatabaseHost,
+                    PGTestDatabaseName,
+                    PGTestDatabaseUser,
+                    PGTestDatabasePassword);
+            exit(1);
+        }
 	}
 	while (![_connection isConnected]);
 }

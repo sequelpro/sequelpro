@@ -52,7 +52,7 @@
 
 #import "SPDatabaseContentViewDelegate.h"
 
-@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate>
+@interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate, SPDatabaseContentViewDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet id tablesListInstance;
@@ -125,7 +125,6 @@
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
-	NSCondition *tableLoadingCondition;
 #ifndef SP_CODA
 	NSMutableArray *nibObjectsToRelease;
 #endif
@@ -305,9 +304,19 @@
 - (void)setFilterTableData:(NSData *)arcData;
 - (NSData *)filterTableData;
 
-- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
+//- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
 - (void)openContentFilterManager;
 
 - (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
+
+#pragma mark - SPTableContentDataSource
+
+- (BOOL)cellValueIsDisplayedAsHexForColumn:(NSUInteger)columnIndex;
+
+#pragma mark - SPTableContentFilter
+
+- (void)makeContentFilterHaveFocus;
+- (void)updateFilterTableClause:(id)currentValue;
+- (NSString*)escapeFilterTableDefaultOperator:(NSString*)op;
 
 @end

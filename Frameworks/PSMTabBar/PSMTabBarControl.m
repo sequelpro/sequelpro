@@ -11,11 +11,6 @@
 #import "PSMOverflowPopUpButton.h"
 #import "PSMRolloverButton.h"
 #import "PSMTabStyle.h"
-#import "PSMMetalTabStyle.h"
-#import "PSMAquaTabStyle.h"
-#import "PSMUnifiedTabStyle.h"
-#import "PSMCardTabStyle.h"
-#import "PSMAdiumTabStyle.h"
 #import "PSMSequelProTabStyle.h"
 #import "PSMTabDragAssistant.h"
 #import "PSMTabBarController.h"
@@ -145,6 +140,9 @@
     _cellMaxWidth = 280;
     _cellOptimumWidth = 130;
 	_tearOffStyle = PSMTabBarTearOffAlphaWindow;
+	
+	self.heightCollapsed = kPSMTabBarControlDefaultHeightCollapsed;
+	
 	style = [[PSMSequelProTabStyle alloc] init];
     
     // the overflow button/menu
@@ -158,6 +156,7 @@
     // new tab button
     NSRect addTabButtonRect = NSMakeRect([self frame].size.width - [style rightMarginForTabBarControl] + 1, 3.0f, 16.0f, 16.0f);
     _addTabButton = [[PSMRolloverButton alloc] initWithFrame:addTabButtonRect];
+	
     if (_addTabButton) {
         NSImage *newButtonImage = [style addTabButtonImage];
         if (newButtonImage) {
@@ -366,31 +365,16 @@
 - (void)setStyleNamed:(NSString *)name
 {
     id <PSMTabStyle> newStyle;
-	
-/*	if ([name isEqualToString:@"Aqua"]) {
-		newStyle = [[PSMAquaTabStyle alloc] init];
-		
-	} else if ([name isEqualToString:@"Unified"]) {
-		newStyle = [[PSMUnifiedTabStyle alloc] init];
-		
-	} else if ([name isEqualToString:@"Adium"]) {
-		newStyle = [[PSMAdiumTabStyle alloc] init];
-	
-	} else if ([name isEqualToString:@"Card"]) {
-		newStyle = [[PSMCardTabStyle alloc] init];
-	
-	} else if ([name isEqualToString:@"Metal"]) {
-		newStyle = [[PSMMetalTabStyle alloc] init];
 
-	} else */
     if ([name isEqualToString:@"SequelPro"]) {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
-
-	} else {
+	}
+	else {
 		newStyle = [[PSMSequelProTabStyle alloc] init];
 	}
 
     [self setStyle:newStyle];
+
     [newStyle release];
 }
 
@@ -795,7 +779,7 @@
 
 - (void)hideTabBar:(BOOL)hide animate:(BOOL)animate
 {
-    if (!_awakenedFromNib || (_isHidden && hide) || (!_isHidden && !hide)) {
+    if (!_awakenedFromNib/* || (_isHidden && hide) || (!_isHidden && !hide)*/) {
         return;
 	}
 	
@@ -832,7 +816,7 @@
 
 		// Determine the target sizes
 		if (_isHidden) {
-			myTargetSize = kPSMTabBarControlHeightCollapsed;
+			myTargetSize = self.heightCollapsed;
 		} else {
 			myTargetSize = kPSMTabBarControlHeight;
 		}
@@ -1069,7 +1053,7 @@
     // hide/show? (these return if already in desired state)
     if ( (_hideForSingleTab) && ([_cells count] <= 1) ) {
         [self hideTabBar:YES animate:YES];
-        return;
+//        return;
     } else {
         [self hideTabBar:NO animate:YES];
     }
@@ -1405,8 +1389,8 @@
 			return;
 		}
 		
-		CGFloat dx = fabsf(currentPoint.x - trackingStartPoint.x);
-		CGFloat dy = fabsf(currentPoint.y - trackingStartPoint.y);
+		CGFloat dx = fabs(currentPoint.x - trackingStartPoint.x);
+		CGFloat dy = fabs(currentPoint.y - trackingStartPoint.y);
 		CGFloat distance = sqrtf(dx * dx + dy * dy);
 		
 		if (distance >= 10 && !_didDrag && ![[PSMTabDragAssistant sharedDragAssistant] isDragging] &&
@@ -1763,22 +1747,22 @@
 			if (partnerView) {
 				NSRect partnerFrame = [partnerView frame];
 				// above or below me?
-				if (myFrame.origin.y - 22 > [partnerView frame].origin.y) {
+				if (myFrame.origin.y - kPSMTabBarControlHeight > [partnerView frame].origin.y) {
 					// partner is below me
-					[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y + 21, myFrame.size.width, myFrame.size.height - 21)];
-					[partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y, partnerFrame.size.width, partnerFrame.size.height + 21)];
+					[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y + (kPSMTabBarControlHeight - 1), myFrame.size.width, myFrame.size.height - (kPSMTabBarControlHeight - 1))];
+					[partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y, partnerFrame.size.width, partnerFrame.size.height + (kPSMTabBarControlHeight - 1))];
 				} else {
 					// partner is above me
-					[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - 21)];
-					[partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y - 21, partnerFrame.size.width, partnerFrame.size.height + 21)];
+					[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - (kPSMTabBarControlHeight - 1))];
+					[partnerView setFrame:NSMakeRect(partnerFrame.origin.x, partnerFrame.origin.y - (kPSMTabBarControlHeight - 1), partnerFrame.size.width, partnerFrame.size.height + (kPSMTabBarControlHeight - 1))];
 				}
 				[partnerView setNeedsDisplay:YES];
 				[self setNeedsDisplay:YES];
 			} else {
 				// for window movement
 				NSRect windowFrame = [[self window] frame];
-				[[self window] setFrame:NSMakeRect(windowFrame.origin.x, windowFrame.origin.y + 21, windowFrame.size.width, windowFrame.size.height - 21) display:YES];
-				[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - 21)];
+				[[self window] setFrame:NSMakeRect(windowFrame.origin.x, windowFrame.origin.y + (kPSMTabBarControlHeight - 1), windowFrame.size.width, windowFrame.size.height - (kPSMTabBarControlHeight - 1)) display:YES];
+				[self setFrame:NSMakeRect(myFrame.origin.x, myFrame.origin.y, myFrame.size.width, myFrame.size.height - (kPSMTabBarControlHeight - 1))];
 			}
 		} else {
 			if (partnerView) {
@@ -1909,11 +1893,14 @@
     while ( (cell = [e nextObject]) ) {
 		//remove the observer binding
         if ([cell representedObject] && ![tabItems containsObject:[cell representedObject]]) {
+			// see issue #2609
+			// -removeTabForCell: comes first to stop the observing that would be triggered in the delegate's call tree
+			// below and finally caused a crash.
+			[self removeTabForCell:cell];
+			
 			if ([[self delegate] respondsToSelector:@selector(tabView:didCloseTabViewItem:)]) {
 				[[self delegate] tabView:aTabView didCloseTabViewItem:[cell representedObject]];
 			}
-			
-            [self removeTabForCell:cell];
         }
     }
     

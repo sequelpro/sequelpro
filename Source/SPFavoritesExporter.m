@@ -66,9 +66,6 @@
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	NSError *error = nil;
-	NSString *errorString = nil;
-	
 	NSMutableArray *favorites = [[NSMutableArray alloc] init];
 	
 	// Get a dictionary representation of all favorites
@@ -83,23 +80,23 @@
 	NSDictionary *dictionary = @{SPFavoritesDataRootKey : favorites};
 	
 	[favorites release];
-	
+
 	// Convert the current favorites tree to a dictionary representation to create the plist data
-	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:dictionary
+	NSError *error = nil;
+	NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
 																   format:NSPropertyListXMLFormat_v1_0
-														 errorDescription:&errorString];
+																  options:0
+																	error:&error];
 	
-	if (plistData) {
+	if (error) {
+		NSLog(@"Error converting favorites data to plist format: %@", error);
+	}
+	else if (plistData) {
 		[plistData writeToFile:[self exportPath] options:NSAtomicWrite error:&error];
 		
 		if (error) {
-			NSLog(@"Error writing favorites data: %@", [error localizedDescription]);
+			NSLog(@"Error writing favorites data: %@", error);
 		}
-	}
-	else if (errorString) {
-		NSLog(@"Error converting favorites data to plist format: %@", errorString);
-		
-		[errorString release];
 	}
 	
 	[self _informDelegateOfExportCompletion:error];

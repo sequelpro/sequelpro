@@ -29,26 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPOSInfo.h"
-
-// Needed because this class is also compiled with SequelProTunnelAssistant which can't access SPConstants.h
-#ifndef __MAC_10_10
-#define __MAC_10_10 101000
-#endif
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < __MAC_10_10
-// This code is available since 10.8 but public only since 10.10
-typedef struct {
-	NSInteger majorVersion;
-	NSInteger minorVersion;
-	NSInteger patchVersion;
-} NSOperatingSystemVersion;
-
-@interface NSProcessInfo ()
-- (NSOperatingSystemVersion)operatingSystemVersion;
-- (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
-@end
-
-#endif
+#import "SPCompatibility.h" // Needed because this class is also compiled with SequelProTunnelAssistant
 
 int SPOSVersionCompare(SPOSVersion left, SPOSVersion right)
 {

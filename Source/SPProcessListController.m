@@ -42,7 +42,10 @@ static NSString *SPKillProcessQueryMode        = @"SPKillProcessQueryMode";
 static NSString *SPKillProcessConnectionMode   = @"SPKillProcessConnectionMode";
 static NSString *SPTableViewIDColumnIdentifier = @"Id";
 
-@interface SPProcessListController (PrivateAPI)
+static NSString * const SPKillModeKey = @"SPKillMode";
+static NSString * const SPKillIdKey   = @"SPKillId";
+
+@interface SPProcessListController ()
 
 - (void)_processListRefreshed;
 - (void)_startAutoRefreshTimer;
@@ -54,6 +57,8 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 - (void)_killProcessQueryWithId:(long long)processId;
 - (void)_killProcessConnectionWithId:(long long)processId;
 - (void)_updateServerProcessesFilterForFilterString:(NSString *)filterString;
+- (void)_addPreferenceObservers;
+- (void)_removePreferenceObservers;
 
 @end
 
@@ -111,9 +116,8 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				
 		if (columnWidth) [column setWidth:[columnWidth floatValue]];
 	}
-	
-	// Register as an observer for the when the UseMonospacedFonts preference changes
-	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	[self _addPreferenceObservers];
 }
 
 /**
@@ -140,10 +144,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		NSMutableString *string = [NSMutableString string];
 		NSIndexSet *rows = [processListTableView selectedRowIndexes];
 		
-		NSUInteger i = [rows firstIndex];
-		
-		while (i != NSNotFound) 
-		{
+		[rows enumerateIndexesUsingBlock:^(NSUInteger i, BOOL * _Nonnull stop) {
 			if (i < [processesFiltered count]) {
 				NSDictionary *process = NSArrayObjectAtIndex(processesFiltered, i);
 				
@@ -160,9 +161,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 				[string appendString:stringTmp];
 				[string appendString:@"\n"];
 			}
-			
-			i = [rows indexGreaterThanIndex:i];
-		}
+		}];
 		
 		NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
 		
@@ -238,7 +237,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
     [panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger returnCode) {
         if (returnCode == NSOKButton) {
             if ([processesFiltered count] > 0) {
-                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server proceese for %@\n\n", [[SPAppDelegate frontDocument] host]];
+                NSMutableString *processesString = [NSMutableString stringWithFormat:@"# MySQL server processes for %@\n\n", [[SPAppDelegate frontDocument] host]];
                 
                 for (NSDictionary *process in processesFiltered)
                 {
@@ -287,7 +286,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessQueryMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessQueryMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -315,7 +321,14 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	
 	[alert setAlertStyle:NSCriticalAlertStyle];
 	
-	[alert beginSheetModalForWindow:[self window] modalDelegate:self didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) contextInfo:SPKillProcessConnectionMode];
+	// while the alert is displayed, the results may be updated and the selectedRow may point to a different
+	// row or has disappeared (= -1) by the time the didEndSelector is invoked,
+	// so we must remember the ACTUAL processId we prompt the user to kill.
+	NSDictionary *userInfo = @{SPKillModeKey: SPKillProcessConnectionMode, SPKillIdKey: @(processId)};
+	[alert beginSheetModalForWindow:[self window]
+					  modalDelegate:self
+					 didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+						contextInfo:[userInfo retain]]; //keep in mind contextInfo is a void * and not an id => no memory management here
 }
 
 /**
@@ -368,7 +381,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	   modalForWindow:[self window]
 		modalDelegate:self
 	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+		  contextInfo:NULL];
 }
 
 #pragma mark -
@@ -390,7 +403,7 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 /**
  * Invoked when the kill alerts are dismissed. Decide what to do based on the user's decision.
  */
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	// Order out current sheet to suppress overlapping of sheets
 	if ([sheet respondsToSelector:@selector(orderOut:)]) {
@@ -400,19 +413,23 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 		[[sheet window] orderOut:nil];
 	}
 
-	if (returnCode == NSAlertDefaultReturn) {
-		
-		if (sheet == customIntervalWindow) {			
-			[self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
-		}
-		else {
-			long long processId = [[[processesFiltered objectAtIndex:[processListTableView selectedRow]] valueForKey:@"Id"] longLongValue];
+	if (sheet == customIntervalWindow) {
+		if (returnCode == NSAlertDefaultReturn) [self _startAutoRefreshTimerWithInterval:[customIntervalTextField integerValue]];
+	}
+	else {
+		NSDictionary *userInfo = [(NSDictionary *)contextInfo autorelease]; //we retained it during the beginSheet… call because Cocoa does not do memory management on void *.
+		if (returnCode == NSAlertDefaultReturn) {
+			long long processId = [[userInfo objectForKey:SPKillIdKey] longLongValue];
 			
-			if ([contextInfo isEqualToString:SPKillProcessQueryMode]) {
+			NSString *mode = [userInfo objectForKey:SPKillModeKey];
+			if ([mode isEqualToString:SPKillProcessQueryMode]) {
 				[self _killProcessQueryWithId:processId];
 			}
-			else if ([contextInfo isEqualToString:SPKillProcessConnectionMode]) {
+			else if ([mode isEqualToString:SPKillProcessConnectionMode]) {
 				[self _killProcessConnectionWithId:processId];
+			}
+			else {
+				[NSException raise:NSInternalInconsistencyException format:@"%s: Unhandled branch for mode=%@", __PRETTY_FUNCTION__, mode];
 			}
 		}
 	}
@@ -765,14 +782,99 @@ static NSString *SPTableViewIDColumnIdentifier = @"Id";
 	[saveProcessesButton setTitle:NSLocalizedString(@"Save View As...", @"save view as button title")];
 }
 
+/**
+ * Add any necessary preference observers to allow live updating on changes.
+ */
+- (void)_addPreferenceObservers
+{
+	// Register as an observer for the when the UseMonospacedFonts preference changes
+	[prefs addObserver:self forKeyPath:SPUseMonospacedFonts options:NSKeyValueObservingOptionNew context:NULL];
+
+	// Register to obeserve table view vertical grid line pref changes
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:NULL];
+}
+
+/**
+ * Remove any previously added preference observers.
+ */
+- (void)_removePreferenceObservers
+{
+	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
+	[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+}
+
+#pragma mark - SPProcessListControllerDataSource
+
+#pragma mark Tableview delegate methods
+
+/**
+ * Table view delegate method. Returns the number of rows in the table veiw.
+ */
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+	return [processesFiltered count];
+}
+
+/**
+ * Table view delegate method. Returns the specific object for the request column and row.
+ */
+- (id)tableView:(NSTableView *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
+{
+	id object = ((NSUInteger)row < [processesFiltered count]) ? [[processesFiltered objectAtIndex:row] valueForKey:[tableColumn identifier]] : @"";
+
+	if ([object isNSNull]) {
+		return [prefs stringForKey:SPNullValue];
+	}
+
+	// If the string is exactly 100 characters long, and FULL process lists are not enabled, it's a safe
+	// bet that the string is truncated
+	if (!showFullProcessList && [object isKindOfClass:[NSString class]] && [(NSString *)object length] == 100) {
+		return [object stringByAppendingString:@"…"];
+	}
+
+	return object;
+}
+
+/**
+ * Table view delegate method. Called when the user changes the sort by column.
+ */
+- (void)tableView:(NSTableView *)tableView sortDescriptorsDidChange:(NSArray *)oldDescriptors
+{
+	[processesFiltered sortUsingDescriptors:[tableView sortDescriptors]];
+
+	[tableView reloadData];
+}
+
+/**
+ * Table view delegate method. Called whenever the user changes a column width.
+ */
+- (void)tableViewColumnDidResize:(NSNotification *)notification
+{
+	NSTableColumn *column = [[notification userInfo] objectForKey:@"NSTableColumn"];
+
+	// Get the existing table column widths dictionary if it exists
+	NSMutableDictionary *tableColumnWidths = ([prefs objectForKey:SPProcessListTableColumnWidths]) ?
+	[NSMutableDictionary dictionaryWithDictionary:[prefs objectForKey:SPProcessListTableColumnWidths]] :
+	[NSMutableDictionary dictionary];
+
+	// Save column size
+	NSString *columnName = [[column headerCell] stringValue];
+
+	if (columnName) {
+		[tableColumnWidths setObject:[NSNumber numberWithDouble:[column width]] forKey:columnName];
+
+		[prefs setObject:tableColumnWidths forKey:SPProcessListTableColumnWidths];
+	}
+}
+
 #pragma mark -
 
 - (void)dealloc
 {
-	[prefs removeObserver:self forKeyPath:SPUseMonospacedFonts];
-	
 	processListThreadRunning = NO;
-	
+
+	[self _removePreferenceObservers];
+
 	SPClear(processes);
 	
 	if (autoRefreshTimer) SPClear(autoRefreshTimer);

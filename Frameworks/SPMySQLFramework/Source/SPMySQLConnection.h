@@ -188,6 +188,7 @@
 - (BOOL)isConnected;
 - (BOOL)isConnectedViaSSL;
 - (BOOL)checkConnection;
+- (BOOL)checkConnectionIfNecessary;
 - (double)timeConnected;
 - (BOOL)userTriggeredDisconnect;
 

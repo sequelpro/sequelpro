@@ -73,9 +73,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 		[webView setDrawsBackground:YES];
 		[webView setEditable:NO];
 		[webView setShouldCloseWithWindow:YES];
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 		[webView setShouldUpdateWhileOffscreen:NO];
-#endif
 		suppressExceptionAlerting = NO;
 	}
 	
@@ -355,7 +353,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 	}
 	// sp-reveal-file://a_file_path reveals the file in Finder
 	else if([[[request URL] scheme] isEqualToString:@"sp-reveal-file"] && navigationType == WebNavigationTypeLinkClicked) {
-		[[NSWorkspace sharedWorkspace] selectFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:16] inFileViewerRootedAtPath:nil];
+		[[NSWorkspace sharedWorkspace] selectFile:[[[request mainDocumentURL] absoluteString] substringFromIndex:16] inFileViewerRootedAtPath:@""];
 		[listener ignore];
 	}
 	// sp-open-file://a_file_path opens the file with the default

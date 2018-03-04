@@ -44,9 +44,9 @@
 - (BOOL)copyTable:(NSString *)tableName from:(NSString *)sourceDB to:(NSString *)targetDB 
 {
 	NSString *createTableResult = [self _createTableStatementFor:tableName inDatabase:sourceDB];
-	NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 	
-	if ([[createTableStatement substringToIndex:12] isEqualToString:@"CREATE TABLE"]) {
+	if ([createTableResult hasPrefix:@"CREATE TABLE"]) {
+		NSMutableString *createTableStatement = [[NSMutableString alloc] initWithString:createTableResult];
 		
 		// Add the target DB name and the separator dot after "CREATE TABLE ".
 		[createTableStatement insertString:@"." atIndex:13];
@@ -58,8 +58,6 @@
 		
 		return ![connection queryErrored];
 	}
-	
-	[createTableStatement release];
 	
 	return NO;
 }
@@ -119,7 +117,7 @@
 		success = NO;
 	}
 	
-	// re-enable id creation
+	// Re-enable id creation
 	[connection queryString:@"/*!40101 SET SQL_MODE=@OLD_SQL_MODE */"];
 	
 	if ([connection queryErrored]) {
@@ -149,9 +147,13 @@
 {
 	NSString *showCreateTableStatment = [NSString stringWithFormat:@"SHOW CREATE TABLE %@.%@", [sourceDatabase backtickQuotedString], [tableName backtickQuotedString]];
 	
-	SPMySQLResult *theResult = [connection queryString:showCreateTableStatment];
+	SPMySQLResult *result = [connection queryString:showCreateTableStatment];
 	
-	return [theResult numberOfRows] > 0 ? [[theResult getRowAsArray] objectAtIndex:1] : @"";
+	if ([result numberOfRows] > 0) return [[result getRowAsArray] objectAtIndex:1];
+	
+	SPLog(@"query <%@> failed to return the expected result.\n  Error state: %@ (%lu)", showCreateTableStatment, [connection lastErrorMessage], [connection lastErrorID]);
+
+	return nil;
 }
 
 @end

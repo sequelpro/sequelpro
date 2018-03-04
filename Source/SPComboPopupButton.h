@@ -44,7 +44,3 @@
 @property(readonly, assign) NSUInteger lineOffset;
 
 @end
-
-@interface SPComboPopupButtonCell : NSPopUpButtonCell
-
-@end

@@ -232,6 +232,7 @@
 		}
 		
 		// Retrieve the next row from the supplied data, either directly from the array...
+		BOOL forceNonNumericRow = NO;
 		if ([self csvDataArray]) {
 			csvRow = NSArrayObjectAtIndex([self csvDataArray], currentRowIndex);
 		} 
@@ -241,6 +242,7 @@
 			if ([self csvOutputFieldNames]) {
 				csvRow = [streamingResult fieldNames];
 				[self setCsvOutputFieldNames:NO];
+				forceNonNumericRow = YES;
 			} 
 			else {
 				csvRow = [streamingResult getRowAsArray];
@@ -298,8 +300,12 @@
 				[csvString appendString:[self csvEnclosingCharacterString]];
 			}
 			else {
+				// is this the header row?
+				if (forceNonNumericRow) {
+					csvCellIsNumeric = NO;
+				}
 				// If an array of bools supplying information as to whether the column is numeric has been supplied, use it.
-				if ([tableColumnNumericStatus count] > 0) {
+				else if ([tableColumnNumericStatus count] > 0) {
 					csvCellIsNumeric = [NSArrayObjectAtIndex(tableColumnNumericStatus, i) boolValue];
 				} 
 				// Otherwise, first test whether this cell contains data

@@ -29,6 +29,7 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPNamedNode.h"
+
 /**
  * @class SPGroupNode SPGroupNode.h
  *

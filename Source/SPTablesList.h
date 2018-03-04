@@ -38,52 +38,43 @@
 @class SPTableContent;
 @class SPSplitView;
 @class SPCharsetCollationHelper;
-
-#ifdef SP_CODA
-@class SQLSidebarViewController;
-#endif
+@class SPCustomQuery;
+@class SPTableImport;
+@class SPTableData;
+@class SPTableInfo;
+@class SPTableTriggers;
+@class SPExtendedTableInfo;
 
 @interface SPTablesList : NSObject <NSTextFieldDelegate, NSTableViewDelegate>
 {
-	IBOutlet SPDatabaseDocument*	tableDocumentInstance;
-	IBOutlet SPTableStructure* tableSourceInstance;
-	IBOutlet SPTableContent* tableContentInstance;
-#ifndef SP_CODA /* ivars */
-	IBOutlet id customQueryInstance;
-	IBOutlet id tableDumpInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id extendedTableInfoInstance;
-#endif
-	IBOutlet SPDatabaseData* databaseDataInstance;
-#ifndef SP_CODA /* ivars */
-	IBOutlet id tableInfoInstance;
-	IBOutlet id tableTriggersInstance;
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTableStructure *tableSourceInstance;
+	IBOutlet SPTableContent *tableContentInstance;
+	IBOutlet SPDatabaseData *databaseDataInstance;
 	IBOutlet SPHistoryController *spHistoryControllerInstance;
+	IBOutlet SPCustomQuery *customQueryInstance;
+	IBOutlet SPTableImport *tableDumpInstance;
+	IBOutlet SPTableData *tableDataInstance;
+	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
+	IBOutlet SPTableInfo *tableInfoInstance;
+	IBOutlet SPTableTriggers *tableTriggersInstance;
 
 	IBOutlet id copyTableSheet;
-#endif
 	IBOutlet SPTableView *tablesListView;
-#ifndef SP_CODA /* ivars */
 	IBOutlet id copyTableButton;
 	IBOutlet id copyTableNameField;
 	IBOutlet id copyTableMessageField;
 	IBOutlet NSButton *copyTableContentSwitch;
-#endif
 	IBOutlet id tableSheet;
 	IBOutlet id tableNameField;
 	IBOutlet id tableEncodingButton;
 	IBOutlet id tableCollationButton;
 	IBOutlet id tableTypeButton;
 	IBOutlet id toolbarAddButton;
-#ifdef SP_CODA
-	id toolbarDeleteButton;
-#endif
-#ifndef SP_CODA
+
 	IBOutlet id toolbarActionsButton;
-#endif
 	IBOutlet id toolbarReloadButton;
 	IBOutlet id addTableButton;
-#ifndef SP_CODA
 	IBOutlet id truncateTableButton;
 	IBOutlet SPSplitView *tableListSplitView;
 	IBOutlet SPSplitView *tableListFilterSplitView;
@@ -101,11 +92,9 @@
 	IBOutlet NSMenuItem *copyCreateSyntaxMenuItem;
 	IBOutlet NSMenuItem *separatorTableMenuItem2;
 	IBOutlet NSMenuItem *separatorTableMenuItem3;
-#endif
 	
 	SPMySQLConnection *mySQLConnection;
-	
-#ifndef SP_CODA /* ivars */
+
 	// Table list context menu items
 	IBOutlet NSMenuItem *removeTableContextMenuItem;
 	IBOutlet NSMenuItem *duplicateTableContextMenuItem;
@@ -118,7 +107,6 @@
 	IBOutlet NSMenuItem *copyCreateSyntaxContextMenuItem;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem2;
 	IBOutlet NSMenuItem *separatorTableContextMenuItem3;
-#endif
 
 	NSMutableArray *tables;
 	NSMutableArray *filteredTables;
@@ -131,97 +119,69 @@
 	BOOL tableListContainsViews;
 	BOOL alertSheetOpened;
 
-#ifndef SP_CODA /* ivars */
 	NSFont *smallSystemFont;
-#endif
-
-#ifdef SP_CODA
-	SQLSidebarViewController* sidebarViewController;
-#endif
 	
 	SPCharsetCollationHelper *addTableCharsetHelper;
 }
 
 // IBAction methods
-- (IBAction)updateTables:(id)sender;
-- (IBAction)addTable:(id)sender;
-- (IBAction)closeSheet:(id)sender;
-- (IBAction)removeTable:(id)sender;
-
-#ifndef SP_CODA /* method decls */
-- (IBAction)copyTable:(id)sender;
-- (IBAction)renameTable:(id)sender;
-- (IBAction)truncateTable:(id)sender;
-- (IBAction)openTableInNewTab:(id)sender;
-- (IBAction)openTableInNewWindow:(id)sender;
-- (IBAction)togglePaneCollapse:(id)sender;
-#endif
+- (IBAction)updateTables:(nullable id)sender;
+- (IBAction)addTable:(nullable id)sender;
+- (IBAction)closeSheet:(nullable id)sender;
+- (IBAction)removeTable:(nullable id)sender;
+- (IBAction)copyTable:(nullable id)sender;
+- (IBAction)renameTable:(nullable id)sender;
+- (IBAction)truncateTable:(nullable id)sender;
+- (IBAction)openTableInNewTab:(nullable id)sender;
+- (IBAction)openTableInNewWindow:(nullable id)sender;
+- (IBAction)togglePaneCollapse:(nullable id)sender;
+- (IBAction)updateFilter:(nullable id)sender;
 
 // Additional methods
-- (void)setConnection:(SPMySQLConnection *)theConnection;
-- (void)setSelectionState:(NSDictionary *)selectionDetails;
-
-#ifndef SP_CODA /* method decls */
-- (void)selectTableAtIndex:(NSNumber *)row;
+- (void)setConnection:(nonnull SPMySQLConnection *)theConnection;
+- (void)setSelectionState:(nullable NSDictionary *)selectionDetails;
+- (void)selectTableAtIndex:(nullable NSNumber *)row;
 - (void)makeTableListFilterHaveFocus;
 - (void)makeTableListHaveFocus;
-#endif
 
 // Getters
-- (NSArray *)selectedTableNames;
-- (NSArray *)selectedTableItems;
-- (NSArray *)selectedTableTypes;
-- (NSString *)tableName;
+- (nonnull NSArray *)selectedTableNames;
+- (nonnull NSArray *)selectedTableItems;
+- (nonnull NSArray *)selectedTableTypes;
+- (nullable NSString *)tableName;
 - (SPTableType)tableType;
-- (NSArray *)tables;
-- (NSArray *)tableTypes;
-- (NSArray *)allTableAndViewNames;
-- (NSArray *)allTableNames;
-- (NSArray *)allViewNames;
-- (NSArray *)allFunctionNames;
-- (NSArray *)allProcedureNames;
-- (NSArray *)allEventNames;
-- (NSArray *)allDatabaseNames;
-- (NSArray *)allSystemDatabaseNames;
-- (NSString *)selectedDatabase;
+- (nonnull NSArray *)tables;
+- (nonnull NSArray *)tableTypes;
+- (nonnull NSArray *)allTableAndViewNames;
+- (nonnull NSArray *)allTableNames;
+- (nonnull NSArray *)allViewNames;
+- (nonnull NSArray *)allFunctionNames;
+- (nonnull NSArray *)allProcedureNames;
+- (nonnull NSArray *)allEventNames;
+- (nonnull NSArray *)allDatabaseNames;
+- (nonnull NSArray *)allSystemDatabaseNames;
+- (nullable NSString *)selectedDatabase;
+- (BOOL)hasViews;
+- (BOOL)hasFunctions;
+- (BOOL)hasProcedures;
+- (BOOL)hasEvents;
+- (BOOL)hasNonTableObjects;
 
 // Setters
-- (BOOL)selectItemWithName:(NSString *)theName;
-#ifndef SP_CODA /* method decls */
-- (BOOL)selectItemsWithNames:(NSArray *)theNames;
+- (BOOL)selectItemWithName:(nullable NSString *)theName;
+- (BOOL)selectItemsWithNames:(nonnull NSArray *)theNames;
 
 // Table list filter interaction
 - (void)showFilter;
 - (void)hideFilter;
 - (void)clearFilter;
-#endif
-- (IBAction) updateFilter:(id)sender;
 
 // Task interaction
-- (void)startDocumentTaskForTab:(NSNotification *)aNotification;
-- (void)endDocumentTaskForTab:(NSNotification *)aNotification;
+- (void)startDocumentTaskForTab:(nullable NSNotification *)aNotification;
+- (void)endDocumentTaskForTab:(nullable NSNotification *)aNotification;
 - (void)setTableListSelectability:(BOOL)isSelectable;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType;
-- (BOOL)isTableNameValid:(NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+- (BOOL)isTableNameValid:(nullable NSString *)tableName forType:(SPTableType)tableType;
+- (BOOL)isTableNameValid:(nullable NSString *)tableName forType:(SPTableType)tableType ignoringSelectedTable:(BOOL)ignoreSelectedTable;
+- (BOOL)selectionShouldChangeInTableView:(nullable NSTableView *)aTableView;
 
-#ifdef SP_CODA /* method decls */
-@property (assign) SPTableStructure* tableSourceInstance;
-@property (assign) SPTableContent* tableContentInstance;
-@property (assign) id toolbarAddButton;
-@property (assign) id toolbarDeleteButton;
-@property (assign) id toolbarReloadButton;
-@property (assign) id tableSheet;
-@property (assign) id tableNameField;
-@property (assign) id tableEncodingButton;
-@property (assign) id tableTypeButton;
-@property (assign) id databaseDataInstance;
-@property (assign) id addTableButton;
-@property (assign) SPTableView* tablesListView;
-@property (assign) SQLSidebarViewController* sidebarViewController;
-
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)aTableView;
-- (void)setDatabaseDocument:(SPDatabaseDocument*)val;
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
-
-#endif
 @end

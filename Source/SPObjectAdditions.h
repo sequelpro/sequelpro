@@ -36,6 +36,12 @@
 - (BOOL)isNSNull;
 
 /**
+ * This is the complementing method to SPBoxNull()
+ * @return The object itself or nil if self == [NSNull null]
+ */
+- (instancetype)unboxNull;
+
+/**
  * easier to read version of [array containsObject:x]
  */
 - (BOOL)isInArray:(NSArray *)list;

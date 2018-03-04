@@ -32,7 +32,6 @@
 #import "SPTableContent.h"
 #import "SPTablesList.h"
 #import "SPHistoryController.h"
-#import "SPDatabaseViewController.h"
 #import "SPThreadAdditions.h"
 
 @implementation SPHistoryController
@@ -170,33 +169,6 @@
 }
 
 /**
- * Retrieve the view that is currently selected from the database
- */
-- (NSUInteger) currentlySelectedView
-{
-	NSUInteger theView = NSNotFound;
-
-	NSString *viewName = [[[theDocument valueForKey:@"tableTabView"] selectedTabViewItem] identifier];
-	
-	if ([viewName isEqualToString:@"source"]) {
-		theView = SPTableViewStructure;
-	} else if ([viewName isEqualToString:@"content"]) {
-		theView = SPTableViewContent;
-	} else if ([viewName isEqualToString:@"customQuery"]) {
-		theView = SPTableViewCustomQuery;
-	} else if ([viewName isEqualToString:@"status"]) {
-		theView = SPTableViewStatus;
-	} else if ([viewName isEqualToString:@"relations"]) {
-		theView = SPTableViewRelations;
-	}
-	else if ([viewName isEqualToString:@"triggers"]) {
-		theView = SPTableViewTriggers;
-	}
-
-	return theView;
-}
-
-/**
  * Set up the toolbar items as appropriate.
  * State tracking is necessary as manipulating items not on the toolbar
  * can cause crashes.
@@ -267,15 +239,16 @@
 	// Don't modify anything if we're in the process of restoring an old history state
 	if (modifyingState) return;
 
+#warning Basically all of those next calls do stuff that must be done on the main thread (AND en block in order to be consistent). This needs to be refactored!
 	// Work out the current document details
 	NSString *theDatabase = [theDocument database];
 	NSString *theTable = [theDocument table];
-	NSUInteger theView = [self currentlySelectedView];
+	SPTableViewType theView = [[theDocument onMainThread] currentlySelectedView];
 	NSString *contentSortCol = [tableContentInstance sortColumnName];
 	BOOL contentSortColIsAsc = [tableContentInstance sortColumnIsAscending];
 	NSUInteger contentPageNumber = [tableContentInstance pageNumber];
-	NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
-	NSRect contentViewport = [tableContentInstance viewport];
+	NSDictionary *contentSelectedRows = [[tableContentInstance onMainThread] selectionDetailsAllowingIndexSelection:YES];
+	NSRect contentViewport = [[tableContentInstance onMainThread] viewport];
 	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
 	NSData *filterTableData = [tableContentInstance filterTableData];
 	if (!theDatabase) return;
@@ -411,8 +384,8 @@
 	// If the database, table, and view are the same and content - just trigger a table reload (filters)
 	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
 		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == [self currentlySelectedView]
-		&& [[historyEntry objectForKey:@"view"] unsignedIntegerValue] == SPTableViewContent)
+		&& [[historyEntry objectForKey:@"view"] integerValue] == [theDocument currentlySelectedView]
+		&& [[historyEntry objectForKey:@"view"] integerValue] == SPTableViewContent)
 	{
 		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
 		modifyingState = NO;
@@ -441,7 +414,7 @@
 	}
 
 	// Check and set the view
-	if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
+	if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
 		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
 			case SPTableViewStructure:
 				[theDocument viewStructure:self];
@@ -462,7 +435,7 @@
 				[theDocument viewTriggers:self];
 				break;
 		}
-		if ([self currentlySelectedView] != [[historyEntry objectForKey:@"view"] unsignedIntegerValue]) {
+		if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
 			return [self abortEntryLoadWithPool:loadPool];
 		}
 	}

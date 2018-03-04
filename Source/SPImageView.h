@@ -29,8 +29,8 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-@interface NSObject (SPImageViewDelegate)
-
+@protocol SPImageViewDelegate <NSObject>
+@optional
 - (void)processUpdatedImageData:(NSData *)data;
 - (void)processPasteImageData;
 

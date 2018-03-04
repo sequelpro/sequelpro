@@ -98,7 +98,10 @@ static NSString *SPGroupNodeIsExpandedKey = @"SPGroupNodeIsExpanded";
 
 - (id)initWithCoder:(NSCoder *)coder
 {
-#warning This is not a valid initializer.
+	if (!(self = [super init])) {
+		return nil;
+	}
+	
 	[self setNodeName:[coder decodeObjectForKey:SPGroupNodeNameKey]];
 	[self setNodeIsExpanded:[[coder decodeObjectForKey:SPGroupNodeIsExpandedKey] boolValue]];
 	

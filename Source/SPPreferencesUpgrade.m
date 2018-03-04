@@ -32,6 +32,7 @@
 #import "SPKeychain.h"
 #import "SPFavoritesController.h"
 #import "SPTreeNode.h"
+#import "SPFavoriteNode.h"
 
 static NSString *SPOldFavoritesKey       = @"favorites";
 static NSString *SPOldDefaultEncodingKey = @"DefaultEncoding";
@@ -354,7 +355,7 @@ void SPApplyRevisionChanges(void)
 		for(SPTreeNode *node in favs) {
 			if([node isGroup])
 				continue;
-			NSMutableDictionary *data = [[node representedObject] nodeFavorite];
+			NSMutableDictionary *data = [(SPFavoriteNode *)[node representedObject] nodeFavorite];
 			if(![data objectForKey:SPFavoriteColorIndexKey])
 				[data setObject:@(-1) forKey:SPFavoriteColorIndexKey];
 		}
@@ -413,29 +414,26 @@ void SPMigrateConnectionFavoritesData(void)
 	NSDictionary *newFavorites = @{SPFavoritesRootKey : [NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"Favorites", @"favorites label"), SPFavoritesGroupNameKey, favorites, SPFavoriteChildrenKey, nil]};
 	
 	error = nil;
-	NSString *errorString = nil;
 	
-	NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:newFavorites
+	NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:newFavorites
 																   format:NSPropertyListXMLFormat_v1_0
-														 errorDescription:&errorString];
-	if (plistData) {
+																  options:0
+																	error:&error];
+
+	if (error) {
+		NSLog(@"Error converting migrating favorites data to plist format: %@", error);
+	}
+	else if (plistData) {
 		[plistData writeToFile:favoritesFile options:NSAtomicWrite error:&error];
 		
 		if (error) {
-			NSLog(@"Error migrating favorites data: %@", [error localizedDescription]);
+			NSLog(@"Error migrating favorites data: %@", error);
 		}
 		else {
 			[prefs removeObjectForKey:SPOldFavoritesKey];
 		}
 	}
-	else if (errorString) {
-		NSLog(@"Error converting migrating favorites data to plist format: %@", errorString);
-		
-		[favorites release];
-		[errorString release];
-		return;
-	}
-		
+
 	[favorites release];
 }
 

@@ -63,7 +63,7 @@
 		"}"); 
 	
 	// Compare the output after getting rid of newlines and spaces
-	STAssertTrue([[[[_result description] stringByReplacingOccurrencesOfString:@"\n" withString:@""] stringByReplacingOccurrencesOfString:@"    " withString:@""] isEqualToString:@"{"
+	XCTAssertTrue([[[[_result description] stringByReplacingOccurrencesOfString:@"\n" withString:@""] stringByReplacingOccurrencesOfString:@"    " withString:@""] isEqualToString:@"{"
 		"\"bigint_field\" = 123456789;"
 		"\"bool_field\" = 1;"
 		"\"char_field\" = CHAR;"
@@ -77,7 +77,7 @@
 		"\"timestamptz_field\" = \"8 Apr 1987 03:02:02 GMT+01:00\";"
 		"\"timetz_field\" = \"02:02:02 GMT+10:00\";"
 		"\"varchar_field\" = VARCHAR;"
-	"}"], nil);
+	"}"]);
 }
 
 #pragma mark -

@@ -321,7 +321,6 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 			}
 			
 			imageSize = [image size];
-			[image setScalesWhenResized:YES];
 			
 			if (imageSize.width > imageSize.height) {
 				[image setSize:NSMakeSize(125, 125 * (imageSize.height / imageSize.width))];
@@ -657,7 +656,7 @@ static PSMTabDragAssistant *sharedDragAssistant = nil;
 
 - (NSImage *)_imageForViewOfCell:(PSMTabBarCell *)cell styleMask:(NSUInteger *)outMask
 {
-	PSMTabBarControl *control = [cell controlView];
+	PSMTabBarControl *control = (PSMTabBarControl *)[cell controlView];
 	NSImage *viewImage = nil;
 	
 	if (outMask) {

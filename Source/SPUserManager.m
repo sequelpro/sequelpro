@@ -44,6 +44,12 @@
 
 static NSString * const SPTableViewNameColumnID = @"NameColumn";
 
+static NSString *SPGeneralTabIdentifier = @"General";
+static NSString *SPGlobalPrivilegesTabIdentifier = @"Global Privileges";
+static NSString *SPResourcesTabIdentifier = @"Resources";
+static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
+
+
 @interface SPUserManager ()
 
 - (void)_initializeTree:(NSArray *)items;
@@ -64,6 +70,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 - (BOOL)_renameUserFrom:(NSString *)originalUser host:(NSString *)originalHost to:(NSString *)newUser host:(NSString *)newHost;
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void*)context;
 - (void)contextWillSave:(NSNotification *)notice;
+- (void)_selectFirstChildOfParentNode;
 
 @end
 
@@ -159,6 +166,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// Select users from the mysql.user table
 	SPMySQLResult *result = [connection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 	[result setReturnDataAsStrings:YES];
+	//TODO: improve user feedback
+	NSAssert(([[result fieldNames] firstObjectCommonWithArray:@[@"Password",@"authentication_string"]] != nil), @"Resultset from mysql.user contains neither 'Password' nor 'authentication_string' column!?");
+	requiresPost576PasswordHandling = ![[result fieldNames] containsObject:@"Password"];
 	[usersResultArray addObjectsFromArray:[result getAllRows]];
 
 	[self _initializeTree:usersResultArray];
@@ -218,20 +228,24 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
  */
 - (void)_initializeTree:(NSArray *)items
 {
-
 	// Retrieve all the user data in order to be able to initialise the schema privs for each child,
 	// copying into a dictionary keyed by user, each with all the host rows.
 	NSMutableDictionary *schemaPrivilegeData = [NSMutableDictionary dictionary];
 	SPMySQLResult *queryResults = [connection queryString:@"SELECT * FROM mysql.db"];
+
 	[queryResults setReturnDataAsStrings:YES];
-	for (NSDictionary *privRow in queryResults) {
+
+	for (NSDictionary *privRow in queryResults)
+	{
 		if (![schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]]) {
 			[schemaPrivilegeData setObject:[NSMutableArray array] forKey:[privRow objectForKey:@"User"]];
 		}
+
 		[[schemaPrivilegeData objectForKey:[privRow objectForKey:@"User"]] addObject:privRow];
 
 		// If "all database" values were found, add them to the schemas list if not already present
 		NSString *schemaName = [privRow objectForKey:@"Db"];
+
 		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
 			if (![schemas containsObject:schemaName]) {
 				[schemas addObject:schemaName];
@@ -244,9 +258,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// for each user currently in the database.
 	for (NSUInteger i = 0; i < [items count]; i++)
 	{
-		NSString *username = [[items objectAtIndex:i] objectForKey:@"User"];
-		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		NSDictionary *item = [items objectAtIndex:i];
+		NSString *username = [item objectForKey:@"User"];
+		NSArray *parentResults = [[self _fetchUserWithUserName:username] retain];
 		SPUserMO *parent;
 		SPUserMO *child;
 		
@@ -266,8 +280,25 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			// original values for comparison purposes
 			[parent setPrimitiveValue:username forKey:@"user"];
 			[parent setPrimitiveValue:username forKey:@"originaluser"];
-			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
-			[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+
+			if (requiresPost576PasswordHandling) {
+				[parent setPrimitiveValue:[item objectForKey:@"plugin"] forKey:@"plugin"];
+
+				NSString *passwordHash = [item objectForKey:@"authentication_string"];
+
+				if (![passwordHash isNSNull]) {
+					[parent setPrimitiveValue:passwordHash forKey:@"authentication_string"];
+
+					// for the UI dialog
+					if ([passwordHash length]) {
+						[parent setPrimitiveValue:@"sequelpro_dummy_password" forKey:@"password"];
+					}
+				}
+			}
+			else {
+				[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"password"];
+				[parent setPrimitiveValue:[item objectForKey:@"Password"] forKey:@"originalpassword"];
+			}
 		}
 
 		// Setup the NSManagedObject with values from the dictionary
@@ -360,7 +391,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			NSNumber *value = [NSNumber numberWithInteger:[[item objectForKey:key] integerValue]];
 			[child setValue:value forKey:key];
 		}
-		else if (![key isEqualToString:@"User"] && ![key isEqualToString:@"Password"])
+		else if (![key isInArray:@[@"User",@"Password",@"plugin",@"authentication_string"]])
 		{
 			NSString *value = [item objectForKey:key];
 			[child setValue:value forKey:key];
@@ -524,7 +555,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
  */
 - (IBAction)doApply:(id)sender
 {
-
 	// If editing can't be committed, cancel the apply
 	if (![treeController commitEditing]) {
 		return;
@@ -807,7 +837,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	{
 		if (![user parent]) {
 			[user setPrimitiveValue:[user valueForKey:@"user"] forKey:@"originaluser"];
-			[user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
+			if(!requiresPost576PasswordHandling) [user setPrimitiveValue:[user valueForKey:@"password"] forKey:@"originalpassword"];
 		}
 	}
 }
@@ -942,6 +972,9 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	if (!isInitializing) [outlineView reloadData];
 }
 
+#pragma mark -
+#pragma mark Core data notifications
+
 - (BOOL)updateUser:(SPUserMO *)user
 {
 	if (![user parent]) {
@@ -961,18 +994,41 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 		}
 		
 		// If the password has been changed, use the same password on all hosts
-		if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
-			
-			for (SPUserMO *child in hosts)
-			{
-				NSString *changePasswordStatement = [NSString stringWithFormat:
-													 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
-													 [[user valueForKey:@"user"] tickQuotedString],
-													 [[child host] tickQuotedString],
-													 ([user valueForKey:@"password"]) ? [[user valueForKey:@"password"] tickQuotedString] : @"''"];
-				
-				[connection queryString:changePasswordStatement];
+		if(requiresPost576PasswordHandling) {
+			// the UI password field is bound to the password field, so this is still where the new plaintext value comes from
+			NSString *newPass = [[user changedValues] objectForKey:@"password"];
+			if(newPass) {
+				// 5.7.6+ can update all users at once
+				NSMutableString *alterStmt = [NSMutableString stringWithString:@"ALTER USER "];
+				BOOL first = YES;
+				for (SPUserMO *child in hosts)
+				{
+					if(!first) [alterStmt appendString:@", "];
+					[alterStmt appendFormat:@"%@@%@ IDENTIFIED WITH %@ BY %@", //note: "BY" -> plaintext, "AS" -> hash
+					                        [[user valueForKey:@"user"] tickQuotedString],
+					                        [[child host] tickQuotedString],
+					                        [[user valueForKey:@"plugin"] tickQuotedString],
+					                        (![newPass isNSNull] && [newPass length]) ? [newPass tickQuotedString] : @"''"];
+					first = NO;
+				}
+				[connection queryString:alterStmt];
 				if(![self _checkAndDisplayMySqlError]) return NO;
+			}
+		}
+		else {
+			if (![[user valueForKey:@"password"] isEqualToString:[user valueForKey:@"originalpassword"]]) {
+				
+				for (SPUserMO *child in hosts)
+				{
+					NSString *changePasswordStatement = [NSString stringWithFormat:
+														 @"SET PASSWORD FOR %@@%@ = PASSWORD(%@)",
+														 [[user valueForKey:@"user"] tickQuotedString],
+														 [[child host] tickQuotedString],
+														 ([user valueForKey:@"password"]) ? [[user valueForKey:@"password"] tickQuotedString] : @"''"];
+					
+					[connection queryString:changePasswordStatement];
+					if(![self _checkAndDisplayMySqlError]) return NO;
+				}
 			}
 		}
 	}
@@ -1038,14 +1094,52 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	// same affect as CREATE USER. That is, a new user with no privleges.
 	NSString *host = [[user valueForKey:@"host"] tickQuotedString];
 	
-	if ([user parent] && [[user parent] valueForKey:@"user"] && [[user parent] valueForKey:@"password"]) {
+	if ([user parent] && [[user parent] valueForKey:@"user"] && ([[user parent] valueForKey:@"password"] || [[user parent] valueForKey:@"authentication_string"])) {
 		
 		NSString *username = [[[user parent] valueForKey:@"user"] tickQuotedString];
-		NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+		
+		NSString *idString;
+		if(requiresPost576PasswordHandling) {
+			// there are three situations to cover here:
+			//   1) host added, parent user unchanged
+			//   2) host added, parent user password changed
+			//   3) host added, parent user is new
+			if([[user parent] valueForKey:@"originaluser"]) {
+				// 1 & 2: If the parent user already exists we always use the old password hash. if the parent password changes at the same time, updateUser: will take care of it afterwards
+				NSString *plugin = [[[user parent] valueForKey:@"plugin"] tickQuotedString];
+				NSString *hash = [[[user parent] valueForKey:@"authentication_string"] tickQuotedString];
+				idString = [NSString stringWithFormat:@"IDENTIFIED WITH %@ AS %@",plugin,hash];
+			}
+			else {
+				// 3: If the user is new, we take the plaintext password value from the UI
+				NSString *password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+				idString = [NSString stringWithFormat:@"IDENTIFIED BY %@",password];
+			}
+		}
+		else {
+			BOOL passwordIsHash;
+			NSString *password;
+			// there are three situations to cover here:
+			//   1) host added, parent user unchanged
+			//   2) host added, parent user password changed
+			//   3) host added, parent user is new
+			if([[user parent] valueForKey:@"originaluser"]) {
+				// 1 & 2: If the parent user already exists we always use the old password hash.
+				// This works because -updateUser: will be called after -insertUser: and update the password for this host, anyway.
+				passwordIsHash = YES;
+				password = [[[user parent] valueForKey:@"originalpassword"] tickQuotedString];
+			}
+			else {
+				// 3: If the user is new, we take the plaintext password value from the UI
+				passwordIsHash = NO;
+				password = [[[user parent] valueForKey:@"password"] tickQuotedString];
+			}
+			idString = [NSString stringWithFormat:@"IDENTIFIED BY %@%@",(passwordIsHash? @"PASSWORD " : @""), password];
+		}
 		
 		createStatement = ([serverSupport supportsCreateUser]) ?
-		[NSString stringWithFormat:@"CREATE USER %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password] :
-		[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ IDENTIFIED BY %@%@", username, host, [[user parent] valueForKey:@"originaluser"]?@"PASSWORD ":@"", password];
+		[NSString stringWithFormat:@"CREATE USER %@@%@ %@", username, host, idString] :
+		[NSString stringWithFormat:@"GRANT SELECT ON mysql.* TO %@@%@ %@", username, host, idString];
 	}
 	else if ([user parent] && [[user parent] valueForKey:@"user"]) {
 		
@@ -1067,22 +1161,27 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 			}
 			// If we created the user with the GRANT statment (MySQL < 5), then revoke the
 			// privileges we gave the new user.
-			else {
+			if(![serverSupport supportsCreateUser]) {
 				[connection queryString:[NSString stringWithFormat:@"REVOKE SELECT ON mysql.* FROM %@@%@", [[[user parent] valueForKey:@"user"] tickQuotedString], host]];
 				
 				if (![self _checkAndDisplayMySqlError]) return NO;
 			}
 			
-			return [self grantPrivilegesToUser:user];
+			return [self grantPrivilegesToUser:user skippingRevoke:YES];
 		}
 	}
 	return NO;
 }
 
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv
+{
+	return [self grantDbPrivilegesWithPrivilege:schemaPriv skippingRevoke:NO];
+}
+
 /**
  * Grant or revoke DB privileges for the supplied user.
  */
-- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv
+- (BOOL)grantDbPrivilegesWithPrivilege:(SPPrivilegesMO *)schemaPriv skippingRevoke:(BOOL)skipRevoke
 {
 	NSMutableArray *grantPrivileges = [NSMutableArray array];
 	NSMutableArray *revokePrivileges = [NSMutableArray array];
@@ -1090,16 +1189,14 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	NSString *dbName = [schemaPriv valueForKey:@"db"];
     dbName = [dbName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"];
 	
-	NSString *statement = [NSString stringWithFormat:@"SELECT USER, HOST FROM mysql.db WHERE USER = %@ AND HOST = %@ AND DB = %@",
-									  [[schemaPriv valueForKeyPath:@"user.parent.user"] tickQuotedString],
-									  [[schemaPriv valueForKeyPath:@"user.host"] tickQuotedString],
-									  [dbName tickQuotedString]];
-	
-	NSArray *matchingUsers = [connection getAllRowsFromQuery:statement];	
+	NSArray *changedKeys = [[schemaPriv changedValues] allKeys];
 	
 	for (NSString *key in [self privsSupportedByServer])
 	{
 		if (![key hasSuffix:@"_priv"]) continue;
+		
+		//ignore anything that we didn't change
+		if (![changedKeys containsObject:key]) continue;
 		
 		NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 		
@@ -1108,9 +1205,7 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 				[grantPrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 			else {
-				if ([matchingUsers count] || [grantPrivileges count] > 0) {
-					[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
-				}
+				[revokePrivileges addObject:[privilege replaceUnderscoreWithSpace]];
 			}
 		NS_HANDLER
 		NS_ENDHANDLER
@@ -1123,11 +1218,13 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 				   forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
 					  host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
 	
-	// Revoke privileges
-	if(![self _revokePrivileges:revokePrivileges
-				 onDatabase:dbName 
-					forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
-					   host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
+	if(!skipRevoke) {
+		// Revoke privileges
+		if(![self _revokePrivileges:revokePrivileges
+					 onDatabase:dbName 
+						forUser:[schemaPriv valueForKeyPath:@"user.parent.user"] 
+						   host:[schemaPriv valueForKeyPath:@"user.host"]]) return NO;
+	}
 	
 	return YES;
 }
@@ -1153,19 +1250,29 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user
+{
+	return [self grantPrivilegesToUser:user skippingRevoke:NO];
+}
+
 /**
  * Grant or revoke privileges for the supplied user.
  */
-- (BOOL)grantPrivilegesToUser:(SPUserMO *)user
+- (BOOL)grantPrivilegesToUser:(SPUserMO *)user skippingRevoke:(BOOL)skipRevoke
 {
 	if ([user valueForKey:@"parent"] != nil)
 	{
 		NSMutableArray *grantPrivileges = [NSMutableArray array];
 		NSMutableArray *revokePrivileges = [NSMutableArray array];
 		
+		NSArray *changedKeys = [[user changedValues] allKeys];
+		
 		for (NSString *key in [self privsSupportedByServer])
 		{
 			if (![key hasSuffix:@"_priv"]) continue;
+			
+			//ignore anything that we didn't change
+			if (![changedKeys containsObject:key]) continue;
 			
 			NSString *privilege = [key stringByReplacingOccurrencesOfString:@"_priv" withString:@""];
 			
@@ -1188,20 +1295,25 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 					   forUser:[[user parent] valueForKey:@"user"] 
 						  host:[user valueForKey:@"host"]]) return NO;
 
-		// Revoke privileges
-		if(![self _revokePrivileges:revokePrivileges
-					 onDatabase:nil 
-						forUser:[[user parent] valueForKey:@"user"] 
-						   host:[user valueForKey:@"host"]]) return NO;
+		if(!skipRevoke) {
+			// Revoke privileges
+			if(![self _revokePrivileges:revokePrivileges
+						 onDatabase:nil 
+							forUser:[[user parent] valueForKey:@"user"] 
+							   host:[user valueForKey:@"host"]]) return NO;
+		}
 	}
 	
 	for (SPPrivilegesMO *priv in [user valueForKey:@"schema_privileges"])
 	{
-		if(![self grantDbPrivilegesWithPrivilege:priv]) return NO;
+		if(![self grantDbPrivilegesWithPrivilege:priv skippingRevoke:skipRevoke]) return NO;
 	}
 	
 	return YES;
 }
+
+#pragma mark -
+#pragma mark Private API
 
 /** 
  * Gets any NSManagedObject (SPUser) from the managedObjectContext that may
@@ -1359,9 +1471,6 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
-#pragma mark -
-#pragma mark Private API
-
 /**
  * Renames a user account using the supplied parameters.
  *
@@ -1418,12 +1527,311 @@ static NSString * const SPTableViewNameColumnID = @"NameColumn";
 	return YES;
 }
 
+#pragma mark - SPUserManagerDelegate
+
+#pragma mark TableView Delegate Methods
+
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	id object = [notification object];
+
+	if (object == schemasTableView) {
+		[grantedSchemaPrivs removeAllObjects];
+		[grantedTableView reloadData];
+
+		[self _initializeAvailablePrivs];
+
+		if ([[treeController selectedObjects] count] > 0 && [[schemasTableView selectedRowIndexes] count] > 0) {
+			SPUserMO *user = [[treeController selectedObjects] objectAtIndex:0];
+
+			// Check to see if the user host node was selected
+			if ([user valueForKey:@"host"]) {
+				NSString *selectedSchema = [schemas objectAtIndex:[schemasTableView selectedRow]];
+
+				NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"]
+													  schema:[selectedSchema stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+														host:[user valueForKey:@"host"]];
+
+				if ([results count] > 0) {
+					NSManagedObject *priv = [results objectAtIndex:0];
+
+					for (NSPropertyDescription *property in [priv entity])
+					{
+						if ([[property name] hasSuffix:@"_priv"] && [[priv valueForKey:[property name]] boolValue])
+						{
+							NSString *displayName = [[[property name] stringByReplacingOccurrencesOfString:@"_priv" withString:@""] replaceUnderscoreWithSpace];
+							NSDictionary *newDict = [NSDictionary dictionaryWithObjectsAndKeys:displayName, @"displayName", [property name], @"name", nil];
+							[grantedController addObject:newDict];
+
+							// Remove items from available so they can't be added twice.
+							NSPredicate *predicate = [NSPredicate predicateWithFormat:@"displayName like[cd] %@", displayName];
+							NSArray *previousObjects = [[availableController arrangedObjects] filteredArrayUsingPredicate:predicate];
+
+							for (NSDictionary *dict in previousObjects)
+							{
+								[availableController removeObject:dict];
+							}
+						}
+					}
+				}
+
+				[availableTableView setEnabled:YES];
+			}
+		}
+		else {
+			[availableTableView setEnabled:NO];
+		}
+	}
+	else if (object == grantedTableView) {
+		[removeSchemaPrivButton setEnabled:[[grantedController selectedObjects] count] > 0];
+	}
+	else if (object == availableTableView) {
+		[addSchemaPrivButton setEnabled:[[availableController selectedObjects] count] > 0];
+	}
+}
+
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	if (tableView == schemasTableView) {
+		NSString *schemaName = [schemas objectAtIndex:rowIndex];
+
+		// Gray out the "all database" entries
+		if ([schemaName isEqualToString:@""] || [schemaName isEqualToString:@"%"]) {
+			[cell setTextColor:[NSColor lightGrayColor]];
+		} else {
+			[cell setTextColor:[NSColor blackColor]];
+		}
+
+		// If the schema has permissions set, highlight with a yellow background
+		BOOL enabledPermissions = NO;
+		SPUserMO *user = [[treeController selectedObjects] objectAtIndex:0];
+		NSArray *results = [self _fetchPrivsWithUser:[[user parent] valueForKey:@"user"]
+											  schema:[schemaName stringByReplacingOccurrencesOfString:@"_" withString:@"\\_"]
+												host:[user valueForKey:@"host"]];
+		if ([results count]) {
+			NSManagedObject *schemaPrivs = [results objectAtIndex:0];
+			for (NSString *itemKey in [[[schemaPrivs entity] attributesByName] allKeys]) {
+				if ([itemKey hasSuffix:@"_priv"] && [[schemaPrivs valueForKey:itemKey] boolValue]) {
+					enabledPermissions = YES;
+					break;
+				}
+			}
+		}
+
+		if (enabledPermissions) {
+			[cell setDrawsBackground:YES];
+			[cell setBackgroundColor:[NSColor colorWithDeviceRed:1.f green:1.f blue:0.f alpha:0.2]];
+		} else {
+			[cell setDrawsBackground:NO];
+		}
+	}
+}
+
+#pragma mark -
+#pragma mark Tab View Delegate methods
+
+- (BOOL)tabView:(NSTabView *)tabView shouldSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	BOOL retVal = YES;
+
+	if ([[treeController selectedObjects] count] == 0) return NO;
+
+	if (![treeController commitEditing]) {
+		return NO;
+	}
+
+	// Currently selected object in tree
+	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+
+	// If we are selecting a tab view that requires there be a child,
+	// make sure there is a child to select.  If not, don't allow it.
+	if ([[tabViewItem identifier] isEqualToString:SPGlobalPrivilegesTabIdentifier] ||
+		[[tabViewItem identifier] isEqualToString:SPResourcesTabIdentifier] ||
+		[[tabViewItem identifier] isEqualToString:SPSchemaPrivilegesTabIdentifier]) {
+
+		id parent = [selectedObject parent];
+
+		retVal = parent ? ([[parent children] count] > 0) : ([[selectedObject children] count] > 0);
+
+		if (!retVal) {
+			NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"User has no hosts", @"user has no hosts message")
+											 defaultButton:NSLocalizedString(@"Add Host", @"Add Host")
+										   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+											   otherButton:nil
+								 informativeTextWithFormat:NSLocalizedString(@"This user doesn't have any hosts associated with it. It will be deleted unless one is added", @"user has no hosts informative message")];
+
+			if ([alert runModal] == NSAlertDefaultReturn) {
+				[self addHost:nil];
+			}
+		}
+
+		// If this is the resources tab, enable or disable the controls based on the server's support for them
+		if ([[tabViewItem identifier] isEqualToString:SPResourcesTabIdentifier]) {
+
+			BOOL serverSupportsUserMaxVars = [serverSupport supportsUserMaxVars];
+
+			// Disable the fields according to the version
+			[maxUpdatesTextField setEnabled:serverSupportsUserMaxVars];
+			[maxConnectionsTextField setEnabled:serverSupportsUserMaxVars];
+			[maxQuestionsTextField setEnabled:serverSupportsUserMaxVars];
+		}
+	}
+
+	return retVal;
+}
+
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	if ([[treeController selectedObjects] count] == 0) return;
+
+	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+
+	// If the selected tab is General and a child is selected, select the
+	// parent (user info).
+	if ([[tabViewItem identifier] isEqualToString:SPGeneralTabIdentifier]) {
+		if ([selectedObject parent]) {
+			[self _selectParentFromSelection];
+		}
+	}
+	else if ([[tabViewItem identifier] isEqualToString:SPGlobalPrivilegesTabIdentifier] ||
+			 [[tabViewItem identifier] isEqualToString:SPResourcesTabIdentifier] ||
+			 [[tabViewItem identifier] isEqualToString:SPSchemaPrivilegesTabIdentifier]) {
+		// If the tab is either Global Privs or Resources and we have a user
+		// selected, then open tree and select first child node.
+		[self _selectFirstChildOfParentNode];
+	}
+}
+
+#pragma mark -
+#pragma mark Outline view Delegate Methods
+
+- (void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	if ([cell isKindOfClass:[ImageAndTextCell class]])
+	{
+		// Determines which Image to display depending on parent or child object
+		NSImage *image = [[NSImage imageNamed:[(SPUserMO *)[item  representedObject] parent] ? NSImageNameNetwork : NSImageNameUser] retain];
+
+		[image setSize:(NSSize){16, 16}];
+		[(ImageAndTextCell *)cell setImage:image];
+		[image release];
+	}
+}
+
+- (BOOL)outlineView:(NSOutlineView *)olv isGroupItem:(id)item
+{
+	return NO;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)olv shouldSelectItem:(id)item
+{
+	return YES;
+}
+
+- (BOOL)outlineView:(NSOutlineView *)olv shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item
+{
+	return ([[[item representedObject] children] count] == 0);
+}
+
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification
+{
+	if ([[treeController selectedObjects] count] == 0) return;
+
+	id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+
+	if ([selectedObject parent] == nil && !([[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"])) {
+		[tabView selectTabViewItemWithIdentifier:SPGeneralTabIdentifier];
+	}
+	else {
+		if ([selectedObject parent] != nil && [[[tabView selectedTabViewItem] identifier] isEqualToString:@"General"]) {
+			[tabView selectTabViewItemWithIdentifier:SPGlobalPrivilegesTabIdentifier];
+		}
+	}
+
+	if ([selectedObject parent] != nil && [selectedObject host] == nil)
+	{
+		[selectedObject setValue:@"%" forKey:@"host"];
+		[outlineView reloadItem:selectedObject];
+	}
+
+	[schemasTableView deselectAll:nil];
+	[schemasTableView setNeedsDisplay:YES];
+	[grantedTableView deselectAll:nil];
+	[availableTableView deselectAll:nil];
+}
+
+- (BOOL)selectionShouldChangeInOutlineView:(NSOutlineView *)olv
+{
+	if ([[treeController selectedObjects] count] > 0)
+	{
+		id selectedObject = [[treeController selectedObjects] objectAtIndex:0];
+
+		// Check parents
+		if ([selectedObject valueForKey:@"parent"] == nil)
+		{
+			NSString *name = [selectedObject valueForKey:@"user"];
+			NSArray *results = [self _fetchUserWithUserName:name];
+
+			if ([results count] > 1) {
+				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Duplicate User", @"duplicate user message")
+												 defaultButton:NSLocalizedString(@"OK", @"OK button")
+											   alternateButton:nil
+												   otherButton:nil
+									 informativeTextWithFormat:NSLocalizedString(@"A user with the name '%@' already exists", @"duplicate user informative message"), name];
+				[alert runModal];
+
+				return NO;
+			}
+		}
+		else
+		{
+			NSArray *children = [selectedObject valueForKeyPath:@"parent.children"];
+			NSString *host = [selectedObject valueForKey:@"host"];
+
+			for (NSManagedObject *child in children)
+			{
+				if (![selectedObject isEqual:child] && [[child valueForKey:@"host"] isEqualToString:host])
+				{
+					NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Duplicate Host", @"duplicate host message")
+													 defaultButton:NSLocalizedString(@"OK", @"OK button")
+												   alternateButton:nil
+													   otherButton:nil
+										 informativeTextWithFormat:NSLocalizedString(@"A user with the host '%@' already exists", @"duplicate host informative message"), host];
+
+					[alert runModal];
+
+					return NO;
+				}
+			}
+		}
+	}
+
+	return YES;
+}
+
+#pragma mark - SPUserManagerDataSource
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView
+{
+	return [schemas count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
+{
+	NSString *databaseName = [schemas objectAtIndex:rowIndex];
+	if ([databaseName isEqualToString:@""]) {
+		databaseName = NSLocalizedString(@"All Databases", @"All databases placeholder");
+	} else if ([databaseName isEqualToString:@"%"]) {
+		databaseName = NSLocalizedString(@"All Databases (%)", @"All databases (%) placeholder");
+	}
+	return databaseName;
+}
+
 #pragma mark -
 
 - (void)dealloc
 {	
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
 
     SPClear(managedObjectContext);
     SPClear(persistentStoreCoordinator);

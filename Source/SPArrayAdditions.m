@@ -133,14 +133,10 @@
 	NSMutableArray *subArray  = [NSMutableArray arrayWithCapacity:[indexes count]];
 	NSUInteger count = [self count];
 
-	NSUInteger index = [indexes firstIndex];
-	while ( index != NSNotFound )
-	{
+	[indexes enumerateIndexesUsingBlock:^(NSUInteger index, BOOL * _Nonnull stop) {
 		if ( index < count )
 			[subArray addObject: [self objectAtIndex: index]];
-
-		index = [indexes indexGreaterThanIndex: index];
-	}
+	}];
 
 	return subArray;
 }

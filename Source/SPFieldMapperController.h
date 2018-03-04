@@ -161,6 +161,7 @@
 - (NSArray*)fieldMappingGlobalValueArray;
 - (NSArray*)fieldMappingTableDefaultValues;
 - (BOOL)importFieldNamesHeader;
+- (BOOL)hasContentRows;
 - (BOOL)insertRemainingRowsAfterUpdate;
 - (BOOL)globalValuesInUsage;
 - (BOOL)importIntoNewTable;

@@ -32,7 +32,9 @@
 
 	// Nearly every class uses constants
 	#import "SPConstants.h"
-	
+
+	#import "SPCompatibility.h"
+
 	// Make all our custom additions available
 	#import "SPCategoryAdditions.h"
 #endif

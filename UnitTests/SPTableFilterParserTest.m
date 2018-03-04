@@ -12,9 +12,9 @@
 #define USE_APPLICATION_UNIT_TEST 1
 
 #import <Cocoa/Cocoa.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
-@interface SPTableFilterParserTest : SenTestCase
+@interface SPTableFilterParserTest : XCTestCase
 
 - (void)testFilterString;
 
@@ -29,7 +29,7 @@
 		[p setCurrentField:@"FLD"];
 		
 		// binary matches as "$BINARY ", eating the one additional whitespace
-		STAssertEqualObjects([p filterString],@"`FLD`  constant string", @"Constant replacement");
+		XCTAssertEqualObjects([p filterString],@"`FLD`  constant string", @"Constant replacement");
 	}
 	//simple one argument case with binary
 	{
@@ -38,7 +38,7 @@
 		[p setCaseSensitive:YES];
 		[p setArgument:@"arg1"];
 		
-		STAssertEqualObjects([p filterString], @"`FLD2` = FOO(BINARY arg1)", @"One Argument, $BINARY variable");
+		XCTAssertEqualObjects([p filterString], @"`FLD2` = FOO(BINARY arg1)", @"One Argument, $BINARY variable");
 	}
 	//simple two argument case with explicit current field
 	{
@@ -48,7 +48,7 @@
 		[p setFirstBetweenArgument:@"LA"];
 		[p setSecondBetweenArgument:@"RA"];
 		
-		STAssertEqualObjects([p filterString], @"MIN(`FLD3`,LA) = RA", @"Two Arguments, $CURRENT_FIELD variable");
+		XCTAssertEqualObjects([p filterString], @"MIN(`FLD3`,LA) = RA", @"Two Arguments, $CURRENT_FIELD variable");
 	}
 
 }
