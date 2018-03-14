@@ -171,6 +171,11 @@
 	IBOutlet NSTextField *requestPasswordPluginNameField;
 	IBOutlet NSSecureTextField *requestPasswordPasswordField;
 	
+	IBOutlet NSView *dialogSecureTextAccessoryView;
+	IBOutlet NSView *dialogPlainTextAccessoryView;
+	IBOutlet NSSecureTextField *dialogSecureTextField;
+	IBOutlet NSTextField *dialogPlainTextField;
+	
 	BOOL isEditingItemName;
     BOOL reverseFavoritesSort;
 	BOOL initComplete;
@@ -243,6 +248,8 @@
 - (NSString *)keychainPassword;
 - (NSString *)keychainPasswordForSSH;
 - (NSString *)actualPasswordForAuthPlugin:(NSString *)pluginName;
+
+- (NSString *)dialogPrompt:(NSString *)prompt usingSecureInput:(BOOL)secure;
 
 // Connection processes
 - (IBAction)initiateConnection:(id)sender;

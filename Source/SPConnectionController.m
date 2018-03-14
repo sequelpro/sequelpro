@@ -116,6 +116,7 @@ static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,
 
 - (void)_beginRequestPasswordForInsecurePlugin:(NSString *)pluginName;
 - (void)_insecurePasswordAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (void)_dialogPromptDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
 #endif
@@ -329,6 +330,45 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 
 	[[pass retain] release]; //free it asap
 	[self initiateMySQLConnection]; //reconnect
+}
+
+- (NSString *)dialogPrompt:(NSString *)prompt usingSecureInput:(BOOL)secure
+{
+	NSString *fallbackText = NSLocalizedString(@"The server requests manual input to continue.", @"Connection dialog : dialog auth plugin : fallback message text");
+	
+	//show modal warning dialog
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert setMessageText:NSLocalizedString(@"Server Prompt",@"Connection dialog : dialog auth plugin : message title")];
+	[alert setInformativeText:([prompt length] ? prompt : fallbackText)];
+	[alert setAccessoryView:(secure ? dialogSecureTextAccessoryView : dialogPlainTextAccessoryView)];
+	
+	NSTextField *textField = (secure ? dialogSecureTextField : dialogPlainTextField);
+	[textField setStringValue:@""];
+	
+	NSButton *okButton = [alert addButtonWithTitle:NSLocalizedString(@"OK",@"Connection dialog : dialog auth plugin : confirm button")];
+	[okButton setTag:NSAlertFirstButtonReturn];
+	
+	NSButton *disconnectButton = [alert addButtonWithTitle:NSLocalizedString(@"Disconnect",@"Connection dialog : dialog auth plugin : disconnect button")];
+	[disconnectButton setTag:NSAlertSecondButtonReturn];
+	[disconnectButton setKeyEquivalent:@"\e"];
+	
+	[alert beginSheetModalForWindow:[dbDocument parentWindow]
+					  modalDelegate:self
+					 didEndSelector:@selector(_dialogPromptDidEnd:returnCode:contextInfo:)
+						contextInfo:NULL];
+	
+	NSInteger result = [NSApp runModalForWindow:[dbDocument parentWindow]]; // blocks
+	
+	[alert release];
+	
+	if(result != NSAlertFirstButtonReturn) return nil;
+	
+	return [textField stringValue];
+}
+
+- (void)_dialogPromptDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+	[NSApp stopModalWithCode:returnCode];
 }
 
 #pragma mark -

@@ -451,6 +451,12 @@ cleanup_thread_and_pool:
 	return [delegate passwordForConnection:connection authPlugin:pluginName];
 }
 
+//TODO is this really used?
+- (NSString *)dialogForConnection:(id)connection prompt:(NSString *)prompt usingSecureInput:(BOOL)secure
+{
+	return [delegate dialogForConnection:connection prompt:prompt usingSecureInput:secure];
+}
+
 #pragma mark -
 
 - (void)dealloc

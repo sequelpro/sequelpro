@@ -42,6 +42,7 @@
 - (BOOL)_connect;
 - (MYSQL *)_makeRawMySQLConnectionWithEncoding:(NSString *)encodingName isMasterConnection:(BOOL)isMaster;
 - (void)_mysqlConnection:(MYSQL *)connection wantsPassword:(void (^)(const char *passwd))inBlock withPlugin:(const char *)pluginName;
+- (char *)_mysqlConnection:(MYSQL *)connection dialogPrompt:(const char *)prompt type:(int)type outBuffer:(char *)buf size:(int)buf_len;
 - (BOOL)_reconnectAllowingRetries:(BOOL)canRetry;
 - (BOOL)_reconnectAfterBackgroundConnectionLoss;
 - (BOOL)_waitForNetworkConnectionWithTimeout:(double)timeoutSeconds;

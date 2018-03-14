@@ -1,0 +1,70 @@
+This patch turns the dialog auth plugin, which is usually built as an optional .so into
+a builtin plugin, since we don't normally build and/or load external plugins in SPMySQL.
+Only the client side of the plugin will be built.
+
+Note that this plugin is essentially a pimped cleartext plugin!
+
+To apply:
+	cd mysql-source-root
+	patch -p1 < this-file
+
+(patch created with `diff -Naur`)
+
+diff -Naur mysql-5.5.59-p003/plugin/auth/dialog.c mysql-5.5.59-p004/plugin/auth/dialog.c
+--- mysql-5.5.59-p003/plugin/auth/dialog.c	2017-11-27 13:03:17.000000000 +0100
++++ mysql-5.5.59-p004/plugin/auth/dialog.c	2018-03-14 00:33:10.000000000 +0100
+@@ -34,6 +34,7 @@
+   a correct password. It shows the situation when a number of questions
+   is not known in advance.
+ */
++#if 0
+ #if defined (WIN32) && !defined (RTLD_DEFAULT)
+ # define RTLD_DEFAULT GetModuleHandle(NULL)
+ #endif
+@@ -173,6 +174,7 @@
+ }
+ mysql_declare_plugin_end;
+ 
++#endif
+ /********************* CLIENT SIDE ***************************************/
+ /*
+   This plugin performs a dialog with the user, asking questions and
+@@ -319,7 +321,10 @@
+   return 0;
+ }
+ 
+-mysql_declare_client_plugin(AUTHENTICATION)
++static auth_plugin_t dialog_client_plugin=
++{
++  MYSQL_CLIENT_AUTHENTICATION_PLUGIN,
++  MYSQL_CLIENT_AUTHENTICATION_PLUGIN_INTERFACE_VERSION,
+   "dialog",
+   "Sergei Golubchik",
+   "Dialog Client Authentication Plugin",
+@@ -330,5 +335,5 @@
+   NULL,
+   NULL,
+   perform_dialog
+-mysql_end_client_plugin;
++};
+ 
+diff -Naur mysql-5.5.59-p003/sql-common/client.c mysql-5.5.59-p004/sql-common/client.c
+--- mysql-5.5.59-p003/sql-common/client.c	2018-02-16 00:27:37.000000000 +0100
++++ mysql-5.5.59-p004/sql-common/client.c	2018-03-13 22:05:47.000000000 +0100
+@@ -2430,6 +2430,8 @@
+ extern auth_plugin_t win_auth_client_plugin;
+ #endif
+ 
++#include "../plugin/auth/dialog.c"
++
+ struct st_mysql_client_plugin *mysql_client_builtins[]=
+ {
+   (struct st_mysql_client_plugin *)&native_password_client_plugin,
+@@ -2438,6 +2440,7 @@
+ #ifdef AUTHENTICATION_WIN
+   (struct st_mysql_client_plugin *)&win_auth_client_plugin,
+ #endif
++  (struct st_mysql_client_plugin *)&dialog_client_plugin,
+   0
+ };
+ 

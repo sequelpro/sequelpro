@@ -54,6 +54,9 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 
 static void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(const char *passwd));
 
+// This is a redefinition from dialog.c in mysql
+char * mysql_authentication_dialog_ask(MYSQL *mysql, int type, const char *prompt, char *buf, int buf_len);
+
 @implementation SPMySQLConnection
 
 #pragma mark -
@@ -792,6 +795,49 @@ asm(".desc ___crashreporter_info__, 0x10");
 	free(cBuffer);
 }
 
+- (char *)_mysqlConnection:(MYSQL *)connection dialogPrompt:(const char *)prompt type:(int)type outBuffer:(char *)buf size:(int)buf_len
+{
+	// we need the delegate to handle the UI
+	if(![delegate respondsToSelector:@selector(dialogForConnection:prompt:usingSecureInput:)]) return NULL;
+	
+	// we are still in the auth phase, so the same rules as with -_mysqlConnection:wantsPassword:withPlugin: above apply
+	NSStringEncoding connectEncodingNS = [SPMySQLConnection stringEncodingForMySQLCharset:mysql_character_set_name(connection)];
+	
+	NSString *promptString = [NSString stringWithCString:prompt encoding:connectEncodingNS];
+	
+	// mysql specifies 1 = text, 2 = password, but technically others are possible
+	NSString *result = [delegate dialogForConnection:self prompt:promptString usingSecureInput:(type != 1)];
+	
+	// cancel on nil (mysql will send an error)
+	if(!result) return NULL;
+	
+	// check if we can use the buffer mysql preallocated or have to create a new one
+	NSInteger cLength = [result lengthOfBytesUsingEncoding:connectEncodingNS]; // does not include the terminating NUL
+	
+	if([result length] && (cLength == 0 || cLength == NSIntegerMax)) {
+		NSLog(@"%s: -lengthOfBytesUsingEncoding: returned 0 or NSIntegerMax for encoding %lu (mysql: %s)", __PRETTY_FUNCTION__, connectEncodingNS, connection->options.charset_name);
+		return NULL;
+	}
+	
+	if(buf && buf_len > cLength) {
+		// fits inside buffer, so we'll use that
+		if(![result getCString:buf maxLength:buf_len encoding:connectEncodingNS]) {
+			NSLog(@"%s: -getCString:maxLength:encoding: failed for input string (cLength=%lu, connectEncodingNS=%lu)!", __PRETTY_FUNCTION__, cLength, connectEncodingNS);
+			return NULL;
+		}
+		return buf;
+	}
+	
+	// otherwise we'll create a new one, which mysql will free()
+	char *newBuf = malloc(++cLength);
+	if(!newBuf || ![result getCString:newBuf maxLength:cLength encoding:connectEncodingNS]) {
+		NSLog(@"%s: malloc() or -getCString:maxLength:encoding: failed for input string (cLength=%lu, connectEncodingNS=%lu)!", __PRETTY_FUNCTION__, cLength, connectEncodingNS);
+		free(newBuf);
+		return NULL;
+	}
+	return newBuf;
+}
+
 /**
  * Perform a reconnection task, either once-only or looping as requested.  If looping is
  * permitted and this method fails, it will ask how to proceed and loop depending on
@@ -1229,4 +1275,11 @@ void PasswordCallback(MYSQL *mysql, const char *plugin, void (^with_password)(co
 {
 	assert(mysql && mysql->sp_context);
 	[(SPMySQLConnection *)mysql->sp_context _mysqlConnection:mysql wantsPassword:with_password withPlugin:plugin];
+}
+
+// Note: this function is resolved by name via dlsym() from libmysqlclient
+char * mysql_authentication_dialog_ask(MYSQL *mysql, int type, const char *prompt, char *buf, int buf_len)
+{
+	assert(mysql && mysql->sp_context);
+	return [(SPMySQLConnection *)mysql->sp_context _mysqlConnection:mysql dialogPrompt:prompt type:type outBuffer:buf size:buf_len];
 }

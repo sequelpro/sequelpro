@@ -76,6 +76,18 @@
 - (NSString *)passwordForConnection:(id)connection authPlugin:(NSString *)pluginName;
 
 /**
+ * Called by the mysql dialog auth plugin when requesting user input
+ *
+ * NOTE: This will be called on the thread SPMySQL is running on (which *MAY* be a background thread)!
+ *
+ * @param connection The connection instance to supply the input for
+ * @param prompt     The message to display to the user along with the input field
+ * @param secure     When YES, a secure text input field (ie. masked) should be used
+ * @return The value the user entered. An empty string is a valid value, nil is interpreted as "cancelled".
+ */
+- (NSString *)dialogForConnection:(id)connection prompt:(NSString *)prompt usingSecureInput:(BOOL)secure;
+
+/**
  * Notifies the delegate that no underlying connection is available,
  * typically when the connection has been asked to perform a query
  * or some other action for which a connection must be present.

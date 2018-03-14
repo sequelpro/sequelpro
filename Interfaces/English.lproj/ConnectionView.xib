@@ -14,6 +14,10 @@
                 <outlet property="connectionResizeContainer" destination="4888" id="5164"/>
                 <outlet property="connectionSplitView" destination="5741" id="5745"/>
                 <outlet property="connectionView" destination="5739" id="5740"/>
+                <outlet property="dialogPlainTextAccessoryView" destination="PfC-LU-B22" id="kHQ-ZZ-GbL"/>
+                <outlet property="dialogPlainTextField" destination="8Re-5z-cnh" id="pBe-4r-Tyv"/>
+                <outlet property="dialogSecureTextAccessoryView" destination="8mE-Sr-CfQ" id="plM-AA-CXS"/>
+                <outlet property="dialogSecureTextField" destination="XJy-Je-XtI" id="6SP-QE-xkU"/>
                 <outlet property="editButtonsView" destination="5862" id="5882"/>
                 <outlet property="errorDetailText" destination="5434" id="5437"/>
                 <outlet property="errorDetailWindow" destination="5431" id="5438"/>
@@ -2638,6 +2642,41 @@ DQ
                 </textField>
             </subviews>
             <point key="canvasLocation" x="104" y="923.5"/>
+        </customView>
+        <customView misplaced="YES" id="8mE-Sr-CfQ" userLabel="Dialog Prompt Secure Accessory View">
+            <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            <subviews>
+                <secureTextField verticalHuggingPriority="750" misplaced="YES" id="XJy-Je-XtI">
+                    <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="7px-hV-TVe">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        <allowedInputSourceLocales>
+                            <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                        </allowedInputSourceLocales>
+                    </secureTextFieldCell>
+                </secureTextField>
+            </subviews>
+            <point key="canvasLocation" x="-193" y="496"/>
+        </customView>
+        <customView misplaced="YES" id="PfC-LU-B22" userLabel="Dialog Prompt Plain Accessory View">
+            <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            <subviews>
+                <textField verticalHuggingPriority="750" misplaced="YES" id="8Re-5z-cnh">
+                    <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="Zi0-mB-J1H">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+            </subviews>
+            <point key="canvasLocation" x="156" y="496"/>
         </customView>
     </objects>
     <resources>

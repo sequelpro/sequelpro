@@ -7142,6 +7142,15 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 }
 
 /**
+ * Invoked by the "dialog" auth plugin
+ */
+- (NSString *)dialogForConnection:(SPMySQLConnection *)connection prompt:(NSString *)prompt usingSecureInput:(BOOL)secure
+{
+	//use main thread for UI interaction
+	return [[connectionController onMainThread] dialogPrompt:prompt usingSecureInput:secure];
+}
+
+/**
  * Invoked when the current connection needs a ssh password from the Keychain.
  * This isn't actually part of the SPMySQLConnection delegate protocol, but is here
  * due to its similarity to the previous method.
