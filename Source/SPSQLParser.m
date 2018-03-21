@@ -31,16 +31,6 @@
 #import "SPSQLParser.h"
 #import "RegexKitLite.h"
 
-/**
- * Include all the extern variables and prototypes required for flex (used for syntax highlighting)
- */
-#import "SPSQLTokenizer.h"
-extern NSInteger tolex();
-extern NSInteger yyuoffset, yyuleng;
-typedef struct to_buffer_state *TO_BUFFER_STATE;
-void to_switch_to_buffer(TO_BUFFER_STATE);
-TO_BUFFER_STATE to_scan_string (const char *);
-
 @interface SPSQLParser ()
 
 - (unichar) _charAtIndex:(NSInteger)index;
@@ -48,6 +38,24 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 @end
 
+/**
+ * Define the length of the character cache to use when parsing instead of accessing
+ * via characterAtIndex:.  There is a balance here between updating the cache very
+ * often and access penalties; 1500 appears a reasonable compromise.
+ */
+#define CHARACTER_CACHE_LENGTH 1500
+
+#define CHAR_SQUOTE '\''
+#define CHAR_DQUOTE '"'
+#define CHAR_BTICK '`'
+#define CHAR_BS '\\'
+#define CHAR_CR '\r'
+#define CHAR_LF '\n'
+
+#define STRING_SQUOTE @"'"
+#define STRING_DQUOTE @"\""
+#define STRING_BS @"\\"
+#define STRING_LF @"\n"
 
 /**
  * Please see the header files for a general description of the purpose of this class,
@@ -91,6 +99,11 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	supportDelimiters = shouldSupportDelimiters;
 }
 
+- (void) setNoBackslashEscapes:(BOOL)ignoreBackslashEscapes
+{
+	noBackslashEscapes = ignoreBackslashEscapes;
+}
+
 #pragma mark -
 #pragma mark SQL-aware utility methods
 
@@ -109,9 +122,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		switch (currentCharacter) {
 
 			// When quote characters are encountered walk to the end of the quoted string.
-			case '\'':
-			case '"':
-			case '`':
+			case CHAR_SQUOTE:
+			case CHAR_DQUOTE:
+			case CHAR_BTICK:
 				quotedStringEndIndex = [self endIndexOfStringQuotedByCharacter:currentCharacter startingAtIndex:currentStringIndex+1];
 				if (quotedStringEndIndex == NSNotFound) {
 					return;
@@ -169,7 +182,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// If the first character is not a quote character, return the entire string.
 	quoteCharacter = CFStringGetCharacterAtIndex((CFStringRef)string, 0);
-	if (quoteCharacter != '`' && quoteCharacter != '"' && quoteCharacter != '\'') {
+	if (quoteCharacter != CHAR_BTICK && quoteCharacter != CHAR_DQUOTE && quoteCharacter != CHAR_SQUOTE) {
 		return [NSString stringWithString:string];
 	}
 
@@ -183,15 +196,16 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	returnString = [NSMutableString stringWithString:[string substringWithRange:NSMakeRange(1, stringEndIndex-1)]];
 	
 	// Remove escaped characters and escaped strings as appropriate
-	if (quoteCharacter == '`' || quoteCharacter == '"' || quoteCharacter == '\'') {
-		[returnString replaceOccurrencesOfString:[NSString stringWithFormat:@"%C%C", quoteCharacter, quoteCharacter] withString:[NSString stringWithFormat:@"%C", quoteCharacter] options:0 range:NSMakeRange(0, [returnString length])];
-	}
-	if (quoteCharacter == '"') {
-		[returnString replaceOccurrencesOfString:@"\\\"" withString:@"\"" options:0 range:NSMakeRange(0, [returnString length])];
-		[returnString replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:0 range:NSMakeRange(0, [returnString length])];
-	} else	if (quoteCharacter == '\'') {
-		[returnString replaceOccurrencesOfString:@"\\'" withString:@"'" options:0 range:NSMakeRange(0, [returnString length])];
-		[returnString replaceOccurrencesOfString:@"\\\\" withString:@"\\" options:0 range:NSMakeRange(0, [returnString length])];
+	[returnString replaceOccurrencesOfString:[NSString stringWithFormat:@"%C%C", quoteCharacter, quoteCharacter] withString:[NSString stringWithFormat:@"%C", quoteCharacter] options:0 range:NSMakeRange(0, [returnString length])];
+
+	if(!noBackslashEscapes) {
+		if (quoteCharacter == CHAR_DQUOTE) {
+			[returnString replaceOccurrencesOfString:(STRING_BS STRING_DQUOTE) withString:STRING_DQUOTE options:0 range:NSMakeRange(0, [returnString length])];
+			[returnString replaceOccurrencesOfString:(STRING_BS STRING_BS) withString:STRING_BS options:0 range:NSMakeRange(0, [returnString length])];
+		} else if (quoteCharacter == CHAR_SQUOTE) {
+			[returnString replaceOccurrencesOfString:(STRING_BS STRING_SQUOTE) withString:STRING_SQUOTE options:0 range:NSMakeRange(0, [returnString length])];
+			[returnString replaceOccurrencesOfString:(STRING_BS STRING_BS) withString:STRING_BS options:0 range:NSMakeRange(0, [returnString length])];
+		}
 	}
 
 	return returnString;
@@ -202,6 +216,11 @@ TO_BUFFER_STATE to_scan_string (const char *);
  * ends, and ensures line endings which aren't in quotes are LF.
  */
 + (NSString *) normaliseQueryForExecution:(NSString *)queryString
+{
+	return [self normaliseQueryForExecution:queryString noBackslashEscapes:NO];
+}
+
++ (NSString *) normaliseQueryForExecution:(NSString *)queryString noBackslashEscapes:(BOOL)noBackslashEscapes
 {
 	NSUInteger stringLength = [queryString length];
 	NSCharacterSet *trimCharset = [NSCharacterSet whitespaceAndNewlineCharacterSet];
@@ -222,25 +241,25 @@ TO_BUFFER_STATE to_scan_string (const char *);
 
 	// Check for carriage returns in the string
 	NSMutableArray *carriageReturnPositions = [NSMutableArray array];
-	NSUInteger currentStringIndex, innerStringIndex, i, quotedStringLength;
-	unichar currentCharacter, innerCharacter;
-	BOOL characterIsEscaped;
-	for (currentStringIndex = 0; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = CFStringGetCharacterAtIndex((CFStringRef)queryString, currentStringIndex);
+	for (NSUInteger currentStringIndex = 0; currentStringIndex < stringLength; currentStringIndex++) {
+		unichar currentCharacter = CFStringGetCharacterAtIndex((CFStringRef)queryString, currentStringIndex);
 		switch (currentCharacter) {
 
 			// When quote characters are encountered walk to the end of the quoted string.
-			case '\'':
-			case '"':
-			case '`':
-				for (innerStringIndex = currentStringIndex+1; innerStringIndex < stringLength; innerStringIndex++) {
-					innerCharacter = CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex);
+			case CHAR_SQUOTE:
+			case CHAR_DQUOTE:
+			case CHAR_BTICK:
+			{
+#warning duplicate code with -endIndexOfStringQuotedByCharacter:startingIndex:
+				NSUInteger innerStringIndex;
+				for (innerStringIndex = currentStringIndex + 1; innerStringIndex < stringLength; innerStringIndex++) {
+					unichar innerCharacter = CFStringGetCharacterAtIndex((CFStringRef) queryString, innerStringIndex);
 
 					// If the string end is a backtick and one has been encountered, treat it as end of string
-					if (innerCharacter == '`' && currentCharacter == '`') {
-					
+					if (innerCharacter == CHAR_BTICK && currentCharacter == CHAR_BTICK) {
+
 						// ...as long as the next character isn't also a backtick, in which case it's being quoted.  Skip both.
-						if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex+1) == '`') {
+						if ((innerStringIndex + 1) < stringLength && CFStringGetCharacterAtIndex((CFStringRef) queryString, innerStringIndex + 1) == CHAR_BTICK) {
 							innerStringIndex++;
 							continue;
 						}
@@ -248,16 +267,19 @@ TO_BUFFER_STATE to_scan_string (const char *);
 						currentStringIndex = innerStringIndex;
 						break;
 
+					}
 					// Otherwise, prepare to treat the string as ended when meeting the correct boundary character....
-					} else if (innerCharacter == currentCharacter) {
+					else if (innerCharacter == currentCharacter) {
 
 						// ...but only if the string end isn't escaped with an *odd* number of escaping characters...
-						characterIsEscaped = NO;
-						i = 1;
-						quotedStringLength = innerStringIndex - 1;
-						while ((quotedStringLength - i) > 0 && CFStringGetCharacterAtIndex((CFStringRef)queryString, innerStringIndex - i) == '\\') {
-							characterIsEscaped = !characterIsEscaped;
-							i++;
+						BOOL characterIsEscaped = NO;
+						if (!noBackslashEscapes) {
+							NSUInteger i = 1;
+							NSUInteger quotedStringLength = innerStringIndex - 1;
+							while ((quotedStringLength - i) > 0 && CFStringGetCharacterAtIndex((CFStringRef) queryString, innerStringIndex - i) == CHAR_BS) {
+								characterIsEscaped = !characterIsEscaped;
+								i++;
+							}
 						}
 
 						// If an even number have been found, it may be the end of the string - as long as the subsequent character
@@ -278,9 +300,10 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				// The quoted string has been left open - end processing.
 				currentStringIndex = innerStringIndex;
 				break;
+			}
 			
-			case '\r':
-				[carriageReturnPositions addObject:[NSNumber numberWithUnsignedInteger:currentStringIndex]];
+			case CHAR_CR:
+				[carriageReturnPositions addObject:@(currentStringIndex)];
 				break;
 		}
 	}
@@ -289,20 +312,18 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	NSUInteger carriageReturnCount = [carriageReturnPositions count];
 	if (carriageReturnCount) {
 		NSMutableString *normalisedString = [NSMutableString stringWithString:queryString];
-		BOOL isCRLF;
-		NSUInteger CRLocation;
 		while ( carriageReturnCount-- ) {
-			CRLocation = [[carriageReturnPositions objectAtIndex:carriageReturnCount] unsignedIntegerValue];
+			NSUInteger CRLocation = [[carriageReturnPositions objectAtIndex:carriageReturnCount] unsignedIntegerValue];
 			
 			// Check whether it's a CRLF or just a CR
-			isCRLF = NO;
-			if ([normalisedString length] > CRLocation + 1 && CFStringGetCharacterAtIndex((CFStringRef)normalisedString, CRLocation + 1) == '\n') isCRLF = YES;
+			BOOL isCRLF = NO;
+			if ([normalisedString length] > CRLocation + 1 && CFStringGetCharacterAtIndex((CFStringRef)normalisedString, CRLocation + 1) == CHAR_LF) isCRLF = YES;
 
 			// Normalise the line endings
 			if (isCRLF) {
 				[normalisedString deleteCharactersInRange:NSMakeRange(CRLocation, 1)];
 			} else {
-				[normalisedString replaceCharactersInRange:NSMakeRange(CRLocation, 1) withString:@"\n"];
+				[normalisedString replaceCharactersInRange:NSMakeRange(CRLocation, 1) withString:STRING_LF];
 			}
 		}
 		queryString = normalisedString;
@@ -706,9 +727,9 @@ TO_BUFFER_STATE to_scan_string (const char *);
 		switch (currentCharacter) {
 
 			// When quote characters are encountered and strings are not being ignored, walk to the end of the quoted string.
-			case '\'':
-			case '"':
-			case '`':
+			case CHAR_SQUOTE:
+			case CHAR_DQUOTE:
+			case CHAR_BTICK:
 				if (!ignoreQuotedStrings) break;
 				quotedStringEndIndex = (NSUInteger)(*endIndex)(self, @selector(endIndexOfStringQuotedByCharacter:startingAtIndex:), currentCharacter, currentStringIndex+1);
 				if (quotedStringEndIndex == NSNotFound) {
@@ -750,7 +771,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 				break;
 
 			// Capture whether carriage returns are encountered
-			case '\r':
+			case CHAR_CR:
 				if (!containsCRs) containsCRs = YES;
 				break;
 
@@ -820,42 +841,43 @@ TO_BUFFER_STATE to_scan_string (const char *);
  */
 - (NSUInteger) endIndexOfStringQuotedByCharacter:(unichar)quoteCharacter startingAtIndex:(NSInteger)startIndex
 {
-	NSInteger currentStringIndex, stringLength;
-	NSUInteger i, quotedStringLength;
-	BOOL characterIsEscaped;
-	unichar currentCharacter;
-
 	// Cache the charAtIndex selector, avoiding dynamic binding overhead
 	IMP charAtIndex = [self methodForSelector:@selector(_charAtIndex:)];
 	SEL charAtIndexSEL = @selector(_charAtIndex:);
 
-	stringLength = [string length];
+	NSInteger stringLength = [string length];
 
 	// Walk the string looking for the string end
-	for ( currentStringIndex = startIndex; currentStringIndex < stringLength; currentStringIndex++) {
-		currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex);
+	for (NSInteger currentStringIndex = startIndex; currentStringIndex < stringLength; currentStringIndex++) {
+		unichar currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex);
 
 		// If the string end is a backtick and one has been encountered, treat it as end of string
-		if (quoteCharacter == '`' && currentCharacter == '`') {
+		if (quoteCharacter == CHAR_BTICK && currentCharacter == CHAR_BTICK) {
 		
 			// ...as long as the next character isn't also a backtick, in which case it's being quoted.  Skip both.
-			if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) == '`') {
+			if ((currentStringIndex + 1) < stringLength && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex+1) == CHAR_BTICK) {
 				currentStringIndex++;
 				continue;
 			}
+
+			// Note: backslash+backtick is not an escape sequence inside a backtick string!
+			//       i.e. »select `abc\`;« is a syntactically valid query. Some versions of the mysql CLI client
+			//       have a bug though and will interpret \` as an escaped backtick.
 			
 			return currentStringIndex;
-
+		}
 		// Otherwise, prepare to treat the string as ended when meeting the correct boundary character....
-		} else if (currentCharacter == quoteCharacter) {
+		else if (currentCharacter == quoteCharacter) {
 
 			// ...but only if the string end isn't escaped with an *odd* number of escaping characters...
-			characterIsEscaped = NO;
-			i = 1;
-			quotedStringLength = currentStringIndex - 1;
-			while ((quotedStringLength - i) > 0 && (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, currentStringIndex - i) == '\\') {
-				characterIsEscaped = !characterIsEscaped;
-				i++;
+			BOOL characterIsEscaped = NO;
+			if(!noBackslashEscapes) {
+				NSUInteger i = 1;
+				NSUInteger quotedStringLength = currentStringIndex - 1;
+				while ((quotedStringLength - i) > 0 && (unichar) (long) (*charAtIndex)(self, charAtIndexSEL, currentStringIndex - i) == CHAR_BS) {
+					characterIsEscaped = !characterIsEscaped;
+					i++;
+				}
 			}
 
 			// If an even number have been found, it may be the end of the string - as long as the subsequent character
@@ -899,8 +921,8 @@ TO_BUFFER_STATE to_scan_string (const char *);
 			anIndex++;
 			for ( ; anIndex < stringLength; anIndex++ ) {
 				currentCharacter = (unichar)(long)(*charAtIndex)(self, charAtIndexSEL, anIndex);
-				if (currentCharacter == '\r') containsCRs = YES;
-				if (currentCharacter == '\r' || currentCharacter == '\n') {
+				if (currentCharacter == CHAR_CR) containsCRs = YES;
+				if (currentCharacter == CHAR_CR || currentCharacter == CHAR_LF) {
 					return anIndex-1;
 				}
 			}
@@ -1004,6 +1026,7 @@ TO_BUFFER_STATE to_scan_string (const char *);
 	delimiterLengthMinusOne = 0;
 	lastMatchIsDelimiter = NO;
 	containsCRs = NO;
+	noBackslashEscapes = NO;
 }
 - (NSUInteger) length {
 	return [string length];
