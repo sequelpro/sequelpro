@@ -115,7 +115,9 @@ static BOOL FindLinesInFile(NSData *fileData,const void *first,size_t first_len,
 - (void)_documentWillClose:(NSNotification *)notification;
 
 - (void)_beginRequestPasswordForInsecurePlugin:(NSString *)pluginName;
+- (IBAction)_insecurePasswordAlertAction:(id)sender;
 - (void)_insecurePasswordAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+- (IBAction)_dialogPromptAction:(id)sender;
 - (void)_dialogPromptDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
 
 static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, void *key);
@@ -284,35 +286,30 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[self setAgreedInsecurePlugin:pluginName];
 
 	//show modal warning dialog
-	NSAlert *alert = [[NSAlert alloc] init]; //released in alert callback
-	[alert setAlertStyle:NSAlertStyleCritical];
-	[alert setMessageText:NSLocalizedString(@"Transmit password insecurely?",@"Connection dialog : password security error alert : title")];
-	[alert setInformativeText:NSLocalizedString(@"The MySQL server has requested the password to be transmitted in an insecure manner. This could be indicative of an attack on the server or your network connection!\n\nIf you still want to continue anyway, manually reenter your connection password.",@"Connection dialog : password security error alert : detail message")];
-	[alert setAccessoryView:requestPasswordAccessoryView];
-
 	[requestPasswordPluginNameField setStringValue:pluginName];
+	
+	[NSApp beginSheet:requestPluginPasswordPanel
+	   modalForWindow:[dbDocument parentWindow]
+		modalDelegate:self
+	   didEndSelector:@selector(_insecurePasswordAlertDidEnd:returnCode:contextInfo:)
+		  contextInfo:NULL];
 
-	NSButton *connectAnywayButton = [alert addButtonWithTitle:NSLocalizedString(@"Connect Anyway",@"Connection dialog : password security error alert : confirm button")];
-	[connectAnywayButton setTag:NSAlertDefaultReturn];
-
-	NSButton *disconnectButton = [alert addButtonWithTitle:NSLocalizedString(@"Disconnect",@"Connection dialog : password security error alert : cancel button")];
-	[disconnectButton setTag:NSAlertAlternateReturn];
-
-	[alert beginSheetModalForWindow:[dbDocument parentWindow]
-	                  modalDelegate:self
-	                 didEndSelector:@selector(_insecurePasswordAlertDidEnd:returnCode:contextInfo:)
-	                    contextInfo:NULL];
 }
 
-- (void)_insecurePasswordAlertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+- (IBAction)_insecurePasswordAlertAction:(id)sender
+{
+	// invoked by the buttons on the insecure password sheet
+	[NSApp endSheet:requestPluginPasswordPanel returnCode:[sender tag]];
+	[requestPluginPasswordPanel orderOut:nil];
+}
+
+- (void)_insecurePasswordAlertDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	NSString *pass = nil;
-	if(returnCode == NSAlertDefaultReturn) {
+	if(returnCode == NSOKButton) {
 		pass = [NSString stringWithString:[requestPasswordPasswordField stringValue]];
 	}
 	[requestPasswordPasswordField setStringValue:@""];
-
-	[alert autorelease];
 
 	cancellingConnection = NO;
 
@@ -337,33 +334,40 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	NSString *fallbackText = NSLocalizedString(@"The server requests manual input to continue.", @"Connection dialog : dialog auth plugin : fallback message text");
 	
 	//show modal warning dialog
-	NSAlert *alert = [[NSAlert alloc] init];
-	[alert setMessageText:NSLocalizedString(@"Server Prompt",@"Connection dialog : dialog auth plugin : message title")];
-	[alert setInformativeText:([prompt length] ? prompt : fallbackText)];
-	[alert setAccessoryView:(secure ? dialogSecureTextAccessoryView : dialogPlainTextAccessoryView)];
+	[dialogMessage setStringValue:([prompt length] ? prompt : fallbackText)];
+
+	[dialogInputSwitcher selectTabViewItemAtIndex:(secure ? 1 : 0)];
 	
 	NSTextField *textField = (secure ? dialogSecureTextField : dialogPlainTextField);
 	[textField setStringValue:@""];
 	
-	NSButton *okButton = [alert addButtonWithTitle:NSLocalizedString(@"OK",@"Connection dialog : dialog auth plugin : confirm button")];
-	[okButton setTag:NSAlertFirstButtonReturn];
+	//resize the sheet height to fit the text content
+	{
+		NSRect msgFrame = [dialogMessage frame];
+		NSRect dialogFrame = [dialogPanel frame];
+		CGFloat baseHeight = dialogFrame.size.height - msgFrame.size.height;
+		NSSize msgSize = [[dialogMessage cell] cellSizeForBounds:NSMakeRect(0.0, 0.0, msgFrame.size.width, CGFLOAT_MAX)];
+		dialogFrame.size.height = baseHeight + msgSize.height;
+		[dialogPanel setFrame:dialogFrame display:NO];
+	}
 	
-	NSButton *disconnectButton = [alert addButtonWithTitle:NSLocalizedString(@"Disconnect",@"Connection dialog : dialog auth plugin : disconnect button")];
-	[disconnectButton setTag:NSAlertSecondButtonReturn];
-	[disconnectButton setKeyEquivalent:@"\e"];
-	
-	[alert beginSheetModalForWindow:[dbDocument parentWindow]
-					  modalDelegate:self
-					 didEndSelector:@selector(_dialogPromptDidEnd:returnCode:contextInfo:)
-						contextInfo:NULL];
+	[NSApp beginSheet:dialogPanel
+	   modalForWindow:[dbDocument parentWindow]
+		modalDelegate:self
+	   didEndSelector:@selector(_dialogPromptDidEnd:returnCode:contextInfo:)
+		  contextInfo:NULL];
 	
 	NSInteger result = [NSApp runModalForWindow:[dbDocument parentWindow]]; // blocks
 	
-	[alert release];
-	
-	if(result != NSAlertFirstButtonReturn) return nil;
+	if(result != NSOKButton) return nil;
 	
 	return [textField stringValue];
+}
+
+- (IBAction)_dialogPromptAction:(id)sender
+{
+	[NSApp endSheet:dialogPanel returnCode:[sender tag]];
+	[dialogPanel orderOut:nil];
 }
 
 - (void)_dialogPromptDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo

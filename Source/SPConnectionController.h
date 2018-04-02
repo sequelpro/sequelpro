@@ -167,12 +167,13 @@
 	IBOutlet NSView *exportPanelAccessoryView;
 	IBOutlet NSView *editButtonsView;
 
-	IBOutlet NSView *requestPasswordAccessoryView;
+	IBOutlet NSPanel *requestPluginPasswordPanel;
 	IBOutlet NSTextField *requestPasswordPluginNameField;
 	IBOutlet NSSecureTextField *requestPasswordPasswordField;
 	
-	IBOutlet NSView *dialogSecureTextAccessoryView;
-	IBOutlet NSView *dialogPlainTextAccessoryView;
+	IBOutlet NSPanel *dialogPanel;
+	IBOutlet NSTabView *dialogInputSwitcher;
+	IBOutlet NSTextField *dialogMessage;
 	IBOutlet NSSecureTextField *dialogSecureTextField;
 	IBOutlet NSTextField *dialogPlainTextField;
 	

@@ -14,9 +14,10 @@
                 <outlet property="connectionResizeContainer" destination="4888" id="5164"/>
                 <outlet property="connectionSplitView" destination="5741" id="5745"/>
                 <outlet property="connectionView" destination="5739" id="5740"/>
-                <outlet property="dialogPlainTextAccessoryView" destination="PfC-LU-B22" id="kHQ-ZZ-GbL"/>
+                <outlet property="dialogInputSwitcher" destination="Y1E-Gx-eVK" id="rMG-Lq-WGW"/>
+                <outlet property="dialogMessage" destination="ilh-1H-1kR" id="PAx-nt-pv5"/>
+                <outlet property="dialogPanel" destination="YuL-CQ-m9u" id="gLu-h9-ZRf"/>
                 <outlet property="dialogPlainTextField" destination="8Re-5z-cnh" id="pBe-4r-Tyv"/>
-                <outlet property="dialogSecureTextAccessoryView" destination="8mE-Sr-CfQ" id="plM-AA-CXS"/>
                 <outlet property="dialogSecureTextField" destination="XJy-Je-XtI" id="6SP-QE-xkU"/>
                 <outlet property="editButtonsView" destination="5862" id="5882"/>
                 <outlet property="errorDetailText" destination="5434" id="5437"/>
@@ -27,9 +28,9 @@
                 <outlet property="helpButton" destination="4829" id="5458"/>
                 <outlet property="progressIndicator" destination="5422" id="5426"/>
                 <outlet property="progressIndicatorText" destination="5423" id="5425"/>
-                <outlet property="requestPasswordAccessoryView" destination="eXu-WW-1SA" id="67S-wG-21A"/>
                 <outlet property="requestPasswordPasswordField" destination="iX8-1c-QGP" id="f2E-RB-7D1"/>
                 <outlet property="requestPasswordPluginNameField" destination="qYD-Yv-BoC" id="4Ps-j5-3U9"/>
+                <outlet property="requestPluginPasswordPanel" destination="moK-Hx-o9Z" id="HVY-Py-Pz3"/>
                 <outlet property="saveFavoriteButton" destination="5869" id="5874"/>
                 <outlet property="socketColorField" destination="5896" id="5897"/>
                 <outlet property="socketConnectionFormContainer" destination="5162" id="5163"/>
@@ -2597,89 +2598,251 @@ DQ
                 </textField>
             </subviews>
         </customView>
-        <customView id="eXu-WW-1SA" userLabel="Request Password Accessory View">
-            <rect key="frame" x="-5" y="0.0" width="334" height="47"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-            <subviews>
-                <textField toolTip="The name of the authentication plugin MySQL wants to use" horizontalHuggingPriority="251" verticalHuggingPriority="750" id="kJN-ff-ksF">
-                    <rect key="frame" x="-2" y="30" width="105" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Plugin:" id="r9R-qm-igR">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="qYD-Yv-BoC">
-                    <rect key="frame" x="107" y="30" width="229" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="$pluginName" id="6ge-00-IRy">
-                        <font key="font" metaFont="systemBold"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-                <secureTextField verticalHuggingPriority="750" id="iX8-1c-QGP">
-                    <rect key="frame" x="109" y="0.0" width="225" height="22"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="de0-rh-heM">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        <allowedInputSourceLocales>
-                            <string>NSAllRomanInputSourcesLocaleIdentifier</string>
-                        </allowedInputSourceLocales>
-                    </secureTextFieldCell>
-                </secureTextField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="YdZ-UM-eof">
-                    <rect key="frame" x="-2" y="2" width="105" height="17"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="afg-rd-MnW">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-            </subviews>
-            <point key="canvasLocation" x="104" y="923.5"/>
-        </customView>
-        <customView misplaced="YES" id="8mE-Sr-CfQ" userLabel="Dialog Prompt Secure Accessory View">
-            <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
-            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-            <subviews>
-                <secureTextField verticalHuggingPriority="750" misplaced="YES" id="XJy-Je-XtI">
-                    <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="7px-hV-TVe">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        <allowedInputSourceLocales>
-                            <string>NSAllRomanInputSourcesLocaleIdentifier</string>
-                        </allowedInputSourceLocales>
-                    </secureTextFieldCell>
-                </secureTextField>
-            </subviews>
-            <point key="canvasLocation" x="-193" y="496"/>
-        </customView>
-        <customView misplaced="YES" id="PfC-LU-B22" userLabel="Dialog Prompt Plain Accessory View">
-            <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
-            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-            <subviews>
-                <textField verticalHuggingPriority="750" misplaced="YES" id="8Re-5z-cnh">
-                    <rect key="frame" x="0.0" y="0.0" width="300" height="22"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="Zi0-mB-J1H">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-            </subviews>
-            <point key="canvasLocation" x="156" y="496"/>
-        </customView>
+        <window title="Request Password Sheet" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="moK-Hx-o9Z" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" documentModal="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="116" y="59" width="490" height="259"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1245" height="745"/>
+            <view key="contentView" misplaced="YES" id="ie9-q0-PrU">
+                <rect key="frame" x="0.0" y="0.0" width="490" height="259"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView misplaced="YES" id="0kn-t8-Tqv">
+                        <rect key="frame" x="20" y="175" width="75" height="64"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="appIcon" id="Sb2-IH-EIt"/>
+                    </imageView>
+                    <imageView misplaced="YES" id="u8g-Lg-OMr">
+                        <rect key="frame" x="69" y="171" width="32" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="NSCaution" id="GU9-9P-gCy"/>
+                    </imageView>
+                    <button verticalHuggingPriority="750" misplaced="YES" tag="1" id="ECr-Qh-cUC">
+                        <rect key="frame" x="310" y="13" width="166" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Connect Anyway" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zV1-3p-hkb">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="_insecurePasswordAlertAction:" target="-2" id="QgT-fi-7qY"/>
+                            <outlet property="nextKeyView" destination="rs2-TE-NZ2" id="yQP-ta-o2h"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="dny-1X-EQ9">
+                        <rect key="frame" x="107" y="222" width="365" height="17"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Transmit password insecurely?" id="Cau-Ep-LuZ">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="nwa-42-vrr">
+                        <rect key="frame" x="107" y="116" width="365" height="98"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="n2R-jf-nGO">
+                            <font key="font" metaFont="smallSystem"/>
+                            <string key="title">The MySQL server has requested the password to be transmitted in an insecure manner. This could be indicative of an attack on the server or your network connection!
+
+If you still want to continue anyway, manually reenter your connection password.</string>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="qYD-Yv-BoC">
+                        <rect key="frame" x="210" y="91" width="262" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="$pluginName" id="6ge-00-IRy">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <secureTextField verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="iX8-1c-QGP">
+                        <rect key="frame" x="212" y="61" width="258" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxY="YES"/>
+                        <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="de0-rh-heM">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <allowedInputSourceLocales>
+                                <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                            </allowedInputSourceLocales>
+                        </secureTextFieldCell>
+                        <connections>
+                            <outlet property="nextKeyView" destination="ECr-Qh-cUC" id="yo6-CQ-qaB"/>
+                        </connections>
+                    </secureTextField>
+                    <textField toolTip="The name of the authentication plugin MySQL wants to use" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="kJN-ff-ksF">
+                        <rect key="frame" x="107" y="91" width="99" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Plugin:" id="r9R-qm-igR">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="YdZ-UM-eof">
+                        <rect key="frame" x="107" y="63" width="99" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Password:" id="afg-rd-MnW">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button verticalHuggingPriority="750" misplaced="YES" id="rs2-TE-NZ2">
+                        <rect key="frame" x="174" y="13" width="136" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Disconnect" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="U8s-6e-bqF">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="_insecurePasswordAlertAction:" target="-2" id="opQ-Xw-hd7"/>
+                            <outlet property="nextKeyView" destination="iX8-1c-QGP" id="c6X-mF-vDR"/>
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="initialFirstResponder" destination="iX8-1c-QGP" id="2PV-zV-HRJ"/>
+            </connections>
+            <point key="canvasLocation" x="-92" y="-355.5"/>
+        </window>
+        <window title="Server Dialog Prompt" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="YuL-CQ-m9u" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="119" width="484" height="154"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1916" height="1100"/>
+            <view key="contentView" misplaced="YES" id="984-0K-Tou">
+                <rect key="frame" x="0.0" y="0.0" width="484" height="154"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" misplaced="YES" tag="1" id="8UJ-Lk-hYA">
+                        <rect key="frame" x="340" y="13" width="130" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Continue" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="pNN-He-6Bj">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="_dialogPromptAction:" target="-2" id="rGL-ME-Ftp"/>
+                            <outlet property="nextKeyView" destination="SPb-SE-LWQ" id="1Xq-3q-Bgj"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" misplaced="YES" id="SPb-SE-LWQ">
+                        <rect key="frame" x="212" y="13" width="128" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Disconnect" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Xeu-3I-USx">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="_dialogPromptAction:" target="-2" id="2WT-oh-ys6"/>
+                            <outlet property="nextKeyView" destination="Y1E-Gx-eVK" id="mSx-VC-6x2"/>
+                        </connections>
+                    </button>
+                    <imageView misplaced="YES" id="cnT-sU-Tsg">
+                        <rect key="frame" x="20" y="60" width="75" height="74"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="appIcon" id="7UZ-iF-eu0"/>
+                    </imageView>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="4ju-i1-k4d">
+                        <rect key="frame" x="107" y="117" width="359" height="17"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Server Prompt" id="T4V-yh-dQ2">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="ilh-1H-1kR">
+                        <rect key="frame" x="107" y="93" width="359" height="16"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Multiline Label (will be resized vertically at runtime to fit content)" id="foT-gc-EAi">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <tabView misplaced="YES" drawsBackground="NO" controlSize="mini" type="noTabsNoBorder" id="Y1E-Gx-eVK">
+                        <rect key="frame" x="103" y="51" width="368" height="34"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                        <font key="font" metaFont="miniSystem"/>
+                        <tabViewItems>
+                            <tabViewItem label="Plaintext" identifier="1" id="ZPt-KV-2Aj" userLabel="Plaintext">
+                                <view key="view" id="JtB-zX-K0W">
+                                    <rect key="frame" x="0.0" y="0.0" width="368" height="34"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textField verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="8Re-5z-cnh">
+                                            <rect key="frame" x="4" y="6" width="359" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="Zi0-mB-J1H">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                                <connections>
+                                    <outlet property="initialFirstResponder" destination="8Re-5z-cnh" id="GD8-Za-SHr"/>
+                                </connections>
+                            </tabViewItem>
+                            <tabViewItem label="Secure" identifier="2" id="WYq-4b-9r3" userLabel="Secure">
+                                <view key="view" id="QhJ-mO-TQX">
+                                    <rect key="frame" x="0.0" y="0.0" width="368" height="34"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <secureTextField verticalHuggingPriority="750" misplaced="YES" allowsCharacterPickerTouchBarItem="NO" id="XJy-Je-XtI">
+                                            <rect key="frame" x="4" y="6" width="359" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="7px-hV-TVe">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                <allowedInputSourceLocales>
+                                                    <string>NSAllRomanInputSourcesLocaleIdentifier</string>
+                                                </allowedInputSourceLocales>
+                                            </secureTextFieldCell>
+                                        </secureTextField>
+                                    </subviews>
+                                </view>
+                                <connections>
+                                    <outlet property="initialFirstResponder" destination="XJy-Je-XtI" id="zSf-8P-s7T"/>
+                                </connections>
+                            </tabViewItem>
+                        </tabViewItems>
+                        <connections>
+                            <outlet property="nextKeyView" destination="8UJ-Lk-hYA" id="itK-gC-jwK"/>
+                        </connections>
+                    </tabView>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="initialFirstResponder" destination="Y1E-Gx-eVK" id="wWN-ID-Ejr"/>
+            </connections>
+            <point key="canvasLocation" x="507" y="-718"/>
+        </window>
     </objects>
     <resources>
+        <image name="NSCaution" width="32" height="32"/>
+        <image name="appIcon" width="512" height="512"/>
         <image name="button_action" width="30" height="22"/>
         <image name="button_add" width="30" height="22"/>
         <image name="button_add_folder" width="30" height="22"/>
