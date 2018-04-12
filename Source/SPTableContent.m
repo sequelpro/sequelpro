@@ -2373,6 +2373,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 /**
  * Returns the current result (as shown in table content view) as array, the first object containing the field
  * names as array, the following objects containing the rows as array.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */ 
 - (NSArray *)currentDataResultWithNULLs:(BOOL)includeNULLs hideBLOBs:(BOOL)hide
 {

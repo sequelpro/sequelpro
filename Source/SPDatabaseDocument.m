@@ -79,9 +79,7 @@
 #import "SPBundleHTMLOutputController.h"
 #endif
 #import "SPTableTriggers.h"
-#ifdef SP_CODA /* headers */
 #import "SPTableStructure.h"
-#endif
 #import "SPPrintAccessory.h"
 #import "MGTemplateEngine.h"
 #import "ICUTemplateMatcher.h"
@@ -7279,8 +7277,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[printWebView mainFrame] frameView] documentView] printInfo:printInfo];
 
-	// Perform the print operation on a background thread
-	[op setCanSpawnSeparateThread:YES];
+	// do not try to use webkit from a background thread!
+	[op setCanSpawnSeparateThread:NO];
 
 	// Add the ability to select the orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
@@ -7297,12 +7295,22 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 	[op setPrintPanel:printPanel];
 
-	[op runOperationModalForWindow:[self parentWindow]
-						  delegate:self
-					didRunSelector:nil
-					   contextInfo:nil];
-
+	/* -endTask has to be called first, since the toolbar caches the item enabled state before starting a sheet,
+	 * disables all items and restores the cached state after the sheet ends. Because the database chooser is disabled
+	 * during tasks, launching the sheet before calling -endTask first would result in the following flow:
+	 * - toolbar item caches database chooser state as disabled (because of the active task)
+	 * - sheet is shown
+	 * - endTask reenables database chooser (has no effect because of the open sheet)
+	 * - user dismisses sheet after some time
+	 * - toolbar item restores cached state and disables database chooser again
+	 * => Inconsistent UI: database chooser disabled when it should actually be enabled
+	 */
 	if ([self isWorking]) [self endTask];
+
+	[op runOperationModalForWindow:[self parentWindow]
+	                      delegate:self
+	                didRunSelector:nil
+	                   contextInfo:nil];
 }
 
 /**
@@ -7590,6 +7598,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 
 /**
  * Returns an array of columns for whichever view is being printed.
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSArray *)columnNames
 {

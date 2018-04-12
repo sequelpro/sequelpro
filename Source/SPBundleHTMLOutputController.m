@@ -197,7 +197,7 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 - (IBAction)printDocument:(id)sender
 {
-
+#warning duplicate code with -[SPDatabaseDocument webView:didFinishLoadForFrame:]
 	NSPrintInfo *printInfo = [NSPrintInfo sharedPrintInfo];
 
 	NSSize paperSize = [printInfo paperSize];
@@ -225,8 +225,8 @@ static NSString *SPSaveDocumentAction = @"SPSaveDocument";
 
 	NSPrintOperation *op = [NSPrintOperation printOperationWithView:[[[webView mainFrame] frameView] documentView] printInfo:printInfo];
 
-	// Perform the print operation on a background thread
-	[op setCanSpawnSeparateThread:YES];
+	// do not try to use webkit from a background thread!
+	[op setCanSpawnSeparateThread:NO];
 
 	// Add the ability to select the orientation to print panel
 	NSPrintPanel *printPanel = [op printPanel];
