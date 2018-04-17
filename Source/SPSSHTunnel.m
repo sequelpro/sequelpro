@@ -246,7 +246,10 @@ static unsigned short getRandomPort();
 	[debugMessagesLock unlock];
 	taskExitedUnexpectedly = NO;
 
-	[NSThread detachNewThreadWithName:@"SPSSHTunnel SSH binary communication task" target:self selector:@selector(launchTask:) object:nil];
+	[NSThread detachNewThreadWithName:@"SPSSHTunnel SSH binary communication task"
+	                           target:self
+	                         selector:@selector(launchTask:)
+	                           object:nil];
 }
 
 /*
@@ -317,7 +320,9 @@ static unsigned short getRandomPort();
 
 	// Prepare to set up the arguments for the task
 	taskArguments = [[NSMutableArray alloc] init];
-#define TA(_name,_value) [taskArguments addObjectsFromArray:@[_name,_value]]
+	void (^TA)(NSString *, NSString *) = ^(NSString *_name, NSString *_value) {
+		[taskArguments addObjectsFromArray:@[_name,_value]];
+	};
 	
 	// Enable verbose mode for message parsing
 	[taskArguments addObject:@"-v"];
@@ -328,7 +333,6 @@ static unsigned short getRandomPort();
 	// If explicitly enabled, activate connection multiplexing - note that this can cause connection
 	// instability on some setups, so is currently disabled by default.
 	if (connectionMuxingEnabled) {
-
 		// Enable automatic connection muxing/sharing, for faster connections
 		TA(@"-o",@"ControlMaster=auto");
 
@@ -340,8 +344,8 @@ static unsigned short getRandomPort();
 		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
 		NSString *hashedString = [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8];
 		TA(@"-o",([NSString stringWithFormat:@"ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], hashedString]));
-	} else {
-
+	}
+	else {
 		// Disable muxing if requested
 		TA(@"-S", @"none");
 		TA(@"-o", @"ControlMaster=no");
@@ -374,16 +378,17 @@ static unsigned short getRandomPort();
 	}
 	if ([sshLogin length]) {
 		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
-	} else {
+	}
+	else {
 		[taskArguments addObject:sshHost];
 	}
 	if (useHostFallback) {
 		TA(@"-L",([NSString stringWithFormat:@"%ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]));
 		TA(@"-L",([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]));
-	} else {
+	}
+	else {
 		TA(@"-L", ([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]));
 	}
-#undef TA
 
 	[task setArguments:taskArguments];
 
@@ -412,11 +417,11 @@ static unsigned short getRandomPort();
 
 	// Set up the standard error pipe
 	standardError = [[NSPipe alloc] init];
-    [task setStandardError:standardError];
-    [[ NSNotificationCenter defaultCenter] addObserver:self 
-											  selector:@selector(standardErrorHandler:) 
-												  name:NSFileHandleDataAvailableNotification
-												object:[standardError fileHandleForReading]];
+	[task setStandardError:standardError];
+	[[NSNotificationCenter defaultCenter] addObserver:self
+	                                         selector:@selector(standardErrorHandler:)
+	                                             name:NSFileHandleDataAvailableNotification
+	                                           object:[standardError fileHandleForReading]];
 	[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 
 	{
@@ -481,9 +486,9 @@ static unsigned short getRandomPort();
 	// On tunnel close, clean up, ready for re-use if the delegate reconnects.
 	SPClear(task);
 	SPClear(standardError);
-	[[NSNotificationCenter defaultCenter] removeObserver:self 
-													name:@"NSFileHandleDataAvailableNotification"
-												  object:nil];
+	[[NSNotificationCenter defaultCenter] removeObserver:self
+	                                                name:NSFileHandleDataAvailableNotification
+	                                              object:nil];
 	
 	// If the task closed unexpectedly, alert appropriately
 	if (connectionState != SPMySQLProxyIdle) {
@@ -497,7 +502,6 @@ static unsigned short getRandomPort();
 	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 
 	SPClear(taskEnvironment);
-#undef TA
 	SPClear(taskArguments);
 
 	[pool release];
@@ -508,7 +512,7 @@ static unsigned short getRandomPort();
  */
 - (void)disconnect
 {
-    if (connectionState == SPMySQLProxyIdle) return;
+	if (connectionState == SPMySQLProxyIdle) return;
 
 	// If there's a delegate set, clear it to prevent unexpected state change messaging
 	if (delegate) {
@@ -518,9 +522,9 @@ static unsigned short getRandomPort();
 
 	// Before terminating the tunnel, check that it's actually running. This is to accommodate tunnels which
 	// suddenly disappear as a result of network disconnections. 
-    if ([task isRunning]) [task terminate];
+	if ([task isRunning]) [task terminate];
 }
- 
+
 /*
  * Processes messages recieved from the SSH task.  These may be received singly
  * or several stuck together.
@@ -537,7 +541,7 @@ static unsigned short getRandomPort();
 	if ([notificationText length]) {
 		messages = [notificationText componentsSeparatedByString:@"\n"];
 		enumerator = [messages objectEnumerator];
-		while ((message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]])) {			
+		while ((message = [[enumerator nextObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]])) {
 			if (![message length]) continue;
 			[debugMessagesLock lock];
 			[debugMessages addObject:[NSString stringWithString:message]];
@@ -590,7 +594,7 @@ static unsigned short getRandomPort();
 	if (connectionState != SPMySQLProxyIdle) {
 		[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
 	}
-		
+
 	[notificationText release];
 }
 
@@ -631,27 +635,27 @@ static unsigned short getRandomPort();
  */
 - (BOOL)getResponseForQuestion:(NSString *)theQuestion
 {
-    // Lock the answer available lock
-    [[answerAvailableLock onMainThread] lock];
-    
-    // Request an answer on the main thread (UI stuff must be done on main thread)
+	// Lock the answer available lock
+	[[answerAvailableLock onMainThread] lock];
+
+	// Request an answer on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetResponseForQuestion:) withObject:theQuestion waitUntilDone:YES];
-	
-    // Wait for closeSSHQuestionSheet: to unlock the lock, indicating an answer is available
+
+	// Wait for closeSSHQuestionSheet: to unlock the lock, indicating an answer is available
 	while (![answerAvailableLock tryLock]) usleep(25000);
-    
-    // Save the answer
-    BOOL response = requestedResponse;
-    
-    // Unlock the lock again
-    [answerAvailableLock unlock];
-    
-    // Return the answer
+
+	// Save the answer
+	BOOL response = requestedResponse;
+
+	// Unlock the lock again
+	[answerAvailableLock unlock];
+
+	// Return the answer
 	return response;
 }
 
 - (void)workerGetResponseForQuestion:(NSString *)theQuestion
-{	
+{
 	NSSize questionTextSize;
 	NSRect windowFrameRect;
 
@@ -661,9 +665,13 @@ static unsigned short getRandomPort();
 	windowFrameRect = [sshQuestionDialog frame];
 	windowFrameRect.size.height = ((questionTextSize.height < 100)?100:questionTextSize.height) + 70 + ([sshPasswordDialog isSheet]?0:22);
 	[sshQuestionDialog setFrame:windowFrameRect display:NO];
-    
-    //show the question window
-	[NSApp beginSheet:sshQuestionDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+
+	//show the question window
+	[NSApp beginSheet:sshQuestionDialog
+	   modalForWindow:parentWindow
+	    modalDelegate:nil
+	   didEndSelector:NULL
+	      contextInfo:NULL];
 	[parentWindow makeKeyAndOrderFront:self];
 }
 
@@ -672,10 +680,10 @@ static unsigned short getRandomPort();
  */
 - (IBAction)closeSSHQuestionSheet:(id)sender
 {
-    requestedResponse = [sender tag]==1 ? YES : NO;
-    [NSApp endSheet:sshQuestionDialog];
+	requestedResponse = [sender tag] == 1 ? YES : NO;
+	[NSApp endSheet:sshQuestionDialog];
 	[sshQuestionDialog orderOut:nil];
-    [[answerAvailableLock onMainThread] unlock];
+	[[answerAvailableLock onMainThread] unlock];
 }
 
 /*
@@ -688,26 +696,26 @@ static unsigned short getRandomPort();
 	
 	if (passwordPromptCancelled) return nil;
 
-    // Lock the answer available lock
-    [[answerAvailableLock onMainThread] lock];
-    
-    // Request password on the main thread (UI stuff must be done on main thread)
+	// Lock the answer available lock
+	[[answerAvailableLock onMainThread] lock];
+
+	// Request password on the main thread (UI stuff must be done on main thread)
 	[self performSelectorOnMainThread:@selector(workerGetPasswordForQuery:) withObject:theQuery waitUntilDone:YES];
 
-    // Wait for closeSSHPasswordSheet: to unlock the lock, indicating an answer is available
+	// Wait for closeSSHPasswordSheet: to unlock the lock, indicating an answer is available
 	while (![answerAvailableLock tryLock]) usleep(25000);
 
-    // Save the answer
+	// Save the answer
 	NSString *thePassword = nil;
-    if (requestedPassphrase) {
-        thePassword = [NSString stringWithString:requestedPassphrase];
-        SPClear(requestedPassphrase);
-    }
-    
-    // Unlock the lock again
-    [answerAvailableLock unlock];
-    
-    // Return the answer
+	if (requestedPassphrase) {
+		thePassword = [NSString stringWithString:requestedPassphrase];
+		SPClear(requestedPassphrase);
+	}
+
+	// Unlock the lock again
+	[answerAvailableLock unlock];
+
+	// Return the answer
 	return thePassword;
 }
 
@@ -722,12 +730,12 @@ static unsigned short getRandomPort();
 	if (keyName) {
 		[sshPasswordText setStringValue:[NSString stringWithFormat:NSLocalizedString(@"Enter your password for the SSH key\n\"%@\"", @"SSH key password prompt"), keyName]];
 		[sshPasswordKeychainCheckbox setHidden:NO];
-        currentKeyName = [keyName retain];
+		currentKeyName = [keyName retain];
 	} 
 	else {
 		[sshPasswordText setStringValue:theQuery];
 		[sshPasswordKeychainCheckbox setHidden:YES];
-        currentKeyName = nil;
+		currentKeyName = nil;
 	}
 
 	// Request the password, sizing the window appropriately to fit the query
@@ -736,7 +744,11 @@ static unsigned short getRandomPort();
 	windowFrameRect.size.height = ((queryTextSize.height < 40)?40:queryTextSize.height) + 140 + ([sshPasswordDialog isSheet]?0:22);
 	
 	[sshPasswordDialog setFrame:windowFrameRect display:NO];
-	[NSApp beginSheet:sshPasswordDialog modalForWindow:parentWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+	[NSApp beginSheet:sshPasswordDialog
+	   modalForWindow:parentWindow
+	    modalDelegate:nil
+	   didEndSelector:NULL
+	      contextInfo:NULL];
 	[parentWindow makeKeyAndOrderFront:self];
 }
  
@@ -745,33 +757,33 @@ static unsigned short getRandomPort();
  */
 - (IBAction)closeSSHPasswordSheet:(id)sender
 {
-    requestedResponse = [sender tag]==1 ? YES : NO;
+	requestedResponse = [sender tag]==1 ? YES : NO;
 	
 	[NSApp endSheet:sshPasswordDialog];
 	[sshPasswordDialog orderOut:nil];
-    
-    if (requestedResponse) {
-        NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
-        [sshPasswordField setStringValue:@""];
-        if ([delegate respondsToSelector:@selector(undoManager)] && [delegate undoManager]) {
-            [[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
-        } else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
-            [[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];			
-        }
-        requestedPassphrase = [[NSString alloc] initWithString:thePassword];
-        
-        // Add to keychain if appropriate
-        if (currentKeyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
-            SPKeychain *keychain = [[SPKeychain alloc] init];
-            [keychain addPassword:thePassword forName:@"SSH" account:currentKeyName withLabel:[NSString stringWithFormat:@"SSH: %@", currentKeyName]];
-            [keychain release];
-            SPClear(currentKeyName);
-        }
-    }
+
+	if (requestedResponse) {
+		NSString *thePassword = [NSString stringWithString:[sshPasswordField stringValue]];
+		[sshPasswordField setStringValue:@""];
+		if ([delegate respondsToSelector:@selector(undoManager)] && [delegate undoManager]) {
+			[[delegate undoManager] removeAllActionsWithTarget:sshPasswordField];
+		} else if ([[parentWindow windowController] document] && [[[parentWindow windowController] document] undoManager]) {
+			[[[[parentWindow windowController] document] undoManager] removeAllActionsWithTarget:sshPasswordField];
+		}
+		requestedPassphrase = [[NSString alloc] initWithString:thePassword];
+
+		// Add to keychain if appropriate
+		if (currentKeyName && [sshPasswordKeychainCheckbox state] == NSOnState) {
+			SPKeychain *keychain = [[SPKeychain alloc] init];
+			[keychain addPassword:thePassword forName:@"SSH" account:currentKeyName withLabel:[NSString stringWithFormat:@"SSH: %@", currentKeyName]];
+			[keychain release];
+			SPClear(currentKeyName);
+		}
+	}
 	
 	if (!requestedPassphrase) passwordPromptCancelled = YES;
-    
-    [[answerAvailableLock onMainThread] unlock];
+
+	[[answerAvailableLock onMainThread] unlock];
 }
 
 #pragma mark -
@@ -796,14 +808,14 @@ static unsigned short getRandomPort();
 	[answerAvailableLock tryLock];
 	[answerAvailableLock unlock];
 	SPClear(answerAvailableLock);
-	if (password)         SPClear(password);
-	if (keychainName)     SPClear(keychainName);
-	if (keychainAccount)  SPClear(keychainAccount);
-	if (identityFilePath) SPClear(identityFilePath);
+	SPClear(password);
+	SPClear(keychainName);
+	SPClear(keychainAccount);
+	SPClear(identityFilePath);
 
 	// As this object is not a NSWindowController, use manual top-level nib item management
-	if (sshQuestionDialog) SPClear(sshQuestionDialog);
-	if (sshPasswordDialog) SPClear(sshPasswordDialog);
+	SPClear(sshQuestionDialog);
+	SPClear(sshPasswordDialog);
 	
 	[super dealloc];
 }
