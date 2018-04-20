@@ -7414,130 +7414,130 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
+	NSMutableDictionary *connection = [NSMutableDictionary dictionary];
+	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
+
+	SPMainQSync(^{
+		[connection setDictionary:[self connectionInformation]];
+		[printData setObject:[self columnNames] forKey:@"columns"];
+		SPTableViewType view = [self currentlySelectedView];
+
+		NSString *heading = @"";
+
+		// Table source view
+		if (view == SPTableViewStructure) {
+
+			NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
+
+			NSInteger tableType = [tablesListInstance tableType];
+
+			switch (tableType) {
+				case SPTableTypeTable:
+					heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
+					break;
+				case SPTableTypeView:
+					heading = NSLocalizedString(@"View Structure", @"view structure print heading");
+					break;
+			}
+
+			NSArray *rows = [[NSArray alloc] initWithArray:
+					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
+			];
+
+			NSArray *indexes = [[NSArray alloc] initWithArray:
+					[[tableSource objectForKey:@"indexes"] objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
+			];
+
+			NSArray *indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
+
+			[printData setObject:rows forKey:@"rows"];
+			[printData setObject:indexes forKey:@"indexes"];
+			[printData setObject:indexColumns forKey:@"indexColumns"];
+
+			if ([indexes count]) [printData setObject:@1 forKey:@"hasIndexes"];
+
+			[rows release];
+			[indexes release];
+		}
+		// Table content view
+		else if (view == SPTableViewContent) {
+
+			NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO hideBLOBs:YES];
+
+			heading = NSLocalizedString(@"Table Content", @"table content print heading");
+
+			NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+			];
+
+			[printData setObject:rows forKey:@"rows"];
+			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
+
+			[rows release];
+		}
+		// Custom query view
+		else if (view == SPTableViewCustomQuery) {
+
+			NSArray *data = [customQueryInstance currentResult];
+
+			heading = NSLocalizedString(@"Query Result", @"query result print heading");
+
+			NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+			];
+
+			[printData setObject:rows forKey:@"rows"];
+			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
+
+			[rows release];
+		}
+		// Table relations view
+		else if (view == SPTableViewRelations) {
+
+			NSArray *data = [tableRelationsInstance relationDataForPrinting];
+
+			heading = NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab");
+
+			NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+			];
+
+			[printData setObject:rows forKey:@"rows"];
+
+			[rows release];
+		}
+		// Table triggers view
+		else if (view == SPTableViewTriggers) {
+
+			NSArray *data = [tableTriggersInstance triggerDataForPrinting];
+
+			heading = NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab");
+
+			NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+			];
+
+			[printData setObject:rows forKey:@"rows"];
+
+			[rows release];
+		}
+
+		[printData setObject:heading forKey:@"heading"];
+	});
+
 	// Set up template engine with your chosen matcher
 	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 
 	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
 
-	NSMutableDictionary *connection = [self connectionInformation];
-
-	NSString *heading = @"";
-	NSArray *rows, *indexes, *indexColumns = nil;
-
-	NSArray *columns = [self columnNames];
-
-	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
-
-	SPTableViewType view = [self currentlySelectedView];
-
-	// Table source view
-	if (view == SPTableViewStructure) {
-
-		NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
-
-		NSInteger tableType = [tablesListInstance tableType];
-
-		switch (tableType) {
-			case SPTableTypeTable:
-				heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
-				break;
-			case SPTableTypeView:
-				heading = NSLocalizedString(@"View Structure", @"view structure print heading");
-				break;
-		}
-
-		rows = [[NSArray alloc] initWithArray:
-				[[tableSource objectForKey:@"structure"] objectsAtIndexes:
-				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
-				];
-
-		indexes = [[NSArray alloc] initWithArray:
-				   [[tableSource objectForKey:@"indexes"] objectsAtIndexes:
-					[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
-				   ];
-
-		indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
-
-		[printData setObject:rows forKey:@"rows"];
-		[printData setObject:indexes forKey:@"indexes"];
-		[printData setObject:indexColumns forKey:@"indexColumns"];
-
-		if ([indexes count]) [printData setObject:@1 forKey:@"hasIndexes"];
-
-		[rows release];
-		[indexes release];
-	}
-	// Table content view
-	else if (view == SPTableViewContent) {
-
-		NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO hideBLOBs:YES];
-
-		heading = NSLocalizedString(@"Table Content", @"table content print heading");
-
-		rows = [[NSArray alloc] initWithArray:
-				[data objectsAtIndexes:
-				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-				];
-
-		[printData setObject:rows forKey:@"rows"];
-		[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-
-		[rows release];
-	}
-	// Custom query view
-	else if (view == SPTableViewCustomQuery) {
-
-		NSArray *data = [customQueryInstance currentResult];
-
-		heading = NSLocalizedString(@"Query Result", @"query result print heading");
-
-		rows = [[NSArray alloc] initWithArray:
-				[data objectsAtIndexes:
-				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-				];
-
-		[printData setObject:rows forKey:@"rows"];
-		[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-
-		[rows release];
-	}
-	// Table relations view
-	else if (view == SPTableViewRelations) {
-
-		NSArray *data = [tableRelationsInstance relationDataForPrinting];
-
-		heading = NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab");
-
-		rows = [[NSArray alloc] initWithArray:
-				[data objectsAtIndexes:
-				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-				];
-
-		[printData setObject:rows forKey:@"rows"];
-
-		[rows release];
-	}
-	// Table triggers view
-	else if (view == SPTableViewTriggers) {
-
-		NSArray *data = [tableTriggersInstance triggerDataForPrinting];
-
-		heading = NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab");
-
-		rows = [[NSArray alloc] initWithArray:
-				[data objectsAtIndexes:
-				 [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-				];
-
-		[printData setObject:rows forKey:@"rows"];
-
-		[rows release];
-	}
-
 	[engine setObject:connection forKey:@"c"];
 
-	[printData setObject:heading forKey:@"heading"];
-	[printData setObject:columns forKey:@"columns"];
 	[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
 	[printData setObject:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? @"1px solid #CCCCCC" : @"none" forKey:@"gridlines"];
 
@@ -7643,12 +7643,12 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (NSMutableDictionary *)connectionInformation
 {
+	NSDictionary *infoDict = [[NSBundle mainBundle] infoDictionary];
 	NSString *versionForPrint = [NSString stringWithFormat:@"%@ %@ (%@ %@)",
-								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"],
-								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"],
-								 NSLocalizedString(@"build", @"build label"),
-								 [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
-								 ];
+	                                                       [infoDict objectForKey:@"CFBundleName"],
+	                                                       [infoDict objectForKey:@"CFBundleShortVersionString"],
+	                                                       NSLocalizedString(@"build", @"build label"),
+	                                                       [infoDict objectForKey:@"CFBundleVersion"]];
 
 	NSMutableDictionary *connection = [NSMutableDictionary dictionary];
 
