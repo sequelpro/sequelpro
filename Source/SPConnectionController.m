@@ -58,6 +58,7 @@
 #endif
 #import "SPSplitView.h"
 #import "SPColorSelectorView.h"
+#import "SPFunctions.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -1931,8 +1932,15 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	[editButtonsView setAlphaValue:0.0f];
 	[editButtonsView setHidden:NO];
 	[editButtonsView setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y - 30)];
-	[[editButtonsView animator] setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y + 30)];
-	[[editButtonsView animator] setAlphaValue:1.0f];
+	// The animation is started async because there is a bug/oddity with layer-backed views and animating frameOrigin (at least in 10.13):
+	// If both calls to -setFrameOrigin: are in the same method, CA would only animate the difference between those calls (which is 0 here).
+	// This works fine when not using layers, but then there is another issue with the progress indicator (#2903)
+	SPMainLoopAsync(^{
+		[NSAnimationContext beginGrouping];
+		[[editButtonsView animator] setFrameOrigin:NSMakePoint([editButtonsView frame].origin.x, [editButtonsView frame].origin.y + 30)];
+		[[editButtonsView animator] setAlphaValue:1.0f];
+		[NSAnimationContext endGrouping];
+	});
 
 	// Update the "Save" button state as appropriate
 	[saveFavoriteButton setEnabled:([self selectedFavorite] != nil)];
@@ -2975,6 +2983,13 @@ static NSComparisonResult _compareFavoritesUsingKey(id favorite1, id favorite2, 
 	// Otherwise, center
 	else {
 		connectionDetailsFrame.origin.y = (scrollViewFrame.size.height - connectionDetailsFrame.size.height)/3;
+		// the division may lead to values that are not valid for the current screen size (e.g. non-integer values on a
+		// @1x non-retina screen). The OS works something out when not using layer-backed views, but in the latter
+		// case the result will look like garbage if we don't fix this.
+		// This code is taken from Apple's "BlurryView" example code.
+		connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectToBase:connectionDetailsFrame];
+		connectionDetailsFrame.origin.y = round(connectionDetailsFrame.origin.y);
+		connectionDetailsFrame = [[connectionDetailsScrollView superview] convertRectFromBase:connectionDetailsFrame];
 		[connectionResizeContainer setFrame:connectionDetailsFrame];
 		scrollDocumentFrame.size.height = scrollViewFrame.size.height;
 		[[connectionDetailsScrollView documentView] setFrame:scrollDocumentFrame];
