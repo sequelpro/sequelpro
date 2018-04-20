@@ -985,11 +985,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Update the rows count as necessary
 	[self updateNumberOfRows];
 
-	// Set the filter text
-	[self updateCountText];
-
-	// Update pagination
-	[[self onMainThread] updatePaginationState];
+	SPMainQSync(^{
+		// Set the filter text
+		[self updateCountText];
+		
+		// Update pagination
+		[self updatePaginationState];
+	});
 
 	// Retrieve and cache the column definitions for editing views
 	if (cqColumnDefinition) [cqColumnDefinition release];
@@ -1163,6 +1165,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 /**
  * Update the table count/selection text
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (void)updateCountText
 {
@@ -1208,7 +1212,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	// If rows are selected, append selection count
-	NSInteger selectedRows = [[tableContentView onMainThread] numberOfSelectedRows]; // -numberOfSelectedRows is a UI method!
+	NSInteger selectedRows = [tableContentView numberOfSelectedRows]; // -numberOfSelectedRows is a UI method!
 	if (selectedRows > 0) {
 		[countString appendString:@"; "];
 		if (selectedRows == 1)
@@ -1219,7 +1223,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 #ifndef SP_CODA
-	[[countText onMainThread] setStringValue:countString];
+	[countText setStringValue:countString];
 #endif
 }
 
