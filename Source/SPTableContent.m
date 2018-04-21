@@ -353,10 +353,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Restore the view origin if appropriate
 	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
-
-		// Scroll the viewport to the saved location
-		selectionViewportToRestore.size = [tableContentView visibleRect].size;
-		[(SPCopyTable*)[tableContentView onMainThread] scrollRectToVisible:selectionViewportToRestore];
+		SPMainQSync(^{
+			// Scroll the viewport to the saved location
+			selectionViewportToRestore.size = [tableContentView visibleRect].size;
+			[tableContentView scrollRectToVisible:selectionViewportToRestore];
+		});
 	}
 
 	// Update display if necessary
@@ -1071,9 +1072,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	[tableValues awaitDataDownloaded];
 
-	tableRowsCount = [tableValues count];
-
 	SPMainQSync(^{
+		tableRowsCount = [tableValues count];
+		
 		// If the final column autoresize wasn't performed, perform it
 		if (tableLoadLastRowCount < 200) [self autosizeColumns];
 
@@ -1090,7 +1091,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  * ready to be dropped into a WHERE clause, or nil if no filtering
  * is active.
  *
- * @warning Uses UI. ONLY call from main thread!
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSString *)tableFilterString
 {
@@ -1341,7 +1342,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 		// Save view details to restore safely if possible (except viewport, which will be
 		// preserved automatically, and can then be scrolled as the table loads)
-		[self storeCurrentDetailsForRestoration];
+		[[self onMainThread] storeCurrentDetailsForRestoration];
 		[self setViewportToRestore:NSZeroRect];
 
 		// Clear the table data column cache and status (including counts)
@@ -3864,7 +3865,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 /**
  * Provide a getter for the current filter details
  *
- * @warning Uses UI. MUST call from main thread!
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (NSDictionary *) filterSettings
 {
@@ -3971,6 +3972,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 /**
  * Convenience method for storing all current settings for restoration
+ *
+ * MUST BE CALLED ON THE UI THREAD!
  */
 - (void) storeCurrentDetailsForRestoration
 {

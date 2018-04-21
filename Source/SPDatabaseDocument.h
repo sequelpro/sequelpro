@@ -57,6 +57,9 @@
 @class SPCharsetCollationHelper;
 @class SPGotoDatabaseController;
 @class SPCreateDatabaseInfo;
+@class SPExtendedTableInfo;
+@class SPTableTriggers;
+@class SPTableRelations;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -76,14 +79,14 @@
 
 	// IBOutlets
 	IBOutlet SPTablesList *tablesListInstance;
-	IBOutlet SPTableStructure *tableSourceInstance;				
+	IBOutlet SPTableStructure *tableSourceInstance;
 	IBOutlet SPTableContent <SPDatabaseContentViewDelegate> *tableContentInstance;
-	IBOutlet id tableRelationsInstance;
-	IBOutlet id tableTriggersInstance;
+	IBOutlet SPTableRelations *tableRelationsInstance;
+	IBOutlet SPTableTriggers *tableTriggersInstance;
 	IBOutlet id customQueryInstance;
 	IBOutlet id tableDumpInstance;
 	IBOutlet SPTableData *tableDataInstance;
-	IBOutlet id extendedTableInfoInstance;
+	IBOutlet SPExtendedTableInfo *extendedTableInfoInstance;
 	IBOutlet id databaseDataInstance;
 #ifndef SP_CODA
 	IBOutlet id spHistoryControllerInstance;
@@ -126,8 +129,6 @@
 	IBOutlet id taskProgressIndicator;
 	IBOutlet id taskDescriptionText;
 	IBOutlet NSButton *taskCancelButton;
-	
-	IBOutlet id favoritesButton;
 #endif
 	
 	IBOutlet id databaseNameField;
@@ -194,8 +195,6 @@
 #ifndef SP_CODA /* ivars */
 	SPProcessListController *processListController;
 	SPServerVariablesController *serverVariablesController;
-
-	NSInteger currentTabIndex;
 #endif
 	NSString *selectedTableName;
 	SPTableType selectedTableType;
@@ -305,9 +304,7 @@
 @property (assign) id databaseRenameNameField;
 @property (assign) id renameDatabaseButton;
 @property (assign) id databaseRenameSheet;
-#endif
 
-#ifdef SP_CODA /* ivars */
 @property (assign) id delegate;
 @property (readonly) NSMutableArray* allDatabases;
 @property (assign) NSProgressIndicator* queryProgressBar;
@@ -335,9 +332,9 @@
 
 #ifndef SP_CODA /* method decls */
 - (void)initQueryEditorWithString:(NSString *)query;
+#endif
 
 // Connection callback and methods
-#endif
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (SPMySQLConnection *)getConnection;
 
@@ -357,7 +354,7 @@
 - (IBAction)renameDatabase:(id)sender;
 #ifndef SP_CODA /* method decls */
 - (IBAction)showMySQLHelp:(id)sender;
-- (IBAction) makeTableListFilterHaveFocus:(id)sender;
+- (IBAction)makeTableListFilterHaveFocus:(id)sender;
 - (IBAction)showServerVariables:(id)sender;
 - (IBAction)showServerProcesses:(id)sender;
 - (IBAction)shutdownServer:(id)sender;
@@ -530,7 +527,6 @@
 - (void)connect;
 - (void)setTableSourceInstance:(SPTableStructure*)source;
 - (void)setTableContentInstance:(SPTableContent*)content;
-
 #endif
 
 #pragma mark - SPDatabaseViewController
