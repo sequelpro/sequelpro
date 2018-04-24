@@ -839,7 +839,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		isFiltered = NO;
 	}
 	
-	if (!passedInitialSort)
+	if (!passedInitialSort && [prefs boolForKey:SPTableSortDescendingInitially])
 	{
 		sortCol = @(0);
 		isDesc = YES;
