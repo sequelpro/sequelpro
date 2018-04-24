@@ -348,6 +348,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
+	passedInitialSort = NO;
+
 	// Trigger a data refresh
 	[self loadTableValues];
 
@@ -835,6 +837,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		isFiltered = YES;
 	} else {
 		isFiltered = NO;
+	}
+	
+	if (!passedInitialSort)
+	{
+		sortCol = @(0);
+		isDesc = YES;
+		passedInitialSort = YES;
 	}
 
 	// Add sorting details if appropriate

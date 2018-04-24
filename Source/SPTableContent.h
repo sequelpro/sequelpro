@@ -135,7 +135,7 @@
 	NSUInteger tableRowsCount, previousTableRowsCount;
 	NSString *compareType;
 	NSNumber *sortCol;
-	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit, passedInitialSort;
 	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
 	NSUserDefaults *prefs;
 	NSInteger currentlyEditingRow, maxNumRows;
