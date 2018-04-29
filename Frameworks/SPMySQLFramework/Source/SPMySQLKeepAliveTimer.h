@@ -37,7 +37,9 @@
 	NSTimer *wrappedTimer;
 }
 
-- (id)initWithInterval:(NSTimeInterval)anInterval target:(id)aTarget selector:(SEL)aSelector;
+- (instancetype)initWithInterval:(NSTimeInterval)anInterval target:(id)aTarget selector:(SEL)aSelector NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
 - (void)invalidate;
 
 @end

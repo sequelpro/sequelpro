@@ -946,31 +946,28 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (BOOL)_waitForNetworkConnectionWithTimeout:(double)timeoutSeconds
 {
-	BOOL hostReachable;
-	Boolean flagsValid;
-	SCNetworkReachabilityRef reachabilityTarget;
-	SCNetworkConnectionFlags reachabilityStatus;
-
 	// Set up the reachability target - the host is not important, and is not connected to.
-	reachabilityTarget = SCNetworkReachabilityCreateWithName(NULL, "dev.mysql.com");
+	SCNetworkReachabilityRef reachabilityTarget = SCNetworkReachabilityCreateWithName(NULL, "dev.mysql.com");
 
+	BOOL hostReachable;
 	// In a loop until success or the timeout, test reachability
 	uint64_t loopStart_t = mach_absolute_time();
 	while (1) {
+		SCNetworkReachabilityFlags reachabilityStatus;
 
 		// Check reachability
-		flagsValid = SCNetworkReachabilityGetFlags(reachabilityTarget, &reachabilityStatus);
+		Boolean flagsValid = SCNetworkReachabilityGetFlags(reachabilityTarget, &reachabilityStatus);
 
 		hostReachable = flagsValid ? YES : NO;
 
 		// Ensure that the network is reachable
-		if (hostReachable && !(reachabilityStatus & kSCNetworkFlagsReachable)) hostReachable = NO;
+		if (hostReachable && !(reachabilityStatus & kSCNetworkReachabilityFlagsReachable)) hostReachable = NO;
 
 		// Ensure that Airport is up/connected if present
-		if (hostReachable && (reachabilityStatus & kSCNetworkFlagsConnectionRequired)) hostReachable = NO;
+		if (hostReachable && (reachabilityStatus & kSCNetworkReachabilityFlagsConnectionRequired)) hostReachable = NO;
 
 		// If the host *is* reachable, return success
-		if (hostReachable) return YES;
+		if (hostReachable) break;
 
 		// If the timeout has been exceeded, break out of the loop
 		if (_elapsedSecondsSinceAbsoluteTime(loopStart_t) >= timeoutSeconds) break;
@@ -979,8 +976,8 @@ asm(".desc ___crashreporter_info__, 0x10");
 		usleep(250000);
 	}
 
-	// All checks failed - return failure
-	return NO;
+	CFRelease(reachabilityTarget);
+	return hostReachable;
 }
 
 /**

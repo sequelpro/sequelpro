@@ -28,6 +28,8 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPMySQLGeometryData.h"
+#include <stdlib.h>
+#include <string.h>
 
 enum wkbType
 {
@@ -57,7 +59,7 @@ typedef struct st_point_2d_
 /**
  * Initialize the SPMySQLGeometryData object
  */
-- (id)init
+- (instancetype)init
 {
 	if ((self = [super init])) {
 		geoBuffer = nil;
@@ -69,7 +71,7 @@ typedef struct st_point_2d_
 /**
  * Initialize the SPMySQLGeometryData object with the WKB data
  */
-- (id)initWithBytes:(const void *)geoData length:(NSUInteger)length
+- (instancetype)initWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	if ((self = [self init])) {
 		bufferLength = length;
@@ -82,7 +84,7 @@ typedef struct st_point_2d_
 /**
  * Return an autorelease SPMySQLGeometryData object
  */
-+ (id)dataWithBytes:(const void *)geoData length:(NSUInteger)length
++ (instancetype)dataWithBytes:(const void *)geoData length:(NSUInteger)length
 {
 	return [[[SPMySQLGeometryData alloc] initWithBytes:geoData length:length] autorelease];
 }

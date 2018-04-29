@@ -59,7 +59,7 @@ static id NSNullPointer;
 /**
  * Standard initialisation - not intended for external use.
  */
-- (id)init
+- (instancetype)init
 {
 	if ((self = [super init])) {
 		stringEncoding = NSASCIIStringEncoding;
@@ -83,7 +83,7 @@ static id NSNullPointer;
  * Standard init method, constructing the SPMySQLResult around a MySQL
  * result pointer and the encoding to use when working with the data.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
 {
 
 	// If no result set was passed in, return nil.

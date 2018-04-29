@@ -51,7 +51,7 @@
 /**
  * Prevent SPMySQLStreamingResults from being init'd as SPMySQLResults.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding
 {
 	[NSException raise:NSInternalInconsistencyException format:@"SPMySQLFullStreamingResults should not be init'd as SPMySQLResults; use initWithMySQLResult:stringEncoding:connection:withFullStreaming: instead."];
 	return nil;
@@ -63,7 +63,7 @@
  * As opposed to SPMySQLResult, defaults to returning rows as arrays, as the result
  * sets are likely to be larger and processed in loops.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
 {
 
 	// If no result set was passed in, return nil.

@@ -51,7 +51,7 @@ typedef struct st_spmysqlstreamingrowdata {
 	struct st_spmysqlstreamingrowdata *nextRow;
 } SPMySQLStreamingRowData;
 
-@interface SPMySQLFastStreamingResult (Private_API)
+@interface SPMySQLFastStreamingResult () // Private API
 
 - (void) _downloadAllData;
 
@@ -317,12 +317,8 @@ typedef struct st_spmysqlstreamingrowdata {
 	return 1;
 }
 
-@end
-
 #pragma mark -
 #pragma mark Result set internals
-
-@implementation SPMySQLFastStreamingResult (Private_API)
 
 /**
  * Used internally to download results in a background thread

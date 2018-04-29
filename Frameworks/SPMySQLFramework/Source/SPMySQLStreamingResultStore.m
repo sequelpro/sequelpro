@@ -105,9 +105,8 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  * The download of results is not started at once - instead, it must be triggered manually
  * via -startDownload, which allows assignment of a result set to replace before use.
  */
-- (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
+- (instancetype)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
 {
-
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
