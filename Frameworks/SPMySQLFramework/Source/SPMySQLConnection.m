@@ -97,7 +97,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 + (void)initialize
 {
-
 	// Set up a pthread thread-specific data key to be used across all classes and threads
 	pthread_key_create(&mySQLThreadInitFlagKey, NULL);
 	mySQLThreadFlag = malloc(1);
@@ -312,7 +311,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)isConnected
 {
-
 	// If the connection has been allowed to drop in the background, restore it if posslbe
 	if (state == SPMySQLConnectionLostInBackground) {
 		[self _reconnectAllowingRetries:YES];
@@ -389,7 +387,6 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
  */
 - (BOOL)checkConnectionIfNecessary
 {
-	
 	// If the connection has been dropped in the background, trigger a
 	// reconnect and return the success state here
 	if (state == SPMySQLConnectionLostInBackground) {
@@ -436,25 +433,24 @@ const char *SPMySQLSSLPermissibleCiphers = "DHE-RSA-AES256-SHA:AES256-SHA:DHE-RS
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 
 	NSArray *possibleSocketLocations = @[
-			@"/tmp/mysql.sock",                                     // Default
-			@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
-			@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
-			@"/var/mysql/mysql.sock",                               // Mac OS X Server default
-			@"/opt/local/var/run/mysqld/mysqld.sock",               // MacPorts MySQL
-			@"/opt/local/var/run/mysql4/mysqld.sock",               // MacPorts MySQL 4
-			@"/opt/local/var/run/mysql5/mysqld.sock",               // MacPorts MySQL 5
-			@"/opt/local/var/run/mariadb-10.0/mysqld.sock",         // MacPorts MariaDB 10.0
-			@"/opt/local/var/run/mariadb-10.1/mysqld.sock",         // MacPorts MariaDB 11.0
-			@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
-			@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
-			@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
-			@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
-			@"/opt/local/lib/mysql/mysql.sock"
+		@"/tmp/mysql.sock",                                     // Default
+		@"/Applications/MAMP/tmp/mysql/mysql.sock",             // MAMP default location
+		@"/Applications/xampp/xamppfiles/var/mysql/mysql.sock", // XAMPP default location
+		@"/var/mysql/mysql.sock",                               // Mac OS X Server default
+		@"/opt/local/var/run/mysqld/mysqld.sock",               // MacPorts MySQL
+		@"/opt/local/var/run/mysql4/mysqld.sock",               // MacPorts MySQL 4
+		@"/opt/local/var/run/mysql5/mysqld.sock",               // MacPorts MySQL 5
+		@"/opt/local/var/run/mariadb-10.0/mysqld.sock",         // MacPorts MariaDB 10.0
+		@"/opt/local/var/run/mariadb-10.1/mysqld.sock",         // MacPorts MariaDB 11.0
+		@"/usr/local/zend/mysql/tmp/mysql.sock",                // Zend Server CE (see Issue #1251)
+		@"/var/run/mysqld/mysqld.sock",                         // As used on Debian/Gentoo
+		@"/var/tmp/mysql.sock",                                 // As used on FreeBSD
+		@"/var/lib/mysql/mysql.sock",                           // As used by Fedora
+		@"/opt/local/lib/mysql/mysql.sock"
 	];
 
-	for (NSUInteger i = 0; i < [possibleSocketLocations count]; i++) {
-		if ([fileManager fileExistsAtPath:[possibleSocketLocations objectAtIndex:i]])
-			return [possibleSocketLocations objectAtIndex:i];
+	for(NSString *path in possibleSocketLocations) {
+		if([fileManager fileExistsAtPath:path]) return path;
 	}
 
 	return nil;
@@ -477,7 +473,6 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (BOOL)_connect
 {
-
 	// If a connection is already active in some form, throw an exception
 	if (state != SPMySQLDisconnected && state != SPMySQLConnectionLostInBackground) {
 		@synchronized (self) {
@@ -686,7 +681,6 @@ asm(".desc ___crashreporter_info__, 0x10");
 
 	// If the connection failed, return NULL
 	if (theConnection != connectionStatus) {
-
 		// If the connection is the master connection, record the error state
 		if (isMaster) {
 			// <TODO>
@@ -883,10 +877,10 @@ asm(".desc ___crashreporter_info__, 0x10");
 			[self setEncodingUsesLatin1Transport:encodingUsesLatin1TransportToRestore];
 			[encodingToRestore release], encodingToRestore = nil;
 		}
-
+	}
 	// If the connection failed and the connection is permitted to retry,
 	// then retry the reconnection.
-	} else if (canRetry && ![[NSThread currentThread] isCancelled]) {
+	else if (canRetry && ![[NSThread currentThread] isCancelled]) {
 
 		// Default to attempting another reconnect
 		SPMySQLConnectionLostDecision connectionLostDecision = SPMySQLConnectionLostReconnect;
@@ -894,9 +888,9 @@ asm(".desc ___crashreporter_info__, 0x10");
 		// If the delegate supports the decision process, ask it how to proceed
 		if (delegateSupportsConnectionLost) {
 			connectionLostDecision = [self _delegateDecisionForLostConnection];
-
+		}
 		// Otherwise default to reconnect, but only a set number of times to prevent a runaway loop
-		} else {
+		else {
 			if (reconnectionRetryAttempts < 5) {
 				connectionLostDecision = SPMySQLConnectionLostReconnect;
 			} else {
@@ -909,6 +903,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 			case SPMySQLConnectionLostDisconnect:
 				[self _updateLastErrorMessage:NSLocalizedString(@"User triggered disconnection", @"User triggered disconnection")];
 				userTriggeredDisconnect = YES;
+				break;
 
 			// By default attempt a reconnect
 			default:
@@ -985,7 +980,6 @@ asm(".desc ___crashreporter_info__, 0x10");
  */
 - (void)_disconnect
 {
-
 	// If state is connection lost, set state directly to disconnected.
 	if (state == SPMySQLConnectionLostInBackground) {
 		state = SPMySQLDisconnected;

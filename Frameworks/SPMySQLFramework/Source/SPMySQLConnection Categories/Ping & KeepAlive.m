@@ -35,6 +35,13 @@
 #import <pthread.h>
 #include <stdio.h>
 
+typedef struct {
+	MYSQL *mySQLConnection;
+	volatile BOOL *keepAlivePingThreadActivePointer;
+	volatile BOOL *keepAliveLastPingSuccessPointer;
+	void *parentId;
+} SPMySQLConnectionPingDetails;
+
 @implementation SPMySQLConnection (Ping_and_KeepAlive)
 
 #pragma mark -
@@ -47,7 +54,6 @@
  */
 - (void)_keepAlive
 {
-
 	// Do nothing if not connected, if keepalive is disabled, or a keepalive is in
 	// progress.
 	if (state != SPMySQLConnected || !useKeepAlive) return;
@@ -185,10 +191,11 @@ end_cleanup:
 
 		// If the ping timeout has been exceeded, or the ping thread has been
 		// cancelled, force a timeout; double-check that the thread is still active.
-		if (([[NSThread currentThread] isCancelled] || pingElapsedTime > pingTimeout)
+		if (
+			([[NSThread currentThread] isCancelled] || pingElapsedTime > pingTimeout)
 			&& keepAlivePingThreadActive
-			&& !threadCancelled)
-		{
+			&& !threadCancelled
+		) {
 			pthread_cancel(keepAlivePingThread_t);
 			threadCancelled = YES;
 
@@ -209,7 +216,7 @@ end_cleanup:
 	keepAlivePingThread_t = NULL;
 	pthread_attr_destroy(&attr);
 
-    // Unlock the connection
+	// Unlock the connection
 	[self _unlockConnection];
 
 	return keepAliveLastPingSuccess;
@@ -278,7 +285,6 @@ void _pingThreadCleanup(void *pingDetails)
  */
 - (BOOL)_cancelKeepAlives
 {
-
 	// If no keepalive thread is active, return
 	if (keepAliveThread) {
 

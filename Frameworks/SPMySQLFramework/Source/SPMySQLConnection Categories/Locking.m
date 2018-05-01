@@ -42,12 +42,11 @@
  */
 - (void)_lockConnection
 {
-
-    // We can only start a query when the condition is SPMySQLConnectionIdle
+	// We can only start a query when the condition is SPMySQLConnectionIdle
 	[connectionLock lockWhenCondition:SPMySQLConnectionIdle];
-    
-    // Set the condition to SPMySQLConnectionBusy
-    [connectionLock unlockWithCondition:SPMySQLConnectionBusy];
+
+	// Set the condition to SPMySQLConnectionBusy
+	[connectionLock unlockWithCondition:SPMySQLConnectionBusy];
 }
 
 /**
@@ -58,7 +57,6 @@
  */
 - (BOOL)_tryLockConnection
 {
-
 	// If the connection is already is use, return failure
 	if (![connectionLock tryLockWhenCondition:SPMySQLConnectionIdle]) {
 		return NO;
@@ -75,28 +73,31 @@
  */
 - (void)_unlockConnection
 {
+	// Always lock the conditional lock before proceeding
+	[connectionLock lock];
 
-    // Always lock the conditional lock before proceeding
-    [connectionLock lock];
-    
-    // Check if the connection actually was busy. If it wasn't busy,
-    // it means the connection may have been unlocked twice. This is
-    // potentially dangerous, so we log this to the console
-    if ([connectionLock condition] != SPMySQLConnectionBusy) {
-        NSLog(@"SPMySQLConnection: Tried to unlock the connection, but it wasn't locked.");
-    }
-    
-    // Since we connected with CLIENT_MULTI_RESULT, we must make sure there are not more results!
-    // This is still a bit of a dirty hack
-    if (state == SPMySQLConnected
-		&& mySQLConnection && mySQLConnection->net.vio && mySQLConnection->net.buff && mysql_more_results(mySQLConnection))
-	{
-        NSLog(@"SPMySQLConnection: Discarding unretrieved results. This is currently normal when using CALL.");
-        [self _flushMultipleResultSets];
-    }
-    
-    // Tell everyone that the connection is available again
-    [connectionLock unlockWithCondition:SPMySQLConnectionIdle];
+	// Check if the connection actually was busy. If it wasn't busy,
+	// it means the connection may have been unlocked twice. This is
+	// potentially dangerous, so we log this to the console
+	if ([connectionLock condition] != SPMySQLConnectionBusy) {
+		NSLog(@"SPMySQLConnection: Tried to unlock the connection, but it wasn't locked.");
+	}
+
+	// Since we connected with CLIENT_MULTI_RESULT, we must make sure there are not more results!
+	// This is still a bit of a dirty hack
+	if (
+		state == SPMySQLConnected &&
+		mySQLConnection &&
+		mySQLConnection->net.vio &&
+		mySQLConnection->net.buff &&
+		mysql_more_results(mySQLConnection)
+	) {
+		NSLog(@"SPMySQLConnection: Discarding unretrieved results. This is currently normal when using CALL.");
+		[self _flushMultipleResultSets];
+	}
+
+	// Tell everyone that the connection is available again
+	[connectionLock unlockWithCondition:SPMySQLConnectionIdle];
 }
 
 @end

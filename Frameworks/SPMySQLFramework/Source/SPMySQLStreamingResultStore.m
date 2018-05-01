@@ -30,7 +30,6 @@
 
 #import "SPMySQLStreamingResultStore.h"
 #import "SPMySQL Private APIs.h"
-#import "SPMySQLArrayAdditions.h"
 #include <pthread.h>
 
 static id NSNullPointer;
@@ -92,7 +91,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 + (void)initialize
 {
-
 	// Cached NSNull singleton reference
 	if (!NSNullPointer) NSNullPointer = [NSNull null];
 }
@@ -176,11 +174,9 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 				// the large memory savings for small rows make this extra work worth it.
 				switch (sizeOfMetadata) {
 					case SPMySQLStoreMetadataAsChar:
-
 						// The length of the data is stored in the last end-position slot
 						dataLength = ((unsigned char *)(oldRow + 1))[previousNumberOfFields - 1];
 						break;
-
 					case SPMySQLStoreMetadataAsShort:
 						dataLength = ((unsigned short *)(oldRow + 1))[previousNumberOfFields - 1];
 						break;
@@ -269,7 +265,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void)dealloc
 {
-
 	// Ensure all data is processed and the parent connection is unlocked
 	[self cancelResultLoad];
 
@@ -310,7 +305,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (NSMutableArray *)rowContentsAtIndex:(NSUInteger)rowIndex
 {
-
 	// Throw an exception if the index is out of bounds
 	if (rowIndex >= numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)rowIndex, (unsigned long long)numberOfRows];
@@ -335,7 +329,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (id)cellDataAtRow:(NSUInteger)rowIndex column:(NSUInteger)columnIndex
 {
-
 	// Wrap the preview method, passing in a length limit of NSNotFound
 	return SPMySQLResultStorePreviewAtRowAndColumn(self, rowIndex, columnIndex, NSNotFound);
 }
@@ -403,7 +396,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 				dataLength = ((unsigned long *)rowData)[columnIndex] - dataStart;
 				break;
 		}
-
 	}
 
 	// If the data length is empty, check whether the cell is null and return null if so
@@ -450,7 +442,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 
 	// Check whether the cell is null
 	return (((BOOL *)(rowData + (sizeOfMetadata * numberOfFields)))[columnIndex]);
-
 }
 
 #pragma mark - Data retrieval overrides
@@ -462,14 +453,17 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 }
+
 - (NSArray *)getRowAsArray
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsArray);
 }
+
 - (NSDictionary *)getRowAsDictionary
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDictionary);
 }
+
 - (id)getRowAsType:(SPMySQLResultRowType)theType
 {
 	[NSException raise:NSInternalInconsistencyException format:@"Streaming SPMySQL result store sets should be used directly as result stores."];
@@ -482,7 +476,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void)cancelResultLoad
 {
-
 	// Track that loading has been cancelled, allowing faster result download without processing
 	loadCancelled = YES;
 
@@ -532,7 +525,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) addDummyRow
 {
-
 	// Currently only support editing after loading is finished; thi could be addressed by checking rowDownloadIterator vs numberOfRows etc
 	if (!dataDownloaded) {
 		[NSException raise:NSInternalInconsistencyException format:@"Streaming SPMySQL result editing is currently only supported once loading is complete."];
@@ -599,7 +591,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeRowAtIndex:(NSUInteger)anIndex
 {
-
 	// Throw an exception if the index is out of bounds
 	if (anIndex > numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)anIndex, (unsigned long long)numberOfRows];
@@ -627,7 +618,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeRowsInRange:(NSRange)rangeToRemove
 {
-
 	// Throw an exception if the range is out of bounds
 	if (NSMaxRange(rangeToRemove) > numberOfRows) {
 		[NSException raise:NSRangeException format:@"Requested storage index (%llu) beyond bounds (%llu)", (unsigned long long)(NSMaxRange(rangeToRemove)), (unsigned long long)numberOfRows];
@@ -657,7 +647,6 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
  */
 - (void) removeAllRows
 {
-
 	// Lock the data mutex
 	pthread_mutex_lock(&dataLock);
 
@@ -697,11 +686,9 @@ static inline void SPMySQLStreamingResultStoreFreeRowData(SPMySQLStreamingResult
 
 	// Loop through the rows until the end of the data is reached - indicated via a NULL
 	while (
-		   (*isConnectedPtr)(parentConnection, isConnectedSelector)
-		   && (theRow = mysql_fetch_row(resultSet))
-		   )
-	{
-
+		(*isConnectedPtr)(parentConnection, isConnectedSelector)
+		&& (theRow = mysql_fetch_row(resultSet))
+	) {
 		// If the load has been cancelled, skip any processing - we're only interested
 		// in ensuring that mysql_fetch_row is called for all rows.
 		if (loadCancelled) {

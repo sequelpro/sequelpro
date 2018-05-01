@@ -68,7 +68,6 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 + (void)initialize
 {
-
 	// Cached NSNull singleton reference
 	if (!NSNullPointer) NSNullPointer = [NSNull null];
 }
@@ -81,7 +80,6 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 - (id)initWithMySQLResult:(void *)theResult stringEncoding:(NSStringEncoding)theStringEncoding connection:(SPMySQLConnection *)theConnection
 {
-
 	// If no result set was passed in, return nil.
 	if (!theResult) return nil;
 
@@ -109,7 +107,6 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 - (void)dealloc
 {
-
 	// Ensure all data is processed and the parent connection is unlocked
 	[self cancelResultLoad];
 
@@ -131,10 +128,12 @@ typedef struct st_spmysqlstreamingrowdata {
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 }
+
 - (NSArray *)getRowAsArray
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsArray);
 }
+
 - (NSDictionary *)getRowAsDictionary
 {
 	return SPMySQLResultGetRow(self, SPMySQLResultRowAsDictionary);
@@ -249,7 +248,6 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 - (void)cancelResultLoad
 {
-
 	// If data has already been downloaded successfully, no further action is required
 	if (dataDownloaded && processedRowCount == downloadedRowCount) return;
 
@@ -300,7 +298,6 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)stackbuf count:(NSUInteger)len
 {
-
 	// To avoid lock issues, return one row at a time.
 	id nextRow = SPMySQLResultGetRow(self, SPMySQLResultRowAsDefault);
 
@@ -341,9 +338,7 @@ typedef struct st_spmysqlstreamingrowdata {
 	while (
 		(*isConnectedPtr)(parentConnection, isConnectedSelector)
 		&& (theRow = mysql_fetch_row(resultSet))
-	)
-	{
-
+	) {
 		// Retrieve the lengths of the returned data
 		fieldLengths = mysql_fetch_lengths(resultSet);
 		rowDataLength = 0;

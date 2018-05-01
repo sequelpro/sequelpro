@@ -1,5 +1,5 @@
 //
-//  Encoding.m
+//  Conversion.m
 //  SPMySQLFramework
 //
 //  Created by Rowan Beentje (rowan.beent.je) on January 22, 2012
@@ -47,7 +47,6 @@
          But the "string" can already contain NUL bytes, so it's not a valid c string anyway.
 + (const char *)_cStringForString:(NSString *)aString usingEncoding:(NSStringEncoding)anEncoding returningLengthAs:(NSUInteger *)cStringLengthPointer
 {
-
 	// Don't try and convert nil strings
 	if (!aString) return NULL;
 
@@ -73,7 +72,6 @@
  */
 - (const char *)_cStringForString:(NSString *)aString
 {
-
 	// Use a cached reference to avoid dynamic method overhead
 	return _cStringForStringWithEncoding(aString, stringEncoding, NULL);
 }

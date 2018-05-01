@@ -1,5 +1,5 @@
 //
-//  Encoding.m
+//  Conversion.h
 //  SPMySQLFramework
 //
 //  Created by Rowan Beentje (rowan.beent.je) on January 22, 2012
