@@ -365,7 +365,7 @@
 		}
 		
 		// Append the line ending to the string for this row, and record the length processed for pool flushing
-		[csvString appendString:[self csvLineEndingString]];						
+		[csvString appendString:[self csvLineEndingString]];
 		currentPoolDataLength += [csvString length];
 		
 		// Write it to the fileHandle
@@ -397,7 +397,7 @@
 	}
 	
 	// Write data to disk
-	[[(SPExportFile*)[self exportOutputFile] exportFileHandle] synchronizeFile];
+	[[[self exportOutputFile] exportFileHandle] synchronizeFile];
 	
 	// Mark the process as not running
 	[self setExportProcessIsRunning:NO];

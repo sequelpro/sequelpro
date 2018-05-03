@@ -1335,27 +1335,25 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (void)reloadTableTask
 {
-	NSAutoreleasePool *reloadPool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Check whether a save of the current row is required, abort if pending changes couldn't be saved.
+		if ([[self onMainThread] saveRowOnDeselect]) {
 
-	// Check whether a save of the current row is required, abort if pending changes couldn't be saved.
-	if ([[self onMainThread] saveRowOnDeselect]) {
+			// Save view details to restore safely if possible (except viewport, which will be
+			// preserved automatically, and can then be scrolled as the table loads)
+			[[self onMainThread] storeCurrentDetailsForRestoration];
+			[self setViewportToRestore:NSZeroRect];
 
-		// Save view details to restore safely if possible (except viewport, which will be
-		// preserved automatically, and can then be scrolled as the table loads)
-		[[self onMainThread] storeCurrentDetailsForRestoration];
-		[self setViewportToRestore:NSZeroRect];
+			// Clear the table data column cache and status (including counts)
+			[tableDataInstance resetColumnData];
+			[tableDataInstance resetStatusData];
 
-		// Clear the table data column cache and status (including counts)
-		[tableDataInstance resetColumnData];
-		[tableDataInstance resetStatusData];
+			// Load the table's data
+			[self loadTable:[tablesListInstance tableName]];
+		}
 
-		// Load the table's data
-		[self loadTable:[tablesListInstance tableName]];
+		[tableDocumentInstance endTask];
 	}
-
-	[tableDocumentInstance endTask];
-
-	[reloadPool drain];
 }
 
 /**
@@ -1447,22 +1445,21 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 - (void)filterTableTask
 {
-	NSAutoreleasePool *filterPool = [[NSAutoreleasePool alloc] init];
-
+	@autoreleasepool {
 #ifndef SP_CODA
-	// Update history
-	[spHistoryControllerInstance updateHistoryEntries];
+		// Update history
+		[spHistoryControllerInstance updateHistoryEntries];
 #endif
 
-	// Reset and reload data using the new filter settings
-	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
-	previousTableRowsCount = 0;
-	[self clearTableValues];
-	[self loadTableValues];
-	[[tableContentView onMainThread] scrollPoint:NSMakePoint(0.0f, 0.0f)];
+		// Reset and reload data using the new filter settings
+		[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
+		previousTableRowsCount = 0;
+		[self clearTableValues];
+		[self loadTableValues];
+		[[tableContentView onMainThread] scrollPoint:NSMakePoint(0.0f, 0.0f)];
 
-	[tableDocumentInstance endTask];
-	[filterPool drain];
+		[tableDocumentInstance endTask];
+	}
 }
 
 /**
@@ -1530,89 +1527,86 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (void)sortTableTaskWithColumn:(NSTableColumn *)tableColumn
 {
-	NSAutoreleasePool *sortPool = [[NSAutoreleasePool alloc] init];
-	
-	// Check whether a save of the current row is required.
-	if (![[self onMainThread] saveRowOnDeselect]) {
+	@autoreleasepool {
+		// Check whether a save of the current row is required.
+		if (![[self onMainThread] saveRowOnDeselect]) {
+			// If the save failed, cancel the sort task and return
+			[tableDocumentInstance endTask];
+			return;
+		}
 
-		// If the save failed, cancel the sort task and return
-		[tableDocumentInstance endTask];
-		[sortPool drain];
-		return;
-	}
-	
-    NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
-    
-	// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
-	// header is clicked several times
-	if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
-        BOOL invert = NO;
-        if (modifierFlags & NSShiftKeyMask) {
-            invert = YES;
-        }
-        
-        // this is the same as saying (isDesc && !invert) || (!isDesc && invert)
-        if (isDesc != invert) {
-			SPClear(sortCol);
-		} 
-		else {
-			isDesc = !isDesc;
+		NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+
+		// Sets column order as tri-state descending, ascending, no sort, descending, ascending etc. order if the same
+		// header is clicked several times
+		if (sortCol && [[tableColumn identifier] integerValue] == [sortCol integerValue]) {
+			BOOL invert = NO;
+			if (modifierFlags & NSShiftKeyMask) {
+				invert = YES;
+			}
+
+			// this is the same as saying (isDesc && !invert) || (!isDesc && invert)
+			if (isDesc != invert) {
+				SPClear(sortCol);
+			}
+			else {
+				isDesc = !isDesc;
+			}
 		}
-	} 
-	else {
-        // When the column is not sorted, allow to sort in reverse order using Shift+click
-        if (modifierFlags & NSShiftKeyMask) {
-            isDesc = YES;
-        } else {
-            isDesc = NO;
-        }
-		
-		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
-		
-		if (sortCol) [sortCol release];
-		
-		sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
-	}
-	
-	if (sortCol) {
-		// Set the highlight and indicatorImage
-		[[tableContentView onMainThread] setHighlightedTableColumn:tableColumn];
-		
-		if (isDesc) {
-			[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
-		} 
 		else {
-			[[tableContentView onMainThread] setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+			// When the column is not sorted, allow to sort in reverse order using Shift+click
+			if (modifierFlags & NSShiftKeyMask) {
+				isDesc = YES;
+			} else {
+				isDesc = NO;
+			}
+
+			[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:[tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)[sortCol integerValue]]]];
+
+			if (sortCol) [sortCol release];
+
+			sortCol = [[NSNumber alloc] initWithInteger:[[tableColumn identifier] integerValue]];
 		}
-	} 
-	else {
-		// If no sort order deselect column header and
-		// remove indicator image
-		[[tableContentView onMainThread] setHighlightedTableColumn:nil];
-		[[tableContentView onMainThread] setIndicatorImage:nil inTableColumn:tableColumn];
-	}
-	
-	// Update data using the new sort order
-	previousTableRowsCount = tableRowsCount;
-	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
-	[[tableContentView onMainThread] selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
-	[self loadTableValues];
-	
-	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
-		SPOnewayAlertSheet(
-			NSLocalizedString(@"Error", @"error"),
-			[tableDocumentInstance parentWindow],
-			[NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection lastErrorMessage]]
-		);
-		
+
+		SPMainQSync(^{
+			if (sortCol) {
+				// Set the highlight and indicatorImage
+				[tableContentView setHighlightedTableColumn:tableColumn];
+
+				if (isDesc) {
+					[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"] inTableColumn:tableColumn];
+				}
+				else {
+					[tableContentView setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"] inTableColumn:tableColumn];
+				}
+			}
+			else {
+				// If no sort order deselect column header and
+				// remove indicator image
+				[tableContentView setHighlightedTableColumn:nil];
+				[tableContentView setIndicatorImage:nil inTableColumn:tableColumn];
+			}
+		});
+
+		// Update data using the new sort order
+		previousTableRowsCount = tableRowsCount;
+		[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:NO]];
+		[[tableContentView onMainThread] selectRowIndexes:[NSIndexSet indexSet] byExtendingSelection:NO];
+		[self loadTableValues];
+
+		if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
+			SPOnewayAlertSheet(
+				NSLocalizedString(@"Error", @"error"),
+				[tableDocumentInstance parentWindow],
+				[NSString stringWithFormat:NSLocalizedString(@"Couldn't sort table. MySQL said: %@", @"message of panel when sorting of table failed"), [mySQLConnection lastErrorMessage]]
+			);
+
+			[tableDocumentInstance endTask];
+			return;
+		}
+
 		[tableDocumentInstance endTask];
-		[sortPool drain];
-		
-		return;
 	}
-	
-	[tableDocumentInstance endTask];
-	[sortPool drain];
 }
 
 #pragma mark -
@@ -2522,83 +2516,80 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell
 {
-	NSAutoreleasePool *linkPool = [[NSAutoreleasePool alloc] init];
-	NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
-	BOOL tableFilterRequired = NO;
+	@autoreleasepool {
+		NSUInteger dataColumnIndex = [[[[tableContentView tableColumns] objectAtIndex:[theArrowCell getClickedColumn]] identifier] integerValue];
+		BOOL tableFilterRequired = NO;
 
-	// Ensure the clicked cell has foreign key details available
-	NSDictionary *columnDefinition = [dataColumns objectAtIndex:dataColumnIndex];
-	NSDictionary *refDictionary = [columnDefinition objectForKey:@"foreignkeyreference"];
-	if (!refDictionary) {
-		[linkPool release];
-		return;
+		// Ensure the clicked cell has foreign key details available
+		NSDictionary *columnDefinition = [dataColumns objectAtIndex:dataColumnIndex];
+		NSDictionary *refDictionary = [columnDefinition objectForKey:@"foreignkeyreference"];
+		if (!refDictionary) {
+			return;
+		}
+
+#ifndef SP_CODA
+		// Save existing scroll position and details and mark that state is being modified
+		[spHistoryControllerInstance updateHistoryEntries];
+		[spHistoryControllerInstance setModifyingState:YES];
+#endif
+
+		NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
+
+		//when navigating binary relations (eg. raw UUID) do so via a hex-encoded value for charset safety
+		BOOL navigateAsHex = ([targetFilterValue isKindOfClass:[NSData class]] && [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"]);
+		if(navigateAsHex) targetFilterValue = [mySQLConnection escapeData:(NSData *)targetFilterValue includingQuotes:NO];
+
+		// If the link is within the current table, apply filter settings manually
+		if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
+			SPMainQSync(^{
+				[fieldField selectItemWithTitle:[refDictionary objectForKey:@"column"]];
+				[self setCompareTypes:self];
+				if ([targetFilterValue isNSNull]) {
+					[compareField selectItemWithTitle:@"IS NULL"];
+				}
+				else {
+					if(navigateAsHex) [compareField selectItemWithTitle:@"= (Hex String)"];
+					[argumentField setStringValue:targetFilterValue];
+				}
+			});
+			tableFilterRequired = YES;
+		}
+		else {
+			NSString *filterComparison = nil;
+			if([targetFilterValue isNSNull]) filterComparison = @"IS NULL";
+			else if(navigateAsHex) filterComparison = @"= (Hex String)";
+
+			// Store the filter details to use when loading the target table
+			NSDictionary *filterSettings = @{
+				@"filterField": [refDictionary objectForKey:@"column"],
+				@"filterValue": targetFilterValue,
+				@"filterComparison": SPBoxNil(filterComparison)
+			};
+			SPMainQSync(^{
+				[self setFiltersToRestore:filterSettings];
+
+				// Attempt to switch to the target table
+				if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
+					NSBeep();
+					[self setFiltersToRestore:nil];
+				}
+			});
+		}
+
+#ifndef SP_CODA
+		// End state and ensure a new history entry
+		[spHistoryControllerInstance setModifyingState:NO];
+		[spHistoryControllerInstance updateHistoryEntries];
+#endif
+
+		// End the task
+		[tableDocumentInstance endTask];
+
+#ifndef SP_CODA
+		// If the same table is the target, trigger a filter task on the main thread
+		if (tableFilterRequired) [self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
+#endif
 	}
-
-#ifndef SP_CODA
-	// Save existing scroll position and details and mark that state is being modified
-	[spHistoryControllerInstance updateHistoryEntries];
-	[spHistoryControllerInstance setModifyingState:YES];
-#endif
-
-	NSString *targetFilterValue = [tableValues cellDataAtRow:[theArrowCell getClickedRow] column:dataColumnIndex];
-
-	//when navigating binary relations (eg. raw UUID) do so via a hex-encoded value for charset safety
-	BOOL navigateAsHex = ([targetFilterValue isKindOfClass:[NSData class]] && [[columnDefinition objectForKey:@"typegrouping"] isEqualToString:@"binary"]);
-	if(navigateAsHex) targetFilterValue = [mySQLConnection escapeData:(NSData *)targetFilterValue includingQuotes:NO];
-	
-	// If the link is within the current table, apply filter settings manually
-	if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
-		SPMainQSync(^{
-			[fieldField selectItemWithTitle:[refDictionary objectForKey:@"column"]];
-			[self setCompareTypes:self];
-			if ([targetFilterValue isNSNull]) {
-				[compareField selectItemWithTitle:@"IS NULL"];
-			}
-			else {
-				if(navigateAsHex) [compareField selectItemWithTitle:@"= (Hex String)"];
-				[argumentField setStringValue:targetFilterValue];
-			}
-		});
-		tableFilterRequired = YES;
-	} else {
-		NSString *filterComparison = nil;
-		if([targetFilterValue isNSNull]) filterComparison = @"IS NULL";
-		else if(navigateAsHex) filterComparison = @"= (Hex String)";
-		
-		// Store the filter details to use when loading the target table
-		NSDictionary *filterSettings = @{
-			@"filterField": [refDictionary objectForKey:@"column"],
-			@"filterValue": targetFilterValue,
-			@"filterComparison": SPBoxNil(filterComparison)
-		};
-		SPMainQSync(^{
-			[self setFiltersToRestore:filterSettings];
-			
-			// Attempt to switch to the target table
-			if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
-				NSBeep();
-				[self setFiltersToRestore:nil];
-			}
-		});
-	}
-
-#ifndef SP_CODA
-	// End state and ensure a new history entry
-	[spHistoryControllerInstance setModifyingState:NO];
-	[spHistoryControllerInstance updateHistoryEntries];
-#endif
-
-	// End the task
-	[tableDocumentInstance endTask];
-
-#ifndef SP_CODA
-	// If the same table is the target, trigger a filter task on the main thread
-	if (tableFilterRequired)
-		[self performSelectorOnMainThread:@selector(filterTable:) withObject:self waitUntilDone:NO];
-#endif
-
-	// Empty the loading pool and exit the thread
-	[linkPool drain];
 }
 
 - (void)contentFiltersHaveBeenUpdated:(NSNotification *)notification

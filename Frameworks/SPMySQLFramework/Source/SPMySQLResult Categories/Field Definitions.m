@@ -77,7 +77,7 @@ const SPMySQLResultCharset SPMySQLCharsetMap[] =
 	{30,  "latin5", "latin5_turkish_ci", 1, 1},
 	{31,  "latin1", "latin1_german2_ci", 1, 1},
 	{32,  "armscii8", "armscii8_general_ci", 1, 1},
-	{33,  "utf8", "utf8_general_ci", 1, 3},
+	{33,  "utf8", "utf8_general_ci", 1, 3}, //mb3
 	{34,  "cp1250", "cp1250_czech_cs", 1, 1},
 	{35,  "ucs2", "ucs2_general_ci", 2, 2},
 	{36,  "cp866", "cp866_general_ci", 1, 1},

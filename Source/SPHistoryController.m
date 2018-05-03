@@ -365,99 +365,98 @@
 }
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber
 {
-	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
-	NSUInteger position = [positionNumber unsignedIntegerValue];
+	@autoreleasepool {
+		NSUInteger position = [positionNumber unsignedIntegerValue];
 
-	modifyingState = YES;
+		modifyingState = YES;
 
-	// Update the position and extract the history entry
-	historyPosition = position;
-	NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
+		// Update the position and extract the history entry
+		historyPosition = position;
+		NSDictionary *historyEntry = [history objectAtIndex:historyPosition];
 
-	// Set table content details for restore
-	[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
-	[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
-	[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
-	[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
-	[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
+		// Set table content details for restore
+		[tableContentInstance setSortColumnNameToRestore:[historyEntry objectForKey:@"contentSortCol"] isAscending:[[historyEntry objectForKey:@"contentSortColIsAsc"] boolValue]];
+		[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
+		[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
+		[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
+		[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
 
-	// If the database, table, and view are the same and content - just trigger a table reload (filters)
-	if ([[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
-		&& [historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-		&& [[historyEntry objectForKey:@"view"] integerValue] == [theDocument currentlySelectedView]
-		&& [[historyEntry objectForKey:@"view"] integerValue] == SPTableViewContent)
-	{
-		[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
+		// If the database, table, and view are the same and content - just trigger a table reload (filters)
+		if (
+			[[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
+			&& [historyEntry objectForKey:@"table"]
+			&& [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
+			&& [[historyEntry objectForKey:@"view"] integerValue] == [theDocument currentlySelectedView]
+			&& [[historyEntry objectForKey:@"view"] integerValue] == SPTableViewContent
+		) {
+			[tableContentInstance loadTable:[historyEntry objectForKey:@"table"]];
+			modifyingState = NO;
+			[[self onMainThread] updateToolbarItem];
+			[theDocument endTask];
+			return;
+		}
+
+		// If the same table was selected, mark the content as requiring a reload
+		if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
+			[theDocument setContentRequiresReload:YES];
+		}
+
+		// Update the database and table name if necessary
+		[theDocument selectDatabase:[historyEntry objectForKey:@"database"] item:[historyEntry objectForKey:@"table"]];
+
+		// If the database or table couldn't be selected, error.
+		if (
+			(
+				![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]] &&
+				([theDocument database] || [historyEntry objectForKey:@"database"])
+			) ||
+			(
+				![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]] &&
+				([theDocument table] || [historyEntry objectForKey:@"table"])
+			)
+		) {
+			goto abort_entry_load;
+		}
+
+		// Check and set the view
+		if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+			switch ([[historyEntry objectForKey:@"view"] integerValue]) {
+				case SPTableViewStructure:
+					[theDocument viewStructure:self];
+					break;
+				case SPTableViewContent:
+					[theDocument viewContent:self];
+					break;
+				case SPTableViewCustomQuery:
+					[theDocument viewQuery:self];
+					break;
+				case SPTableViewStatus:
+					[theDocument viewStatus:self];
+					break;
+				case SPTableViewRelations:
+					[theDocument viewRelations:self];
+					break;
+				case SPTableViewTriggers:
+					[theDocument viewTriggers:self];
+					break;
+			}
+			if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
+				goto abort_entry_load;
+			}
+		}
+
 		modifyingState = NO;
 		[[self onMainThread] updateToolbarItem];
+
+		// End the task
 		[theDocument endTask];
-		[loadPool drain];
 		return;
+
+abort_entry_load:
+		NSBeep();
+		modifyingState = NO;
+		[theDocument endTask];
 	}
-
-	// If the same table was selected, mark the content as requiring a reload
-	if ([historyEntry objectForKey:@"table"] && [[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]) {
-		[theDocument setContentRequiresReload:YES];
-	}
-
-	// Update the database and table name if necessary
-	[theDocument selectDatabase:[historyEntry objectForKey:@"database"] item:[historyEntry objectForKey:@"table"]];
-
-	// If the database or table couldn't be selected, error.
-	if ((![[theDocument database] isEqualToString:[historyEntry objectForKey:@"database"]]
-			&& ([theDocument database] || [historyEntry objectForKey:@"database"]))
-		|| 
-		(![[theDocument table] isEqualToString:[historyEntry objectForKey:@"table"]]
-			&& ([theDocument table] || [historyEntry objectForKey:@"table"])))
-	{
-		return [self abortEntryLoadWithPool:loadPool];
-	}
-
-	// Check and set the view
-	if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
-		switch ([[historyEntry objectForKey:@"view"] integerValue]) {
-			case SPTableViewStructure:
-				[theDocument viewStructure:self];
-				break;
-			case SPTableViewContent:
-				[theDocument viewContent:self];
-				break;
-			case SPTableViewCustomQuery:
-				[theDocument viewQuery:self];
-				break;
-			case SPTableViewStatus:
-				[theDocument viewStatus:self];
-				break;
-			case SPTableViewRelations:
-				[theDocument viewRelations:self];
-				break;
-			case SPTableViewTriggers:
-				[theDocument viewTriggers:self];
-				break;
-		}
-		if ([theDocument currentlySelectedView] != [[historyEntry objectForKey:@"view"] integerValue]) {
-			return [self abortEntryLoadWithPool:loadPool];
-		}
-	}
-
-	modifyingState = NO;
-	[[self onMainThread] updateToolbarItem];
-
-	// End the task
-	[theDocument endTask];
-	[loadPool drain];
-}
-
-/**
- * Convenience method for aborting history load - could at some point
- * clean up the history list, show an alert, etc
- */
-- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool
-{
-	NSBeep();
-	modifyingState = NO;
-	[theDocument endTask];
-	if (pool) [pool drain];
 }
 
 /**

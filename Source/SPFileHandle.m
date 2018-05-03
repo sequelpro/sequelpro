@@ -368,63 +368,61 @@ struct SPRawFileHandles {
  */
 - (void)_writeBufferToData
 {
-	NSAutoreleasePool *writePool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Process the buffer in a loop into the file, until cancelled
+		while (!fileIsClosed && ![processingThread isCancelled]) {
 
-	// Process the buffer in a loop into the file, until cancelled
-	while (!fileIsClosed && ![processingThread isCancelled]) {
+			// Check whether any data in the buffer needs to be written out - using thread locks for safety
+			pthread_mutex_lock(&bufferLock);
 
-		// Check whether any data in the buffer needs to be written out - using thread locks for safety
-		pthread_mutex_lock(&bufferLock);
-		
-		if (!bufferDataLength) {
-			pthread_mutex_unlock(&bufferLock);
-			usleep(1000);
-			continue;
-		}
-
-		// Copy the data into a local buffer
-		NSData *dataToBeWritten = [buffer copy];
-		
-		[buffer setLength:0];
-		bufferDataLength = 0;
-		
-		pthread_mutex_unlock(&bufferLock);
-
-		// Write out the data
-		long bufferLengthWrittenOut = 0;
-		
-		switch (compressionFormat) {
-			case SPGzipCompression:
-				bufferLengthWrittenOut = gzwrite(wrappedFile->gzfile, [dataToBeWritten bytes], (unsigned)[dataToBeWritten length]);
-				break;
-			case SPBzip2Compression:
-				bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile->bzfile, (void *)[dataToBeWritten bytes], (int)[dataToBeWritten length]);
-				break;
-			default:
-				bufferLengthWrittenOut = fwrite([dataToBeWritten bytes], 1, [dataToBeWritten length], wrappedFile->file);
-		}
-
-		// Restore data to the buffer if it wasn't written out
-		pthread_mutex_lock(&bufferLock);
-		
-		if (bufferLengthWrittenOut < (NSInteger)[dataToBeWritten length]) {
-			if ([buffer length]) {
-				long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
-				[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];
-				bufferDataLength += dataLengthToRestore;
+			if (!bufferDataLength) {
+				pthread_mutex_unlock(&bufferLock);
+				usleep(1000);
+				continue;
 			}
-		} 
-		// Otherwise, mark all data as written if it has been - allows synching to hard disk.
-		else if (![buffer length]) {
-			allDataWritten = YES;
+
+			// Copy the data into a local buffer
+			NSData *dataToBeWritten = [buffer copy];
+
+			[buffer setLength:0];
+			bufferDataLength = 0;
+
+			pthread_mutex_unlock(&bufferLock);
+
+			// Write out the data
+			long bufferLengthWrittenOut = 0;
+
+			switch (compressionFormat) {
+				case SPGzipCompression:
+					bufferLengthWrittenOut = gzwrite(wrappedFile->gzfile, [dataToBeWritten bytes], (unsigned)[dataToBeWritten length]);
+					break;
+				case SPBzip2Compression:
+					bufferLengthWrittenOut = BZ2_bzwrite(wrappedFile->bzfile, (void *)[dataToBeWritten bytes], (int)[dataToBeWritten length]);
+					break;
+				default:
+					bufferLengthWrittenOut = fwrite([dataToBeWritten bytes], 1, [dataToBeWritten length], wrappedFile->file);
+			}
+
+			// Restore data to the buffer if it wasn't written out
+			pthread_mutex_lock(&bufferLock);
+
+			if (bufferLengthWrittenOut < (NSInteger)[dataToBeWritten length]) {
+				if ([buffer length]) {
+					long dataLengthToRestore = [dataToBeWritten length] - bufferLengthWrittenOut;
+					[buffer replaceBytesInRange:NSMakeRange(0, 0) withBytes:[[dataToBeWritten subdataWithRange:NSMakeRange(bufferLengthWrittenOut, dataLengthToRestore)] bytes] length:dataLengthToRestore];
+					bufferDataLength += dataLengthToRestore;
+				}
+			}
+			// Otherwise, mark all data as written if it has been - allows synching to hard disk.
+			else if (![buffer length]) {
+				allDataWritten = YES;
+			}
+
+			pthread_mutex_unlock(&bufferLock);
+
+			[dataToBeWritten release];
 		}
-		
-		pthread_mutex_unlock(&bufferLock);
-
-		[dataToBeWritten release];
 	}
-
-	[writePool drain];
 }
 
 /**

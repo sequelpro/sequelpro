@@ -67,36 +67,33 @@ static NSString *SPOldPreferenceFileFavoritesKey = @"favorites";
  */
 - (void)_importFavoritesInBackground
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSDictionary *importData;
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	
-	if ([fileManager fileExistsAtPath:[self importPath]]) {
-		importData = [[[NSDictionary alloc] initWithContentsOfFile:[self importPath]] autorelease];
-		
-		NSArray *favorites = [importData valueForKey:SPFavoritesDataRootKey];
-		
-		if (favorites) {
-			[self _informDelegateOfImportDataAvailable:favorites];
-		}
-		else {
+	@autoreleasepool {
+		NSDictionary *importData;
+		NSFileManager *fileManager = [NSFileManager defaultManager];
 
-			// Check to see whether we're importing favorites from an old preferences file
-			if ([importData valueForKey:SPOldPreferenceFileFavoritesKey]) {
-				[self _informDelegateOfImportDataAvailable:[importData valueForKey:SPOldPreferenceFileFavoritesKey]];
-			} else {
-				[self _informDelegateOfErrorCode:NSFileReadUnknownError 
-				                     description:NSLocalizedString(@"Error reading import file.", @"error reading import file")];
+		if ([fileManager fileExistsAtPath:[self importPath]]) {
+			importData = [[[NSDictionary alloc] initWithContentsOfFile:[self importPath]] autorelease];
+
+			NSArray *favorites = [importData valueForKey:SPFavoritesDataRootKey];
+
+			if (favorites) {
+				[self _informDelegateOfImportDataAvailable:favorites];
+			}
+			else {
+				// Check to see whether we're importing favorites from an old preferences file
+				if ([importData valueForKey:SPOldPreferenceFileFavoritesKey]) {
+					[self _informDelegateOfImportDataAvailable:[importData valueForKey:SPOldPreferenceFileFavoritesKey]];
+				} else {
+					[self _informDelegateOfErrorCode:NSFileReadUnknownError
+					                     description:NSLocalizedString(@"Error reading import file.", @"error reading import file")];
+				}
 			}
 		}
+		else {
+			[self _informDelegateOfErrorCode:NSFileReadNoSuchFileError
+			                     description:NSLocalizedString(@"Import file does not exist.", @"import file does not exist message")];
+		}
 	}
-	else {
-		[self _informDelegateOfErrorCode:NSFileReadNoSuchFileError 
-							 description:NSLocalizedString(@"Import file does not exist.", @"import file does not exist message")];
-	}
-		
-	[pool release];
 }
 
 /**

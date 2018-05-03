@@ -260,251 +260,249 @@ static unsigned short getRandomPort();
 - (void)launchTask:(id) dummy
 {
 	if (connectionState != SPMySQLProxyIdle || task) return;
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSMutableArray *taskArguments;
-	NSMutableDictionary *taskEnvironment;
-	NSString *authenticationAppPath;
 
-	connectionState = SPMySQLProxyConnecting;
-	if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+	@autoreleasepool {
+		NSMutableArray *taskArguments;
+		NSMutableDictionary *taskEnvironment;
+		NSString *authenticationAppPath;
 
-	// Enforce a parent window being present for dialogs
-	if (!parentWindow) {
-		connectionState = SPMySQLProxyIdle;
+		connectionState = SPMySQLProxyConnecting;
 		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
-		[self setLastError:@"SSH Tunnel started without a parent window.  A parent window must be present."];
-		[pool release];
-		return;
-	}
 
-	NSInteger connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] integerValue];
-	if (!connectionTimeout) connectionTimeout = 10;
-	BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:SPUseKeepAlive] doubleValue];
-	double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:SPKeepAliveInterval] doubleValue];
-	if (!keepAliveInterval) keepAliveInterval = 0;
-
-	// If no local port has yet been chosen, choose one
-	if (!localPort) {
-		localPort = getRandomPort();
-		
-		if (useHostFallback) {
-			localPortFallback = getRandomPort();
-		}
-		
-		// Abort if no local free port could be allocated
-		if (!localPort || (useHostFallback && !localPortFallback)) {
+		// Enforce a parent window being present for dialogs
+		if (!parentWindow) {
 			connectionState = SPMySQLProxyIdle;
 			if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
-			[self setLastError:NSLocalizedString(@"No local port could be allocated for the SSH Tunnel.", @"SSH tunnel could not be created because no local port could be allocated")];
-			[pool release];
+			[self setLastError:@"SSH Tunnel started without a parent window.  A parent window must be present."];
 			return;
 		}
-	}
 
-	// Set up the NSTask
-	task = [[NSTask alloc] init];
-	NSString *launchPath = @"/usr/bin/ssh";
-	NSString *userSSHPath = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHClientPath];
+		NSInteger connectionTimeout = [[[NSUserDefaults standardUserDefaults] objectForKey:SPConnectionTimeoutValue] integerValue];
+		if (!connectionTimeout) connectionTimeout = 10;
+		BOOL useKeepAlive = [[[NSUserDefaults standardUserDefaults] objectForKey:SPUseKeepAlive] doubleValue];
+		double keepAliveInterval = [[[NSUserDefaults standardUserDefaults] objectForKey:SPKeepAliveInterval] doubleValue];
+		if (!keepAliveInterval) keepAliveInterval = 0;
 
-	if([userSSHPath length]) {
-		launchPath = userSSHPath;
-		// And I'm sure we will get issue reports about it anyway!
-		[debugMessagesLock lock];
-		[debugMessages addObject:@"################################################################"];
-		[debugMessages addObject:[NSString stringWithFormat:@"# %@",NSLocalizedString(@"Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!", @"SSH connection : debug header with user-defined ssh binary")]];
-		[debugMessages addObject:@"################################################################"];
-		[debugMessagesLock unlock];
-	}
-	
-	[task setLaunchPath:launchPath];
+		// If no local port has yet been chosen, choose one
+		if (!localPort) {
+			localPort = getRandomPort();
 
-	// Prepare to set up the arguments for the task
-	taskArguments = [[NSMutableArray alloc] init];
-	void (^TA)(NSString *, NSString *) = ^(NSString *_name, NSString *_value) {
-		[taskArguments addObjectsFromArray:@[_name,_value]];
-	};
-	
-	// Enable verbose mode for message parsing
-	[taskArguments addObject:@"-v"];
-
-	// Ensure that the connection can be used for only tunnels, not interactive
-	[taskArguments addObject:@"-N"];
-
-	// If explicitly enabled, activate connection multiplexing - note that this can cause connection
-	// instability on some setups, so is currently disabled by default.
-	if (connectionMuxingEnabled) {
-		// Enable automatic connection muxing/sharing, for faster connections
-		TA(@"-o",@"ControlMaster=auto");
-
-		// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
-		// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
-		// hashed path to aid length limit issues.
-		unsigned char hashedPathResult[16];
-		NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, (long)(sshPort?sshPort:0)];
-		CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
-		NSString *hashedString = [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8];
-		TA(@"-o",([NSString stringWithFormat:@"ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], hashedString]));
-	}
-	else {
-		// Disable muxing if requested
-		TA(@"-S", @"none");
-		TA(@"-o", @"ControlMaster=no");
-	}
-
-	// If the port forwarding fails, exit - as this is the primary use case for the instance
-	TA(@"-o",@"ExitOnForwardFailure=yes");
-
-	// Specify a connection timeout based on the preferences value
-	TA(@"-o",([NSString stringWithFormat:@"ConnectTimeout=%ld", (long)connectionTimeout]));
-
-	// Allow three password prompts
-	TA(@"-o",@"NumberOfPasswordPrompts=3");
-
-	// Specify an identity file if available
-	if (identityFilePath) {
-		TA(@"-i", identityFilePath);
-	}
-
-	// If keepalive is set in the preferences, use the same value for the SSH tunnel
-	if (useKeepAlive && keepAliveInterval) {
-		TA(@"-o", @"TCPKeepAlive=no");
-		TA(@"-o", ([NSString stringWithFormat:@"ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]));
-		TA(@"-o", @"ServerAliveCountMax=1");
-	}
-
-	// Specify the port, host, and authentication details
-	if (sshPort) {
-		TA(@"-p", ([NSString stringWithFormat:@"%ld", (long)sshPort]));
-	}
-	if ([sshLogin length]) {
-		[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
-	}
-	else {
-		[taskArguments addObject:sshHost];
-	}
-	if (useHostFallback) {
-		TA(@"-L",([NSString stringWithFormat:@"%ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]));
-		TA(@"-L",([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]));
-	}
-	else {
-		TA(@"-L", ([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]));
-	}
-
-	[task setArguments:taskArguments];
-
-	// Set up the environment for the task
-	authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
-	taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
-	[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
-	[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
-	[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
-	[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
-	if (passwordInKeychain) {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordUsesKeychain] stringValue] forKey:@"SP_PASSWORD_METHOD"];
-		[taskEnvironment setObject:[keychainName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:@"SP_KEYCHAIN_ITEM_NAME"];
-		[taskEnvironment setObject:[keychainAccount stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
-	} else if (password) {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordAsksUI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
-	} else {
-		[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordNone] stringValue] forKey:@"SP_PASSWORD_METHOD"];
-	}
-	[task setEnvironment:taskEnvironment];
-
-	// Add the connection details to the debug messages
-	[debugMessagesLock lock];
-	[debugMessages addObject:[NSString stringWithFormat:@"Used command:  %@ %@\n", [task launchPath], [[task arguments] componentsJoinedByString:@" "]]];
-	[debugMessagesLock unlock];
-
-	// Set up the standard error pipe
-	standardError = [[NSPipe alloc] init];
-	[task setStandardError:standardError];
-	[[NSNotificationCenter defaultCenter] addObserver:self
-	                                         selector:@selector(standardErrorHandler:)
-	                                             name:NSFileHandleDataAvailableNotification
-	                                           object:[standardError fileHandleForReading]];
-	[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
-
-	{
-		static BOOL hasCheckedTTY = NO;
-		if(!hasCheckedTTY) {
-			int fd = open("/dev/tty", O_RDWR);
-			if(fd >= 0) {
-				close(fd);
-				fprintf(stderr, (
-					 "!!!\n"
-					 "!!! You are running Sequel Pro from a TTY.\n"
-					 "!!! Any SSH connections that require user input (e.g. a password/passphrase) will fail\n"
-					 "!!!  and appear stalled indefinitely.\n"
-					 "!!! Sorry!\n"
-					 "!!!\n"
-				));
-				fflush(stderr);
-				// Explanation:
-				// OpenSSH by default requests passwords AND yes/no questions directly from the TTY,
-				// if it is part of a session group that has a controlling terminal (which is the case for
-				// processes created by Terminal.app).
-				//
-				// But this won't work, because only the foreground process group can read from /dev/tty and
-				// NSTask will create a new (background) process group for OpenSSH on launch.
-				//   Side note: The internal method called from -[NSTask launch]
-				//   -[NSConcreteTask launchWithDictionary:] accepts key @"_NSTaskNoNewProcessGroup" to skip that.
-				//
-				// Now, there are two preconditions for OpenSSH to use our SSH_ASKPASS utility instead:
-				//   1) The "DISPLAY" envvar has to be set
-				//   2) There must be no controlling terminal (ie. open("/dev/tty") fails)
-				// (See readpass.c#read_passphrase() in OpenSSH for the relevant code)
-				//
-				// -[NSTask launch] internally uses posix_spawn() and according to its documentation
-				//   "The new process also inherits the following attributes from the calling
-				//    process: [...] control terminal [...]"
-				// So if we wanted to avoid that, we would have to reimplement the whole NSTask class
-				// and use fork()+exec*()+setsid() instead (or use GNUStep's NSTask which already does this).
-				//
-				// We could also do ioctl(fd, TIOCNOTTY, 0); before launching the child process, but
-				// changing our own controlling terminal does not seem like a good idea in the middle
-				// of the application lifecycle, when we don't know what other Cocoa code may use it...
+			if (useHostFallback) {
+				localPortFallback = getRandomPort();
 			}
-			hasCheckedTTY = YES;
+
+			// Abort if no local free port could be allocated
+			if (!localPort || (useHostFallback && !localPortFallback)) {
+				connectionState = SPMySQLProxyIdle;
+				if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+				[self setLastError:NSLocalizedString(@"No local port could be allocated for the SSH Tunnel.", @"SSH tunnel could not be created because no local port could be allocated")];
+				return;
+			}
 		}
-	}
-	
-	@try {
-		// Launch and run the tunnel
-		[task launch]; //throws for invalid paths, missing +x permission
-		
-		// Listen for output
-		[task waitUntilExit];
-	}
-	@catch (NSException *e) {
-		connectionState = SPMySQLProxyLaunchFailed;
-		// Log the exception. Could be improved by showing a dedicated alert instead
+
+		// Set up the NSTask
+		task = [[NSTask alloc] init];
+		NSString *launchPath = @"/usr/bin/ssh";
+		NSString *userSSHPath = [[NSUserDefaults standardUserDefaults] stringForKey:SPSSHClientPath];
+
+		if([userSSHPath length]) {
+			launchPath = userSSHPath;
+			// And I'm sure we will get issue reports about it anyway!
+			[debugMessagesLock lock];
+			[debugMessages addObject:@"################################################################"];
+			[debugMessages addObject:[NSString stringWithFormat:@"# %@",NSLocalizedString(@"Custom SSH binary enabled. Disable in Preferences to rule out incompatibilities!", @"SSH connection : debug header with user-defined ssh binary")]];
+			[debugMessages addObject:@"################################################################"];
+			[debugMessagesLock unlock];
+		}
+
+		[task setLaunchPath:launchPath];
+
+		// Prepare to set up the arguments for the task
+		taskArguments = [[NSMutableArray alloc] init];
+		void (^TA)(NSString *, NSString *) = ^(NSString *_name, NSString *_value) {
+			[taskArguments addObjectsFromArray:@[_name,_value]];
+		};
+
+		// Enable verbose mode for message parsing
+		[taskArguments addObject:@"-v"];
+
+		// Ensure that the connection can be used for only tunnels, not interactive
+		[taskArguments addObject:@"-N"];
+
+		// If explicitly enabled, activate connection multiplexing - note that this can cause connection
+		// instability on some setups, so is currently disabled by default.
+		if (connectionMuxingEnabled) {
+			// Enable automatic connection muxing/sharing, for faster connections
+			TA(@"-o",@"ControlMaster=auto");
+
+			// Set a custom control path to isolate connection sharing to Sequel Pro, to prevent picking up
+			// existing masters without forwarding enabled and to isolate from interactive sessions.  Use a short
+			// hashed path to aid length limit issues.
+			unsigned char hashedPathResult[16];
+			NSString *pathString = [NSString stringWithFormat:@"%@@%@:%ld", sshLogin?sshLogin:@"", sshHost, (long)(sshPort?sshPort:0)];
+			CC_MD5([pathString UTF8String], (unsigned int)strlen([pathString UTF8String]), hashedPathResult);
+			NSString *hashedString = [[[NSData dataWithBytes:hashedPathResult length:16] dataToHexString] substringToIndex:8];
+			TA(@"-o",([NSString stringWithFormat:@"ControlPath=%@/SPSSH-%@", [NSFileManager temporaryDirectory], hashedString]));
+		}
+		else {
+			// Disable muxing if requested
+			TA(@"-S", @"none");
+			TA(@"-o", @"ControlMaster=no");
+		}
+
+		// If the port forwarding fails, exit - as this is the primary use case for the instance
+		TA(@"-o",@"ExitOnForwardFailure=yes");
+
+		// Specify a connection timeout based on the preferences value
+		TA(@"-o",([NSString stringWithFormat:@"ConnectTimeout=%ld", (long)connectionTimeout]));
+
+		// Allow three password prompts
+		TA(@"-o",@"NumberOfPasswordPrompts=3");
+
+		// Specify an identity file if available
+		if (identityFilePath) {
+			TA(@"-i", identityFilePath);
+		}
+
+		// If keepalive is set in the preferences, use the same value for the SSH tunnel
+		if (useKeepAlive && keepAliveInterval) {
+			TA(@"-o", @"TCPKeepAlive=no");
+			TA(@"-o", ([NSString stringWithFormat:@"ServerAliveInterval=%ld", (long)ceil(keepAliveInterval)]));
+			TA(@"-o", @"ServerAliveCountMax=1");
+		}
+
+		// Specify the port, host, and authentication details
+		if (sshPort) {
+			TA(@"-p", ([NSString stringWithFormat:@"%ld", (long)sshPort]));
+		}
+		if ([sshLogin length]) {
+			[taskArguments addObject:[NSString stringWithFormat:@"%@@%@", sshLogin, sshHost]];
+		}
+		else {
+			[taskArguments addObject:sshHost];
+		}
+		if (useHostFallback) {
+			TA(@"-L",([NSString stringWithFormat:@"%ld:127.0.0.1:%ld", (long)localPort, (long)remotePort]));
+			TA(@"-L",([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPortFallback, remoteHost, (long)remotePort]));
+		}
+		else {
+			TA(@"-L", ([NSString stringWithFormat:@"%ld:%@:%ld", (long)localPort, remoteHost, (long)remotePort]));
+		}
+
+		[task setArguments:taskArguments];
+
+		// Set up the environment for the task
+		authenticationAppPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"SequelProTunnelAssistant"];
+		taskEnvironment = [[NSMutableDictionary alloc] initWithDictionary:[[NSProcessInfo processInfo] environment]];
+		[taskEnvironment setObject:authenticationAppPath forKey:@"SSH_ASKPASS"];
+		[taskEnvironment setObject:@":0" forKey:@"DISPLAY"];
+		[taskEnvironment setObject:tunnelConnectionName forKey:@"SP_CONNECTION_NAME"];
+		[taskEnvironment setObject:tunnelConnectionVerifyHash forKey:@"SP_CONNECTION_VERIFY_HASH"];
+		if (passwordInKeychain) {
+			[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordUsesKeychain] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+			[taskEnvironment setObject:[keychainName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:@"SP_KEYCHAIN_ITEM_NAME"];
+			[taskEnvironment setObject:[keychainAccount stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:@"SP_KEYCHAIN_ITEM_ACCOUNT"];
+		} else if (password) {
+			[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordAsksUI] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		} else {
+			[taskEnvironment setObject:[[NSNumber numberWithInteger:SPSSHPasswordNone] stringValue] forKey:@"SP_PASSWORD_METHOD"];
+		}
+		[task setEnvironment:taskEnvironment];
+
+		// Add the connection details to the debug messages
 		[debugMessagesLock lock];
-		[debugMessages addObject:[NSString stringWithFormat:@"%@: %@\n", [e name], [e reason]]];
+		[debugMessages addObject:[NSString stringWithFormat:@"Used command:  %@ %@\n", [task launchPath], [[task arguments] componentsJoinedByString:@" "]]];
 		[debugMessagesLock unlock];
+
+		// Set up the standard error pipe
+		standardError = [[NSPipe alloc] init];
+		[task setStandardError:standardError];
+		[[NSNotificationCenter defaultCenter] addObserver:self
+		                                         selector:@selector(standardErrorHandler:)
+		                                             name:NSFileHandleDataAvailableNotification
+		                                           object:[standardError fileHandleForReading]];
+		[[standardError fileHandleForReading] waitForDataInBackgroundAndNotify];
+
+		{
+			static BOOL hasCheckedTTY = NO;
+			if(!hasCheckedTTY) {
+				int fd = open("/dev/tty", O_RDWR);
+				if(fd >= 0) {
+					close(fd);
+					fprintf(stderr, (
+						"!!!\n"
+						"!!! You are running Sequel Pro from a TTY.\n"
+						"!!! Any SSH connections that require user input (e.g. a password/passphrase) will fail\n"
+						"!!!  and appear stalled indefinitely.\n"
+						"!!! Sorry!\n"
+						"!!!\n"
+					));
+					fflush(stderr);
+					// Explanation:
+					// OpenSSH by default requests passwords AND yes/no questions directly from the TTY,
+					// if it is part of a session group that has a controlling terminal (which is the case for
+					// processes created by Terminal.app).
+					//
+					// But this won't work, because only the foreground process group can read from /dev/tty and
+					// NSTask will create a new (background) process group for OpenSSH on launch.
+					//   Side note: The internal method called from -[NSTask launch]
+					//   -[NSConcreteTask launchWithDictionary:] accepts key @"_NSTaskNoNewProcessGroup" to skip that.
+					//
+					// Now, there are two preconditions for OpenSSH to use our SSH_ASKPASS utility instead:
+					//   1) The "DISPLAY" envvar has to be set
+					//   2) There must be no controlling terminal (ie. open("/dev/tty") fails)
+					// (See readpass.c#read_passphrase() in OpenSSH for the relevant code)
+					//
+					// -[NSTask launch] internally uses posix_spawn() and according to its documentation
+					//   "The new process also inherits the following attributes from the calling
+					//    process: [...] control terminal [...]"
+					// So if we wanted to avoid that, we would have to reimplement the whole NSTask class
+					// and use fork()+exec*()+setsid() instead (or use GNUStep's NSTask which already does this).
+					//
+					// We could also do ioctl(fd, TIOCNOTTY, 0); before launching the child process, but
+					// changing our own controlling terminal does not seem like a good idea in the middle
+					// of the application lifecycle, when we don't know what other Cocoa code may use it...
+				}
+				hasCheckedTTY = YES;
+			}
+		}
+
+		@try {
+			// Launch and run the tunnel
+			[task launch]; //throws for invalid paths, missing +x permission
+
+			// Listen for output
+			[task waitUntilExit];
+		}
+		@catch (NSException *e) {
+			connectionState = SPMySQLProxyLaunchFailed;
+			// Log the exception. Could be improved by showing a dedicated alert instead
+			[debugMessagesLock lock];
+			[debugMessages addObject:[NSString stringWithFormat:@"%@: %@\n", [e name], [e reason]]];
+			[debugMessagesLock unlock];
+		}
+
+		// On tunnel close, clean up, ready for re-use if the delegate reconnects.
+		SPClear(task);
+		SPClear(standardError);
+		[[NSNotificationCenter defaultCenter] removeObserver:self
+		                                                name:NSFileHandleDataAvailableNotification
+		                                              object:nil];
+
+		// If the task closed unexpectedly, alert appropriately
+		if (connectionState != SPMySQLProxyIdle) {
+			connectionState = SPMySQLProxyIdle;
+			taskExitedUnexpectedly = YES;
+			[self setLastError:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
+			if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
+		}
+
+		// Run the run loop for a short time to ensure all task/pipe callbacks are dealt with
+		[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+
+		SPClear(taskEnvironment);
+		SPClear(taskArguments);
 	}
-
-	// On tunnel close, clean up, ready for re-use if the delegate reconnects.
-	SPClear(task);
-	SPClear(standardError);
-	[[NSNotificationCenter defaultCenter] removeObserver:self
-	                                                name:NSFileHandleDataAvailableNotification
-	                                              object:nil];
-	
-	// If the task closed unexpectedly, alert appropriately
-	if (connectionState != SPMySQLProxyIdle) {
-		connectionState = SPMySQLProxyIdle;
-		taskExitedUnexpectedly = YES;
-		[self setLastError:NSLocalizedString(@"The SSH Tunnel has unexpectedly closed.", @"SSH tunnel unexpectedly closed")];
-		if (delegate) [delegate performSelectorOnMainThread:stateChangeSelector withObject:self waitUntilDone:NO];
-	}
-
-	// Run the run loop for a short time to ensure all task/pipe callbacks are dealt with
-	[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
-
-	SPClear(taskEnvironment);
-	SPClear(taskArguments);
-
-	[pool release];
 }
 
 /*

@@ -1473,68 +1473,65 @@ static void _BuildMenuWithPills(NSMenu *menu,struct _cmpMap *map,size_t mapEntri
  */
 - (void)_removeFieldAndForeignKey:(NSNumber *)removeForeignKey
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Remove the foreign key before the field if required
+		if ([removeForeignKey boolValue]) {
+			NSString *relationName = @"";
+			NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"];
 
-	// Remove the foreign key before the field if required
-	if ([removeForeignKey boolValue]) {
-
-		NSString *relationName = @"";
-		NSString *field = [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"];
-
-		// Get the foreign key name
-		for (NSDictionary *constraint in [tableDataInstance getConstraints])
-		{
-			for (NSString *column in [constraint objectForKey:@"columns"])
+			// Get the foreign key name
+			for (NSDictionary *constraint in [tableDataInstance getConstraints])
 			{
-				if ([column isEqualToString:field]) {
-					relationName = [constraint objectForKey:@"name"];
-					break;
+				for (NSString *column in [constraint objectForKey:@"columns"])
+				{
+					if ([column isEqualToString:field]) {
+						relationName = [constraint objectForKey:@"name"];
+						break;
+					}
 				}
+			}
+
+			[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
+
+			// Check for errors, but only if the query wasn't cancelled
+			if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
+				NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
+				[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
+				[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection lastErrorMessage]] forKey:@"message"];
+				[[self onMainThread] showErrorSheetWith:errorDictionary];
 			}
 		}
 
-		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP FOREIGN KEY %@", [selectedTable backtickQuotedString], [relationName backtickQuotedString]]];
+		// Remove field
+		[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
+		                                                        [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"] backtickQuotedString]]];
 
 		// Check for errors, but only if the query wasn't cancelled
 		if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
 			NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-			[errorDictionary setObject:NSLocalizedString(@"Unable to delete relation", @"error deleting relation message") forKey:@"title"];
-			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"An error occurred while trying to delete the relation '%@'.\n\nMySQL said: %@", @"error deleting relation informative message"), relationName, [mySQLConnection lastErrorMessage]] forKey:@"message"];
+			[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
+			[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
+			                                                      [[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"],
+			                                                      [mySQLConnection lastErrorMessage]] forKey:@"message"];
+
 			[[self onMainThread] showErrorSheetWith:errorDictionary];
 		}
+		else {
+			[tableDataInstance resetAllData];
+
+			// Refresh relevant views
+			[tableDocumentInstance setStatusRequiresReload:YES];
+			[tableDocumentInstance setContentRequiresReload:YES];
+			[tableDocumentInstance setRelationsRequiresReload:YES];
+
+			[self loadTable:selectedTable];
+		}
+
+		[tableDocumentInstance endTask];
+
+		// Preserve focus on table for keyboard navigation
+		[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
 	}
-
-	// Remove field
-	[mySQLConnection queryString:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@",
-								  [selectedTable backtickQuotedString], [[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"] backtickQuotedString]]];
-
-	// Check for errors, but only if the query wasn't cancelled
-	if ([mySQLConnection queryErrored] && ![mySQLConnection lastQueryWasCancelled]) {
-		NSMutableDictionary *errorDictionary = [NSMutableDictionary dictionary];
-		[errorDictionary setObject:NSLocalizedString(@"Error", @"error") forKey:@"title"];
-		[errorDictionary setObject:[NSString stringWithFormat:NSLocalizedString(@"Couldn't delete field %@.\nMySQL said: %@", @"message of panel when field cannot be deleted"),
-									[[tableFields objectAtIndex:[tableSourceView selectedRow]] objectForKey:@"name"],
-									[mySQLConnection lastErrorMessage]] forKey:@"message"];
-		
-		[[self onMainThread] showErrorSheetWith:errorDictionary];
-	}
-	else {
-		[tableDataInstance resetAllData];
-		
-		// Refresh relevant views
-		[tableDocumentInstance setStatusRequiresReload:YES];
-		[tableDocumentInstance setContentRequiresReload:YES];
-		[tableDocumentInstance setRelationsRequiresReload:YES];
-		
-		[self loadTable:selectedTable];		
-	}
-
-	[tableDocumentInstance endTask];
-
-	// Preserve focus on table for keyboard navigation
-	[[tableDocumentInstance parentWindow] makeFirstResponder:tableSourceView];
-
-	[pool drain];
 }
 
 #pragma mark -

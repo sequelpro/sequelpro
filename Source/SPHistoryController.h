@@ -65,7 +65,6 @@
 // Loading history entries
 - (void) loadEntryAtPosition:(NSUInteger)position;
 - (void) loadEntryTaskWithPosition:(NSNumber *)positionNumber;
-- (void) abortEntryLoadWithPool:(NSAutoreleasePool *)pool;
 - (void) loadEntryFromMenuItem:(id)theMenuItem;
 
 // Restoring view states

@@ -158,66 +158,64 @@ static NSString *SPSchemaPrivilegesTabIdentifier = @"Schema Privileges";
 {
 	isInitializing = YES; // Don't want to do some of the notifications if initializing
 	
-	NSMutableString *privKey;
-	NSArray *privRow;
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSMutableArray *usersResultArray = [NSMutableArray array];
-	
-	// Select users from the mysql.user table
-	SPMySQLResult *result = [connection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
-	[result setReturnDataAsStrings:YES];
-	//TODO: improve user feedback
-	NSAssert(([[result fieldNames] firstObjectCommonWithArray:@[@"Password",@"authentication_string"]] != nil), @"Resultset from mysql.user contains neither 'Password' nor 'authentication_string' column!?");
-	requiresPost576PasswordHandling = ![[result fieldNames] containsObject:@"Password"];
-	[usersResultArray addObjectsFromArray:[result getAllRows]];
+	@autoreleasepool {
+		NSArray *privRow;
+		NSMutableArray *usersResultArray = [NSMutableArray array];
 
-	[self _initializeTree:usersResultArray];
-
-	// Set up the array of privs supported by this server.
-	[[self privsSupportedByServer] removeAllObjects];
-	
-	result = nil;
-	
-	// Attempt to obtain user privileges if supported
-	if ([serverSupport supportsShowPrivileges]) {
-	
-		result = [connection queryString:@"SHOW PRIVILEGES"];
+		// Select users from the mysql.user table
+		SPMySQLResult *result = [connection queryString:@"SELECT * FROM mysql.user ORDER BY user"];
 		[result setReturnDataAsStrings:YES];
-	}
-	
-	if (result && [result numberOfRows]) {
-		while ((privRow = [result getRowAsArray])) 
-		{
-			privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
+		//TODO: improve user feedback
+		NSAssert(([[result fieldNames] firstObjectCommonWithArray:@[@"Password",@"authentication_string"]] != nil), @"Resultset from mysql.user contains neither 'Password' nor 'authentication_string' column!?");
+		requiresPost576PasswordHandling = ![[result fieldNames] containsObject:@"Password"];
+		[usersResultArray addObjectsFromArray:[result getAllRows]];
 
-			// Skip the special "Usage" key
-			if ([privKey isEqualToString:@"usage"]) continue;
-			
-			[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
-			[privKey appendString:@"_priv"];
-			
-			[[self privsSupportedByServer] setValue:@YES forKey:privKey];
+		[self _initializeTree:usersResultArray];
+
+		// Set up the array of privs supported by this server.
+		[[self privsSupportedByServer] removeAllObjects];
+
+		result = nil;
+
+		// Attempt to obtain user privileges if supported
+		if ([serverSupport supportsShowPrivileges]) {
+
+			result = [connection queryString:@"SHOW PRIVILEGES"];
+			[result setReturnDataAsStrings:YES];
 		}
-	} 
-	// If that fails, base privilege support on the mysql.users columns
-	else {
-		result = [connection queryString:@"SHOW COLUMNS FROM mysql.user"];
-		
-		[result setReturnDataAsStrings:YES];
-		
-		while ((privRow = [result getRowAsArray])) 
-		{
-			privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
-			
-			if (![privKey hasSuffix:@"_priv"]) continue;
-			
-			if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
-			
-			[[self privsSupportedByServer] setValue:@YES forKey:[privKey lowercaseString]];
+
+		if (result && [result numberOfRows]) {
+			while ((privRow = [result getRowAsArray]))
+			{
+				NSMutableString *privKey = [NSMutableString stringWithString:[[privRow objectAtIndex:0] lowercaseString]];
+
+				// Skip the special "Usage" key
+				if ([privKey isEqualToString:@"usage"]) continue;
+
+				[privKey replaceOccurrencesOfString:@" " withString:@"_" options:NSLiteralSearch range:NSMakeRange(0, [privKey length])];
+				[privKey appendString:@"_priv"];
+
+				[[self privsSupportedByServer] setValue:@YES forKey:privKey];
+			}
+		}
+		// If that fails, base privilege support on the mysql.users columns
+		else {
+			result = [connection queryString:@"SHOW COLUMNS FROM mysql.user"];
+
+			[result setReturnDataAsStrings:YES];
+
+			while ((privRow = [result getRowAsArray]))
+			{
+				NSMutableString *privKey = [NSMutableString stringWithString:[privRow objectAtIndex:0]];
+
+				if (![privKey hasSuffix:@"_priv"]) continue;
+
+				if ([privColumnToGrantMap objectForKey:privKey]) privKey = [privColumnToGrantMap objectForKey:privKey];
+
+				[[self privsSupportedByServer] setValue:@YES forKey:[privKey lowercaseString]];
+			}
 		}
 	}
-
-	[pool release];
 	
 	isInitializing = NO;
 }

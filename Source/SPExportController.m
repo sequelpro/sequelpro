@@ -1070,66 +1070,64 @@ set_input:
  */
 - (void)_toggleExportButton:(id)uiStateDict
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		
-	BOOL enable = NO;
-	
-	BOOL isSQL  = (exportType == SPSQLExport);
-	BOOL isCSV  = (exportType == SPCSVExport);
-	BOOL isXML  = (exportType == SPXMLExport);
-	BOOL isHTML = (exportType == SPHTMLExport);
-	BOOL isPDF  = (exportType == SPPDFExport);
-	
-	BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] boolValue];
-	BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] boolValue];
-	BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] boolValue];
-		
-	if (isCSV || isXML || isHTML || isPDF || (isSQL && ((!structureEnabled) || (!dropEnabled)))) {
-		enable = NO;
-		
-		// Only enable the button if at least one table is selected
-		for (NSArray *table in tables)
-		{
-			if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
-				enable = YES;
-				break;
-			}
-		}
-	}
-	else if (isSQL) {
-		
-		// Disable if all are unchecked
-		if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
+	@autoreleasepool {
+		BOOL enable = NO;
+
+		BOOL isSQL  = (exportType == SPSQLExport);
+		BOOL isCSV  = (exportType == SPCSVExport);
+		BOOL isXML  = (exportType == SPXMLExport);
+		BOOL isHTML = (exportType == SPHTMLExport);
+		BOOL isPDF  = (exportType == SPPDFExport);
+
+		BOOL structureEnabled = [[uiStateDict objectForKey:SPSQLExportStructureEnabled] boolValue];
+		BOOL contentEnabled   = [[uiStateDict objectForKey:SPSQLExportContentEnabled] boolValue];
+		BOOL dropEnabled      = [[uiStateDict objectForKey:SPSQLExportDropEnabled] boolValue];
+
+		if (isCSV || isXML || isHTML || isPDF || (isSQL && ((!structureEnabled) || (!dropEnabled)))) {
 			enable = NO;
-		}
-		// If they are all checked, check to see if any of the tables are checked
-		else if (contentEnabled && structureEnabled && dropEnabled) {
-			
+
 			// Only enable the button if at least one table is selected
 			for (NSArray *table in tables)
 			{
-				if ([NSArrayObjectAtIndex(table, 1) boolValue] || 
-					[NSArrayObjectAtIndex(table, 2) boolValue] ||
-					[NSArrayObjectAtIndex(table, 3) boolValue]) 
-				{
+				if ([NSArrayObjectAtIndex(table, 2) boolValue]) {
 					enable = YES;
 					break;
 				}
 			}
 		}
-		// Disable if structure is unchecked, but content and drop are as dropping a 
-		// table then trying to insert into it is obviously an error.
-		else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
-			enable = NO;
+		else if (isSQL) {
+
+			// Disable if all are unchecked
+			if ((!contentEnabled) && (!structureEnabled) && (!dropEnabled)) {
+				enable = NO;
+			}
+				// If they are all checked, check to see if any of the tables are checked
+			else if (contentEnabled && structureEnabled && dropEnabled) {
+
+				// Only enable the button if at least one table is selected
+				for (NSArray *table in tables)
+				{
+					if ([NSArrayObjectAtIndex(table, 1) boolValue] ||
+						[NSArrayObjectAtIndex(table, 2) boolValue] ||
+						[NSArrayObjectAtIndex(table, 3) boolValue])
+					{
+						enable = YES;
+						break;
+					}
+				}
+			}
+				// Disable if structure is unchecked, but content and drop are as dropping a
+				// table then trying to insert into it is obviously an error.
+			else if (contentEnabled && (!structureEnabled) && (dropEnabled)) {
+				enable = NO;
+			}
+			else {
+				enable = (contentEnabled || (structureEnabled || dropEnabled));
+			}
 		}
-		else {			
-			enable = (contentEnabled || (structureEnabled || dropEnabled));
-		}
+
+		[self performSelectorOnMainThread:@selector(_toggleExportButtonWithBool:) withObject:@(enable) waitUntilDone:NO];
 	}
-		
-	[self performSelectorOnMainThread:@selector(_toggleExportButtonWithBool:) withObject:[NSNumber numberWithBool:enable] waitUntilDone:NO];
-		
-	[pool release];
 }
 
 /**

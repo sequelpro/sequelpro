@@ -5081,70 +5081,65 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)restoreSession
 {
-	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Check and set the table
+		NSArray *tables = [tablesListInstance tables];
 
-	// Check and set the table
-	NSArray *tables = [tablesListInstance tables];
+		BOOL isSelectedTableDefined = YES;
 
-	BOOL isSelectedTableDefined = YES;
-
-	if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
-		isSelectedTableDefined = NO;
-	}
-
-	// Restore toolbar setting
-	if([spfSession objectForKey:@"isToolbarVisible"]) {
-		[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
-	}
-	
-	// Reset database view encoding if differs from default
-	if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]]) {
-		[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
-	}
-
-	if(isSelectedTableDefined) {
-		// Set table content details for restore
-		if([spfSession objectForKey:@"contentSortCol"])
-			[tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
-		if([spfSession objectForKey:@"contentPageNumber"])
-			[tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
-		if([spfSession objectForKey:@"contentViewport"])
-			[tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
-		if([spfSession objectForKey:@"contentFilter"])
-			[tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
-
-		// Select table
-		[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
-
-		// Restore table selection indexes
-		if([spfSession objectForKey:@"contentSelection"]) {
-			[tableContentInstance setSelectionToRestore:[spfSession objectForKey:@"contentSelection"]];
+		if([tables indexOfObject:[spfSession objectForKey:@"table"]] == NSNotFound) {
+			isSelectedTableDefined = NO;
 		}
 
-		[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
+		// Restore toolbar setting
+		if([spfSession objectForKey:@"isToolbarVisible"]) {
+			[mainToolbar setVisible:[[spfSession objectForKey:@"isToolbarVisible"] boolValue]];
+		}
 
+		// Reset database view encoding if differs from default
+		if([spfSession objectForKey:@"connectionEncoding"] && ![[mySQLConnection encoding] isEqualToString:[spfSession objectForKey:@"connectionEncoding"]]) {
+			[self setConnectionEncoding:[spfSession objectForKey:@"connectionEncoding"] reloadingViews:YES];
+		}
+
+		if(isSelectedTableDefined) {
+			// Set table content details for restore
+			if([spfSession objectForKey:@"contentSortCol"])    [tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
+			if([spfSession objectForKey:@"contentPageNumber"]) [tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
+			if([spfSession objectForKey:@"contentViewport"])   [tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
+			if([spfSession objectForKey:@"contentFilter"])     [tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
+
+			// Select table
+			[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];
+
+			// Restore table selection indexes
+			if([spfSession objectForKey:@"contentSelection"]) {
+				[tableContentInstance setSelectionToRestore:[spfSession objectForKey:@"contentSelection"]];
+			}
+
+			[[tablesListInstance valueForKeyPath:@"tablesListView"] scrollRowToVisible:[tables indexOfObject:[spfSession objectForKey:@"selectedTable"]]];
+
+		}
+
+		// update UI on main thread
+		SPMainQSync(^{
+			// Select view
+			NSString *view = [spfSession objectForKey:@"view"];
+			     if([view isEqualToString:@"SP_VIEW_STRUCTURE"])   [self viewStructure:self];
+			else if([view isEqualToString:@"SP_VIEW_CONTENT"])     [self viewContent:self];
+			else if([view isEqualToString:@"SP_VIEW_CUSTOMQUERY"]) [self viewQuery:self];
+			else if([view isEqualToString:@"SP_VIEW_STATUS"])      [self viewStatus:self];
+			else if([view isEqualToString:@"SP_VIEW_RELATIONS"])   [self viewRelations:self];
+			else if([view isEqualToString:@"SP_VIEW_TRIGGERS"])    [self viewTriggers:self];
+
+			[self updateWindowTitle:self];
+		});
+
+		// dealloc spfSession data
+		SPClear(spfSession);
+
+		// End the task
+		[self endTask];
 	}
-
-	// update UI on main thread
-	SPMainQSync(^{
-		// Select view
-		NSString *view = [spfSession objectForKey:@"view"];
-		     if([view isEqualToString:@"SP_VIEW_STRUCTURE"])   [self viewStructure:self];
-		else if([view isEqualToString:@"SP_VIEW_CONTENT"])     [self viewContent:self];
-		else if([view isEqualToString:@"SP_VIEW_CUSTOMQUERY"]) [self viewQuery:self];
-		else if([view isEqualToString:@"SP_VIEW_STATUS"])      [self viewStatus:self];
-		else if([view isEqualToString:@"SP_VIEW_RELATIONS"])   [self viewRelations:self];
-		else if([view isEqualToString:@"SP_VIEW_TRIGGERS"])    [self viewTriggers:self];
-		
-		[self updateWindowTitle:self];
-	});
-
-	// dealloc spfSession data
-	SPClear(spfSession);
-
-	// End the task
-	[self endTask];
-	[taskPool drain];
 }
 #endif
 
@@ -6231,112 +6226,109 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)_selectDatabaseAndItem:(NSDictionary *)selectionDetails
 {
-	NSAutoreleasePool *taskPool = [[NSAutoreleasePool alloc] init];
-	NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
+	@autoreleasepool {
+		NSString *targetDatabaseName = [selectionDetails objectForKey:@"database"];
 #ifndef SP_CODA /* update history controller */
-	NSString *targetItemName = [selectionDetails objectForKey:@"item"];
+		NSString *targetItemName = [selectionDetails objectForKey:@"item"];
 
-	// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
-	BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
-	
-	if (!historyStateChanging) {
-		[spHistoryControllerInstance updateHistoryEntries];
-		[spHistoryControllerInstance setModifyingState:YES];
-	}
+		// Save existing scroll position and details, and ensure no duplicate entries are created as table list changes
+		BOOL historyStateChanging = [spHistoryControllerInstance modifyingState];
+
+		if (!historyStateChanging) {
+			[spHistoryControllerInstance updateHistoryEntries];
+			[spHistoryControllerInstance setModifyingState:YES];
+		}
 #endif
 
-	if (![targetDatabaseName isEqualToString:selectedDatabase]) {
-
-		// Attempt to select the specified database, and abort on failure
+		if (![targetDatabaseName isEqualToString:selectedDatabase]) {
+			// Attempt to select the specified database, and abort on failure
 #ifndef SP_CODA /* patch */
-		if ([[chooseDatabaseButton onMainThread] indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
+			if ([[chooseDatabaseButton onMainThread] indexOfItemWithTitle:targetDatabaseName] == NSNotFound || ![mySQLConnection selectDatabase:targetDatabaseName])
 #else
-		if ( ![mySQLConnection selectDatabase:targetDatabaseName] )
+			if ( ![mySQLConnection selectDatabase:targetDatabaseName] )
 #endif
-		{
-			// End the task first to ensure the database dropdown can be reselected
-			[self endTask];
+			{
+				// End the task first to ensure the database dropdown can be reselected
+				[self endTask];
 
-			if ([mySQLConnection isConnected]) {
+				if ([mySQLConnection isConnected]) {
 
-				// Update the database list
-				[[self onMainThread] setDatabases:self];
+					// Update the database list
+					[[self onMainThread] setDatabases:self];
 
-				SPOnewayAlertSheet(
-					NSLocalizedString(@"Error", @"error"),
-					parentWindow,
-					[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
-				);
+					SPOnewayAlertSheet(
+						NSLocalizedString(@"Error", @"error"),
+						parentWindow,
+						[NSString stringWithFormat:NSLocalizedString(@"Unable to select database %@.\nPlease check you have the necessary privileges to view the database, and that the database still exists.", @"message of panel when connection to db failed after selecting from popupbutton"), targetDatabaseName]
+					);
+				}
+
+				return;
 			}
 
-			[taskPool drain];
-			return;
-		}
-
 #ifndef SP_CODA /* chooseDatabaseButton selectItemWithTitle: */
-		[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
+			[[chooseDatabaseButton onMainThread] selectItemWithTitle:targetDatabaseName];
 #endif
-		if (selectedDatabase) SPClear(selectedDatabase);
-		selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
+			if (selectedDatabase) SPClear(selectedDatabase);
+			selectedDatabase = [[NSString alloc] initWithString:targetDatabaseName];
 
-		[databaseDataInstance resetAllData];
+			[databaseDataInstance resetAllData];
 
 #ifndef SP_CODA /* update database encoding */
 
-		// Update the stored database encoding, used for views, "default" table encodings, and to allow
-		// or disallow use of the "View using encoding" menu
-		[self detectDatabaseEncoding];
+			// Update the stored database encoding, used for views, "default" table encodings, and to allow
+			// or disallow use of the "View using encoding" menu
+			[self detectDatabaseEncoding];
 #endif
-		
-		// Set the connection of SPTablesList to reload tables in db
-		[tablesListInstance setConnection:mySQLConnection];
+
+			// Set the connection of SPTablesList to reload tables in db
+			[tablesListInstance setConnection:mySQLConnection];
 
 #ifndef SP_CODA /* update history controller and ui manip */
-		// Update the window title
-		[self updateWindowTitle:self];
+			// Update the window title
+			[self updateWindowTitle:self];
 
-		// Add a history entry
-		if (!historyStateChanging) {
-			[spHistoryControllerInstance setModifyingState:NO];
-			[spHistoryControllerInstance updateHistoryEntries];
-		}
+			// Add a history entry
+			if (!historyStateChanging) {
+				[spHistoryControllerInstance setModifyingState:NO];
+				[spHistoryControllerInstance updateHistoryEntries];
+			}
 #endif
-	}
+		}
 
 #ifndef SP_CODA /* update selected table in SPTablesList */
 
-	SPMainQSync(^{
-		BOOL focusOnFilter = YES;
-		if (targetItemName) focusOnFilter = NO;
-		
-		// If a the table has changed, update the selection
-		if (![targetItemName isEqualToString:[self table]] && targetItemName) {
-			focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
-		}
-		
-		// Ensure the window focus is on the table list or the filter as appropriate
-		[tablesListInstance setTableListSelectability:YES];
-		if (focusOnFilter) {
-			[tablesListInstance makeTableListFilterHaveFocus];
-		} else {
-			[tablesListInstance makeTableListHaveFocus];
-		}
-		[tablesListInstance setTableListSelectability:NO];
-	});
+		SPMainQSync(^{
+			BOOL focusOnFilter = YES;
+			if (targetItemName) focusOnFilter = NO;
+
+			// If a the table has changed, update the selection
+			if (![targetItemName isEqualToString:[self table]] && targetItemName) {
+				focusOnFilter = ![tablesListInstance selectItemWithName:targetItemName];
+			}
+
+			// Ensure the window focus is on the table list or the filter as appropriate
+			[tablesListInstance setTableListSelectability:YES];
+			if (focusOnFilter) {
+				[tablesListInstance makeTableListFilterHaveFocus];
+			} else {
+				[tablesListInstance makeTableListHaveFocus];
+			}
+			[tablesListInstance setTableListSelectability:NO];
+		});
 
 #endif
-	[self endTask];
+		[self endTask];
 #ifndef SP_CODA /* triggered commands */
-	[self _processDatabaseChangedBundleTriggerActions];
+		[self _processDatabaseChangedBundleTriggerActions];
 #endif
 
 #ifdef SP_CODA /* glue */
-	if (delegate && [delegate respondsToSelector:@selector(databaseDidChange:)]) {
-		[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
-	}
+		if (delegate && [delegate respondsToSelector:@selector(databaseDidChange:)]) {
+			[delegate performSelectorOnMainThread:@selector(databaseDidChange:) withObject:self waitUntilDone:NO];
+		}
 #endif
-
-	[taskPool drain];
+	}
 }
 
 #ifndef SP_CODA
@@ -6793,57 +6785,53 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)_loadTabTask:(NSNumber *)tabViewItemIndexNumber
 {
-	NSAutoreleasePool *tabLoadPool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// If anything other than a single table or view is selected, don't proceed.
+		if (![self table] || ([tablesListInstance tableType] != SPTableTypeTable && [tablesListInstance tableType] != SPTableTypeView)) {
+			[self endTask];
+			return;
+		}
 
-	// If anything other than a single table or view is selected, don't proceed.
-	if (![self table] || ([tablesListInstance tableType] != SPTableTypeTable && [tablesListInstance tableType] != SPTableTypeView))
-	{
-		[self endTask];
-		[tabLoadPool drain];
-		return;
-	}
+		// Get the tab view index and ensure the associated view is loaded
+		SPTableViewType selectedTabViewIndex = (SPTableViewType)[tabViewItemIndexNumber integerValue];
 
-	// Get the tab view index and ensure the associated view is loaded
-	SPTableViewType selectedTabViewIndex = [tabViewItemIndexNumber integerValue];
-
-	switch (selectedTabViewIndex) {
-		case SPTableViewStructure:
-			if (!structureLoaded) {
-				[tableSourceInstance loadTable:selectedTableName];
-				structureLoaded = YES;
-			}
-			break;
-		case SPTableViewContent:
-			if (!contentLoaded) {
-				[tableContentInstance loadTable:selectedTableName];
-				contentLoaded = YES;
-			}
-			break;
+		switch (selectedTabViewIndex) {
+			case SPTableViewStructure:
+				if (!structureLoaded) {
+					[tableSourceInstance loadTable:selectedTableName];
+					structureLoaded = YES;
+				}
+				break;
+			case SPTableViewContent:
+				if (!contentLoaded) {
+					[tableContentInstance loadTable:selectedTableName];
+					contentLoaded = YES;
+				}
+				break;
 #ifndef SP_CODA /* case SPTableViewStatus: case SPTableViewTriggers: */
-		case SPTableViewStatus:
-			if (!statusLoaded) {
-				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
-				statusLoaded = YES;
-			}
-			break;
-		case SPTableViewTriggers:
-			if (!triggersLoaded) {
-				[[tableTriggersInstance onMainThread] loadTriggers];
-				triggersLoaded = YES;
-			}
-			break;
-		case SPTableViewRelations:
-			if (!relationsLoaded) {
-				[[tableRelationsInstance onMainThread] refreshRelations:self];
-				relationsLoaded = YES;
-			}
-			break;
+			case SPTableViewStatus:
+				if (!statusLoaded) {
+					[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
+					statusLoaded = YES;
+				}
+				break;
+			case SPTableViewTriggers:
+				if (!triggersLoaded) {
+					[[tableTriggersInstance onMainThread] loadTriggers];
+					triggersLoaded = YES;
+				}
+				break;
+			case SPTableViewRelations:
+				if (!relationsLoaded) {
+					[[tableRelationsInstance onMainThread] refreshRelations:self];
+					relationsLoaded = YES;
+				}
+				break;
 #endif
+		}
+
+		[self endTask];
 	}
-
-	[self endTask];
-
-	[tabLoadPool drain];
 }
 
 
@@ -6852,169 +6840,169 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)_loadTableTask
 {
-	NSAutoreleasePool *loadPool = [[NSAutoreleasePool alloc] init];
-	NSString *tableEncoding = nil;
+	@autoreleasepool {
+		NSString *tableEncoding = nil;
 
 #ifndef SP_CODA /* Update the window title */
-	// Update the window title
-	[self updateWindowTitle:self];
+		// Update the window title
+		[self updateWindowTitle:self];
 #endif
 
-	// Reset table information caches and mark that all loaded views require their data reloading
-	[tableDataInstance resetAllData];
+		// Reset table information caches and mark that all loaded views require their data reloading
+		[tableDataInstance resetAllData];
 
-	structureLoaded = NO;
-	contentLoaded = NO;
-	statusLoaded = NO;
-	triggersLoaded = NO;
-	relationsLoaded = NO;
+		structureLoaded = NO;
+		contentLoaded = NO;
+		statusLoaded = NO;
+		triggersLoaded = NO;
+		relationsLoaded = NO;
 
-	// Ensure status and details are fetched using UTF8
-	NSString *previousEncoding = [mySQLConnection encoding];
-	BOOL changeEncoding = ![previousEncoding isEqualToString:@"utf8"];
+		// Ensure status and details are fetched using UTF8
+		NSString *previousEncoding = [mySQLConnection encoding];
+		BOOL changeEncoding = ![previousEncoding isEqualToString:@"utf8"];
 
-	if (changeEncoding) {
-		[mySQLConnection storeEncodingForRestoration];
-		[mySQLConnection setEncoding:@"utf8"];
-	}
-
-	// Cache status information on the working thread
-	[tableDataInstance updateStatusInformationForCurrentTable];
-
-	// Check the current encoding against the table encoding to see whether
-	// an encoding change and reset is required.  This also caches table information on
-	// the working thread.
-	if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
-
-		// tableEncoding == nil indicates that there was an error while retrieving table data
-		tableEncoding = [tableDataInstance tableEncoding];
-
-		// If encoding is set to Autodetect, update the connection character set encoding
-		// based on the newly selected table's encoding - but only if it differs from the current encoding.
-		if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] intValue] == SPEncodingAutodetect) {
-			if (tableEncoding != nil && ![tableEncoding isEqualToString:previousEncoding]) {
-				[self setConnectionEncoding:tableEncoding reloadingViews:NO];
-				changeEncoding = NO;
-			}
+		if (changeEncoding) {
+			[mySQLConnection storeEncodingForRestoration];
+			[mySQLConnection setEncoding:@"utf8"];
 		}
-	}
 
-	if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+		// Cache status information on the working thread
+		[tableDataInstance updateStatusInformationForCurrentTable];
 
-	// Notify listeners of the table change now that the state is fully set up.
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+		// Check the current encoding against the table encoding to see whether
+		// an encoding change and reset is required.  This also caches table information on
+		// the working thread.
+		if( selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable) {
 
-#ifndef SP_CODA /* [spHistoryControllerInstance restoreViewStates] */
+			// tableEncoding == nil indicates that there was an error while retrieving table data
+			tableEncoding = [tableDataInstance tableEncoding];
 
-	// Restore view states as appropriate
-	[spHistoryControllerInstance restoreViewStates];
-#endif
-
-	// Load the currently selected view if looking at a table or view
-	if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
-	{
-#ifndef SP_CODA /* load everything */
-		NSInteger selectedTabViewIndex = [[self onMainThread] currentlySelectedView];
-
-		switch (selectedTabViewIndex) {
-			case SPTableViewStructure:
-#endif
-				[tableSourceInstance loadTable:selectedTableName];
-				structureLoaded = YES;
-#ifndef SP_CODA /* load everything */
-				break;
-			case SPTableViewContent:
-#endif
-				[tableContentInstance loadTable:selectedTableName];
-				contentLoaded = YES;
-#ifndef SP_CODA /* load everything */
-				break;
-			case SPTableViewStatus:
-				[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
-				statusLoaded = YES;
-				break;
-			case SPTableViewTriggers:
-				[[tableTriggersInstance onMainThread] loadTriggers];
-				triggersLoaded = YES;
-				break;
-			case SPTableViewRelations:
-				[[tableRelationsInstance onMainThread] refreshRelations:self];
-				relationsLoaded = YES;
-				break;
-		}
-#endif
-	}
-
-	// Clear any views which haven't been loaded as they weren't visible.  Note
-	// that this should be done after reloading visible views, instead of clearing all
-	// views, to reduce UI operations and avoid resetting state unnecessarily.
-	// Some views (eg TableRelations) make use of the SPTableChangedNotification and
-	// so don't require manual clearing.
-	if (!structureLoaded) [tableSourceInstance loadTable:nil];
-	if (!contentLoaded) [tableContentInstance loadTable:nil];
-	if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
-	if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
-
-	// If the table row counts an inaccurate and require updating, trigger an update - no
-	// action will be performed if not necessary
-	[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
-
-#ifndef SP_CODA /* show Create Table syntax */
-	// Update the "Show Create Syntax" window if it's already opened
-	// according to the selected table/view/proc/func
-	if ([[[self onMainThread] getCreateTableSyntaxWindow] isVisible]) {
-		[[self onMainThread] showCreateTableSyntax:self];
-	}
-
-	// Add a history entry
-	[spHistoryControllerInstance updateHistoryEntries];
-#endif
-	// Empty the loading pool and exit the thread
-	[self endTask];
-
-#ifndef SP_CODA /* triggered commands */
-	NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
-
-	for(NSString* cmdPath in triggeredCommands)
-	{
-		NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
-		NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
-		[aMenuItem setTag:0];
-		[aMenuItem setToolTip:[data objectAtIndex:0]];
-
-		// For HTML output check if corresponding window already exists
-		BOOL stopTrigger = NO;
-		if([(NSString*)[data objectAtIndex:2] length]) {
-			BOOL correspondingWindowFound = NO;
-			NSString *uuid = [data objectAtIndex:2];
-			for(id win in [NSApp windows]) {
-				if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
-					if([[[win delegate] windowUUID] isEqualToString:uuid]) {
-						correspondingWindowFound = YES;
-						break;
-					}
+			// If encoding is set to Autodetect, update the connection character set encoding
+			// based on the newly selected table's encoding - but only if it differs from the current encoding.
+			if ([[[NSUserDefaults standardUserDefaults] objectForKey:SPDefaultEncoding] intValue] == SPEncodingAutodetect) {
+				if (tableEncoding != nil && ![tableEncoding isEqualToString:previousEncoding]) {
+					[self setConnectionEncoding:tableEncoding reloadingViews:NO];
+					changeEncoding = NO;
 				}
 			}
-			if(!correspondingWindowFound) stopTrigger = YES;
 		}
-		if(!stopTrigger) {
-			id firstResponder = [[NSApp keyWindow] firstResponder];
-			if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
-				[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
-			}
-			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
-				if([[[firstResponder class] description] isEqualToString:@"SPCopyTable"])
-					[[firstResponder onMainThread] executeBundleItemForDataTable:aMenuItem];
-			}
-			else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
-				if([firstResponder isKindOfClass:[NSTextView class]])
-					[[firstResponder onMainThread] executeBundleItemForInputField:aMenuItem];
-			}
-		}
-	}
+
+		if (changeEncoding) [mySQLConnection restoreStoredEncoding];
+
+		// Notify listeners of the table change now that the state is fully set up.
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:SPTableChangedNotification object:self];
+
+#ifndef SP_CODA /* [spHistoryControllerInstance restoreViewStates] */
+		// Restore view states as appropriate
+		[spHistoryControllerInstance restoreViewStates];
 #endif
 
-	[loadPool drain];
+		// Load the currently selected view if looking at a table or view
+		if (tableEncoding && (selectedTableType == SPTableTypeView || selectedTableType == SPTableTypeTable))
+		{
+#ifndef SP_CODA /* load everything */
+			NSInteger selectedTabViewIndex = [[self onMainThread] currentlySelectedView];
+
+			switch (selectedTabViewIndex) {
+				case SPTableViewStructure:
+#endif
+					[tableSourceInstance loadTable:selectedTableName];
+					structureLoaded = YES;
+#ifndef SP_CODA /* load everything */
+					break;
+				case SPTableViewContent:
+#endif
+					[tableContentInstance loadTable:selectedTableName];
+					contentLoaded = YES;
+#ifndef SP_CODA /* load everything */
+					break;
+				case SPTableViewStatus:
+					[[extendedTableInfoInstance onMainThread] loadTable:selectedTableName];
+					statusLoaded = YES;
+					break;
+				case SPTableViewTriggers:
+					[[tableTriggersInstance onMainThread] loadTriggers];
+					triggersLoaded = YES;
+					break;
+				case SPTableViewRelations:
+					[[tableRelationsInstance onMainThread] refreshRelations:self];
+					relationsLoaded = YES;
+					break;
+			}
+#endif
+		}
+
+		// Clear any views which haven't been loaded as they weren't visible.  Note
+		// that this should be done after reloading visible views, instead of clearing all
+		// views, to reduce UI operations and avoid resetting state unnecessarily.
+		// Some views (eg TableRelations) make use of the SPTableChangedNotification and
+		// so don't require manual clearing.
+		if (!structureLoaded) [tableSourceInstance loadTable:nil];
+		if (!contentLoaded) [tableContentInstance loadTable:nil];
+		if (!statusLoaded) [[extendedTableInfoInstance onMainThread] loadTable:nil];
+		if (!triggersLoaded) [[tableTriggersInstance onMainThread] resetInterface];
+
+		// If the table row counts an inaccurate and require updating, trigger an update - no
+		// action will be performed if not necessary
+		[tableDataInstance updateAccurateNumberOfRowsForCurrentTableForcingUpdate:NO];
+
+#ifndef SP_CODA /* show Create Table syntax */
+		SPMainQSync(^{
+			// Update the "Show Create Syntax" window if it's already opened
+			// according to the selected table/view/proc/func
+			if ([[self getCreateTableSyntaxWindow] isVisible]) {
+				[self showCreateTableSyntax:self];
+			}
+		});
+
+		// Add a history entry
+		[spHistoryControllerInstance updateHistoryEntries];
+#endif
+		// Empty the loading pool and exit the thread
+		[self endTask];
+
+#ifndef SP_CODA /* triggered commands */
+		NSArray *triggeredCommands = [SPAppDelegate bundleCommandsForTrigger:SPBundleTriggerActionTableChanged];
+
+		for(NSString* cmdPath in triggeredCommands)
+		{
+			NSArray *data = [cmdPath componentsSeparatedByString:@"|"];
+			NSMenuItem *aMenuItem = [[[NSMenuItem alloc] init] autorelease];
+			[aMenuItem setTag:0];
+			[aMenuItem setToolTip:[data objectAtIndex:0]];
+
+			// For HTML output check if corresponding window already exists
+			BOOL stopTrigger = NO;
+			if([(NSString*)[data objectAtIndex:2] length]) {
+				BOOL correspondingWindowFound = NO;
+				NSString *uuid = [data objectAtIndex:2];
+				for(id win in [NSApp windows]) {
+					if([[[[win delegate] class] description] isEqualToString:@"SPBundleHTMLOutputController"]) {
+						if([[[win delegate] windowUUID] isEqualToString:uuid]) {
+							correspondingWindowFound = YES;
+							break;
+						}
+					}
+				}
+				if(!correspondingWindowFound) stopTrigger = YES;
+			}
+			if(!stopTrigger) {
+				id firstResponder = [[NSApp keyWindow] firstResponder];
+				if([[data objectAtIndex:1] isEqualToString:SPBundleScopeGeneral]) {
+					[[SPAppDelegate onMainThread] executeBundleItemForApp:aMenuItem];
+				}
+				else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeDataTable]) {
+					if([[[firstResponder class] description] isEqualToString:@"SPCopyTable"])
+						[[firstResponder onMainThread] executeBundleItemForDataTable:aMenuItem];
+				}
+				else if([[data objectAtIndex:1] isEqualToString:SPBundleScopeInputField]) {
+					if([firstResponder isKindOfClass:[NSTextView class]])
+						[[firstResponder onMainThread] executeBundleItemForInputField:aMenuItem];
+				}
+			}
+		}
+#endif
+	}
 }
 
 #pragma mark - SPMySQLConnection delegate methods
@@ -7329,149 +7317,144 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)generateHTMLForPrinting
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		NSMutableDictionary *connection = [NSMutableDictionary dictionary];
+		NSMutableDictionary *printData = [NSMutableDictionary dictionary];
 
-	NSMutableDictionary *connection = [NSMutableDictionary dictionary];
-	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
+		SPMainQSync(^{
+			[connection setDictionary:[self connectionInformation]];
+			[printData setObject:[self columnNames] forKey:@"columns"];
+			SPTableViewType view = [self currentlySelectedView];
 
-	SPMainQSync(^{
-		[connection setDictionary:[self connectionInformation]];
-		[printData setObject:[self columnNames] forKey:@"columns"];
-		SPTableViewType view = [self currentlySelectedView];
+			NSString *heading = @"";
 
-		NSString *heading = @"";
+			// Table source view
+			if (view == SPTableViewStructure) {
 
-		// Table source view
-		if (view == SPTableViewStructure) {
+				NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
 
-			NSDictionary *tableSource = [tableSourceInstance tableSourceForPrinting];
+				NSInteger tableType = [tablesListInstance tableType];
 
-			NSInteger tableType = [tablesListInstance tableType];
+				switch (tableType) {
+					case SPTableTypeTable:
+						heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
+						break;
+					case SPTableTypeView:
+						heading = NSLocalizedString(@"View Structure", @"view structure print heading");
+						break;
+				}
 
-			switch (tableType) {
-				case SPTableTypeTable:
-					heading = NSLocalizedString(@"Table Structure", @"table structure print heading");
-					break;
-				case SPTableTypeView:
-					heading = NSLocalizedString(@"View Structure", @"view structure print heading");
-					break;
+				NSArray *rows = [[NSArray alloc] initWithArray:
+					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
+				];
+
+				NSArray *indexes = [[NSArray alloc] initWithArray:
+					[[tableSource objectForKey:@"indexes"] objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
+				];
+
+				NSArray *indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
+
+				[printData setObject:rows forKey:@"rows"];
+				[printData setObject:indexes forKey:@"indexes"];
+				[printData setObject:indexColumns forKey:@"indexColumns"];
+
+				if ([indexes count]) [printData setObject:@1 forKey:@"hasIndexes"];
+
+				[rows release];
+				[indexes release];
+			}
+				// Table content view
+			else if (view == SPTableViewContent) {
+
+				NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO hideBLOBs:YES];
+
+				heading = NSLocalizedString(@"Table Content", @"table content print heading");
+
+				NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+				];
+
+				[printData setObject:rows forKey:@"rows"];
+				[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
+
+				[rows release];
+			}
+				// Custom query view
+			else if (view == SPTableViewCustomQuery) {
+
+				NSArray *data = [customQueryInstance currentResult];
+
+				heading = NSLocalizedString(@"Query Result", @"query result print heading");
+
+				NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
+				];
+
+				[printData setObject:rows forKey:@"rows"];
+				[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
+
+				[rows release];
+			}
+				// Table relations view
+			else if (view == SPTableViewRelations) {
+
+				NSArray *data = [tableRelationsInstance relationDataForPrinting];
+
+				heading = NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab");
+
+				NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+				];
+
+				[printData setObject:rows forKey:@"rows"];
+
+				[rows release];
+			}
+				// Table triggers view
+			else if (view == SPTableViewTriggers) {
+
+				NSArray *data = [tableTriggersInstance triggerDataForPrinting];
+
+				heading = NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab");
+
+				NSArray *rows = [[NSArray alloc] initWithArray:
+					[data objectsAtIndexes:
+						[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
+				];
+
+				[printData setObject:rows forKey:@"rows"];
+
+				[rows release];
 			}
 
-			NSArray *rows = [[NSArray alloc] initWithArray:
-					[[tableSource objectForKey:@"structure"] objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"structure"] count] - 1)]]
-			];
+			[printData setObject:heading forKey:@"heading"];
+		});
 
-			NSArray *indexes = [[NSArray alloc] initWithArray:
-					[[tableSource objectForKey:@"indexes"] objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [[tableSource objectForKey:@"indexes"] count] - 1)]]
-			];
+		// Set up template engine with your chosen matcher
+		MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 
-			NSArray *indexColumns = [[tableSource objectForKey:@"indexes"] objectAtIndex:0];
+		[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
 
-			[printData setObject:rows forKey:@"rows"];
-			[printData setObject:indexes forKey:@"indexes"];
-			[printData setObject:indexColumns forKey:@"indexColumns"];
+		[engine setObject:connection forKey:@"c"];
 
-			if ([indexes count]) [printData setObject:@1 forKey:@"hasIndexes"];
+		[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
+		[printData setObject:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? @"1px solid #CCCCCC" : @"none" forKey:@"gridlines"];
 
-			[rows release];
-			[indexes release];
-		}
-		// Table content view
-		else if (view == SPTableViewContent) {
+		NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
 
-			NSArray *data = [tableContentInstance currentDataResultWithNULLs:NO hideBLOBs:YES];
-
-			heading = NSLocalizedString(@"Table Content", @"table content print heading");
-
-			NSArray *rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-			];
-
-			[printData setObject:rows forKey:@"rows"];
-			[connection setValue:[tableContentInstance usedQuery] forKey:@"query"];
-
-			[rows release];
-		}
-		// Custom query view
-		else if (view == SPTableViewCustomQuery) {
-
-			NSArray *data = [customQueryInstance currentResult];
-
-			heading = NSLocalizedString(@"Query Result", @"query result print heading");
-
-			NSArray *rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, [data count] - 1)]]
-			];
-
-			[printData setObject:rows forKey:@"rows"];
-			[connection setValue:[customQueryInstance usedQuery] forKey:@"query"];
-
-			[rows release];
-		}
-		// Table relations view
-		else if (view == SPTableViewRelations) {
-
-			NSArray *data = [tableRelationsInstance relationDataForPrinting];
-
-			heading = NSLocalizedString(@"Table Relations", @"toolbar item label for switching to the Table Relations tab");
-
-			NSArray *rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-			];
-
-			[printData setObject:rows forKey:@"rows"];
-
-			[rows release];
-		}
-		// Table triggers view
-		else if (view == SPTableViewTriggers) {
-
-			NSArray *data = [tableTriggersInstance triggerDataForPrinting];
-
-			heading = NSLocalizedString(@"Table Triggers", @"toolbar item label for switching to the Table Triggers tab");
-
-			NSArray *rows = [[NSArray alloc] initWithArray:
-					[data objectsAtIndexes:
-							[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(1, ([data count] - 1))]]
-			];
-
-			[printData setObject:rows forKey:@"rows"];
-
-			[rows release];
+		// Check if the operation has been cancelled
+		if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {
+			[self endTask];
+			return;
 		}
 
-		[printData setObject:heading forKey:@"heading"];
-	});
-
-	// Set up template engine with your chosen matcher
-	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
-
-	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
-
-	[engine setObject:connection forKey:@"c"];
-
-	[printData setObject:([prefs boolForKey:SPUseMonospacedFonts]) ? SPDefaultMonospacedFontName : @"Lucida Grande" forKey:@"font"];
-	[printData setObject:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? @"1px solid #CCCCCC" : @"none" forKey:@"gridlines"];
-
-	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLPrintTemplate ofType:@"html"] withVariables:printData];
-
-	// Check if the operation has been cancelled
-	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {
-		[self endTask];
-		[pool drain];
-
-		[NSThread exit];
-		return;
+		[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
 	}
-
-	[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
-
-	[pool drain];
 }
 
 /**
@@ -7479,38 +7462,33 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (void)generateTableInfoHTMLForPrinting
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	@autoreleasepool {
+		// Set up template engine with your chosen matcher
+		MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
 
-	// Set up template engine with your chosen matcher
-	MGTemplateEngine *engine = [MGTemplateEngine templateEngine];
+		[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
 
-	[engine setMatcher:[ICUTemplateMatcher matcherWithTemplateEngine:engine]];
+		NSMutableDictionary *connection = [self connectionInformation];
+		NSMutableDictionary *printData = [NSMutableDictionary dictionary];
 
-	NSMutableDictionary *connection = [self connectionInformation];
-	NSMutableDictionary *printData = [NSMutableDictionary dictionary];
+		NSString *heading = NSLocalizedString(@"Table Information", @"table information print heading");
 
-	NSString *heading = NSLocalizedString(@"Table Information", @"table information print heading");
+		[engine setObject:connection forKey:@"c"];
+		[engine setObject:[[extendedTableInfoInstance onMainThread] tableInformationForPrinting] forKey:@"i"];
 
-	[engine setObject:connection forKey:@"c"];
-	[engine setObject:[[extendedTableInfoInstance onMainThread] tableInformationForPrinting] forKey:@"i"];
+		[printData setObject:heading forKey:@"heading"];
+		[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
 
-	[printData setObject:heading forKey:@"heading"];
-	[printData setObject:[[NSUnarchiver unarchiveObjectWithData:[prefs objectForKey:SPCustomQueryEditorFont]] fontName] forKey:@"font"];
+		NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
 
-	NSString *HTMLString = [engine processTemplateInFileAtPath:[[NSBundle mainBundle] pathForResource:SPHTMLTableInfoPrintTemplate ofType:@"html"] withVariables:printData];
+		// Check if the operation has been cancelled
+		if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {
+			[self endTask];
+			return;
+		}
 
-	// Check if the operation has been cancelled
-	if ((printThread != nil) && (![NSThread isMainThread]) && ([printThread isCancelled])) {
-		[self endTask];
-		[pool drain];
-
-		[NSThread exit];
-		return;
+		[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
 	}
-
-	[self performSelectorOnMainThread:@selector(loadPrintWebViewWithHTMLString:) withObject:HTMLString waitUntilDone:NO];
-
-	[pool drain];
 }
 
 /**

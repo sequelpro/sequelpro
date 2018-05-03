@@ -47,47 +47,44 @@ void CancelThumbnailGeneration(void* thisInterface, QLThumbnailRequestRef thumbn
 
 OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maximumSize)
 {
-	return noErr;
-
 	// The following code is meant as example maybe for the future
+#if 0
+	@autoreleasepool {
+		NSData *thumbnailData = [NSData dataWithContentsOfFile:@"appIcon.icns"];
+		if ( thumbnailData == nil || [thumbnailData length] == 0 ) {
+			// Nothing Found. Don't care.
+			[pool release];
+			return noErr;
+		}
 
-	// NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-	// 
-	// NSData *thumbnailData = [NSData dataWithContentsOfFile:@"appIcon.icns"];
-	// if ( thumbnailData == nil || [thumbnailData length] == 0 ) {
-	// 	// Nothing Found. Don't care.
-	// 	[pool release];
-	// 	return noErr;
-	// }
-	// 
-	// NSSize canvasSize = NSMakeSize((NSInteger)(maximumSize.height/1.3f), maximumSize.height);
-	// 
-	// // Thumbnail will be drawn with maximum resolution for desired thumbnail request
-	// // Here we create a graphics context to draw the Quick Look Thumbnail in.
-	// CGContextRef cgContext = QLThumbnailRequestCreateContext(thumbnail, *(CGSize *)&canvasSize, true, NULL);
-	// if(cgContext) {
-	// 	NSGraphicsContext* context = [NSGraphicsContext graphicsContextWithGraphicsPort:(void *)cgContext flipped:YES];
-	// 	if(context) {
-	// 		//These two lines of code are just good safe programming...
-	// 		[NSGraphicsContext saveGraphicsState];
-	// 		[NSGraphicsContext setCurrentContext:context];
-	// 
-	// 		// [context setCompositingOperation:NSCompositeSourceOver];
-	// 		// CGContextSetAlpha(cgContext, 0.5);
-	// 
-	// 		NSBitmapImageRep *thumbnailBitmap = [NSBitmapImageRep imageRepWithData:thumbnailData];
-	// 		[thumbnailBitmap drawInRect:NSMakeRect(10,10,200,200)];
-	// 
-	// 		//This line sets the context back to what it was when we're done
-	// 		[NSGraphicsContext restoreGraphicsState];
-	// 	}
-	// 
-	// 	// When we are done with our drawing code QLThumbnailRequestFlushContext() is called to flush the context
-	// 	QLThumbnailRequestFlushContext(thumbnail, cgContext);
-	// 
-	// 	CFRelease(cgContext);
-	// }
-	// 
-	// [pool release];
-	// return noErr;
+		NSSize canvasSize = NSMakeSize((NSInteger)(maximumSize.height/1.3f), maximumSize.height);
+
+		// Thumbnail will be drawn with maximum resolution for desired thumbnail request
+		// Here we create a graphics context to draw the Quick Look Thumbnail in.
+		CGContextRef cgContext = QLThumbnailRequestCreateContext(thumbnail, *(CGSize *)&canvasSize, true, NULL);
+		if(cgContext) {
+			NSGraphicsContext* context = [NSGraphicsContext graphicsContextWithGraphicsPort:(void *)cgContext flipped:YES];
+			if(context) {
+				//These two lines of code are just good safe programming...
+				[NSGraphicsContext saveGraphicsState];
+				[NSGraphicsContext setCurrentContext:context];
+
+				// [context setCompositingOperation:NSCompositeSourceOver];
+				// CGContextSetAlpha(cgContext, 0.5);
+
+				NSBitmapImageRep *thumbnailBitmap = [NSBitmapImageRep imageRepWithData:thumbnailData];
+				[thumbnailBitmap drawInRect:NSMakeRect(10,10,200,200)];
+
+				//This line sets the context back to what it was when we're done
+				[NSGraphicsContext restoreGraphicsState];
+			}
+
+			// When we are done with our drawing code QLThumbnailRequestFlushContext() is called to flush the context
+			QLThumbnailRequestFlushContext(thumbnail, cgContext);
+
+			CFRelease(cgContext);
+		}
+	}
+#endif
+	return noErr;
 }

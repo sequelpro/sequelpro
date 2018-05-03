@@ -64,44 +64,42 @@
  */
 - (void)_writeFavoritesInBackground
 {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	NSMutableArray *favorites = [[NSMutableArray alloc] init];
-	
-	// Get a dictionary representation of all favorites
-	for (SPTreeNode *node in [self exportFavorites])
-	{
-		// The selection could contain a group as well as items in that group.
-		// So we skip those items, as their group will already export them.
-		if(![node isDescendantOfNodes:[self exportFavorites]])
-			[favorites addObject:[node dictionaryRepresentation]];
-	}
-	
-	NSDictionary *dictionary = @{SPFavoritesDataRootKey : favorites};
-	
-	[favorites release];
+	@autoreleasepool {
+		NSMutableArray *favorites = [[NSMutableArray alloc] init];
 
-	// Convert the current favorites tree to a dictionary representation to create the plist data
-	NSError *error = nil;
-	NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
-																   format:NSPropertyListXMLFormat_v1_0
-																  options:0
-																	error:&error];
-	
-	if (error) {
-		NSLog(@"Error converting favorites data to plist format: %@", error);
-	}
-	else if (plistData) {
-		[plistData writeToFile:[self exportPath] options:NSAtomicWrite error:&error];
-		
-		if (error) {
-			NSLog(@"Error writing favorites data: %@", error);
+		// Get a dictionary representation of all favorites
+		for (SPTreeNode *node in [self exportFavorites])
+		{
+			// The selection could contain a group as well as items in that group.
+			// So we skip those items, as their group will already export them.
+			if(![node isDescendantOfNodes:[self exportFavorites]])
+				[favorites addObject:[node dictionaryRepresentation]];
 		}
+
+		NSDictionary *dictionary = @{SPFavoritesDataRootKey : favorites};
+
+		[favorites release];
+
+		// Convert the current favorites tree to a dictionary representation to create the plist data
+		NSError *error = nil;
+		NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:dictionary
+		                                                               format:NSPropertyListXMLFormat_v1_0
+		                                                              options:0
+		                                                                error:&error];
+
+		if (error) {
+			NSLog(@"Error converting favorites data to plist format: %@", error);
+		}
+		else if (plistData) {
+			[plistData writeToFile:[self exportPath] options:NSAtomicWrite error:&error];
+
+			if (error) {
+				NSLog(@"Error writing favorites data: %@", error);
+			}
+		}
+
+		[self _informDelegateOfExportCompletion:error];
 	}
-	
-	[self _informDelegateOfExportCompletion:error];
-	
-	[pool release];
 }
 
 /**

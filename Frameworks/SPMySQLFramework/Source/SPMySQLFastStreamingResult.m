@@ -322,80 +322,80 @@ typedef struct st_spmysqlstreamingrowdata {
  */
 - (void)_downloadAllData
 {
-	NSAutoreleasePool *downloadPool = [[NSAutoreleasePool alloc] init];
-	MYSQL_ROW theRow;
-	unsigned long *fieldLengths;
-	NSUInteger i, dataCopiedLength, rowDataLength;
-	SPMySQLStreamingRowData *newRowStore;
+	@autoreleasepool {
+		MYSQL_ROW theRow;
+		unsigned long *fieldLengths;
+		NSUInteger i, dataCopiedLength, rowDataLength;
+		SPMySQLStreamingRowData *newRowStore;
 
-	[[NSThread currentThread] setName:@"SPMySQLFastStreamingResult data download thread"];
+		[[NSThread currentThread] setName:@"SPMySQLFastStreamingResult data download thread"];
 
-	size_t sizeOfStreamingRowData = sizeof(SPMySQLStreamingRowData);
-	size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * numberOfFields);
-	size_t sizeOfChar = sizeof(char);
+		size_t sizeOfStreamingRowData = sizeof(SPMySQLStreamingRowData);
+		size_t sizeOfDataLengths = (size_t)(sizeof(unsigned long) * numberOfFields);
+		size_t sizeOfChar = sizeof(char);
 
-	// Loop through the rows until the end of the data is reached - indicated via a NULL
-	while (
-		(*isConnectedPtr)(parentConnection, isConnectedSelector)
-		&& (theRow = mysql_fetch_row(resultSet))
-	) {
-		// Retrieve the lengths of the returned data
-		fieldLengths = mysql_fetch_lengths(resultSet);
-		rowDataLength = 0;
-		dataCopiedLength = 0;
-		for (i = 0; i < numberOfFields; i++) {
-			rowDataLength += fieldLengths[i];
-		}
-
-		// Initialise memory for the row and set a NULL pointer for the next item
-		newRowStore = malloc(sizeOfStreamingRowData);
-		newRowStore->nextRow = NULL;
-
-		// Set up the row data store - a char* - and copy in the data if there is any.
-		newRowStore->data = calloc(rowDataLength, sizeOfChar);
-		for (i = 0; i < numberOfFields; i++) {
-			if (theRow[i] != NULL) {
-				memcpy(newRowStore->data+dataCopiedLength, theRow[i], fieldLengths[i]);
-				dataCopiedLength += fieldLengths[i];
-			} else {
-				fieldLengths[i] = NSNotFound;
+		// Loop through the rows until the end of the data is reached - indicated via a NULL
+		while (
+			(*isConnectedPtr)(parentConnection, isConnectedSelector)
+				&& (theRow = mysql_fetch_row(resultSet))
+			) {
+			// Retrieve the lengths of the returned data
+			fieldLengths = mysql_fetch_lengths(resultSet);
+			rowDataLength = 0;
+			dataCopiedLength = 0;
+			for (i = 0; i < numberOfFields; i++) {
+				rowDataLength += fieldLengths[i];
 			}
+
+			// Initialise memory for the row and set a NULL pointer for the next item
+			newRowStore = malloc(sizeOfStreamingRowData);
+			newRowStore->nextRow = NULL;
+
+			// Set up the row data store - a char* - and copy in the data if there is any.
+			newRowStore->data = calloc(rowDataLength, sizeOfChar);
+			for (i = 0; i < numberOfFields; i++) {
+				if (theRow[i] != NULL) {
+					memcpy(newRowStore->data+dataCopiedLength, theRow[i], fieldLengths[i]);
+					dataCopiedLength += fieldLengths[i];
+				} else {
+					fieldLengths[i] = NSNotFound;
+				}
+			}
+
+			// Set up the memory for, and copy in, the field lengths
+			newRowStore->dataLengths = memcpy(malloc(sizeOfDataLengths), fieldLengths, sizeOfDataLengths);
+
+			// Lock the data mutex
+			pthread_mutex_lock(&dataLock);
+
+			// Add the newly allocated row to end of the storage linked list
+			if (lastDataStoreEntry) {
+				lastDataStoreEntry->nextRow = newRowStore;
+			}
+			lastDataStoreEntry = newRowStore;
+			if (!currentDataStoreEntry) currentDataStoreEntry = newRowStore;
+
+			// Update the downloaded row count
+			downloadedRowCount++;
+
+			// Unlock the mutex
+			pthread_mutex_unlock(&dataLock);
 		}
 
-		// Set up the memory for, and copy in, the field lengths
-		newRowStore->dataLengths = memcpy(malloc(sizeOfDataLengths), fieldLengths, sizeOfDataLengths);
+		// Update the connection's error statuses to reflect any errors during the content download
+		[parentConnection _updateLastErrorInfos];
 
-		// Lock the data mutex
-		pthread_mutex_lock(&dataLock);
+		// Unlock the parent connection now all data has been retrieved
+		[parentConnection _unlockConnection];
+		connectionUnlocked = YES;
 
-		// Add the newly allocated row to end of the storage linked list
-		if (lastDataStoreEntry) {
-			lastDataStoreEntry->nextRow = newRowStore;
+		// If the connection query may have been cancelled with a query kill, double-check connection
+		if ([parentConnection lastQueryWasCancelled] && [parentConnection serverMajorVersion] < 5) {
+			[parentConnection checkConnection];
 		}
-		lastDataStoreEntry = newRowStore;
-		if (!currentDataStoreEntry) currentDataStoreEntry = newRowStore;
 
-		// Update the downloaded row count
-		downloadedRowCount++;
-
-		// Unlock the mutex
-		pthread_mutex_unlock(&dataLock);
+		dataDownloaded = YES;
 	}
-
-	// Update the connection's error statuses to reflect any errors during the content download
-	[parentConnection _updateLastErrorInfos];
-
-	// Unlock the parent connection now all data has been retrieved
-    [parentConnection _unlockConnection];
-    connectionUnlocked = YES;
-
-	// If the connection query may have been cancelled with a query kill, double-check connection
-	if ([parentConnection lastQueryWasCancelled] && [parentConnection serverMajorVersion] < 5) {
-		[parentConnection checkConnection];
-	}
-
-	dataDownloaded = YES;
-	[downloadPool drain];
 }
 
 @end

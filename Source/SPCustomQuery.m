@@ -603,372 +603,370 @@
 
 - (void)performQueriesTask:(NSDictionary *)taskArguments
 {
-	NSAutoreleasePool	*queryRunningPool = [[NSAutoreleasePool alloc] init];
-	NSArray				*queries	= [taskArguments objectForKey:@"queries"];
-	SPMySQLStreamingResultStore	*resultStore  = nil;
-	NSMutableString		*errors     = [NSMutableString string];
-	SEL					callbackMethod = NULL;
-	NSString			*taskButtonString;
+	@autoreleasepool {
+		NSArray                     *queries        = [taskArguments objectForKey:@"queries"];
+		SPMySQLStreamingResultStore *resultStore    = nil;
+		NSMutableString             *errors         = [NSMutableString string];
+		SEL                          callbackMethod = NULL;
+		NSString                    *taskButtonString;
 
-	NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
-	double executionTime = 0;
-	NSInteger firstErrorOccuredInQuery = -1;
-	BOOL suppressErrorSheet = NO;
-	BOOL tableListNeedsReload = NO;
-	BOOL databaseWasChanged = NO;
-	// BOOL queriesSeparatedByDelimiter = NO;
+		NSUInteger i, totalQueriesRun = 0, totalAffectedRows = 0;
+		double executionTime = 0;
+		NSInteger firstErrorOccuredInQuery = -1;
+		BOOL suppressErrorSheet = NO;
+		BOOL tableListNeedsReload = NO;
+		BOOL databaseWasChanged = NO;
+		// BOOL queriesSeparatedByDelimiter = NO;
 
-	NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+		NSCharacterSet *whitespaceAndNewlineSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 #ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
-	[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
+		[tableDocumentInstance setQueryMode:SPCustomQueryQueryMode];
 #endif
 
-	// Notify listeners that a query has started
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
+		// Notify listeners that a query has started
+		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
 #ifndef SP_CODA /* growl */
-	// Start the notification timer to allow notifications to be shown even if frontmost for long queries
-	[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
+		// Start the notification timer to allow notifications to be shown even if frontmost for long queries
+		[[SPGrowlController sharedGrowlController] setVisibilityForNotificationName:@"Query Finished"];
 #endif
 
-	// Reset the current table view as necessary to avoid redraw and reload issues.
-	// Restore the view position to the top left to be within the results for all datasets.
-	if(editedRow == -1 && !reloadingExistingResult) {
-		[[customQueryView onMainThread] scrollRowToVisible:0];
-		[[customQueryView onMainThread] scrollColumnToVisible:0];
-	}
-
-	// Remove all the columns if not reloading the table
-	if(!reloadingExistingResult) {
-		if (cqColumnDefinition) SPClear(cqColumnDefinition);
-		[[self onMainThread] updateTableView];
-	}
-
-	// Disable automatic query retries on failure for the custom queries
-	[mySQLConnection setRetryQueriesOnConnectionFailure:NO];
-
-	NSUInteger queryCount = [queries count];
-	NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
-
-	// Enable task cancellation
-	if (queryCount > 1)
-		taskButtonString = NSLocalizedString(@"Stop queries", @"Stop queries string");
-	else
-		taskButtonString = NSLocalizedString(@"Stop query", @"Stop query string");
-	[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
-
-	// Perform the supplied queries in series
-	for ( i = 0 ; i < queryCount ; i++ ) {
-
-		if (i > 0) {
-			NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
-			[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
-			[[errorText onMainThread] setString:taskString];
+		// Reset the current table view as necessary to avoid redraw and reload issues.
+		// Restore the view position to the top left to be within the results for all datasets.
+		if(editedRow == -1 && !reloadingExistingResult) {
+			[[customQueryView onMainThread] scrollRowToVisible:0];
+			[[customQueryView onMainThread] scrollColumnToVisible:0];
 		}
 
-		NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
+		// Remove all the columns if not reloading the table
+		if(!reloadingExistingResult) {
+			SPClear(cqColumnDefinition);
+			[[self onMainThread] updateTableView];
+		}
 
-		// Don't run blank queries, or queries which only contain whitespace.
-		if (![query length])
-			continue;
+		// Disable automatic query retries on failure for the custom queries
+		[mySQLConnection setRetryQueriesOnConnectionFailure:NO];
 
-		// store trimmed queries for usedQueries and history
-		[tempQueries addObject:query];
+		NSUInteger queryCount = [queries count];
+		NSMutableArray *tempQueries = [NSMutableArray arrayWithCapacity:queryCount];
 
-		// Run the query, timing execution (note this also includes network and overhead)
-		resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
-		executionTime += [resultStore queryExecutionTime];
-		totalQueriesRun++;
+		// Enable task cancellation
+		taskButtonString = (queryCount > 1)? NSLocalizedString(@"Stop queries", @"Stop queries string") : NSLocalizedString(@"Stop query", @"Stop query string");
+		[tableDocumentInstance enableTaskCancellationWithTitle:taskButtonString callbackObject:nil callbackFunction:NULL];
 
-		// If this is the last query, retrieve and store the result; otherwise,
-		// discard the result without fully loading.
-		if (totalQueriesRun == queryCount || [mySQLConnection lastQueryWasCancelled]) {
+		// Perform the supplied queries in series
+		for ( i = 0 ; i < queryCount ; i++ ) {
 
-			// Retrieve and cache the column definitions for the result array
-			if (cqColumnDefinition) [cqColumnDefinition release];
-			cqColumnDefinition = [[resultStore fieldDefinitions] retain];
-
-			if(!reloadingExistingResult) {
-				[[self onMainThread] updateTableView];
+			if (i > 0) {
+				NSString *taskString = [NSString stringWithFormat:NSLocalizedString(@"Running query %ld of %lu...", @"Running multiple queries string"), (long)(i+1), (unsigned long)queryCount];
+				[[tableDocumentInstance onMainThread] setTaskDescription:taskString];
+				[[errorText onMainThread] setString:taskString];
 			}
 
-			// Find result table name for copying as SQL INSERT.
-			// If more than one table name is found set resultTableName to nil.
-			// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
-			// and the resultTableName can differ due to case-sensitive/insensitive settings!.
-			NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
-			for(id field in cqColumnDefinition) {
-				if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
-					resultTableName = nil;
-					break;
+			NSString *query = [NSArrayObjectAtIndex(queries, i) stringByTrimmingCharactersInSet:whitespaceAndNewlineSet];
+
+			// Don't run blank queries, or queries which only contain whitespace.
+			if (![query length]) continue;
+
+			// store trimmed queries for usedQueries and history
+			[tempQueries addObject:query];
+
+			// Run the query, timing execution (note this also includes network and overhead)
+			resultStore = [[mySQLConnection resultStoreFromQueryString:query] retain];
+			executionTime += [resultStore queryExecutionTime];
+			totalQueriesRun++;
+
+			// If this is the last query, retrieve and store the result; otherwise,
+			// discard the result without fully loading.
+			if (totalQueriesRun == queryCount || [mySQLConnection lastQueryWasCancelled]) {
+
+				// Retrieve and cache the column definitions for the result array
+				if (cqColumnDefinition) [cqColumnDefinition release];
+				cqColumnDefinition = [[resultStore fieldDefinitions] retain];
+
+				if(!reloadingExistingResult) {
+					[[self onMainThread] updateTableView];
 				}
-			}
 
-			// Init copyTable with necessary information for copying selected rows as SQL INSERT
-			[customQueryView setTableInstance:self withTableData:resultData withColumns:cqColumnDefinition withTableName:resultTableName withConnection:mySQLConnection];
+				// Find result table name for copying as SQL INSERT.
+				// If more than one table name is found set resultTableName to nil.
+				// resultTableName will be set to the original table name (not defined via AS) provided by mysql return
+				// and the resultTableName can differ due to case-sensitive/insensitive settings!.
+				NSString *resultTableName = [[cqColumnDefinition objectAtIndex:0] objectForKey:@"org_table"];
+				for(id field in cqColumnDefinition) {
+					if(![[field objectForKey:@"org_table"] isEqualToString:resultTableName]) {
+						resultTableName = nil;
+						break;
+					}
+				}
 
-			[self updateResultStore:resultStore];
-		} else {
-			[resultStore cancelResultLoad];
-		}
+				// Init copyTable with necessary information for copying selected rows as SQL INSERT
+				[customQueryView setTableInstance:self
+				                    withTableData:resultData
+				                      withColumns:cqColumnDefinition
+				                    withTableName:resultTableName
+				                   withConnection:mySQLConnection];
 
-		// Record any affected rows
-		if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 )
-			totalAffectedRows += (NSUInteger)[mySQLConnection rowsAffectedByLastQuery];
-		else if ( [resultStore numberOfRows] )
-			totalAffectedRows += (NSUInteger)[resultStore numberOfRows];
-
-		[resultStore release];
-
-		// Store any error messages
-		if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
-
-			NSString *errorString;
-			if ([mySQLConnection lastQueryWasCancelled]) {
-				if ([mySQLConnection lastQueryWasCancelledUsingReconnect])
-					errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
-				else
-					errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
+				[self updateResultStore:resultStore];
 			} else {
-				errorString = [mySQLConnection lastErrorMessage];
-
-				// If dealing with a "MySQL server has gone away" error, explain the situation.
-				// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
-				if ([mySQLConnection lastErrorID] == 2006) {
-					errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
-				}
+				[resultStore cancelResultLoad];
 			}
 
-			// If the query errored, append error to the error log for display at the end
-			if ( queryCount > 1 ) {
-				if(firstErrorOccuredInQuery == -1)
-					firstErrorOccuredInQuery = i+1;
+			// Record any affected rows
+			if ( [mySQLConnection rowsAffectedByLastQuery] != (unsigned long long)~0 ) {
+				totalAffectedRows += (NSUInteger) [mySQLConnection rowsAffectedByLastQuery];
+			}
+			else if ( [resultStore numberOfRows] ) {
+				totalAffectedRows += (NSUInteger) [resultStore numberOfRows];
+			}
 
-				if(!suppressErrorSheet)
-				{
-					// Update error text for the user
-					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-										(long)(i+1),
-										errorString];
-					[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
-					[[errorText onMainThread] setString:errors];
+			[resultStore release];
 
-					// ask the user to continue after detecting an error
-					if (![mySQLConnection lastQueryWasCancelled]) {
+			// Store any error messages
+			if ([mySQLConnection queryErrored] || [mySQLConnection lastQueryWasCancelled]) {
 
-						[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
-						[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
-						                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
-						                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
-						                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
-						                                    alertStyle:NSWarningAlertStyle
-						                                     docWindow:[tableDocumentInstance parentWindow]
-						                                 modalDelegate:self
-						                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-						                                   contextInfo:@"runAllContinueStopSheet"
-						                                      infoText:[mySQLConnection lastErrorMessage]
-						                                    returnCode:&runAllContinueStopSheetReturnCode];
-
-						[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
-
-						switch (runAllContinueStopSheetReturnCode) {
-							case NSAlertDefaultReturn:
-								suppressErrorSheet = YES;
-							case NSAlertAlternateReturn:
-								break;
-							default:
-								if(i < queryCount-1) // output that message only if it was not the last one
-									[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
-								i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
-						}
+				NSString *errorString;
+				if ([mySQLConnection lastQueryWasCancelled]) {
+					if ([mySQLConnection lastQueryWasCancelledUsingReconnect]){
+						errorString = NSLocalizedString(@"Query cancelled.  Please note that to cancel the query the connection had to be reset; transactions and connection variables were reset.", @"Query cancel by resetting connection error");
+					}
+					else {
+						errorString = NSLocalizedString(@"Query cancelled.", @"Query cancelled error");
 					}
 				} else {
-					[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
-											(long)(i+1),
-											errorString];
+					errorString = [mySQLConnection lastErrorMessage];
+
+					// If dealing with a "MySQL server has gone away" error, explain the situation.
+					// Error 2006 is CR_SERVER_GONE_ERROR, which means the query write couldn't complete.
+					if ([mySQLConnection lastErrorID] == 2006) {
+						errorString = [NSString stringWithFormat:@"%@.\n\n%@", errorString, NSLocalizedString(@"(This usually indicates that the connection has been closed by the server after inactivity, but can also occur due to other conditions.  The connection has been restored; please try again if the query is safe to re-run.)", @"Explanation for MySQL server has gone away error")];
+					}
+				}
+
+				// If the query errored, append error to the error log for display at the end
+				if ( queryCount > 1 ) {
+					if(firstErrorOccuredInQuery == -1) firstErrorOccuredInQuery = i+1;
+
+					if(!suppressErrorSheet)
+					{
+						// Update error text for the user
+						[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+						                     (long)(i+1),
+						                     errorString];
+						[[errorTextTitle onMainThread] setStringValue:NSLocalizedString(@"Last Error Message", @"Last Error Message")];
+						[[errorText onMainThread] setString:errors];
+
+						// ask the user to continue after detecting an error
+						if (![mySQLConnection lastQueryWasCancelled]) {
+
+							[tableDocumentInstance setTaskIndicatorShouldAnimate:NO];
+							[SPAlertSheets beginWaitingAlertSheetWithTitle:NSLocalizedString(@"MySQL Error", @"mysql error message")
+							                                 defaultButton:NSLocalizedString(@"Run All", @"run all button")
+							                               alternateButton:NSLocalizedString(@"Continue", @"continue button")
+							                                   otherButton:NSLocalizedString(@"Stop", @"stop button")
+							                                    alertStyle:NSWarningAlertStyle
+							                                     docWindow:[tableDocumentInstance parentWindow]
+							                                 modalDelegate:self
+							                                didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+							                                   contextInfo:@"runAllContinueStopSheet"
+							                                      infoText:[mySQLConnection lastErrorMessage]
+							                                    returnCode:&runAllContinueStopSheetReturnCode];
+
+							[tableDocumentInstance setTaskIndicatorShouldAnimate:YES];
+
+							switch (runAllContinueStopSheetReturnCode) {
+								case NSAlertDefaultReturn:
+									suppressErrorSheet = YES;
+								case NSAlertAlternateReturn:
+									break;
+								default:
+									if(i < queryCount-1) {
+										// output that message only if it was not the last one
+										[errors appendString:NSLocalizedString(@"Execution stopped!\n", @"execution stopped message")];
+									}
+									i = queryCount; // break for loop; for safety reasons stop the execution of the following queries
+							}
+						}
+					} else {
+						[errors appendFormat:NSLocalizedString(@"[ERROR in query %ld] %@\n", @"error text when multiple custom query failed"),
+						                     (long)(i+1),
+						                     errorString];
+					}
+				} else {
+					[errors setString:errorString];
 				}
 			} else {
-				[errors setString:errorString];
+				// Check if table/db list needs an update
+				// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
+				if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."]) {
+					tableListNeedsReload = YES;
+				}
+				if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."]){
+					databaseWasChanged = YES;
+				}
 			}
-		} else {
-			// Check if table/db list needs an update
-			// The regex is a compromise between speed and usefullness. TODO: further improvements are needed
-			if(!tableListNeedsReload && [query isMatchedByRegex:@"(?i)^\\s*\\b(create|alter|drop|rename)\\b\\s+."])
-				tableListNeedsReload = YES;
-			if(!databaseWasChanged && [query isMatchedByRegex:@"(?i)^\\s*\\b(use|drop\\s+database|drop\\s+schema)\\b\\s+."])
-				databaseWasChanged = YES;
+			// If the query was cancelled, end all queries.
+			if ([mySQLConnection lastQueryWasCancelled]) break;
 		}
-		// If the query was cancelled, end all queries.
-		if ([mySQLConnection lastQueryWasCancelled]) break;
-	}
 
-	// Reload table list if at least one query began with drop, alter, rename, or create
-	if(tableListNeedsReload || databaseWasChanged) {
-		// Build database pulldown menu
-		[[tableDocumentInstance onMainThread] setDatabases:self];
+		// Reload table list if at least one query began with drop, alter, rename, or create
+		if(tableListNeedsReload || databaseWasChanged) {
+			// Build database pulldown menu
+			[[tableDocumentInstance onMainThread] setDatabases:self];
 
-		if (databaseWasChanged)
-			// Reset the current database
-			[tableDocumentInstance refreshCurrentDatabase];
+			if (databaseWasChanged) {
+				// Reset the current database
+				[tableDocumentInstance refreshCurrentDatabase];
+			}
 
-		// Reload table list
-		[tablesListInstance updateTables:self];
+			// Reload table list
+			[tablesListInstance updateTables:self];
+		}
 
-	}
+		if(usedQuery) [usedQuery release];
 
-	if(usedQuery)
-		[usedQuery release];
+		// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
+		usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
 
-	// if(!queriesSeparatedByDelimiter) // TODO: How to combine queries delimited by DELIMITER?
-	usedQuery = [[NSString stringWithString:[tempQueries componentsJoinedByString:@";\n"]] retain];
+		if (lastExecutedQuery) [lastExecutedQuery release];
+		lastExecutedQuery = [[tempQueries lastObject] retain];
 
-	if (lastExecutedQuery) [lastExecutedQuery release];
-	lastExecutedQuery = [[tempQueries lastObject] retain];
-
-	// Perform empty query if no query is given
-	if ( !queryCount ) {
-		resultStore = [mySQLConnection resultStoreFromQueryString:@""];
-		[resultStore cancelResultLoad];
-		[errors setString:[mySQLConnection lastErrorMessage]];
-	}
+		// Perform empty query if no query is given
+		if ( !queryCount ) {
+			resultStore = [mySQLConnection resultStoreFromQueryString:@""];
+			[resultStore cancelResultLoad];
+			[errors setString:[mySQLConnection lastErrorMessage]];
+		}
 
 #ifndef SP_CODA
-	// add query to history
-	if(!reloadingExistingResult && [usedQuery length])
-		[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+		// add query to history
+		if(!reloadingExistingResult && [usedQuery length]) {
+			[self performSelectorOnMainThread:@selector(addHistoryEntry:) withObject:usedQuery waitUntilDone:NO];
+		}
 #endif
 
-	// Update status/errors text
-	NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-									errors, @"errorString",
-									[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
-									nil];
-	[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
+		// Update status/errors text
+		NSDictionary *statusDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+			errors, @"errorString",
+			[NSNumber numberWithInteger:firstErrorOccuredInQuery], @"firstErrorQueryNumber",
+			nil
+		];
+		[self performSelectorOnMainThread:@selector(updateStatusInterfaceWithDetails:) withObject:statusDetails waitUntilDone:YES];
 
-	// Set up the status string
-	NSString *statusString = nil;
-	NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
-	if ( [mySQLConnection lastQueryWasCancelled] ) {
-		if (totalQueriesRun > 1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
-								statusErrorString,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
+		// Set up the status string
+		NSString *statusString = nil;
+		NSString *statusErrorString = [errors length]?NSLocalizedString(@"Errors", @"Errors title"):NSLocalizedString(@"No errors", @"No errors title");
+		if ( [mySQLConnection lastQueryWasCancelled] ) {
+			if (totalQueriesRun > 1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled in query %ld, after %@", @"text showing multiple queries were cancelled"),
+				                                          statusErrorString,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled after %@", @"text showing a query was cancelled"),
+				                                          statusErrorString,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			}
+		} else if ( totalQueriesRun > 1 ) {
+			if (totalAffectedRows==1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
+				                                          statusErrorString,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
+				                                          statusErrorString,
+				                                          (long)totalAffectedRows,
+				                                          (long)totalQueriesRun,
+				                                          [NSString stringForTimeInterval:executionTime]];
+			}
 		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; Cancelled after %@", @"text showing a query was cancelled"),
-								statusErrorString,
-								[NSString stringForTimeInterval:executionTime]
-							];
+			if (totalAffectedRows==1) {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
+				                                          statusErrorString];
+			} else {
+				statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
+				                                          statusErrorString,
+				                                          (long)totalAffectedRows];
+			}
+			if([resultData count]) {
+				// we were running a query that returns a result set (ie. SELECT).
+				// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
+				//       and that makes our query time measurement pretty useless (see #264)
+				statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+			}
+			else {
+				statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
+			}
 		}
-	} else if ( totalQueriesRun > 1 ) {
-		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected in total, by %ld queries taking %@", @"text showing one row has been affected by multiple queries"),
-								statusErrorString,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
-		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected in total, by %ld queries taking %@", @"text showing how many rows have been affected by multiple queries"),
-								statusErrorString,
-								(long)totalAffectedRows,
-								(long)totalQueriesRun,
-								[NSString stringForTimeInterval:executionTime]
-							];
-		}
-	} else {
-		if (totalAffectedRows==1) {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; 1 row affected", @"text showing one row has been affected by a single query"),
-								statusErrorString
-							];
-		} else {
-			statusString = [NSString stringWithFormat:NSLocalizedString(@"%@; %ld rows affected", @"text showing how many rows have been affected by a single query"),
-								statusErrorString,
-								(long)totalAffectedRows
-							];
-		}
-		if([resultData count]) {
-			// we were running a query that returns a result set (ie. SELECT).
-			// TODO: mysql_query() returns as soon as the first result row is found (which might be pretty soon when using indexes / not doing aggregations)
-			//       and that makes our query time measurement pretty useless (see #264)
-			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", first row available after %1$@",@"Custom Query : text appended to the “x row(s) affected” messages. $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
-		}
-		else {
-			statusString = [statusString stringByAppendingFormat:NSLocalizedString(@", taking %1$@",@"Custom Query : text appended to the “x row(s) affected” messages (for update/delete queries). $1 is a time interval"),[NSString stringForTimeInterval:executionTime]];
-		}
-	}
 
-	[[affectedRowsText onMainThread] setStringValue:statusString];
+		[[affectedRowsText onMainThread] setStringValue:statusString];
 
-	// Restore automatic query retries
-	[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
+		// Restore automatic query retries
+		[mySQLConnection setRetryQueriesOnConnectionFailure:YES];
 
 #ifndef SP_CODA /* [tableDocumentInstance setQueryMode:] */
-	[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
+		[tableDocumentInstance setQueryMode:SPInterfaceQueryMode];
 #endif
 
-	// If no results were returned, redraw the empty table and post notifications before returning.
-	if ( ![resultData count] ) {
-		[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
+		// If no results were returned, redraw the empty table and post notifications before returning.
+		if ( ![resultData count] ) {
+			[customQueryView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:YES];
 
-		// Notify any listeners that the query has completed
+			// Notify any listeners that the query has completed
+			[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
+
+#ifndef SP_CODA /* growl */
+			// Perform the Growl notification for query completion
+			[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
+			                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+			                                                  document:tableDocumentInstance
+			                                          notificationName:@"Query Finished"];
+#endif
+
+			// Set up the callback if present
+			if ([taskArguments objectForKey:@"callback"]) {
+				[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
+				[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+			}
+
+			[tableDocumentInstance endTask];
+
+			return;
+		}
+
+		// Restore the result view origin if appropriate
+		if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
+
+			// Scroll the viewport to the saved location
+			selectionViewportToRestore.size = [customQueryView visibleRect].size;
+			[[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
+		}
+
+		//query finished
 		[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
 
 #ifndef SP_CODA /* growl */
-		// Perform the Growl notification for query completion
+		// Query finished Growl notification
 		[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                       description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
-														  document:tableDocumentInstance
-                                                  notificationName:@"Query Finished"];
+		                                               description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
+		                                                  document:tableDocumentInstance
+		                                          notificationName:@"Query Finished"];
 #endif
 
 		// Set up the callback if present
 		if ([taskArguments objectForKey:@"callback"]) {
 			[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
-			[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:NO];
+			[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:YES];
 		}
 
 		[tableDocumentInstance endTask];
-		[queryRunningPool release];
 
-		return;
+		// Restore selection indexes if appropriate
+		if (selectionIndexToRestore) [customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
+
+		if(reloadingExistingResult) [[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView];
 	}
-
-	// Restore the result view origin if appropriate
-	if (!NSEqualRects(selectionViewportToRestore, NSZeroRect)) {
-
-		// Scroll the viewport to the saved location
-		selectionViewportToRestore.size = [customQueryView visibleRect].size;
-		[(SPCopyTable*)[customQueryView onMainThread] scrollRectToVisible:selectionViewportToRestore];
-	}
-
-	//query finished
-	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryHasBeenPerformed" object:tableDocumentInstance];
-
-#ifndef SP_CODA /* growl */
-	// Query finished Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Query Finished"
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"%@",@"description for query finished growl notification"), [errorText string]]
-													  document:tableDocumentInstance
-                                              notificationName:@"Query Finished"];
-#endif
-
-	// Set up the callback if present
-	if ([taskArguments objectForKey:@"callback"]) {
-		[[taskArguments objectForKey:@"callback"] getValue:&callbackMethod];
-		[self performSelectorOnMainThread:callbackMethod withObject:nil waitUntilDone:YES];
-	}
-
-	[tableDocumentInstance endTask];
-
-	// Restore selection indexes if appropriate
-	if (selectionIndexToRestore)
-		[customQueryView selectRowIndexes:selectionIndexToRestore byExtendingSelection:NO];
-
-	if(reloadingExistingResult)
-		[[tableDocumentInstance parentWindow] makeFirstResponder:customQueryView]; 
-
-	[queryRunningPool release];
 }
 
 /**
