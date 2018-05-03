@@ -4070,6 +4070,10 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarHistoryNavigation]) {
 		[toolbarItem setLabel:NSLocalizedString(@"Table History", @"toolbar item for navigation history")];
 		[toolbarItem setPaletteLabel:[toolbarItem label]];
+		// At some point after 10.9 the sizing of NSSegmentedControl changed, resulting in clipping in newer OS X versions.
+		// We can't just adjust the XIB, because then it would be wrong for older versions (possibly resulting in drawing artifacts),
+		// so we have the OS determine the proper size at runtime.
+		[historyControl sizeToFit];
 		[toolbarItem setView:historyControl];
 
 	} else if ([itemIdentifier isEqualToString:SPMainToolbarShowConsole]) {

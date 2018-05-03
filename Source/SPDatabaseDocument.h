@@ -149,9 +149,9 @@
 	IBOutlet id renameDatabaseMessageField;
 	IBOutlet id renameDatabaseButton;
 
-	IBOutlet id chooseDatabaseButton;
+	IBOutlet NSPopUpButton *chooseDatabaseButton;
 #ifndef SP_CODA
-	IBOutlet id historyControl;
+	IBOutlet NSSegmentedControl *historyControl;
 	IBOutlet NSTabView *tableTabView;
 	
 	IBOutlet NSTableView *tableInfoTable;
