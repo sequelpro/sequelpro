@@ -75,7 +75,7 @@
 	IBOutlet id reloadButton;
 #ifndef SP_CODA
 	IBOutlet NSButton *multipleLineEditingButton;
-	IBOutlet id countText;
+	IBOutlet NSTextField *countText;
 	IBOutlet id limitRowsField;
 	IBOutlet id limitRowsButton;
 	IBOutlet id limitRowsStepper;

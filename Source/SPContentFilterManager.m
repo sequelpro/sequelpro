@@ -89,10 +89,10 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// Add global group row to contentFilters
 	[contentFilters addObject:@{
-			@"MenuLabel"        : NSLocalizedString(@"Global", @"Content Filter Manager : Filter Entry List: 'Global' Header"),
-			@"headerOfFileURL"  : @"",
-			@"Clause"           : @"",
-			@"ConjunctionLabel" : @""
+		@"MenuLabel"        : NSLocalizedString(@"Global", @"Content Filter Manager : Filter Entry List: 'Global' Header"),
+		@"headerOfFileURL"  : @"",
+		@"Clause"           : @"",
+		@"ConjunctionLabel" : @""
 	}];
 
 #ifndef SP_CODA /* prefs access */
@@ -940,16 +940,16 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 			NSError *error = nil;
 			NSData *plist = [NSPropertyListSerialization dataWithPropertyList:spfdata
-																	   format:NSPropertyListXMLFormat_v1_0
-																	  options:0
-																		error:&error];
+			                                                           format:NSPropertyListXMLFormat_v1_0
+			                                                          options:0
+			                                                            error:&error];
 
 			if(error) {
 				NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Error while converting content filter data", @"Content filters could not be converted to plist upon export - message title (ContentFilterManager)")
-												 defaultButton:NSLocalizedString(@"OK", @"OK button")
-											   alternateButton:nil
-												   otherButton:nil
-									 informativeTextWithFormat:@"%@", [error localizedDescription]];
+				                                 defaultButton:NSLocalizedString(@"OK", @"OK button")
+				                               alternateButton:nil
+				                                   otherButton:nil
+				                     informativeTextWithFormat:@"%@", [error localizedDescription]];
 
 				[alert setAlertStyle:NSCriticalAlertStyle];
 				[alert runModal];

@@ -182,14 +182,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		NSError *readError = nil;
 		NSString *filePath = [NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]];
 		NSData *defaultFilterData = [NSData dataWithContentsOfFile:filePath
-														   options:NSMappedRead
-															 error:&readError];
-		
-		if(defaultFilterData && !readError) {
+		                                                   options:NSMappedRead
+		                                                     error:&readError];
+
+		if (defaultFilterData && !readError) {
 			NSDictionary *defaultFilterDict = [NSPropertyListSerialization propertyListWithData:defaultFilterData
-																						options:NSPropertyListMutableContainersAndLeaves
-																						 format:NULL
-																						  error:&readError];
+			                                                                            options:NSPropertyListMutableContainersAndLeaves
+			                                                                             format:NULL
+			                                                                              error:&readError];
 			
 			if(defaultFilterDict && !readError) {
 				[contentFilters setDictionary:defaultFilterDict];
@@ -289,13 +289,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(startDocumentTaskForTab:)
-												 name:SPDocumentTaskStartNotification
-											   object:tableDocumentInstance];
+	                                         selector:@selector(startDocumentTaskForTab:)
+	                                             name:SPDocumentTaskStartNotification
+	                                           object:tableDocumentInstance];
 	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(endDocumentTaskForTab:)
-												 name:SPDocumentTaskEndNotification
-											   object:tableDocumentInstance];
+	                                         selector:@selector(endDocumentTaskForTab:)
+	                                             name:SPDocumentTaskEndNotification
+	                                           object:tableDocumentInstance];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(documentWillClose:)
 	                                             name:SPDocumentWillCloseNotification
@@ -830,7 +830,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Add a filter string if appropriate
 	filterString = [[self onMainThread] tableFilterString];
 
-	if (filterString) {
+	if ([filterString length]) {
 		[queryString appendFormat:@" WHERE %@", filterString];
 		isFiltered = YES;
 	} else {
@@ -1007,7 +1007,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		if(activeFilter == 0) {
 #endif
 			NSString *errorDetail;
-			if(filterString)
+			if([filterString length])
 				errorDetail = [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded presumably due to used filter clause. \n\nMySQL said: %@", @"message of panel when loading of table failed and presumably due to used filter argument"), [mySQLConnection lastErrorMessage]];
 			else
 				errorDetail = [NSString stringWithFormat:NSLocalizedString(@"The table data couldn't be loaded.\n\nMySQL said: %@", @"message of panel when loading of table failed"), [mySQLConnection lastErrorMessage]];
@@ -1098,9 +1098,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 #ifndef SP_CODA
 	// If filter command was passed by sequelpro url scheme
-	if(activeFilter == 2) {
-		if(schemeFilter)
-			return schemeFilter;
+	if(activeFilter == SPTableContentFilterSourceURLScheme) {
+		if(schemeFilter) return schemeFilter;
 	}
 
 	// Call did come from filter table and is filter table window still open?
@@ -2851,8 +2850,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 					fieldValue = [NSString stringWithFormat:@"b'%@'", ((![desc length] || [desc isEqualToString:@"0"]) ? @"0" : desc)];
 				} else if ([fieldTypeGroup isEqualToString:@"date"] && [desc isEqualToString:@"NOW()"]) {
 					fieldValue = @"NOW()";
-               } else if ([fieldTypeGroup isEqualToString:@"string"] && [[rowObject description] isEqualToString:@"UUID()"]) {
-                   fieldValue = @"UUID()";
+				} else if ([fieldTypeGroup isEqualToString:@"string"] && [[rowObject description] isEqualToString:@"UUID()"]) {
+					fieldValue = @"UUID()";
 				} else {
 					fieldValue = [mySQLConnection escapeAndQuoteString:desc];
 				}
@@ -2986,12 +2985,20 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		currentlyEditingRow = -1;
 
 		return YES;
-
+	}
 	// Report errors which have occurred
-	} 
 	else {
-		SPBeginAlertSheet(NSLocalizedString(@"Unable to write row", @"Unable to write row error"), NSLocalizedString(@"Edit row", @"Edit row button"), NSLocalizedString(@"Discard changes", @"discard changes button"), nil, [tableDocumentInstance parentWindow], self, @selector(addRowErrorSheetDidEnd:returnCode:contextInfo:), NULL,
-						  [NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection lastErrorMessage]]);
+		SPBeginAlertSheet(
+			NSLocalizedString(@"Unable to write row", @"Unable to write row error"),
+			NSLocalizedString(@"Edit row", @"Edit row button"),
+			NSLocalizedString(@"Discard changes", @"discard changes button"),
+			nil,
+			[tableDocumentInstance parentWindow],
+			self,
+			@selector(addRowErrorSheetDidEnd:returnCode:contextInfo:),
+			NULL,
+			[NSString stringWithFormat:NSLocalizedString(@"MySQL said:\n\n%@", @"message of panel when error while adding row to db"), [mySQLConnection lastErrorMessage]]
+		);
 		return NO;
 	}
 }
