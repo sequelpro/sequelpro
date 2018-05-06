@@ -65,6 +65,12 @@
 #import <SPMySQL/SPMySQL.h>
 #include <stdlib.h>
 
+/**
+ * This is the unique KVO context of code that resides in THIS class.
+ * Do not try to give it to other classes, ESPECIALLY NOT child classes!
+ */
+static void *TableContentKVOContext = &TableContentKVOContext;
+
 #ifndef SP_CODA
 static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
 #endif
@@ -286,6 +292,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #else
 //	filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:nil] retain];
 #endif
+
+	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:TableContentKVOContext];
+	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont             options:NSKeyValueObservingOptionNew context:TableContentKVOContext];
+	[prefs addObserver:self forKeyPath:SPDisplayBinaryDataAsHex            options:NSKeyValueObservingOptionNew context:TableContentKVOContext];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -4197,22 +4207,28 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
 #ifndef SP_CODA /* observe pref changes */
-	// Display table veiew vertical gridlines preference changed
-	if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
-        [tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-		[filterTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	}
-	// Table font preference changed
-	else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
-		NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
+	// a parent class (or cocoa) can also use KVO, so we need to watch out to only catch those KVO messages we requested
+	if(context == TableContentKVOContext) {
+		// Display table veiew vertical gridlines preference changed
+		if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
+			[tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+			[filterTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
+		}
+		// Table font preference changed
+		else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
+			NSFont *tableFont = [NSUnarchiver unarchiveObjectWithData:[change objectForKey:NSKeyValueChangeNewKey]];
 
-		[tableContentView setRowHeight:2.0f + NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
-		[tableContentView setFont:tableFont];
-		[tableContentView reloadData];
+			[tableContentView setRowHeight:2.0f + NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
+			[tableContentView setFont:tableFont];
+			[tableContentView reloadData];
+		}
+		// Display binary data as Hex
+		else if ([keyPath isEqualToString:SPDisplayBinaryDataAsHex] && [tableContentView numberOfRows] > 0) {
+			[tableContentView reloadData];
+		}
 	}
-	// Display binary data as Hex
-	else if ([keyPath isEqualToString:SPDisplayBinaryDataAsHex] && [tableContentView numberOfRows] > 0) {
-		[tableContentView reloadData];
+	else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 	}
 #endif
 }
@@ -5460,6 +5476,13 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
+	if(_mainNibLoaded) {
+		//TODO this should be changed to the variant with …context: after 10.6 support is removed!
+		[prefs removeObserver:self forKeyPath:SPGlobalResultTableFont];
+		[prefs removeObserver:self forKeyPath:SPDisplayBinaryDataAsHex];
+		[prefs removeObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines];
+	}
 
 	// Cancel previous performSelector: requests on ourselves and the table view
 	// to prevent crashes for deferred actions
