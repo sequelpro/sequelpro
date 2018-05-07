@@ -4937,64 +4937,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 }
 #endif
 
-#ifndef SP_CODA /* SplitView delegate methods */
-
-#pragma mark -
-#pragma mark SplitView delegate methods
-
-- (BOOL)splitView:(NSSplitView *)sender canCollapseSubview:(NSView *)subview
-{
-	return NO;
-}
-
-/**
- * Set a minimum size for the filter text area.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMaxCoordinate:(CGFloat)proposedMax ofSubviewAt:(NSInteger)offset
-{
-	return proposedMax - 180;
-}
-
-/**
- * Set a minimum size for the field list and action area.
- */
-- (CGFloat)splitView:(NSSplitView *)sender constrainMinCoordinate:(CGFloat)proposedMin ofSubviewAt:(NSInteger)offset
-{
-	return proposedMin + 225;
-}
-
-/**
- * Improve default resizing and resize only the filter text area by default.
- */
-- (void)splitView:(NSSplitView *)sender resizeSubviewsWithOldSize:(NSSize)oldSize
-{
-	NSSize newSize = [sender frame].size;
-	NSView *leftView = [[sender subviews] objectAtIndex:0];
-	NSView *rightView = [[sender subviews] objectAtIndex:1];
-	float dividerThickness = [sender dividerThickness];
-	NSRect leftFrame = [leftView frame];
-	NSRect rightFrame = [rightView frame];
-
-	// Resize height of both views
-	leftFrame.size.height = newSize.height;
-	rightFrame.size.height = newSize.height;
-
-	// Only resize the right view's width - unless the constraint has been reached
-	if (rightFrame.size.width > 180 || newSize.width > oldSize.width) {
-		rightFrame.size.width = newSize.width - leftFrame.size.width - dividerThickness;
-	}
-	else {
-		leftFrame.size.width = newSize.width - rightFrame.size.width - dividerThickness;
-	}
-
-	rightFrame.origin.x = leftFrame.size.width + dividerThickness;
-
-	[leftView setFrame:leftFrame];
-	[rightView setFrame:rightFrame];
-}
-
-#endif
-
 #pragma mark -
 #pragma mark Control delegate methods
 
