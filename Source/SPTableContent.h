@@ -43,10 +43,8 @@
 @class SPDatabaseDocument;
 @class SPTablesList;
 @class SPTableStructure;
-#ifndef SP_CODA
-@class SPSplitView;
-#endif
 @class SPTableContentFilterController;
+@class SPFilterTableController;
 
 typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	SPTableContentFilterSourceNone = -1,
@@ -102,21 +100,8 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 #ifndef SP_CODA
 	IBOutlet NSStepper *paginationPageStepper;
 
-	IBOutlet SPCopyTable *filterTableView;
-	IBOutlet NSPanel *filterTableWindow;
-	IBOutlet SPSplitView *filterTableSplitView;
-	IBOutlet NSTextField *filterTableQueryTitle;
-	IBOutlet NSButton *filterTableFilterButton;
-	IBOutlet NSButton *filterTableClearButton;
-	IBOutlet SPTextView *filterTableWhereClause;
-	IBOutlet NSButton *filterTableNegateCheckbox;
-	IBOutlet NSButton *filterTableDistinctCheckbox;
-	IBOutlet NSButton *filterTableLiveSearchCheckbox;
-	IBOutlet NSButton *filterTableSearchAllFields;
-	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
-	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
-
 	IBOutlet SPTableContentFilterController *filterControllerInstance;
+	IBOutlet SPFilterTableController *filterTableController;
 #endif
 	SPMySQLConnection *mySQLConnection;
 
@@ -140,12 +125,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	NSUInteger contentPage;
 
 #ifndef SP_CODA
-	NSMutableDictionary *filterTableData;
-	BOOL filterTableNegate;
-	BOOL filterTableDistinct;
-	BOOL filterTableIsSwapped;
-	NSString *filterTableDefaultOperator;
-	NSString *lastEditedFilterTableValue;
 	SPTableContentFilterSource activeFilter;
 	NSString *schemeFilter;
 #endif
@@ -243,14 +222,7 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 - (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo;
 
 // Filter Table
-- (IBAction)tableFilterClear:(id)sender;
 - (IBAction)showFilterTable:(id)sender;
-- (IBAction)toggleNegateClause:(id)sender;
-- (IBAction)toggleDistinctSelect:(id)sender;
-- (IBAction)setDefaultOperator:(id)sender;
-- (IBAction)toggleLookAllFieldsMode:(id)sender;
-- (IBAction)closeSheet:(id)sender;
-- (IBAction)showDefaultOperaterHelp:(id)sender;
 
 // Data accessors
 - (NSArray *)currentResult;
@@ -309,7 +281,5 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 #pragma mark - SPTableContentFilter
 
 - (void)makeContentFilterHaveFocus;
-- (void)updateFilterTableClause:(id)currentValue;
-- (NSString*)escapeFilterTableDefaultOperator:(NSString*)op;
 
 @end

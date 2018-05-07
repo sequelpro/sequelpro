@@ -40,9 +40,6 @@
 #import "SPTableData.h"
 #import "SPQueryController.h"
 #import "SPTextAndLinkCell.h"
-#ifndef SP_CODA
-#import "SPSplitView.h"
-#endif
 #import "SPFieldEditorController.h"
 #import "SPTooltip.h"
 #import "RegexKitLite.h"
@@ -60,6 +57,7 @@
 #import "SPTableFilterParser.h"
 #import "SPFunctions.h"
 #import "SPTableContentFilterController.h"
+#import "SPFilterTableController.h"
 
 #import <pthread.h>
 #import <SPMySQL/SPMySQL.h>
@@ -70,10 +68,6 @@
  * Do not try to give it to other classes, ESPECIALLY NOT child classes!
  */
 static void *TableContentKVOContext = &TableContentKVOContext;
-
-#ifndef SP_CODA
-static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOperator";
-#endif
 
 @interface SPTableContent ()
 
@@ -127,18 +121,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		tableValues       = [[SPDataStorage alloc] init];
 		dataColumns       = [[NSMutableArray alloc] init];
 		oldRow            = [[NSMutableArray alloc] init];
-#ifndef SP_CODA
-		filterTableData   = [[NSMutableDictionary alloc] initWithCapacity:1];
-#endif
 
 		tableRowsCount         = 0;
 		previousTableRowsCount = 0;
 
 #ifndef SP_CODA
-		filterTableNegate          = NO;
-		filterTableDistinct        = NO;
-		filterTableIsSwapped       = NO;
-		lastEditedFilterTableValue = nil;
 		activeFilter               = SPTableContentFilterSourceNone;
 		schemeFilter               = nil;
 		paginationPopover          = nil;
@@ -198,7 +185,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 	// Set the table content view's vertical gridlines if required
 	[tableContentView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-	[filterTableView setGridStyleMask:([prefs boolForKey:SPDisplayTableViewVerticalGridlines]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableContentView setEmptyDoubleClickAction:@selector(addRow:)];
@@ -238,24 +224,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[paginationView setFrame:paginationViewFrame];
 		[contentViewPane addSubview:paginationView];
 	}
-
-	// Modify the filter table split view sizes
-	[filterTableSplitView setMinSize:135 ofSubviewAtIndex:1];
 #endif
 
 	[tableContentView setFieldEditorSelectedRange:NSMakeRange(0,0)];
-
-#ifndef SP_CODA
-	// Init Filter Table GUI
-	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
-	[filterTableNegateCheckbox setState:(filterTableNegate) ? NSOnState : NSOffState];
-	[filterTableLiveSearchCheckbox setState:NSOffState];
-#endif
-#ifndef SP_CODA /* patch */
-	filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:[prefs objectForKey:SPFilterTableDefaultOperator]] retain];
-#else
-//	filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:nil] retain];
-#endif
 
 	[prefs addObserver:self forKeyPath:SPDisplayTableViewVerticalGridlines options:NSKeyValueObservingOptionNew context:TableContentKVOContext];
 	[prefs addObserver:self forKeyPath:SPGlobalResultTableFont             options:NSKeyValueObservingOptionNew context:TableContentKVOContext];
@@ -273,6 +244,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	                                           object:contentAreaContainer];
 	[filterControllerInstance setTarget:self];
 	[filterControllerInstance setAction:@selector(filterTable:)];
+	
+	[filterTableController setTarget:self];
+	[filterTableController setAction:@selector(filterTable:)];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -406,14 +380,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[self clearDetailsToRestore];
 
 #ifndef SP_CODA
-	// Clear filter table
-	while ([[filterTableView tableColumns] count]) {
-		[NSArrayObjectAtIndex([filterTableView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
-		[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
-	}
-	// Clear filter table data
-	[filterTableData removeAllObjects];
-	[filterTableWhereClause setString:@""];
+	[filterTableController setColumns:nil];
 	activeFilter = SPTableContentFilterSourceNone;
 #endif
 }
@@ -432,10 +399,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 	NSArray *columnNames;
 	NSMutableDictionary *preservedColumnWidths = nil;
-	NSTableColumn	*theCol;
-#ifndef SP_CODA
-	NSTableColumn *filterCol;
-#endif
+	NSTableColumn *theCol;
+
 	BOOL enableInteraction =
 #ifndef SP_CODA /* checking toolbar state */
 	 ![[tableDocumentInstance selectedToolbarItemIdentifier] isEqualToString:SPMainToolbarTableContent] || 
@@ -511,14 +476,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 #ifndef SP_CODA
 	// Remove existing columns from the filter table
-	[filterTableView abortEditing];
-	while ([[filterTableView tableColumns] count]) {
-		[NSArrayObjectAtIndex([filterTableView tableColumns], 0) setHeaderToolTip:nil]; // prevent crash #2414
-		[filterTableView removeTableColumn:NSArrayObjectAtIndex([filterTableView tableColumns], 0)];
-	}
-	// Clear filter table data
-	[filterTableData removeAllObjects];
-	[filterTableWhereClause setString:@""];
+	[filterTableController setColumns:nil];
 	// TODO  code smell
 	//...but keep it, if the rule filter is the active one
 	if(activeFilter != SPTableContentFilterSourceRuleFilter) activeFilter = SPTableContentFilterSourceNone;
@@ -557,7 +515,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #endif
 	[tableContentView setRowHeight:2.0f+NSSizeToCGSize([@"{ǞṶḹÜ∑zgyf" sizeWithAttributes:@{NSFontAttributeName : tableFont}]).height];
 
-	// Add the new columns to the table and filterTable
+	// Add the new columns to the table
 	for (NSDictionary *columnDefinition in dataColumns ) {
 
 		// Set up the column
@@ -577,24 +535,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		}
 		
 		[theCol setEditable:YES];
-
-#ifndef SP_CODA
-		// Set up column for filterTable 
-		filterCol = [[NSTableColumn alloc] initWithIdentifier:[columnDefinition objectForKey:@"datacolumnindex"]];
-		[[filterCol headerCell] setStringValue:[columnDefinition objectForKey:@"name"]];
-		[filterCol setEditable:YES];
-		SPTextAndLinkCell *filterDataCell = [[[SPTextAndLinkCell alloc] initTextCell:@""] autorelease];
-		[filterDataCell setEditable:YES];
-		[filterCol setDataCell:filterDataCell];
-		[filterTableView addTableColumn:filterCol];
-		[filterCol release];
-
-		[filterTableData setObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:
-				[columnDefinition objectForKey:@"name"], @"name",
-				[columnDefinition objectForKey:@"typegrouping"], @"typegrouping",
-				[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil], SPTableContentFilterKey,
-				nil] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
-#endif
 
 		// Set up the data cell depending on the column type
 		id dataCell;
@@ -665,12 +605,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		[theCol release];
 	}
 
-#ifndef SP_CODA
-	[filterTableView setDelegate:self];
-	[filterTableView setDataSource:self];
-	[filterTableView reloadData];
-#endif
-
 	// If the table has been reloaded and the previously selected sort column is still present, reselect it.
 	if (sortColumnNumberToRestore != NSNotFound) {
 		theCol = [tableContentView tableColumnWithIdentifier:[NSString stringWithFormat:@"%lld", (long long)sortColumnNumberToRestore]];
@@ -700,6 +634,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		currentFirstResponder = [currentFirstResponder delegate];
 	}
 
+	[filterTableController setColumns:dataColumns];
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
 	[filterControllerInstance updateFiltersFrom:self];
 	// Restore preserved filter settings if appropriate and valid
@@ -732,10 +667,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if (!previousTableRowsCount) {
 		[self clearTableValues];
 	}
-#ifndef SP_CODA
-	[filterTableView reloadData];
-#endif
-
 }
 
 - (NSString *)selectedTable
@@ -785,16 +716,16 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	// Notify any listeners that a query has started
 	[[NSNotificationCenter defaultCenter] postNotificationOnMainThreadWithName:@"SMySQLQueryWillBePerformed" object:tableDocumentInstance];
 
+	// Add a filter string if appropriate
+	filterString = [[self onMainThread] tableFilterString];
+	
 	// Start construction of the query string
 	queryString = [NSMutableString stringWithFormat:@"SELECT %@%@ FROM %@", 
 #ifndef SP_CODA
-			(activeFilter == SPTableContentFilterSourceTableFilter && [self tableFilterString] && filterTableDistinct) ? @"DISTINCT " :
+			(activeFilter == SPTableContentFilterSourceTableFilter && filterString && [filterTableController isDistinct]) ? @"DISTINCT " :
 #endif
 			@"", 
 			[self fieldListForQuery], [selectedTable backtickQuotedString]];
-
-	// Add a filter string if appropriate
-	filterString = [[self onMainThread] tableFilterString];
 
 	if ([filterString length]) {
 		[queryString appendFormat:@" WHERE %@", filterString];
@@ -983,7 +914,9 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 		// Filter task came from filter table
 		else if(activeFilter == SPTableContentFilterSourceTableFilter) {
-			[filterTableWindow setTitle:[NSString stringWithFormat:@"%@ – %@", NSLocalizedString(@"Filter", @"filter label"), NSLocalizedString(@"WHERE clause not valid", @"WHERE clause not valid")]];
+			[[filterTableController onMainThread] setFilterError:[mySQLConnection lastErrorID]
+			                           message:[mySQLConnection lastErrorMessage]
+			                          sqlstate:[mySQLConnection lastSqlstate]];
 		}
 	} 
 #endif
@@ -992,7 +925,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 		// Trigger a full reload if required
 		if (fullTableReloadRequired) [self reloadTable:self];
-		[[filterTableWindow onMainThread] setTitle:NSLocalizedString(@"Filter", @"filter label")];
+		[[filterTableController onMainThread] setFilterError:0 message:nil sqlstate:nil];
 #endif
 	}
 }
@@ -1069,18 +1002,8 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	}
 
 	// Call did come from filter table and is filter table window still open?
-	if(activeFilter == SPTableContentFilterSourceTableFilter && [filterTableWindow isVisible]) {
-		if([[[filterTableWhereClause textStorage] string] length]) {
-			if ([filterTableNegateCheckbox state] == NSOnState) {
-				return [NSString stringWithFormat:@"NOT (%@)", [[filterTableWhereClause textStorage] string]];
-			}
-			else {
-				return [[filterTableWhereClause textStorage] string];
-			}
-		}
-		else {
-			return nil;
-		}
+	if(activeFilter == SPTableContentFilterSourceTableFilter && [[filterTableController window] isVisible]) {
+		return [filterTableController tableFilterString];
 	}
 #endif
 	if(activeFilter == SPTableContentFilterSourceRuleFilter && showFilterRuleEditor) {
@@ -1317,7 +1240,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #ifndef SP_CODA
 
 	// If the filter table is being used - the advanced filter - switch type
-	if(sender == filterTableFilterButton) {
+	if(sender == filterTableController) {
 		activeFilter = SPTableContentFilterSourceTableFilter;
 	}
 
@@ -3054,46 +2977,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 }
 
-/**
- * Close an open sheet.
- */
-- (void)sheetDidEnd:(id)sheet returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
-{
-#ifndef SP_CODA
-	[sheet orderOut:self];
-	
-	if([contextInfo isEqualToString:SPTableFilterSetDefaultOperator]) {
-		if(returnCode) {
-			if(filterTableDefaultOperator) [filterTableDefaultOperator release];
-			NSString *newOperator = [filterTableSetDefaultOperatorValue stringValue];
-			filterTableDefaultOperator = [[self escapeFilterTableDefaultOperator:newOperator] retain];
-			[prefs setObject:newOperator forKey:SPFilterTableDefaultOperator];
 
-			if(![newOperator isMatchedByRegex:@"(?i)like\\s+['\"]%@%['\"]\\s*"]) {
-				if(![prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
-					[prefs setObject:[NSMutableArray array] forKey:SPFilterTableDefaultOperatorLastItems];
-
-				NSMutableArray *lastItems = [NSMutableArray array];
-				[lastItems setArray:[prefs objectForKey:SPFilterTableDefaultOperatorLastItems]];
-
-				if([lastItems containsObject:newOperator])
-					[lastItems removeObject:newOperator];
-				if([lastItems count] > 0)
-					[lastItems insertObject:newOperator atIndex:0];
-				else
-					[lastItems addObject:newOperator];
-				// Remember only the last 15 items
-				if([lastItems count] > 15)
-					while([lastItems count] > 15)
-						[filterTableSetDefaultOperatorValue removeItemAtIndex:[lastItems count]-1];
-
-				[prefs setObject:lastItems forKey:SPFilterTableDefaultOperatorLastItems];
-			}
-			[self updateFilterTableClause:nil];
-		}
-	}
-#endif
-}
 
 /**
  * Show Error sheet (can be called from inside of a endSheet selector)
@@ -3290,160 +3174,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #pragma mark Filter Table
 
 /**
- * Clear the filter table
- */
-- (IBAction)tableFilterClear:(id)sender
-{
-#ifndef SP_CODA
-
-	[filterTableView abortEditing];
-
-	if(filterTableData && [filterTableData count]) {
-
-		// Clear filter data
-		for(NSNumber *col in [filterTableData allKeys])
-		{
-			[[filterTableData objectForKey:col] setObject:[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil] forKey:SPTableContentFilterKey];
-		}
-
-		[filterTableView reloadData];
-		[filterTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
-		[filterTableWhereClause setString:@""];
-
-		// Reload table
-		[self filterTable:nil];
-	}
-#endif
-}
-
-/**
  * Show filter table
  */
 - (IBAction)showFilterTable:(id)sender
 {
-#ifndef SP_CODA
-	[filterTableWindow makeKeyAndOrderFront:nil];
-	[filterTableWhereClause setContinuousSpellCheckingEnabled:NO];
-	[filterTableWhereClause setAutoindent:NO];
-	[filterTableWhereClause setAutoindentIgnoresEnter:NO];
-	[filterTableWhereClause setAutopair:[prefs boolForKey:SPCustomQueryAutoPairCharacters]];
-	[filterTableWhereClause setAutohelp:NO];
-	[filterTableWhereClause setAutouppercaseKeywords:[prefs boolForKey:SPCustomQueryAutoUppercaseKeywords]];
-	[filterTableWhereClause setCompletionWasReinvokedAutomatically:NO];
-	[filterTableWhereClause insertText:@""];
-	[filterTableWhereClause didChangeText];
-	
-	[[filterTableView window] makeFirstResponder:filterTableView];
-#endif
-}
-
-/**
- * Set filter table's Negate
- */
-- (IBAction)toggleNegateClause:(id)sender
-{
-#ifndef SP_CODA
-	filterTableNegate = !filterTableNegate;
-
-	if (filterTableNegate) {
-		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE NOT query", @"Title of filter preview area when the query WHERE is negated")];
-	} 
-	else {
-		[filterTableQueryTitle setStringValue:NSLocalizedString(@"WHERE query", @"Title of filter preview area when the query WHERE is normal")];
-	}
-
-	// If live search is set perform filtering
-	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
-		[self filterTable:filterTableFilterButton];
-	}
-#endif
-
-}
-
-/**
- * Set filter table's Distinct
- */
-- (IBAction)toggleDistinctSelect:(id)sender
-{
-#ifndef SP_CODA
-	filterTableDistinct = !filterTableDistinct;
-
-	[filterTableDistinctCheckbox setState:(filterTableDistinct) ? NSOnState : NSOffState];
-
-	// If live search is set perform filtering
-	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
-		[self filterTable:filterTableFilterButton];
-	}
-#endif
-
-}
-
-/**
- * Set filter table's default operator
- */
-- (IBAction)setDefaultOperator:(id)sender
-{
-#ifndef SP_CODA
-
-	[filterTableWindow makeFirstResponder:filterTableView];
-
-	// Load history
-	if([prefs objectForKey:SPFilterTableDefaultOperatorLastItems]) {
-		NSMutableArray *lastItems = [NSMutableArray array];
-		
-		[lastItems addObject:@"LIKE '%@%'"];
-
-		for(NSString* item in [prefs objectForKey:SPFilterTableDefaultOperatorLastItems])
-		{
-			[lastItems addObject:item];
-		}
-
-		[filterTableSetDefaultOperatorValue removeAllItems];
-		[filterTableSetDefaultOperatorValue addItemsWithObjectValues:lastItems];
-	}
-
-	[filterTableSetDefaultOperatorValue setStringValue:[prefs objectForKey:SPFilterTableDefaultOperator]];
-
-	[NSApp beginSheet:filterTableSetDefaultOperatorSheet
-	   modalForWindow:filterTableWindow
-		modalDelegate:self
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:SPTableFilterSetDefaultOperator];
-#endif
-
-}
-
-/**
- * Generate WHERE clause to look for last typed pattern in all fields
- */
-- (IBAction)toggleLookAllFieldsMode:(id)sender
-{
-	[self updateFilterTableClause:sender];
-
-#ifndef SP_CODA
-	// If live search is set perform filtering
-	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
-		[self filterTable:filterTableFilterButton];
-	}
-#endif
-
-}
-
-/**
- * Closes the current sheet and stops the modal session
- */
-- (IBAction)closeSheet:(id)sender
-{
-	[NSApp endSheet:[sender window] returnCode:[sender tag]];
-	[[sender window] orderOut:self];
-}
-
-/**
- * Opens the content filter help page in the default browser.
- */
-- (IBAction)showDefaultOperaterHelp:(id)sender
-{
-	[[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:SPLOCALIZEDURL_CONTENTFILTERHELP]];
+	[filterTableController showFilterTableWindow];
 }
 
 #pragma mark -
@@ -3664,29 +3399,14 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	[self setFiltersToRestore:nil];
 }
 
-- (void) setFilterTableData:(NSData*)arcData
-{
-#ifndef SP_CODA
-	if(!arcData) return;
-	NSDictionary *filterData = [NSUnarchiver unarchiveObjectWithData:arcData];
-	[filterTableData removeAllObjects];
-	[filterTableData addEntriesFromDictionary:filterData];
-	[filterTableWindow makeKeyAndOrderFront:nil];
-	// [filterTableView reloadData];
-#endif
-}
-
 - (NSData*) filterTableData
 {
-#ifndef SP_CODA
-	if(![filterTableWindow isVisible]) return nil;
+	return [filterTableController filterTableData];
+}
 
-	[filterTableView deselectAll:nil];
-
-	return [NSArchiver archivedDataWithRootObject:filterTableData];
-#else
-	return nil;
-#endif
+- (void)setFilterTableData:(NSData *)arcData;
+{
+	[filterTableController setFilterTableData:arcData];
 }
 
 #pragma mark -
@@ -3916,7 +3636,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		// Display table veiew vertical gridlines preference changed
 		if ([keyPath isEqualToString:SPDisplayTableViewVerticalGridlines]) {
 			[tableContentView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
-			[filterTableView setGridStyleMask:([[change objectForKey:NSKeyValueChangeNewKey] boolValue]) ? NSTableViewSolidVerticalGridLineMask : NSTableViewGridNone];
 		}
 		// Table font preference changed
 		else if ([keyPath isEqualToString:SPGlobalResultTableFont]) {
@@ -3982,11 +3701,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (NSInteger)numberOfRowsInTableView:(SPCopyTable *)tableView
 {
-#ifndef SP_CODA
-	if (tableView == filterTableView) {
-		return filterTableIsSwapped ? [filterTableData count] : [[[filterTableData objectForKey:@"0"] objectForKey:SPTableContentFilterKey] count];
-	}
-#endif
 	if (tableView == tableContentView) {
 		return tableRowsCount;
 	}
@@ -3997,20 +3711,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 - (id)tableView:(SPCopyTable *)tableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
 	NSUInteger columnIndex = [[tableColumn identifier] integerValue];
-#ifndef SP_CODA
-	if (tableView == filterTableView) {
-		if (filterTableIsSwapped) {
-			// First column shows the field names
-			if (columnIndex == 0) {
-				return [[[NSTableHeaderCell alloc] initTextCell:[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:@"name"]] autorelease];
-			}
-
-			return NSArrayObjectAtIndex([[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey], columnIndex - 1);
-		}
-
-		return NSArrayObjectAtIndex([[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey], rowIndex);
-	}
-#endif
 	if (tableView == tableContentView) {
 
 		id value = nil;
@@ -4081,20 +3781,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_CODA
-	if(tableView == filterTableView) {
-		if (filterTableIsSwapped) {
-			[[[filterTableData objectForKey:[NSNumber numberWithInteger:rowIndex]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:([[tableColumn identifier] integerValue] - 1) withObject:(NSString *)object];
-		}
-		else {
-			[[[filterTableData objectForKey:[tableColumn identifier]] objectForKey:SPTableContentFilterKey] replaceObjectAtIndex:rowIndex withObject:(NSString *)object];
-		}
-
-		[self updateFilterTableClause:nil];
-
-		return;
-	}
-#endif
 	if (tableView == tableContentView) {
 		NSInteger columnIndex = [[tableColumn identifier] integerValue];
 		// If the current cell should have been edited in a sheet, do nothing - field closing will have already
@@ -4184,187 +3870,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 #pragma mark - SPTableContentFilter
 
 #ifndef SP_CODA
-
-/**
- * Escape passed operator for usage as filterTableDefaultOperator.
- */
-- (NSString*)escapeFilterTableDefaultOperator:(NSString *)op
-{
-	if (!op) return @"";
-
-	NSMutableString *newOp = [[[NSMutableString alloc] initWithCapacity:[op length]] autorelease];
-
-	[newOp setString:op];
-	[newOp replaceOccurrencesOfRegex:@"%" withString:@"%%"];
-	[newOp replaceOccurrencesOfRegex:@"(?<!`)@(?!=`)" withString:@"%@"];
-
-	return newOp;
-}
-
-/**
- * Update WHERE clause in filter table window.
- *
- * @param currentValue If currentValue == nil take the data from filterTableData, if currentValue == filterTableSearchAllFields
- * generate a WHERE clause to search in all given fields, if currentValue == a string take this string as table cell data of the
- * currently edited table cell
- */
-- (void)updateFilterTableClause:(id)currentValue
-{
-	NSMutableString *clause  = [NSMutableString string];
-	NSInteger numberOfRows   = [self numberOfRowsInTableView:filterTableView];
-	NSInteger numberOfCols   = [[filterTableView tableColumns] count];
-	NSInteger numberOfValues = 0;
-	NSRange opRange, defopRange;
-
-	BOOL lookInAllFields = NO;
-
-	NSString *re1 = @"^\\s*(<[=>]?|>=?|!?=|≠|≤|≥)\\s*(.*?)\\s*$";
-	NSString *re2 = @"^\\s*(.*)\\s+(.*?)\\s*$";
-
-	NSInteger editedRow = [filterTableView editedRow];
-
-	if (currentValue == filterTableSearchAllFields) {
-		numberOfRows = 1;
-		lookInAllFields = YES;
-	}
-
-	[filterTableWhereClause setString:@""];
-
-	for (NSInteger i = 0; i < numberOfRows; i++)
-	{
-		numberOfValues = 0;
-
-		for (NSInteger anIndex = 0; anIndex < numberOfCols; anIndex++)
-		{
-			NSString *filterCell = nil;
-			NSDictionary *filterCellData = [NSDictionary dictionaryWithDictionary:[filterTableData objectForKey:[NSString stringWithFormat:@"%ld", (long)anIndex]]];
-
-			// Take filterTableData
-			if (!currentValue) {
-				filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:SPTableContentFilterKey], i);
-			}
-			// Take last edited value to create the OR clause
-			else if (lookInAllFields) {
-				if (lastEditedFilterTableValue && [lastEditedFilterTableValue length]) {
-					filterCell = lastEditedFilterTableValue;
-				}
-				else {
-					[filterTableWhereClause setString:@""];
-					[filterTableWhereClause insertText:@""];
-					[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
-
-					// If live search is set perform filtering
-					if ([filterTableLiveSearchCheckbox state] == NSOnState) {
-						[self filterTable:filterTableFilterButton];
-					}
-				}
-			}
-			// Take value from currently edited table cell
-			else if ([currentValue isKindOfClass:[NSString class]]) {
-				if (i == editedRow && anIndex == [[NSArrayObjectAtIndex([filterTableView tableColumns], [filterTableView editedColumn]) identifier] integerValue]) {
-					filterCell = (NSString*)currentValue;
-				}
-				else {
-					filterCell = NSArrayObjectAtIndex([filterCellData objectForKey:SPTableContentFilterKey], i);
-				}
-			}
-
-			if ([filterCell length]) {
-
-				// Recode special operators
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≠" withString:@"!="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≤" withString:@"<="];
-				filterCell = [filterCell stringByReplacingOccurrencesOfRegex:@"^\\s*≥" withString:@">="];
-
-				if (numberOfValues) {
-					[clause appendString:(lookInAllFields) ? @" OR " : @" AND "];
-				}
-
-				NSString *fieldName = [[filterCellData objectForKey:@"name"] backtickQuotedString];
-				NSString *filterTableDefaultOperatorWithFieldName = [filterTableDefaultOperator stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
-
-				opRange = [filterCell rangeOfString:@"`@`"];
-				defopRange = [filterTableDefaultOperator rangeOfString:@"`@`"];
-
-				// if cell data begins with ' or " treat it as it is
-				// by checking if default operator by itself contains a ' or " - if so
-				// remove first and if given the last ' or "
-				if ([filterCell isMatchedByRegex:@"^\\s*['\"]"]) {
-					if ([filterTableDefaultOperator isMatchedByRegex:@"['\"]"]) {
-						NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\1\\s*$"];
-
-						if ([matches count] && [matches = NSArrayObjectAtIndex(matches, 0) count] == 3) {
-							[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
-						}
-						else {
-							matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:@"^\\s*(['\"])(.*)\\s*$"];
-
-							if ([matches count] && [matches = NSArrayObjectAtIndex(matches, 0) count] == 3) {
-								[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, NSArrayObjectAtIndex(matches, 2)];
-							}
-						}
-					}
-					else {
-						[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
-					}
-				}
-				// If cell contains the field name placeholder
-				else if (opRange.length || defopRange.length) {
-					filterCell = [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName];
-
-					if (defopRange.length) {
-						[clause appendFormat:filterTableDefaultOperatorWithFieldName, [filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
-					}
-					else {
-						[clause appendString:[filterCell stringByReplacingOccurrencesOfString:@"`@`" withString:fieldName]];
-					}
-				}
-				// If cell is equal to NULL
-				else if ([filterCell isMatchedByRegex:@"(?i)^\\s*null\\s*$"]) {
-					[clause appendFormat:@"%@ IS NULL", fieldName];
-				}
-				// If cell starts with an operator
-				else if ([filterCell isMatchedByRegex:re1]) {
-					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re1];
-
-					if ([matches count] && [matches = NSArrayObjectAtIndex(matches, 0) count] == 3) {
-						[clause appendFormat:@"%@ %@ %@", fieldName, NSArrayObjectAtIndex(matches, 1), NSArrayObjectAtIndex(matches, 2)];
-					}
-				}
-				// If cell consists of at least two words treat the first as operator and the rest as argument
-				else if ([filterCell isMatchedByRegex:re2]) {
-					NSArray *matches = [filterCell arrayOfCaptureComponentsMatchedByRegex:re2];
-
-					if ([matches count] && [matches = NSArrayObjectAtIndex(matches,0) count] == 3) {
-						[clause appendFormat:@"%@ %@ %@", fieldName, [NSArrayObjectAtIndex(matches, 1) uppercaseString], NSArrayObjectAtIndex(matches, 2)];
-					}
-				}
-				// Apply the default operator
-				else {
-					[clause appendFormat:[NSString stringWithFormat:@"%%@ %@", filterTableDefaultOperatorWithFieldName], fieldName, filterCell];
-				}
-
-				numberOfValues++;
-			}
-		}
-
-		if (numberOfValues) {
-			[clause appendString:@"\nOR\n"];
-		}
-	}
-
-	// Remove last " OR " if any
-	[filterTableWhereClause setString:[clause length] > 3 ? [clause substringToIndex:([clause length] - 4)] : @""];
-
-	// Update syntax highlighting and uppercasing
-	[filterTableWhereClause insertText:@""];
-	[filterTableWhereClause scrollRangeToVisible:NSMakeRange(0, 0)];
-
-	// If live search is set perform filtering
-	if ([filterTableLiveSearchCheckbox state] == NSOnState) {
-		[self filterTable:filterTableFilterButton];
-	}
-}
 
 /**
  * Makes the content filter field have focus by making it the first responder.
@@ -4546,134 +4051,127 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 {
 	if ([tableDocumentInstance isWorking]) return NO;
 
-#ifndef SP_CODA
-	if (tableView == filterTableView) {
-		return (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) ? NO : YES;
-	}
-	else
-#endif
-		if (tableView == tableContentView) {
+	if (tableView == tableContentView) {
 
-			// Nothing is editable while the field editor is running.
-			// This guards against a special case where accessibility services might
-			// check if a table field is editable while the sheet is running.
-			if (fieldEditor) return NO;
+		// Nothing is editable while the field editor is running.
+		// This guards against a special case where accessibility services might
+		// check if a table field is editable while the sheet is running.
+		if (fieldEditor) return NO;
 
-			// Ensure that row is editable since it could contain "(not loaded)" columns together with
-			// issue that the table has no primary key
-			NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
+		// Ensure that row is editable since it could contain "(not loaded)" columns together with
+		// issue that the table has no primary key
+		NSString *wherePart = [NSString stringWithString:[self argumentForRow:[tableContentView selectedRow]]];
 
-			if (![wherePart length]) return NO;
+		if (![wherePart length]) return NO;
 
-			// If the selected cell hasn't been loaded, load it.
-			if ([[tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]] isSPNotLoaded]) {
+		// If the selected cell hasn't been loaded, load it.
+		if ([[tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]] isSPNotLoaded]) {
 
-				// Only get the data for the selected column, not all of them
-				NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[tableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
+			// Only get the data for the selected column, not all of them
+			NSString *query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@", [[[tableColumn headerCell] stringValue] backtickQuotedString], [selectedTable backtickQuotedString], wherePart];
 
-				SPMySQLResult *tempResult = [mySQLConnection queryString:query];
+			SPMySQLResult *tempResult = [mySQLConnection queryString:query];
 
-				if (![tempResult numberOfRows]) {
-					SPOnewayAlertSheet(
-									   NSLocalizedString(@"Error", @"error"),
-									   [tableDocumentInstance parentWindow],
-									   NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed")
-									   );
-					return NO;
-				}
-
-				NSArray *tempRow = [tempResult getRowAsArray];
-
-				[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:tableColumn] withObject:[tempRow objectAtIndex:0]];
-				[tableContentView reloadData];
-			}
-
-			// Retrieve the column definition
-			NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
-
-			// Open the editing sheet if required
-			if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
-
-				BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[tableColumn headerCell] stringValue]];
-
-				// A table is per definition editable
-				BOOL isFieldEditable = YES;
-
-				// Check for Views if field is editable
-				if ([tablesListInstance tableType] == SPTableTypeView) {
-					NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[tableColumn identifier] integerValue]];
-					isFieldEditable = [[editStatus objectAtIndex:0] integerValue] == 1;
-				}
-
-				NSUInteger fieldLength = 0;
-				NSString *fieldEncoding = nil;
-				BOOL allowNULL = YES;
-
-				NSString *fieldType = [columnDefinition objectForKey:@"type"];
-
-				if ([columnDefinition objectForKey:@"char_length"]) {
-					fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
-				}
-
-				if ([columnDefinition objectForKey:@"null"]) {
-					allowNULL = (![[columnDefinition objectForKey:@"null"] integerValue]);
-				}
-
-				if ([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"]) {
-					fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
-				}
-
-				fieldEditor = [[SPFieldEditorController alloc] init];
-
-				[fieldEditor setEditedFieldInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-												 [[tableColumn headerCell] stringValue], @"colName",
-												 [self usedQuery], @"usedQuery",
-												 @"content", @"tableSource",
-												 nil]];
-
-				[fieldEditor setTextMaxLength:fieldLength];
-				[fieldEditor setFieldType:fieldType == nil ? @"" : fieldType];
-				[fieldEditor setFieldEncoding:fieldEncoding == nil ? @"" : fieldEncoding];
-				[fieldEditor setAllowNULL:allowNULL];
-
-				id cellValue = [tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]];
-
-				if ([cellValue isNSNull]) {
-					cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
-				}
-
-				if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-					[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
-					isFieldEditable = NO;
-				}
-
-				NSInteger editedColumn = 0;
-
-				for (NSTableColumn* col in [tableContentView tableColumns])
-				{
-					if ([[col identifier] isEqualToString:[tableColumn identifier]]) break;
-
-					editedColumn++;
-				}
-
-				[fieldEditor editWithObject:cellValue
-								  fieldName:[[tableColumn headerCell] stringValue]
-							  usingEncoding:[mySQLConnection stringEncoding]
-							   isObjectBlob:isBlob
-								 isEditable:isFieldEditable
-								 withWindow:[tableDocumentInstance parentWindow]
-									 sender:self
-								contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-											 [NSNumber numberWithInteger:rowIndex], @"rowIndex",
-											 [NSNumber numberWithInteger:editedColumn], @"columnIndex",
-											 [NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
-											 nil]];
-
+			if (![tempResult numberOfRows]) {
+				SPOnewayAlertSheet(
+					NSLocalizedString(@"Error", @"error"),
+					[tableDocumentInstance parentWindow],
+					NSLocalizedString(@"Couldn't load the row. Reload the table to be sure that the row exists and use a primary key for your table.", @"message of panel when loading of row failed")
+				);
 				return NO;
 			}
 
-			return YES;
+			NSArray *tempRow = [tempResult getRowAsArray];
+
+			[tableValues replaceObjectInRow:rowIndex column:[[tableContentView tableColumns] indexOfObject:tableColumn] withObject:[tempRow objectAtIndex:0]];
+			[tableContentView reloadData];
 		}
+
+		// Retrieve the column definition
+		NSDictionary *columnDefinition = [cqColumnDefinition objectAtIndex:[[tableColumn identifier] integerValue]];
+
+		// Open the editing sheet if required
+		if ([tableContentView shouldUseFieldEditorForRow:rowIndex column:[[tableColumn identifier] integerValue] checkWithLock:NULL]) {
+
+			BOOL isBlob = [tableDataInstance columnIsBlobOrText:[[tableColumn headerCell] stringValue]];
+
+			// A table is per definition editable
+			BOOL isFieldEditable = YES;
+
+			// Check for Views if field is editable
+			if ([tablesListInstance tableType] == SPTableTypeView) {
+				NSArray *editStatus = [self fieldEditStatusForRow:rowIndex andColumn:[[tableColumn identifier] integerValue]];
+				isFieldEditable = [[editStatus objectAtIndex:0] integerValue] == 1;
+			}
+
+			NSUInteger fieldLength = 0;
+			NSString *fieldEncoding = nil;
+			BOOL allowNULL = YES;
+
+			NSString *fieldType = [columnDefinition objectForKey:@"type"];
+
+			if ([columnDefinition objectForKey:@"char_length"]) {
+				fieldLength = [[columnDefinition objectForKey:@"char_length"] integerValue];
+			}
+
+			if ([columnDefinition objectForKey:@"null"]) {
+				allowNULL = (![[columnDefinition objectForKey:@"null"] integerValue]);
+			}
+
+			if ([columnDefinition objectForKey:@"charset_name"] && ![[columnDefinition objectForKey:@"charset_name"] isEqualToString:@"binary"]) {
+				fieldEncoding = [columnDefinition objectForKey:@"charset_name"];
+			}
+
+			fieldEditor = [[SPFieldEditorController alloc] init];
+
+			[fieldEditor setEditedFieldInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+											 [[tableColumn headerCell] stringValue], @"colName",
+											 [self usedQuery], @"usedQuery",
+											 @"content", @"tableSource",
+											 nil]];
+
+			[fieldEditor setTextMaxLength:fieldLength];
+			[fieldEditor setFieldType:fieldType == nil ? @"" : fieldType];
+			[fieldEditor setFieldEncoding:fieldEncoding == nil ? @"" : fieldEncoding];
+			[fieldEditor setAllowNULL:allowNULL];
+
+			id cellValue = [tableValues cellDataAtRow:rowIndex column:[[tableColumn identifier] integerValue]];
+
+			if ([cellValue isNSNull]) {
+				cellValue = [NSString stringWithString:[prefs objectForKey:SPNullValue]];
+			}
+
+			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
+				[fieldEditor setTextMaxLength:[[self tableView:tableContentView objectValueForTableColumn:tableColumn row:rowIndex] length]];
+				isFieldEditable = NO;
+			}
+
+			NSInteger editedColumn = 0;
+
+			for (NSTableColumn* col in [tableContentView tableColumns])
+			{
+				if ([[col identifier] isEqualToString:[tableColumn identifier]]) break;
+
+				editedColumn++;
+			}
+
+			[fieldEditor editWithObject:cellValue
+			                  fieldName:[[tableColumn headerCell] stringValue]
+			              usingEncoding:[mySQLConnection stringEncoding]
+			               isObjectBlob:isBlob
+			                 isEditable:isFieldEditable
+			                 withWindow:[tableDocumentInstance parentWindow]
+			                     sender:self
+			                contextInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:rowIndex], @"rowIndex",
+			                                                                       [NSNumber numberWithInteger:editedColumn], @"columnIndex",
+			                                                                       [NSNumber numberWithBool:isFieldEditable], @"isFieldEditable",
+			                                                                       nil]];
+
+			return NO;
+		}
+
+		return YES;
+	}
 
 	return YES;
 }
@@ -4714,13 +4212,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (BOOL)tableView:(NSTableView *)tableView shouldSelectRow:(NSInteger)rowIndex
 {
-#ifndef SP_CODA
-	if (tableView == filterTableView) {
-		return YES;
-	}
-	else
-#endif
-		return tableView == tableContentView ? tableRowsSelectable : YES;
+	return tableView == tableContentView ? tableRowsSelectable : YES;
 }
 
 /**
@@ -4775,76 +4267,62 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (void)tableView:(SPCopyTable *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
 {
-#ifndef SP_CODA
-	if (tableView == filterTableView) {
-		if (filterTableIsSwapped && [[tableColumn identifier] integerValue] == 0) {
-			[cell setDrawsBackground:YES];
-			[cell setBackgroundColor:lightGrayColor];
+	if (tableView == tableContentView) {
+
+		if (![cell respondsToSelector:@selector(setTextColor:)]) return;
+
+		BOOL cellIsNullOrUnloaded = NO;
+		BOOL cellIsLinkCell = [cell isMemberOfClass:[SPTextAndLinkCell class]];
+
+		NSUInteger columnIndex = [[tableColumn identifier] integerValue];
+
+		// If user wants to edit 'cell' set text color to black and return to avoid
+		// writing in gray if value was NULL
+		if ([tableView editedColumn] != -1
+			&& [tableView editedRow] == rowIndex
+			&& (NSUInteger)[[NSArrayObjectAtIndex([tableView tableColumns], [tableView editedColumn]) identifier] integerValue] == columnIndex) {
+			[cell setTextColor:blackColor];
+			if (cellIsLinkCell) [cell setLinkActive:NO];
+			return;
 		}
-		else {
-			[cell setDrawsBackground:NO];
-		}
 
-		return;
-	}
-	else
-#endif
-		if (tableView == tableContentView) {
+		// While the table is being loaded, additional validation is required - data
+		// locks must be used to avoid crashes, and indexes higher than the available
+		// rows or columns may be requested.  Use gray to indicate loading in these cases.
+		if (isWorking) {
+			pthread_mutex_lock(&tableValuesLock);
 
-			if (![cell respondsToSelector:@selector(setTextColor:)]) return;
-
-			BOOL cellIsNullOrUnloaded = NO;
-			BOOL cellIsLinkCell = [cell isMemberOfClass:[SPTextAndLinkCell class]];
-
-			NSUInteger columnIndex = [[tableColumn identifier] integerValue];
-
-			// If user wants to edit 'cell' set text color to black and return to avoid
-			// writing in gray if value was NULL
-			if ([tableView editedColumn] != -1
-				&& [tableView editedRow] == rowIndex
-				&& (NSUInteger)[[NSArrayObjectAtIndex([tableView tableColumns], [tableView editedColumn]) identifier] integerValue] == columnIndex) {
-				[cell setTextColor:blackColor];
-				if (cellIsLinkCell) [cell setLinkActive:NO];
-				return;
-			}
-
-			// While the table is being loaded, additional validation is required - data
-			// locks must be used to avoid crashes, and indexes higher than the available
-			// rows or columns may be requested.  Use gray to indicate loading in these cases.
-			if (isWorking) {
-				pthread_mutex_lock(&tableValuesLock);
-
-				if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
-					cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
-				}
-
-				pthread_mutex_unlock(&tableValuesLock);
-			}
-			else {
+			if (rowIndex < (NSInteger)tableRowsCount && columnIndex < [tableValues columnCount]) {
 				cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
 			}
 
-			if (cellIsNullOrUnloaded) {
-				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : lightGrayColor];
-			}
-			else {
-				[cell setTextColor:blackColor];
+			pthread_mutex_unlock(&tableValuesLock);
+		}
+		else {
+			cellIsNullOrUnloaded = [tableValues cellIsNullOrUnloadedAtRow:rowIndex column:columnIndex];
+		}
 
-				if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
-					[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
-				}
-			}
+		if (cellIsNullOrUnloaded) {
+			[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : lightGrayColor];
+		}
+		else {
+			[cell setTextColor:blackColor];
 
-			// Disable link arrows for the currently editing row and for any NULL or unloaded cells
-			if (cellIsLinkCell) {
-				if (cellIsNullOrUnloaded || [tableView editedRow] == rowIndex) {
-					[cell setLinkActive:NO];
-				}
-				else {
-					[cell setLinkActive:YES];
-				}
+			if ([self cellValueIsDisplayedAsHexForColumn:[[tableColumn identifier] integerValue]]) {
+				[cell setTextColor:rowIndex == [tableContentView selectedRow] ? whiteColor : blueColor];
 			}
 		}
+
+		// Disable link arrows for the currently editing row and for any NULL or unloaded cells
+		if (cellIsLinkCell) {
+			if (cellIsNullOrUnloaded || [tableView editedRow] == rowIndex) {
+				[cell setLinkActive:NO];
+			}
+			else {
+				[cell setLinkActive:YES];
+			}
+		}
+	}
 }
 
 #ifndef SP_CODA
@@ -4857,10 +4335,7 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
  */
 - (NSString *)tableView:(NSTableView *)tableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation
 {
-	if (tableView == filterTableView) {
-		return nil;
-	}
-	else if (tableView == tableContentView) {
+	if (tableView == tableContentView) {
 
 		if ([[aCell stringValue] length] < 2 || [tableDocumentInstance isWorking]) return nil;
 
@@ -4923,12 +4398,11 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		// Show the cell string value as tooltip (including line breaks and tabs)
 		// by using the cell's font
 		[SPTooltip showWithObject:[aCell stringValue]
-					   atLocation:pos
-						   ofType:@"text"
-				   displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:
-								   [[aCell font] familyName], @"fontname",
-								   [NSString stringWithFormat:@"%f",[[aCell font] pointSize]], @"fontsize",
-								   nil]];
+		               atLocation:pos
+		                   ofType:@"text"
+		           displayOptions:[NSDictionary dictionaryWithObjectsAndKeys:[[aCell font] familyName], @"fontname",
+		                                                                     [NSString stringWithFormat:@"%f", [[aCell font] pointSize]], @"fontsize",
+		                                                                     nil]];
 
 		return nil;
 	}
@@ -4966,24 +4440,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		}
 	}
 	return YES;
-}
-
-- (void)controlTextDidChange:(NSNotification *)notification
-{
-#ifndef SP_CODA
-	if ([notification object] == filterTableView) {
-
-		NSString *string = [[[[notification userInfo] objectForKey:@"NSFieldEditor"] textStorage] string];
-
-		if (string && [string length]) {
-			if (lastEditedFilterTableValue) [lastEditedFilterTableValue release];
-
-			lastEditedFilterTableValue = [[NSString stringWithString:string] retain];
-		}
-
-		[self updateFilterTableClause:string];
-	}
-#endif
 }
 
 /**
@@ -5128,13 +4584,10 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	SPClear(dataColumns);
 	SPClear(oldRow);
 #ifndef SP_CODA
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];	
+	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	SPClear(nibObjectsToRelease);
 	SPClear(paginationPopover);
 
-	SPClear(filterTableData);
-	if (lastEditedFilterTableValue) SPClear(lastEditedFilterTableValue);
-	if (filterTableDefaultOperator) SPClear(filterTableDefaultOperator);
 #endif
 	if (selectedTable)          SPClear(selectedTable);
 	if (keys)                   SPClear(keys);

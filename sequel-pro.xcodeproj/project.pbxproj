@@ -391,6 +391,7 @@
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		73F70A961E4E547500636550 /* SPJSONFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 73F70A951E4E547500636550 /* SPJSONFormatter.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */; };
 		B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */ = {isa = PBXBuildFile; fileRef = B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */; };
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
 		B52460D80F8EF92300171639 /* SPTextViewAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D60F8EF92300171639 /* SPTextViewAdditions.m */; };
@@ -411,6 +412,7 @@
 		B5E2C5FA0F2353B5007446E0 /* table-property.png in Resources */ = {isa = PBXBuildFile; fileRef = B5E2C5F90F2353B5007446E0 /* table-property.png */; };
 		B5E92F190F75B2D100012500 /* ExportDialog.xib in Resources */ = {isa = PBXBuildFile; fileRef = B5E92F170F75B2D100012500 /* ExportDialog.xib */; };
 		B5E92F1C0F75B2E800012500 /* SPExportController.m in Sources */ = {isa = PBXBuildFile; fileRef = B5E92F1B0F75B2E800012500 /* SPExportController.m */; };
+		BAC6BAF920A0D22400247837 /* FilterTableWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = BAC6BAF720A0D22400247837 /* FilterTableWindow.xib */; };
 		BC01BCCF104024BE006BDEE7 /* SPEncodingPopupAccessory.m in Sources */ = {isa = PBXBuildFile; fileRef = BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */; };
 		BC05F1C5101241DF008A97F8 /* YRKSpinningProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = BC05F1C4101241DF008A97F8 /* YRKSpinningProgressIndicator.m */; };
 		BC09D7DE12A786FB0030DB64 /* cancel-clicked-highlighted.png in Resources */ = {isa = PBXBuildFile; fileRef = BC09D7D812A786FB0030DB64 /* cancel-clicked-highlighted.png */; };
@@ -1127,6 +1129,8 @@
 		73F70A941E4E547500636550 /* SPJSONFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPJSONFormatter.h; sourceTree = "<group>"; };
 		73F70A951E4E547500636550 /* SPJSONFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatter.m; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFilterTableController.m; sourceTree = "<group>"; };
+		9BE76F9BF9BDA2921CDD05AF /* SPFilterTableController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFilterTableController.h; sourceTree = "<group>"; };
 		B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-triggers.png"; sourceTree = "<group>"; };
 		B52460D30F8EF92300171639 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
 		B52460D40F8EF92300171639 /* SPArrayAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPArrayAdditions.m; sourceTree = "<group>"; };
@@ -1153,6 +1157,7 @@
 		B5E92F1A0F75B2E800012500 /* SPExportController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPExportController.h; sourceTree = "<group>"; };
 		B5E92F1B0F75B2E800012500 /* SPExportController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPExportController.m; sourceTree = "<group>"; };
 		B5EAC0FC0EC87FF900CC579C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		BAC6BAF820A0D22400247837 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/FilterTableWindow.xib; sourceTree = "<group>"; };
 		BC01BCCD104024BE006BDEE7 /* SPEncodingPopupAccessory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPEncodingPopupAccessory.h; sourceTree = "<group>"; };
 		BC01BCCE104024BE006BDEE7 /* SPEncodingPopupAccessory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPEncodingPopupAccessory.m; sourceTree = "<group>"; };
 		BC05F1C3101241DF008A97F8 /* YRKSpinningProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRKSpinningProgressIndicator.h; sourceTree = "<group>"; };
@@ -1557,6 +1562,8 @@
 				1713C73D140D88D400CFD461 /* Query Controller */,
 				17381853151FB29C0078FFE2 /* User Manager */,
 				17846B9D170C95D800414499 /* Process List */,
+				9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */,
+				9BE76F9BF9BDA2921CDD05AF /* SPFilterTableController.h */,
 			);
 			name = "Subview Controllers";
 			sourceTree = "<group>";
@@ -2158,6 +2165,7 @@
 				BCCBD7FA104408B000D4C50A /* SaveSPFAccessory.xib */,
 				B58DA7390FF8BB9E00FDDACD /* SSHQuestionDialog.xib */,
 				4D90B7A0101E0D1500D116A1 /* UserManagerView.xib */,
+				BAC6BAF720A0D22400247837 /* FilterTableWindow.xib */,
 			);
 			path = Interfaces;
 			sourceTree = "<group>";
@@ -2847,6 +2855,7 @@
 				BC2C8E220FA8C2DB008468C7 /* SPMySQLHelpTemplate.html in Resources */,
 				384582C40FB95FF800DDACB6 /* func-small.png in Resources */,
 				384582C70FB9603600DDACB6 /* proc-small.png in Resources */,
+				BAC6BAF920A0D22400247837 /* FilterTableWindow.xib in Resources */,
 				177E792E0FCB54EC00E9E122 /* database-small.png in Resources */,
 				177E792F0FCB54EC00E9E122 /* dummy-small.png in Resources */,
 				B58DA73C0FF8BBA500FDDACD /* PrintAccessory.xib in Resources */,
@@ -3267,6 +3276,7 @@
 				50E217B318174246009D3580 /* SPColorSelectorView.m in Sources */,
 				50E217B618174280009D3580 /* SPFavoriteColorSupport.m in Sources */,
 				1A564F74237E2E4958CA593A /* SPPillAttachmentCell.m in Sources */,
+				9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3540,6 +3550,14 @@
 				B5E92F180F75B2D100012500 /* English */,
 			);
 			name = ExportDialog.xib;
+			sourceTree = "<group>";
+		};
+		BAC6BAF720A0D22400247837 /* FilterTableWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BAC6BAF820A0D22400247837 /* English */,
+			);
+			name = FilterTableWindow.xib;
 			sourceTree = "<group>";
 		};
 		BC30C00F111C98BD002701C9 /* DataMigrationDialog.xib */ = {

@@ -250,7 +250,7 @@
 	NSDictionary *contentSelectedRows = [[tableContentInstance onMainThread] selectionDetailsAllowingIndexSelection:YES];
 	NSRect contentViewport = [[tableContentInstance onMainThread] viewport];
 	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
-	NSData *filterTableData = [tableContentInstance filterTableData];
+	NSData *filterTableData = [[tableContentInstance onMainThread] filterTableData];
 	if (!theDatabase) return;
 
 	// If a table is selected, save state information
