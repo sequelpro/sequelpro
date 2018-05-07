@@ -178,38 +178,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 		blueColor = [NSColor blueColor];
 		whiteColor = [NSColor whiteColor];
 
-		// Init default filters for Content Browser
-		contentFilters = [[NSMutableDictionary alloc] init];
-		numberOfDefaultFilters = [[NSMutableDictionary alloc] init];
-
-		NSError *readError = nil;
-		NSString *filePath = [NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]];
-		NSData *defaultFilterData = [NSData dataWithContentsOfFile:filePath
-		                                                   options:NSMappedRead
-		                                                     error:&readError];
-
-		if (defaultFilterData && !readError) {
-			NSDictionary *defaultFilterDict = [NSPropertyListSerialization propertyListWithData:defaultFilterData
-			                                                                            options:NSPropertyListMutableContainersAndLeaves
-			                                                                             format:NULL
-			                                                                              error:&readError];
-			
-			if(defaultFilterDict && !readError) {
-				[contentFilters setDictionary:defaultFilterDict];
-			}
-		}
-		
-		if (readError) {
-			NSLog(@"Error while reading 'ContentFilters.plist':\n%@", readError);
-			NSBeep();
-		} 
-		else {
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"number"] count]] forKey:@"number"];
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"date"] count]] forKey:@"date"];
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"string"] count]] forKey:@"string"];
-			[numberOfDefaultFilters setObject:[NSNumber numberWithInteger:[[contentFilters objectForKey:@"spatial"] count]] forKey:@"spatial"];
-		}
-
 		kCellEditorErrorNoMatch = NSLocalizedString(@"Field is not editable. No matching record found.\nReload table, check the encoding, or try to add\na primary key field or more fields\nin the view declaration of '%@' to identify\nfield origin unambiguously.", @"Table Content result editing error - could not identify original row");
 		kCellEditorErrorNoMultiTabDb = NSLocalizedString(@"Field is not editable. Field has no or multiple table or database origin(s).",@"field is not editable due to no table/database");
 		kCellEditorErrorTooManyMatches = NSLocalizedString(@"Field is not editable. Couldn't identify field origin unambiguously (%ld matches).", @"Query result editing error - could not match row being edited uniquely");
@@ -5227,8 +5195,6 @@ static NSString *SPTableFilterSetDefaultOperator = @"SPTableFilterSetDefaultOper
 	if (filterTableDefaultOperator) SPClear(filterTableDefaultOperator);
 #endif
 	if (selectedTable)          SPClear(selectedTable);
-	if (contentFilters)         SPClear(contentFilters);
-	if (numberOfDefaultFilters) SPClear(numberOfDefaultFilters);
 	if (keys)                   SPClear(keys);
 	if (sortCol)                SPClear(sortCol);
 	SPClear(usedQuery);

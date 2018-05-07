@@ -137,8 +137,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	NSUserDefaults *prefs;
 	NSInteger currentlyEditingRow, maxNumRows;
 
-	NSMutableDictionary *contentFilters;
-	NSMutableDictionary *numberOfDefaultFilters;
 	NSUInteger contentPage;
 
 #ifndef SP_CODA

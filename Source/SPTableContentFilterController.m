@@ -366,7 +366,9 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 		target = nil;
 		action = NULL;
 
+		// Init default filters for Content Browser
 		contentFilters = [[NSMutableDictionary alloc] init];
+		numberOfDefaultFilters = [[NSMutableDictionary alloc] init];
 
 		NSError *readError = nil;
 		NSString *filePath = [NSBundle pathForResource:@"ContentFilters.plist" ofType:nil inDirectory:[[NSBundle mainBundle] bundlePath]];
@@ -670,6 +672,8 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	SPClear(model);
 	SPClear(columns);
+	SPClear(contentFilters);
+	SPClear(numberOfDefaultFilters);
 	[super dealloc];
 }
 
