@@ -109,8 +109,7 @@
 	[clause flushCachedRegexData];
 	
 	// Escape % sign for format insertion ie if number of arguments is greater than 0
-	if(numberOfArguments > 0)
-		[clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
+	if(numberOfArguments > 0) [clause replaceOccurrencesOfRegex:@"%" withString:@"%%"];
 	[clause flushCachedRegexData];
 	
 	// Replace placeholder ${} by %@

@@ -4711,7 +4711,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 		[sessionState setObject:[NSNumber numberWithInteger:[tableContentInstance pageNumber]] forKey:@"contentPageNumber"];
 		[sessionState setObject:NSStringFromRect([tableContentInstance viewport]) forKey:@"contentViewport"];
 		NSDictionary *filterSettings = [tableContentInstance filterSettings];
-		if (filterSettings) [sessionState setObject:filterSettings forKey:@"contentFilter"];
+		if (filterSettings) [sessionState setObject:filterSettings forKey:@"contentFilterV2"];
 
 		NSDictionary *contentSelectedRows = [tableContentInstance selectionDetailsAllowingIndexSelection:YES];
 		if (contentSelectedRows) {
@@ -5110,7 +5110,7 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 			if([spfSession objectForKey:@"contentSortCol"])    [tableContentInstance setSortColumnNameToRestore:[spfSession objectForKey:@"contentSortCol"] isAscending:[[spfSession objectForKey:@"contentSortColIsAsc"] boolValue]];
 			if([spfSession objectForKey:@"contentPageNumber"]) [tableContentInstance setPageToRestore:[[spfSession objectForKey:@"pageNumber"] integerValue]];
 			if([spfSession objectForKey:@"contentViewport"])   [tableContentInstance setViewportToRestore:NSRectFromString([spfSession objectForKey:@"contentViewport"])];
-			if([spfSession objectForKey:@"contentFilter"])     [tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilter"]];
+			if([spfSession objectForKey:@"contentFilterV2"])   [tableContentInstance setFiltersToRestore:[spfSession objectForKey:@"contentFilterV2"]];
 
 			// Select table
 			[tablesListInstance selectTableAtIndex:[NSNumber numberWithInteger:[tables indexOfObject:[spfSession objectForKey:@"table"]]]];

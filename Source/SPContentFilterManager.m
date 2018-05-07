@@ -48,31 +48,29 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 @implementation SPContentFilterManager
 
 /**
- * Initialize the manager with the supplied delegate
+ * Initialize the manager with the supplied document
  */
-- (id)initWithDelegate:(id)managerDelegate forFilterType:(NSString *)compareType
+- (id)initWithDatabaseDocument:(SPDatabaseDocument *)document forFilterType:(NSString *)compareType
 {
-	if ((self = [super initWithWindowNibName:@"ContentFilterManager"])) {
+	if (document == nil) {
+		NSBeep();
+		NSLog(@"ContentFilterManager was called without a document.");
 
+		return nil;
+	}
+
+	if ((self = [super initWithWindowNibName:@"ContentFilterManager"])) {
 #ifndef SP_CODA
 		prefs = [NSUserDefaults standardUserDefaults];
 #endif
 
 		contentFilters = [[NSMutableArray alloc] init];
-
-		if (managerDelegate == nil) {
-			NSBeep();
-			NSLog(@"ContentFilterManager was called without a delegate.");
-
-			return nil;
-		}
-		
-		tableDocumentInstance = [managerDelegate valueForKeyPath:@"tableDocumentInstance"];
+		tableDocumentInstance = document;
 #ifndef SP_CODA
-		delegatesFileURL = [tableDocumentInstance fileURL];
+		documentFileURL = [[tableDocumentInstance fileURL] copy];
 #endif
 
-		filterType = [NSString stringWithString:compareType];
+		filterType = [compareType copy];
 	}
 
 	return self;
@@ -113,13 +111,13 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 
 	// Build doc-based filters
 	[contentFilters addObject:[NSDictionary dictionaryWithObjectsAndKeys:
-		[[[delegatesFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel",
-		[delegatesFileURL absoluteString], @"headerOfFileURL",
+		[[[documentFileURL absoluteString] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] lastPathComponent], @"MenuLabel",
+		[documentFileURL absoluteString], @"headerOfFileURL",
 		@"", @"Clause",
 		nil]];
 	
-	if ([[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL]) {
-		id filters = [[SPQueryController sharedQueryController] contentFilterForFileURL:delegatesFileURL];
+	if ([[SPQueryController sharedQueryController] contentFilterForFileURL:documentFileURL]) {
+		id filters = [[SPQueryController sharedQueryController] contentFilterForFileURL:documentFileURL];
 		if([filters objectForKey:filterType])
 			for(id fav in [filters objectForKey:filterType])
 				[contentFilters addObject:[[fav mutableCopy] autorelease]];
@@ -395,7 +393,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 #ifndef SP_CODA
 		// Update current document's content filters in the SPQueryController
 		[[SPQueryController sharedQueryController] replaceContentFilterByArray:
-			[self contentFilterForFileURL:delegatesFileURL] ofType:filterType forFileURL:delegatesFileURL];
+			[self contentFilterForFileURL:documentFileURL] ofType:filterType forFileURL:documentFileURL];
 
 		// Update global preferences' list
 		id cf = [[prefs objectForKey:SPContentFilters] mutableCopy];
@@ -968,6 +966,8 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
 - (void)dealloc
 {
 	SPClear(contentFilters);
+	SPClear(filterType);
+	SPClear(documentFileURL);
 	
 	[super dealloc];
 }

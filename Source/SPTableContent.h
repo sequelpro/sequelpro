@@ -43,12 +43,17 @@
 @class SPDatabaseDocument;
 @class SPTablesList;
 @class SPTableStructure;
-@class SPTableList;
-@class SPContentFilterManager;
 #ifndef SP_CODA
 @class SPSplitView;
 #endif
 @class SPTableContentFilterController;
+
+typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
+	SPTableContentFilterSourceNone = -1,
+	SPTableContentFilterSourceRuleFilter = 0,
+	SPTableContentFilterSourceTableFilter = 1,
+	SPTableContentFilterSourceURLScheme = 2,
+};
 
 #import "SPDatabaseContentViewDelegate.h"
 
@@ -65,10 +70,9 @@
 #endif
 	
 	IBOutlet SPCopyTable *tableContentView;
-	IBOutlet NSPopUpButton *fieldField;
-	IBOutlet id compareField;
-	IBOutlet id argumentField;
-	IBOutlet id filterButton;
+
+	IBOutlet NSButton *filterButton;
+	IBOutlet NSButton *toggleRuleFilterButton;
 	IBOutlet id addButton;
 	IBOutlet id duplicateButton;
 	IBOutlet id removeButton;
@@ -80,9 +84,6 @@
 	IBOutlet id limitRowsButton;
 	IBOutlet id limitRowsStepper;
 #endif
-	IBOutlet id firstBetweenField;
-	IBOutlet id secondBetweenField;
-	IBOutlet id betweenTextField;
 
 	IBOutlet NSButton *paginationPreviousButton;
 #ifndef SP_CODA
@@ -115,9 +116,6 @@
 	IBOutlet NSPanel *filterTableSetDefaultOperatorSheet;
 	IBOutlet NSComboBox* filterTableSetDefaultOperatorValue;
 
-	// Temporary to avoid nib conflicts during WIP
-	IBOutlet SPSplitView *contentSplitView;
-
 	IBOutlet SPTableContentFilterController *filterControllerInstance;
 #endif
 	SPMySQLConnection *mySQLConnection;
@@ -133,7 +131,6 @@
 	SPDataStorage *tableValues;
 	NSMutableArray *dataColumns, *keys, *oldRow;
 	NSUInteger tableRowsCount, previousTableRowsCount;
-	NSString *compareType;
 	NSNumber *sortCol;
 	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
 	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
@@ -142,8 +139,6 @@
 
 	NSMutableDictionary *contentFilters;
 	NSMutableDictionary *numberOfDefaultFilters;
-	NSUInteger lastSelectedContentFilterIndex;
-	SPContentFilterManager *contentFilterManager;
 	NSUInteger contentPage;
 
 #ifndef SP_CODA
@@ -153,7 +148,7 @@
 	BOOL filterTableIsSwapped;
 	NSString *filterTableDefaultOperator;
 	NSString *lastEditedFilterTableValue;
-	NSInteger activeFilter; // 0 = default filter; 1 = filter table; 2 = sequelpro url scheme
+	SPTableContentFilterSource activeFilter;
 	NSString *schemeFilter;
 #endif
 
@@ -163,7 +158,6 @@
 	NSUInteger pageToRestore;
 	NSDictionary *selectionToRestore;
 	NSRect selectionViewportToRestore;
-	NSString *filterFieldToRestore, *filterComparisonToRestore, *filterValueToRestore, *firstBetweenValueToRestore, *secondBetweenValueToRestore;
 
 #ifndef SP_CODA
 	NSInteger paginationViewHeight;
@@ -173,7 +167,6 @@
 	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount, tableLoadTargetRowCount;
 
 	NSArray *cqColumnDefinition;
-	NSString *fieldIDQueryString;
 	BOOL isFirstChangeInView;
 
 	NSString *kCellEditorErrorNoMatch;
@@ -186,17 +179,20 @@
 	NSColor *whiteColor;
 
 	SPFieldEditorController *fieldEditor;
-	NSRange fieldEditorSelectedRange;
+
+	// this represents the visible area of the whole content view at runtime.
+	// we use it as a positioning aide for the other two views below
+	IBOutlet NSView *contentAreaContainer;
+	IBOutlet NSView *filterRuleEditorContainer;
+	IBOutlet NSView *tableContentContainer;
+
+	BOOL showFilterRuleEditor;
+
+	NSDictionary *filtersToRestore;
 }
 
 #ifdef SP_CODA /* glue */
 @property (assign) id filterButton;
-@property (assign) id fieldField;
-@property (assign) id compareField;
-@property (assign) id betweenTextField;
-@property (assign) id firstBetweenField;
-@property (assign) id secondBetweenField;
-@property (assign) id argumentField;
 @property (assign) NSButton* addButton;
 @property (assign) NSButton* duplicateButton;
 @property (assign) NSButton* removeButton;
@@ -229,9 +225,10 @@
 - (IBAction)reloadTable:(id)sender;
 - (void)reloadTableTask;
 - (IBAction)filterTable:(id)sender;
+- (IBAction)toggleRuleEditorVisible:(id)sender;
 - (void)filterTableTask;
-- (IBAction)toggleFilterField:(id)sender;
 - (void)setUsedQuery:(NSString *)query;
+- (NSString *)selectedTable;
 
 // Pagination
 - (IBAction)navigatePaginationFromButton:(id)sender;
@@ -269,7 +266,6 @@
 - (void)setConnection:(SPMySQLConnection *)theConnection;
 - (void)clickLinkArrow:(SPTextAndLinkCell *)theArrowCell;
 - (void)clickLinkArrowTask:(SPTextAndLinkCell *)theArrowCell;
-- (IBAction)setCompareTypes:(id)sender;
 - (void)updateResultStore:(SPMySQLStreamingResultStore *)theResultStore approximateRowCount:(NSUInteger)targetRowCount;
 - (BOOL)saveRowToTable;
 - (void) addRowErrorSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
@@ -305,7 +301,6 @@
 - (NSData *)filterTableData;
 
 //- (NSString *)escapeFilterArgument:(NSString *)argument againstClause:(NSString *)clause;
-- (void)openContentFilterManager;
 
 - (NSArray *)fieldEditStatusForRow:(NSInteger)rowIndex andColumn:(NSInteger)columnIndex;
 

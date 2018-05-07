@@ -264,7 +264,7 @@
 												nil];
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
 		if (contentSelectedRows) [contentState setObject:contentSelectedRows forKey:@"selection"];
-		if (contentFilter) [contentState setObject:contentFilter forKey:@"filter"];
+		if (contentFilter) [contentState setObject:contentFilter forKey:@"filterV2"];
 		if (filterTableData) [contentState setObject:filterTableData forKey:@"filterTable"];
 
 		// Update the table content states with this information - used when switching tables to restore last used view.
@@ -278,38 +278,45 @@
 	} else if (historyPosition != NSNotFound && historyPosition == [history count] - 1) {
 		NSMutableDictionary *currentHistoryEntry = [history objectAtIndex:historyPosition];
 
+		BOOL databaseIsTheSame = [[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase];
+		BOOL tableIsTheSame    = [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable];
+		BOOL viewIsTheSame     = ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] == theView);
 		// If the table is the same, and the filter settings haven't changed, delete the
 		// last entry so it can be replaced.  This updates navigation within a table, rather than
 		// creating a new entry every time detail is changed.
-		if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] != theView
-				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && !contentFilter)
-					|| (![currentHistoryEntry objectForKey:@"contentFilter"]
-						&& ![(NSString *)[contentFilter objectForKey:@"filterValue"] length]
-						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NULL"]
-						&& ![[contentFilter objectForKey:@"filterComparison"] isEqualToString:@"IS NOT NULL"])
-					|| [[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
-		{
+		if (
+			databaseIsTheSame &&
+			tableIsTheSame &&
+			(
+				!viewIsTheSame ||
+				(
+					(![currentHistoryEntry objectForKey:@"contentFilterV2"] && !contentFilter) ||
+					[[currentHistoryEntry objectForKey:@"contentFilterV2"] isEqualToDictionary:contentFilter]
+				)
+			)
+		) {
 			[history removeLastObject];
-
+		}
 		// If the only db/table/view are the same, but the filter settings have changed, also store the
 		// position details on the *previous* history item
-		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& [[currentHistoryEntry objectForKey:@"table"] isEqualToString:theTable]
-			&& ([[currentHistoryEntry objectForKey:@"view"] unsignedIntegerValue] == theView
-				|| ((![currentHistoryEntry objectForKey:@"contentFilter"] && contentFilter)
-					|| ![[currentHistoryEntry objectForKey:@"contentFilter"] isEqualToDictionary:contentFilter])))
-		{
+		else if (
+			databaseIsTheSame &&
+			tableIsTheSame &&
+			(
+				viewIsTheSame ||
+				(
+					(![currentHistoryEntry objectForKey:@"contentFilterV2"] && contentFilter) ||
+					![[currentHistoryEntry objectForKey:@"contentFilterV2"] isEqualToDictionary:contentFilter]
+				)
+			)
+		) {
 			[currentHistoryEntry setObject:[NSValue valueWithRect:contentViewport] forKey:@"contentViewport"];
 			if (contentSelectedRows) [currentHistoryEntry setObject:contentSelectedRows forKey:@"contentSelection"];
-
+		}
 		// Special case: if the last history item is currently active, and has no table,
 		// but the new selection does - delete the last entry, in order to replace it.
 		// This improves history flow.
-		} else if ([[currentHistoryEntry objectForKey:@"database"] isEqualToString:theDatabase]
-			&& ![currentHistoryEntry objectForKey:@"table"])
-		{
+		else if (databaseIsTheSame && ![currentHistoryEntry objectForKey:@"table"]) {
 			[history removeLastObject];
 		}
 	}
@@ -325,7 +332,7 @@
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
 	if (contentSelectedRows) [newEntry setObject:contentSelectedRows forKey:@"contentSelection"];
-	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilter"];
+	if (contentFilter) [newEntry setObject:contentFilter forKey:@"contentFilterV2"];
 
 	[history addObject:newEntry];
 
@@ -379,7 +386,7 @@
 		[tableContentInstance setPageToRestore:[[historyEntry objectForKey:@"contentPageNumber"] integerValue]];
 		[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
 		[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
-		[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilter"]];
+		[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilterV2"]];
 
 		// If the database, table, and view are the same and content - just trigger a table reload (filters)
 		if (
@@ -495,7 +502,7 @@ abort_entry_load:
 	[tableContentInstance setPageToRestore:[[contentState objectForKey:@"page"] unsignedIntegerValue]];
 	[tableContentInstance setSelectionToRestore:[contentState objectForKey:@"selection"]];
 	[tableContentInstance setViewportToRestore:[[contentState objectForKey:@"viewport"] rectValue]];
-	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filter"]];
+	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filterV2"]];
 }
 
 #pragma mark -
@@ -529,21 +536,14 @@ abort_entry_load:
 
 	[theName appendFormat:@"/%@", [theEntry objectForKey:@"table"]];
 
-	if ([theEntry objectForKey:@"contentFilter"]) {
-		NSDictionary *filterSettings = [theEntry objectForKey:@"contentFilter"];
-		if ([filterSettings objectForKey:@"filterField"]) {
-			if([filterSettings objectForKey:@"menuLabel"]) {
-				theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Filtered by %@)", @"History item filtered by values label"),
-							theName, [filterSettings objectForKey:@"menuLabel"]];
-			}
-		}
+	if ([theEntry objectForKey:@"contentFilterV2"]) {
+		theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Filtered)", @"History item filtered by values label"), theName];
 	}
 
 	if ([theEntry objectForKey:@"contentPageNumber"]) {
 		NSUInteger pageNumber = [[theEntry objectForKey:@"contentPageNumber"] unsignedIntegerValue];
 		if (pageNumber > 1) {
-			theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"),
-						theName, (unsigned long)pageNumber];
+			theName = [NSMutableString stringWithFormat:NSLocalizedString(@"%@ (Page %lu)", @"History item with page number label"), theName, (unsigned long)pageNumber];
 		}
 	}
 
