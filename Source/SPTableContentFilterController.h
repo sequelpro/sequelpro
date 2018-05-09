@@ -65,7 +65,7 @@ NSString * const SPTableContentFilterHeightChangedNotification;
  */
 - (void)focusFirstInputField;
 
-- (void)updateFiltersFrom:(SPTableContent *)tableContent;
+- (void)setColumns:(NSArray *)dataColumns;
 
 - (void)openContentFilterManagerForFilterType:(NSString *)filterType;
 

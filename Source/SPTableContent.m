@@ -361,7 +361,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[filterButton setEnabled:NO];
 	[toggleRuleFilterButton setEnabled:NO];
 	[toggleRuleFilterButton setState:NSOffState];
-	[filterControllerInstance updateFiltersFrom:self];
+	[filterControllerInstance setColumns:nil];
 
 	// Disable pagination
 	[paginationPreviousButton setEnabled:NO];
@@ -636,7 +636,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	[filterTableController setColumns:dataColumns];
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
-	[filterControllerInstance updateFiltersFrom:self];
+	[filterControllerInstance setColumns:dataColumns];
 	// Restore preserved filter settings if appropriate and valid
 	[filterControllerInstance restoreSerializedFilters:filtersToRestore];
 	//if we did restore some filters, set filtering enabled

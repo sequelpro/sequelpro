@@ -437,7 +437,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	return NO;
 }
 
-- (void)updateFiltersFrom:(SPTableContent *)tableContent
+- (void)setColumns:(NSArray *)dataColumns;
 {
 	[self willChangeValueForKey:@"model"]; // manual KVO is needed for filter rule editor to notice change
 	[model removeAllObjects];
@@ -446,22 +446,22 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	[columns removeAllObjects];
 
 	//without a table there is nothing to filter
-	if(![tableContent selectedTable]) return;
+	if(dataColumns) {
+		//sort column names if enabled
+		NSArray *columnDefinitions = dataColumns;
+		if ([[NSUserDefaults standardUserDefaults] boolForKey:SPAlphabeticalTableSorting]) {
+			NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
+			columnDefinitions = [columnDefinitions sortedArrayUsingDescriptors:@[sortDescriptor]];
+		}
 
-	//sort column names if enabled
-	NSArray *columnDefinitions = [tableContent dataColumnDefinitions];
-	if([[NSUserDefaults standardUserDefaults] boolForKey:SPAlphabeticalTableSorting]) {
-		NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES];
-		columnDefinitions = [columnDefinitions sortedArrayUsingDescriptors:@[sortDescriptor]];
-	}
-
-	// get the columns
-	for(NSDictionary *colDef in columnDefinitions) {
-		ColumnNode *node = [[ColumnNode alloc] init];
-		[node setName:[colDef objectForKey:@"name"]];
-		[node setTypegrouping:[colDef objectForKey:@"typegrouping"]];
-		[columns addObject:node];
-		[node release];
+		// get the columns
+		for (NSDictionary *colDef in columnDefinitions) {
+			ColumnNode *node = [[ColumnNode alloc] init];
+			[node setName:[colDef objectForKey:@"name"]];
+			[node setTypegrouping:[colDef objectForKey:@"typegrouping"]];
+			[columns addObject:node];
+			[node release];
+		}
 	}
 
 	// make the rule editor reload the criteria
