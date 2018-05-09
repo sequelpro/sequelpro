@@ -29,7 +29,6 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 #import "SPTableContentFilterController.h"
-#import "SPTableContent.h"
 #import "SPQueryController.h"
 #import "SPDatabaseDocument.h"
 #import "RegexKitLite.h"
@@ -47,12 +46,31 @@ typedef NS_ENUM(NSInteger, RuleNodeType) {
 
 NSString * const SPTableContentFilterHeightChangedNotification = @"SPTableContentFilterHeightChanged";
 
+/**
+ * The type of filter rule that the current item represents.
+ */
 const NSString * const SerFilterClass = @"filterClass";
+/**
+ * The current rule is a group row (an "AND" or "OR" expression with children)
+ */
 const NSString * const SerFilterClassGroup = @"groupNode";
+/**
+ * The current rule is a filter expression
+ */
 const NSString * const SerFilterClassExpression = @"expressionNode";
+/**
+ * Group Nodes only:
+ * Indicates whether the group is a conjunction.
+ * If YES, the children will be combined using "AND", otherwise using "OR".
+ */
 const NSString * const SerFilterGroupIsConjunction = @"isConjunction";
+/**
+ * Group Nodes only:
+ * An array of child filter rules (which again can be group or expression rules)
+ */
 const NSString * const SerFilterGroupChildren = @"children";
 /**
+ * Expression Nodes only:
  * The name of the column to filter in (left side expression)
  *
  * Legacy names:
@@ -60,10 +78,12 @@ const NSString * const SerFilterGroupChildren = @"children";
  */
 const NSString * const SerFilterExprColumn = @"column";
 /**
+ * Expression Nodes only:
  * The data type grouping of the column for applicable filters
  */
 const NSString * const SerFilterExprType = @"filterType";
 /**
+ * Expression Nodes only:
  * The title of the filter operator to apply
  *
  * Legacy names:
@@ -71,7 +91,8 @@ const NSString * const SerFilterExprType = @"filterType";
  */
 const NSString * const SerFilterExprComparison = @"filterComparison";
 /**
- * The values to apply the filter with
+ * Expression Nodes only:
+ * The values to apply the filter with (an array of 0 or more elements)
  *
  * Legacy names:
  *   @"filterValue", argumentField
@@ -79,36 +100,21 @@ const NSString * const SerFilterExprComparison = @"filterComparison";
  */
 const NSString * const SerFilterExprValues = @"filterValues";
 /**
+ * Expression Nodes only:
  * the filter definition dictionary (as in ContentFilters.plist)
+ * for the filter represented by SerFilterExprComparison.
  *
  * This item is not designed to be serialized to disk
  */
-const NSString * const SerFilterExprDefinition = @"filterDefinition";
+const NSString * const SerFilterExprDefinition = @"_filterDefinition";
+
+#pragma mark -
 
 @interface RuleNode : NSObject {
 	RuleNodeType type;
 }
 @property(assign, nonatomic) RuleNodeType type;
 @end
-
-@implementation RuleNode
-
-@synthesize type = type;
-
-- (NSUInteger)hash {
-	return type;
-}
-
-- (BOOL)isEqual:(id)other {
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [(RuleNode *)other type] == type) return YES;
-
-	return NO;
-}
-
-@end
-
-#pragma mark -
 
 @interface ColumnNode : RuleNode {
 	NSString *name;
@@ -120,73 +126,11 @@ const NSString * const SerFilterExprDefinition = @"filterDefinition";
 @property(retain, nonatomic) NSArray *operatorCache;
 @end
 
-@implementation ColumnNode
-
-@synthesize name = name;
-@synthesize typegrouping = typegrouping;
-@synthesize operatorCache = operatorCache;
-
-- (instancetype)init
-{
-	if((self = [super init])) {
-		type = RuleNodeTypeColumn;
-	}
-	return self;
-}
-
-- (NSString *)description
-{
-	return [NSString stringWithFormat:@"ColumnNode<%@@%p>",[self name],self];
-}
-
-- (NSUInteger)hash {
-	return ([name hash] ^ [typegrouping hash] ^ [super hash]);
-}
-
-- (BOOL)isEqual:(id)other {
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [name isEqualToString:[other name]] && [typegrouping isEqualToString:[other typegrouping]]) return YES;
-
-	return NO;
-}
-
-@end
-
-#pragma mark -
-
 @interface StringNode : RuleNode {
 	NSString *value;
 }
 @property(copy, nonatomic) NSString *value;
 @end
-
-@implementation StringNode
-
-@synthesize value = value;
-
-- (instancetype)init
-{
-	if((self = [super init])) {
-		type = RuleNodeTypeString;
-	}
-	return self;
-}
-
-- (NSUInteger)hash {
-	return ([value hash] ^ [super hash]);
-}
-
-- (BOOL)isEqual:(id)other {
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [value isEqualToString:[(StringNode *)other value]]) return YES;
-
-	return NO;
-}
-
-
-@end
-
-#pragma mark -
 
 @interface OpNode : RuleNode {
 	// Note: The main purpose of this field is to have @"=" for column A and @"=" for column B to return NO in -isEqual:
@@ -200,42 +144,6 @@ const NSString * const SerFilterExprDefinition = @"filterDefinition";
 @property (retain, nonatomic) NSDictionary *filter;
 @end
 
-@implementation OpNode
-
-@synthesize parentColumn = parentColumn;
-@synthesize settings = settings;
-@synthesize filter = filter;
-
-- (instancetype)init
-{
-	if((self = [super init])) {
-		type = RuleNodeTypeOperator;
-	}
-	return self;
-}
-
-- (void)dealloc
-{
-	[self setFilter:nil];
-	[self setSettings:nil];
-	[super dealloc];
-}
-
-- (NSUInteger)hash {
-	return (([parentColumn hash] << 16) ^ [settings hash] ^ [super hash]);
-}
-
-- (BOOL)isEqual:(id)other {
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [settings isEqualToDictionary:[(OpNode *)other settings]] && [parentColumn isEqual:[other parentColumn]]) return YES;
-
-	return NO;
-}
-
-@end
-
-#pragma mark -
-
 @interface ArgNode : RuleNode {
 	NSDictionary *filter;
 	NSUInteger argIndex;
@@ -246,82 +154,12 @@ const NSString * const SerFilterExprDefinition = @"filterDefinition";
 @property (assign, nonatomic) NSUInteger argIndex;
 @end
 
-@implementation ArgNode
-
-@synthesize filter = filter;
-@synthesize argIndex = argIndex;
-@synthesize initialValue = initialValue;
-
-- (instancetype)init
-{
-	if((self = [super init])) {
-		type = RuleNodeTypeArgument;
-	}
-	return self;
-}
-
-- (void)dealloc
-{
-	[self setInitialValue:nil];
-	[self setFilter:nil];
-	[super dealloc];
-}
-
-- (NSUInteger)hash {
-	// initialValue does not count towards hash because two Args are not different if only the initialValue differs
-	return ((argIndex << 16) ^ [filter hash] ^ [super hash]);
-}
-
-- (BOOL)isEqual:(id)other {
-	// initialValue does not count towards isEqual: because two Args are not different if only the initialValue differs
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ArgNode *)other filter]] && argIndex == [(ArgNode *)other argIndex]) return YES;
-
-	return NO;
-}
-
-@end
-
-#pragma mark -
-
 @interface ConnectorNode : RuleNode {
 	NSDictionary *filter;
 	NSUInteger labelIndex;
 }
 @property (retain, nonatomic) NSDictionary *filter;
 @property (assign, nonatomic) NSUInteger labelIndex;
-@end
-
-@implementation ConnectorNode
-
-@synthesize filter = filter;
-@synthesize labelIndex = labelIndex;
-
-- (instancetype)init
-{
-	if((self = [super init])) {
-		type = RuleNodeTypeConnector;
-	}
-	return self;
-}
-
-- (void)dealloc
-{
-	[self setFilter:nil];
-	[super dealloc];
-}
-
-- (NSUInteger)hash {
-	return ((labelIndex << 16) ^ [filter hash] ^ [super hash]);
-}
-
-- (BOOL)isEqual:(id)other {
-	if (other == self) return YES;
-	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ConnectorNode *)other filter]] && labelIndex == [(ConnectorNode *)other labelIndex]) return YES;
-
-	return NO;
-}
-
 @end
 
 #pragma mark -
@@ -347,6 +185,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 - (OpNode *)_operatorNamed:(NSString *)title forColumn:(ColumnNode *)col;
 - (BOOL)_focusOnFieldInSubtree:(NSDictionary *)dict;
 - (void)_resize;
+- (void)openContentFilterManagerForFilterType:(NSString *)filterType;
 
 @end
 
@@ -640,7 +479,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 - (void)_resize
 {
 	// The situation with the sizing is a bit f'ed up:
-	// - When this method is invoked the NSRuleEditor has not yet updated its required frame size
+	// - When -ruleEditorRowsDidChange: is invoked the NSRuleEditor has not yet updated its required frame size
 	// - We can't use KVO on -frame either, because SPTableContent will update the container size which
 	//   ultimately also updates the NSRuleEditor's frame, causing a loop
 	// - Calling -sizeToFit works, but only when the NSRuleEditor is growing. It won't shrink
@@ -663,7 +502,9 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)ruleEditorRowsDidChange:(NSNotification *)notification 
 {
-	[self performSelector:@selector(_resize) withObject:nil afterDelay:0.2]; //TODO find a better way to trigger resize
+	//TODO find a better way to trigger resize
+	// We can't do this here, because it will cause rows to jump around when removing them (the add case works fine, though)
+	[self performSelector:@selector(_resize) withObject:nil afterDelay:0.2];
 	//[self _resize];
 }
 
@@ -915,6 +756,8 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 		return nil;
 	}
 
+	if(err) *err = nil;
+
 	NSString *out = [filterString copy];
 	[filterString release];
 
@@ -1131,7 +974,7 @@ fail:
 	return nil;
 }
 
-- (NSDictionary *)makeSerializedFilterForColumn:(NSString *)colName operator:(NSString *)opName values:(NSArray *)values
++ (NSDictionary *)makeSerializedFilterForColumn:(NSString *)colName operator:(NSString *)opName values:(NSArray *)values
 {
 	return @{
 		SerFilterClass:          SerFilterClassExpression,
@@ -1306,46 +1149,181 @@ BOOL SerIsGroup(NSDictionary *dict)
 
 @end
 
-//TODO move
-@interface SPFillView : NSView
-{
-	NSColor *currentColor;
+#pragma mark -
+
+@implementation RuleNode
+
+@synthesize type = type;
+
+- (NSUInteger)hash {
+	return type;
 }
 
-/**
- * This method is invoked when unarchiving the View from the xib.
- * The value is configured in IB under "User Defined Runtime Attributes"
- */
-- (void)setSystemColorOfName:(NSString *)name;
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [(RuleNode *)other type] == type) return YES;
+
+	return NO;
+}
 
 @end
 
-@implementation SPFillView
+@implementation ColumnNode
 
-- (void)setSystemColorOfName:(NSString *)name
+@synthesize name = name;
+@synthesize typegrouping = typegrouping;
+@synthesize operatorCache = operatorCache;
+
+- (instancetype)init
 {
-	//TODO: xibs after 10.6 support storing colors as user defined attributes
-	NSColorList *scl = [NSColorList colorListNamed:@"System"];
-	NSColor *color = [scl colorWithKey:name];
-	if(color) {
-		[color retain];
-		[currentColor release];
-		currentColor = color;
-		[self setNeedsDisplay:YES];
+	if((self = [super init])) {
+		type = RuleNodeTypeColumn;
 	}
+	return self;
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-	if(currentColor) {
-		[currentColor set];
-		NSRectFill(dirtyRect);
+- (NSString *)description
+{
+	return [NSString stringWithFormat:@"ColumnNode<%@@%p>",[self name],self];
+}
+
+- (NSUInteger)hash {
+	return ([name hash] ^ [typegrouping hash] ^ [super hash]);
+}
+
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [name isEqualToString:[other name]] && [typegrouping isEqualToString:[other typegrouping]]) return YES;
+
+	return NO;
+}
+
+@end
+
+
+@implementation StringNode
+
+@synthesize value = value;
+
+- (instancetype)init
+{
+	if((self = [super init])) {
+		type = RuleNodeTypeString;
 	}
+	return self;
+}
+
+- (NSUInteger)hash {
+	return ([value hash] ^ [super hash]);
+}
+
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [value isEqualToString:[(StringNode *)other value]]) return YES;
+
+	return NO;
+}
+
+@end
+
+@implementation OpNode
+
+@synthesize parentColumn = parentColumn;
+@synthesize settings = settings;
+@synthesize filter = filter;
+
+- (instancetype)init
+{
+	if((self = [super init])) {
+		type = RuleNodeTypeOperator;
+	}
+	return self;
 }
 
 - (void)dealloc
 {
-	[currentColor release];
+	[self setFilter:nil];
+	[self setSettings:nil];
 	[super dealloc];
+}
+
+- (NSUInteger)hash {
+	return (([parentColumn hash] << 16) ^ [settings hash] ^ [super hash]);
+}
+
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [settings isEqualToDictionary:[(OpNode *)other settings]] && [parentColumn isEqual:[other parentColumn]]) return YES;
+
+	return NO;
+}
+
+@end
+
+@implementation ArgNode
+
+@synthesize filter = filter;
+@synthesize argIndex = argIndex;
+@synthesize initialValue = initialValue;
+
+- (instancetype)init
+{
+	if((self = [super init])) {
+		type = RuleNodeTypeArgument;
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	[self setInitialValue:nil];
+	[self setFilter:nil];
+	[super dealloc];
+}
+
+- (NSUInteger)hash {
+	// initialValue does not count towards hash because two Args are not different if only the initialValue differs
+	return ((argIndex << 16) ^ [filter hash] ^ [super hash]);
+}
+
+- (BOOL)isEqual:(id)other {
+	// initialValue does not count towards isEqual: because two Args are not different if only the initialValue differs
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ArgNode *)other filter]] && argIndex == [(ArgNode *)other argIndex]) return YES;
+
+	return NO;
+}
+
+@end
+
+@implementation ConnectorNode
+
+@synthesize filter = filter;
+@synthesize labelIndex = labelIndex;
+
+- (instancetype)init
+{
+	if((self = [super init])) {
+		type = RuleNodeTypeConnector;
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	[self setFilter:nil];
+	[super dealloc];
+}
+
+- (NSUInteger)hash {
+	return ((labelIndex << 16) ^ [filter hash] ^ [super hash]);
+}
+
+- (BOOL)isEqual:(id)other {
+	if (other == self) return YES;
+	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ConnectorNode *)other filter]] && labelIndex == [(ConnectorNode *)other labelIndex]) return YES;
+
+	return NO;
 }
 
 @end

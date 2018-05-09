@@ -391,6 +391,7 @@
 		58FEF57E0F3B4E9700518E8E /* SPTableData.m in Sources */ = {isa = PBXBuildFile; fileRef = 58FEF57D0F3B4E9700518E8E /* SPTableData.m */; };
 		73F70A961E4E547500636550 /* SPJSONFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 73F70A951E4E547500636550 /* SPJSONFormatter.m */; };
 		8D15AC340486D014006FF6A4 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A7FEA54F5311CA2CBB /* Cocoa.framework */; };
+		9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE768F3989033CEDDC2027E /* SPFillView.m */; };
 		9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */; };
 		B51D6B9E114C310C0074704E /* toolbar-switch-to-table-triggers.png in Resources */ = {isa = PBXBuildFile; fileRef = B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */; };
 		B52460D70F8EF92300171639 /* SPArrayAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = B52460D40F8EF92300171639 /* SPArrayAdditions.m */; };
@@ -1129,7 +1130,9 @@
 		73F70A941E4E547500636550 /* SPJSONFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPJSONFormatter.h; sourceTree = "<group>"; };
 		73F70A951E4E547500636550 /* SPJSONFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPJSONFormatter.m; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Sequel Pro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sequel Pro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9BE768F3989033CEDDC2027E /* SPFillView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFillView.m; sourceTree = "<group>"; };
 		9BE76A3D5C9830E2F7738770 /* SPFilterTableController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SPFilterTableController.m; sourceTree = "<group>"; };
+		9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFillView.h; sourceTree = "<group>"; };
 		9BE76F9BF9BDA2921CDD05AF /* SPFilterTableController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPFilterTableController.h; sourceTree = "<group>"; };
 		B51D6B9D114C310C0074704E /* toolbar-switch-to-table-triggers.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "toolbar-switch-to-table-triggers.png"; sourceTree = "<group>"; };
 		B52460D30F8EF92300171639 /* SPArrayAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPArrayAdditions.h; sourceTree = "<group>"; };
@@ -1978,6 +1981,8 @@
 				17DC8827126B32F300E9AAEC /* Table Views */,
 				17DF51241163C68600E3F396 /* Outline Views */,
 				17DC8828126B332F00E9AAEC /* Accessory Views */,
+				9BE768F3989033CEDDC2027E /* SPFillView.m */,
+				9BE76CC0CCE3A4A74E3E8D5E /* SPFillView.h */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -3277,6 +3282,7 @@
 				50E217B618174280009D3580 /* SPFavoriteColorSupport.m in Sources */,
 				1A564F74237E2E4958CA593A /* SPPillAttachmentCell.m in Sources */,
 				9BE76F2886901784E4FD2321 /* SPFilterTableController.m in Sources */,
+				9BE765EBBDFD2F121C13D274 /* SPFillView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

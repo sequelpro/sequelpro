@@ -2375,9 +2375,9 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		else if(navigateAsHex) filterComparison = @"= (Hex String)";
 
 		// Store the filter details to use when loading the target table
-		NSDictionary *filterSettings = [filterControllerInstance makeSerializedFilterForColumn:[refDictionary objectForKey:@"column"]
-		                                                                              operator:filterComparison
-		                                                                                values:@[targetFilterValue]];
+		NSDictionary *filterSettings = [SPTableContentFilterController makeSerializedFilterForColumn:[refDictionary objectForKey:@"column"]
+		                                                                                    operator:filterComparison
+		                                                                                      values:@[targetFilterValue]];
 
 		// If the link is within the current table, apply filter settings manually
 		if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
