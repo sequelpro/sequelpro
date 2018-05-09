@@ -102,6 +102,7 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 
 	IBOutlet SPTableContentFilterController *filterControllerInstance;
 	IBOutlet SPFilterTableController *filterTableController;
+	BOOL scrollViewHasRubberbandScrolling;
 #endif
 	SPMySQLConnection *mySQLConnection;
 

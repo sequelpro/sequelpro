@@ -57,6 +57,13 @@ NSString * const SPTableContentFilterHeightChangedNotification;
 }
 
 /**
+ * Returns the rule editor view that is managed by this object
+ *
+ * SHOULD be called on the UI thread, or results may be inconsistent!
+ */
+- (NSRuleEditor *)view;
+
+/**
  * Makes the first NSTextField found in the rule editor the first responder
  *
  * MUST BE CALLED ON THE UI THREAD!

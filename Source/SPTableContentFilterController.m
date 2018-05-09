@@ -735,6 +735,11 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	[filterRuleEditor insertRowAtIndex:0 withType:NSRuleEditorRowTypeSimple asSubrowOfRow:-1 animate:NO];
 }
 
+- (NSRuleEditor *)view
+{
+	return filterRuleEditor;
+}
+
 - (NSString *)sqlWhereExpressionWithBinary:(BOOL)isBINARY error:(NSError **)err
 {
 	NSMutableString *filterString = [[NSMutableString alloc] init];

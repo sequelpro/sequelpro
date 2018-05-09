@@ -247,6 +247,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	
 	[filterTableController setTarget:self];
 	[filterTableController setAction:@selector(filterTable:)];
+	//TODO This is only needed for 10.6 compatibility
+	scrollViewHasRubberbandScrolling = [[[filterControllerInstance view] enclosingScrollView] respondsToSelector:@selector(setVerticalScrollElasticity:)];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -3417,7 +3419,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	NSRect contentViewRect = [contentAreaContainer frame];
 	CGFloat availableHeight = contentViewRect.size.height;
 	//the rule editor can ask for about one-third of the available space before we have it use it's scrollbar
-	CGFloat givenHeight = MIN(requestedHeight + 1,(availableHeight / 3));
+	CGFloat givenHeight = MIN(requestedHeight + 1,(availableHeight / 3)); // +1 is the SPFillView at the bottom
 	
 	// abort if the size didn't really change
 	NSRect ruleEditorRect = [filterRuleEditorContainer frame];
@@ -3441,6 +3443,16 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	else {
 		[tableContentContainer setFrameSize:tableContentRect.size];
 		[filterRuleEditorContainer setFrame:ruleEditorRect];
+	}
+
+	//disable rubberband scrolling as long as there is nothing to scroll
+	if(scrollViewHasRubberbandScrolling) {
+		NSScrollView *filterControllerScroller = [[filterControllerInstance view] enclosingScrollView];
+		if (givenHeight > requestedHeight) { // note that givenHeight + 1 == requestedHeight in order to avoid scroll
+			[filterControllerScroller setVerticalScrollElasticity:NSScrollElasticityNone];
+		} else {
+			[filterControllerScroller setVerticalScrollElasticity:NSScrollElasticityAutomatic];
+		}
 	}
 }
 
