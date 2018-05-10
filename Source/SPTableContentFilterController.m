@@ -186,6 +186,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 - (BOOL)_focusOnFieldInSubtree:(NSDictionary *)dict;
 - (void)_resize;
 - (void)openContentFilterManagerForFilterType:(NSString *)filterType;
+- (IBAction)filterTable:(id)sender;
 
 @end
 
@@ -305,6 +306,9 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 	// make the rule editor reload the criteria
 	[filterRuleEditor reloadCriteria];
+
+	// disable UI if no criteria exist
+	[self setEnabled:([columns count] != 0)];
 }
 
 - (NSInteger)ruleEditor:(NSRuleEditor *)editor numberOfChildrenForCriterion:(nullable id)criterion withRowType:(NSRuleEditorRowType)rowType
@@ -472,8 +476,13 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	// if the action was caused by pressing return or enter, trigger filtering
 	NSEvent *event = [NSApp currentEvent];
 	if(event && [event type] == NSKeyDown && ([event keyCode] == 36 || [event keyCode] == 76)) {
-		if(target && action) [target performSelector:action withObject:self];
+		[self filterTable:nil];
 	}
+}
+
+- (IBAction)filterTable:(id)sender
+{
+	if(target && action) [target performSelector:action withObject:self];
 }
 
 - (void)_resize
@@ -740,6 +749,18 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	return filterRuleEditor;
 }
 
+- (BOOL)isEnabled
+{
+	return enabled;
+}
+
+- (void)setEnabled:(BOOL)_enabled
+{
+	enabled = _enabled;
+	[filterButton setEnabled:_enabled];
+	[filterRuleEditor setEnabled:_enabled];
+}
+
 - (NSString *)sqlWhereExpressionWithBinary:(BOOL)isBINARY error:(NSError **)err
 {
 	NSMutableString *filterString = [[NSMutableString alloc] init];
@@ -926,7 +947,7 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 		NSString *curFilterType = [[op settings] objectForKey:@"filterType"];
 		NSString *serFilterType = [serialized objectForKey:SerFilterExprType]; // this is optional
 		if(serFilterType && ![curFilterType isEqualToString:serFilterType]) {
-			SPLog(@"mistmatch in filter types for operator %@: current=%@, serialized=%@",op,curFilterType,serFilterType);
+			SPLog(@"mismatch in filter types for operator %@: current=%@, serialized=%@",op,curFilterType,serFilterType);
 			goto fail;
 		}
 

@@ -92,7 +92,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifdef SP_CODA
 @synthesize addButton;
 @synthesize duplicateButton;
-@synthesize filterButton;
 @synthesize paginationNextButton;
 @synthesize paginationPageField;
 @synthesize paginationPreviousButton;
@@ -360,7 +359,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	// Empty and disable filter options
 	[self setRuleEditorVisible:NO animate:NO];
-	[filterButton setEnabled:NO];
 	[toggleRuleFilterButton setEnabled:NO];
 	[toggleRuleFilterButton setState:NSOffState];
 	[filterControllerInstance setColumns:nil];
@@ -650,7 +648,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		[self setRuleEditorVisible:NO animate:NO]; //immediately hide the filter editor when switching tables
 		[toggleRuleFilterButton setState:NSOffState];
 	}
-	[filterButton setEnabled:enableInteraction];
+	[filterControllerInstance setEnabled:enableInteraction];
 	[toggleRuleFilterButton setEnabled:enableInteraction];
 
 	// Restore page number if limiting is set
@@ -1304,11 +1302,15 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[tableDocumentInstance startTaskWithDescription:taskString];
 
 	if ([NSThread isMainThread]) {
-		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent filter table task", tableDocumentInstance) target:self selector:@selector(filterTableTask) object:nil];
+		[NSThread detachNewThreadWithName:SPCtxt(@"SPTableContent filter table task", tableDocumentInstance)
+		                           target:self
+		                         selector:@selector(filterTableTask)
+		                           object:nil];
 	} else {
 		[self filterTableTask];
 	}
 }
+
 - (void)filterTableTask
 {
 	@autoreleasepool {
@@ -1349,7 +1351,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		[self updateFilterRuleEditorSize:0.0 animate:animate];
 	}
 	showFilterRuleEditor = show;
-	[filterButton setHidden:!show];
 }
 
 - (void)setUsedQuery:(NSString *)query
@@ -3416,39 +3417,49 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 - (void)updateFilterRuleEditorSize:(CGFloat)requestedHeight animate:(BOOL)animate
 {
-	NSRect contentViewRect = [contentAreaContainer frame];
-	CGFloat availableHeight = contentViewRect.size.height;
+	NSRect contentAreaRect = [contentAreaContainer frame];
+	CGFloat availableHeight = contentAreaRect.size.height;
+
+	NSRect ruleEditorRect = [[[filterControllerInstance view] enclosingScrollView] frame];
+
+	//adjust for the UI elements below the rule editor, but only if the view height should not be 0 (ie. hidden)
+	CGFloat containerRequestedHeight =  requestedHeight ? requestedHeight + ruleEditorRect.origin.y : 0;
+
 	//the rule editor can ask for about one-third of the available space before we have it use it's scrollbar
-	CGFloat givenHeight = MIN(requestedHeight + 1,(availableHeight / 3)); // +1 is the SPFillView at the bottom
-	
+	CGFloat topContainerGivenHeight = MIN(containerRequestedHeight,(availableHeight / 3));
+
 	// abort if the size didn't really change
-	NSRect ruleEditorRect = [filterRuleEditorContainer frame];
-	if(givenHeight == ruleEditorRect.size.height) return;
+	NSRect topContainerRect = [filterRuleEditorContainer frame];
+	if(topContainerGivenHeight == topContainerRect.size.height) return;
 
-	CGFloat newTableContentHeight = availableHeight - givenHeight;
+	CGFloat newBottomContainerHeight = availableHeight - topContainerGivenHeight;
 
-	NSRect tableContentRect = [tableContentContainer frame];
-	tableContentRect.size.height = newTableContentHeight;
+	NSRect bottomContainerRect = [tableContentContainer frame];
+	bottomContainerRect.size.height = newBottomContainerHeight;
 
+	topContainerRect.origin.y = newBottomContainerHeight;
+	topContainerRect.size.height = topContainerGivenHeight;
 
-	ruleEditorRect.origin.y = newTableContentHeight;
-	ruleEditorRect.size.height = givenHeight;
+	// this one should be inferable from the IB layout IMHO, but the OS gets it wrong
+	ruleEditorRect.size.height = topContainerGivenHeight - ruleEditorRect.origin.y;
 
 	if(animate) {
 		[NSAnimationContext beginGrouping];
-		[[tableContentContainer animator] setFrame:tableContentRect];
-		[[filterRuleEditorContainer animator] setFrame:ruleEditorRect];
+		[[tableContentContainer animator] setFrame:bottomContainerRect];
+		[[filterRuleEditorContainer animator] setFrame:topContainerRect];
+		[[[[filterControllerInstance view] enclosingScrollView] animator] setFrame:ruleEditorRect];
 		[NSAnimationContext endGrouping];
 	}
 	else {
-		[tableContentContainer setFrameSize:tableContentRect.size];
-		[filterRuleEditorContainer setFrame:ruleEditorRect];
+		[tableContentContainer setFrameSize:bottomContainerRect.size];
+		[filterRuleEditorContainer setFrame:topContainerRect];
+		[[[filterControllerInstance view] enclosingScrollView] setFrame:ruleEditorRect];
 	}
 
 	//disable rubberband scrolling as long as there is nothing to scroll
 	if(scrollViewHasRubberbandScrolling) {
 		NSScrollView *filterControllerScroller = [[filterControllerInstance view] enclosingScrollView];
-		if (givenHeight > requestedHeight) { // note that givenHeight + 1 == requestedHeight in order to avoid scroll
+		if (ruleEditorRect.size.height >= requestedHeight) {
 			[filterControllerScroller setVerticalScrollElasticity:NSScrollElasticityNone];
 		} else {
 			[filterControllerScroller setVerticalScrollElasticity:NSScrollElasticityAutomatic];
@@ -3586,7 +3597,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[removeButton setEnabled:NO];
 	[duplicateButton setEnabled:NO];
 	[reloadButton setEnabled:NO];
-	[filterButton setEnabled:NO];
+	[filterControllerInstance setEnabled:NO];
 	[toggleRuleFilterButton setEnabled:NO];
 	tableRowsSelectable = NO;
 	[paginationPreviousButton setEnabled:NO];
@@ -3622,7 +3633,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 	}
 
-	[filterButton setEnabled:(!![selectedTable length])];
+	[filterControllerInstance setEnabled:(!![selectedTable length])];
 	[toggleRuleFilterButton setEnabled:(!![selectedTable length])];
 	tableRowsSelectable = YES;
 }

@@ -1075,7 +1075,7 @@
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <subviews>
                                                             <customView misplaced="YES" id="vcX-Xr-0cm" userLabel="Table Content Container">
-                                                                <rect key="frame" x="0.0" y="0.0" width="695" height="488"/>
+                                                                <rect key="frame" x="0.0" y="0.0" width="695" height="458"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <subviews>
                                                                     <imageView id="5179">
@@ -1145,8 +1145,8 @@
                                                                             <binding destination="1907" name="value" keyPath="values.EditInSheetEnabled" id="6351"/>
                                                                         </connections>
                                                                     </button>
-                                                                    <textField verticalHuggingPriority="750" id="261">
-                                                                        <rect key="frame" x="159" y="-4" width="421" height="22"/>
+                                                                    <textField verticalHuggingPriority="750" misplaced="YES" id="261">
+                                                                        <rect key="frame" x="193" y="-4" width="362" height="22"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" id="3759">
                                                                             <font key="font" metaFont="smallSystem"/>
@@ -1238,26 +1238,15 @@
                                                                             <autoresizingMask key="autoresizingMask"/>
                                                                         </tableHeaderView>
                                                                     </scrollView>
-                                                                    <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="858">
-                                                                        <rect key="frame" x="676" y="466" width="16" height="16"/>
-                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                                                    <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" id="858">
+                                                                        <rect key="frame" x="561" y="4" width="16" height="16"/>
+                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                                     </progressIndicator>
-                                                                    <button hidden="YES" verticalHuggingPriority="750" id="4676">
-                                                                        <rect key="frame" x="616" y="463" width="54" height="19"/>
-                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                                                        <buttonCell key="cell" type="roundRect" title="Filter" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4677">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                                            <font key="font" metaFont="smallSystem"/>
-                                                                        </buttonCell>
-                                                                        <connections>
-                                                                            <action selector="filterTable:" target="67" id="4678"/>
-                                                                        </connections>
-                                                                    </button>
                                                                     <button toolTip="Show/Hide table content filters" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" id="LYg-Ux-Lph">
-                                                                        <rect key="frame" x="2" y="456" width="36" height="32"/>
-                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSIconViewTemplate" imagePosition="only" alignment="center" borderStyle="border" inset="2" id="WNc-7G-qPQ">
-                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
+                                                                        <rect key="frame" x="155" y="-1" width="32" height="25"/>
+                                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="button_filter" imagePosition="overlaps" alignment="center" alternateImage="button_filter_active" inset="2" id="WNc-7G-qPQ">
+                                                                            <behavior key="behavior" pushIn="YES" changeContents="YES" lightByContents="YES"/>
                                                                             <font key="font" metaFont="system"/>
                                                                         </buttonCell>
                                                                         <connections>
@@ -1267,11 +1256,11 @@
                                                                 </subviews>
                                                             </customView>
                                                             <customView misplaced="YES" id="9oo-u0-ndW" userLabel="Filter Rule Editor Container">
-                                                                <rect key="frame" x="0.0" y="488" width="695" height="41"/>
+                                                                <rect key="frame" x="0.0" y="458" width="695" height="71"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                                 <subviews>
                                                                     <scrollView misplaced="YES" borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" horizontalScrollElasticity="none" id="CIQ-tc-1Fn">
-                                                                        <rect key="frame" x="0.0" y="1" width="694" height="40"/>
+                                                                        <rect key="frame" x="0.0" y="31" width="694" height="40"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="kdv-Wp-s5h">
                                                                             <rect key="frame" x="0.0" y="0.0" width="694" height="40"/>
@@ -1296,12 +1285,23 @@
                                                                         </scroller>
                                                                     </scrollView>
                                                                     <customView misplaced="YES" id="GJn-1I-e7O" customClass="SPFillView">
-                                                                        <rect key="frame" x="0.0" y="0.0" width="695" height="1"/>
+                                                                        <rect key="frame" x="0.0" y="30" width="695" height="1"/>
                                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                         <userDefinedRuntimeAttributes>
                                                                             <userDefinedRuntimeAttribute type="string" keyPath="systemColorOfName" value="gridColor"/>
                                                                         </userDefinedRuntimeAttributes>
                                                                     </customView>
+                                                                    <button verticalHuggingPriority="750" misplaced="YES" id="4676">
+                                                                        <rect key="frame" x="616" y="5" width="54" height="19"/>
+                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                        <buttonCell key="cell" type="roundRect" title="Filter" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4677">
+                                                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                            <font key="font" metaFont="smallSystem"/>
+                                                                        </buttonCell>
+                                                                        <connections>
+                                                                            <action selector="filterTable:" target="ki9-Po-bdr" id="eAC-YD-du3"/>
+                                                                        </connections>
+                                                                    </button>
                                                                 </subviews>
                                                             </customView>
                                                         </subviews>
@@ -4596,7 +4596,6 @@ Gw
                 <outlet property="contentViewPane" destination="27" id="6661"/>
                 <outlet property="countText" destination="261" id="262"/>
                 <outlet property="duplicateButton" destination="5178" id="7837"/>
-                <outlet property="filterButton" destination="4676" id="5942"/>
                 <outlet property="filterControllerInstance" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
                 <outlet property="filterRuleEditorContainer" destination="9oo-u0-ndW" id="OZb-jI-CMy"/>
                 <outlet property="filterTableController" destination="UBS-cN-3Af" id="FV7-by-Gy1"/>
@@ -4619,6 +4618,7 @@ Gw
         </customObject>
         <customObject id="ki9-Po-bdr" userLabel="SPTableContentFilter" customClass="SPTableContentFilterController">
             <connections>
+                <outlet property="filterButton" destination="4676" id="9tZ-dW-BR3"/>
                 <outlet property="filterRuleEditor" destination="FF9-z2-9od" id="RW4-XM-XQS"/>
                 <outlet property="tableContentViewBelow" destination="36" id="ZGh-dM-J6C"/>
                 <outlet property="tableDataInstance" destination="4702" id="e69-W6-UwN"/>
@@ -5160,7 +5160,6 @@ Gw
         <image name="NSApplicationIcon" width="128" height="128"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
-        <image name="NSIconViewTemplate" width="10" height="10"/>
         <image name="NSLeftFacingTriangleTemplate" width="9" height="12"/>
         <image name="NSListViewTemplate" width="14" height="10"/>
         <image name="NSRightFacingTriangleTemplate" width="9" height="12"/>
@@ -5172,6 +5171,8 @@ Gw
         <image name="button_edit" width="30" height="22"/>
         <image name="button_edit_mode" width="30" height="22"/>
         <image name="button_edit_mode_selected" width="30" height="22"/>
+        <image name="button_filter" width="30" height="22"/>
+        <image name="button_filter_active" width="30" height="22"/>
         <image name="button_info_pane_show" width="30" height="22"/>
         <image name="button_left" width="30" height="22"/>
         <image name="button_pagination" width="30" height="22"/>

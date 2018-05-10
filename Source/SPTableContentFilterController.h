@@ -41,6 +41,7 @@ NSString * const SPTableContentFilterHeightChangedNotification;
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
 	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet NSView *tableContentViewBelow;
+	IBOutlet NSButton *filterButton;
 
 	NSMutableArray *columns;
 	NSMutableDictionary *contentFilters;
@@ -54,6 +55,8 @@ NSString * const SPTableContentFilterHeightChangedNotification;
 	
 	id target;
 	SEL action;
+
+	BOOL enabled;
 }
 
 /**
@@ -153,5 +156,8 @@ NSString * const SPTableContentFilterHeightChangedNotification;
  */
 @property (assign, nonatomic) id target;
 @property (assign, nonatomic) SEL action;
+
+- (BOOL)isEnabled;
+- (void)setEnabled:(BOOL)enabled;
 
 @end

@@ -69,7 +69,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	
 	IBOutlet SPCopyTable *tableContentView;
 
-	IBOutlet NSButton *filterButton;
 	IBOutlet NSButton *toggleRuleFilterButton;
 	IBOutlet id addButton;
 	IBOutlet id duplicateButton;
@@ -170,7 +169,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 }
 
 #ifdef SP_CODA /* glue */
-@property (assign) id filterButton;
 @property (assign) NSButton* addButton;
 @property (assign) NSButton* duplicateButton;
 @property (assign) NSButton* removeButton;
