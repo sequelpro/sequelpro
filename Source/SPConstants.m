@@ -112,6 +112,7 @@ NSString *SPNullValue                            = @"SPNullValue";
 NSString *SPGlobalResultTableFont                = @"GlobalResultTableFont";
 NSString *SPFilterTableDefaultOperator           = @"FilterTableDefaultOperator";
 NSString *SPFilterTableDefaultOperatorLastItems  = @"FilterTableDefaultOperatorLastItems";
+NSString *SPTableSortDescendingInitially		 = @"TableSortDescendingInitially";
 
 // Favorites Prefpane
 NSString *SPFavorites                            = @"favorites";

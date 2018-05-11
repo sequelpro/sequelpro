@@ -306,6 +306,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	// Init copyTable with necessary information for copying selected rows as SQL INSERT
 	[tableContentView setTableInstance:self withTableData:tableValues withColumns:dataColumns withTableName:selectedTable withConnection:mySQLConnection];
 
+	passedInitialSort = NO;
+
 	// Trigger a data refresh
 	[self loadTableValues];
 
@@ -732,6 +734,13 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		isFiltered = YES;
 	} else {
 		isFiltered = NO;
+	}
+	
+	if (!passedInitialSort && [prefs boolForKey:SPTableSortDescendingInitially])
+	{
+		sortCol = @(0);
+		isDesc = YES;
+		passedInitialSort = YES;
 	}
 
 	// Add sorting details if appropriate

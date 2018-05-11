@@ -117,7 +117,7 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	NSMutableArray *dataColumns, *keys, *oldRow;
 	NSUInteger tableRowsCount, previousTableRowsCount;
 	NSNumber *sortCol;
-	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
+	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit, passedInitialSort;
 	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
 	NSUserDefaults *prefs;
 	NSInteger currentlyEditingRow, maxNumRows;
