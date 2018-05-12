@@ -144,6 +144,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		selectionToRestore = nil;
 		selectionViewportToRestore = NSZeroRect;
 		filtersToRestore = nil;
+		activeFilterToRestore = SPTableContentFilterSourceNone;
 		tableRowsSelectable = YES;
 		isFirstChangeInView = YES;
 
@@ -477,9 +478,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 	// Remove existing columns from the filter table
 	[filterTableController setColumns:nil];
-	// TODO  code smell
-	//...but keep it, if the rule filter is the active one
-	if(activeFilter != SPTableContentFilterSourceRuleFilter) activeFilter = SPTableContentFilterSourceNone;
 #endif
 
 	// Retrieve the field names and types for this table from the data cache. This is used when requesting all data as part
@@ -639,17 +637,19 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[filterControllerInstance setColumns:dataColumns];
 	// Restore preserved filter settings if appropriate and valid
 	[filterControllerInstance restoreSerializedFilters:filtersToRestore];
-	//if we did restore some filters, set filtering enabled
-	if(![filterControllerInstance isEmpty]) {
+	// hide/show the rule filter editor, based on its previous state (so that it says visible when switching tables, if someone has enabled it and vice versa)
+	if(showFilterRuleEditor) {
 		[self setRuleEditorVisible:YES animate:NO];
 		[toggleRuleFilterButton setState:NSOnState];
 	}
 	else {
-		[self setRuleEditorVisible:NO animate:NO]; //immediately hide the filter editor when switching tables
+		[self setRuleEditorVisible:NO animate:NO];
 		[toggleRuleFilterButton setState:NSOffState];
 	}
 	[filterControllerInstance setEnabled:enableInteraction];
 	[toggleRuleFilterButton setEnabled:enableInteraction];
+	// restore the filter to the previously choosen one for the table
+	activeFilter = activeFilterToRestore;
 
 	// Restore page number if limiting is set
 	if ([prefs boolForKey:SPLimitResults]) contentPage = pageToRestore;
@@ -915,8 +915,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		// Filter task came from filter table
 		else if(activeFilter == SPTableContentFilterSourceTableFilter) {
 			[[filterTableController onMainThread] setFilterError:[mySQLConnection lastErrorID]
-			                           message:[mySQLConnection lastErrorMessage]
-			                          sqlstate:[mySQLConnection lastSqlstate]];
+			                                             message:[mySQLConnection lastErrorMessage]
+			                                            sqlstate:[mySQLConnection lastSqlstate]];
 		}
 	} 
 #endif
@@ -1239,22 +1239,25 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 #ifndef SP_CODA
 
+	BOOL resetPaging = NO; // if filtering was triggered by pressing the "Filter" button, reset to page 1
+	
 	// If the filter table is being used - the advanced filter - switch type
 	if(sender == filterTableController) {
 		activeFilter = SPTableContentFilterSourceTableFilter;
+		resetPaging = YES;
 	}
-
 	// If a string was supplied, use a custom query from that URL scheme
 	else if([sender isKindOfClass:[NSString class]] && [(NSString *)sender length]) {
 		if(schemeFilter) SPClear(schemeFilter);
 		schemeFilter = [sender retain];
 		activeFilter = SPTableContentFilterSourceURLScheme;
+		resetPaging = YES;
 	}
-
 	// If a button other than the pagination buttons was used, set the active filter type to
 	// the standard filter field.
-	else if (!senderIsPaginationButton) {
+	else if (sender == filterControllerInstance) {
 		activeFilter = SPTableContentFilterSourceRuleFilter;
+		resetPaging = YES;
 	}
 #endif
 
@@ -1280,16 +1283,17 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	// Select the correct pagination value.
 	// If the filter button was used, or if pagination is disabled, reset to page one
-	if (!senderIsPaginationButton && ([sender isKindOfClass:[NSButton class]] || [sender isKindOfClass:[NSTextField class]] || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0))
+	if (resetPaging || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0) {
 		contentPage = 1;
-
+	}
 	// If the current page is out of bounds, move it within bounds
-	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows)
-		contentPage = ceilf((CGFloat)maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
-
+	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) {
+		contentPage = ceilf((CGFloat) maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
+	}
 	// Otherwise, use the pagination value
-	else
+	else {
 		contentPage = [paginationPageField integerValue];
+	}
 
 	if ([self tableFilterString]) {
 		taskString = NSLocalizedString(@"Filtering table...", @"Filtering table task description");
@@ -1332,7 +1336,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 - (IBAction)toggleRuleEditorVisible:(id)sender
 {
-	[self setRuleEditorVisible:!showFilterRuleEditor animate:YES];
+	BOOL shouldShow = !showFilterRuleEditor;
+	[self setRuleEditorVisible:shouldShow animate:YES];
+	// if this was the active filter before, it no longer can be the active filter when it is hidden
+	if(activeFilter == SPTableContentFilterSourceRuleFilter && !shouldShow) {
+		activeFilter = SPTableContentFilterSourceNone;
+	}
 }
 
 - (void)setRuleEditorVisible:(BOOL)show animate:(BOOL)animate
@@ -2387,17 +2396,19 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 			SPMainQSync(^{
 				[filterControllerInstance restoreSerializedFilters:filterSettings];
 				[self setRuleEditorVisible:YES animate:YES];
+				activeFilter = SPTableContentFilterSourceRuleFilter;
 			});
 			tableFilterRequired = YES;
 		}
 		else {
 			SPMainQSync(^{
 				[self setFiltersToRestore:filterSettings];
-
+				[self setActiveFilterToRestore:SPTableContentFilterSourceRuleFilter];
 				// Attempt to switch to the target table
 				if (![tablesListInstance selectItemWithName:[refDictionary objectForKey:@"table"]]) {
 					NSBeep();
 					[self setFiltersToRestore:nil];
+					[self setActiveFilterToRestore:SPTableContentFilterSourceNone];
 				}
 			});
 		}
@@ -3388,6 +3399,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[self setSelectionToRestore:[self selectionDetailsAllowingIndexSelection:YES]];
 	[self setViewportToRestore:[self viewport]];
 	[self setFiltersToRestore:[self filterSettings]];
+	[self setActiveFilterToRestore:activeFilter];
 }
 
 /**
@@ -3400,6 +3412,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[self setSelectionToRestore:nil];
 	[self setViewportToRestore:NSZeroRect];
 	[self setFiltersToRestore:nil];
+	[self setActiveFilterToRestore:SPTableContentFilterSourceNone];
 }
 
 - (NSData*) filterTableData
@@ -3410,6 +3423,16 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (void)setFilterTableData:(NSData *)arcData;
 {
 	[filterTableController setFilterTableData:arcData];
+}
+
+- (SPTableContentFilterSource)activeFilter
+{
+	return activeFilter;
+}
+
+- (void)setActiveFilterToRestore:(SPTableContentFilterSource)filter
+{
+	activeFilterToRestore = filter;
 }
 
 #pragma mark -
@@ -3469,12 +3492,16 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 - (void)filterRuleEditorPreferredSizeChanged:(NSNotification *)notification
 {
-	[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:YES];
+	if(showFilterRuleEditor) {
+		[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:YES];
+	}
 }
 
 - (void)contentViewSizeChanged:(NSNotification *)notification
 {
-	[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:NO];
+	if(showFilterRuleEditor) {
+		[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:NO];
+	}
 }
 
 /**

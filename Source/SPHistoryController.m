@@ -251,6 +251,7 @@
 	NSRect contentViewport = [[tableContentInstance onMainThread] viewport];
 	NSDictionary *contentFilter = [[tableContentInstance onMainThread] filterSettings];
 	NSData *filterTableData = [[tableContentInstance onMainThread] filterTableData];
+	SPTableContentFilterSource activeFilter = [[tableContentInstance onMainThread] activeFilter];
 	if (!theDatabase) return;
 
 	// If a table is selected, save state information
@@ -261,6 +262,7 @@
 												[NSNumber numberWithUnsignedInteger:contentPageNumber], @"page",
 												[NSValue valueWithRect:contentViewport], @"viewport",
 												[NSNumber numberWithBool:contentSortColIsAsc], @"sortIsAsc",
+												@(activeFilter), @"activeFilter",
 												nil];
 		if (contentSortCol) [contentState setObject:contentSortCol forKey:@"sortCol"];
 		if (contentSelectedRows) [contentState setObject:contentSelectedRows forKey:@"selection"];
@@ -329,6 +331,7 @@
 										[NSNumber numberWithBool:contentSortColIsAsc], @"contentSortColIsAsc",
 										[NSNumber numberWithInteger:contentPageNumber], @"contentPageNumber",
 										[NSValue valueWithRect:contentViewport], @"contentViewport",
+										@(activeFilter), @"activeFilter",
 										nil];
 	if (contentSortCol) [newEntry setObject:contentSortCol forKey:@"contentSortCol"];
 	if (contentSelectedRows) [newEntry setObject:contentSelectedRows forKey:@"contentSelection"];
@@ -387,6 +390,7 @@
 		[tableContentInstance setSelectionToRestore:[historyEntry objectForKey:@"contentSelection"]];
 		[tableContentInstance setViewportToRestore:[[historyEntry objectForKey:@"contentViewport"] rectValue]];
 		[tableContentInstance setFiltersToRestore:[historyEntry objectForKey:@"contentFilterV2"]];
+		[tableContentInstance setActiveFilterToRestore:(SPTableContentFilterSource)[[historyEntry objectForKey:@"activeFilter"] integerValue]];
 
 		// If the database, table, and view are the same and content - just trigger a table reload (filters)
 		if (
@@ -503,6 +507,7 @@ abort_entry_load:
 	[tableContentInstance setSelectionToRestore:[contentState objectForKey:@"selection"]];
 	[tableContentInstance setViewportToRestore:[[contentState objectForKey:@"viewport"] rectValue]];
 	[tableContentInstance setFiltersToRestore:[contentState objectForKey:@"filterV2"]];
+	[tableContentInstance setActiveFilterToRestore:(SPTableContentFilterSource)[[contentState objectForKey:@"activeFilter"] integerValue]];
 }
 
 #pragma mark -
