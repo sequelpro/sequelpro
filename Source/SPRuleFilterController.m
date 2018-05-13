@@ -1,5 +1,5 @@
 //
-//  SPTableContentFilterController.m
+//  SPRuleFilterController.m
 //  sequel-pro
 //
 //  Created by Max Lohrmann on 04.05.18.
@@ -28,7 +28,7 @@
 //
 //  More info at <https://github.com/sequelpro/sequelpro>
 
-#import "SPTableContentFilterController.h"
+#import "SPRuleFilterController.h"
 #import "SPQueryController.h"
 #import "SPDatabaseDocument.h"
 #import "RegexKitLite.h"
@@ -44,7 +44,7 @@ typedef NS_ENUM(NSInteger, RuleNodeType) {
 	RuleNodeTypeConnector,
 };
 
-NSString * const SPTableContentFilterHeightChangedNotification = @"SPTableContentFilterHeightChanged";
+NSString * const SPRuleFilterHeightChangedNotification = @"SPRuleFilterHeightChanged";
 
 /**
  * The type of filter rule that the current item represents.
@@ -164,7 +164,7 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 
 #pragma mark -
 
-@interface SPTableContentFilterController () <NSRuleEditorDelegate>
+@interface SPRuleFilterController () <NSRuleEditorDelegate>
 
 @property (readwrite, assign, nonatomic) CGFloat preferredHeight;
 
@@ -190,7 +190,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 @end
 
-@implementation SPTableContentFilterController
+@implementation SPRuleFilterController
 
 @synthesize model = model;
 @synthesize preferredHeight = preferredHeight;
@@ -505,7 +505,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	}
 	if(wantsHeight != preferredHeight) {
 		[self setPreferredHeight:wantsHeight];
-		[[NSNotificationCenter defaultCenter] postNotificationName:SPTableContentFilterHeightChangedNotification object:self];
+		[[NSNotificationCenter defaultCenter] postNotificationName:SPRuleFilterHeightChangedNotification object:self];
 	}
 }
 

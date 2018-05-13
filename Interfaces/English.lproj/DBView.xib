@@ -4596,7 +4596,7 @@ Gw
                 <outlet property="contentViewPane" destination="27" id="6661"/>
                 <outlet property="countText" destination="261" id="262"/>
                 <outlet property="duplicateButton" destination="5178" id="7837"/>
-                <outlet property="filterControllerInstance" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
+                <outlet property="ruleFilterController" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
                 <outlet property="filterRuleEditorContainer" destination="9oo-u0-ndW" id="OZb-jI-CMy"/>
                 <outlet property="filterTableController" destination="UBS-cN-3Af" id="FV7-by-Gy1"/>
                 <outlet property="multipleLineEditingButton" destination="5201" id="5203"/>
@@ -4616,7 +4616,7 @@ Gw
                 <outlet property="toggleRuleFilterButton" destination="LYg-Ux-Lph" id="9eY-dL-AhC"/>
             </connections>
         </customObject>
-        <customObject id="ki9-Po-bdr" userLabel="SPTableContentFilter" customClass="SPTableContentFilterController">
+        <customObject id="ki9-Po-bdr" userLabel="SPRuleFilter" customClass="SPRuleFilterController">
             <connections>
                 <outlet property="filterButton" destination="4676" id="9tZ-dW-BR3"/>
                 <outlet property="filterRuleEditor" destination="FF9-z2-9od" id="RW4-XM-XQS"/>

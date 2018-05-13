@@ -56,7 +56,7 @@
 #import "SPThreadAdditions.h"
 #import "SPTableFilterParser.h"
 #import "SPFunctions.h"
-#import "SPTableContentFilterController.h"
+#import "SPRuleFilterController.h"
 #import "SPFilterTableController.h"
 
 #import <pthread.h>
@@ -235,20 +235,20 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	// Add observer to change view sizes with filter rule editor
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(filterRuleEditorPreferredSizeChanged:)
-	                                             name:SPTableContentFilterHeightChangedNotification
-	                                           object:filterControllerInstance];
+	                                             name:SPRuleFilterHeightChangedNotification
+	                                           object:ruleFilterController];
 	[contentAreaContainer setPostsFrameChangedNotifications:YES];
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(contentViewSizeChanged:)
 	                                             name:NSViewFrameDidChangeNotification
 	                                           object:contentAreaContainer];
-	[filterControllerInstance setTarget:self];
-	[filterControllerInstance setAction:@selector(filterTable:)];
+	[ruleFilterController setTarget:self];
+	[ruleFilterController setAction:@selector(filterTable:)];
 	
 	[filterTableController setTarget:self];
 	[filterTableController setAction:@selector(filterTable:)];
 	//TODO This is only needed for 10.6 compatibility
-	scrollViewHasRubberbandScrolling = [[[filterControllerInstance view] enclosingScrollView] respondsToSelector:@selector(setVerticalScrollElasticity:)];
+	scrollViewHasRubberbandScrolling = [[[ruleFilterController view] enclosingScrollView] respondsToSelector:@selector(setVerticalScrollElasticity:)];
 
 	// Add observers for document task activity
 	[[NSNotificationCenter defaultCenter] addObserver:self
@@ -362,7 +362,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[self setRuleEditorVisible:NO animate:NO];
 	[toggleRuleFilterButton setEnabled:NO];
 	[toggleRuleFilterButton setState:NSOffState];
-	[filterControllerInstance setColumns:nil];
+	[ruleFilterController setColumns:nil];
 
 	// Disable pagination
 	[paginationPreviousButton setEnabled:NO];
@@ -634,9 +634,9 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	[filterTableController setColumns:dataColumns];
 	// Enable and initialize filter fields (with tags for position of menu item and field position)
-	[filterControllerInstance setColumns:dataColumns];
+	[ruleFilterController setColumns:dataColumns];
 	// Restore preserved filter settings if appropriate and valid
-	[filterControllerInstance restoreSerializedFilters:filtersToRestore];
+	[ruleFilterController restoreSerializedFilters:filtersToRestore];
 	// hide/show the rule filter editor, based on its previous state (so that it says visible when switching tables, if someone has enabled it and vice versa)
 	if(showFilterRuleEditor) {
 		[self setRuleEditorVisible:YES animate:NO];
@@ -646,7 +646,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		[self setRuleEditorVisible:NO animate:NO];
 		[toggleRuleFilterButton setState:NSOffState];
 	}
-	[filterControllerInstance setEnabled:enableInteraction];
+	[ruleFilterController setEnabled:enableInteraction];
 	[toggleRuleFilterButton setEnabled:enableInteraction];
 	// restore the filter to the previously choosen one for the table
 	activeFilter = activeFilterToRestore;
@@ -1014,7 +1014,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		BOOL caseSensitive = (([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask) > 0);
 
 		NSError *err = nil;
-		NSString *filter = [filterControllerInstance sqlWhereExpressionWithBinary:caseSensitive error:&err];
+		NSString *filter = [ruleFilterController sqlWhereExpressionWithBinary:caseSensitive error:&err];
 		if(err) {
 			SPOnewayAlertSheet(
 				NSLocalizedString(@"Invalid Filter", @"table content : apply filter : invalid filter message title"),
@@ -1256,7 +1256,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	}
 	// If a button other than the pagination buttons was used, set the active filter type to
 	// the standard filter field.
-	else if (sender == filterControllerInstance) {
+	else if (sender == ruleFilterController) {
 		activeFilter = SPTableContentFilterSourceRuleFilter;
 		resetPaging = YES;
 	}
@@ -1349,12 +1349,12 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 {
 	// we can't change the state of the button here, because the mouse click already changed it
 	if(show) {
-		if([filterControllerInstance isEmpty]) {
-			[filterControllerInstance addFilterExpression];
+		if([ruleFilterController isEmpty]) {
+			[ruleFilterController addFilterExpression];
 			// the sizing will be updated automatically by adding a row
 		}
 		else {
-			[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:animate];
+			[self updateFilterRuleEditorSize:[ruleFilterController preferredHeight] animate:animate];
 		}
 	}
 	else {
@@ -2388,14 +2388,14 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		else if(navigateAsHex) filterComparison = @"= (Hex String)";
 
 		// Store the filter details to use when loading the target table
-		NSDictionary *filterSettings = [SPTableContentFilterController makeSerializedFilterForColumn:[refDictionary objectForKey:@"column"]
+		NSDictionary *filterSettings = [SPRuleFilterController makeSerializedFilterForColumn:[refDictionary objectForKey:@"column"]
 		                                                                                    operator:filterComparison
 		                                                                                      values:@[targetFilterValue]];
 
 		// If the link is within the current table, apply filter settings manually
 		if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {
 			SPMainQSync(^{
-				[filterControllerInstance restoreSerializedFilters:filterSettings];
+				[ruleFilterController restoreSerializedFilters:filterSettings];
 				[self setRuleEditorVisible:YES animate:YES];
 				activeFilter = SPTableContentFilterSourceRuleFilter;
 			});
@@ -3337,7 +3337,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
  */
 - (NSDictionary *) filterSettings
 {
-	return [filterControllerInstance serializedFilter];
+	return [ruleFilterController serializedFilter];
 }
 
 /**
@@ -3445,7 +3445,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	NSRect contentAreaRect = [contentAreaContainer frame];
 	CGFloat availableHeight = contentAreaRect.size.height;
 
-	NSRect ruleEditorRect = [[[filterControllerInstance view] enclosingScrollView] frame];
+	NSRect ruleEditorRect = [[[ruleFilterController view] enclosingScrollView] frame];
 
 	//adjust for the UI elements below the rule editor, but only if the view height should not be 0 (ie. hidden)
 	CGFloat containerRequestedHeight =  requestedHeight ? requestedHeight + ruleEditorRect.origin.y : 0;
@@ -3472,18 +3472,18 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		[NSAnimationContext beginGrouping];
 		[[tableContentContainer animator] setFrame:bottomContainerRect];
 		[[filterRuleEditorContainer animator] setFrame:topContainerRect];
-		[[[[filterControllerInstance view] enclosingScrollView] animator] setFrame:ruleEditorRect];
+		[[[[ruleFilterController view] enclosingScrollView] animator] setFrame:ruleEditorRect];
 		[NSAnimationContext endGrouping];
 	}
 	else {
 		[tableContentContainer setFrameSize:bottomContainerRect.size];
 		[filterRuleEditorContainer setFrame:topContainerRect];
-		[[[filterControllerInstance view] enclosingScrollView] setFrame:ruleEditorRect];
+		[[[ruleFilterController view] enclosingScrollView] setFrame:ruleEditorRect];
 	}
 
 	//disable rubberband scrolling as long as there is nothing to scroll
 	if(scrollViewHasRubberbandScrolling) {
-		NSScrollView *filterControllerScroller = [[filterControllerInstance view] enclosingScrollView];
+		NSScrollView *filterControllerScroller = [[ruleFilterController view] enclosingScrollView];
 		if (ruleEditorRect.size.height >= requestedHeight) {
 			[filterControllerScroller setVerticalScrollElasticity:NSScrollElasticityNone];
 		} else {
@@ -3495,14 +3495,14 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 - (void)filterRuleEditorPreferredSizeChanged:(NSNotification *)notification
 {
 	if(showFilterRuleEditor) {
-		[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:YES];
+		[self updateFilterRuleEditorSize:[ruleFilterController preferredHeight] animate:YES];
 	}
 }
 
 - (void)contentViewSizeChanged:(NSNotification *)notification
 {
 	if(showFilterRuleEditor) {
-		[self updateFilterRuleEditorSize:[filterControllerInstance preferredHeight] animate:NO];
+		[self updateFilterRuleEditorSize:[ruleFilterController preferredHeight] animate:NO];
 	}
 }
 
@@ -3627,7 +3627,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	[removeButton setEnabled:NO];
 	[duplicateButton setEnabled:NO];
 	[reloadButton setEnabled:NO];
-	[filterControllerInstance setEnabled:NO];
+	[ruleFilterController setEnabled:NO];
 	[toggleRuleFilterButton setEnabled:NO];
 	tableRowsSelectable = NO;
 	[paginationPreviousButton setEnabled:NO];
@@ -3663,7 +3663,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		}
 	}
 
-	[filterControllerInstance setEnabled:(!![selectedTable length])];
+	[ruleFilterController setEnabled:(!![selectedTable length])];
 	[toggleRuleFilterButton setEnabled:(!![selectedTable length])];
 	tableRowsSelectable = YES;
 }
@@ -3931,7 +3931,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 {
 	[self setRuleEditorVisible:YES animate:YES];
 	[toggleRuleFilterButton setState:NSOnState];
-	[filterControllerInstance focusFirstInputField];
+	[ruleFilterController focusFirstInputField];
 }
 
 #endif

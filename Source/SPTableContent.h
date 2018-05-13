@@ -43,7 +43,7 @@
 @class SPDatabaseDocument;
 @class SPTablesList;
 @class SPTableStructure;
-@class SPTableContentFilterController;
+@class SPRuleFilterController;
 @class SPFilterTableController;
 
 typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
@@ -96,7 +96,7 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 #ifndef SP_CODA
 	IBOutlet NSStepper *paginationPageStepper;
 
-	IBOutlet SPTableContentFilterController *filterControllerInstance;
+	IBOutlet SPRuleFilterController *ruleFilterController;
 	IBOutlet SPFilterTableController *filterTableController;
 	BOOL scrollViewHasRubberbandScrolling;
 #endif
