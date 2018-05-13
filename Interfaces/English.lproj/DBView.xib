@@ -4636,7 +4636,6 @@ Gw
                 <outlet property="singleProgressSheet" destination="6125" id="6139"/>
                 <outlet property="singleProgressText" destination="6130" id="6140"/>
                 <outlet property="singleProgressTitle" destination="6132" id="6238"/>
-                <outlet property="tableContentInstance" destination="67" id="1025"/>
                 <outlet property="tableDataInstance" destination="4702" id="4713"/>
                 <outlet property="tableDocumentInstance" destination="-2" id="534"/>
                 <outlet property="tableSourceInstance" destination="69" id="1172"/>

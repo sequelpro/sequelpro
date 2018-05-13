@@ -30,6 +30,13 @@
 //  More info at <https://github.com/sequelpro/sequelpro>
 
 @class SPMySQLConnection;
+@class SPFieldMapperController;
+@class SPFileHandle;
+@class SPDatabaseDocument;
+@class SPCustomQuery;
+@class SPTableData;
+@class SPTableStructure;
+@class SPTablesList;
 
 typedef enum {
 	SPFieldMapperInProgress = 1,
@@ -37,16 +44,14 @@ typedef enum {
 	SPFieldMapperCancelled = 3
 } SPFieldMapperSheetStatus;
 
-@class SPFieldMapperController, SPFileHandle;
-
 @interface SPDataImport : NSObject <NSOpenSavePanelDelegate>
 {
-	IBOutlet id tableDocumentInstance;
-	IBOutlet id tablesListInstance;
-	IBOutlet id tableSourceInstance;
-	IBOutlet id tableContentInstance;
-	IBOutlet id tableDataInstance;
-	IBOutlet id customQueryInstance;
+#warning Outlets belong to multiple xib files!
+	IBOutlet SPDatabaseDocument *tableDocumentInstance;
+	IBOutlet SPTablesList *tablesListInstance;
+	IBOutlet SPTableStructure *tableSourceInstance;
+	IBOutlet SPTableData *tableDataInstance;
+	IBOutlet SPCustomQuery *customQueryInstance;
 
 	IBOutlet id importView;
 	IBOutlet id importTabView;
@@ -55,7 +60,6 @@ typedef enum {
 	IBOutlet id importFieldsEnclosedField;
 	IBOutlet id importFieldsEscapedField;
 	IBOutlet id importLinesTerminatedField;
-	IBOutlet id importFieldMapperSheetWindow;
 
 	IBOutlet NSPopUpButton *importFormatPopup;
 	IBOutlet NSPopUpButton *importEncodingPopup;
@@ -67,21 +71,13 @@ typedef enum {
 	
 	IBOutlet NSTextView *importFromClipboardTextView;
 	
-	IBOutlet id addDropTableSwitch;
-	IBOutlet id addCreateTableSwitch;
-	IBOutlet id addTableContentSwitch;
-	IBOutlet id addErrorsSwitch;
-	IBOutlet id sqlFullStreamingSwitch;
-	IBOutlet id sqlCompressionSwitch;
-	IBOutlet id csvFullStreamingSwitch;
-	IBOutlet id multiCSVFullStreamingSwitch;
-	IBOutlet id multiXMLFullStreamingSwitch;
-	IBOutlet id errorsSheet;
-	IBOutlet id errorsView;
-	IBOutlet id singleProgressSheet;
-	IBOutlet id singleProgressBar;
-	IBOutlet id singleProgressTitle;
-	IBOutlet id singleProgressText;
+	IBOutlet NSWindow *errorsSheet;
+	IBOutlet NSTextView *errorsView;
+
+	IBOutlet NSPanel *singleProgressSheet;
+	IBOutlet NSProgressIndicator *singleProgressBar;
+	IBOutlet NSTextField *singleProgressTitle;
+	IBOutlet NSTextField *singleProgressText;
 
 	SPMySQLConnection *mySQLConnection;
 
@@ -108,7 +104,6 @@ typedef enum {
 	BOOL importMethodIsUpdate;
 	BOOL importIntoNewTable;
 
-	NSUInteger exportMode;
 	NSUserDefaults *prefs;
 	BOOL progressCancelled;
 	BOOL _mainNibLoaded;
@@ -119,8 +114,6 @@ typedef enum {
 	NSMutableIndexSet *bitFieldsMapIndex;
 	NSMutableArray *nullableNumericFields;
 	NSMutableIndexSet *nullableNumericFieldsMapIndex;
-
-	NSSavePanel *currentExportPanel;
 }
 
 // IBAction methods

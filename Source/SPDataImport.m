@@ -210,9 +210,9 @@
 
 	[NSApp beginSheet:importFromClipboardSheet
 	   modalForWindow:[tableDocumentInstance parentWindow]
-		modalDelegate:self
+	    modalDelegate:self
 	   didEndSelector:@selector(importFromClipboardSheetDidEnd:returnCode:contextInfo:)
-		  contextInfo:nil];
+	      contextInfo:nil];
 }
 
 /**
@@ -407,7 +407,11 @@
 		[singleProgressBar startAnimation:self];
 		
 		// Open the progress sheet
-		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:singleProgressSheet
+		   modalForWindow:[tableDocumentInstance parentWindow]
+		    modalDelegate:nil
+		   didEndSelector:NULL
+		      contextInfo:NULL];
 		[singleProgressSheet makeKeyWindow];
 	});
 
@@ -695,12 +699,12 @@
 	
 	// Re-query the structure of all databases in the background
 	[[tableDocumentInstance databaseStructureRetrieval] queryDbStructureInBackgroundWithUserInfo:@{@"forceUpdate" : @YES}];
-	
-    // Import finished Growl notification
-    [[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished" 
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
-													  document:tableDocumentInstance
-                                              notificationName:@"Import Finished"];
+
+	// Import finished Growl notification
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:@"Import Finished"
+	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing growl notification"), [filename lastPathComponent]]
+	                                                  document:tableDocumentInstance
+	                                          notificationName:@"Import Finished"];
 }
 
 #pragma mark -
@@ -791,7 +795,11 @@
 		[singleProgressBar startAnimation:self];
 		
 		// Open the progress sheet
-		[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:self didEndSelector:nil contextInfo:nil];
+		[NSApp beginSheet:singleProgressSheet
+		   modalForWindow:[tableDocumentInstance parentWindow]
+		    modalDelegate:nil
+		   didEndSelector:NULL
+		      contextInfo:NULL];
 		[singleProgressSheet makeKeyWindow];
 	});
 
@@ -973,7 +981,11 @@
 					[singleProgressBar setMaxValue:fileTotalLength];
 					[singleProgressBar setIndeterminate:NO];
 					[singleProgressBar startAnimation:self];
-					[NSApp beginSheet:singleProgressSheet modalForWindow:[tableDocumentInstance parentWindow] modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+					[NSApp beginSheet:singleProgressSheet
+					   modalForWindow:[tableDocumentInstance parentWindow]
+					    modalDelegate:nil
+					   didEndSelector:NULL
+					      contextInfo:NULL];
 					[singleProgressSheet makeKeyWindow];
 				});
 
@@ -1210,10 +1222,10 @@
 	}
 	
 	// Import finished Growl notification
-	[[SPGrowlController sharedGrowlController] notifyWithTitle:NSLocalizedString(@"Import Finished" , @"title for finished importing growl notification")
-                                                   description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@",@"description for finished importing growl notification"), [filename lastPathComponent]] 
-													  document:tableDocumentInstance
-                                              notificationName:@"Import Finished"];
+	[[SPGrowlController sharedGrowlController] notifyWithTitle:NSLocalizedString(@"Import Finished", @"title for finished importing growl notification")
+	                                               description:[NSString stringWithFormat:NSLocalizedString(@"Finished importing %@", @"description for finished importing growl notification"), [filename lastPathComponent]]
+	                                                  document:tableDocumentInstance
+	                                          notificationName:@"Import Finished"];
 
 	SPMainQSync(^{
 		if(importIntoNewTable) {
@@ -1294,10 +1306,10 @@
 		
 		// Show field mapper sheet and set the focus to it
 		[NSApp beginSheet:[fieldMapperController window]
-						  modalForWindow:[tableDocumentInstance parentWindow]
-						   modalDelegate:self
-						  didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
-							 contextInfo:nil];
+		   modalForWindow:[tableDocumentInstance parentWindow]
+		    modalDelegate:self
+		   didEndSelector:@selector(fieldMapperDidEndSheet:returnCode:contextInfo:)
+		      contextInfo:NULL];
 		
 		[[fieldMapperController window] makeKeyWindow];
 	});
@@ -1719,11 +1731,11 @@ cleanup:
 	}
 	
 	[errorsView setString:message];
-	[NSApp beginSheet:errorsSheet 
-	   modalForWindow:[tableDocumentInstance parentWindow] 
-		modalDelegate:self 
-	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:) 
-		  contextInfo:nil];
+	[NSApp beginSheet:errorsSheet
+	   modalForWindow:[tableDocumentInstance parentWindow]
+	    modalDelegate:self
+	   didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+	      contextInfo:NULL];
 	[errorsSheet makeKeyWindow];
 }
 
