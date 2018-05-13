@@ -58,9 +58,9 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 @interface SPTableContent : NSObject <NSTableViewDelegate, NSTableViewDataSource, NSComboBoxDataSource, NSComboBoxDelegate, SPDatabaseContentViewDelegate>
 {	
 	IBOutlet SPDatabaseDocument *tableDocumentInstance;
-	IBOutlet id tablesListInstance;
+	IBOutlet SPTablesList *tablesListInstance;
 	IBOutlet SPTableData* tableDataInstance;
-	IBOutlet id tableSourceInstance;
+	IBOutlet SPTableStructure *tableSourceInstance;
 
 #ifndef SP_CODA
 	IBOutlet SPTableInfo *tableInfoInstance;
@@ -70,16 +70,13 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	IBOutlet SPCopyTable *tableContentView;
 
 	IBOutlet NSButton *toggleRuleFilterButton;
-	IBOutlet id addButton;
-	IBOutlet id duplicateButton;
-	IBOutlet id removeButton;
-	IBOutlet id reloadButton;
+	IBOutlet NSButton *addButton;
+	IBOutlet NSButton *duplicateButton;
+	IBOutlet NSButton *removeButton;
+	IBOutlet NSButton *reloadButton;
 #ifndef SP_CODA
 	IBOutlet NSButton *multipleLineEditingButton;
 	IBOutlet NSTextField *countText;
-	IBOutlet id limitRowsField;
-	IBOutlet id limitRowsButton;
-	IBOutlet id limitRowsStepper;
 #endif
 
 	IBOutlet NSButton *paginationPreviousButton;
@@ -112,15 +109,27 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	NSMutableArray *nibObjectsToRelease;
 #endif
 
-	NSString *selectedTable, *usedQuery;
+	NSString *selectedTable;
+	NSString *usedQuery;
 	SPDataStorage *tableValues;
-	NSMutableArray *dataColumns, *keys, *oldRow;
-	NSUInteger tableRowsCount, previousTableRowsCount;
+	NSMutableArray *dataColumns;
+	NSMutableArray *keys;
+	NSMutableArray *oldRow;
+	NSUInteger tableRowsCount;
+	NSUInteger previousTableRowsCount;
 	NSNumber *sortCol;
-	BOOL isEditingRow, isEditingNewRow, isSavingRow, isDesc, setLimit;
-	BOOL isFiltered, isLimited, isInterruptedLoad, maxNumRowsIsEstimate;
+	BOOL isEditingRow;
+	BOOL isEditingNewRow;
+	BOOL isSavingRow;
+	BOOL isDesc;
+	BOOL setLimit;
+	BOOL isFiltered;
+	BOOL isLimited;
+	BOOL isInterruptedLoad;
+	BOOL maxNumRowsIsEstimate;
 	NSUserDefaults *prefs;
-	NSInteger currentlyEditingRow, maxNumRows;
+	NSInteger currentlyEditingRow;
+	NSInteger maxNumRows;
 
 	NSUInteger contentPage;
 
@@ -142,7 +151,10 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 #endif
 
 	NSTimer *tableLoadTimer;
-	NSUInteger tableLoadInterfaceUpdateInterval, tableLoadTimerTicksSinceLastUpdate, tableLoadLastRowCount, tableLoadTargetRowCount;
+	NSUInteger tableLoadInterfaceUpdateInterval;
+	NSUInteger tableLoadTimerTicksSinceLastUpdate;
+	NSUInteger tableLoadLastRowCount;
+	NSUInteger tableLoadTargetRowCount;
 
 	NSArray *cqColumnDefinition;
 	BOOL isFirstChangeInView;
