@@ -33,7 +33,6 @@
 #import "RegexKitLite.h"
 #import "SPQueryController.h"
 #import "SPDatabaseDocument.h"
-#import "SPTableContent.h"
 #import "SPConnectionController.h"
 #import "SPSplitView.h"
 #import "SPAppController.h"
@@ -218,6 +217,7 @@ static NSString *SPExportFilterAction = @"SPExportFilter";
  */
 - (id)customQueryInstance
 {
+#warning private ivar accessed from outside
 	return [tableDocumentInstance valueForKey:@"customQueryInstance"];
 }
 

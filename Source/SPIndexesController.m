@@ -31,7 +31,6 @@
 #import "SPIndexesController.h"
 #import "SPAlertSheets.h"
 #import "SPServerSupport.h"
-#import "SPTableContent.h"
 #import "SPTableData.h"
 #import "SPDatabaseDocument.h"
 #import "SPTablesList.h"

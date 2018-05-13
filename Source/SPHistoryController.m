@@ -58,6 +58,7 @@
 
 - (void) awakeFromNib
 {
+#warning private ivar accessed from outside
 	tableContentInstance = [theDocument valueForKey:@"tableContentInstance"];
 	tablesListInstance = [theDocument valueForKey:@"tablesListInstance"];
 	toolbarItemVisible = NO;

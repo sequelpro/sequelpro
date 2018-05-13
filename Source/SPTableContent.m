@@ -1809,10 +1809,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	if (![tableContentView numberOfSelectedRows]) return;
 
 	NSAlert *alert = [NSAlert alertWithMessageText:@""
-									 defaultButton:NSLocalizedString(@"Delete", @"delete button")
-								   alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
-									   otherButton:nil
-						 informativeTextWithFormat:@""];
+	                                 defaultButton:NSLocalizedString(@"Delete", @"delete button")
+	                               alternateButton:NSLocalizedString(@"Cancel", @"cancel button")
+	                                   otherButton:nil
+	                     informativeTextWithFormat:@""];
 
 	[alert setAlertStyle:NSCriticalAlertStyle];
 
@@ -1869,7 +1869,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 /**
  * Perform the requested row deletion action.
  */
-- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(NSString *)contextInfo
+- (void)removeRowSheetDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 {
 	NSMutableIndexSet *selectedRows = [NSMutableIndexSet indexSet];
 	NSString *wherePart;
@@ -2389,8 +2389,8 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 		// Store the filter details to use when loading the target table
 		NSDictionary *filterSettings = [SPRuleFilterController makeSerializedFilterForColumn:[refDictionary objectForKey:@"column"]
-		                                                                                    operator:filterComparison
-		                                                                                      values:@[targetFilterValue]];
+		                                                                            operator:filterComparison
+		                                                                              values:@[targetFilterValue]];
 
 		// If the link is within the current table, apply filter settings manually
 		if ([[refDictionary objectForKey:@"table"] isEqualToString:selectedTable]) {

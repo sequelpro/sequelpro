@@ -34,7 +34,6 @@
 #import "SPTablesList.h"
 #import "SPTableStructure.h"
 #import "SPDatabaseStructure.h"
-#import "SPTableContent.h"
 #import "SPCustomQuery.h"
 #import "SPGrowlController.h"
 #import "SPSQLParser.h"
