@@ -165,6 +165,7 @@ static void *FilterTableKVOContext = &FilterTableKVOContext;
 	[self setFilterError:0 message:nil sqlstate:nil];
 
 	if(dataColumns) {
+		CGFloat totalWidth = 0;
 		// Add the new columns to the filterTable
 		for (NSDictionary *columnDefinition in dataColumns ) {
 			// Set up column for filterTable
@@ -175,6 +176,10 @@ static void *FilterTableKVOContext = &FilterTableKVOContext;
 			[filterDataCell setEditable:YES];
 			[filterDataCell setLineBreakMode:NSLineBreakByTruncatingTail]; // add ellipsis for long values (default is to simply hide words)
 			[filterCol setDataCell:filterDataCell];
+			NSSize headerSize = [[[filterCol headerCell] attributedStringValue] size];
+			CGFloat headerInitialWidth = headerSize.width + 5.0;
+			[filterCol setWidth:headerInitialWidth];
+			totalWidth += headerInitialWidth;
 			[filterTableView addTableColumn:filterCol];
 			[filterCol release];
 
@@ -184,6 +189,9 @@ static void *FilterTableKVOContext = &FilterTableKVOContext;
 				[NSMutableArray arrayWithObjects:@"", @"", @"", @"", @"", @"", @"", @"", @"", @"", nil], SPTableContentFilterKey,
 					nil] forKey:[columnDefinition objectForKey:@"datacolumnindex"]];
 		}
+
+		// if the width of all columns is still less than the width of the table view resize them uniformly once to take up all horizontal space
+		if(totalWidth < [[filterTableView enclosingScrollView] contentSize].width) [filterTableView sizeToFit];
 	}
 
 	[filterTableView reloadData];
