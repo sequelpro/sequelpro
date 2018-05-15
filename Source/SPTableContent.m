@@ -142,9 +142,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		isWorking = NO;
 		
 		pthread_mutex_init(&tableValuesLock, NULL);
-#ifndef SP_CODA
-		nibObjectsToRelease = [[NSMutableArray alloc] init];
-#endif
 
 		tableValues       = [[SPDataStorage alloc] init];
 		dataColumns       = [[NSMutableArray alloc] init];
@@ -4649,8 +4646,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	SPClear(dataColumns);
 	SPClear(oldRow);
 #ifndef SP_CODA
-	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
-	SPClear(nibObjectsToRelease);
 	SPClear(paginationPopover);
 	SPClear(paginationViewController);
 

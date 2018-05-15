@@ -102,9 +102,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	BOOL _mainNibLoaded;
 	BOOL isWorking;
 	pthread_mutex_t tableValuesLock;
-#ifndef SP_CODA
-	NSMutableArray *nibObjectsToRelease;
-#endif
 
 	NSString *selectedTable;
 	NSString *usedQuery;
