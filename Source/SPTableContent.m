@@ -69,6 +69,36 @@
  */
 static void *TableContentKVOContext = &TableContentKVOContext;
 
+/**
+ * TODO:
+ * This class is a temporary workaround, because before SPTableContent was both a child class in one xib
+ * and an owner class in another xib, which is bad style and causes other complications.
+ */
+@interface ContentPaginationViewController : NSViewController
+{
+	id target;
+	SEL action;
+
+	NSNumber *page;
+	NSNumber *maxPage;
+
+	IBOutlet NSButton *paginationGoButton;
+	IBOutlet NSTextField *paginationPageField;
+	IBOutlet NSStepper *paginationPageStepper;
+}
+- (IBAction)paginationGoAction:(id)sender;
+- (void)makeInputFirstResponder;
+- (BOOL)isFirstResponderInside;
+
+@property (assign, nonatomic) id target;
+@property (assign, nonatomic) SEL action;
+
+// IB Bindings
+@property (copy, nonatomic) NSNumber *page;
+@property (copy, nonatomic) NSNumber *maxPage;
+
+@end
+
 @interface SPTableContent ()
 
 - (BOOL)cancelRowEditing;
@@ -93,7 +123,6 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 @synthesize addButton;
 @synthesize duplicateButton;
 @synthesize paginationNextButton;
-@synthesize paginationPageField;
 @synthesize paginationPreviousButton;
 @synthesize reloadButton;
 @synthesize removeButton;
@@ -127,6 +156,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 #ifndef SP_CODA
 		activeFilter               = SPTableContentFilterSourceNone;
 		schemeFilter               = nil;
+		paginationViewController   = [[ContentPaginationViewController alloc] init]; // the view itself is lazily loaded
 		paginationPopover          = nil;
 #endif
 
@@ -189,18 +219,9 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	// Set the double-click action in blank areas of the table to create new rows
 	[tableContentView setEmptyDoubleClickAction:@selector(addRow:)];
 
-	// Load the pagination view, keeping references to the top-level objects for later release
-	NSArray *paginationViewTopLevelObjects = nil;
-	NSNib *nibLoader = [[NSNib alloc] initWithNibNamed:@"ContentPaginationView" bundle:[NSBundle mainBundle]];
-	
-	if (![nibLoader instantiateNibWithOwner:self topLevelObjects:&paginationViewTopLevelObjects]) {
-		NSLog(@"Content pagination nib could not be loaded; pagination will not function correctly.");
-	} 
-	else {
-		[nibObjectsToRelease addObjectsFromArray:paginationViewTopLevelObjects];
-	}
-	
-	[nibLoader release];
+	[paginationViewController setTarget:self];
+	[paginationViewController setAction:@selector(navigatePaginationFromButton:)];
+	[paginationViewController view]; // make sure the nib is actually loaded
 	
 	//let's see if we can use the NSPopover (10.7+) or have to make do with our legacy clone.
 	//this is using reflection right now, as our SDK is 10.8 but our minimum supported version is 10.6
@@ -222,7 +243,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		paginationViewFrame.origin.y = paginationButtonFrame.origin.y + paginationButtonFrame.size.height - 2;
 		paginationViewFrame.size.height = 0;
 		[paginationView setFrame:paginationViewFrame];
-		[contentViewPane addSubview:paginationView];
+		[[paginationButton superview] addSubview:paginationView];
 	}
 #endif
 
@@ -443,7 +464,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		if (newTableName) selectedTable = [[NSString alloc] initWithString:newTableName];
 		previousTableRowsCount = 0;
 		contentPage = 1;
-		[paginationPageField setStringValue:@"1"];
+		[paginationViewController setPage:@1];
 
 		// Clear the selection
 		[tableContentView deselectAll:self];
@@ -1229,7 +1250,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 {
 	BOOL senderIsPaginationButton = (sender == paginationPreviousButton || sender == paginationNextButton
 #ifndef SP_CODA
-		|| sender == paginationGoButton
+		|| sender == paginationViewController
 #endif
 		);
 
@@ -1284,16 +1305,17 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	// Select the correct pagination value.
 	// If the filter button was used, or if pagination is disabled, reset to page one
-	if (resetPaging || ![prefs boolForKey:SPLimitResults] || [paginationPageField integerValue] <= 0) {
+	NSInteger paginationViewPage = [[paginationViewController page] integerValue];
+	if (resetPaging || ![prefs boolForKey:SPLimitResults] || paginationViewPage <= 0) {
 		contentPage = 1;
 	}
 	// If the current page is out of bounds, move it within bounds
-	else if (([paginationPageField integerValue] - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) {
+	else if ((paginationViewPage - 1) * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) {
 		contentPage = ceilf((CGFloat) maxNumRows / [prefs floatForKey:SPLimitResultsValue]);
 	}
 	// Otherwise, use the pagination value
 	else {
-		contentPage = [paginationPageField integerValue];
+		contentPage = paginationViewPage;
 	}
 
 	if ([self tableFilterString]) {
@@ -1466,10 +1488,10 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	if (sender == paginationPreviousButton) {
 		if (contentPage <= 1) return;
-		[paginationPageField setIntegerValue:(contentPage - 1)];
+		[paginationViewController setPage:@(contentPage - 1)];
 	} else if (sender == paginationNextButton) {
 		if ((NSInteger)contentPage * [prefs integerForKey:SPLimitResultsValue] >= maxNumRows) return;
-		[paginationPageField setIntegerValue:(contentPage + 1)];
+		[paginationViewController setPage:@(contentPage + 1)];
 	}
 
 	[self filterTable:sender];
@@ -1503,18 +1525,17 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	if(makeVisible) {
 		[paginationButton setState:NSOnState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_action"]];
-		[[paginationPageField window] makeFirstResponder:paginationPageField];
+		[paginationViewController makeInputFirstResponder];
 	}
 	else {
 		[paginationButton setState:NSOffState];
 		[paginationButton setImage:[NSImage imageNamed:@"button_pagination"]];
-		if ([[paginationPageField window] firstResponder] == paginationPageField
-			|| ([[[paginationPageField window] firstResponder] respondsToSelector:@selector(superview)]
-				&& [(id)[[paginationPageField window] firstResponder] superview]
-				&& [[(id)[[paginationPageField window] firstResponder] superview] respondsToSelector:@selector(superview)]
-				&& [[(id)[[paginationPageField window] firstResponder] superview] superview] == paginationPageField))
-		{
-			[[paginationPageField window] makeFirstResponder:nil];
+		// TODO This is only relevant in 10.6 legacy mode.
+		// When using a modern NSPopover, the view controller's parent window is an _NSPopoverWindow,
+		// not the SP window and we don't care what the first responder in the popover is.
+		// (when it is not being displayed anyway).
+		if (!paginationPopover && [paginationViewController isFirstResponderInside]) {
+			[[[paginationViewController view] window] makeFirstResponder:nil];
 		}
 	}
 	
@@ -1554,33 +1575,24 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	}
 	BOOL enabledMode = ![tableDocumentInstance isWorking];
 
-	NSNumberFormatter *numberFormatter = [[[NSNumberFormatter alloc] init] autorelease];
-	[numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
-
+	BOOL limitResults = [prefs boolForKey:SPLimitResults];
 	// Set up the previous page button
-	if ([prefs boolForKey:SPLimitResults] && contentPage > 1)
-		[paginationPreviousButton setEnabled:enabledMode];
-	else
-		[paginationPreviousButton setEnabled:NO];
+	[paginationPreviousButton setEnabled:(limitResults && contentPage > 1 ? enabledMode : NO)];
 
 	// Set up the next page button
-	if ([prefs boolForKey:SPLimitResults] && contentPage < maxPage)
-		[paginationNextButton setEnabled:enabledMode];
-	else
-		[paginationNextButton setEnabled:NO];
+	[paginationNextButton setEnabled:(limitResults && contentPage < maxPage ? enabledMode : NO)];
 
 #ifndef SP_CODA
 	// As long as a table is selected (which it will be if this is called), enable pagination detail button
 	[paginationButton setEnabled:enabledMode];
 #endif
 
+	// "1" is the minimum page, so maxPage must not be less (which it would be for empty tables)
+	if(maxPage < 1) maxPage = 1;
+
 	// Set the values and maximums for the text field and associated pager
-	[paginationPageField setStringValue:[numberFormatter stringFromNumber:[NSNumber numberWithUnsignedInteger:contentPage]]];
-	[[paginationPageField formatter] setMaximum:[NSNumber numberWithUnsignedInteger:maxPage]];
-#ifndef SP_CODA
-	[paginationPageStepper setIntegerValue:contentPage];
-	[paginationPageStepper setMaxValue:maxPage];
-#endif
+	[paginationViewController setPage:@(contentPage)];
+	[paginationViewController setMaxPage:@(maxPage)];
 }
 
 #pragma mark -
@@ -4640,6 +4652,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 	for (id retainedObject in nibObjectsToRelease) [retainedObject release];
 	SPClear(nibObjectsToRelease);
 	SPClear(paginationPopover);
+	SPClear(paginationViewController);
 
 #endif
 	if (selectedTable)          SPClear(selectedTable);
@@ -4652,6 +4665,52 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 
 	SPClear(filtersToRestore);
 
+	[super dealloc];
+}
+
+@end
+
+#pragma mark -
+
+@implementation ContentPaginationViewController
+
+@synthesize page = page;
+@synthesize maxPage = maxPage;
+@synthesize target = target;
+@synthesize action = action;
+
+- (instancetype)init
+{
+	if((self = [super initWithNibName:@"ContentPaginationView" bundle:nil])) {
+		[self setPage:@1];
+		[self setMaxPage:@1];
+	}
+	return self;
+}
+
+- (IBAction)paginationGoAction:(id)sender
+{
+	if(target && action) [target performSelector:action withObject:self];
+}
+
+- (void)makeInputFirstResponder
+{
+	[[paginationPageField window] makeFirstResponder:paginationPageField];
+}
+
+- (BOOL)isFirstResponderInside
+{
+	NSResponder *firstResponder = [[paginationPageField window] firstResponder];
+	return (
+		[firstResponder isKindOfClass:[NSView class]] &&
+		[(NSView *)firstResponder isDescendantOf:[self view]]
+	);
+}
+
+- (void)dealloc
+{
+	[self setPage:nil];
+	[self setMaxPage:nil];
 	[super dealloc];
 }
 

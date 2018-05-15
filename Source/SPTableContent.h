@@ -46,6 +46,8 @@
 @class SPRuleFilterController;
 @class SPFilterTableController;
 
+@class ContentPaginationViewController; //private
+
 typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	SPTableContentFilterSourceNone = -1,
 	SPTableContentFilterSourceRuleFilter = 0,
@@ -82,19 +84,14 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 	IBOutlet NSButton *paginationPreviousButton;
 #ifndef SP_CODA
 	IBOutlet NSButton *paginationButton;
-	IBOutlet NSButton *paginationGoButton;
 #endif
 	IBOutlet NSButton *paginationNextButton;
 #ifndef SP_CODA
 	IBOutlet NSView *contentViewPane;
-	IBOutlet NSViewController *paginationViewController;
+	ContentPaginationViewController *paginationViewController;
+	NSPopover *paginationPopover;
 	IBOutlet NSView *paginationView;
 	IBOutlet NSBox *paginationBox;
-	NSPopover *paginationPopover;
-#endif
-	IBOutlet NSTextField *paginationPageField;
-#ifndef SP_CODA
-	IBOutlet NSStepper *paginationPageStepper;
 
 	IBOutlet SPRuleFilterController *ruleFilterController;
 	IBOutlet SPFilterTableController *filterTableController;
@@ -188,7 +185,6 @@ typedef NS_ENUM(NSInteger, SPTableContentFilterSource) {
 @property (assign) NSButton* reloadButton;
 @property (assign) NSButton* paginationNextButton;
 @property (assign) NSButton* paginationPreviousButton;
-@property (assign) NSTextField* paginationPageField;
 @property (assign) SPDatabaseDocument* tableDocumentInstance;
 @property (assign) SPTablesList* tablesListInstance;
 @property (assign) SPCopyTable* tableContentView;

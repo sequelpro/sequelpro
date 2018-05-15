@@ -4596,15 +4596,17 @@ Gw
                 <outlet property="contentViewPane" destination="27" id="6661"/>
                 <outlet property="countText" destination="261" id="262"/>
                 <outlet property="duplicateButton" destination="5178" id="7837"/>
-                <outlet property="ruleFilterController" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
                 <outlet property="filterRuleEditorContainer" destination="9oo-u0-ndW" id="OZb-jI-CMy"/>
                 <outlet property="filterTableController" destination="UBS-cN-3Af" id="FV7-by-Gy1"/>
                 <outlet property="multipleLineEditingButton" destination="5201" id="5203"/>
+                <outlet property="paginationBox" destination="Cen-HW-aJR" id="cE5-7g-Pzn"/>
                 <outlet property="paginationButton" destination="6653" id="6657"/>
                 <outlet property="paginationNextButton" destination="6647" id="6664"/>
                 <outlet property="paginationPreviousButton" destination="6650" id="6663"/>
+                <outlet property="paginationView" destination="EmC-GF-Hfu" id="l4X-ze-hG5"/>
                 <outlet property="reloadButton" destination="5176" id="6625"/>
                 <outlet property="removeButton" destination="5177" id="5190"/>
+                <outlet property="ruleFilterController" destination="ki9-Po-bdr" id="5od-0U-9xj"/>
                 <outlet property="spHistoryControllerInstance" destination="6297" id="6316"/>
                 <outlet property="tableContentContainer" destination="vcX-Xr-0cm" id="Xak-w0-y6x"/>
                 <outlet property="tableContentView" destination="36" id="142"/>
@@ -5153,6 +5155,23 @@ Gw
             </view>
             <point key="canvasLocation" x="98" y="659.5"/>
         </window>
+        <customView id="EmC-GF-Hfu">
+            <rect key="frame" x="0.0" y="0.0" width="330" height="89"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <box autoresizesSubviews="NO" wantsLayer="YES" boxType="custom" borderType="line" titlePosition="noTitle" id="Cen-HW-aJR">
+                    <rect key="frame" x="0.0" y="-47" width="330" height="136"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                    <view key="contentView" id="yNs-cH-TWp">
+                        <rect key="frame" x="1" y="1" width="328" height="134"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </view>
+                    <color key="borderColor" white="0.0" alpha="0.20000000300000001" colorSpace="calibratedWhite"/>
+                    <color key="fillColor" white="0.94758063550000005" alpha="1" colorSpace="calibratedWhite"/>
+                </box>
+            </subviews>
+            <point key="canvasLocation" x="19" y="-25"/>
+        </customView>
     </objects>
     <resources>
         <image name="NSAdvanced" width="32" height="32"/>
