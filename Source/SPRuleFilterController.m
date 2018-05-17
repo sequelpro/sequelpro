@@ -164,12 +164,46 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 
 #pragma mark -
 
+/**
+ * TODO:
+ * This class shouldn't even exist to begin with.
+ * Its sad story begins with this call in `-[SPRuleFilterController dealloc]`:
+ *
+ *   [filterRuleEditor unbind:@"rows"];
+ *
+ * `-dealloc` may not be the best method to undo what we did in `-awakeFromNib`, but it's the only thing we have.
+ * Also we have to unbind this object, or we may receive zombie calls later on because the binding is unretained.
+ * Which brings us to another huge mistake Apple made in the implementation of -unbind. The call looks like this:
+ *
+ *   - [NSRulEditor unbind:]
+ *     - [NSRuleEditor _rootRowsArray]
+ *       - [NSRuleEditor->_boundArrayOwner mutableArrayValueForKeyPath:NSRuleEditor->_boundArrayKeyPath]
+ *
+ * -mutableArrayValueForKeyPath: is the culprit here since it does not return the object itself ("model") but
+ * instead returns an autoreleased proxy object which retains the parent object of the key.
+ *
+ * That explains why we can't put "model" into SPRuleFilterController:
+ * The `-[NSRuleEditor unbind:]` would cause a call to `-[SPRuleFilterController retain]` from within
+ * `-[SPRuleFilterController dealloc]` (which is pointless since there is no way out from -dealloc).
+ * This wouldn't be a problem if the proxy object was released again while dealloc is still on the stack, but
+ * since it is autoreleased we end up with a zombie call again.
+ *
+ * ModelContainer is a dummy intermediate to prevent this, since it is still valid when we enter -dealloc and
+ * trigger -unbind and thus can handle the -retain by the proxy object.
+ */
+@interface ModelContainer : NSObject
+{
+	NSMutableArray *model;
+}
+// This is the binding used by NSRuleEditor for the current state
+@property (retain, nonatomic) NSMutableArray *model;
+@end
+
+#pragma mark -
+
 @interface SPRuleFilterController () <NSRuleEditorDelegate>
 
 @property (readwrite, assign, nonatomic) CGFloat preferredHeight;
-
-// This is the binding used by NSRuleEditor for the current state
-@property (retain, nonatomic) NSMutableArray *model;
 
 - (NSArray *)_compareTypesForColumn:(ColumnNode *)colNode;
 - (IBAction)_textFieldAction:(id)sender;
@@ -192,7 +226,6 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 @implementation SPRuleFilterController
 
-@synthesize model = model;
 @synthesize preferredHeight = preferredHeight;
 @synthesize target = target;
 @synthesize action = action;
@@ -201,7 +234,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 {
 	if((self = [super init])) {
 		columns = [[NSMutableArray alloc] init];
-		model = [[NSMutableArray alloc] init];
+		_modelContainer = [[ModelContainer alloc] init];
 		preferredHeight = 0.0;
 		target = nil;
 		action = NULL;
@@ -243,7 +276,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)awakeFromNib
 {
-	[filterRuleEditor bind:@"rows" toObject:self withKeyPath:@"model" options:nil];
+	[filterRuleEditor bind:@"rows" toObject:_modelContainer withKeyPath:@"model" options:nil];
 
 	[[NSNotificationCenter defaultCenter] addObserver:self
 	                                         selector:@selector(_contentFiltersHaveBeenUpdated:)
@@ -253,7 +286,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)focusFirstInputField
 {
-	for(NSDictionary *rootItem in model) {
+	for(NSDictionary *rootItem in [_modelContainer model]) {
 		if([self _focusOnFieldInSubtree:rootItem]) return;
 	}
 }
@@ -279,9 +312,8 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)setColumns:(NSArray *)dataColumns;
 {
-	[self willChangeValueForKey:@"model"]; // manual KVO is needed for filter rule editor to notice change
-	[model removeAllObjects];
-	[self didChangeValueForKey:@"model"];
+	// we have to access the model in the same way the rule editor does for it to realize the changes
+	[[_modelContainer mutableArrayValueForKey:@"model"] removeAllObjects];
 
 	[columns removeAllObjects];
 
@@ -519,8 +551,10 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)dealloc
 {
+	[filterRuleEditor unbind:@"rows"];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	SPClear(model);
+	// WARNING: THIS MUST COME AFTER -unbind:! See the class comment on ModelContainer for the reasoning
+	SPClear(_modelContainer);
 	SPClear(columns);
 	SPClear(contentFilters);
 	SPClear(numberOfDefaultFilters);
@@ -736,7 +770,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (BOOL)isEmpty
 {
-	return ([[self model] count] == 0);
+	return ([[_modelContainer model] count] == 0);
 }
 
 - (void)addFilterExpression
@@ -797,8 +831,8 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (NSDictionary *)_serializedFilterIncludingFilterDefinition:(BOOL)includeDefinition
 {
-	NSMutableArray *rootItems = [NSMutableArray arrayWithCapacity:[model count]];
-	for(NSDictionary *item in model) {
+	NSMutableArray *rootItems = [NSMutableArray arrayWithCapacity:[[_modelContainer model] count]];
+	for(NSDictionary *item in [_modelContainer model]) {
 		[rootItems addObject:[self _serializeSubtree:item includingDefinition:includeDefinition]];
 	}
 	//the root serialized filter can either be an AND of multiple root items or a single root item
@@ -872,9 +906,7 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 {
 	if(!serialized) return;
 
-	// we have to exchange the whole model object or NSRuleEditor will get confused
 	NSMutableArray *newModel = [[NSMutableArray alloc] init];
-	
 	@autoreleasepool {
 		// if the root object is an AND group directly restore its contents, otherwise restore the object
 		if(SerIsGroup(serialized) && [[serialized objectForKey:SerFilterGroupIsConjunction] boolValue]) {
@@ -887,7 +919,10 @@ void _addIfNotNil(NSMutableArray *array, id toAdd)
 		}
 	}
 
-	[self setModel:newModel];
+	// we have to access the model in the same way the rule editor does for it to realize the changes
+	NSMutableArray *proxy = [_modelContainer mutableArrayValueForKey:@"model"];
+	[proxy setArray:newModel];
+
 	[newModel release];
 }
 
@@ -1350,6 +1385,50 @@ BOOL SerIsGroup(NSDictionary *dict)
 	if (other && [[other class] isEqual:[self class]] && [filter isEqualToDictionary:[(ConnectorNode *)other filter]] && labelIndex == [(ConnectorNode *)other labelIndex]) return YES;
 
 	return NO;
+}
+
+@end
+
+#pragma mark -
+
+@implementation ModelContainer
+
+@synthesize model = model;
+
+- (instancetype)init
+{
+	if (self = [super init]) {
+		model = [[NSMutableArray alloc] init];
+	}
+	return self;
+}
+
+- (void)dealloc
+{
+	[self setModel:nil];
+	[super dealloc];
+}
+
+// KVO
+
+- (void)insertObject:(id)obj inModelAtIndex:(NSUInteger)idx
+{
+	[model insertObject:obj atIndex:idx];
+}
+
+- (void)removeObjectFromModelAtIndex:(NSUInteger)idx
+{
+	[model removeObjectAtIndex:idx];
+}
+
+- (void)insertModel:(NSArray *)array atIndexes:(NSIndexSet *)indexes
+{
+	[model insertObjects:array atIndexes:indexes];
+}
+
+- (void)removeModelAtIndexes:(NSIndexSet *)indexes
+{
+	[model removeObjectsAtIndexes:indexes];
 }
 
 @end

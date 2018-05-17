@@ -47,7 +47,7 @@ NSString * const SPRuleFilterHeightChangedNotification;
 	NSMutableDictionary *contentFilters;
 	NSMutableDictionary *numberOfDefaultFilters;
 
-	NSMutableArray *model;
+	id _modelContainer; // private class
 
 	SPContentFilterManager *contentFilterManager;
 
