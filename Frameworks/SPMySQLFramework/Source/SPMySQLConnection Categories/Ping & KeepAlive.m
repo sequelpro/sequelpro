@@ -87,43 +87,45 @@ typedef struct {
  */
 - (void)_threadedKeepAlive
 {
-	@synchronized(self) {
-		if(keepAliveThread) {
-			NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
-		}
-		keepAliveThread = [NSThread currentThread];
-	}
-	
-	[keepAliveThread setName:[NSString stringWithFormat:@"SPMySQL connection keepalive monitor thread (id=%p)", self]];
-
-	// If the maximum number of ping failures has been reached, determine whether to reconnect.
-	if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
-
-		// If the connection has been used within the last fifteen minutes,
-		// attempt a single reconnection in the background
-		if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
-			[self _reconnectAfterBackgroundConnectionLoss];
-		}
-		// Otherwise set the state to connection lost for automatic reconnect on
-		// next use.
-		else {
-			state = SPMySQLConnectionLostInBackground;
+	@autoreleasepool {
+		@synchronized(self) {
+			if(keepAliveThread) {
+				NSLog(@"warning: overwriting existing keepAliveThread: %@, results may be unpredictable!",keepAliveThread);
+			}
+			keepAliveThread = [NSThread currentThread];
 		}
 
-		// Return as no further ping action required this cycle.
-		goto end_cleanup;
-	}
+		[keepAliveThread setName:[NSString stringWithFormat:@"SPMySQL connection keepalive monitor thread (id=%p)", self]];
 
-	// Otherwise, perform a background ping.
-	BOOL pingResult = [self _pingConnectionUsingLoopDelay:10000];
-	if (pingResult) {
-		keepAlivePingFailures = 0;
-	} else {
-		keepAlivePingFailures++;
-	}
+		// If the maximum number of ping failures has been reached, determine whether to reconnect.
+		if (keepAliveLastPingBlocked || keepAlivePingFailures >= 3) {
+
+			// If the connection has been used within the last fifteen minutes,
+			// attempt a single reconnection in the background
+			if (_elapsedSecondsSinceAbsoluteTime(lastConnectionUsedTime) < 60 * 15) {
+				[self _reconnectAfterBackgroundConnectionLoss];
+			}
+			// Otherwise set the state to connection lost for automatic reconnect on
+			// next use.
+			else {
+				state = SPMySQLConnectionLostInBackground;
+			}
+
+			// Return as no further ping action required this cycle.
+			goto end_cleanup;
+		}
+
+		// Otherwise, perform a background ping.
+		BOOL pingResult = [self _pingConnectionUsingLoopDelay:10000];
+		if (pingResult) {
+			keepAlivePingFailures = 0;
+		} else {
+			keepAlivePingFailures++;
+		}
 end_cleanup:
-	@synchronized(self) {
-		keepAliveThread = nil;
+		@synchronized(self) {
+			keepAliveThread = nil;
+		}
 	}
 }
 
