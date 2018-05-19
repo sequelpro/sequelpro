@@ -120,10 +120,12 @@ const NSString * const SerFilterExprDefinition = @"_filterDefinition";
 	NSString *name;
 	NSString *typegrouping;
 	NSArray *operatorCache;
+	NSUInteger opCacheVersion;
 }
 @property(copy, nonatomic) NSString *name;
 @property(copy, nonatomic) NSString *typegrouping;
 @property(retain, nonatomic) NSArray *operatorCache;
+@property(assign, nonatomic) NSUInteger opCacheVersion;
 @end
 
 @interface StringNode : RuleNode {
@@ -221,6 +223,10 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 - (void)_resize;
 - (void)openContentFilterManagerForFilterType:(NSString *)filterType;
 - (IBAction)filterTable:(id)sender;
+- (IBAction)_menuItemInRuleEditorClicked:(id)sender;
+- (void)_pretendPlayRuleEditorForCriteria:(NSMutableArray *)criteria displayValues:(NSMutableArray *)displayValues inRow:(NSInteger)row;
+- (void)_ensureValidOperatorCache:(ColumnNode *)col;
+static BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle);
 
 @end
 
@@ -238,6 +244,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 		preferredHeight = 0.0;
 		target = nil;
 		action = NULL;
+		opNodeCacheVersion = 1;
 
 		// Init default filters for Content Browser
 		contentFilters = [[NSMutableDictionary alloc] init];
@@ -357,10 +364,7 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 		RuleNodeType type = [(RuleNode *)criterion type];
 		if(type == RuleNodeTypeColumn) {
 			ColumnNode *node = (ColumnNode *)criterion;
-			if(![node operatorCache]) {
-				NSArray *ops = [self _compareTypesForColumn:node];
-				[node setOperatorCache:ops];
-			}
+			[self _ensureValidOperatorCache:node];
 			return [[node operatorCache] count];
 		}
 		// the first child of an operator is the first argument (if it has one)
@@ -454,23 +458,29 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 				item = [NSMenuItem separatorItem];
 			}
 			else {
+				/* NOTE:
+				 * Apple's doc on NSRuleEditor says that returning NSMenuItems is supported.
+				 * However there seems to be a major discrepancy between what Apple considers "supported" and what any
+				 * sane person would consider supported.
+				 *
+				 * Basically one would expect NSMenuItems to be handled in the same way a number of NSString children of a
+				 * row's element will be handled, but that was not Apples intention. By supported they actually mean
+				 * "Your app won't crash immediately if you return an NSMenuItem here" - but that's about it.
+				 * Even selecting such an NSMenuItem will already cause an exception on 10.6 and be treated as a NOOP on
+				 * later OSes.
+				 * So if we return NSMenuItems we have to implement the full logic of the NSRuleEditor for updating and
+				 * displaying the row ourselves, starting with handling the target/action of the NSMenuItems!
+				 */
 				item = [[NSMenuItem alloc] initWithTitle:[[node settings] objectForKey:@"title"] action:NULL keyEquivalent:@""];
 				[item setToolTip:[[node settings] objectForKey:@"tooltip"]];
 				[item setTag:[[[node settings] objectForKey:@"tag"] integerValue]];
-				//TODO the following seems to be mentioned exactly nowhere on the internet/in documentation, but without it NSMenuItems won't work properly, even though Apple says they are supported
 				[item setRepresentedObject:@{
-					@"item": node,
-					@"value": [item title],
+					@"node": node,
 					// this one is needed by the "Edit filters…" item for context
 					@"filterType": SPBoxNil([[node settings] objectForKey:@"filterType"]),
 				}];
-				// override the default action from the rule editor if given (used to open the edit content filters sheet)
-				id _target = [[node settings] objectForKey:@"target"];
-				SEL _action = (SEL)[(NSValue *)[[node settings] objectForKey:@"action"] pointerValue];
-				if(_target && _action) {
-					[item setTarget:_target];
-					[item setAction:_action];
-				}
+				[item setTarget:self];
+				[item setAction:@selector(_menuItemInRuleEditorClicked:)];
 				[item autorelease];
 			}
 			return item;
@@ -509,6 +519,131 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 	NSEvent *event = [NSApp currentEvent];
 	if(event && [event type] == NSKeyDown && ([event keyCode] == 36 || [event keyCode] == 76)) {
 		[self filterTable:nil];
+	}
+}
+
+- (IBAction)_menuItemInRuleEditorClicked:(id)sender
+{
+	if(!sender) return; // NSRuleEditor will throw on nil
+
+	NSInteger row = [filterRuleEditor rowForDisplayValue:sender];
+
+	if(row == NSNotFound) return; // unknown display values
+
+	OpNode *node = [[(NSMenuItem *)sender representedObject] objectForKey:@"node"];
+
+	// if the row has an explicit handler, pass on the action and do nothing
+	id _target = [[node settings] objectForKey:@"target"];
+	SEL _action = (SEL)[(NSValue *)[[node settings] objectForKey:@"action"] pointerValue];
+	if(_target && _action) {
+		[_target performSelector:_action withObject:sender];
+		return;
+	} 
+
+	/* now comes the painful part, where we'd have to find out where exactly in the row this
+	 * displayValue should appear.
+	 * 
+	 * Luckily we know that this method will only be invoked by the displayValues of OpNode
+	 * and currently OpNode can only appear as the second node in a row (after the column).
+	 * 
+	 * Annoyingly we can't tell the rule editor to just replace a single element. We actually
+	 * have to recalculate the whole row starting with the element we replaced - a task the
+	 * rule editor would normally do for us when using NSStrings!
+	 */
+	NSMutableArray *criteria = [[filterRuleEditor criteriaForRow:row] mutableCopy];
+	NSMutableArray *displayValues = [[filterRuleEditor displayValuesForRow:row] mutableCopy];
+
+	// find the position of the previous opnode (just for safety)
+	NSUInteger opIndex = NSNotFound;
+	NSUInteger i = 0;
+	for(RuleNode *obj in criteria) {
+		if([obj type] == RuleNodeTypeOperator) {
+			opIndex = i;
+			break;
+		}
+		i++;
+	}
+
+	if(opIndex < [criteria count]) {
+		// yet another uglyness: if one of the displayValues is an input and currently the first responder
+		// we have to manually restore that for the new input we create for UX reasons.
+		// However an NSTextField is seldom a first responder, usually it's an invisible subview of the text field...
+		id firstResponder = [[filterRuleEditor window] firstResponder];
+		BOOL hasFirstResponderInRow = _arrayContainsInViewHierarchy(displayValues, firstResponder);
+
+		//remove previous opnode and everything that follows and append new opnode
+		NSRange stripRange = NSMakeRange(opIndex, ([criteria count] - opIndex));
+		[criteria removeObjectsInRange:stripRange];
+		[criteria addObject:node];
+
+		//remove the display value for the old op node and everything that followed
+		[displayValues removeObjectsInRange:stripRange];
+
+		//now we'll fill in everything again
+		[self _pretendPlayRuleEditorForCriteria:criteria displayValues:displayValues inRow:row];
+
+		//and update the row to its new state
+		[filterRuleEditor setCriteria:criteria andDisplayValues:displayValues forRowAtIndex:row];
+
+		if(hasFirstResponderInRow) {
+			// make the next possible object after the opnode the new next responder (since the previous one is gone now)
+			for (NSUInteger j = stripRange.location + 1; j < [displayValues count]; ++j) {
+				id obj = [displayValues objectAtIndex:j];
+				if([obj respondsToSelector:@selector(acceptsFirstResponder)] && [obj acceptsFirstResponder]) {
+					[[filterRuleEditor window] makeFirstResponder:obj];
+					break;
+				}
+			}
+		}
+	}
+
+	[criteria release];
+	[displayValues release];
+}
+
+BOOL _arrayContainsInViewHierarchy(NSArray *haystack, id needle)
+{
+	//first, try it the easy way
+	if([haystack indexOfObjectIdenticalTo:needle] != NSNotFound) return YES;
+
+	// otherwise, if needle is a view, check if it appears as a desencdant of some other view in haystack
+	Class NSViewClass = [NSView class];
+	if([needle isKindOfClass:NSViewClass]) {
+		for(id obj in haystack) {
+			if([obj isKindOfClass:NSViewClass] && [needle isDescendantOf:obj]) return YES;
+		}
+	}
+
+	return NO;
+}
+
+/**
+ * This method recursively fills up the passed-in criteria and displayValues arrays with objects in the way the
+ * NSRuleEditor would, so they can be used with the -setCriteria:andDisplayValues:forRowAtIndex: call.
+ * 
+ * Assumptions made:
+ * - row is a valid row within the bounds of the rule editor
+ * - criteria contains at least one object
+ * - displayValues contains exactly one less object than criteria
+ */
+- (void)_pretendPlayRuleEditorForCriteria:(NSMutableArray *)criteria displayValues:(NSMutableArray *)displayValues inRow:(NSInteger)row
+{
+	id curCriterion = [criteria lastObject];
+
+	//first fill in the display value for the current criterion
+	id display = [self ruleEditor:filterRuleEditor displayValueForCriterion:curCriterion inRow:row];
+	if(!display) return; // abort if unset
+	[displayValues addObject:display];
+
+	// now let's check if we have to go deeper
+	NSRuleEditorRowType rowType = [filterRuleEditor rowTypeForRow:row];
+	if([self ruleEditor:filterRuleEditor numberOfChildrenForCriterion:curCriterion withRowType:rowType]) {
+		// we only care for the first child, though
+		id nextCriterion = [self ruleEditor:filterRuleEditor child:0 forCriterion:curCriterion withRowType:rowType];
+		if(nextCriterion) {
+			[criteria addObject:nextCriterion];
+			[self _pretendPlayRuleEditorForCriteria:criteria displayValues:displayValues inRow:row];
+		}
 	}
 }
 
@@ -764,8 +899,19 @@ static void _addIfNotNil(NSMutableArray *array, id toAdd);
 
 - (void)_contentFiltersHaveBeenUpdated:(NSNotification *)notification
 {
+	// invalidate our OpNode caches
+	opNodeCacheVersion++;
 	//tell the rule editor to reload its criteria
 	[filterRuleEditor reloadCriteria];
+}
+
+- (void)_ensureValidOperatorCache:(ColumnNode *)col
+{
+	if(![col operatorCache] || [col opCacheVersion] != opNodeCacheVersion) {
+		NSArray *ops = [self _compareTypesForColumn:col];
+		[col setOperatorCache:ops];
+		[col setOpCacheVersion:opNodeCacheVersion];
+	}
 }
 
 - (BOOL)isEmpty
@@ -1059,10 +1205,7 @@ fail:
 {
 	if([title length]) {
 		// check if we have the operator cache, otherwise build it
-		if(![col operatorCache]) {
-			NSArray *ops = [self _compareTypesForColumn:col];
-			[col setOperatorCache:ops];
-		}
+		[self _ensureValidOperatorCache:col];
 		// try to find it in the operator cache
 		for(OpNode *node in [col operatorCache]) {
 			if([[[node filter] objectForKey:@"MenuLabel"] isEqualToString:title]) return node;
@@ -1234,11 +1377,13 @@ BOOL SerIsGroup(NSDictionary *dict)
 @synthesize name = name;
 @synthesize typegrouping = typegrouping;
 @synthesize operatorCache = operatorCache;
+@synthesize opCacheVersion = opCacheVersion;
 
 - (instancetype)init
 {
 	if((self = [super init])) {
 		type = RuleNodeTypeColumn;
+		opCacheVersion = 0;
 	}
 	return self;
 }

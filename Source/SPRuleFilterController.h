@@ -57,6 +57,8 @@ NSString * const SPRuleFilterHeightChangedNotification;
 	SEL action;
 
 	BOOL enabled;
+	
+	NSUInteger opNodeCacheVersion;
 }
 
 /**
