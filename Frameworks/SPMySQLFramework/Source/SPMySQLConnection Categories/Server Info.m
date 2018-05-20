@@ -167,4 +167,36 @@
 	return NO;
 }
 
+- (BOOL)updateServerStatusBits:(SPMySQLServerStatusBits *)bits
+{
+	if(state != SPMySQLConnected || !mySQLConnection) return NO;
+
+	unsigned int ss = mySQLConnection->server_status;
+
+	unsigned int (^isSet)(unsigned int) =  ^unsigned int(unsigned int cmp) {
+		return ((ss & cmp) != 0 ? 1 : 0);
+	};
+
+	bits->inTransaction        = isSet(SERVER_STATUS_IN_TRANS); // 1 << 0
+	bits->autocommit           = isSet(SERVER_STATUS_AUTOCOMMIT); // 1 << 1
+	bits->_reserved1           = isSet(4); // 1 << 2
+	bits->moreResultsExists    = isSet(SERVER_MORE_RESULTS_EXISTS); // 1 << 3
+	bits->queryNoGoodIndexUsed = isSet(SERVER_QUERY_NO_GOOD_INDEX_USED); // 1 << 4
+	bits->queryNoIndexUsed     = isSet(SERVER_QUERY_NO_INDEX_USED); // 1 << 5
+	bits->cursorExists         = isSet(SERVER_STATUS_CURSOR_EXISTS); // 1 << 6
+	bits->lastRowSent          = isSet(SERVER_STATUS_LAST_ROW_SENT); // 1 << 7
+	bits->dbDropped            = isSet(SERVER_STATUS_DB_DROPPED); // 1 << 8
+	bits->noBackslashEscapes   = isSet(SERVER_STATUS_NO_BACKSLASH_ESCAPES); // 1 << 9
+	bits->metadataChanged      = isSet(SERVER_STATUS_METADATA_CHANGED); // 1 << 10
+	bits->queryWasSlow         = isSet(SERVER_QUERY_WAS_SLOW); // 1 << 11
+	bits->psOutParams          = isSet(SERVER_PS_OUT_PARAMS); // 1 << 12
+	//TODO the following two flags were added after the 5.5 branch we are currently using
+	bits->inTransReadonly      = isSet(1 << 13); // 1 << 13
+	bits->sessionStateChanged  = isSet(1 << 14); // 1 << 14
+	// currently unused bits (protocol V10 uses 16 bit status on the wire)
+	bits->_reserved2           = isSet(1 << 15); // 1 << 15
+
+	return YES;
+}
+
 @end
