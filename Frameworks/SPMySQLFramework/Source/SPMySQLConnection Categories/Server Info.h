@@ -60,6 +60,8 @@
  * the server_status flags that were received most recently (i.e. usually
  * in return to the last executed query).
  *
+ * Calling this method will never affect the mysql error state.
+ *
  * THIS METHOD IS NOT THREAD-SAFE!
  *
  * @return YES, unless the MySQL connection is invalid (in which case the passed-in struct remains unchanged)
