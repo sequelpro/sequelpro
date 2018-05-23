@@ -184,7 +184,7 @@
                                             <rect key="frame" x="1" y="1" width="510" height="90"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <textView editable="NO" importsGraphics="NO" verticallyResizable="NO" findStyle="panel" allowsNonContiguousLayout="YES" id="NLm-8l-MrV" customClass="SPTextView">
+                                                <textView editable="NO" importsGraphics="NO" verticallyResizable="YES" findStyle="panel" allowsNonContiguousLayout="YES" id="NLm-8l-MrV" customClass="SPTextView">
                                                     <rect key="frame" x="0.0" y="0.0" width="510" height="90"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
