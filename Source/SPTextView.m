@@ -50,6 +50,7 @@
 #import "SPCopyTable.h"
 #import "SPEditorTokens.h"
 #import "SPSyntaxParser.h"
+#import "SPHelpViewerClient.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -1107,7 +1108,7 @@ retry:
  */
 - (IBAction) showMySQLHelpForCurrentWord:(id)sender
 {
-	[customQueryInstance showHelpForCurrentWord:self];
+	[[tableDocumentInstance helpViewerClient] showHelpForCurrentWord:self];
 }
 #endif
 

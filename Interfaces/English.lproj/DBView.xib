@@ -4,7 +4,6 @@
         <deployment identifier="macosx"/>
         <development version="8000" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="14109"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -38,6 +37,7 @@
                 <outlet property="documentActivityScrollView" destination="7691" id="7790"/>
                 <outlet property="exportControllerInstance" destination="5377" id="6619"/>
                 <outlet property="extendedTableInfoInstance" destination="1277" id="5848"/>
+                <outlet property="helpViewerClientInstance" destination="AxW-sg-bzq" id="QCc-bz-uzm"/>
                 <outlet property="historyControl" destination="6293" id="6296"/>
                 <outlet property="inputTextWindow" destination="6492" id="6504"/>
                 <outlet property="inputTextWindowHeader" destination="6497" id="6505"/>
@@ -4003,190 +4003,6 @@ Gw
                 <outlet property="initialFirstResponder" destination="964" id="6813"/>
             </connections>
         </window>
-        <window title="MySQL Help" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="MYSQL_HELP_WINDOW" animationBehavior="default" id="5428" userLabel="Help Panel" customClass="NSPanel">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="415" y="136" width="505" height="308"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1178"/>
-            <value key="minSize" type="size" width="351" height="120"/>
-            <view key="contentView" id="5429">
-                <rect key="frame" x="0.0" y="0.0" width="505" height="308"/>
-                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                <subviews>
-                    <webView id="5441">
-                        <rect key="frame" x="0.0" y="0.0" width="505" height="271"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <webPreferences key="preferences" defaultFontSize="16" defaultFixedFontSize="13" minimumFontSize="0">
-                            <nil key="identifier"/>
-                        </webPreferences>
-                        <connections>
-                            <outlet property="UIDelegate" destination="134" id="5508"/>
-                            <outlet property="nextKeyView" destination="5474" id="5528"/>
-                            <outlet property="policyDelegate" destination="134" id="5451"/>
-                        </connections>
-                    </webView>
-                    <searchField verticalHuggingPriority="750" id="5452">
-                        <rect key="frame" x="122" y="280" width="218" height="19"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        <searchFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" selectable="YES" editable="YES" borderStyle="bezel" placeholderString="Search" usesSingleLineMode="YES" bezelStyle="round" sendsWholeSearchString="YES" id="5453">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </searchFieldCell>
-                        <connections>
-                            <action selector="showHelpForSearchString:" target="134" id="5455"/>
-                            <outlet property="nextKeyView" destination="5510" id="5526"/>
-                        </connections>
-                    </searchField>
-                    <button verticalHuggingPriority="750" id="5464">
-                        <rect key="frame" x="81" y="-91" width="77" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="larger" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5465">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">+</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="makeTextLarger:" target="5441" id="5469"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="5466">
-                        <rect key="frame" x="150" y="-91" width="86" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="smaller" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5467">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">-</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="makeTextSmaller:" target="5441" id="5468"/>
-                        </connections>
-                    </button>
-                    <segmentedControl verticalHuggingPriority="750" id="5474">
-                        <rect key="frame" x="11" y="280" width="104" height="20"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="roundRect" trackingMode="momentary" id="5475">
-                            <font key="font" metaFont="titleBar" size="12"/>
-                            <segments>
-                                <segment toolTip="Show the previous page" image="NSLeftFacingTriangleTemplate" width="32">
-                                    <nil key="label"/>
-                                </segment>
-                                <segment toolTip="MySQL Table of Contents" image="NSListViewTemplate" width="32" tag="1"/>
-                                <segment toolTip="Show the next page" image="NSRightFacingTriangleTemplate" width="32"/>
-                            </segments>
-                        </segmentedCell>
-                        <connections>
-                            <action selector="helpSegmentDispatcher:" target="134" id="5524"/>
-                            <outlet property="nextKeyView" destination="5452" id="5529"/>
-                        </connections>
-                    </segmentedControl>
-                    <button verticalHuggingPriority="750" id="5497">
-                        <rect key="frame" x="157" y="-48" width="132" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="focusToSearch" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5498">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">f</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="selectText:" target="5452" id="5506"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="5500">
-                        <rect key="frame" x="71" y="-48" width="97" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="FindNext" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5501">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">g</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="helpSearchFindNextInPage:" target="134" id="5502"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="5503">
-                        <rect key="frame" x="72" y="-70" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="FindPrev" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5504">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">G</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="helpSearchFindPreviousInPage:" target="134" id="5505"/>
-                        </connections>
-                    </button>
-                    <box verticalHuggingPriority="750" boxType="separator" id="5509">
-                        <rect key="frame" x="0.0" y="269" width="505" height="5"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                    </box>
-                    <segmentedControl verticalHuggingPriority="750" id="5510">
-                        <rect key="frame" x="347" y="279" width="152" height="20"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                        <segmentedCell key="cell" borderStyle="border" alignment="left" style="roundRect" trackingMode="selectOne" id="5511">
-                            <font key="font" metaFont="smallSystem"/>
-                            <segments>
-                                <segment label="MySQL" toolTip="Search in MySQL Help  [⇧⌘M]" width="48" selected="YES"/>
-                                <segment label="Page" toolTip="Search in current page [⇧⌘P]" width="48" tag="1"/>
-                                <segment label="Web" toolTip="Search in the online documentation [⇧⌘W]" width="48" tag="2"/>
-                            </segments>
-                        </segmentedCell>
-                        <connections>
-                            <action selector="helpTargetDispatcher:" target="134" id="5513"/>
-                            <outlet property="nextKeyView" destination="5441" id="5527"/>
-                        </connections>
-                    </segmentedControl>
-                    <button verticalHuggingPriority="750" id="5514">
-                        <rect key="frame" x="129" y="-50" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Web" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5515">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">W</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="helpSelectHelpTargetWeb:" target="134" id="5523"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="5517">
-                        <rect key="frame" x="220" y="-50" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="page" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5518">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">P</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="helpSelectHelpTargetPage:" target="134" id="5522"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="5519">
-                        <rect key="frame" x="308" y="-50" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="mysql" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="5520">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent">M</string>
-                            <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="helpSelectHelpTargetMySQL:" target="134" id="5521"/>
-                        </connections>
-                    </button>
-                </subviews>
-            </view>
-            <connections>
-                <outlet property="delegate" destination="134" id="7715"/>
-                <outlet property="initialFirstResponder" destination="5452" id="5525"/>
-            </connections>
-        </window>
         <window title="Query Favorite Sheet" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="6405" userLabel="Query Favorite Sheet" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -4551,12 +4367,6 @@ Gw
                 <outlet property="errorText" destination="8248" id="8250"/>
                 <outlet property="errorTextScrollView" destination="8245" id="8249"/>
                 <outlet property="errorTextTitle" destination="7429" id="8334"/>
-                <outlet property="helpNavigator" destination="5474" id="5478"/>
-                <outlet property="helpSearchField" destination="5452" id="5454"/>
-                <outlet property="helpSearchFieldCell" destination="5453" id="5496"/>
-                <outlet property="helpTargetSelector" destination="5510" id="5512"/>
-                <outlet property="helpWebView" destination="5441" id="5442"/>
-                <outlet property="helpWebViewWindow" destination="5428" id="5433"/>
                 <outlet property="nextHistoryMenuItem" destination="7242" id="7368"/>
                 <outlet property="previousHistoryMenuItem" destination="7243" id="7369"/>
                 <outlet property="queryEditorSplitView" destination="7209" id="8023"/>
@@ -4846,6 +4656,7 @@ Gw
                 <outlet property="tablesList" destination="68" id="7075"/>
             </connections>
         </customObject>
+        <customObject id="AxW-sg-bzq" customClass="SPHelpViewerClient"/>
         <menu id="6180" userLabel="Table List Menu">
             <items>
                 <menuItem title="Rename Table..." toolTip="Rename the selected item" id="6186">
@@ -5178,9 +4989,6 @@ Gw
         <image name="NSApplicationIcon" width="128" height="128"/>
         <image name="NSGoLeftTemplate" width="9" height="12"/>
         <image name="NSGoRightTemplate" width="9" height="12"/>
-        <image name="NSLeftFacingTriangleTemplate" width="9" height="12"/>
-        <image name="NSListViewTemplate" width="14" height="10"/>
-        <image name="NSRightFacingTriangleTemplate" width="9" height="12"/>
         <image name="button_action" width="30" height="22"/>
         <image name="button_add" width="30" height="22"/>
         <image name="button_bar_handle" width="15" height="23"/>

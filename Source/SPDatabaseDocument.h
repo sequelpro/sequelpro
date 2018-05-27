@@ -60,6 +60,7 @@
 @class SPExtendedTableInfo;
 @class SPTableTriggers;
 @class SPTableRelations;
+@class SPHelpViewerClient;
 
 #import "SPDatabaseContentViewDelegate.h"
 #import "SPConnectionControllerDelegateProtocol.h"
@@ -92,6 +93,7 @@
 	IBOutlet id spHistoryControllerInstance;
 	IBOutlet id exportControllerInstance;
 #endif
+	IBOutlet SPHelpViewerClient *helpViewerClientInstance;
 
 	IBOutlet id statusTableAccessoryView;
 	IBOutlet id statusTableView;
@@ -324,6 +326,8 @@
 @property (readonly) SPServerSupport *serverSupport;
 @property (readonly) SPDatabaseStructure *databaseStructureRetrieval;
 @property (readonly) int64_t instanceId;
+
+- (SPHelpViewerClient *)helpViewerClient;
 
 #ifndef SP_CODA /* method decls */
 - (BOOL)isUntitled;

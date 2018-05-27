@@ -2,12 +2,12 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	
+	<title>{{title}}</title>
 	<style type="text/css" media="all">
 		body {
 			margin: 2px;
 			padding: 10px;
-			font-family:'Helvetica';
+			font-family: 'Helvetica', 'Helvetica Neue', sans-serif;
 			font-size:9pt;
 		}
 		
@@ -23,19 +23,28 @@
 		}
 		
 		.description {
-			font-family: Monaco;
+			font-family: Monaco, monospace;
 		}
 		
 		.example {
-			font-family: Courier;
+			font-family: Courier, monospace;
 		}
 		
 		.header {
 			padding-bottom: 5px;
 		}
+
+		.nothing {
+			color: gray;
+		}
+
+		.error {
+			color: #ff415a;
+			font-family: monospace;
+		}
 	</style>
 </head>
 <body>
-%@
+{{body}}
 </body>
 </html>

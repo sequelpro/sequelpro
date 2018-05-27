@@ -48,7 +48,6 @@
 #import "SPSQLParser.h"
 #import "SPTableData.h"
 #import "SPDatabaseData.h"
-#import "SPDatabaseStructure.h"
 #import "SPExtendedTableInfo.h"
 #import "SPHistoryController.h"
 #import "SPPreferenceController.h"
@@ -85,6 +84,8 @@
 #import "ICUTemplateMatcher.h"
 #import "SPFavoritesOutlineView.h"
 #import "SPSSHTunnel.h"
+#import "SPHelpViewerClient.h"
+#import "SPHelpViewerController.h"
 
 #import <SPMySQL/SPMySQL.h>
 
@@ -510,6 +511,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	
 	// Set the custom query editor's MySQL version
 	[customQueryInstance setMySQLversion:mySQLVersion];
+
+	[helpViewerClientInstance setConnection:mySQLConnection];
 
 #ifndef SP_CODA
 	[self updateWindowTitle:self];
@@ -2661,6 +2664,11 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
 	}
 }
 
+- (SPHelpViewerClient *)helpViewerClient
+{
+	return helpViewerClientInstance;
+}
+
 /**
  * Is current document Untitled?
  */
@@ -3602,8 +3610,8 @@ static int64_t SPDatabaseDocumentInstanceCounter = 0;
  */
 - (IBAction)showMySQLHelp:(id)sender
 {
-	[customQueryInstance showHelpFor:SP_HELP_TOC_SEARCH_STRING addToHistory:YES calledByAutoHelp:NO];
-	[[customQueryInstance helpWebViewWindow] makeKeyWindow];
+	[helpViewerClientInstance showHelpFor:SPHelpViewerSearchTOC addToHistory:YES calledByAutoHelp:NO];
+	[[helpViewerClientInstance helpWebViewWindow] makeKeyWindow];
 }
 #endif
 
