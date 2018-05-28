@@ -1348,7 +1348,7 @@ static void *TableContentKVOContext = &TableContentKVOContext;
 		previousTableRowsCount = 0;
 		[self clearTableValues];
 		[self loadTableValues];
-		[[tableContentView onMainThread] scrollPoint:NSMakePoint(0.0f, 0.0f)];
+		[[tableContentView onMainThread] scrollRowToVisible:0];
 
 		[tableDocumentInstance endTask];
 	}
