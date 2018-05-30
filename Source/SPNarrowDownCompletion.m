@@ -43,8 +43,8 @@
 #pragma mark -
 #pragma mark attribute definition 
 
-#define kSPAutoCompletePlaceholderName	@"Placeholder"
-#define kSPAutoCompletePlaceholderVal	@"placholder"
+static NSString * const SPAutoCompletePlaceholderName = @"Placeholder";
+static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 
 @interface NSTableView (MovingSelectedRow)
 
@@ -226,12 +226,9 @@
                parseRange:(NSRange)parseRange
                    inView:(id)aView
                  dictMode:(BOOL)mode
-                   dbMode:(BOOL)theDbMode
            tabTriggerMode:(BOOL)tabTriggerMode
               fuzzySearch:(BOOL)fuzzySearch
              backtickMode:(NSInteger)theBackTickMode
-               withDbName:(NSString *)dbName
-            withTableName:(NSString *)tableName
                selectedDb:(NSString *)selectedDb
            caretMovedLeft:(BOOL)caretMovedLeft
              autoComplete:(BOOL)autoComplete
@@ -257,7 +254,6 @@
 		if(fuzzyMode) [theTableView setBackgroundColor:[NSColor colorWithCalibratedRed:0.9f green:0.9f blue:0.9f alpha:1.0f]];
 		else          [theTableView setBackgroundColor:[NSColor whiteColor]];
 
-		dbStructureMode = theDbMode;
 		cursorMovedLeft = caretMovedLeft;
 		backtickMode = theBackTickMode;
 		commaInsertionMode = NO;
@@ -268,7 +264,6 @@
 		caseSensitive = isCaseSensitive;
 
 		theCharRange = initRange;
-		noFilterString = ([aUserString length]) ? NO : YES;
 
 		theParseRange = parseRange;
 
@@ -299,8 +294,6 @@
 		}
 
 		currentDb = selectedDb;
-
-		theDbName = dbName;
 
 		if(someAdditionalWordCharacters) [textualInputCharacters addCharactersInString:someAdditionalWordCharacters];
 
@@ -361,32 +354,43 @@
 	[theTableView setAllowsEmptySelection:YES];
 	[theTableView setHeaderView:nil];
 
-	NSTableColumn *column0 = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
-	[column0 setDataCell:[[NSImageCell new] autorelease]];
-	[theTableView addTableColumn:column0];
-	[column0 setMinWidth:0];
-	[column0 setWidth:20];
+	{
+		NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"image"] autorelease];
+		[column setDataCell:[[NSImageCell new] autorelease]];
+		[theTableView addTableColumn:column];
+		[column setMinWidth:0];
+		[column setWidth:20];
+	}
 
-	NSTableColumn *column1 = [[[NSTableColumn alloc] initWithIdentifier:@"name"] autorelease];
-	[column1 setEditable:NO];
-	[theTableView addTableColumn:column1];
-	[column1 setWidth:170];
+	{
+		NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"name"] autorelease];
+		[column setEditable:NO];
+		[[column dataCell] setFont:[NSFont systemFontOfSize:12]];
+		[theTableView addTableColumn:column];
+		[column setWidth:170];
+	}
 
-	NSTableColumn *column3 = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
-	[column3 setEditable:NO];
-	[theTableView addTableColumn:column3];
-	[column3 setWidth:139];
+	{
+		NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"type"] autorelease];
+		[column setEditable:NO];
+		[theTableView addTableColumn:column];
+		[column setWidth:139];
+	}
 
-	NSTableColumn *column2 = [[[NSTableColumn alloc] initWithIdentifier:@"list"] autorelease];
-	[column2 setEditable:NO];
-	[theTableView addTableColumn:column2];
-	[column0 setMinWidth:0];
-	[column2 setWidth:6];
+	{
+		NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"list"] autorelease];
+		[column setEditable:NO];
+		[theTableView addTableColumn:column];
+		[column setMinWidth:0];
+		[column setWidth:6];
+	}
 
-	NSTableColumn *column4 = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
-	[column4 setEditable:NO];
-	[theTableView addTableColumn:column4];
-	[column4 setWidth:95];
+	{
+		NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:@"path"] autorelease];
+		[column setEditable:NO];
+		[theTableView addTableColumn:column];
+		[column setWidth:95];
+	}
 
 	[theTableView setDataSource:self];
 	[theTableView setDelegate:self];
@@ -405,7 +409,8 @@
 
 - (NSString *)tableView:(NSTableView *)aTableView toolTipForCell:(id)aCell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex mouseLocation:(NSPoint)mouseLocation
 {
-	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+	NSString *identifier = [aTableColumn identifier];
+	if([identifier isEqualToString:@"image"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
 		}
@@ -422,14 +427,14 @@
 		}
 		return @"";
 	}
-	else if([[aTableColumn identifier] isEqualToString:@"name"]) {
+	else if([identifier isEqualToString:@"name"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
 		}
 
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 	}
-	else if ([[aTableColumn identifier] isEqualToString:@"list"] || [[aTableColumn identifier] isEqualToString:@"type"]) {
+	else if ([identifier isEqualToString:@"list"] || [identifier isEqualToString:@"type"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return NSLocalizedString(@"fetching database structure data in progress", @"fetching database structure data in progress");
 		}
@@ -452,7 +457,7 @@
 			}
 		}
 	}
-	else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+	else if ([identifier isEqualToString:@"path"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
 		}
@@ -488,32 +493,30 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
-	NSImage* image = nil;
-	NSString* imageName = nil;
-
-	if([[aTableColumn identifier] isEqualToString:@"image"]) {
+	NSString *identifier = [aTableColumn identifier];
+	if([identifier isEqualToString:@"image"]) {
 		if(!dictMode) {
 			if(isQueryingDatabaseStructure && rowIndex == 0) {
 				return [syncArrowImages objectAtIndex:currentSyncImage];
 			}
 			else {
-				imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+				NSImage* image = nil;
+				NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
 				if(imageName) image = [NSImage imageNamed:imageName];
 				return image;
 			}
 		}
+
 		return @"";
 	}
-	else if([[aTableColumn identifier] isEqualToString:@"name"]) {
-		[[aTableColumn dataCell] setFont:[NSFont systemFontOfSize:12]];
-
+	else if([identifier isEqualToString:@"name"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return NSLocalizedString(@"fetching database structure in progress", @"fetching database structure in progress");
 		}
 
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 	}
-	else if ([[aTableColumn identifier] isEqualToString:@"list"]) {
+	else if ([identifier isEqualToString:@"list"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 			[b setPullsDown:NO];
@@ -528,32 +531,32 @@
 		if(dictMode) {
 			return @"";
 		}
-		else {
-			if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
-				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-				[b setPullsDown:NO];
-				[b setAltersStateOfSelectedItem:NO];
-				[b setControlSize:NSMiniControlSize];
-				NSMenu *m = [[NSMenu alloc] init];
-				NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Type Declaration:", @"type declaration header") action:NULL keyEquivalent:@""] autorelease];
-				[aMenuItem setEnabled:NO];
-				[m addItem:aMenuItem];
-				[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
-				[b setMenu:m];
-				[m release];
-				[b setPreferredEdge:NSMinXEdge];
-				[b setArrowPosition:NSPopUpArrowAtCenter];
-				[b setFont:[NSFont systemFontOfSize:11]];
-				[b setBordered:NO];
-				[aTableColumn setDataCell:b];
-			}
-			else {
-				[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
-			}
-			return @"";
+
+		if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setAltersStateOfSelectedItem:NO];
+			[b setControlSize:NSMiniControlSize];
+			NSMenu *m = [[NSMenu alloc] init];
+			NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Type Declaration:", @"type declaration header") action:NULL keyEquivalent:@""] autorelease];
+			[aMenuItem setEnabled:NO];
+			[m addItem:aMenuItem];
+			[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
+			[b setMenu:m];
+			[m release];
+			[b setPreferredEdge:NSMinXEdge];
+			[b setArrowPosition:NSPopUpArrowAtCenter];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
 		}
+		else {
+			[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
+		}
+
+		return @"";
 	}
-	else if([[aTableColumn identifier] isEqualToString:@"type"]) {
+	else if([identifier isEqualToString:@"type"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			return @"";
 		}
@@ -561,15 +564,14 @@
 		if(dictMode) {
 			return @"";
 		}
-		else {
-			NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
-			[b setEditable:NO];
-			[b setAlignment:NSRightTextAlignment];
-			[b setFont:[NSFont systemFontOfSize:11]];
-			return b;
-		}
+
+		NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
+		[b setEditable:NO];
+		[b setAlignment:NSRightTextAlignment];
+		[b setFont:[NSFont systemFontOfSize:11]];
+		return b;
 	}
-	else if ([[aTableColumn identifier] isEqualToString:@"path"]) {
+	else if ([identifier isEqualToString:@"path"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
 			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
 			[b setPullsDown:NO];
@@ -584,35 +586,36 @@
 		if(dictMode) {
 			return @"";
 		}
-		else {
-			if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
-				NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-				[b setPullsDown:NO];
-				[b setAltersStateOfSelectedItem:NO];
-				[b setControlSize:NSMiniControlSize];
-				NSMenu *m = [[NSMenu alloc] init];
-				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects]) {
-					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
-				}
-				if([m numberOfItems]>2) {
-					[m removeItemAtIndex:[m numberOfItems]-1];
-					[m removeItemAtIndex:0];
-				}
-				[b setMenu:m];
-				[m release];
-				[b setPreferredEdge:NSMinXEdge];
-				[b setArrowPosition:([m numberOfItems]>1) ? NSPopUpArrowAtCenter : NSPopUpNoArrow];
-				[b setFont:[NSFont systemFontOfSize:11]];
-				[b setBordered:NO];
-				[aTableColumn setDataCell:b];
+
+		if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
+			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
+			[b setPullsDown:NO];
+			[b setAltersStateOfSelectedItem:NO];
+			[b setControlSize:NSMiniControlSize];
+			NSMenu *m = [[NSMenu alloc] init];
+			for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects]) {
+				[m addItemWithTitle:p action:NULL keyEquivalent:@""];
 			}
-			else {
-				[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
+			if([m numberOfItems]>2) {
+				[m removeItemAtIndex:[m numberOfItems]-1];
+				[m removeItemAtIndex:0];
 			}
-			return @"";
+			[b setMenu:m];
+			[m release];
+			[b setPreferredEdge:NSMinXEdge];
+			[b setArrowPosition:([m numberOfItems]>1) ? NSPopUpArrowAtCenter : NSPopUpNoArrow];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			[aTableColumn setDataCell:b];
 		}
+		else {
+			[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
+		}
+
+		return @"";
 	}
-	return [filtered objectAtIndex:rowIndex];
+
+	[NSException raise:NSInternalInconsistencyException format:@"Requesting data for invalid table column with identifier=%@", identifier];
 }
 
 // ======================================================================================
@@ -983,7 +986,7 @@
 		// Restore the text selection location, and clearly mark the autosuggested text
 		[theView setSelectedRange:NSMakeRange(currentSelectionPosition, 0)];
 		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], NSForegroundColorAttributeName, [[theView otherTextColor] colorWithAlphaComponent:0.3f], NSMakeRange(currentSelectionPosition, [toInsert length]));
-		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], kSPAutoCompletePlaceholderName, kSPAutoCompletePlaceholderVal, NSMakeRange(currentSelectionPosition, [toInsert length]));
+		NSMutableAttributedStringAddAttributeValueRange([theView textStorage], SPAutoCompletePlaceholderName, SPAutoCompletePlaceholderVal, NSMakeRange(currentSelectionPosition, [toInsert length]));
 
 		[self checkSpaceForAllowedCharacter];
 	}
@@ -1015,7 +1018,7 @@
 			if (scanPosition == currentLength) break;
 
 			// Perform a search for the attribute, capturing the range of the [non]match
-			if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:scanPosition longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(scanPosition, currentLength-scanPosition)]) {
+			if ([[theView textStorage] attribute:SPAutoCompletePlaceholderName atIndex:scanPosition longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(scanPosition, currentLength-scanPosition)]) {
 				// A match was found - attributeResultRange contains the range of the attributed string
 				[theView shouldChangeTextInRange:attributeResultRange replacementString:@""];
 				[[theView textStorage] deleteCharactersInRange:attributeResultRange];
@@ -1027,7 +1030,7 @@
 
 				// A match was found - retrieve the location
 				NSUInteger matchStart = NSMaxRange(attributeResultRange);
-				if ([[theView textStorage] attribute:kSPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, currentLength - matchStart)]) {
+				if ([[theView textStorage] attribute:SPAutoCompletePlaceholderName atIndex:matchStart longestEffectiveRange:&attributeResultRange inRange:NSMakeRange(matchStart, currentLength - matchStart)]) {
 					[theView shouldChangeTextInRange:attributeResultRange replacementString:@""];
 					[[theView textStorage] deleteCharactersInRange:attributeResultRange];
 				}
