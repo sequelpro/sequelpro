@@ -34,12 +34,12 @@
 
 @interface SPNarrowDownCompletion : NSWindow <NSTableViewDelegate, NSTableViewDataSource>
 {
-	NSArray* suggestions;
-	NSMutableString* mutablePrefix;
-	NSString* staticPrefix;
-	NSString* currentDb;
-	NSArray* filtered;
-	NSTableView* theTableView;
+	NSArray *suggestions;
+	NSMutableString *mutablePrefix;
+	NSString *staticPrefix;
+	NSString *currentDb;
+	NSArray *filtered;
+	NSTableView *theTableView;
 	NSPoint caretPos;
 	BOOL isAbove;
 	BOOL closeMe;
@@ -70,11 +70,11 @@
 	NSUInteger timeCounter;
 
 	id theView;
-	
+
 	NSInteger maxWindowWidth;
 	NSInteger spaceCounter;
-	
-	NSMutableCharacterSet* textualInputCharacters;
+
+	NSMutableCharacterSet *textualInputCharacters;
 
 	SPDatabaseStructure *databaseStructureRetrieval;
 #ifndef SP_CODA
@@ -82,21 +82,34 @@
 #endif
 }
 
-- (id)initWithItems:(NSArray*)someSuggestions alreadyTyped:(NSString*)aUserString staticPrefix:(NSString*)aStaticPrefix 
-	additionalWordCharacters:(NSString*)someAdditionalWordCharacters caseSensitive:(BOOL)isCaseSensitive 
-	charRange:(NSRange)initRange parseRange:(NSRange)parseRange inView:(id)aView 
-	dictMode:(BOOL)mode dbMode:(BOOL)theDbMode tabTriggerMode:(BOOL)tabTriggerMode fuzzySearch:(BOOL)fuzzySearch 
-	backtickMode:(NSInteger)theBackTickMode withDbName:(NSString*)dbName withTableName:(NSString*)tableName 
-	selectedDb:(NSString*)selectedDb caretMovedLeft:(BOOL)caretMovedLeft autoComplete:(BOOL)autoComplete oneColumn:(BOOL)oneColumn
-	alias:(NSString*)anAlias withDBStructureRetriever:(SPDatabaseStructure *)theDatabaseStructure;
+- (id)      initWithItems:(NSArray *)someSuggestions
+             alreadyTyped:(NSString *)aUserString
+             staticPrefix:(NSString *)aStaticPrefix
+ additionalWordCharacters:(NSString *)someAdditionalWordCharacters
+            caseSensitive:(BOOL)isCaseSensitive
+                charRange:(NSRange)initRange
+               parseRange:(NSRange)parseRange
+                   inView:(id)aView
+                 dictMode:(BOOL)mode
+                   dbMode:(BOOL)theDbMode
+           tabTriggerMode:(BOOL)tabTriggerMode
+              fuzzySearch:(BOOL)fuzzySearch
+             backtickMode:(NSInteger)theBackTickMode
+               withDbName:(NSString *)dbName
+            withTableName:(NSString *)tableName
+               selectedDb:(NSString *)selectedDb
+           caretMovedLeft:(BOOL)caretMovedLeft
+             autoComplete:(BOOL)autoComplete
+                oneColumn:(BOOL)oneColumn
+                    alias:(NSString *)anAlias
+ withDBStructureRetriever:(SPDatabaseStructure *)theDatabaseStructure;
 - (void)setCaretPos:(NSPoint)aPos;
-- (void)insert_text:(NSString* )aString;
+- (void)insert_text:(NSString *)aString;
 - (void)insertAutocompletePlaceholder;
 - (void)removeAutocompletionPlaceholderUsingFastMethod:(BOOL)useFastMethod;
 - (void)adjustWorkingRangeByDelta:(NSInteger)delta;
 
 - (void)updateSyncArrowStatus;
 - (void)reInvokeCompletion;
-
 
 @end
