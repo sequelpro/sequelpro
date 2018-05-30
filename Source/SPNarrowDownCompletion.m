@@ -163,6 +163,9 @@
 	SPClear(mutablePrefix);
 	SPClear(textualInputCharacters);
 	SPClear(originalFilterString);
+	[theTableView setDataSource:nil];
+	[theTableView setDelegate:nil];
+	SPClear(theTableView);
 	if (staticPrefix)               SPClear(staticPrefix);
 	if (syncArrowImages)            SPClear(syncArrowImages);
 	if (suggestions)                SPClear(suggestions);
@@ -353,7 +356,7 @@
 	[[scrollView verticalScroller] setControlSize:NSSmallControlSize];
 	[[scrollView horizontalScroller] setControlSize:NSSmallControlSize];
 
-	theTableView = [[[NSTableView alloc] initWithFrame:NSZeroRect] autorelease];
+	theTableView = [[NSTableView alloc] initWithFrame:NSZeroRect];
 	[theTableView setFocusRingType:NSFocusRingTypeNone];
 	[theTableView setAllowsEmptySelection:YES];
 	[theTableView setHeaderView:nil];
@@ -557,7 +560,6 @@
 			[b setEditable:NO];
 			[b setAlignment:NSRightTextAlignment];
 			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setDelegate:self];
 			return b;
 		}
 

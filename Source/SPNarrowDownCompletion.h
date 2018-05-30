@@ -32,7 +32,7 @@
 
 @class SPDatabaseStructure;
 
-@interface SPNarrowDownCompletion : NSWindow <NSTableViewDelegate, NSTableViewDataSource, NSTokenFieldCellDelegate>
+@interface SPNarrowDownCompletion : NSWindow <NSTableViewDelegate, NSTableViewDataSource>
 {
 	NSArray* suggestions;
 	NSMutableString* mutablePrefix;
