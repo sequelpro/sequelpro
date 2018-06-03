@@ -491,23 +491,98 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 	return proposedSelectionIndexes;
 }
 
+- (NSCell *)tableView:(NSTableView *)tableView dataCellForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex
+{
+	// tableColumn == nil is called for a potential group row by the table view, which we don't have
+	if(!tableColumn) return nil;
+
+	NSString *identifier = [tableColumn identifier];
+	if ([identifier isEqualToString:@"list"]) {
+		if(
+			!(isQueryingDatabaseStructure && rowIndex == 0) &&
+			!dictMode &&
+			[[filtered objectAtIndex:rowIndex] objectForKey:@"list"]
+		) {
+			NSPopUpButtonCell *b = [NSPopUpButtonCell new];
+			[b setPullsDown:NO];
+			[b setAltersStateOfSelectedItem:NO];
+			[b setControlSize:NSMiniControlSize];
+			{
+				NSMenu *m = [[NSMenu alloc] init];
+				NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Type Declaration:", @"type declaration header") action:NULL keyEquivalent:@""] autorelease];
+				[aMenuItem setEnabled:NO];
+				[m addItem:aMenuItem];
+				[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
+				[b setMenu:m];
+				[m release];
+			}
+			[b setPreferredEdge:NSMinXEdge];
+			[b setArrowPosition:NSPopUpArrowAtCenter];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			return [b autorelease];
+		}
+	}
+	else if([identifier isEqualToString:@"type"]) {
+		if(!(isQueryingDatabaseStructure && rowIndex == 0) && !dictMode) {
+			NSTokenFieldCell *b = [[NSTokenFieldCell alloc] init];
+			[b setEditable:NO];
+			[b setAlignment:NSRightTextAlignment];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			return [b autorelease];
+		}
+	}
+	else if ([identifier isEqualToString:@"path"]) {
+		if(
+			!(isQueryingDatabaseStructure && rowIndex == 0) &&
+			!dictMode &&
+			[[filtered objectAtIndex:rowIndex] objectForKey:@"path"]
+		) {
+			NSPopUpButtonCell *b = [NSPopUpButtonCell new];
+			[b setPullsDown:NO];
+			[b setAltersStateOfSelectedItem:NO];
+			[b setControlSize:NSMiniControlSize];
+			{
+				NSMenu *m = [[NSMenu alloc] init];
+				for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects]) {
+					[m addItemWithTitle:p action:NULL keyEquivalent:@""];
+				}
+				if([m numberOfItems] > 2) {
+					[m removeItemAtIndex:[m numberOfItems]-1];
+					[m removeItemAtIndex:0];
+				}
+				[b setMenu:m];
+				[m release];
+			}
+			[b setPreferredEdge:NSMinXEdge];
+			[b setArrowPosition:([b numberOfItems] > 1 ? NSPopUpArrowAtCenter : NSPopUpNoArrow)];
+			[b setFont:[NSFont systemFontOfSize:11]];
+			[b setBordered:NO];
+			return [b autorelease];
+		}
+	}
+
+	// ... otherwise use the default cell for the column (text field cell)
+	return nil;
+}
+
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex
 {
 	NSString *identifier = [aTableColumn identifier];
 	if([identifier isEqualToString:@"image"]) {
-		if(!dictMode) {
-			if(isQueryingDatabaseStructure && rowIndex == 0) {
-				return [syncArrowImages objectAtIndex:currentSyncImage];
-			}
-			else {
-				NSImage* image = nil;
-				NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
-				if(imageName) image = [NSImage imageNamed:imageName];
-				return image;
-			}
+		if(dictMode) {
+			return @"";
 		}
 
-		return @"";
+		if(isQueryingDatabaseStructure && rowIndex == 0) {
+			return [syncArrowImages objectAtIndex:currentSyncImage];
+		}
+		else {
+			NSImage* image = nil;
+			NSString *imageName = [[filtered objectAtIndex:rowIndex] objectForKey:@"image"];
+			if(imageName) image = [NSImage imageNamed:imageName];
+			return image;
+		}
 	}
 	else if([identifier isEqualToString:@"name"]) {
 		if(isQueryingDatabaseStructure && rowIndex == 0) {
@@ -517,43 +592,6 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 		return [[filtered objectAtIndex:rowIndex] objectForKey:@"display"];
 	}
 	else if ([identifier isEqualToString:@"list"]) {
-		if(isQueryingDatabaseStructure && rowIndex == 0) {
-			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-			[b setPullsDown:NO];
-			[b setArrowPosition:NSPopUpNoArrow];
-			[b setControlSize:NSMiniControlSize];
-			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setBordered:NO];
-			[aTableColumn setDataCell:b];
-			return @"";
-		}
-
-		if(dictMode) {
-			return @"";
-		}
-
-		if([[filtered objectAtIndex:rowIndex] objectForKey:@"list"]) {
-			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-			[b setPullsDown:NO];
-			[b setAltersStateOfSelectedItem:NO];
-			[b setControlSize:NSMiniControlSize];
-			NSMenu *m = [[NSMenu alloc] init];
-			NSMenuItem *aMenuItem = [[[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Type Declaration:", @"type declaration header") action:NULL keyEquivalent:@""] autorelease];
-			[aMenuItem setEnabled:NO];
-			[m addItem:aMenuItem];
-			[m addItemWithTitle:[[filtered objectAtIndex:rowIndex] objectForKey:@"list"] action:NULL keyEquivalent:@""];
-			[b setMenu:m];
-			[m release];
-			[b setPreferredEdge:NSMinXEdge];
-			[b setArrowPosition:NSPopUpArrowAtCenter];
-			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setBordered:NO];
-			[aTableColumn setDataCell:b];
-		}
-		else {
-			[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
-		}
-
 		return @"";
 	}
 	else if([identifier isEqualToString:@"type"]) {
@@ -565,53 +603,9 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 			return @"";
 		}
 
-		NSTokenFieldCell *b = [[[NSTokenFieldCell alloc] initTextCell:([[filtered objectAtIndex:rowIndex] objectForKey:@"type"]) ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @""] autorelease];
-		[b setEditable:NO];
-		[b setAlignment:NSRightTextAlignment];
-		[b setFont:[NSFont systemFontOfSize:11]];
-		return b;
+		return ([[filtered objectAtIndex:rowIndex] objectForKey:@"type"] ? [[filtered objectAtIndex:rowIndex] objectForKey:@"type"] : @"");
 	}
 	else if ([identifier isEqualToString:@"path"]) {
-		if(isQueryingDatabaseStructure && rowIndex == 0) {
-			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-			[b setPullsDown:NO];
-			[b setArrowPosition:NSPopUpNoArrow];
-			[b setControlSize:NSMiniControlSize];
-			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setBordered:NO];
-			[aTableColumn setDataCell:b];
-			return @"";
-		}
-
-		if(dictMode) {
-			return @"";
-		}
-
-		if([[filtered objectAtIndex:rowIndex] objectForKey:@"path"]) {
-			NSPopUpButtonCell *b = [[NSPopUpButtonCell new] autorelease];
-			[b setPullsDown:NO];
-			[b setAltersStateOfSelectedItem:NO];
-			[b setControlSize:NSMiniControlSize];
-			NSMenu *m = [[NSMenu alloc] init];
-			for(id p in [[[[[filtered objectAtIndex:rowIndex] objectForKey:@"path"] componentsSeparatedByString:SPUniqueSchemaDelimiter] reverseObjectEnumerator] allObjects]) {
-				[m addItemWithTitle:p action:NULL keyEquivalent:@""];
-			}
-			if([m numberOfItems]>2) {
-				[m removeItemAtIndex:[m numberOfItems]-1];
-				[m removeItemAtIndex:0];
-			}
-			[b setMenu:m];
-			[m release];
-			[b setPreferredEdge:NSMinXEdge];
-			[b setArrowPosition:([m numberOfItems]>1) ? NSPopUpArrowAtCenter : NSPopUpNoArrow];
-			[b setFont:[NSFont systemFontOfSize:11]];
-			[b setBordered:NO];
-			[aTableColumn setDataCell:b];
-		}
-		else {
-			[aTableColumn setDataCell:[[NSTextFieldCell new] autorelease]];
-		}
-
 		return @"";
 	}
 
