@@ -248,7 +248,7 @@
 		}
 		else {
 			[errors appendFormat:@"%@ (%@)\n", NSLocalizedString(@"The server's SQL_MODE could not be changed to one suitable for export. The export may be missing important details or may not be importable at all!", @"sql export : 'set @@sql_mode' query failed message"), [connection lastErrorMessage]];
-			[self writeUTF8String:[NSString stringWithFormat:@"# SET SQL_MODE Error: %@\n\n\n", [connection lastErrorMessage]]];
+			[metaString appendFormat:@"# SET SQL_MODE Error: %@\n\n\n", [connection lastErrorMessage]];
 			//if we couldn't change it, we don't need to restore it either
 			oldSqlMode = nil;
 		}
