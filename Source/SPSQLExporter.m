@@ -112,15 +112,15 @@
 	
 	NSMutableDictionary *viewSyntaxes = [NSMutableDictionary dictionary];
 
+	NSString *oldSqlMode = nil;
+
 	// Check that we have all the required info before starting the export
 	if ((![self sqlExportTables])     || ([[self sqlExportTables] count] == 0)          ||
 	    (![self sqlDatabaseHost])     || ([[self sqlDatabaseHost] isEqualToString:@""]) ||
 	    (![self sqlDatabaseName])     || ([[self sqlDatabaseName] isEqualToString:@""]) ||
 	    (![self sqlDatabaseVersion]   || ([[self sqlDatabaseName] isEqualToString:@""])))
 	{
-		[errors release];
-		[sqlString release];
-		return;
+		goto end_cleanup;
 	}
 
 	// Inform the delegate that the export process is about to begin
@@ -138,11 +138,7 @@
 	for (NSArray *item in [self sqlExportTables]) 
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		switch ([NSArrayObjectAtIndex(item, 4) intValue]) {
 			case SPTableTypeProc:
@@ -196,7 +192,7 @@
 	}
 
 	[metaString appendString:@"/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n"];
-	[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
+
 	/* A note on SQL_MODE:
 	 *
 	 *   BEFORE 3.23.6
@@ -228,6 +224,40 @@
 	 *       (trivia: internally it has become MODE_NOT_USED: 16 = "?")
 	 *
 	 */
+
+	BOOL sqlModeIsValid = NO;
+	//fetch old sql mode to restore it later
+	{
+		SPMySQLResult *result = [connection queryString:@"SHOW VARIABLES LIKE 'sql_mode'"];
+		if(![connection queryErrored]) {
+			[result setReturnDataAsStrings:YES];
+			NSArray *row = [result getRowAsArray];
+			oldSqlMode = [[row objectAtIndex:1] unboxNull];
+		}
+	}
+	//set sql mode for export
+	if([@"" isEqualToString:oldSqlMode]) {
+		// the current sql_mode is already the one we want (empty string), no need to change+revert it
+		oldSqlMode = nil;
+		sqlModeIsValid = YES;
+	}
+	else {
+		[connection queryString:@"SET SQL_MODE=''"]; //mysqldump uses a conditional comment for 40100 here, but we want to see the error, since it can't simply be ignored (also ANSI mode is supported before 4.1)
+		if (![connection queryErrored]) {
+			sqlModeIsValid = YES;
+		}
+		else {
+			[errors appendFormat:@"%@ (%@)\n", NSLocalizedString(@"The server's SQL_MODE could not be changed to one suitable for export. The export may be missing important details or may not be importable at all!", @"sql export : 'set @@sql_mode' query failed message"), [connection lastErrorMessage]];
+			[self writeUTF8String:[NSString stringWithFormat:@"# SET SQL_MODE Error: %@\n\n\n", [connection lastErrorMessage]]];
+			//if we couldn't change it, we don't need to restore it either
+			oldSqlMode = nil;
+		}
+	}
+	// there is no point in writing out that the file should use a specific SQL mode when we don't even know which one was active during export
+	if(sqlModeIsValid) {
+		[metaString appendString:@"/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n"];
+	}
+
 	[metaString appendString:@"/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n\n"];
 
 	[self writeString:metaString];
@@ -236,11 +266,7 @@
 	for (NSArray *table in tables) 
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		[self setSqlCurrentTableExportIndex:[self sqlCurrentTableExportIndex]+1];
 		tableName = NSArrayObjectAtIndex(table, 0);
@@ -415,12 +441,10 @@
 						[streamingResult cancelResultLoad];
 						[streamingResult release];
 						[sqlExportPool release];
-						[errors release];
-						[sqlString release];
 						free(useRawDataForColumnAtIndex);
 						free(useRawHexDataForColumnAtIndex);
 
-						return;
+						goto end_cleanup;
 					}
 
 					// Update the progress
@@ -581,11 +605,7 @@
 				for (s = 0; s < [queryResult numberOfRows]; s++) 
 				{
 					// Check for cancellation flag
-					if ([self isCancelled]) {
-						[errors release];
-						[sqlString release];
-						return;
-					}
+					if ([self isCancelled]) goto end_cleanup;
 					
 					NSDictionary *triggers = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 					
@@ -627,11 +647,7 @@
 	for (tableName in viewSyntaxes) 
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		[metaString setString:@"\n\n"];
 
@@ -647,11 +663,7 @@
 	for (NSString *procedureType in @[@"PROCEDURE", @"FUNCTION"])
 	{
 		// Check for cancellation flag
-		if ([self isCancelled]) {
-			[errors release];
-			[sqlString release];
-			return;
-		}
+		if ([self isCancelled]) goto end_cleanup;
 		
 		// Retrieve the array of selected procedures or functions, and skip export if not selected
 		NSMutableArray *items;
@@ -677,11 +689,7 @@
 			for (s = 0; s < [queryResult numberOfRows]; s++) 
 			{
 				// Check for cancellation flag
-				if ([self isCancelled]) {
-					[errors release];
-					[sqlString release];
-					return;
-				}
+				if ([self isCancelled]) goto end_cleanup;
 
 				NSDictionary *proceduresList = [[NSDictionary alloc] initWithDictionary:[queryResult getRowAsDictionary]];
 				NSString *procedureName = [NSString stringWithFormat:@"%@", [proceduresList objectForKey:@"Name"]];
@@ -693,9 +701,7 @@
 					// Check for cancellation flag
 					if ([self isCancelled]) {
 						[proceduresList release];
-						[errors release];
-						[sqlString release];
-						return;
+						goto end_cleanup;
 					}
 					
 					if ([NSArrayObjectAtIndex(item, 0) isEqualToString:procedureName]) {
@@ -811,9 +817,6 @@
 	// Set export errors
 	[self setSqlExportErrors:errors];
 
-	[errors release];
-	[sqlString release];
-	
 	// Close the file
 	[[self exportOutputFile] close];
 	
@@ -822,6 +825,13 @@
 	
 	// Inform the delegate that the export process is complete
 	[delegate performSelectorOnMainThread:@selector(sqlExportProcessComplete:) withObject:self waitUntilDone:NO];
+
+end_cleanup:
+	if(oldSqlMode) {
+		[connection queryString:[NSString stringWithFormat:@"SET SQL_MODE=%@",[oldSqlMode tickQuotedString]]];
+	}
+	[errors release];
+	[sqlString release];
 }
 
 /**
