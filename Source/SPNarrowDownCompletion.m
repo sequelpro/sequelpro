@@ -610,6 +610,7 @@ static NSString * const SPAutoCompletePlaceholderVal  = @"placholder";
 	}
 
 	[NSException raise:NSInternalInconsistencyException format:@"Requesting data for invalid table column with identifier=%@", identifier];
+	return nil; // compiler hint
 }
 
 // ======================================================================================
